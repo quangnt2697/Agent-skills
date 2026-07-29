@@ -39,20 +39,29 @@ Start with a high-level vision. Ask the human clarifying questions until require
 
 ```
 ASSUMPTIONS I'M MAKING:
-1. This is a web application (not native mobile)
-2. Authentication uses session-based cookies (not JWT)
-3. The database is PostgreSQL (based on existing Prisma schema)
-4. We're targeting modern browsers only (no IE11)
+1. Platform: This is a web application (not native mobile or OpenAPI). If OpenAPI is required, it must follow an API-first design.
+2. Domain Context: This does NOT have strict Fintech/Securities/Banking compliance requirements.
+3. Authentication uses session-based cookies (not JWT).
+4. The database is PostgreSQL (based on existing Prisma schema).
 → Correct me now or I'll proceed with these.
 ```
 
 Don't silently fill in ambiguous requirements. The spec's entire purpose is to surface misunderstandings *before* code gets written — assumptions are the most dangerous form of misunderstanding.
 
-**Write a spec document covering these six core areas:**
+**Write a spec document covering these core areas:**
 
 1. **Objective** — What are we building and why? Who is the user? What does success look like?
 
-2. **Commands** — Full executable commands with flags, not just tool names.
+2. **Domain Requirements (Fintech/Banking/Securities Focus)** — 
+   - Define Security mechanisms (Authentication/Authorization, encryption).
+   - Define Precision requirements (e.g., float rounding, currency formatting).
+   - Define Auditability (Audit logs, transaction history, immutability).
+
+3. **Platform Specs** — 
+   - **OpenAPI/Backend:** Define API schemas and contracts first (API-first design).
+   - **Web/App:** Define network state handling (offline mode, retry logic), latency expectations, and state management.
+
+4. **Commands** — Full executable commands with flags, not just tool names.
    ```
    Build: npm run build
    Test: npm test -- --coverage
@@ -60,7 +69,7 @@ Don't silently fill in ambiguous requirements. The spec's entire purpose is to s
    Dev: npm run dev
    ```
 
-3. **Project Structure** — Where source code lives, where tests go, where docs belong.
+5. **Project Structure** — Where source code lives, where tests go, where docs belong.
    ```
    src/           → Application source code
    src/components → React components
@@ -70,11 +79,11 @@ Don't silently fill in ambiguous requirements. The spec's entire purpose is to s
    docs/          → Documentation
    ```
 
-4. **Code Style** — One real code snippet showing your style beats three paragraphs describing it. Include naming conventions, formatting rules, and examples of good output.
+6. **Code Style** — One real code snippet showing your style beats three paragraphs describing it. Include naming conventions, formatting rules, and examples of good output.
 
-5. **Testing Strategy** — What framework, where tests live, coverage expectations, which test levels for which concerns.
+7. **Testing Strategy** — What framework, where tests live, coverage expectations, which test levels for which concerns.
 
-6. **Boundaries** — Three-tier system:
+8. **Boundaries** — Three-tier system:
    - **Always do:** Run tests before commits, follow naming conventions, validate inputs
    - **Ask first:** Database schema changes, adding dependencies, changing CI config
    - **Never do:** Commit secrets, edit vendor directories, remove failing tests without approval
@@ -86,6 +95,12 @@ Don't silently fill in ambiguous requirements. The spec's entire purpose is to s
 
 ## Objective
 [What we're building and why. User stories or acceptance criteria.]
+
+## Domain Requirements
+[Fintech/Banking/Securities requirements: Security, Precision, Auditability]
+
+## Platform Specs
+[OpenAPI schemas, Web/App network state handling, and latency]
 
 ## Tech Stack
 [Framework, language, key dependencies with versions]

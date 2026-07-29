@@ -52,7 +52,7 @@ Database schema
     └── Seed data / migrations
 ```
 
-Implementation order follows the dependency graph bottom-up: build foundations first.
+Implementation order follows the dependency graph bottom-up: build foundations first. **For cross-platform projects using OpenAPI, the API Contract (Swagger/OpenAPI spec) must be at the very top of the graph and finalized first. This allows Web, App, and Backend teams to work in parallel.**
 
 ### Step 3: Slice Vertically
 
@@ -72,6 +72,14 @@ Task 1: User can create an account (schema + API + UI for registration)
 Task 2: User can log in (auth schema + API + UI for login)
 Task 3: User can create a task (task schema + API + UI for creation)
 Task 4: User can view task list (query + API + UI for list view)
+```
+
+**Good (vertical slicing for financial/securities domains):**
+```
+Task 1: Validate account balance and permissions (schema + API + UI for balance check)
+Task 2: Create draft transaction (schema + API + UI for draft creation)
+Task 3: Send and verify 2FA/OTP (auth + API + UI for 2FA)
+Task 4: Commit transaction with ACID compliance (DB transaction + API + UI success state)
 ```
 
 Each vertical slice delivers working, testable functionality.

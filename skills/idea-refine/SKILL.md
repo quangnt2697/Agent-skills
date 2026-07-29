@@ -65,6 +65,8 @@ When the user invokes this skill with an idea (`$ARGUMENTS`), guide them through
    - What are the real constraints (time, tech, resources)?
    - What's been tried before?
    - Why now?
+   - **(Financial/Banking)** What are the compliance (Regulatory/Security) requirements and how is data privacy handled?
+   - **(Financial/Banking)** What are the expected concurrency and latency constraints for transactions?
 
    Use the `AskUserQuestion` tool to gather this input. Do NOT proceed until you understand who this is for and what success looks like.
 
@@ -89,10 +91,11 @@ After the user reacts to Phase 1 (indicates which ideas resonate, pushes back, a
 
 1. **Cluster** the ideas that resonated into 2-3 distinct directions. Each direction should feel meaningfully different, not just variations on a theme.
 
-2. **Stress-test** each direction against three criteria:
+2. **Stress-test** each direction against these criteria:
    - **User value:** Who benefits and how much? Is this a painkiller or a vitamin?
    - **Feasibility:** What's the technical and resource cost? What's the hardest part?
    - **Differentiation:** What makes this genuinely different? Would someone switch from their current solution?
+   - **Financial/Security Risk (Fintech/Banking):** Are there potential vectors for financial loss, fraud, or data breaches? Can the system handle ACID transactions at scale?
 
    Read `refinement-criteria.md` in this skill directory for the full evaluation rubric.
 

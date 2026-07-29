@@ -20,6 +20,7 @@ Task arrives
     ├── Have a rough concept, need variants? → idea-refine
     ├── New project/feature/change? ──→ spec-driven-development
     ├── Have a spec, need tasks? ──────→ planning-and-task-breakdown
+    ├── Need to design test cases? ────→ qa-test-design
     ├── Implementing code? ────────────→ incremental-implementation
     │   ├── UI work? ─────────────────→ frontend-ui-engineering
     │   ├── API work? ────────────────→ api-and-interface-design
@@ -112,6 +113,12 @@ Every skill includes a verification step. A task is not complete until verificat
 
 Per-skill verification is the local check. The project-wide bar that applies to *every* change, regardless of which skill is active, is the Definition of Done: tests pass, no regressions, behavior verified at runtime, docs updated. See `references/definition-of-done.md`. It complements each task's acceptance criteria rather than replacing them.
 
+### 7. Respect Domain & Platform Constraints
+
+Always consider the context of the domain and platform:
+- **Domain (Fintech/Banking/Securities):** Ensure strict adherence to Security (Auth/Permissions), Financial Precision (no arbitrary rounding), and ACID transaction requirements.
+- **Platform (Cross-platform/OpenAPI):** Ensure API-first design. The API Contract must be designed and agreed upon before Web/App implementations begin.
+
 ## Failure Modes to Avoid
 
 These are the subtle errors that look like productivity but create problems:
@@ -146,18 +153,19 @@ For a complete feature, the typical skill sequence is:
 2.  idea-refine                 → Refine vague ideas
 3.  spec-driven-development     → Define what we're building
 4.  planning-and-task-breakdown → Break into verifiable chunks
-5.  context-engineering         → Load the right context
-6.  source-driven-development   → Verify against official docs
-7.  incremental-implementation  → Build slice by slice
-8.  observability-and-instrumentation → Instrument as you build (runs parallel with 7-9, not after)
-9.  doubt-driven-development    → Cross-examine non-trivial decisions in-flight
-10. test-driven-development     → Prove each slice works
-11. code-review-and-quality     → Review before merge
-12. code-simplification         → Reduce unnecessary complexity while preserving behavior
-13. git-workflow-and-versioning → Clean commit history
-14. documentation-and-adrs      → Document decisions
-15. deprecation-and-migration   → Retire old systems and move users safely when needed
-16. shipping-and-launch         → Deploy safely
+5.  qa-test-design              → Design test checklists and BDD scenarios
+6.  context-engineering         → Load the right context
+7.  source-driven-development   → Verify against official docs
+8.  incremental-implementation  → Build slice by slice
+9.  observability-and-instrumentation → Instrument as you build (runs parallel with 8-10, not after)
+10. doubt-driven-development    → Cross-examine non-trivial decisions in-flight
+11. test-driven-development     → Prove each slice works
+12. code-review-and-quality     → Review before merge
+13. code-simplification         → Reduce unnecessary complexity while preserving behavior
+14. git-workflow-and-versioning → Clean commit history
+15. documentation-and-adrs      → Document decisions
+16. deprecation-and-migration   → Retire old systems and move users safely when needed
+17. shipping-and-launch         → Deploy safely
 ```
 
 Not every task needs every skill. A bug fix might only need: `debugging-and-error-recovery` → `test-driven-development` → `code-review-and-quality`.
@@ -170,6 +178,7 @@ Not every task needs every skill. A bug fix might only need: `debugging-and-erro
 | Define | idea-refine | Refine ideas through structured divergent and convergent thinking |
 | Define | spec-driven-development | Requirements and acceptance criteria before code |
 | Plan | planning-and-task-breakdown | Decompose into small, verifiable tasks |
+| Plan | qa-test-design | Design 2-phase test artifacts: checklists then BDD scenarios |
 | Build | incremental-implementation | Thin vertical slices, test each before expanding |
 | Build | source-driven-development | Verify against official docs before implementing |
 | Build | doubt-driven-development | Adversarial fresh-context review of every non-trivial decision |
