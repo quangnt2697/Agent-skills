@@ -2,11 +2,11 @@
 
 Specialist personas that play a single role with a single perspective. Each persona is a Markdown file consumed as a system prompt by your harness (Claude Code, Cursor, Copilot, etc.).
 
-| Persona | Role | Best for |
-|---------|------|----------|
-| [code-reviewer](../agents/code-reviewer.md) | Senior Staff Engineer | Five-axis review before merge |
-| [security-auditor](../agents/security-auditor.md) | Security Engineer | Vulnerability detection, OWASP-style audit |
-| [test-engineer](../agents/test-engineer.md) | QA Engineer | Test strategy, coverage analysis, Prove-It pattern |
+| Persona                                                         | Role | Best for |
+|-----------------------------------------------------------------|------|----------|
+| [code-reviewer](../agents/code-reviewer.md)                     | Senior Staff Engineer | Five-axis review before merge |
+| [security-auditor](../agents/security-auditor.md)               | Security Engineer | Vulnerability detection, OWASP-style audit |
+| [qa](../agents/qa.md)                                           | QA Engineer | Test strategy, coverage analysis, Prove-It pattern, checklist design, BDD Gherkin |
 | [web-performance-auditor](../agents/web-performance-auditor.md) | Web Performance Engineer | Core Web Vitals audit, loading/rendering/network analysis |
 
 ## How personas relate to skills and commands
@@ -36,6 +36,7 @@ Pick this when there's a repeatable workflow you'd otherwise re-explain every ti
 
 - `/review` → wraps `code-reviewer` with the project's review skill
 - `/test` → wraps `test-engineer` with TDD skill
+- `/qa` → wraps `test-engineer` with qa-test-design skill for checklist + BDD Gherkin design
 - `/webperf` → wraps `web-performance-auditor` for performance-focused audits on web apps
 
 ### Slash command (orchestrator — fan-out)
@@ -52,7 +53,7 @@ Is the work a single perspective on a single artifact?
 ├── Yes → Direct persona invocation
 └── No  → Are the sub-tasks independent (no shared mutable state, no ordering)?
          ├── Yes → Slash command with parallel fan-out (e.g. /ship)
-         └── No  → Sequential slash commands run by the user (/spec → /plan → /build → /test → /review)
+         └── No  → Sequential slash commands run by the user (/spec → /plan → /qa → /build → /test → /review)
 ```
 
 ## Worked example: valid orchestration

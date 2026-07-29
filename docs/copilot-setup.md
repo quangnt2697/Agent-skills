@@ -28,13 +28,13 @@ Copilot supports specialized agent personas. Use the agent-skills agents:
 # Create the agents directory and copy agent definitions
 mkdir -p .github/agents
 cp /path/to/agent-skills/agents/code-reviewer.md .github/agents/code-reviewer.agent.md
-cp /path/to/agent-skills/agents/test-engineer.md .github/agents/test-engineer.agent.md
+cp /path/to/agent-skills/agents/qa.md .github/agents/test-engineer.agent.md
 cp /path/to/agent-skills/agents/security-auditor.md .github/agents/security-auditor.agent.md
 ```
 
 Invoke agents in Copilot Chat:
 - `@code-reviewer Review this PR`
-- `@test-engineer Analyze test coverage for this module`
+- `@qa Analyze test coverage for this module`
 - `@security-auditor Check this endpoint for vulnerabilities`
 
 ### Custom Instructions (User Level)

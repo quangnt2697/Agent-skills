@@ -262,11 +262,11 @@ The commands above are entry points. The pack includes 24 skills total — 23 li
 
 Pre-configured specialist personas for targeted reviews:
 
-| Agent | Role | Perspective |
-|-------|------|-------------|
-| [code-reviewer](agents/code-reviewer.md) | Senior Staff Engineer | Five-axis code review with "would a staff engineer approve this?" standard |
-| [test-engineer](agents/test-engineer.md) | QA Specialist | Test strategy, coverage analysis, and the Prove-It pattern |
-| [security-auditor](agents/security-auditor.md) | Security Engineer | Vulnerability detection, threat modeling, OWASP assessment |
+| Agent                                                        | Role | Perspective |
+|--------------------------------------------------------------|------|-------------|
+| [code-reviewer](agents/code-reviewer.md)                     | Senior Staff Engineer | Five-axis code review with "would a staff engineer approve this?" standard |
+| [qa](agents/qa.md)                                           | QA Specialist | Test strategy, coverage analysis, and the Prove-It pattern |
+| [security-auditor](agents/security-auditor.md)               | Security Engineer | Vulnerability detection, threat modeling, OWASP assessment |
 | [web-performance-auditor](agents/web-performance-auditor.md) | Web Performance Engineer | Core Web Vitals audit with Quick/Deep modes and a metric-honesty rule; run it via `/webperf` |
 
 See [docs/agents.md](docs/agents.md) for the decision matrix, orchestration rules, and how personas compose with skills and slash commands.
