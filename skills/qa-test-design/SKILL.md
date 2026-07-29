@@ -63,7 +63,8 @@ Before writing any checklist item, collect the inputs:
 2. **Review API documentation** — extract endpoints, request/response schemas, authentication requirements
 3. **Identify test boundaries** — what is in scope (this checklist) vs out of scope (another checklist or automated tests)
 4. **Note environment requirements** — which environment (UAT/Staging/Production), which devices, which build version
-5. **Identify symmetric elements** — Liệt kê tất cả buttons, tabs, sections, input triggers, hoặc giá trị khác nhau mà chia sẻ cùng hành vi hoặc luồng xử lý (ví dụ: nút MUA và BÁN cùng mở form đặt lệnh; tab "Lệnh thường" và "Lệnh điều kiện" cùng layout nhập giá). Ghi nhận dưới dạng **nhóm đối xứng** (symmetry group) để đảm bảo checklist và scenario bao phủ TẤT CẢ phần tử trong mỗi nhóm.
+5. **Identify symmetric elements** — List all buttons, tabs, sections, input triggers, or values that share the same behavior or processing flow. Record them as **symmetry groups** to ensure the checklist and scenarios cover ALL elements in each group.
+6. **Enumerate closed lists** — When the spec lists a finite, closed set of values (order types, account statuses, security types, exchanges...), record ALL values explicitly. Do not sample — every value in a closed list MUST appear in at least one checklist item and one Examples row.
 
 If `spec-driven-development` has produced a spec, use it as the primary source. Do not re-extract what is already documented.
 
@@ -236,14 +237,14 @@ Feature: <Short title reflecting the behavior area>
 - At least one `Scenario` for the happy path (successful flow)
 - At least one `Scenario` per validation rule for negative testing / edge cases
 - Do not write a single catch-all scenario for all error cases — each error condition gets its own scenario
-- **Symmetry coverage:** Khi spec mô tả nhiều phần tử (buttons, tabs, giá trị) có cùng hành vi, PHẢI sử dụng `Scenario Outline` với `Examples` table liệt kê tất cả biến thể. Không được chỉ test một phần tử rồi bỏ qua các phần tử đối xứng.
+- **Symmetry coverage:** When the spec describes multiple elements (buttons, tabs, values) with the same behavior, you MUST use `Scenario Outline` with an `Examples` table listing all variants. Never test only one element and skip its symmetric counterparts.
 
   ```gherkin
-  # ❌ Chỉ test một phần tử
+  # ❌ Only tests one element
   Scenario: Mở form đặt lệnh khi nhấn MUA
     When người dùng nhấn nút "MUA"
 
-  # ✅ Bao phủ đối xứng bằng Scenario Outline
+  # ✅ Covers all symmetric elements via Scenario Outline
   Scenario Outline: Mở form đặt lệnh khi nhấn <loại_lệnh>
     When người dùng nhấn nút "<loại_lệnh>"
     Examples:
@@ -251,6 +252,9 @@ Feature: <Short title reflecting the behavior area>
       | MUA        |
       | BÁN        |
   ```
+
+- **State-dependent coverage:** When the same action produces different outcomes depending on system state (logged in / not logged in, has data / empty, market hours / after hours), create a separate scenario for each state that yields a distinct outcome. Use Scenario Outline if only input/output data differs; use separate Scenarios if the entire flow differs.
+- **Cross-field interaction:** When changing field A affects field B (e.g., changing price recalculates buying power which changes quantity suggestions), include at least one scenario that asserts the downstream effect on field B after modifying field A.
 
 **Writing rules:**
 

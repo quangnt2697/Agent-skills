@@ -58,22 +58,9 @@ For every function or component:
 
 ### 6. Design Test Artifacts (Checklist + BDD Gherkin)
 
-When designing test artifacts, invoke the `qa-test-design` skill. It runs a two-phase gated workflow:
-
-**Phase 1 — Checklist:** Produce a structured execution checklist first.
-- One item, one action — each line is a single Pass/Fail gate
-- Begin every item with an action verb: "Xác nhận...", "Kiểm tra...", "Nhập..."
-- Group by test concern: Security & Auth → Routing → Validation → Business Rules → Edge Cases → Happy Path
-- Include Priority (P0/P1/P2), Status, and Bug ID columns
-
-**Phase 2 — Gherkin:** Use the checklist as input to design `.feature` files.
-- One scenario, one behavior — never group multiple behaviors in a single scenario
-- Write declarative (state-based), not imperative (navigation-based)
-- Follow strict Given → When → Then order (no loops within a scenario)
-- Tag every scenario for CI/CD filtering: `@smoke`, `@negative`, `@happy-path`, `@regression`, `@JIRA-XXXX`
-- Use Scenario Outline with Boundary Value Analysis for data-driven validation
-
-Do not skip Phase 1. The checklist is the source of truth for scenario coverage.
+When designing test artifacts, invoke the `qa-test-design` skill.
+Follow the skill's two-phase gated workflow exactly — do not skip Phase 1 (checklist).
+All rules, templates, examples, and anti-patterns are defined in the skill file.
 
 ## Output Format
 
@@ -97,62 +84,8 @@ When analyzing test coverage:
 - Low: [Tests for utility functions and formatting]
 ```
 
-When designing an execution checklist:
-
-```markdown
-# Checklist Kiểm Thử - [Tên tính năng / API]
-
-**Môi trường:** [UAT / Staging / Production]
-**Phiên bản / Nhánh:** [Build Version / Branch]
-
-## 1. Kiểm tra Bảo mật & Phân quyền (Security & Auth)
-- [ ] [Hạng mục kiểm tra] — [P0]
-
-## 2. Kiểm tra Đường dẫn & Điều hướng (Routing)
-- [ ] [Hạng mục kiểm tra] — [P1]
-
-## 3. Kiểm tra Dữ liệu đầu vào (Payload Validation)
-- [ ] [Hạng mục kiểm tra] — [P1]
-
-## 4. Kiểm tra Logic Nghiệp vụ (Business Rules)
-- [ ] [Hạng mục kiểm tra] — [P0]
-
-## 5. Kiểm tra Ngoại lệ & Hiệu năng (Edge Cases)
-- [ ] [Hạng mục kiểm tra] — [P2]
-
-## 6. Kiểm tra Luồng Thành công (Happy Path)
-- [ ] [Hạng mục kiểm tra] — [P0]
-```
-
-When designing BDD Gherkin scenarios:
-
-```gherkin
-@domain-securities @feature-tag @JIRA-XXXX
-Feature: <Tên tính năng>
-  As a <vai trò>
-  I want <mục tiêu>
-  So that <lý do>
-
-  Background:
-    Given <trạng thái dùng chung>
-
-  @happy-path @smoke
-  Scenario: <Mô tả luồng thành công>
-    Given <ngữ cảnh tiền điều kiện>
-    When <hành động kích hoạt>
-    Then <kết quả quan sát được>
-
-  @negative @edge-case
-  Scenario Outline: <Mô tả luồng kiểm tra lỗi>
-    Given <ngữ cảnh hợp lệ>
-    When <hành động với dữ liệu> "<input>"
-    Then <hệ thống từ chối>
-    And <thông báo lỗi> "<error_message>"
-
-    Examples:
-      | input | error_message |
-      | ...   | ...           |
-```
+When designing an execution checklist or BDD Gherkin scenarios:
+→ Follow the templates defined in the `qa-test-design` skill (Phase 1 for checklists, Phase 2 for Gherkin).
 
 ## Rules
 
@@ -163,11 +96,11 @@ Feature: <Tên tính năng>
 5. Mock at system boundaries (database, network), not between internal functions
 6. Every test name should read like a specification
 7. A test that never fails is as useless as a test that always fails
-8. Generated checklists and `.feature` files MUST be written in Vietnamese, using domain terminology for securities, fintech, banking, and financial services
+8. Generated checklists and `.feature` files MUST be written in Vietnamese, using domain terminology for securities, fintech, banking, and financial services. Specifically: feature titles, scenario names, step text, checklist items, user stories, and comment blocks → Vietnamese. Tags (`@smoke`, `@negative`, `@JIRA-XXX`) → English (convention).
 9. When testing financial domain features, prioritize transaction integrity, data consistency across accounts, race conditions on concurrent orders, and boundary value analysis on monetary amounts
 10. Invoke `qa-test-design` when the user requests test checklists, execution plans, BDD scenarios, `.feature` files, or Gherkin test cases — always produce the checklist (Phase 1) before the Gherkin (Phase 2)
 11. Use `references/qa-testing-checklist.md` as the minimum baseline for financial domain test coverage, BVA tables, and writing conventions
-12. **Symmetry Coverage** — Khi spec đề cập nhiều phần tử UI (buttons, tabs, sections) hoặc giá trị (loại lệnh, loại tài khoản) có chung hành vi hoặc luồng xử lý, PHẢI bao phủ TẤT CẢ các phần tử/giá trị đó. Không được chỉ test một phần tử rồi bỏ qua các phần tử đối xứng còn lại. Ưu tiên sử dụng `Scenario Outline` với `Examples` table để liệt kê tất cả các biến thể. Xem `references/qa-testing-checklist.md` section **Symmetry Coverage Patterns** để biết cách phát hiện và áp dụng.
+12. **Symmetry Coverage** — When the spec mentions multiple UI elements (buttons, tabs, sections) or values (order types, account types) that share the same behavior or processing flow, you MUST cover ALL of them. Never test only one element and skip its symmetric counterparts. Prefer `Scenario Outline` with an `Examples` table listing every variant. See `references/qa-testing-checklist.md` section **Symmetry Coverage Patterns**.
 
 ## Composition
 

@@ -30,6 +30,7 @@ The agent should automatically map user intent to skills:
 - Refactoring / simplification → `code-simplification`
 - API or interface design → `api-and-interface-design`
 - UI work → `frontend-ui-engineering`
+- Test checklists / BDD Gherkin / `.feature` files → `qa-test-design`
 
 ### Lifecycle Mapping (Implicit Commands)
 
@@ -41,6 +42,7 @@ Instead, the agent must internally follow this lifecycle:
 - PLAN → `planning-and-task-breakdown`
 - BUILD → `incremental-implementation` + `test-driven-development`
 - VERIFY → `debugging-and-error-recovery`
+- QA DESIGN → `qa-test-design` (checklist + BDD Gherkin)
 - REVIEW → `code-review-and-quality`
 - SHIP → `shipping-and-launch`
 
