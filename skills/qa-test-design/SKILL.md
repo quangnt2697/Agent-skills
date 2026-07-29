@@ -65,6 +65,8 @@ Before writing any checklist item, collect the inputs:
 4. **Note environment requirements** — which environment (UAT/Staging/Production), which devices, which build version
 5. **Identify symmetric elements** — List all buttons, tabs, sections, input triggers, or values that share the same behavior or processing flow. Record them as **symmetry groups** to ensure the checklist and scenarios cover ALL elements in each group.
 6. **Enumerate closed lists** — When the spec lists a finite, closed set of values (order types, account statuses, security types, exchanges...), record ALL values explicitly. Do not sample — every value in a closed list MUST appear in at least one checklist item and one Examples row.
+7. **Identify API schema variations** — If the spec describes multiple types of APIs, or a single API that accepts/returns different schema models based on the value of a specific field (e.g., `type`), you MUST list all schema variations to ensure coverage for every model.
+8. **Identify Path & Path Parameters** — Note down path structure and path parameters to validate.
 
 If `spec-driven-development` has produced a spec, use it as the primary source. Do not re-extract what is already documented.
 
@@ -74,12 +76,12 @@ Organize checklist items into logical groups based on the testing dimension. Thi
 
 | Group | Priority | What it covers |
 |-------|----------|----------------|
-| **Security & Auth** | P0 | API key, signature, tokens, authorization, permission |
-| **Routing & HTTP** | P1 | HTTP methods, endpoints, URL validation, market type routing |
-| **Payload Validation** | P1 | Required fields, data types, format validation |
+| **Security & Auth** | P0 | API key, signature, tokens, authorization, permission, path/account access boundaries |
+| **Routing & HTTP** | P1 | HTTP methods, endpoints, URL validation, market type routing, path parameters |
+| **Payload & Schema Validation** | P1 | Required fields, data types, format validation, schema variations based on input values (request/response models) |
 | **Business Rules** | P0 | Price limits, quantity rules, balance checks, time restrictions |
 | **Edge Cases & Performance** | P2 | Race conditions, overflow, rate limiting, cross-asset conflicts |
-| **Happy Path & Data Consistency** | P0 | Successful flows, response schema, end-to-end data verification |
+| **Happy Path & Data Consistency** | P0 | Successful flows, full response schema, end-to-end data verification |
 
 ### Step 3: Write Each Item
 
@@ -150,11 +152,14 @@ Every checklist must include these columns:
 ## 2. Kiểm tra Đường dẫn & Điều hướng (Routing)
 - [ ] Xác nhận hệ thống báo lỗi khi dùng sai HTTP method cho endpoint — [P1]
 - [ ] Xác nhận hệ thống báo lỗi khi viết sai URL — [P1]
+- [ ] Xác nhận hệ thống báo lỗi hoặc từ chối khi truyền sai định dạng Path parameter (VD: ID không tồn tại, sai type) — [P1]
 
-## 3. Kiểm tra Dữ liệu đầu vào (Payload Validation)
+## 3. Kiểm tra Dữ liệu đầu vào & Schema (Payload Validation)
 - [ ] Xác nhận API báo lỗi khi bỏ trống body `{}` — [P1]
 - [ ] Xác nhận API báo lỗi khi thiếu trường bắt buộc: [liệt kê] — [P1]
 - [ ] Xác nhận API **từ chối** nếu sai định dạng dữ liệu — [P1]
+- [ ] **Schema Variation:** Xác nhận hệ thống validate đúng request schema tương ứng với `[tên_trường] = [giá_trị_1]` — [P1]
+- [ ] **Schema Variation:** Xác nhận hệ thống validate đúng request schema tương ứng với `[tên_trường] = [giá_trị_2]` — [P1]
 
 ## 4. Kiểm tra Logic Nghiệp vụ (Business Rules)
 - [ ] Xác nhận API **từ chối** khi giá vượt quá Giá Trần — [P0]
@@ -169,7 +174,8 @@ Every checklist must include these columns:
 
 ## 6. Kiểm tra Luồng Thành công & Nhất quán Dữ liệu (Happy Path)
 - [ ] Xác nhận thao tác thành công với toàn bộ dữ liệu hợp lệ (HTTP 200) — [P0]
-- [ ] Xác nhận response trả về đủ các fields theo schema — [P0]
+- [ ] **Response Schema:** Xác nhận response trả về đúng model schema loại 1 khi `[trường_phân_loại] = [giá_trị_1]` — [P0]
+- [ ] **Response Schema:** Xác nhận response trả về đúng model schema loại 2 khi `[trường_phân_loại] = [giá_trị_2]` — [P0]
 - [ ] **Data Consistency:** Xác nhận dữ liệu nhất quán sau thao tác thành công — [P0]
 ```
 
@@ -252,8 +258,9 @@ Feature: <Short title reflecting the behavior area>
       | MUA        |
       | BÁN        |
   ```
-
 - **State-dependent coverage:** When the same action produces different outcomes depending on system state (logged in / not logged in, has data / empty, market hours / after hours), create a separate scenario for each state that yields a distinct outcome. Use Scenario Outline if only input/output data differs; use separate Scenarios if the entire flow differs.
+- **API Schema Variations:** If an API has multiple request or response schema models based on specific input fields (e.g., `accountType=individual` vs `accountType=corporate`), you MUST create scenarios covering validation for ALL schema variations.
+- **Path and Account Validation:** Ensure there are scenarios to validate path variables (e.g., malformed IDs, IDs belonging to a different user) and account access constraints.
 - **Cross-field interaction:** When changing field A affects field B (e.g., changing price recalculates buying power which changes quantity suggestions), include at least one scenario that asserts the downstream effect on field B after modifying field A.
 
 **Writing rules:**

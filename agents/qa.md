@@ -55,6 +55,8 @@ For every function or component:
 | Boundary values | Min, max, zero, negative |
 | Error paths | Invalid input, network failure, timeout |
 | Concurrency | Rapid repeated calls, out-of-order responses |
+| Schema Variations | Different request/response models based on input field types |
+| Authorization & Path | Valid/invalid account IDs, missing/malformed path parameters |
 
 ### 6. Design Test Artifacts (Checklist + BDD Gherkin)
 
@@ -101,6 +103,7 @@ When designing an execution checklist or BDD Gherkin scenarios:
 10. Invoke `qa-test-design` when the user requests test checklists, execution plans, BDD scenarios, `.feature` files, or Gherkin test cases — always produce the checklist (Phase 1) before the Gherkin (Phase 2)
 11. Use `references/qa-testing-checklist.md` as the minimum baseline for financial domain test coverage, BVA tables, and writing conventions
 12. **Symmetry Coverage** — When the spec mentions multiple UI elements (buttons, tabs, sections) or values (order types, account types) that share the same behavior or processing flow, you MUST cover ALL of them. Never test only one element and skip its symmetric counterparts. Prefer `Scenario Outline` with an `Examples` table listing every variant. See `references/qa-testing-checklist.md` section **Symmetry Coverage Patterns**.
+13. **API Schema & Path Coverage** — Always validate API schema variations for requests and responses when they change based on input fields. Explicitly validate path parameters and account boundaries to ensure robust routing and security testing.
 
 ## Composition
 
