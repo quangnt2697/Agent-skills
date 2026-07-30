@@ -52,6 +52,7 @@ For any numeric input with a valid range `[min, max]`:
 | Below maximum | max - 1 | Accept |
 | At maximum | max | Accept |
 | Above maximum | max + 1 | Reject |
+| Numeric Overflow | INT_MAX, LONG_MAX | Reject / Handle without crashing |
 | Zero | 0 | Depends on domain |
 | Negative | -1 | Reject (usually) |
 | Empty / null | (empty) | Reject |
@@ -68,6 +69,18 @@ For any numeric input with a valid range `[min, max]`:
 | Special characters | `"<script>alert(1)</script>"` | Reject / sanitize |
 | Unicode | `"Nguyễn Văn A"` | Accept |
 | SQL injection | `"'; DROP TABLE--"` | Reject / sanitize |
+
+### Date/Time Fields
+
+| Test case | Value | Expected |
+|-----------|-------|----------|
+| Past date | Yesterday | Depends on rules |
+| Current date | Today | Accept |
+| Future date | Tomorrow | Depends on rules |
+| Invalid calendar date | 30/02, 31/04 | Reject |
+| Leap year validation | 29/02/2024 vs 29/02/2023 | Accept / Reject |
+| Format mismatch | `DD-MM-YYYY` when expecting ISO 8601 | Reject |
+| Timezone handling | With vs without `Z` or `+07:00` offset | Parse correctly |
 
 ## Equivalence Partitioning Reference
 
@@ -151,6 +164,24 @@ Group inputs into classes where all values in the same class produce the same be
 | Wrong data type | String where number expected | 400 + type mismatch error |
 | Extra unknown field | Add `"unknown_field": "value"` | Ignored or 400 (depends on strictness) |
 | Null required field | `"price": null` | 400 Bad Request |
+
+### Query & Path Parameter Validation
+
+| Test | Request | Expected |
+|---|---|---|
+| Path variable missing | `GET /users//orders` | 404 Not Found or 400 Bad Request |
+| Wrong path variable type | `GET /users/abc/orders` (when ID is int) | 400 Bad Request |
+| Query pagination overflow | `GET /orders?page=999999&limit=50` | Empty list or 400 Bad Request |
+| Invalid filter/sort | `GET /orders?sort=-nonexistent_field` | 400 Bad Request |
+
+### Concurrency, Rate Limiting & Idempotency
+
+| Test | Action | Expected |
+|---|---|---|
+| Rate Limiting (Throttling) | Send requests exceeding limit (e.g. 100 req/s) | 429 Too Many Requests |
+| Race Condition | Send N requests modifying same resource simultaneously | Process 1, others rejected or handled safely |
+| Idempotency | Send 2 requests with the same `idempotency-key` | Process 1st, return same cached response for 2nd |
+| Payload Too Large | Send a massive JSON payload | 413 Payload Too Large |
 
 ## Gherkin Step Vocabulary
 

@@ -62,7 +62,7 @@ Before writing any checklist item, collect the inputs:
 1. **Read the spec or requirements** — identify validation rules, error codes, state transitions, business constraints
 2. **Review API documentation** — extract endpoints, request/response schemas, authentication requirements
 3. **Identify test boundaries** — what is in scope (this checklist) vs out of scope (another checklist or automated tests)
-4. **Note environment requirements** — which environment (UAT/Staging/Production), which devices, which build version
+4. **Note environment & non-functional requirements** — which environment (UAT/Staging/Production), device/build versions, and constraints (rate limits, expected latency, date/time format, pagination mechanisms like Cursor/Offset).
 5. **Identify symmetric elements** — List all buttons, tabs, sections, input triggers, or values that share the same behavior or processing flow. Record them as **symmetry groups** to ensure the checklist and scenarios cover ALL elements in each group.
 6. **Enumerate closed lists** — When the spec lists a finite, closed set of values (order types, account statuses, security types, exchanges...), record ALL values explicitly. Do not sample — every value in a closed list MUST appear in at least one checklist item and one Examples row.
 7. **Identify API schema variations** — If the spec describes multiple types of APIs, or a single API that accepts/returns different schema models based on the value of a specific field (e.g., `type`), you MUST list all schema variations to ensure coverage for every model.
@@ -77,10 +77,10 @@ Organize checklist items into logical groups based on the testing dimension. Thi
 | Group | Priority | What it covers |
 |-------|----------|----------------|
 | **Security & Auth** | P0 | API key, signature, tokens, authorization, permission, path/account access boundaries |
-| **Routing & HTTP** | P1 | HTTP methods, endpoints, URL validation, market type routing, path parameters |
-| **Payload & Schema Validation** | P1 | Required fields, data types, format validation, schema variations based on input values (request/response models) |
+| **Routing & HTTP** | P1 | HTTP methods, endpoints, URL validation, market type routing, query string and path parameters |
+| **Payload & Schema Validation** | P1 | Required fields, data types, format validation, schema variations based on input values. MUST validate both Request (Input) and Response (Output) schemas |
 | **Business Rules** | P0 | Price limits, quantity rules, balance checks, time restrictions |
-| **Edge Cases & Performance** | P2 | Race conditions, overflow, rate limiting, cross-asset conflicts |
+| **Edge Cases & Performance** | P2 | Concurrency (Race conditions), Idempotency, Numeric overflow, Rate limiting (Throttling), cross-asset conflicts |
 | **Happy Path & Data Consistency** | P0 | Successful flows, full response schema, end-to-end data verification |
 
 ### Step 3: Write Each Item
@@ -293,6 +293,12 @@ Treat `Given / When / Then` as `Arrange / Act / Assert`:
 | `Given` | Set up preconditions / context | Arrange |
 | `When` | Perform the triggering action | Act |
 | `Then` | Verify the observable outcome | Assert |
+
+**API-specific step examples:**
+- `Given hệ thống thiết lập giới hạn rate limit là "100" request/giây`
+- `When gửi đồng thời "5" requests tới endpoint "/api/orders"`
+- `Then API trả về response schema khớp với định dạng "OrderResponse"`
+- `Then cấu trúc JSON trả về chứa mảng "data" có "5" phần tử`
 
 **Strict rules:**
 
