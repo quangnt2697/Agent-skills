@@ -61,10 +61,7 @@ Khi đầu vào từ jira-import, output sẽ lưu tại chung một thư mục 
 ```
 tests/qa-test-design/{issueKey}/
 ├── {issueKey}-checklist.md
-├── security-auth.feature
-├── validation-payload.feature
-├── business-rules.feature
-└── happy-path.feature
+└── {issueKey}.feature
 ```
 
 ### Bước 1: Thu thập yêu cầu
@@ -223,7 +220,7 @@ Mỗi checklist phải bao gồm các cột sau:
 
 Trước khi viết bất kỳ file `.feature` nào, sử dụng checklist Giai đoạn 1 làm đầu vào chính:
 
-1. **Ánh xạ nhóm checklist thành Features** — mỗi nhóm checklist (Bảo mật, Validation, Quy tắc nghiệp vụ...) thường trở thành một file `.feature` hoặc một khối Feature
+1. **Gom nhóm checklist thành Scenarios** — BẮT BUỘC gom toàn bộ các nhóm checklist (Bảo mật, Validation, Quy tắc nghiệp vụ...) vào CHUNG CHÍNH XÁC 1 file `.feature` duy nhất. KHÔNG tạo nhiều file `.feature` cho một task. Hãy sử dụng tag, comment, hoặc tên Scenario để phân biệt giữa các nhóm chức năng trong cùng một file.
 2. **Trích xuất quy tắc kiểm thử** — từ các item checklist, liệt kê các quy tắc ánh xạ thành hành vi kiểm thử được: validation rules, state transitions, error codes, boundary values. **QUAN TRỌNG:** Các quy tắc này phải phản ánh chính xác Business Rules trong spec gốc. Không tự đặt ra quy tắc; truy vết trực tiếp về spec.
 3. **Brainstorm kịch bản** — cho mỗi quy tắc, liệt kê các kịch bản ứng viên:
    - Luồng thành công (ít nhất 1 cho mỗi quy tắc)
@@ -243,8 +240,7 @@ Trước khi viết bất kỳ file `.feature` nào, sử dụng checklist Giai 
 
 ### Bước 6: Thiết lập File và Định dạng
 
-- Lưu file với đuôi `.feature`
-- Đặt tên file theo kebab-case: `get-trading-token.feature`, `post-bond-order.feature`
+- Đặt tên file bắt buộc là: `{issueKey}.feature`
 - Mỗi file chỉ định nghĩa đúng **một** `Feature`
 - Thụt vào **2 spaces** cho tất cả nội dung lồng
 - Giữ mỗi dòng dưới **120 ký tự**
