@@ -1,13 +1,13 @@
 ---
-name: jira-import
+name: biz-spec
 description: >
   Download Jira issue dưới dạng PDF theo {issueKey}, tự động nhận diện loại task
   ([APP]/[WEB]/[OpenAPI]/[BE]) từ tên issue, chọn bộ trích xuất & câu hỏi phù hợp,
   chạy interview-me để làm rõ yêu cầu, tổng hợp thành bản markdown chi tiết.
-  Trigger: "jira", "import jira", "lấy task jira", "/jira {issueKey}".
+  Trigger: "biz-spec", "import jira", "lấy task jira", "/biz-spec {issueKey}".
 ---
 
-# Skill: jira-import
+# Skill: biz-spec
 
 ## Mục đích
 
@@ -54,11 +54,11 @@ Download PDF ──→ Nhận diện     ──→ Trích xuất    ──→ Ph
    - **Phương án B** (fallback): Dùng browser subagent mở trang issue → Print to PDF
 6. Download tất cả file attachment đính kèm (giữ nguyên format gốc: .pdf, .doc, .png, .xlsx...)
 7. Tạo file `metadata.json` chứa thông tin issue
-8. Lưu tất cả vào `specs/jira-import/{issueKey}/source/`
+8. Lưu tất cả vào `specs/biz-spec/{issueKey}/source/`
 
 ### Cấu trúc thư mục output
 ```
-specs/jira-import/{issueKey}/
+specs/biz-spec/{issueKey}/
 ├── source/
 │   ├── {issueKey}.pdf            # PDF chính (issue content + ảnh)
 │   ├── attachment-*.{ext}         # File đính kèm gốc
@@ -172,7 +172,7 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 ## Phase 5: Tổng hợp bản Markdown chi tiết
 
 ### File output
-📄 `specs/jira-import/{issueKey}-final.md`
+📄 `specs/biz-spec/{issueKey}-final.md`
 
 ### Template header (chung cho tất cả loại task)
 ```markdown
@@ -207,7 +207,7 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 
 ### Quy tắc quan trọng
 > File `*-final.md` là **single source of truth** sau khi import từ Jira.
-> Tất cả các bước tiếp theo (`/spec`, `/planning`, `/qa`) đều đọc từ file này.
+> Tất cả các bước tiếp theo (`/tech-spec`, `/planning`, `/qa`) đều đọc từ file này.
 
 ---
 
@@ -217,7 +217,7 @@ Hỏi user muốn tiếp tục với pipeline nào:
 
 | Tùy chọn | Command | Mô tả |
 |-----------|---------|-------|
-| Viết spec | `/spec` | Viết structured specification từ bản final |
+| Viết spec | `/tech-spec` | Viết structured specification từ bản final |
 | Phân rã tasks | `/planning` | Breakdown thành tasks |
 | Thiết kế test | `/qa` | Tạo checklist + BDD Gherkin |
 | Full pipeline | Tất cả | Chạy lần lượt spec → planning → qa |

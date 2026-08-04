@@ -1,43 +1,43 @@
 ---
 name: planning-and-task-breakdown
-description: Breaks work into ordered tasks. Use when you have a spec or clear requirements and need to break work into implementable tasks. Use when a task feels too large to start, when you need to estimate scope, or when parallel work is possible.
+description: Chia nhỏ công việc thành các task có thứ tự. Sử dụng khi bạn đã có một bản spec hoặc yêu cầu rõ ràng và cần phân rã công việc thành các task có thể triển khai. Sử dụng khi một task có vẻ quá lớn để bắt đầu, khi bạn cần ước lượng khối lượng (scope), hoặc khi có thể làm song song nhiều việc.
 ---
 
-# Planning and Task Breakdown
+# Kỹ năng: Lên Kế hoạch và Phân rã Công việc (Planning and Task Breakdown)
 
-## Overview
+## Tổng quan
 
-Decompose work into small, verifiable tasks with explicit acceptance criteria. Good task breakdown is the difference between an agent that completes work reliably and one that produces a tangled mess. Every task should be small enough to implement, test, and verify in a single focused session.
+Phân rã công việc thành các task nhỏ, có thể kiểm chứng với các tiêu chí chấp thuận (acceptance criteria) rõ ràng. Việc phân rã task tốt chính là ranh giới giữa một agent hoàn thành công việc một cách đáng tin cậy và một agent tạo ra một mớ bòng bong. Mỗi task nên đủ nhỏ để có thể triển khai, chạy test và xác minh (verify) trong một phiên làm việc tập trung (single focused session).
 
-## When to Use
+## Khi nào cần sử dụng
 
-- You have a spec and need to break it into implementable units
-- A task feels too large or vague to start
-- Work needs to be parallelized across multiple agents or sessions
-- You need to communicate scope to a human
-- The implementation order isn't obvious
+- Bạn đã có một bản spec và cần chia nó thành các đơn vị có thể triển khai.
+- Một task có vẻ quá lớn hoặc quá mơ hồ để bắt đầu.
+- Công việc cần được làm song song trên nhiều agent hoặc nhiều phiên (sessions).
+- Bạn cần truyền đạt phạm vi khối lượng (scope) cho con người.
+- Thứ tự triển khai không rõ ràng một cách hiển nhiên.
 
-**When NOT to use:** Single-file changes with obvious scope, or when the spec already contains well-defined tasks.
+**Khi nào KHÔNG nên sử dụng:** Các thay đổi chỉ trên một file với phạm vi hiển nhiên, hoặc khi bản spec đã chứa sẵn các task được định nghĩa tốt.
 
-## The Planning Process
+## Quy trình Lên kế hoạch
 
-### Step 1: Enter Plan Mode
+### Bước 1: Vào Chế độ Lên kế hoạch (Plan Mode)
 
-Before writing any code, operate in read-only mode:
+Trước khi viết bất kỳ đoạn code nào, hãy hoạt động trong chế độ chỉ-đọc (read-only mode):
 
-- Read the spec and relevant codebase sections
-- Identify existing patterns and conventions
-- Map dependencies between components
-- Note risks and unknowns
+- Đọc bản spec và các phần code liên quan.
+- Xác định các mô hình (patterns) và quy ước (conventions) đang có.
+- Ánh xạ sự phụ thuộc (dependencies) giữa các components.
+- Ghi chú các rủi ro và những điều chưa biết.
 
-**Do NOT write code during planning.** The output is a plan document saved to `tasks/plan.md` and a task list saved to `tasks/todo.md`, not implementation.
+**KHÔNG viết code trong lúc lên kế hoạch.** Đầu ra của bước này là một tài liệu kế hoạch được lưu ở `tasks/plan.md` và một danh sách task được lưu ở `tasks/todo.md`, KHÔNG phải là code thực thi.
 
-### Step 2: Identify the Dependency Graph
+### Bước 2: Xác định Đồ thị Phụ thuộc (Dependency Graph)
 
-Map what depends on what:
+Ánh xạ cái gì phụ thuộc vào cái gì:
 
-```
-Database schema
+```text
+Database schema (Cấu trúc DB)
     │
     ├── API models/types
     │       │
@@ -47,196 +47,196 @@ Database schema
     │       │               │
     │       │               └── UI components
     │       │
-    │       └── Validation logic
+    │       └── Validation logic (Logic xác thực)
     │
     └── Seed data / migrations
 ```
 
-Implementation order follows the dependency graph bottom-up: build foundations first. **For cross-platform projects using OpenAPI, the API Contract (Swagger/OpenAPI spec) must be at the very top of the graph and finalized first. This allows Web, App, and Backend teams to work in parallel.**
+Thứ tự triển khai đi theo đồ thị phụ thuộc từ dưới lên (bottom-up): xây dựng nền móng trước. **Đối với các dự án đa nền tảng sử dụng OpenAPI, Hợp đồng API (API Contract - Swagger/OpenAPI spec) phải nằm ở đỉnh cao nhất của đồ thị và được chốt đầu tiên. Điều này cho phép các team Web, App, và Backend làm việc song song.**
 
-### Step 3: Slice Vertically
+### Bước 3: Cắt Lát Dọc (Slice Vertically)
 
-Instead of building all the database, then all the API, then all the UI — build one complete feature path at a time:
+Thay vì xây dựng toàn bộ database, rồi toàn bộ API, rồi toàn bộ UI — hãy xây dựng một luồng tính năng hoàn chỉnh tại một thời điểm:
 
-**Bad (horizontal slicing):**
-```
-Task 1: Build entire database schema
-Task 2: Build all API endpoints
-Task 3: Build all UI components
-Task 4: Connect everything
-```
-
-**Good (vertical slicing):**
-```
-Task 1: User can create an account (schema + API + UI for registration)
-Task 2: User can log in (auth schema + API + UI for login)
-Task 3: User can create a task (task schema + API + UI for creation)
-Task 4: User can view task list (query + API + UI for list view)
+**Cách làm Tồi (cắt lát ngang):**
+```text
+Task 1: Xây dựng toàn bộ database schema
+Task 2: Xây dựng tất cả các API endpoints
+Task 3: Xây dựng tất cả các UI components
+Task 4: Kết nối mọi thứ lại
 ```
 
-**Good (vertical slicing for financial/securities domains):**
+**Cách làm Tốt (cắt lát dọc):**
+```text
+Task 1: Người dùng có thể tạo tài khoản (schema + API + UI cho Đăng ký)
+Task 2: Người dùng có thể đăng nhập (schema + API + UI cho Đăng nhập)
+Task 3: Người dùng có thể tạo một task (schema + API + UI cho Tạo task)
+Task 4: Người dùng có thể xem danh sách task (query + API + UI cho Xem danh sách)
 ```
-Task 1: Validate account balance and permissions (schema + API + UI for balance check)
-Task 2: Create draft transaction (schema + API + UI for draft creation)
-Task 3: Send and verify 2FA/OTP (auth + API + UI for 2FA)
-Task 4: Commit transaction with ACID compliance (DB transaction + API + UI success state)
+
+**Cách làm Tốt (cắt lát dọc cho lĩnh vực Tài chính/Chứng khoán):**
+```text
+Task 1: Xác thực số dư tài khoản và quyền (schema + API + UI cho check số dư)
+Task 2: Tạo giao dịch nháp (schema + API + UI cho tạo nháp)
+Task 3: Gửi và xác minh 2FA/OTP (auth + API + UI cho 2FA)
+Task 4: Commit giao dịch với tính ACID (DB transaction + API + UI trạng thái thành công)
 ```
 
-Each vertical slice delivers working, testable functionality.
+Mỗi lát cắt dọc sẽ giao (deliver) một tính năng hoạt động được và có thể test được.
 
-### Step 4: Write Tasks
+### Bước 4: Viết Tasks
 
-Each task follows this structure:
+Mỗi task tuân theo cấu trúc sau:
 
 ```markdown
-## Task [N]: [Short descriptive title]
+## Task [N]: [Tiêu đề ngắn gọn mang tính mô tả]
 
-**Description:** One paragraph explaining what this task accomplishes.
+**Mô tả:** Một đoạn văn giải thích những gì task này hoàn thành.
 
-**Acceptance criteria:**
-- [ ] [Specific, testable condition]
-- [ ] [Specific, testable condition]
+**Tiêu chí chấp thuận (Acceptance criteria):**
+- [ ] [Điều kiện cụ thể, test được]
+- [ ] [Điều kiện cụ thể, test được]
 
-**Verification:**
-- [ ] Tests pass: [the repository's focused-test command]
-- [ ] Build succeeds: [the repository's build command]
-- [ ] Manual check: [description of what to verify]
+**Xác minh (Verification):**
+- [ ] Tests pass: [câu lệnh test trọng tâm của repo]
+- [ ] Build thành công: [câu lệnh build của repo]
+- [ ] Kiểm tra thủ công: [mô tả những gì cần check bằng tay]
 
-**Dependencies:** [Task numbers this depends on, or "None"]
+**Phụ thuộc vào (Dependencies):** [Số thứ tự của task mà task này phụ thuộc, hoặc "Không có"]
 
-**Files likely touched:**
+**Các file dự kiến sẽ chạm vào:**
 - `src/path/to/file.ts`
 - `tests/path/to/test.ts`
 
-**Estimated scope:** [Small: 1-2 files | Medium: 3-5 files | Large: 5+ files]
+**Ước lượng quy mô:** [Nhỏ: 1-2 file | Vừa: 3-5 file | Lớn: 5+ file]
 ```
 
-### Step 5: Order and Checkpoint
+### Bước 5: Sắp xếp và Đặt Checkpoint
 
-Arrange tasks so that:
+Sắp xếp các task sao cho:
 
-1. Dependencies are satisfied (build foundation first)
-2. Each task leaves the system in a working state
-3. Verification checkpoints occur after every 2-3 tasks
-4. High-risk tasks are early (fail fast)
+1. Các phụ thuộc (dependencies) được thỏa mãn (xây nền móng trước).
+2. Mỗi task đều để lại hệ thống trong trạng thái hoạt động bình thường.
+3. Các điểm xác minh (checkpoints) xuất hiện sau mỗi 2-3 tasks.
+4. Các task có rủi ro cao được đẩy lên sớm (để fail fast).
 
-Add explicit checkpoints:
+Thêm các checkpoints rõ ràng:
 
 ```markdown
-## Checkpoint: After Tasks 1-3
-- [ ] All tests pass
-- [ ] Application builds without errors
-- [ ] Core user flow works end-to-end
-- [ ] Review with human before proceeding
+## Checkpoint: Sau Tasks 1-3
+- [ ] Tất cả các bài test đều pass
+- [ ] Ứng dụng build không có lỗi
+- [ ] Luồng người dùng cốt lõi hoạt động từ đầu đến cuối (end-to-end)
+- [ ] Review với con người trước khi đi tiếp
 ```
 
-## Task Sizing Guidelines
+## Hướng dẫn Định cỡ Task (Task Sizing)
 
-| Size | Files | Scope | Example |
+| Kích cỡ | Số Files | Phạm vi (Scope) | Ví dụ |
 |------|-------|-------|---------|
-| **XS** | 1 | Single function or config change | Add a validation rule |
-| **S** | 1-2 | One component or endpoint | Add a new API endpoint |
-| **M** | 3-5 | One feature slice | User registration flow |
-| **L** | 5-8 | Multi-component feature | Search with filtering and pagination |
-| **XL** | 8+ | **Too large — break it down further** | — |
+| **Rất nhỏ (XS)** | 1 | Đổi một function hoặc config | Thêm một luật validation |
+| **Nhỏ (S)** | 1-2 | Một component hoặc endpoint | Thêm một API endpoint mới |
+| **Vừa (M)** | 3-5 | Một lát cắt tính năng | Luồng đăng ký người dùng |
+| **Lớn (L)** | 5-8 | Tính năng nhiều component | Tìm kiếm có filter và phân trang |
+| **Rất lớn (XL)** | 8+ | **QUÁ LỚN — Cần chia nhỏ thêm** | — |
 
-If a task is L or larger, it should be broken into smaller tasks. An agent performs best on S and M tasks.
+Nếu một task có size L hoặc lớn hơn, nó nên được chia nhỏ thành các task nhỏ hơn. Agent hoạt động tốt nhất trên các task cỡ S và M.
 
-**When to break a task down further:**
-- It would take more than one focused session (roughly 2+ hours of agent work)
-- You cannot describe the acceptance criteria in 3 or fewer bullet points
-- It touches two or more independent subsystems (e.g., auth and billing)
-- You find yourself writing "and" in the task title (a sign it is two tasks)
+**Khi nào cần chia nhỏ task hơn nữa:**
+- Nó sẽ mất hơn một phiên làm việc tập trung (khoảng 2+ giờ làm việc của agent).
+- Bạn không thể mô tả các tiêu chí chấp thuận trong vòng 3 gạch đầu dòng.
+- Nó chạm tới hai hoặc nhiều hệ thống con độc lập (ví dụ: auth và billing).
+- Bạn thấy mình đang viết chữ "và" trong tiêu đề task (một dấu hiệu cho thấy đó là 2 task).
 
 ## Output Files
 
-- **Plan document:** Save the implementation plan to `tasks/plan.md`.
-- **Task list:** Save the checklist-style task list to `tasks/todo.md`.
+- **Tài liệu kế hoạch (Plan document):** Lưu bản kế hoạch triển khai vào `tasks/plan.md`.
+- **Danh sách Task (Task list):** Lưu danh sách dạng checklist vào `tasks/todo.md`.
 
-Create the `tasks/` directory if it does not exist. These paths are the convention expected by the `/build` command and other downstream tooling.
+Tạo thư mục `tasks/` nếu nó chưa tồn tại. Các đường dẫn này là quy ước mà lệnh `/build` và các công cụ theo sau (downstream tooling) mong đợi.
 
-## Plan Document Template
+## Template Tài liệu Kế hoạch (Plan Document)
 
 ```markdown
-# Implementation Plan: [Feature/Project Name]
+# Kế hoạch Triển khai (Implementation Plan): [Tên Tính năng/Dự án]
 
-## Overview
-[One paragraph summary of what we're building]
+## Tổng quan
+[Một đoạn tóm tắt chúng ta đang xây dựng gì]
 
-## Architecture Decisions
-- [Key decision 1 and rationale]
-- [Key decision 2 and rationale]
+## Các quyết định Kiến trúc (Architecture Decisions)
+- [Quyết định chính 1 và lý do]
+- [Quyết định chính 2 và lý do]
 
-## Task List
+## Danh sách Task (Task List)
 
-### Phase 1: Foundation
+### Giai đoạn 1: Nền móng (Foundation)
 - [ ] Task 1: ...
 - [ ] Task 2: ...
 
-### Checkpoint: Foundation
-- [ ] Tests pass, builds clean
+### Checkpoint: Nền móng
+- [ ] Test pass, build sạch sẽ
 
-### Phase 2: Core Features
+### Giai đoạn 2: Tính năng cốt lõi (Core Features)
 - [ ] Task 3: ...
 - [ ] Task 4: ...
 
-### Checkpoint: Core Features
-- [ ] End-to-end flow works
+### Checkpoint: Tính năng cốt lõi
+- [ ] Luồng end-to-end hoạt động tốt
 
-### Phase 3: Polish
+### Giai đoạn 3: Trau chuốt (Polish)
 - [ ] Task 5: ...
 - [ ] Task 6: ...
 
-### Checkpoint: Complete
-- [ ] All acceptance criteria met
-- [ ] Ready for review
+### Checkpoint: Hoàn thành
+- [ ] Thỏa mãn tất cả tiêu chí chấp thuận
+- [ ] Sẵn sàng để review
 
-## Risks and Mitigations
-| Risk | Impact | Mitigation |
+## Rủi ro và Cách giảm thiểu (Risks and Mitigations)
+| Rủi ro | Tác động | Cách giảm thiểu |
 |------|--------|------------|
-| [Risk] | [High/Med/Low] | [Strategy] |
+| [Rủi ro] | [Cao/Vừa/Thấp] | [Chiến lược] |
 
-## Open Questions
-- [Question needing human input]
+## Câu hỏi mở (Open Questions)
+- [Câu hỏi cần con người trả lời]
 ```
 
-## Parallelization Opportunities
+## Các Cơ hội Làm song song (Parallelization)
 
-When multiple agents or sessions are available:
+Khi có sẵn nhiều agents hoặc nhiều phiên làm việc:
 
-- **Safe to parallelize:** Independent feature slices, tests for already-implemented features, documentation
-- **Must be sequential:** Database migrations, shared state changes, dependency chains
-- **Needs coordination:** Features that share an API contract (define the contract first, then parallelize)
+- **An toàn để làm song song:** Các lát cắt tính năng độc lập, viết test cho tính năng đã code, tài liệu hóa (docs).
+- **Bắt buộc phải làm tuần tự:** Migrations database, thay đổi state dùng chung, chuỗi phụ thuộc (dependency chains).
+- **Cần điều phối:** Các tính năng có chung Hợp đồng API (API contract) (phải định nghĩa hợp đồng trước, rồi mới làm song song).
 
-## Common Rationalizations
+## Những lời Biện minh Thường gặp (Rationalizations)
 
-| Rationalization | Reality |
+| Lời biện minh | Thực tế |
 |---|---|
-| "I'll figure it out as I go" | That's how you end up with a tangled mess and rework. 10 minutes of planning saves hours. |
-| "The tasks are obvious" | Write them down anyway. Explicit tasks surface hidden dependencies and forgotten edge cases. |
-| "Planning is overhead" | Planning is the task. Implementation without a plan is just typing. |
-| "I can hold it all in my head" | Context windows are finite. Written plans survive session boundaries and compaction. |
+| "Tới đâu hay tới đó, vừa làm vừa tính" | Đó là cách để biến dự án thành mớ hỗn độn và phải làm lại. 10 phút lên kế hoạch cứu vớt hàng giờ đồng hồ. |
+| "Mấy cái task này quá hiển nhiên" | Cứ viết chúng ra. Các task rõ ràng sẽ làm lộ diện những dependencies bị ẩn và các edge cases bị lãng quên. |
+| "Lên kế hoạch là rườm rà (overhead)" | Lên kế hoạch CHÍNH LÀ công việc. Cắm đầu code mà không có kế hoạch thì chỉ là gõ phím. |
+| "Tôi có thể nhớ hết trong đầu" | Cửa sổ ngữ cảnh (Context windows) là có hạn. Kế hoạch viết ra giấy sẽ tồn tại qua các phiên làm việc và sự thanh lọc bộ nhớ (compaction). |
 
-## Red Flags
+## Các Dấu hiệu Cảnh báo (Red Flags)
 
-- Starting implementation without a written task list
-- Tasks that say "implement the feature" without acceptance criteria
-- No verification steps in the plan
-- All tasks are XL-sized
-- No checkpoints between tasks
-- Dependency order isn't considered
+- Bắt đầu triển khai mà không có một danh sách task được viết ra.
+- Các task có nội dung kiểu "triển khai tính năng" mà không có tiêu chí chấp thuận.
+- Không có các bước xác minh (verification) trong kế hoạch.
+- Toàn bộ các task đều là size XL.
+- Không có checkpoint nào giữa các task.
+- Thứ tự phụ thuộc (dependency) không được xem xét tới.
 
-## Verification
+## Xác minh (Verification)
 
-Before starting implementation, confirm:
+Trước khi bắt đầu triển khai code, hãy xác nhận:
 
-- [ ] Every task has acceptance criteria
-- [ ] Every task has a verification step
-- [ ] Task dependencies are identified and ordered correctly
-- [ ] No task touches more than ~5 files
-- [ ] Checkpoints exist between major phases
-- [ ] The human has reviewed and approved the plan
+- [ ] Mọi task đều có tiêu chí chấp thuận.
+- [ ] Mọi task đều có bước xác minh (verify).
+- [ ] Các dependencies của task được nhận diện và sắp xếp đúng thứ tự.
+- [ ] Không có task nào động vào nhiều hơn ~5 files.
+- [ ] Có các checkpoints giữa các giai đoạn chính.
+- [ ] Con người đã review và phê duyệt kế hoạch.
 
-## See Also
+## Xem thêm
 
-Acceptance criteria are per-task and answer "did we build the right thing?". They sit on top of the project-wide Definition of Done, the standing bar every task clears before it counts as done. See `references/definition-of-done.md`.
+Các tiêu chí chấp thuận (Acceptance criteria) là dành cho từng task riêng lẻ và trả lời câu hỏi "chúng ta đã xây đúng thứ cần xây chưa?". Chúng nằm bên trên Định nghĩa Hoàn thành (Definition of Done) của toàn dự án — cái bar tiêu chuẩn cố định mà mọi task phải vượt qua trước khi được tính là xong. Hãy xem `references/definition-of-done.md`.

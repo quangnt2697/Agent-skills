@@ -1,14 +1,14 @@
 description = "Tải Jira issue thành PDF, tự động nhận diện loại task, trích xuất & phân tích yêu cầu, tổng hợp thành spec chi tiết"
 
 prompt = """
-Invoke the jira-import skill. Đọc file SKILL.md để thực hiện đúng workflow.
+Invoke the biz-spec skill. Đọc file SKILL.md để thực hiện đúng workflow.
 
 $ARGUMENTS chứa Jira issue key (VD: G3PTP-16584). Chạy workflow 6 phase:
 
 1. **Download PDF**: Fetch issue theo key → Download PDF + attachments
    - Chạy script `jira-auth-check.sh` để kiểm tra kết nối
    - Chạy script `jira-fetch-pdf.sh {issueKey}` để tải về
-   - Lưu vào `specs/jira-import/{issueKey}/source/`
+   - Lưu vào `specs/biz-spec/{issueKey}/source/`
 
 2. **Nhận diện loại task** từ tên issue (case-insensitive):
    - Chứa [APP] → dùng profile APP → đọc `references/profile-app.md`
@@ -28,13 +28,13 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16584). Chạy workflow 6 phase:
    đạt ≥90% confidence. Nếu user trả lời "không biết" → ghi Open Question.
 
 6. **Tổng hợp final.md**: Tổng hợp tất cả thành file markdown chi tiết:
-   `specs/jira-import/{issueKey}-final.md`
+   `specs/biz-spec/{issueKey}-final.md`
    - Header: metadata + loại task
    - Sections 2-8: theo profile tương ứng
    - Sections 9-12: AC, Assumptions, Open Questions, Tham khảo
 
 7. **Sau khi hoàn thành**: Hỏi user muốn tiếp tục với pipeline nào:
-   - /spec → Viết structured specification từ bản final
+   - /tech-spec → Viết structured technical specification từ bản final
    - /planning → Phân rã thành tasks
    - /qa → Thiết kế checklist + BDD Gherkin
    - All → Chạy full BA pipeline

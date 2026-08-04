@@ -1,249 +1,249 @@
 ---
 name: incremental-implementation
-description: Delivers changes incrementally. Use when implementing any feature or change that touches more than one file. Use when you're about to write a large amount of code at once, or when a task feels too big to land in one step.
+description: Triển khai các thay đổi theo từng bước tăng dần (incremental). Sử dụng khi implement bất kỳ tính năng hoặc thay đổi nào chạm đến nhiều hơn 1 file. Sử dụng khi bạn định viết một lượng lớn code cùng một lúc, hoặc khi một task có vẻ quá lớn để xử lý trong một bước.
 ---
 
-# Incremental Implementation
+# Kỹ năng: Triển khai Từng bước (Incremental Implementation)
 
-## Overview
+## Tổng quan
 
-Build in thin vertical slices — implement one piece, test it, verify it, then expand. Avoid implementing an entire feature in one pass. Each increment should leave the system in a working, testable state. This is the execution discipline that makes large features manageable.
+Xây dựng theo các lát cắt dọc mỏng — implement một phần, test nó, verify nó, sau đó mới mở rộng tiếp. Tránh việc implement toàn bộ một tính năng trong một lần viết code duy nhất. Mỗi bước tăng dần (increment) phải để lại hệ thống trong trạng thái hoạt động tốt và có thể test được. Đây là kỷ luật thực thi giúp các tính năng lớn trở nên dễ quản lý.
 
-## When to Use
+## Khi nào cần sử dụng
 
-- Implementing any multi-file change
-- Building a new feature from a task breakdown
-- Refactoring existing code
-- Any time you're tempted to write more than ~100 lines before testing
+- Triển khai bất kỳ thay đổi nào ảnh hưởng tới nhiều file.
+- Xây dựng tính năng mới từ bảng phân rã công việc (task breakdown).
+- Refactoring lại code cũ.
+- Bất cứ khi nào bạn có ý định viết nhiều hơn ~100 dòng code trước khi chạy test.
 
-**When NOT to use:** Single-file, single-function changes where the scope is already minimal.
+**Khi nào KHÔNG nên sử dụng:** Những thay đổi nhỏ gọn trong 1 file, 1 function mà phạm vi vốn đã rất tối thiểu.
 
-## The Increment Cycle
+## Chu trình Tăng dần (The Increment Cycle)
 
-```
+```text
 ┌──────────────────────────────────────┐
 │                                      │
-│   Implement ──→ Test ──→ Verify ──┐  │
+│   Code (Implement) ──→ Test ──→ Verify ──┐  │
 │       ▲                           │  │
 │       └───── Commit ◄─────────────┘  │
 │              │                       │
 │              ▼                       │
-│          Next slice                  │
+│          Lát cắt tiếp theo           │
 │                                      │
 └──────────────────────────────────────┘
 ```
 
-For each slice:
+Đối với mỗi lát cắt (slice):
 
-1. **Implement** the smallest complete piece of functionality
-2. **Test** — run the test suite (or write a test if none exists)
-3. **Verify** — confirm the slice works as expected (tests pass, build succeeds, manual check)
-4. **Commit** -- save your progress with a descriptive message (see `git-workflow-and-versioning` for atomic commit guidance)
-5. **Move to the next slice** — carry forward, don't restart
+1. **Implement (Code)** đoạn chức năng hoàn chỉnh nhỏ nhất có thể.
+2. **Test** — chạy bộ test suite (hoặc viết thêm test nếu chưa có).
+3. **Verify** — xác minh rằng lát cắt hoạt động đúng kỳ vọng (test pass, build thành công, check thủ công).
+4. **Commit** — lưu lại tiến độ với một thông điệp commit mô tả rõ ràng (xem `git-workflow-and-versioning` để biết hướng dẫn commit nguyên tử).
+5. **Chuyển sang lát cắt tiếp theo** — đi tiếp, không phải làm lại từ đầu.
 
-## Slicing Strategies
+## Các chiến lược Cắt lát (Slicing Strategies)
 
-### Vertical Slices (Preferred)
+### Cắt lát dọc (Vertical Slices - Khuyên dùng)
 
-Build one complete path through the stack:
+Xây dựng một luồng (path) hoàn chỉnh đi xuyên qua toàn bộ stack:
 
-```
-Slice 1: Create a task (DB + API + basic UI)
-    → Tests pass, user can create a task via the UI
+```text
+Lát cắt 1: Tạo một task (DB + API + UI cơ bản)
+    → Test pass, người dùng có thể tạo task qua UI.
 
-Slice 2: List tasks (query + API + UI)
-    → Tests pass, user can see their tasks
+Lát cắt 2: Lấy danh sách task (Câu query + API + UI)
+    → Test pass, người dùng thấy được danh sách task của họ.
 
-Slice 3: Edit a task (update + API + UI)
-    → Tests pass, user can modify tasks
+Lát cắt 3: Sửa một task (Lệnh update + API + UI)
+    → Test pass, người dùng có thể chỉnh sửa task.
 
-Slice 4: Delete a task (delete + API + UI + confirmation)
-    → Tests pass, full CRUD complete
-```
-
-Each slice delivers working end-to-end functionality.
-
-### Contract-First Slicing
-
-When backend and frontend need to develop in parallel:
-
-```
-Slice 0: Define the API contract (types, interfaces, OpenAPI spec)
-Slice 1a: Implement backend against the contract + API tests
-Slice 1b: Implement frontend against mock data matching the contract
-Slice 2: Integrate and test end-to-end
+Lát cắt 4: Xóa một task (Lệnh delete + API + UI + popup xác nhận)
+    → Test pass, luồng CRUD hoàn thiện.
 ```
 
-### Risk-First Slicing
+Mỗi lát cắt đều giao (deliver) một tính năng hoạt động được end-to-end.
 
-Tackle the riskiest or most uncertain piece first:
+### Cắt lát Hợp đồng-trước (Contract-First Slicing)
 
-```
-Slice 1: Prove the WebSocket connection works (highest risk)
-Slice 2: Build real-time task updates on the proven connection
-Slice 3: Add offline support and reconnection
-```
+Khi backend và frontend cần được phát triển song song:
 
-If Slice 1 fails, you discover it before investing in Slices 2 and 3.
-
-## Implementation Rules
-
-### Rule 0: Simplicity First
-
-Before writing any code, ask: "What is the simplest thing that could work?"
-
-After writing code, review it against these checks:
-- Can this be done in fewer lines?
-- Are these abstractions earning their complexity?
-- Would a staff engineer look at this and say "why didn't you just..."?
-- Am I building for hypothetical future requirements, or the current task?
-
-```
-SIMPLICITY CHECK:
-✗ Generic EventBus with middleware pipeline for one notification
-✓ Simple function call
-
-✗ Abstract factory pattern for two similar components
-✓ Two straightforward components with shared utilities
-
-✗ Config-driven form builder for three forms
-✓ Three form components
+```text
+Lát cắt 0: Định nghĩa Hợp đồng API (types, interfaces, OpenAPI spec).
+Lát cắt 1a: Implement backend dựa trên hợp đồng + API tests.
+Lát cắt 1b: Implement frontend dựa trên dữ liệu mock đúng chuẩn hợp đồng.
+Lát cắt 2: Tích hợp và test end-to-end.
 ```
 
-Three similar lines of code is better than a premature abstraction. Implement the naive, obviously-correct version first. Optimize only after correctness is proven with tests.
+### Cắt lát Ưu tiên Rủi ro (Risk-First Slicing)
 
-### Rule 0.5: Scope Discipline
+Xử lý phần rủi ro cao nhất hoặc phần không chắc chắn nhất đầu tiên:
 
-Touch only what the task requires.
-
-Do NOT:
-- "Clean up" code adjacent to your change
-- Refactor imports in files you're not modifying
-- Remove comments you don't fully understand
-- Add features not in the spec because they "seem useful"
-- Modernize syntax in files you're only reading
-
-If you notice something worth improving outside your task scope, note it — don't fix it:
-
-```
-NOTICED BUT NOT TOUCHING:
-- src/utils/format.ts has an unused import (unrelated to this task)
-- The auth middleware could use better error messages (separate task)
-→ Want me to create tasks for these?
+```text
+Lát cắt 1: Chứng minh kết nối WebSocket hoạt động (rủi ro cao nhất).
+Lát cắt 2: Xây dựng cơ chế cập nhật task realtime trên kết nối đã hoạt động.
+Lát cắt 3: Thêm hỗ trợ offline và tính năng tự reconnect.
 ```
 
-### Rule 1: One Thing at a Time
+Nếu Lát cắt 1 thất bại, bạn phát hiện ra nó trước khi đầu tư thời gian vào Lát cắt 2 và 3.
 
-Each increment changes one logical thing. Don't mix concerns:
+## Các quy tắc Triển khai
 
-**Bad:** One commit that adds a new component, refactors an existing one, and updates the build config.
+### Quy tắc 0: Ưu tiên sự Đơn giản (Simplicity First)
 
-**Good:** Three separate commits — one for each change.
+Trước khi viết bất kỳ dòng code nào, hãy hỏi: "Đâu là cách đơn giản nhất để nó chạy được?"
 
-### Rule 2: Keep It Compilable
+Sau khi viết code, hãy review nó theo các check sau:
+- Code này có thể viết ngắn gọn hơn không?
+- Các lớp trừu tượng (abstractions) này có đáng giá so với sự phức tạp mà nó gây ra không?
+- Một staff engineer nhìn vào liệu có bảo "sao bạn không làm thế này cho nhanh..." không?
+- Tôi đang code cho một yêu cầu xa xôi trong tương lai, hay là cho task hiện tại?
 
-After each increment, the project must build and existing tests must pass. Don't leave the codebase in a broken state between slices.
+```text
+KIỂM TRA SỰ ĐƠN GIẢN:
+✗ Dùng Generic EventBus cùng với middleware pipeline chỉ để bắn 1 cái thông báo
+✓ Dùng hàm function call đơn giản
 
-### Rule 3: Feature Flags for Incomplete Features
+✗ Dùng Abstract factory pattern cho 2 components na ná nhau
+✓ Viết thẳng 2 components đơn giản và share chung vài hàm utilities
 
-If a feature isn't ready for users but you need to merge increments:
+✗ Xây hẳn 1 bộ config-driven form builder chỉ để làm 3 cái form
+✓ Code thẳng 3 form components
+```
+
+Ba dòng code tương tự nhau vẫn tốt hơn là một sự trừu tượng hóa quá sớm. Hãy implement phiên bản thô sơ, rõ-ràng-là-đúng trước tiên. Chỉ tối ưu sau khi sự chính xác đã được chứng minh qua test.
+
+### Quy tắc 0.5: Kỷ luật về Phạm vi (Scope Discipline)
+
+Chỉ chạm vào những gì mà task yêu cầu.
+
+TUYỆT ĐỐI KHÔNG:
+- "Dọn dẹp" (Clean up) các đoạn code nằm cạnh chỗ bạn đang sửa.
+- Refactor các câu lệnh import ở những file bạn không định sửa.
+- Xóa các comments mà bạn không hiểu ngọn ngành.
+- Thêm tính năng không có trong spec chỉ vì nó "có vẻ hữu ích".
+- Hiện đại hóa cú pháp (modernize syntax) ở những file mà bạn chỉ mở lên để đọc.
+
+Nếu bạn nhận thấy có gì đó đáng được cải thiện nằm ngoài phạm vi task, hãy ghi chú lại — đừng sửa nó vội:
+
+```text
+NHẬN THẤY NHƯNG KHÔNG ĐỤNG VÀO:
+- File src/utils/format.ts có 1 import không dùng tới (nhưng không liên quan task này).
+- Auth middleware có thể cải thiện câu thông báo lỗi cho hay hơn (tách thành task riêng).
+→ Bạn có muốn tôi tạo các task mới cho những việc này không?
+```
+
+### Quy tắc 1: Mỗi lần làm Một việc (One Thing at a Time)
+
+Mỗi lần tăng dần (increment) chỉ làm thay đổi một thứ logic duy nhất. Không trộn lẫn các mối quan tâm:
+
+**Sai:** Gộp 1 commit chứa việc tạo component mới, refactor một component cũ, và update cấu hình build.
+
+**Đúng:** 3 commits tách biệt — mỗi cái cho một thay đổi riêng.
+
+### Quy tắc 2: Giữ code luôn Compile được (Keep It Compilable)
+
+Sau mỗi lần tăng dần, dự án phải build được và các test cũ phải pass. Đừng để codebase nằm trong trạng thái hỏng hóc vỡ lở giữa các lát cắt.
+
+### Quy tắc 3: Dùng Cờ Tính năng (Feature Flags) cho tính năng chưa xong
+
+Nếu một tính năng chưa sẵn sàng tung ra cho user nhưng bạn cần merge các bước tăng dần vào nhánh chính:
 
 ```typescript
-// Feature flag for work-in-progress
+// Feature flag cho chức năng đang code dở (WIP)
 const ENABLE_TASK_SHARING = process.env.FEATURE_TASK_SHARING === 'true';
 
 if (ENABLE_TASK_SHARING) {
-  // New sharing UI
+  // UI chức năng sharing mới
 }
 ```
 
-This lets you merge small increments to the main branch without exposing incomplete work.
+Điều này cho phép bạn merge từng phần nhỏ vào branch chính mà không làm phơi bày tính năng chưa hoàn thiện ra ngoài.
 
-### Rule 4: Safe Defaults
+### Quy tắc 4: Các thiết lập Mặc định An toàn (Safe Defaults)
 
-New code should default to safe, conservative behavior:
+Code mới viết nên để mặc định là hành vi an toàn, bảo thủ (conservative):
 
 ```typescript
-// Safe: disabled by default, opt-in
+// An toàn: mặc định là tắt, opt-in mới bật
 export function createTask(data: TaskInput, options?: { notify?: boolean }) {
   const shouldNotify = options?.notify ?? false;
   // ...
 }
 ```
 
-### Rule 5: Rollback-Friendly
+### Quy tắc 5: Thân thiện với việc Rollback
 
-Each increment should be independently revertable:
+Mỗi increment phải có khả năng được revert (hoàn tác) một cách độc lập:
 
-- Additive changes (new files, new functions) are easy to revert
-- Modifications to existing code should be minimal and focused
-- Database migrations should have corresponding rollback migrations
-- Avoid deleting something in one commit and replacing it in the same commit — separate them
+- Các thay đổi mang tính thêm mới (file mới, function mới) thì rất dễ revert.
+- Sửa đổi code cũ phải được thực hiện tối thiểu và tập trung nhất có thể.
+- Database migrations phải đi kèm file rollback migrations tương ứng.
+- Tránh việc vừa xóa một thứ đi rồi thay thế nó bằng thứ khác trong cùng một commit — hãy tách riêng ra.
 
-## Working with Agents
+## Phối hợp cùng Agents
 
-When directing an agent to implement incrementally:
+Khi chỉ thị agent implement theo kiểu incremental:
 
+```text
+"Hãy implement Task 3 trong bản kế hoạch.
+
+Bắt đầu trước với việc sửa DB schema và cái API endpoint thôi.
+Đừng đụng vào UI vội — chúng ta sẽ làm UI ở phần increment tiếp theo.
+
+Sau khi code xong, hãy chạy các lệnh test và lệnh build của repo
+để chắc chắn không có gì bị hỏng nhé."
 ```
-"Let's implement Task 3 from the plan.
 
-Start with just the database schema change and the API endpoint.
-Don't touch the UI yet — we'll do that in the next increment.
+Hãy đưa ra định nghĩa thật rõ ràng về việc cái gì thuộc phạm vi (in scope) và KHÔNG thuộc phạm vi (NOT in scope) cho mỗi increment.
 
-After implementing, run the repository's test and build commands to
-verify nothing is broken."
-```
+## Checklist cho mỗi Increment
 
-Be explicit about what's in scope and what's NOT in scope for each increment.
+Sau mỗi lần tăng dần, hãy kiểm tra lại bằng các lệnh của chính repository đó (xem phần *Khám phá Stack trước tiên* trong skill `test-driven-development`):
 
-## Increment Checklist
+- [ ] Thay đổi chỉ thực hiện một việc duy nhất và thực hiện nó trọn vẹn.
+- [ ] Tất cả các bài test cũ vẫn pass (dùng lệnh test của repo: `npm test`, `./gradlew test`, `pytest`, ...).
+- [ ] Build thành công (dùng lệnh build của repo).
+- [ ] Type checking pass (nếu stack có hỗ trợ: `npx tsc --noEmit`, `mypy`, ...).
+- [ ] Lệnh Linting không báo lỗi.
+- [ ] Tính năng mới hoạt động chính xác như kỳ vọng.
+- [ ] Thay đổi đã được commit kèm một mô tả có ý nghĩa.
 
-After each increment, verify with the repository's own commands (see the test-driven-development skill's Discover the Stack First section):
+**Lưu ý:** Chỉ chạy các lệnh kiểm tra sau khi vừa có một thay đổi có khả năng gây ảnh hưởng tới lệnh đó. Sau khi lệnh chạy thành công, đừng lặp lại câu lệnh đó lần nữa trừ khi code lại vừa được sửa — việc chạy lại test trên đống code không đổi chẳng cung cấp thêm thông tin gì.
 
-- [ ] The change does one thing and does it completely
-- [ ] All existing tests still pass (the repository's test command: `npm test`, `./gradlew test`, `pytest`, ...)
-- [ ] The build succeeds (the repository's build command)
-- [ ] Type checking passes, where the stack has one (`npx tsc --noEmit`, `mypy`, ...)
-- [ ] Linting passes (the repository's lint command)
-- [ ] The new functionality works as expected
-- [ ] The change is committed with a descriptive message
+## Các lý do Biện minh Thường gặp
 
-**Note:** Run each verification command after a change that could affect it. After a successful run, don't repeat the same command unless the code has changed since — re-running on unchanged code adds no information.
-
-## Common Rationalizations
-
-| Rationalization | Reality |
+| Lời biện minh | Thực tế |
 |---|---|
-| "I'll test it all at the end" | Bugs compound. A bug in Slice 1 makes Slices 2-5 wrong. Test each slice. |
-| "It's faster to do it all at once" | It *feels* faster until something breaks and you can't find which of 500 changed lines caused it. |
-| "These changes are too small to commit separately" | Small commits are free. Large commits hide bugs and make rollbacks painful. |
-| "I'll add the feature flag later" | If the feature isn't complete, it shouldn't be user-visible. Add the flag now. |
-| "This refactor is small enough to include" | Refactors mixed with features make both harder to review and debug. Separate them. |
-| "Let me run the build command again just to be sure" | After a successful run, repeating the same command adds nothing unless the code has changed since. Run it again after subsequent edits, not as reassurance. |
+| "Tí nữa làm xong tôi test một thể" | Bugs bị dồn ứ lại. Một bug ở Lát cắt 1 sẽ làm các Lát cắt 2-5 bị sai theo. Hãy test từng lát cắt. |
+| "Cứ làm tuốt luốt một cục cho nhanh" | Cảm giác *có vẻ* nhanh cho đến khi cái gì đó lăn ra hỏng, và bạn không thể tìm ra nguyên nhân ở 500 dòng code vừa đổi. |
+| "Cái này đổi ít quá, commit mất công" | Commit nhỏ không tốn tiền. Commit to giấu kín bug và biến việc rollback thành một nỗi đau khổ. |
+| "Để tí nữa tôi nhét cái feature flag vào sau" | Nếu tính năng chưa hoàn thiện, user không được phép thấy nó. Hãy cài cờ (flag) ngay từ đầu. |
+| "Cái đoạn refactor này có tý xíu, gộp chung luôn" | Trộn lẫn refactoring vào chung với code tính năng mới khiến cả hai đều khó review và khó debug. Tách ra. |
+| "Để tôi chạy lại lệnh build phát nữa cho chắc củ" | Nếu đã chạy pass rồi, chạy lại lần nữa là vô dụng nếu không có dòng code nào thay đổi giữa hai lần chạy. Chỉ chạy lại sau khi sửa code, không phải để tự trấn an bản thân. |
 
-## Red Flags
+## Các Dấu hiệu Cảnh báo (Red Flags)
 
-- More than 100 lines of code written without running tests
-- Multiple unrelated changes in a single increment
-- "Let me just quickly add this too" scope expansion
-- Skipping the test/verify step to move faster
-- Build or tests broken between increments
-- Large uncommitted changes accumulating
-- Building abstractions before the third use case demands it
-- Touching files outside the task scope "while I'm here"
-- Creating new utility files for one-time operations
-- Running the same build/test command twice in a row without any intervening code change
+- Viết quá 100 dòng code mà chưa chạy test phát nào.
+- Gộp quá nhiều thay đổi không liên quan vào chung 1 increment.
+- Tiện tay mở rộng phạm vi: "để tôi thêm nhanh cái này vào luôn".
+- Bỏ qua bước test/verify để làm cho lẹ.
+- Build hoặc test bị hỏng giữa chừng giữa các increments.
+- Đống thay đổi khổng lồ nằm ụ lại chưa được commit.
+- Viết các lớp abstract khi chưa có đủ 3 use cases đòi hỏi nó.
+- Chạm vào các file ngoài phạm vi task với lý do "tiện tay ở đây thì sửa luôn".
+- Đẻ ra một đống file utility mới chỉ để dùng 1 lần duy nhất.
+- Chạy đi chạy lại cùng một lệnh build/test 2 lần liên tiếp dù chẳng sửa thêm dòng code nào.
 
-## Verification
+## Xác minh (Verification)
 
-After completing all increments for a task:
+Sau khi hoàn tất mọi increments của một task:
 
-- [ ] Each increment was individually tested and committed
-- [ ] The full test suite passes
-- [ ] The build is clean
-- [ ] The feature works end-to-end as specified
-- [ ] No uncommitted changes remain
+- [ ] Từng increment đã được test và commit một cách độc lập.
+- [ ] Toàn bộ test suite đều pass.
+- [ ] Build hoàn toàn sạch sẽ.
+- [ ] Tính năng hoạt động end-to-end theo đúng spec.
+- [ ] Không còn đoạn code thay đổi nào bị bỏ quên chưa commit.
 
-## See Also
+## Xem thêm
 
-Per-increment verification is the local check. Before declaring a task done, apply the project-wide Definition of Done as the final gate, the standing bar every increment clears regardless of the task. See `references/definition-of-done.md`.
+Kiểm chứng (verification) ở từng increment là việc check ở cấp độ cục bộ. Trước khi tuyên bố một task đã xong toàn bộ, hãy đối chiếu với Định nghĩa Hoàn thành (Definition of Done) của dự án — đây là rào chắn chốt sổ cuối cùng mà mọi thay đổi đều phải vượt qua. Xem `references/definition-of-done.md`.

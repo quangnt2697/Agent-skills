@@ -1,182 +1,182 @@
 ---
 name: api-and-interface-design
-description: Guides stable API and interface design. Use when designing APIs, module boundaries, or any public interface. Use when creating REST or GraphQL endpoints, defining type contracts between modules, or establishing boundaries between frontend and backend.
+description: Hướng dẫn thiết kế các giao diện và API ổn định. Sử dụng khi thiết kế APIs, các ranh giới module, hoặc bất kỳ giao diện công khai nào. Sử dụng khi tạo REST hoặc GraphQL endpoints, định nghĩa các hợp đồng kiểu dữ liệu (type contracts) giữa các module, hoặc thiết lập ranh giới giữa frontend và backend.
 ---
 
-# API and Interface Design
+# Kỹ năng: Thiết kế API và Giao diện (API and Interface Design)
 
-## Overview
+## Tổng quan
 
-Design stable, well-documented interfaces that are hard to misuse. Good interfaces make the right thing easy and the wrong thing hard. This applies to REST APIs, GraphQL schemas, module boundaries, component props, and any surface where one piece of code talks to another.
+Thiết kế các giao diện ổn định, được document tốt, và khó bị dùng sai (hard to misuse). Một giao diện tốt là làm cho việc dùng đúng thì dễ dàng, còn dùng sai thì khó khăn. Điều này áp dụng cho REST APIs, GraphQL schemas, ranh giới giữa các module, các props của component, và bất kỳ bề mặt giao tiếp nào mà đoạn code này nói chuyện với đoạn code khác.
 
-## When to Use
+## Khi nào cần sử dụng
 
-- Designing new API endpoints
-- Defining module boundaries or contracts between teams
-- Creating component prop interfaces
-- Establishing database schema that informs API shape
-- Changing existing public interfaces
+- Khi thiết kế các endpoint API mới.
+- Khi định nghĩa ranh giới giữa các module hoặc các hợp đồng giao kèo (contracts) giữa các team.
+- Khi tạo các component prop interfaces.
+- Khi thiết lập cấu trúc database (database schema) có ảnh hưởng đến định dạng của API.
+- Khi thay đổi các giao diện công khai (public interfaces) đang tồn tại.
 
-## Core Principles
+## Các Nguyên tắc Cốt lõi (Core Principles)
 
-### Hyrum's Law
+### Định luật Hyrum (Hyrum's Law)
 
-> With a sufficient number of users of an API, all observable behaviors of your system will be depended on by somebody, regardless of what you promise in the contract.
+> Khi có đủ số lượng người dùng sử dụng API của bạn, thì tất cả những hành vi có thể quan sát được của hệ thống đều sẽ bị một ai đó dựa dẫm vào (depended on), bất kể bạn có hứa hẹn gì trong cái hợp đồng API hay không.
 
-This means: every public behavior — including undocumented quirks, error message text, timing, and ordering — becomes a de facto contract once users depend on it. Design implications:
+Điều này có nghĩa là: Mọi hành vi quan sát được — bao gồm cả những đặc tính kỳ cục không hề ghi trong tài liệu, nội dung câu báo lỗi, độ trễ (timing), hay thứ tự sắp xếp — đều sẽ tự động trở thành một bản hợp đồng thực tế (de facto contract) một khi user đã trót phụ thuộc vào nó. Ý nghĩa đối với việc thiết kế:
 
-- **Be intentional about what you expose.** Every observable behavior is a potential commitment.
-- **Don't leak implementation details.** If users can observe it, they will depend on it.
-- **Plan for deprecation at design time.** See `deprecation-and-migration` for how to safely remove things users depend on.
-- **Tests are not enough.** Even with perfect contract tests, Hyrum's Law means "safe" changes can break real users who depend on undocumented behavior.
+- **Phải có chủ đích về những gì bạn phơi bày ra ngoài (expose).** Mọi hành vi quan sát được đều là một sự cam kết tiềm tàng.
+- **Đừng để rò rỉ chi tiết cài đặt bên trong (implementation details).** Nếu user có thể nhìn thấy nó, họ sẽ phụ thuộc vào nó.
+- **Lên kế hoạch loại bỏ (deprecation) ngay từ khâu thiết kế.** Xem kỹ năng `deprecation-and-migration` để biết cách tháo gỡ an toàn những thứ mà user đang phụ thuộc vào.
+- **Tests thôi là chưa đủ.** Ngay cả với những bài test hợp đồng (contract tests) hoàn hảo nhất, Định luật Hyrum nói rằng những thay đổi tưởng như "an toàn" vẫn có thể đấm vỡ mặt các user ngoài đời thực vì họ lỡ phụ thuộc vào một hành vi ngầm không được ghi trong tài liệu.
 
-### The One-Version Rule
+### Quy tắc Một-Phiên-bản (The One-Version Rule)
 
-Avoid forcing consumers to choose between multiple versions of the same dependency or API. Diamond dependency problems arise when different consumers need different versions of the same thing. Design for a world where only one version exists at a time — extend rather than fork.
+Tránh việc ép người dùng (consumers) phải chọn lựa giữa nhiều versions khác nhau của cùng một dependency hoặc API. Vấn đề phụ thuộc hình kim cương (Diamond dependency) sẽ phát sinh khi các consumer khác nhau lại cần các version khác nhau của cùng một thứ. Hãy thiết kế cho một thế giới nơi chỉ có một phiên bản duy nhất tồn tại ở một thời điểm — hãy mở rộng (extend) thay vì chẻ nhánh (fork).
 
-### 1. Contract First
+### 1. Hợp đồng đi trước (Contract First)
 
-Define the interface before implementing it. The contract is the spec — implementation follows.
+Định nghĩa cái Giao diện/Hợp đồng (Interface/Contract) trước khi bắt tay vào code nó. Hợp đồng chính là bản đặc tả (spec) — việc code (implementation) đi theo sau.
 
 ```typescript
-// Define the contract first
+// Định nghĩa hợp đồng (contract) trước
 interface TaskAPI {
-  // Creates a task and returns the created task with server-generated fields
+  // Tạo task và trả về task đã tạo bao gồm các trường do server tự sinh (server-generated)
   createTask(input: CreateTaskInput): Promise<Task>;
 
-  // Returns paginated tasks matching filters
+  // Trả về danh sách task có phân trang khớp với các điều kiện lọc
   listTasks(params: ListTasksParams): Promise<PaginatedResult<Task>>;
 
-  // Returns a single task or throws NotFoundError
+  // Trả về 1 task hoặc quăng lỗi NotFoundError
   getTask(id: string): Promise<Task>;
 
-  // Partial update — only provided fields change
+  // Update một phần — chỉ thay đổi những trường được truyền vào
   updateTask(id: string, input: UpdateTaskInput): Promise<Task>;
 
-  // Idempotent delete — succeeds even if already deleted
+  // Xóa có tính lũy đẳng (Idempotent) — báo thành công ngay cả khi nó đã bị xóa từ trước rồi
   deleteTask(id: string): Promise<void>;
 }
 ```
 
-### 2. Consistent Error Semantics
+### 2. Ngữ nghĩa Báo lỗi Nhất quán (Consistent Error Semantics)
 
-Pick one error strategy and use it everywhere:
+Hãy chọn ra ĐÚNG MỘT chiến lược báo lỗi và dùng nó ở mọi nơi:
 
 ```typescript
-// REST: HTTP status codes + structured error body
-// Every error response follows the same shape
+// REST: Mã HTTP status codes + Body báo lỗi có cấu trúc (structured)
+// Mọi cục response báo lỗi đều phải tuân theo đúng 1 cái form này
 interface APIError {
   error: {
-    code: string;        // Machine-readable: "VALIDATION_ERROR"
-    message: string;     // Human-readable: "Email is required"
-    details?: unknown;   // Additional context when helpful
+    code: string;        // Máy đọc được: "VALIDATION_ERROR"
+    message: string;     // Người đọc được: "Bắt buộc phải nhập Email"
+    details?: unknown;   // Bối cảnh bổ sung nếu cần thiết
   };
 }
 
-// Status code mapping
-// 400 → Client sent invalid data
-// 401 → Not authenticated
-// 403 → Authenticated but not authorized
-// 404 → Resource not found
-// 409 → Conflict (duplicate, version mismatch)
-// 422 → Validation failed (semantically invalid)
-// 500 → Server error (never expose internal details)
+// Bảng map các Status code
+// 400 → Client gửi data láo (invalid)
+// 401 → Chưa đăng nhập (Not authenticated)
+// 403 → Đã đăng nhập nhưng không có quyền (Not authorized)
+// 404 → Không tìm thấy tài nguyên (Resource not found)
+// 409 → Xung đột (Conflict - trùng lặp, lệch version)
+// 422 → Tạch Validation (sai ngữ nghĩa)
+// 500 → Server hỏng (TUYỆT ĐỐI KHÔNG BẮN CHI TIẾT LỖI RA NGOÀI)
 ```
 
-**Don't mix patterns.** If some endpoints throw, others return null, and others return `{ error }` — the consumer can't predict behavior.
+**Đừng trộn lẫn các pattern.** Nếu vài endpoint thì ném lỗi (throw), vài cái khác thì trả về `null`, và vài cái lại trả về `{ error }` — người dùng API sẽ đéo thể nào lường trước được hành vi.
 
-### 3. Validate at Boundaries
+### 3. Validate tại Ranh giới (Validate at Boundaries)
 
-Trust internal code. Validate at system edges where external input enters:
+Hãy tin tưởng code nội bộ. Chỉ Validate tại các ranh giới ngoại biên nơi dữ liệu bên ngoài đi vào:
 
 ```typescript
-// Validate at the API boundary
+// Validate tại ranh giới API
 app.post('/api/tasks', async (req, res) => {
   const result = CreateTaskSchema.safeParse(req.body);
   if (!result.success) {
     return res.status(422).json({
       error: {
         code: 'VALIDATION_ERROR',
-        message: 'Invalid task data',
+        message: 'Dữ liệu task không hợp lệ',
         details: result.error.flatten(),
       },
     });
   }
 
-  // After validation, internal code trusts the types
+  // Sau cổng validation, code bên trong hoàn toàn tin tưởng vào cái Types đó
   const task = await taskService.create(result.data);
   return res.status(201).json(task);
 });
 ```
 
-Where validation belongs:
-- API route handlers (user input)
-- Form submission handlers (user input)
-- External service response parsing (third-party data -- **always treat as untrusted**)
-- Environment variable loading (configuration)
+Nơi BẮT BUỘC phải đặt Validation:
+- Các hàm xử lý API route (dữ liệu do user nhập)
+- Các hàm xử lý Form submit (dữ liệu do user nhập)
+- Parse các response từ External service (dữ liệu của bên thứ ba -- **luôn coi đó là dữ liệu không đáng tin**)
+- Load các biến môi trường (environment variables - cấu hình)
 
-> **Third-party API responses are untrusted data.** Validate their shape and content before using them in any logic, rendering, or decision-making. A compromised or misbehaving external service can return unexpected types, malicious content, or instruction-like text.
+> **Các kết quả trả về (responses) từ API của bên thứ 3 là dữ liệu KHÔNG ĐÁNG TIN.** Hãy validate hình dáng (shape) và nội dung của chúng trước khi xài chúng vào bất kỳ logic, màn hình render, hay quyết định nào. Một dịch vụ bên ngoài bị hack hoặc dở chứng có thể trả về sai type, chứa nội dung độc hại, hoặc chứa các câu text thao túng (instruction-like text).
 
-Where validation does NOT belong:
-- Between internal functions that share type contracts
-- In utility functions called by already-validated code
-- On data that just came from your own database
+Nơi ĐỪNG đi Validate thừa thãi:
+- Giữa các function nội bộ đang dùng chung một bộ type contracts (hợp đồng type).
+- Bên trong các utility functions được gọi bởi một đoạn code đã được validate từ trước.
+- Trên các cục dữ liệu vừa được móc ra từ chính cái Database nhà bạn.
 
-### 4. Prefer Addition Over Modification
+### 4. Ưu tiên Thêm mới Hơn là Sửa đổi (Prefer Addition Over Modification)
 
-Extend interfaces without breaking existing consumers:
+Hãy mở rộng các interfaces mà không làm hỏng ứng dụng của những người đang xài nó (existing consumers):
 
 ```typescript
-// Good: Add optional fields
+// Tốt (Good): Thêm các trường tự chọn (optional)
 interface CreateTaskInput {
   title: string;
   description?: string;
-  priority?: 'low' | 'medium' | 'high';  // Added later, optional
-  labels?: string[];                       // Added later, optional
+  priority?: 'low' | 'medium' | 'high';  // Được thêm vào sau này, optional
+  labels?: string[];                       // Được thêm vào sau này, optional
 }
 
-// Bad: Change existing field types or remove fields
+// Tệ (Bad): Đổi type của các trường hiện có, hoặc xóa trường đi
 interface CreateTaskInput {
   title: string;
-  // description: string;  // Removed — breaks existing consumers
-  priority: number;         // Changed from string — breaks existing consumers
+  // description: string;  // Xóa mẹ đi rồi — làm hỏng đống app đang xài
+  priority: number;         // Đổi type từ string sang number — app của thiên hạ hỏng hết
 }
 ```
 
-### 5. Predictable Naming
+### 5. Đặt tên Dễ đoán (Predictable Naming)
 
-| Pattern | Convention | Example |
+| Pattern | Quy ước (Convention) | Ví dụ (Example) |
 |---------|-----------|---------|
-| REST endpoints | Plural nouns, no verbs | `GET /api/tasks`, `POST /api/tasks` |
+| REST endpoints | Danh từ Số nhiều (Plural nouns), Không có Động từ | `GET /api/tasks`, `POST /api/tasks` |
 | Query params | camelCase | `?sortBy=createdAt&pageSize=20` |
 | Response fields | camelCase | `{ createdAt, updatedAt, taskId }` |
-| Boolean fields | is/has/can prefix | `isComplete`, `hasAttachments` |
+| Boolean fields | tiền tố is/has/can | `isComplete`, `hasAttachments` |
 | Enum values | UPPER_SNAKE | `"IN_PROGRESS"`, `"COMPLETED"` |
 
-## REST API Patterns
+## Các Mô hình REST API (REST API Patterns)
 
-### Resource Design
+### Thiết kế Tài nguyên (Resource Design)
 
+```text
+GET    /api/tasks              → Lấy danh sách tasks (dùng query params để lọc)
+POST   /api/tasks              → Tạo một task mới
+GET    /api/tasks/:id          → Lấy chi tiết một task
+PATCH  /api/tasks/:id          → Update một task (update một phần - partial)
+DELETE /api/tasks/:id          → Xóa một task
+
+GET    /api/tasks/:id/comments → Lấy danh sách comments của một task (tài nguyên con - sub-resource)
+POST   /api/tasks/:id/comments → Đăng một comment vào một task
 ```
-GET    /api/tasks              → List tasks (with query params for filtering)
-POST   /api/tasks              → Create a task
-GET    /api/tasks/:id          → Get a single task
-PATCH  /api/tasks/:id          → Update a task (partial)
-DELETE /api/tasks/:id          → Delete a task
 
-GET    /api/tasks/:id/comments → List comments for a task (sub-resource)
-POST   /api/tasks/:id/comments → Add a comment to a task
-```
+### Phân trang (Pagination)
 
-### Pagination
-
-Paginate list endpoints:
+Phân trang cho tất cả các endpoint trả về danh sách:
 
 ```typescript
-// Request
+// Yêu cầu (Request)
 GET /api/tasks?page=1&pageSize=20&sortBy=createdAt&sortOrder=desc
 
-// Response
+// Phản hồi (Response)
 {
   "data": [...],
   "pagination": {
@@ -188,57 +188,57 @@ GET /api/tasks?page=1&pageSize=20&sortBy=createdAt&sortOrder=desc
 }
 ```
 
-### Filtering
+### Lọc dữ liệu (Filtering)
 
-Use query parameters for filters:
+Dùng query parameters để làm bộ lọc:
 
-```
+```text
 GET /api/tasks?status=in_progress&assignee=user123&createdAfter=2025-01-01
 ```
 
-### Partial Updates (PATCH)
+### Update Một phần (Partial Updates - dùng method PATCH)
 
-Accept partial objects — only update what's provided:
+Chấp nhận các object bị khuyết thiếu (partial objects) — user gửi lên trường (field) nào thì chỉ update trường đó:
 
 ```typescript
-// Only title changes, everything else preserved
+// Chỉ thay đổi title, các trường khác giữ nguyên
 PATCH /api/tasks/123
 { "title": "Updated title" }
 ```
 
-## TypeScript Interface Patterns
+## Các Mô hình TypeScript Interface (TypeScript Interface Patterns)
 
-### Use Discriminated Unions for Variants
+### Dùng Discriminated Unions cho Các Biến thể (Variants)
 
 ```typescript
-// Good: Each variant is explicit
+// Tốt: Từng biến thể (variant) được định nghĩa rất rõ ràng
 type TaskStatus =
   | { type: 'pending' }
   | { type: 'in_progress'; assignee: string; startedAt: Date }
   | { type: 'completed'; completedAt: Date; completedBy: string }
   | { type: 'cancelled'; reason: string; cancelledAt: Date };
 
-// Consumer gets type narrowing
+// Consumer khi xài sẽ được TypeScript gánh (type narrowing)
 function getStatusLabel(status: TaskStatus): string {
   switch (status.type) {
     case 'pending': return 'Pending';
-    case 'in_progress': return `In progress (${status.assignee})`;
-    case 'completed': return `Done on ${status.completedAt}`;
-    case 'cancelled': return `Cancelled: ${status.reason}`;
+    case 'in_progress': return `Đang làm (${status.assignee})`;
+    case 'completed': return `Xong lúc ${status.completedAt}`;
+    case 'cancelled': return `Hủy vì: ${status.reason}`;
   }
 }
 ```
 
-### Input/Output Separation
+### Tách bạch Input/Output
 
 ```typescript
-// Input: what the caller provides
+// Input: những gì cái thằng gọi hàm/API truyền vào
 interface CreateTaskInput {
   title: string;
   description?: string;
 }
 
-// Output: what the system returns (includes server-generated fields)
+// Output: những gì hệ thống trả ra (Bao gồm các trường do server tự sinh)
 interface Task {
   id: string;
   title: string;
@@ -249,46 +249,46 @@ interface Task {
 }
 ```
 
-### Use Branded Types for IDs
+### Dùng Branded Types cho các loại ID
 
 ```typescript
 type TaskId = string & { readonly __brand: 'TaskId' };
 type UserId = string & { readonly __brand: 'UserId' };
 
-// Prevents accidentally passing a UserId where a TaskId is expected
+// Ngăn chặn sự ngu ngốc khi lỡ tay truyền một cái UserId vào chỗ đòi TaskId
 function getTask(id: TaskId): Promise<Task> { ... }
 ```
 
-## Common Rationalizations
+## Các lý do Biện minh Thường gặp
 
-| Rationalization | Reality |
+| Lời biện minh | Thực tế |
 |---|---|
-| "We'll document the API later" | The types ARE the documentation. Define them first. |
-| "We don't need pagination for now" | You will the moment someone has 100+ items. Add it from the start. |
-| "PATCH is complicated, let's just use PUT" | PUT requires the full object every time. PATCH is what clients actually want. |
-| "We'll version the API when we need to" | Breaking changes without versioning break consumers. Design for extension from the start. |
-| "Nobody uses that undocumented behavior" | Hyrum's Law: if it's observable, somebody depends on it. Treat every public behavior as a commitment. |
-| "We can just maintain two versions" | Multiple versions multiply maintenance cost and create diamond dependency problems. Prefer the One-Version Rule. |
-| "Internal APIs don't need contracts" | Internal consumers are still consumers. Contracts prevent coupling and enable parallel work. |
+| "Thôi để sau này viết document cho API sau cũng được" | Bản thân cái đống Types CHÍNH LÀ document rồi. Định nghĩa chúng trước đi. |
+| "Bây giờ chưa cần phải Phân trang đâu" | Mày sẽ cần ngay cái khoảnh khắc có thằng lồn nào đấy tạo ra 100+ items. Nhét mẹ phân trang vào ngay từ đầu đi. |
+| "PATCH lằng nhằng vãi, xài PUT cho nhanh" | PUT bắt thằng client phải gửi toàn bộ nguyên cục object to đùng mỗi lần update. PATCH mới là thứ mà bọn client thực sự muốn. |
+| "Lúc nào cần thì bọn tao sẽ gắn version cho API sau" | Các Breaking changes (thay đổi làm gãy cấu trúc) mà không có versioning sẽ giết chết app của consumers. Hãy thiết kế để dễ dàng Mở rộng (extension) ngay từ ngày 1. |
+| "Chả có thằng đéo nào xài mấy cái behavior ẩn đéo có trong document đó đâu" | Định luật Hyrum: Nếu mày phơi ra ngoài, sẽ có thằng dùng. Hãy coi mọi hành vi công khai (public behavior) là một lời cam kết. |
+| "Bọn tao maintain 2 phiên bản song song cũng được, chả sao" | Nhiều versions sẽ nhân hệ số nhân cái chi phí maintain và đẻ ra vấn đề Diamond dependency. Hãy tuân thủ Quy tắc Một-Phiên-Bản. |
+| "Mấy cái API gọi nội bộ (Internal) cần quái gì Hợp đồng (contracts)" | Consumer nội bộ bản chất VẪN LÀ consumers. Hợp đồng giúp ngăn chặn sự dính chùm (coupling) và cho phép các team làm việc song song (parallel work). |
 
-## Red Flags
+## Các Dấu hiệu Cảnh báo (Red Flags)
 
-- Endpoints that return different shapes depending on conditions
-- Inconsistent error formats across endpoints
-- Validation scattered throughout internal code instead of at boundaries
-- Breaking changes to existing fields (type changes, removals)
-- List endpoints without pagination
-- Verbs in REST URLs (`/api/createTask`, `/api/getUsers`)
-- Third-party API responses used without validation or sanitization
+- Các endpoint trả về các cấu trúc (shapes) khác nhau tùy thuộc vào câu if/else.
+- Các định dạng báo lỗi (error formats) không đồng nhất giữa các endpoints.
+- Đống Validation rải rác khắp nơi bên trong lõi code thay vì đứng gác tại biên giới ranh giới (boundaries).
+- Đẻ ra các breaking changes làm hỏng các trường (fields) hiện tại (đổi type, xóa trường).
+- API trả về danh sách (List) mà đéo thèm làm phân trang (pagination).
+- Nhét cả Động từ (Verbs) vào trong URL của REST (`/api/createTask`, `/api/getUsers`).
+- Bốc nguyên cục response từ API bên thứ ba (Third-party) xài luôn mà đéo thèm validate hay làm sạch (sanitization).
 
-## Verification
+## Xác minh (Verification)
 
-After designing an API:
+Sau khi thiết kế xong một cái API:
 
-- [ ] Every endpoint has typed input and output schemas
-- [ ] Error responses follow a single consistent format
-- [ ] Validation happens at system boundaries only
-- [ ] List endpoints support pagination
-- [ ] New fields are additive and optional (backward compatible)
-- [ ] Naming follows consistent conventions across all endpoints
-- [ ] API documentation or types are committed alongside the implementation
+- [ ] Mọi endpoint đều phải được define Type rõ ràng cho cả Input và Output.
+- [ ] Các thông báo lỗi (Error responses) tuân thủ duy nhất 1 format đồng nhất.
+- [ ] Validation chỉ được phép diễn ra tại các ranh giới của hệ thống.
+- [ ] Các endpoint trả về list bắt buộc phải có phân trang.
+- [ ] Các trường (fields) thêm mới phải là dạng bổ sung (additive) và không bắt buộc (optional) (để tương thích ngược - backward compatible).
+- [ ] Đặt tên chuẩn chỉnh theo quy ước chung xuyên suốt mọi endpoints.
+- [ ] API documentation hoặc đống Types phải được commit ngay sát sạt với code implementation.

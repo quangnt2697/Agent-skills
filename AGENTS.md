@@ -1,94 +1,33 @@
 # AGENTS.md
 
-This file provides guidance to AI coding agents (Claude Code, Cursor, Copilot, Antigravity, etc.) when working with code in this repository.
+Tệp này cung cấp hướng dẫn cho các AI coding agents Gemini khi làm việc với các dự án.
 
-> **Scope:** This file configures agents working on the [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) repository itself. It is not meant to be copied into other projects or into a global agent configuration; the reusable assets are the skills in `skills/`, not this file.
+> **Phạm vi:** Tệp này cấu hình các quy tắc và định hướng cho agent. Các tài sản có thể tái sử dụng nằm trong thư mục `skills/` và `commands/`.
 
-## Repository Overview
+## Tổng quan Quy trình làm việc (Workflow)
 
-A collection of skills for Claude.ai and Claude Code for senior software engineers. Skills are packaged instructions and scripts that extend Claude and your coding agents capabilities.
+Agent **BẮT BUỘC** phải tuân thủ quy trình phát triển theo hướng dữ liệu từ Jira, bắt đầu từ lúc lấy yêu cầu đến khi bàn giao mã nguồn:
 
-## OpenCode Integration
+1. **Nhập yêu cầu từ Jira (`/biz-spec {issueKey}`)**: Bước khởi đầu.
+   - Tải PDF task từ Jira và nhận diện loại task (APP, WEB, API).
+   - Trích xuất thông tin theo profile, xác định các điểm mơ hồ (gaps).
+   - Sử dụng kỹ năng `interview-me` để tương tác, hỏi người dùng nhằm làm rõ yêu cầu.
+   - Tổng hợp kết quả thành file `{issueKey}-final.md`.
+2. **Viết Đặc tả kỹ thuật (`/tech-spec`)**: Dựa trên bản tổng hợp final từ Jira, viết tài liệu đặc tả kỹ thuật chi tiết.
+3. **Phân rã Công việc (`/planning`)**: Chia nhỏ tài liệu spec thành các task/sub-task có thể thực thi được.
+4. **Thiết kế Kiểm thử (`/qa`)**: Tạo checklist kiểm thử và viết kịch bản BDD (các tệp `.feature`).
+5. **Triển khai (Build)**: Dùng các kỹ năng `incremental-implementation` và `test-driven-development` để tiến hành viết code dựa trên plan và QA đã duyệt.
+6. **Sửa lỗi & Tối ưu (Verify/Review)**: Dùng `code-review-and-quality` hoặc `debugging-and-error-recovery` để rà soát mã nguồn.
+7. **Bàn giao (`/ship`)**: Gọi các subagent (như Code Reviewer, QA, Security Auditor) chạy song song để đánh giá chéo toàn diện trước khi hoàn tất.
 
-OpenCode uses a **skill-driven execution model** powered by the `skill` tool and this repository's `/skills` directory.
+## Quy tắc Điều phối (Orchestration)
 
-### Core Rules
+Kho lưu trữ này hoạt động dựa trên 3 lớp thành phần chính, có vai trò riêng biệt và không được nhầm lẫn:
 
-- If a task matches a skill, you MUST invoke it
-- Skills are located in `skills/<skill-name>/SKILL.md`
-- Never implement directly if a skill applies
-- Always follow the skill instructions exactly (do not partially apply them)
+- **Slash commands** (`commands/*.toml`) — Điểm đầu vào dành cho người dùng (Ví dụ: `/biz-spec`, `/tech-spec`). Đây là lớp điều phối (khi nào thì chạy).
+- **Skills** (`skills/<name>/SKILL.md`) — Các quy trình công việc cụ thể với từng bước và tiêu chí hoàn thành. Đây là cách thức thực hiện (làm như thế nào).
+- **Personas/Subagents** (`agents/<role>.md`) — Các agent đóng vai chuyên gia (như Reviewer, QA) với góc nhìn và định dạng đầu ra riêng. Đây là người thực hiện (ai làm).
 
-### Intent → Skill Mapping
+**Quy tắc cấu trúc:** Người dùng (hoặc slash command) là người điều phối. Personas KHÔNG ĐƯỢC gọi các personas khác. Một persona có thể gọi các skills. Lệnh `/ship` là lệnh duy nhất thực hiện mô hình chạy đa luồng (gọi cùng lúc nhiều subagents rồi tổng hợp kết quả).
 
-The agent should automatically map user intent to skills:
-
-- Feature / new functionality → `spec-driven-development`, then `incremental-implementation`, `test-driven-development`
-- Planning / breakdown → `planning-and-task-breakdown`
-- Bug / failure / unexpected behavior → `debugging-and-error-recovery`
-- Code review → `code-review-and-quality`
-- Refactoring / simplification → `code-simplification`
-- API or interface design → `api-and-interface-design`
-- UI work → `frontend-ui-engineering`
-- Test checklists / BDD Gherkin / `.feature` files → `qa-test-design`
-
-### Lifecycle Mapping (Implicit Commands)
-
-OpenCode does not support slash commands like `/spec` or `/plan`.
-
-Instead, the agent must internally follow this lifecycle:
-
-- DEFINE → `spec-driven-development`
-- PLAN → `planning-and-task-breakdown`
-- BUILD → `incremental-implementation` + `test-driven-development`
-- VERIFY → `debugging-and-error-recovery`
-- QA DESIGN → `qa-test-design` (checklist + BDD Gherkin)
-- REVIEW → `code-review-and-quality`
-- SHIP → `shipping-and-launch`
-
-### Execution Model
-
-For every request:
-
-1. Determine if any skill applies (even 1% chance)
-2. Invoke the appropriate skill using the `skill` tool
-3. Follow the skill workflow strictly
-4. Only proceed to implementation after required steps (spec, plan, etc.) are complete
-
-### Anti-Rationalization
-
-The following thoughts are incorrect and must be ignored:
-
-- "This is too small for a skill"
-- "I can just quickly implement this"
-- "I’ll gather context first"
-
-Correct behavior:
-
-- Always check for and use skills first
-
-This ensures OpenCode behaves similarly to Claude Code with full workflow enforcement.
-
-## Orchestration: Personas, Skills, and Commands
-
-This repo has three composable layers. They have different jobs and should not be confused:
-
-- **Skills** (`skills/<name>/SKILL.md`) — workflows with steps and exit criteria. The *how*. Mandatory hops when an intent matches.
-- **Personas** (`agents/<role>.md`) — roles with a perspective and an output format. The *who*.
-- **Slash commands** (`.claude/commands/*.md`) — user-facing entry points. The *when*. The orchestration layer.
-
-Composition rule: **the user (or a slash command) is the orchestrator. Personas do not invoke other personas.** A persona may invoke skills.
-
-The only multi-persona orchestration pattern this repo endorses is **parallel fan-out with a merge step** — used by `/ship` to run `code-reviewer`, `security-auditor`, and `test-engineer` concurrently and synthesize their reports. Do not build a "router" persona that decides which other persona to call; that's the job of slash commands and intent mapping.
-
-See [docs/agents.md](docs/agents.md) for the decision matrix and [references/orchestration-patterns.md](references/orchestration-patterns.md) for the full pattern catalog.
-
-**Claude Code interop:** the personas in `agents/` work as Claude Code subagents (auto-discovered from this plugin's `agents/` directory) and as Agent Teams teammates (referenced by name when spawning). Two platform constraints align with our rules: subagents cannot spawn other subagents, and teams cannot nest. Plugin agents silently ignore the `hooks`, `mcpServers`, and `permissionMode` frontmatter fields.
-
-## Creating a New Skill
-
-> **Before you start:** run the pre-flight checks in [CONTRIBUTING.md](CONTRIBUTING.md#before-proposing-a-new-skill), search the catalog, check open PRs (`gh pr list --state open`), confirm the idea fits [docs/skill-anatomy.md](docs/skill-anatomy.md), and justify the gap in your PR description. Most new-skill ideas overlap an existing skill or an open PR; prefer extending an existing skill over adding a near-duplicate. CONTRIBUTING.md is the single source of truth for this workflow.
-
-Skills in this repo are markdown-first: each lives at `skills/<kebab-case-name>/SKILL.md` with YAML frontmatter (`name`, `description`) and follows the section anatomy (Overview, When to Use, Process, Common Rationalizations, Red Flags, Verification). Add a `scripts/` directory only when the skill ships runnable helpers; most skills are markdown only, and there are no per-skill zip packages.
-
-For the full format, naming conventions, frontmatter rules, supporting-file thresholds, and writing principles, see [docs/skill-anatomy.md](docs/skill-anatomy.md), the single source of truth for skill structure. Do not restate that guidance here, link to it.
+**Tích hợp với Gemini:** Các personas trong `agents/` hoạt động như các subagents của Gemini và có thể được gọi ra dưới dạng các tools. Agent KHÔNG ĐƯỢC tự ý bỏ qua các bước trong quy trình, đặc biệt là giai đoạn làm rõ yêu cầu từ Jira.
