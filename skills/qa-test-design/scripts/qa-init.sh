@@ -7,7 +7,7 @@ set -e
 # Creates a standardized directory layout for test checklists and .feature files.
 # If the directory already exists, reports the existing structure without overwriting.
 
-OUTPUT_DIR="${1:-tests/qa}"
+OUTPUT_DIR="${1:-tests/qa-test-design/}"
 
 cleanup() {
   # No temporary files to clean in this script
@@ -15,19 +15,16 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [ -d "$OUTPUT_DIR/checklists" ] && [ -d "$OUTPUT_DIR/features" ]; then
-  echo "Directory structure already exists: $OUTPUT_DIR" >&2
-  CHECKLISTS_COUNT=$(find "$OUTPUT_DIR/checklists" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-  FEATURES_COUNT=$(find "$OUTPUT_DIR/features" -name "*.feature" 2>/dev/null | wc -l | tr -d ' ')
-  echo "{\"status\": \"exists\", \"output_dir\": \"$OUTPUT_DIR\", \"checklists_dir\": \"$OUTPUT_DIR/checklists\", \"features_dir\": \"$OUTPUT_DIR/features\", \"checklists_count\": $CHECKLISTS_COUNT, \"features_count\": $FEATURES_COUNT}"
+if [ -d "$OUTPUT_DIR" ]; then
+  echo "Directory already exists: $OUTPUT_DIR" >&2
+  CHECKLISTS_COUNT=$(find "$OUTPUT_DIR" -name "*checklist*.md" 2>/dev/null | wc -l | tr -d ' ')
+  FEATURES_COUNT=$(find "$OUTPUT_DIR" -name "*.feature" 2>/dev/null | wc -l | tr -d ' ')
+  echo "{\"status\": \"exists\", \"output_dir\": \"$OUTPUT_DIR\", \"checklists_count\": $CHECKLISTS_COUNT, \"features_count\": $FEATURES_COUNT}"
   exit 0
 fi
 
-mkdir -p "$OUTPUT_DIR/checklists"
-mkdir -p "$OUTPUT_DIR/features"
+mkdir -p "$OUTPUT_DIR"
 
-echo "Created QA output directories under: $OUTPUT_DIR" >&2
-echo "  checklists/ — execution checklists (.md)" >&2
-echo "  features/   — BDD Gherkin feature files (.feature)" >&2
+echo "Created QA output directory at: $OUTPUT_DIR" >&2
 
-echo "{\"status\": \"ready\", \"output_dir\": \"$OUTPUT_DIR\", \"checklists_dir\": \"$OUTPUT_DIR/checklists\", \"features_dir\": \"$OUTPUT_DIR/features\"}"
+echo "{\"status\": \"ready\", \"output_dir\": \"$OUTPUT_DIR\"}"
