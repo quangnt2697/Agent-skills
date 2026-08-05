@@ -60,15 +60,20 @@ Lệnh này tạo thư mục con `checklists/` và `features/` trong đường d
 Khi đầu vào từ jira-import, output sẽ lưu tại chung một thư mục theo cấu trúc:
 ```
 tests/qa-test-design/{issueKey}/
-├── {issueKey}-checklist.md
-└── {issueKey}.feature
+├── features/
+│   ├── {issueKey}-checklist.md
+│   └── {issueKey}.feature
+├── steps/                          # ← auto-test sinh code vào đây
+│   └── test_*.py
+└── reports/                        # ← auto-test xuất báo cáo vào đây
+    └── {issueKey}-report.md
 ```
 
 ### Bước 1: Thu thập yêu cầu
 
 Trước khi viết bất kỳ item checklist nào, thu thập đầu vào:
 
-#### Nguồn đầu vào chính: `specs/jira-import/{issueKey}-final.md`
+#### Nguồn đầu vào chính: `specs/jira-import/{issueKey}/biz-spec/{issueKey}-final.md`
 
 Nếu file này tồn tại, đây là **single source of truth** đã qua phân tích và interview.
 Agent đọc file này và ánh xạ các sections sang các nhóm kiểm thử:
@@ -112,7 +117,7 @@ Tổ chức các item checklist thành các nhóm logic dựa trên chiều ki�
 |------|---------|--------|
 | **Bảo mật & Phân quyền** | P0 | API key, signature, tokens, authorization, permission, ràng buộc truy cập path/tài khoản |
 | **Đường dẫn & HTTP** | P1 | HTTP methods, endpoints, URL validation, định tuyến theo loại thị trường, query string và path parameters |
-| **Dữ liệu đầu vào & Validation Schema** | P1 | Trường bắt buộc, kiểu dữ liệu, validation định dạng, biến thể schema theo giá trị input. BẮT BUỘC validate cả Request (Input) và Response (Output) schemas |
+| **Dữ liệu đầu vào & Validation Schema** | P1 | Trường bắt buộc, kiểu dữ liệu, validation định dạng, biến thể schema theo giá trị input. BẮT BUỘC validate cả Request (Input) và Response (Output) schemas. Đặc biệt với API/WebSocket, BẮT BUỘC validate rõ ràng Event Payload Schema dựa trên ví dụ trong Jira/Spec. |
 | **Quy tắc nghiệp vụ** | P0 | Giới hạn giá, quy tắc khối lượng, kiểm tra số dư, hạn chế thời gian |
 | **Ngoại lệ & Hiệu năng** | P2 | Đồng thời (Race conditions), Idempotency, Tràn số, Rate limiting (Throttling), xung đột tài sản chéo |
 | **Luồng thành công & Nhất quán dữ liệu** | P0 | Luồng thành công, schema response đầy đủ, xác minh dữ liệu end-to-end |
@@ -293,6 +298,7 @@ Feature: <Short title reflecting the behavior area>
   ```
 - **Bao phủ theo trạng thái:** Khi cùng hành động cho kết quả khác nhau tùy trạng thái hệ thống (đã đăng nhập / chưa, có data / trống, trong giờ / ngoài giờ), tạo scenario riêng cho mỗi trạng thái có kết quả khác biệt. Dùng Scenario Outline nếu chỉ khác data input/output; dùng Scenarios riêng nếu toàn bộ luồng khác nhau.
 - **Biến thể Schema API:** Nếu API có nhiều request/response schema dựa trên trường input cụ thể (VD: `accountType=individual` vs `accountType=corporate`), BẮT BUỘC tạo scenarios bao phủ validation cho TẤT CẢ biến thể.
+- **Bao phủ Schema Validation (API & WebSocket):** BẮT BUỘC có step/scenario tường minh để kiểm tra Response Schema (hoặc Event Payload Schema của WebSocket) đối chiếu với mẫu JSON/tài liệu lấy từ Jira. Không gộp ẩn vào các step nghiệp vụ chung chung.
 - **Validation Path và Tài khoản:** Đảm bảo có scenarios validate path variables (VD: ID sai định dạng, ID thuộc user khác) và ràng buộc truy cập tài khoản.
 - **Tương tác chéo giữa các trường:** Khi thay đổi trường A ảnh hưởng trường B (VD: đổi giá tính lại sức mua → thay đổi gợi ý khối lượng), bao gồm ít nhất 1 scenario kiểm tra hiệu ứng xuôi chiều lên trường B sau khi sửa trường A.
 
@@ -480,9 +486,32 @@ Sau khi hoàn thành cả hai giai đoạn:
 - [ ] Không có cơ chế tự động hoá (selectors, xpaths, SQL) trong text step
 - [ ] Chạy `bash skills/qa-test-design/scripts/qa-validate.sh <features-dir>` và xác nhận tất cả kiểm tra pass
 
+## Quy trình QA tổng thể
+
+Skill `qa-test-design` nằm ở **Giai đoạn 2** trong pipeline QA gồm 4 giai đoạn:
+
+```
+Giai đoạn 1              Giai đoạn 2              Giai đoạn 3              Giai đoạn 4
+/biz-spec            →   /qa-test-design      →   /auto-test           →   Báo cáo
+Import Jira              Thiết kế Checklist       Sinh code automation     Chạy test &
+→ Phân tích spec         → Viết Gherkin file      → Review code            Xuất report
+                                                  → Chạy test
+```
+
+| Giai đoạn | Skill | Input | Output |
+|-----------|-------|-------|--------|
+| 1 | `biz-spec` | Jira Issue Key | `specs/jira-import/{issueKey}/biz-spec/{issueKey}-final.md` |
+| 2 | `qa-test-design` | File `*-final.md` | `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
+| 3 | `auto-test` | File `.feature` + code có sẵn | `tests/qa-test-design/{issueKey}/steps/test_*.py` |
+| 4 | `auto-test` (Bước 7) | Test scripts | `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
+
+**Sau khi hoàn thành Giai đoạn 2 (qa-test-design)**, có thể chuyển sang Giai đoạn 3 bằng lệnh `/auto-test` để tự động sinh code automation test từ file `.feature` vừa tạo.
+
 ## Xem thêm
 
 - Tham khảo `references/qa-testing-checklist.md` cho các mẫu validation domain tài chính, bảng BVA, phân vùng tương đương, và quy ước viết
 - Nếu đã có spec, dùng yêu cầu từ `spec-driven-development` làm đầu vào cho Giai đoạn 1
-- Để implement test sau khi thiết kế scenarios, theo `test-driven-development`
+- Để import và phân tích Jira task trước khi thiết kế test, dùng `biz-spec`
+- Để sinh code automation test từ Gherkin file, dùng `auto-test`
 - Để lập kế hoạch và phân rã tasks trước khi thiết kế test, dùng `planning-and-task-breakdown`
+

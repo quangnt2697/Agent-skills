@@ -54,11 +54,11 @@ Download PDF ──→ Nhận diện     ──→ Trích xuất    ──→ Ph
    - **Phương án B** (fallback): Dùng browser subagent mở trang issue → Print to PDF
 6. Download tất cả file attachment đính kèm (giữ nguyên format gốc: .pdf, .doc, .png, .xlsx...)
 7. Tạo file `metadata.json` chứa thông tin issue
-8. Lưu tất cả vào `specs/biz-spec/{issueKey}/source/`
+8. Lưu tất cả vào `specs/jira-import/{issueKey}/biz-spec/source/`
 
 ### Cấu trúc thư mục output
 ```
-specs/biz-spec/{issueKey}/
+specs/jira-import/{issueKey}/biz-spec/
 ├── source/
 │   ├── {issueKey}.pdf            # PDF chính (issue content + ảnh)
 │   ├── attachment-*.{ext}         # File đính kèm gốc
@@ -172,7 +172,7 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 ## Phase 5: Tổng hợp bản Markdown chi tiết
 
 ### File output
-📄 `specs/biz-spec/{issueKey}-final.md`
+📄 `specs/jira-import/{issueKey}/biz-spec/{issueKey}-final.md`
 
 ### Template header (chung cho tất cả loại task)
 ```markdown
@@ -220,4 +220,17 @@ Hỏi user muốn tiếp tục với pipeline nào:
 | Viết spec | `/tech-spec` | Viết structured specification từ bản final |
 | Phân rã tasks | `/planning` | Breakdown thành tasks |
 | Thiết kế test | `/qa` | Tạo checklist + BDD Gherkin |
-| Full pipeline | Tất cả | Chạy lần lượt spec → planning → qa |
+| Sinh automation test | `/auto-test` | Sinh code test từ Gherkin file (yêu cầu đã có `.feature`) |
+| Full QA pipeline | `/qa` → `/auto-test` | Thiết kế test → Sinh code → Chạy test → Xuất report |
+| Full pipeline | Tất cả | Chạy lần lượt spec → planning → qa → auto-test |
+
+### Quy trình QA tổng thể
+
+```
+Giai đoạn 1              Giai đoạn 2              Giai đoạn 3              Giai đoạn 4
+/biz-spec            →   /qa-test-design      →   /auto-test           →   Báo cáo
+Import Jira              Thiết kế Checklist       Sinh code automation     Chạy test &
+→ Phân tích spec         → Viết Gherkin file      → Review code            Xuất report
+                                                  → Chạy test
+```
+
