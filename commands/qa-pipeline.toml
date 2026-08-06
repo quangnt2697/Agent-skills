@@ -27,7 +27,7 @@ KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các ph
 - Giai đoạn 1: Viết Checklist (P0/P1/P2) → tự động duyệt, KHÔNG hỏi user
 - Giai đoạn 2: Viết Gherkin (.feature) từ checklist
 - Chạy `qa-validate.sh` kiểm tra format
-- Output: `tests/qa-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
+- Output: `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
 - → Tự động chuyển Phase 3
 
 ### Phase 3: Sinh Code & Chạy Test (qa-auto-design)
@@ -37,13 +37,13 @@ KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các ph
 - Bước 4-5: Sinh test scripts (`test_*.py`)
 - Bước 6: Code review tự động
 - Bước 7: Chạy pytest + self-fix loop (chỉ sửa script error, KHÔNG ép FAIL→PASS)
-- Output: `tests/qa-design/{issueKey}/steps/test_*.py`
+- Output: `tests/qa-test-design/{issueKey}/steps/test_*.py`
 - → Tự động chuyển Phase 4
 
 ### Phase 4: Xuất Báo cáo
 - Sinh báo cáo Markdown từ kết quả pytest
 - Bao gồm bảng truy vết end-to-end: Ba-spec → Checklist → Gherkin → Test → Kết quả
-- Output: `tests/qa-design/{issueKey}/reports/{issueKey}-report.md`
+- Output: `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
 
 ## Sau khi hoàn thành
 

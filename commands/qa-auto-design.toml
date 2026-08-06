@@ -7,8 +7,8 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 
 ## Nguồn đầu vào
 
-1. **File .feature:** `tests/qa-design/{issueKey}/features/{issueKey}.feature`
-2. **File checklist:** `tests/qa-design/{issueKey}/features/{issueKey}-checklist.md`
+1. **File .feature:** `tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
+2. **File checklist:** `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md`
 3. **File spec (nếu có):** `specs/jira-import/{issueKey}/ba-spec/{issueKey}-final.md`
 4. **Code function có sẵn** trong workspace do dev team phát triển — tìm và tái sử dụng
 
@@ -24,12 +24,12 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 
 ## Output
 
-- Test scripts: `tests/qa-design/{issueKey}/steps/test_*.py`
-- Báo cáo: `tests/qa-design/{issueKey}/reports/{issueKey}-report.md`
+- Test scripts: `tests/qa-test-design/{issueKey}/steps/test_*.py`
+- Báo cáo: `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
 
 ## Quy tắc
 
 1. BẮT BUỘC tìm và tái sử dụng code API/WebSocket có sẵn của dev. KHÔNG viết lại từ đầu.
-2. Nếu file `.feature` chưa tồn tại, yêu cầu user chạy `/qa-design` trước.
+2. Nếu file `.feature` chưa tồn tại, yêu cầu user chạy `/qa-test-design` trước.
 3. Tất cả output viết bằng TIẾNG VIỆT (trừ code và tags).
 """

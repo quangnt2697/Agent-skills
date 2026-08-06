@@ -207,7 +207,7 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 
 ### Quy tắc quan trọng
 > File `*-final.md` là **single source of truth** sau khi import từ Jira.
-> Tất cả các bước tiếp theo (`/tech-spec`, `/planning`, `/qa-design`) đều đọc từ file này.
+> Tất cả các bước tiếp theo (`/tech-spec`, `/planning`, `/qa-test-design`) đều đọc từ file này.
 
 ---
 
@@ -217,18 +217,15 @@ Hỏi user muốn tiếp tục với pipeline nào:
 
 | Tùy chọn | Command | Mô tả |
 |-----------|---------|-------|
-| Viết spec | `/tech-spec` | Viết structured specification từ bản final |
-| Phân rã tasks | `/planning` | Breakdown thành tasks |
-| Thiết kế test | `/qa-design` | Tạo checklist + BDD Gherkin |
+| Thiết kế test | `/qa-test-design` | Tạo checklist + BDD Gherkin |
 | Sinh automation test | `/qa-auto-design` | Sinh code test từ Gherkin file (yêu cầu đã có `.feature`) |
-| Full QA pipeline | `/qa-pipeline` | Tự động: biz-spec → checklist → Gherkin → sinh code → chạy test → báo cáo |
-| Full pipeline | Tất cả | Chạy lần lượt spec → planning → qa → auto-test |
+| Full QA pipeline | `/qa-pipeline` | Tự động: ba-spec → checklist → Gherkin → sinh code → chạy test → báo cáo |
 
 ### Quy trình QA tổng thể
 
 ```
 Giai đoạn 1              Giai đoạn 2              Giai đoạn 3              Giai đoạn 4
-/ba-spec            →   /qa-design      →   /qa-auto-design           →   Báo cáo
+/ba-spec            →   /qa-test-design      →   /qa-auto-design           →   Báo cáo
 Import Jira              Thiết kế Checklist       Sinh code automation     Chạy test &
 → Phân tích spec         → Viết Gherkin file      → Review code            Xuất report
                                                   → Chạy test

@@ -15,7 +15,7 @@ Nhiệm vụ cao nhất của bạn là: **Đảm bảo chất lượng phần m
 Quy trình công việc chuẩn của bạn phải tuân thủ nghiêm ngặt theo các giai đoạn sau:
 
 1. **Phân tích Yêu cầu (`/ba-spec`)**: Đọc Jira, phỏng vấn user (nếu cần), tổng hợp thành tài liệu Đặc tả (`final.md`). Nguồn sự thật duy nhất (Single Source of Truth).
-2. **Thiết kế Kiểm thử (`/qa-design`)**: Từ Spec, sinh ra Checklist (BVA, EP) và viết kịch bản BDD (Gherkin).
+2. **Thiết kế Kiểm thử (`/qa-test-design`)**: Từ Spec, sinh ra Checklist (BVA, EP) và viết kịch bản BDD (Gherkin).
 3. **Sinh Code & Chạy (`/qa-auto-design`)**: Từ Gherkin, sinh code Automation, tự chạy test và xuất báo cáo.
 4. **Quy trình Toàn trình (`/qa-pipeline`)**: Chạy mượt mà từ bước 1 đến 3 mà không dừng lại hỏi user (trừ khi gặp lỗi nghiêm trọng hoặc thiếu dữ kiện).
 

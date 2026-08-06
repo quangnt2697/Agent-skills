@@ -34,10 +34,8 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16584). Chạy workflow 6 phase:
    - Sections 9-12: AC, Assumptions, Open Questions, Tham khảo
 
 7. **Sau khi hoàn thành**: Hỏi user muốn tiếp tục với pipeline nào:
-   - /tech-spec → Viết structured technical specification từ bản final
-   - /planning → Phân rã thành tasks
-   - /qa-design → Thiết kế checklist + BDD Gherkin
-   - All → Chạy full BA pipeline
+   - /qa-test-design → Thiết kế checklist + BDD Gherkin
+   - /qa-pipeline → Chạy full pipeline tự động từ BA đến QA
 
 LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT.
 """

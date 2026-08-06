@@ -1,235 +1,264 @@
-# Testing Patterns Reference (JavaScript/TypeScript)
+# Testing Patterns Reference (Python: Pytest & Playwright)
 
-Quick reference of JavaScript/TypeScript testing patterns — Jest, React Testing Library, Supertest, and Playwright — illustrating the universal principles from the `test-driven-development` skill. The principles (Arrange-Act-Assert, naming, mock discipline, anti-patterns) apply in any ecosystem; the syntax and tooling shown here are JS/TS-specific. In another stack, follow the same principles with the repository's own test framework and commands.
+Tài liệu tham khảo nhanh các mẫu code (patterns) dành cho kỹ sư Tự động hóa Kiểm thử (QA/SDET) sử dụng **Pytest** và **Playwright Python**. Các nguyên tắc thiết kế (Arrange-Act-Assert, naming conventions) áp dụng chung cho mọi bài toán kiểm thử, đặc biệt tối ưu cho domain **Tài chính - Ngân hàng - Chứng khoán**.
 
-## Table of Contents
+## Mục lục
 
-- [Test Structure (Arrange-Act-Assert)](#test-structure-arrange-act-assert)
-- [Test Naming Conventions](#test-naming-conventions)
-- [Common Assertions](#common-assertions)
-- [Mocking Patterns](#mocking-patterns)
-- [React/Component Testing](#reactcomponent-testing)
-- [API / Integration Testing](#api--integration-testing)
-- [E2E Testing (Playwright)](#e2e-testing-playwright)
-- [Test Anti-Patterns](#test-anti-patterns)
+- [Cấu trúc Test (Arrange-Act-Assert)](#cấu-trúc-test-arrange-act-assert)
+- [Quy tắc Đặt tên Test](#quy-tắc-đặt-tên-test)
+- [Mẫu Assertions Phổ biến](#mẫu-assertions-phổ-biến)
+- [Xử lý Số thập phân (Tiền tệ)](#xử-lý-số-thập-phân-tiền-tệ)
+- [Mẫu API Testing (REST)](#mẫu-api-testing-rest)
+- [Mẫu WebSocket Testing](#mẫu-websocket-testing)
+- [Mẫu UI E2E Testing (Playwright)](#mẫu-ui-e2e-testing-playwright)
+- [Mocking & Bypassing trong Test](#mocking--bypassing-trong-test)
+- [Anti-Patterns cần tránh](#anti-patterns-cần-tránh)
 
-## Test Structure (Arrange-Act-Assert)
+---
 
-```typescript
-it('describes expected behavior', () => {
-  // Arrange: Set up test data and preconditions
-  const input = { title: 'Test Task', priority: 'high' };
+## Cấu trúc Test (Arrange-Act-Assert)
 
-  // Act: Perform the action being tested
-  const result = createTask(input);
+Mọi test case đều phải tuân thủ nghiêm ngặt 3 bước: Chuẩn bị (Arrange), Hành động (Act), Kiểm tra (Assert).
 
-  // Assert: Verify the outcome
-  expect(result.title).toBe('Test Task');
-  expect(result.priority).toBe('high');
-  expect(result.status).toBe('pending');
-});
+```python
+def test_create_order_success(api_client, auth_token):
+    # Arrange: Chuẩn bị dữ liệu và tiền kiện
+    payload = {
+        "symbol": "VND",
+        "side": "buy",
+        "quantity": 100,
+        "price": 25.5
+    }
+    headers = {"Authorization": f"Bearer {auth_token}"}
+
+    # Act: Gọi API hoặc tương tác UI
+    response = api_client.post("/api/v1/orders", json=payload, headers=headers)
+    result = response.json()
+
+    # Assert: Xác minh kết quả thực tế với mong đợi
+    assert response.status_code == 201
+    assert result["data"]["status"] == "pending"
+    assert result["data"]["symbol"] == "VND"
 ```
 
-## Test Naming Conventions
+---
 
-```typescript
-// Pattern: [unit] [expected behavior] [condition]
-describe('TaskService.createTask', () => {
-  it('creates a task with default pending status', () => {});
-  it('throws ValidationError when title is empty', () => {});
-  it('trims whitespace from title', () => {});
-  it('generates a unique ID for each task', () => {});
-});
+## Quy tắc Đặt tên Test
+
+Sử dụng định dạng `test_<chức_năng>_<điều_kiện>_<kết_quả>`:
+
+```python
+class TestOrderPlacement:
+    def test_place_order_with_valid_balance_returns_success(self):
+        pass
+
+    def test_place_order_exceeds_balance_returns_insufficient_funds_error(self):
+        pass
+
+    def test_place_order_outside_trading_hours_returns_time_error(self):
+        pass
 ```
 
-## Common Assertions
+---
 
-```typescript
-// Equality
-expect(result).toBe(expected);           // Strict equality (===)
-expect(result).toEqual(expected);        // Deep equality (objects/arrays)
-expect(result).toStrictEqual(expected);  // Deep equality + type matching
+## Mẫu Assertions Phổ biến
 
-// Truthiness
-expect(result).toBeTruthy();
-expect(result).toBeFalsy();
-expect(result).toBeNull();
-expect(result).toBeDefined();
-expect(result).toBeUndefined();
+```python
+# Bằng nhau (Equality)
+assert result == expected
+assert response.status_code == 200
 
-// Numbers
-expect(result).toBeGreaterThan(5);
-expect(result).toBeLessThanOrEqual(10);
-expect(result).toBeCloseTo(0.3, 5);      // Floating point
+# Chứa trong (Containment)
+assert "error_message" in result
+assert "Thành công" in page.content()
 
-// Strings
-expect(result).toMatch(/pattern/);
-expect(result).toContain('substring');
+# Danh sách (Collections)
+assert len(data_list) == 3
+assert any(item["status"] == "active" for item in data_list)
 
-// Arrays / Objects
-expect(array).toContain(item);
-expect(array).toHaveLength(3);
-expect(object).toHaveProperty('key', 'value');
+# Kiểu dữ liệu (Type checking)
+assert isinstance(result["balance"], float)
 
-// Errors
-expect(() => fn()).toThrow();
-expect(() => fn()).toThrow(ValidationError);
-expect(() => fn()).toThrow('specific message');
-
-// Async
-await expect(asyncFn()).resolves.toBe(value);
-await expect(asyncFn()).rejects.toThrow(Error);
+# Bắt Exception
+import pytest
+with pytest.raises(ValueError) as exc_info:
+    process_transaction(invalid_data)
+assert "Số tiền không hợp lệ" in str(exc_info.value)
 ```
 
-## Mocking Patterns
+---
 
-### Mock Functions
+## Xử lý Số thập phân (Tiền tệ)
 
-```typescript
-const mockFn = jest.fn();
-mockFn.mockReturnValue(42);
-mockFn.mockResolvedValue({ data: 'test' });
-mockFn.mockImplementation((x) => x * 2);
+Trong domain Tài chính, **TUYỆT ĐỐI KHÔNG** dùng `float` để so sánh số tiền do lỗi sai số nhị phân. Luôn dùng `Decimal`.
 
-expect(mockFn).toHaveBeenCalled();
-expect(mockFn).toHaveBeenCalledWith('arg1', 'arg2');
-expect(mockFn).toHaveBeenCalledTimes(3);
+```python
+from decimal import Decimal
+
+def test_balance_deduction():
+    # Arrange
+    initial_balance = Decimal("10000.50")
+    deduction = Decimal("100.10")
+    expected_balance = Decimal("9900.40")
+    
+    # Act
+    actual_balance = calculate_new_balance(initial_balance, deduction)
+    
+    # Assert
+    assert actual_balance == expected_balance
 ```
 
-### Mock Modules
+---
 
-```typescript
-// Mock an entire module
-jest.mock('./database', () => ({
-  query: jest.fn().mockResolvedValue([{ id: 1, title: 'Test' }]),
-}));
+## Mẫu API Testing (REST)
 
-// Mock specific exports
-jest.mock('./utils', () => ({
-  ...jest.requireActual('./utils'),
-  generateId: jest.fn().mockReturnValue('test-id'),
-}));
+```python
+import pytest
+import requests
+
+@pytest.fixture
+def api_base_url():
+    return "https://api-staging.bank.com"
+
+class TestTransferAPI:
+    def test_transfer_unauthorized_returns_401(self, api_base_url):
+        response = requests.post(f"{api_base_url}/api/transfer", json={"amount": 100})
+        assert response.status_code == 401
+        assert response.json()["error"]["code"] == "UNAUTHORIZED"
+
+    def test_transfer_success_deducts_balance(self, api_base_url, valid_token):
+        headers = {"Authorization": f"Bearer {valid_token}"}
+        payload = {"to_account": "123456789", "amount": 50000}
+        
+        response = requests.post(
+            f"{api_base_url}/api/transfer", 
+            json=payload, 
+            headers=headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["transaction_status"] == "SUCCESS"
+        assert "transaction_id" in data
 ```
 
-### Mock at Boundaries Only
+---
 
-```
-Mock these:                    Don't mock these:
-├── Database calls             ├── Internal utility functions
-├── HTTP requests              ├── Business logic
-├── File system operations     ├── Data transformations
-├── External API calls         ├── Validation functions
-└── Time/Date (when needed)    └── Pure functions
-```
+## Mẫu WebSocket Testing
 
-## React/Component Testing
+Test luồng real-time (vd: đẩy giá cổ phiếu).
 
-```tsx
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+```python
+import pytest
+import asyncio
+import websockets
+import json
 
-describe('TaskForm', () => {
-  it('submits the form with entered data', async () => {
-    const onSubmit = jest.fn();
-    render(<TaskForm onSubmit={onSubmit} />);
-
-    // Find elements by accessible role/label (not test IDs)
-    await screen.findByRole('textbox', { name: /title/i });
-    fireEvent.change(screen.getByRole('textbox', { name: /title/i }), {
-      target: { value: 'New Task' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /create/i }));
-
-    await waitFor(() => {
-      expect(onSubmit).toHaveBeenCalledWith({ title: 'New Task' });
-    });
-  });
-
-  it('shows validation error for empty title', async () => {
-    render(<TaskForm onSubmit={jest.fn()} />);
-
-    fireEvent.click(screen.getByRole('button', { name: /create/i }));
-
-    expect(await screen.findByText(/title is required/i)).toBeInTheDocument();
-  });
-});
+@pytest.mark.asyncio
+async def test_websocket_price_stream():
+    uri = "wss://stream-staging.stock.com/market"
+    
+    async with websockets.connect(uri) as websocket:
+        # Subscribe vào mã cổ phiếu
+        subscribe_msg = {"action": "subscribe", "symbol": "VN30"}
+        await websocket.send(json.dumps(subscribe_msg))
+        
+        # Chờ và đọc bản tin trả về
+        response = await asyncio.wait_for(websocket.recv(), timeout=5.0)
+        data = json.loads(response)
+        
+        # Assertions
+        assert data["type"] == "price_update"
+        assert data["symbol"] == "VN30"
+        assert float(data["price"]) > 0
 ```
 
-## API / Integration Testing
+---
 
-```typescript
-import request from 'supertest';
-import { app } from '../src/app';
+## Mẫu UI E2E Testing (Playwright)
 
-describe('POST /api/tasks', () => {
-  it('creates a task and returns 201', async () => {
-    const response = await request(app)
-      .post('/api/tasks')
-      .send({ title: 'Test Task' })
-      .set('Authorization', `Bearer ${testToken}`)
-      .expect(201);
+Sử dụng Page Object Model (POM) và Auto-retrying assertions.
 
-    expect(response.body).toMatchObject({
-      id: expect.any(String),
-      title: 'Test Task',
-      status: 'pending',
-    });
-  });
+```python
+# --- File: pages/login_page.py ---
+class LoginPage:
+    def __init__(self, page):
+        self.page = page
+        self.username_input = page.locator("input[name='username']")
+        self.password_input = page.locator("input[name='password']")
+        self.login_btn = page.locator("button[type='submit']")
+        
+    def login(self, username, password):
+        self.username_input.fill(username)
+        self.password_input.fill(password)
+        self.login_btn.click()
 
-  it('returns 422 for invalid input', async () => {
-    const response = await request(app)
-      .post('/api/tasks')
-      .send({ title: '' })
-      .set('Authorization', `Bearer ${testToken}`)
-      .expect(422);
+# --- File: tests/test_login.py ---
+from playwright.sync_api import expect
 
-    expect(response.body.error.code).toBe('VALIDATION_ERROR');
-  });
-
-  it('returns 401 without authentication', async () => {
-    await request(app)
-      .post('/api/tasks')
-      .send({ title: 'Test' })
-      .expect(401);
-  });
-});
+def test_user_can_login_successfully(page):
+    # Arrange
+    login_page = LoginPage(page)
+    page.goto("https://staging.bank.com/login")
+    
+    # Act
+    login_page.login("testuser", "Password123!")
+    
+    # Assert (Sử dụng expect của Playwright để tự động đợi)
+    dashboard_header = page.locator("h1:has-text('Tổng quan tài sản')")
+    expect(dashboard_header).to_be_visible(timeout=5000)
+    
+    balance_amount = page.locator(".balance-amount")
+    expect(balance_amount).not_to_be_empty()
 ```
 
-## E2E Testing (Playwright)
+---
 
-```typescript
-import { test, expect } from '@playwright/test';
+## Mocking & Bypassing trong Test
 
-test('user can create and complete a task', async ({ page }) => {
-  // Navigate and authenticate
-  await page.goto('/');
-  await page.getByRole('textbox', { name: /email/i }).fill('test@example.com');
-  await page.getByLabel(/password/i).fill('testpass123');
-  await page.getByRole('button', { name: /log in/i }).click();
+Trong môi trường Test (Staging), thường xuyên phải bypass mã OTP hoặc mock dữ liệu từ 3rd-party.
 
-  // Create a task
-  await page.getByRole('button', { name: /new task/i }).click();
-  await page.getByRole('textbox', { name: /title/i }).fill('Buy groceries');
-  await page.getByRole('button', { name: /create/i }).click();
+```python
+# Bypass OTP trên UI Test (Yêu cầu backend support "static OTP" cho account test)
+def test_transfer_with_static_otp(page):
+    page.locator("#otp-input-1").fill("1")
+    page.locator("#otp-input-2").fill("2")
+    page.locator("#otp-input-3").fill("3")
+    page.locator("#otp-input-4").fill("4")
+    page.locator("#otp-input-5").fill("5")
+    page.locator("#otp-input-6").fill("6")
+    page.locator("button:has-text('Xác nhận OTP')").click()
+    
+    expect(page.locator(".success-message")).to_be_visible()
 
-  // Verify task appears
-  const task = page.getByRole('listitem', { name: /buy groceries/i });
-  await expect(task).toBeVisible();
+# Mocking API Response (dùng pytest-mock / responses library)
+import responses
 
-  // Complete the task
-  await task.getByRole('checkbox', { name: /complete buy groceries/i }).check();
-  await expect(task).toHaveCSS('text-decoration-line', 'line-through');
-});
+@responses.activate
+def test_kyc_third_party_timeout():
+    # Giả lập bên thứ 3 trả về 504 Gateway Timeout
+    responses.add(
+        responses.POST, 
+        "https://national-id-service.gov/verify",
+        json={"error": "timeout"}, 
+        status=504
+    )
+    
+    response = requests.post("/api/kyc/verify", json={"id_number": "00123456789"})
+    
+    # Hệ thống của mình phải bắt được lỗi và trả về 503 cho App
+    assert response.status_code == 503
+    assert response.json()["message"] == "Hệ thống xác thực quốc gia đang gián đoạn"
 ```
 
-## Test Anti-Patterns
+---
 
-| Anti-Pattern | Problem | Better Approach |
+## Anti-Patterns cần tránh
+
+| Anti-Pattern | Vấn đề | Cách khắc phục |
 |---|---|---|
-| Testing implementation details | Breaks on refactor | Test inputs/outputs |
-| Snapshot everything | No one reviews snapshot diffs | Assert specific values |
-| Shared mutable state | Tests pollute each other | Setup/teardown per test |
-| Testing third-party code | Wastes time, not your bug | Mock the boundary |
-| Skipping tests to pass CI | Hides real bugs | Fix or delete the test |
-| Using `test.skip` permanently | Dead code | Remove or fix it |
-| Overly broad assertions | Doesn't catch regressions | Be specific |
-| No async error handling | Swallowed errors, false passes | Always `await` async tests |
+| **Hard Sleep** (`time.sleep(5)`) | Làm chậm test, gây flaky test. | Dùng `expect(locator).to_be_visible()` hoặc `wait_for_condition`. |
+| **Chia sẻ state giữa các test** | Test A fail làm Test B fail theo (Cascading failure). | Dùng Pytest Fixtures để setup/teardown data cho MỖI test case độc lập. |
+| **Dùng `float` cho tiền tệ** | `0.1 + 0.2 = 0.30000000000000004` (Lỗi Assertion). | LUÔN dùng `from decimal import Decimal`. |
+| **Lấy Locator theo Class ngẫu nhiên** | `.button-xyz-123` thay đổi mỗi lần build. | Dùng text, role (`get_by_role`), hoặc data-testid. |
+| **Bỏ qua Assert Response Body** | Chỉ check status code 200 là không đủ an toàn. | Assert cả status code LẪN cấu trúc JSON trả về. |

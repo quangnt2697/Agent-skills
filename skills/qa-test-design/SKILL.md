@@ -62,16 +62,16 @@ Sau khi hoàn thành Giai đoạn 1, agent **BẮT BUỘC**:
 Có thể khởi tạo thư mục output trước khi bắt đầu:
 
 ```bash
-bash skills/qa-design/scripts/qa-init.sh [output-dir]
+bash skills/qa-test-design/scripts/qa-init.sh [output-dir]
 ```
 
-Lệnh này tạo thư mục con `checklists/` và `features/` trong đường dẫn chỉ định (mặc định: `tests/qa-design/`).
+Lệnh này tạo thư mục con `checklists/` và `features/` trong đường dẫn chỉ định (mặc định: `tests/qa-test-design/`).
 
 ### Đường dẫn output
 
 Khi đầu vào từ jira-import, output sẽ lưu tại chung một thư mục theo cấu trúc:
 ```
-tests/qa-design/{issueKey}/
+tests/qa-test-design/{issueKey}/
 ├── features/
 │   ├── {issueKey}-checklist.md
 │   └── {issueKey}.feature
@@ -496,7 +496,7 @@ Sau khi hoàn thành cả hai giai đoạn:
 - [ ] Tất cả nội dung output viết bằng tiếng Việt với thuật ngữ domain
 - [ ] Mỗi scenario `.feature` truy vết được về 1 item checklist
 - [ ] Không có cơ chế tự động hoá (selectors, xpaths, SQL) trong text step
-- [ ] Chạy `bash skills/qa-design/scripts/qa-validate.sh <features-dir>` và xác nhận tất cả kiểm tra pass
+- [ ] Chạy `bash skills/qa-test-design/scripts/qa-validate.sh <features-dir>` và xác nhận tất cả kiểm tra pass
 
 ## Quy trình QA tổng thể
 
@@ -504,7 +504,7 @@ Skill `qa-test-design` nằm ở **Giai đoạn 2** trong pipeline QA gồm 4 gi
 
 ```
 Giai đoạn 1              Giai đoạn 2              Giai đoạn 3              Giai đoạn 4
-/ba-spec            →   /qa-design      →   /qa-auto-design           →   Báo cáo
+/ba-spec            →   /qa-test-design      →   /qa-auto-design           →   Báo cáo
 Import Jira              Thiết kế Checklist       Sinh code automation     Chạy test &
 → Phân tích spec         → Viết Gherkin file      → Review code            Xuất report
                                                   → Chạy test
@@ -513,9 +513,9 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 | Giai đoạn | Skill | Input | Output |
 |-----------|-------|-------|--------|
 | 1 | `biz-spec` | Jira Issue Key | `specs/jira-import/{issueKey}/ba-spec/{issueKey}-final.md` |
-| 2 | `qa-test-design` | File `*-final.md` | `tests/qa-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
-| 3 | `auto-test` | File `.feature` + code có sẵn | `tests/qa-design/{issueKey}/steps/test_*.py` |
-| 4 | `auto-test` (Bước 7) | Test scripts | `tests/qa-design/{issueKey}/reports/{issueKey}-report.md` |
+| 2 | `qa-test-design` | File `*-final.md` | `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
+| 3 | `auto-test` | File `.feature` + code có sẵn | `tests/qa-test-design/{issueKey}/steps/test_*.py` |
+| 4 | `auto-test` (Bước 7) | Test scripts | `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
 
 **Sau khi hoàn thành Giai đoạn 2 (qa-test-design)**, có thể chuyển sang Giai đoạn 3 bằng lệnh `/qa-auto-design` để tự động sinh code automation test từ file `.feature` vừa tạo.
 

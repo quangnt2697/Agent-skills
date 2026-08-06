@@ -246,9 +246,9 @@ Sau khi test chạy xong, Agent **BẮT BUỘC** xuất báo cáo kết quả d�
 ```
 
 **Đường dẫn output báo cáo:**
-- File báo cáo Markdown: `tests/qa-design/{issueKey}/reports/{issueKey}-report.md`
-- File báo cáo HTML (nếu dùng pytest-html): `tests/qa-design/{issueKey}/reports/{issueKey}-report.html`
-- Screenshot lỗi (nếu UI test): `tests/qa-design/{issueKey}/reports/screenshots/`
+- File báo cáo Markdown: `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
+- File báo cáo HTML (nếu dùng pytest-html): `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.html`
+- Screenshot lỗi (nếu UI test): `tests/qa-test-design/{issueKey}/reports/screenshots/`
 
 ---
 
@@ -293,7 +293,7 @@ Skill `auto-test` nằm ở **Giai đoạn 3-4** trong pipeline QA:
 
 ```
 Giai đoạn 1              Giai đoạn 2              Giai đoạn 3              Giai đoạn 4
-/ba-spec            →   /qa-design      →   /qa-auto-design           →   Báo cáo
+/ba-spec            →   /qa-test-design      →   /qa-auto-design           →   Báo cáo
 Import Jira              Thiết kế Checklist       Sinh code automation     Chạy test &
 → Phân tích spec         → Viết Gherkin file      → Review code            Xuất report
                                                   → Chạy test
@@ -302,9 +302,9 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 | Giai đoạn | Skill | Input | Output |
 |-----------|-------|-------|--------|
 | 1 | `biz-spec` | Jira Issue Key | `specs/jira-import/{issueKey}/ba-spec/{issueKey}-final.md` |
-| 2 | `qa-test-design` | File `*-final.md` | `tests/qa-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
-| 3 | `auto-test` | File `.feature` + code có sẵn | `tests/qa-design/{issueKey}/steps/test_*.py` |
-| 4 | `auto-test` (Bước 7) | Test scripts | `tests/qa-design/{issueKey}/reports/{issueKey}-report.md` |
+| 2 | `qa-test-design` | File `*-final.md` | `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
+| 3 | `auto-test` | File `.feature` + code có sẵn | `tests/qa-test-design/{issueKey}/steps/test_*.py` |
+| 4 | `auto-test` (Bước 7) | Test scripts | `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
 
 ## Xem thêm
 

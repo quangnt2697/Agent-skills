@@ -2,7 +2,7 @@
 set -e
 
 # qa-validate.sh — Validate .feature files against qa-test-design conventions.
-# Usage: bash skills/qa-design/scripts/qa-validate.sh <path>
+# Usage: bash skills/qa-test-design/scripts/qa-validate.sh <path>
 #
 # <path> can be a single .feature file or a directory containing .feature files.
 # Outputs a JSON validation report to stdout; status messages to stderr.

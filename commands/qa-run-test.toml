@@ -8,13 +8,13 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 ## Quy trình
 
 1. **Tìm test scripts có sẵn:**
-   - Tìm tại `tests/qa-design/{issueKey}/steps/test_*.py`
+   - Tìm tại `tests/qa-test-design/{issueKey}/steps/test_*.py`
    - Nếu không tìm thấy → thông báo user chưa có test scripts, gợi ý chạy `/qa-auto-design {issueKey}` để sinh code trước
    - KHÔNG tự viết hoặc sinh code test mới
 
 2. **Chạy test:**
-   - Thực thi `pytest tests/qa-design/{issueKey}/steps/ -v`
-   - Nếu có cấu hình pytest-html: thêm `--html=tests/qa-design/{issueKey}/reports/{issueKey}-report.html --self-contained-html`
+   - Thực thi `pytest tests/qa-test-design/{issueKey}/steps/ -v`
+   - Nếu có cấu hình pytest-html: thêm `--html=tests/qa-test-design/{issueKey}/reports/{issueKey}-report.html --self-contained-html`
    - Self-fix Loop: Nếu lỗi **kỹ thuật** của script (ImportError, SyntaxError, fixture thiếu...) → sửa script → chạy lại
    - KHÔNG sửa code để ép test case FAIL thành PASS
 
@@ -27,7 +27,7 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
      - Chi tiết lỗi (nếu có)
      - Bảng truy vết Scenario ↔ Test method (nếu có file .feature)
      - Bảng truy vết End-to-End (nếu có file biz-spec)
-   - Lưu tại `tests/qa-design/{issueKey}/reports/{issueKey}-report.md`
+   - Lưu tại `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
 
 4. **Trình bày kết quả cho user:**
    - Hiển thị bảng tổng kết Pass/Fail

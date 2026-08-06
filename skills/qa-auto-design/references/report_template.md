@@ -129,7 +129,7 @@ Body:
 
 ## Ghi chú
 
-- File báo cáo HTML: `tests/qa-design/{issueKey}/reports/{issueKey}-report.html`
-- Screenshot lỗi: `tests/qa-design/{issueKey}/reports/screenshots/`
-- Để chạy lại: `pytest tests/qa-design/{issueKey}/steps/ -v`
+- File báo cáo HTML: `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.html`
+- Screenshot lỗi: `tests/qa-test-design/{issueKey}/reports/screenshots/`
+- Để chạy lại: `pytest tests/qa-test-design/{issueKey}/steps/ -v`
 - Để chạy lại full pipeline: `/qa-pipeline {issueKey}`

@@ -2,16 +2,16 @@
 set -e
 
 # qa-init.sh — Initialize directory structure for QA test artifacts.
-# Usage: bash skills/qa-design/scripts/qa-init.sh [issueKey] [output-base]
+# Usage: bash skills/qa-test-design/scripts/qa-init.sh [issueKey] [output-base]
 #
 # Creates a standardized directory layout for test checklists, .feature files,
 # test steps, and reports per issue key.
 #
 # Convention: issueKey is always stored in LOWER CASE for consistency.
-# Example: qa-init.sh G3PTP-16825 tests/qa-design
+# Example: qa-init.sh G3PTP-16825 tests/qa-test-design
 
 ISSUE_KEY_RAW="${1:?Usage: qa-init.sh <issueKey> [output-base-dir]}"
-OUTPUT_BASE="${2:-tests/qa-design}"
+OUTPUT_BASE="${2:-tests/qa-test-design}"
 
 # Normalize issue key to lower case for consistent directory naming
 ISSUE_KEY=$(echo "$ISSUE_KEY_RAW" | tr '[:upper:]' '[:lower:]')
