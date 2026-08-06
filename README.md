@@ -18,6 +18,7 @@ Bạn chỉ cần gõ các lệnh sau vào khung chat:
 | Lệnh | Chức năng | Phân hệ |
 |------|-----------|----------|
 | `/ba-spec {Mã_Jira}` | Phân tích Jira, tạo Spec chuẩn. Gọi `ba-refine` và `ba-interview-me` ngầm. | BA |
+| `/qa-code2spec {path}`| Dịch ngược (Reverse Engineer) Code thành Spec chuẩn, hỗ trợ đa ngôn ngữ. | BA/RE |
 | `/qa-test-design` | Viết Checklist + kịch bản Gherkin từ Spec. | QA |
 | `/qa-auto-design {Mã_Jira}` | Sinh code automation từ kịch bản + Chạy test. | QA |
 | `/qa-run-test {Mã_Jira}` | CHỈ chạy test đã có + Báo cáo (không sinh code). | QA |

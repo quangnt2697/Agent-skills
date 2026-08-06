@@ -54,11 +54,11 @@ Download PDF ──→ Nhận diện     ──→ Trích xuất    ──→ Ph
    - **Phương án B** (fallback): Dùng browser subagent mở trang issue → Print to PDF
 6. Download tất cả file attachment đính kèm (giữ nguyên format gốc: .pdf, .doc, .png, .xlsx...)
 7. Tạo file `metadata.json` chứa thông tin issue
-8. Lưu tất cả vào `specs/jira-import/{issueKey}/ba-spec/source/`
+8. Lưu tất cả vào `specs/jira-import/{issueKey}/source/`
 
 ### Cấu trúc thư mục output
 ```
-specs/jira-import/{issueKey}/ba-spec/
+specs/jira-import/{issueKey}/
 ├── source/
 │   ├── {issueKey}.pdf            # PDF chính (issue content + ảnh)
 │   ├── attachment-*.{ext}         # File đính kèm gốc
@@ -172,7 +172,7 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 ## Phase 5: Tổng hợp bản Markdown chi tiết
 
 ### File output
-📄 `specs/jira-import/{issueKey}/ba-spec/{issueKey}-final.md`
+📄 `specs/jira-import/{issueKey}/{issueKey}-final.md`
 
 ### Template header (chung cho tất cả loại task)
 ```markdown
