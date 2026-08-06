@@ -1,0 +1,56 @@
+description = "Chạy full QA pipeline tự động: ba-spec → qa-test-design → qa-auto-design → báo cáo. Tự động duyệt giữa các phase, chỉ dừng khi cần input từ user."
+
+prompt = """
+Chạy pipeline QA đầy đủ cho $ARGUMENTS (Jira issue key) ở CHẾ ĐỘ TỰ ĐỘNG.
+
+## Nguyên tắc Auto-approve
+
+Pipeline này chạy **xuyên suốt không dừng** giữa các phase. Agent tự động duyệt
+output của mỗi phase và chuyển sang phase tiếp theo. CHỈ dừng lại khi:
+- Cần thông tin từ user mà agent không thể tự suy luận (VD: interview-me)
+- Gặp lỗi nghiêm trọng không thể self-fix (VD: Jira connection failed, test framework lỗi)
+- User chủ động yêu cầu dừng
+
+KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các phase.
+
+## Pipeline 4 Phase
+
+### Phase 1: Import & Phân tích Yêu cầu (ba-spec)
+- Invoke skill `ba-spec` với issue key từ $ARGUMENTS
+- Tự động chạy 6 phase: Download PDF → Nhận diện → Trích xuất → Gap analysis
+- **Dừng lại NẾU** cần ba-interview-me (hỏi user từng câu một để làm rõ gaps)
+- Output: `specs/jira-import/{issueKey}/ba-spec/{issueKey}-final.md`
+- → Tự động chuyển Phase 2
+
+### Phase 2: Thiết kế Test (qa-test-design)
+- Invoke skill `qa-test-design` ở **auto-approve mode**
+- Giai đoạn 1: Viết Checklist (P0/P1/P2) → tự động duyệt, KHÔNG hỏi user
+- Giai đoạn 2: Viết Gherkin (.feature) từ checklist
+- Chạy `qa-validate.sh` kiểm tra format
+- Output: `tests/qa-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
+- → Tự động chuyển Phase 3
+
+### Phase 3: Sinh Code & Chạy Test (qa-auto-design)
+- Invoke skill `qa-auto-design` với issue key
+- Bước 0-2: Scan workspace + đối chiếu .feature
+- Bước 3: Tìm & tái sử dụng code dev có sẵn
+- Bước 4-5: Sinh test scripts (`test_*.py`)
+- Bước 6: Code review tự động
+- Bước 7: Chạy pytest + self-fix loop (chỉ sửa script error, KHÔNG ép FAIL→PASS)
+- Output: `tests/qa-design/{issueKey}/steps/test_*.py`
+- → Tự động chuyển Phase 4
+
+### Phase 4: Xuất Báo cáo
+- Sinh báo cáo Markdown từ kết quả pytest
+- Bao gồm bảng truy vết end-to-end: Ba-spec → Checklist → Gherkin → Test → Kết quả
+- Output: `tests/qa-design/{issueKey}/reports/{issueKey}-report.md`
+
+## Sau khi hoàn thành
+
+Trình bày cho user:
+1. Tổng kết: X passed / Y failed / Z skipped
+2. Nếu có test FAILED → hiển thị chi tiết lỗi + đề xuất hành động
+3. Đường dẫn đến tất cả output files
+
+LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT (trừ code và tags).
+"""
