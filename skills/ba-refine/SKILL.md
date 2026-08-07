@@ -175,7 +175,13 @@ Scenario: [Business Scenario]
   - KHÔNG nhét Business Rules hay Acceptance Criteria vào câu User Story.
 - **Definition of Done:** User Story tốt phải trả lời được: Ai cần? Muốn gì? Giá trị kinh doanh/người dùng là gì?
 
-Hỏi user xem họ có muốn lưu cái file này vào `docs/ideas/[tên-ý-tưởng].md` (hoặc vào chỗ nào họ thích) không. CHỈ ĐƯỢC LƯU khi họ gật đầu cái rụp.
+Hỏi user xem họ có muốn lưu cái file này vào `docs/ideas/[tên-ý-tưởng]-refined.md` (hoặc vào chỗ nào họ thích) không. CHỈ ĐƯỢC LƯU khi họ gật đầu cái rụp.
+
+**Bước Tiếp Theo (Next Steps):**
+Sau khi file đã được lưu, hãy gợi ý cho user các hướng đi tiếp theo:
+1. **Push lên Jira:** "Bạn có muốn đẩy thẳng bản Spec xịn xò này đè lên một ticket Jira nào đó không (ví dụ: `G3PTP-123`)?". Nếu user cung cấp mã ticket và đồng ý, hãy tự động chạy script:
+   `bash skills/ba-refine/scripts/jira-push-spec.sh {issueKey} {đường_dẫn_file_md}`
+2. **Thiết kế Test:** "Bạn có muốn chuyển sang lệnh `/qa-test-design` để tôi vã luôn cái checklist kiểm thử và kịch bản BDD không?"
 
 ### Những Thói quen Tồi cần NÉ (Anti-patterns to Avoid)
 
