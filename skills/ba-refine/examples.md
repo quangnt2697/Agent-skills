@@ -1,238 +1,246 @@
-# Ideation Session Examples
+# Các Ví dụ về Buổi Lên Ý Tưởng (Ideation Session)
 
-These examples demonstrate what good ideation sessions look like across different kinds of ideas. Study the rhythm, tone, and structure — not just the content. The skill should feel equally at home with a vague startup concept, a feature for an existing product, or a process improvement.
-
----
-
-## Example 1: Vague Early-Stage Concept (Full 3-Phase Session)
-
-**User invokes:** `/ideate I want to help small local restaurants compete with the big delivery platforms`
-
-### Phase 1: Understand & Expand
-
-**Skill response:**
-
-> **How might we** give independent restaurants the reach and convenience customers expect from delivery platforms, without forcing them into a model that erodes their margins and brand?
-
-That's a big space. Let me sharpen it:
-
-1. **Which part of "compete"?** Customer acquisition? Delivery logistics? Online ordering UX? Loyalty/retention? Margin pressure from platform fees?
-2. **Who are you building for?** The restaurant owner? The diner? Both?
-3. **What's the constraint?** Are you thinking software? A cooperative model? Something physical?
-
-**User responds:** "Restaurant owners. The core pain is that they're paying 25-30% commission to delivery apps but feel they can't opt out because that's where the customers are. I'm thinking software but I'm open."
-
-**Skill continues:**
-
-So the problem isn't delivery logistics — it's **customer dependency**. The platforms own the customer relationship, and restaurants are renting access to their own customers at 30% of revenue. That's the leverage to break.
-
-Here are 6 variations:
-
-1. **Direct Channel Toolkit:** Give restaurants their own branded ordering — web, SMS, maybe a lightweight app — so they can move existing customers off-platform. The core bet: customers who *already know* a restaurant will order direct if it's easy enough. You don't need to compete with DoorDash for discovery, just for reordering.
-
-2. **Inversion — Charge the Customer, Not the Restaurant:** What if the delivery fee model flipped? Customers pay a small premium for direct ordering, restaurants pay zero commission. Position it as "support your local spot." The bet: enough customers care about supporting local businesses to pay $1-2 more per order.
-
-3. **Constraint Removal — What If Delivery Weren't Required?** The platforms bundle discovery + ordering + delivery, but most of their cost (and the restaurant's commission) is delivery. What if you only solved ordering and pickup? Pickup-first model. Restaurants keep 100% of revenue, customers save the delivery fee. Works best in dense neighborhoods.
-
-4. **Combination — Restaurant Collective:** A co-op model where 20-50 local restaurants in an area share a platform, split costs, and cross-promote each other. Individual restaurants can't afford marketing — but a neighborhood collective can. Think "local food hall" but digital.
-
-5. **Audience Shift — For Regular Customers:** Don't try to acquire new customers. Build exclusively for a restaurant's existing regulars — the people who come in weekly. A loyalty/reorder tool that's dead simple: "Your usual?" one-tap reorder. The 80/20 bet: 20% of customers drive 80% of revenue, and those people don't need DoorDash to discover the restaurant.
-
-6. **Expert Lens — What Restaurant Owners Actually Do:** Most small restaurant owners aren't looking at dashboards. They're in the kitchen. Any tool that requires them to "manage" something will fail. The winning approach might be something that runs itself — auto-texts regulars when they haven't ordered in 2 weeks, auto-posts the daily special, auto-handles reorders. Zero restaurant-side effort.
-
-Variation 5 and 6 together are interesting. Instead of trying to out-platform the platforms, you'd build something hyper-narrow: a reordering and retention tool for a restaurant's best existing customers. No discovery, no delivery, no marketplace. Just "keep your regulars ordering direct."
-
-Which directions interest you?
+Các ví dụ này phác họa hình hài của những buổi Lên ý tưởng (ideation) xịn xò với các loại ý tưởng khác nhau. Hãy học hỏi **nhịp điệu (rhythm), giọng văn (tone), và cấu trúc (structure)** — đừng chỉ nhìn vào phần nội dung. Kỹ năng này phải hoạt động mượt mà dù đó là một ý tưởng startup mông lung, một tính năng nhỏ cho một sản phẩm có sẵn, hay là một cải tiến quy trình.
 
 ---
 
-### Phase 2: Evaluate & Converge
+## Ví dụ 1: Một Khái niệm Mơ hồ ở Giai đoạn Đầu (Chạy Đủ 3 Giai đoạn)
 
-**User responds:** "I love the regulars angle (5 and 6). The direct channel toolkit (1) feels necessary but boring. The co-op idea (4) is interesting but complex. Let me focus on 1 + 5 + 6 combined."
+**User gọi lệnh:** `/ideate Tao muốn giúp các nhà hàng nhỏ ở địa phương cạnh tranh lại với bọn app giao đồ ăn khổng lồ`
 
-**Skill response:**
+### Giai đoạn 1: Thấu hiểu & Mở rộng (Understand & Expand)
 
-Good instincts. That combination has a clear thesis: **own the relationship with your best customers, make reordering effortless, and require zero effort from the restaurant owner.** Let me stress-test it.
+**Skill phản hồi:**
 
-**Direction A: The "Regulars Engine" (Variations 5 + 6 fused)**
-A tool focused entirely on a restaurant's existing repeat customers. Auto-reorder, auto-engagement, zero management.
+> **Chúng ta có thể làm cách nào (How might we)** mang lại cho các nhà hàng độc lập độ phủ và sự tiện lợi mà khách hàng mong đợi từ bọn app giao hàng, mà không ép họ vào một mô hình hút máu bào mòn lợi nhuận và thương hiệu của họ?
 
-- **Core bet:** A restaurant's top 20% of customers will shift to direct ordering if the experience is frictionless and personal. The restaurant doesn't need *new* customers — it needs to stop paying 30% on customers it already has.
-- **User value:** High and immediate. Every direct reorder saves the restaurant 25-30% commission. If a regular orders $30/week, that's ~$400/year in saved fees per customer. 50 regulars = $20K/year. That's real money for a small restaurant.
-- **Feasibility:** Medium. The ordering/payment tech is commodity. The hard parts: (a) how do you identify and onboard "regulars" without the restaurant doing manual work? (b) How do you handle the cold start — the first reorder needs an order history that lives on the delivery platform, not with you.
-- **Differentiation:** High for the niche. Platforms optimize for marketplace dynamics (new customer discovery, driver logistics). Nobody is optimizing specifically for "keep your regulars ordering direct." It's too small for DoorDash to care about, which is exactly why it's a good wedge.
-- **Hidden assumptions:**
-  - Regulars will install/use yet another ordering method (assumption most likely to be wrong)
-  - Restaurant owners will share customer contact info or let you access it
-  - Direct ordering won't cannibalize dine-in revenue
-- **What could kill it:** If customers simply won't switch channels. Habit is powerful — even if DoorDash costs more, it's already on their phone.
+Bài toán này rộng đấy. Để tôi mài nó sắc lại tí:
 
-**Direction B: Direct Channel + Retention Hybrid (Variation 1 + 5)**
-Branded ordering for the restaurant *plus* the retention automation. More complete but more complex.
+1. **Cạnh tranh ở "khâu nào"?** Kiếm khách mới? Giao nhận (logistics)? Trải nghiệm đặt hàng online? Lòng trung thành/Giữ chân khách (retention)? Hay là sức ép biên lợi nhuận từ phí hoa hồng?
+2. **Bạn đang xây cái này cho ai?** Chủ nhà hàng? Thực khách? Hay cả hai?
+3. **Ràng buộc là gì?** Bạn đang nghĩ đến làm software? Hay làm một mô hình hợp tác xã? Hay một cái gì đó vật lý?
 
-- **Core bet:** Restaurants need both the channel (a way to accept orders) and the engine (a way to keep customers coming back through that channel).
-- **User value:** Higher ceiling, but only if both parts work together. The ordering channel alone is a commodity (Square, Toast already do this). The retention layer alone has no channel to retain customers *on*.
-- **Feasibility:** Lower. You're building two products and hoping they're better together.
-- **Differentiation:** Medium. The combination is interesting, but each piece individually has competitors.
-- **Hidden assumption:** That bundling these is better than partnering (e.g., retention layer on top of Square Online).
-- **What could kill it:** Scope. Building two things well is exponentially harder than building one thing well.
+**User phản hồi:** "Cho chủ nhà hàng. Nỗi đau lớn nhất là họ đang phải cúng 25-30% tiền hoa hồng cho bọn app giao hàng nhưng đéo dám bỏ vì khách hàng toàn ở trên đó. Tao đang nghĩ tới làm software, nhưng cũng mở."
 
-**The honest read:** Direction A is the sharper bet. Direction B is safer but less differentiated. The biggest risk for A is the channel-switching problem — getting customers to order through a new method. If you can crack that (and variation 6's "zero effort" approach might help — an SMS-based reorder doesn't require a new app), the rest follows.
+**Skill tiếp tục:**
 
-One thing I want to push back on: you said variation 1 feels "necessary but boring." That instinct to include the "necessary" thing is how products lose focus. If the regulars engine works, you can add a branded ordering channel later. But if you build the channel first, you're just another Square Online competitor.
+Vậy bài toán ở đây không phải là logistics giao nhận — mà là **sự phụ thuộc vào khách hàng của nền tảng**. Bọn app đang nắm giữ mối quan hệ với khách hàng, còn các nhà hàng thì đang phải "thuê" lại quyền tiếp cận chính khách hàng của mình với giá 30% doanh thu. Đó chính là cái đòn bẩy cần phải bẻ gãy.
 
----
+Dưới đây là 6 biến thể ý tưởng (variations):
 
-### Phase 3: Sharpen & Ship
+1. **Bộ Công cụ Kênh Trực tiếp (Direct Channel Toolkit):** Cấp cho các nhà hàng một kênh đặt món mang thương hiệu riêng — web, SMS, hoặc một cái app siêu nhẹ — để họ kéo tệp khách hàng HIỆN TẠI ra khỏi app giao đồ. Cược vào giả định: những khách đã CÓ SẴN thói quen ăn ở đây sẽ đặt trực tiếp nếu nó đủ dễ. Bạn đéo cần cạnh tranh với ShopeeFood ở khâu tìm khách mới, chỉ cần cạnh tranh ở khâu khách đặt lại (reordering).
 
-**Skill produces:**
+2. **Đảo ngược — Thu phí Khách hàng, Đéo thu phí Nhà hàng:** Sẽ ra sao nếu lật ngược mô hình thu phí giao hàng? Khách hàng trả một mức phí premium nhỏ để đặt trực tiếp, nhà hàng đéo phải đóng đồng hoa hồng nào. Đóng khung nó dưới mác "ủng hộ quán ruột ở địa phương". Cược vào giả định: có đủ lượng khách hàng quan tâm đến việc ủng hộ quán local để sẵn sàng bỏ thêm $1-2 mỗi đơn.
 
-# ReOrder: Keep Your Regulars Ordering Direct
+3. **Đạp đổ Ràng buộc — Sẽ ra sao nếu Đéo cần Giao Hàng?** Bọn platform gộp chung [Khám phá + Đặt món + Giao hàng] vào làm một, nhưng phần lớn chi phí (và hoa hồng của nhà hàng) nằm ở khâu Giao hàng. Sẽ ra sao nếu bạn chỉ giải quyết khâu Đặt món và Đến lấy (Pickup)? Mô hình Pickup-first. Nhà hàng húp trọn 100% doanh thu, khách hàng tiết kiệm được tiền ship. Hoạt động cực tốt ở các khu dân cư đông đúc.
 
-## Problem Statement
-How might we help independent restaurants retain their best existing customers through direct ordering, eliminating the 25-30% platform commission on the revenue that matters most?
+4. **Lai tạp — Tổ hợp Nhà hàng (Restaurant Collective):** Một mô hình hợp tác xã nơi 20-50 nhà hàng local trong cùng một khu vực share chung một platform, cưa đôi chi phí và chéo khách (cross-promote) cho nhau. Một nhà hàng lẻ tẻ thì đéo có tiền làm marketing — nhưng một tổ hợp nhà hàng trong xóm thì có. Nghĩ về nó như một cái "Food court ở địa phương" nhưng phiên bản digital.
 
-## Recommended Direction
-Build a **regulars-only retention engine** — not a marketplace, not a full ordering platform. Hyper-focused on one job: make it effortless for a restaurant's repeat customers to reorder directly.
+5. **Đổi Target Audience — Chuyên trị cho Khách Ruột (Regular Customers):** Dẹp mẹ chuyện đi kiếm khách mới. Hãy xây một cái gì đó CHỈ DÀNH RIÊNG cho tệp khách ruột — những người tuần đéo nào cũng ghé ăn. Một công cụ Loyalty/Reorder ngốc nghếch tới mức: "Lấy món cũ nhé?" chốt đơn 1 chạm. Bài toán 80/20: 20% khách hàng đẻ ra 80% doanh thu, và những người đó đéo cần ShopeeFood để biết quán mỳ gõ đầu ngõ nằm ở đâu.
 
-The key insight is that restaurants don't need help *finding* their best customers — they know who walks in every Tuesday. They need help moving those relationships off-platform. And the tool needs to run itself, because the owner is in the kitchen, not at a dashboard.
+6. **Lăng kính Chuyên gia — Chủ nhà hàng Thực sự Làm cái đéo gì:** Hầu hết chủ quán nhỏ đéo bao giờ rảnh mà ngồi dòm mấy cái dashboard (bảng điều khiển). Họ bận sml trong bếp. Bất kỳ tool nào ép họ phải "quản lý" một cái gì đó sẽ chết ngắc. Cách tiếp cận ăn tiền nhất phải là thứ gì đó CỨ THẾ MÀ CHẠY — tự động nhắn tin cho khách ruột nếu 2 tuần đéo thấy họ mua, tự động post món đặc biệt trong ngày, tự động chốt đơn. Chủ quán đéo cần động tay (Zero effort).
 
-SMS-first (not app-first) is likely the right channel. A text saying "Hey, want your usual Thursday order from Marco's?" with a one-tap confirmation is lower friction than any app install.
+Biến thể 5 và 6 gộp lại nghe cực kỳ cuốn. Thay vì cố gắng làm một cái app để giết bọn app kia, bạn sẽ xây một thứ hẹp hoắc: một cái tool chốt đơn và giữ chân (retention) dành riêng cho tệp khách VIP nhất của quán. Đéo cần tính năng khám phá, đéo cần giao hàng, đéo cần làm marketplace. Chỉ tập trung vào: "Giữ cho khách ruột của quán đặt món trực tiếp."
 
-## Key Assumptions to Validate
-- [ ] Repeat customers will reorder via SMS/direct link instead of their usual delivery app — test with 5 restaurants, 20 regulars each, measure conversion over 4 weeks
-- [ ] Restaurant owners can identify their top 20-30 regulars and share contact info — test by asking 10 restaurant owners if they'd do this
-- [ ] The commission savings ($8-10 per order) is motivating enough for owners to invest initial setup effort — interview 10 owners about platform fee pain
-
-## MVP Scope
-- SMS-based reordering for a restaurant's self-identified regular customers
-- Restaurant owner adds regulars manually (name + phone + usual order) — 15-minute setup
-- Customer receives a text with their usual order, confirms with a reply, pays via link
-- Restaurant receives the order via text/simple dashboard
-- No delivery — pickup only in v1
-- No discovery, no marketplace, no app
-
-## Not Doing (and Why)
-- **Delivery logistics** — delivery is the expensive, complex part and not the core problem. Pickup-first validates demand without operational burden.
-- **Customer acquisition/discovery** — that's the platform's game. Competing on discovery means competing with DoorDash's budget. We compete on retention instead.
-- **Branded restaurant apps/websites** — commodity. Square and Toast already do this. Another branded channel doesn't solve the behavioral problem.
-- **Menu management, POS integration** — scope creep. "Your usual" doesn't need a dynamic menu. Start with static orders.
-- **Analytics dashboards** — the owner is in the kitchen. Build reporting that's passive (weekly text summary) not active (log in and look at charts).
-
-## Open Questions
-- What's the legal/compliance landscape for SMS marketing to restaurant customers?
-- How do you handle menu/price changes for "usual" orders?
-- Is there a way to bootstrap the regular customer list from existing POS data instead of manual entry?
-- What's the pricing model? Per-order fee? Monthly subscription?
+Bạn thấy hướng nào "bùi tai" nhất?
 
 ---
 
-## Example 2: Feature Idea Within an Existing Product (Codebase-Aware)
+### Giai đoạn 2: Đánh giá & Hội tụ (Evaluate & Converge)
 
-**User invokes:** `/ideate adding real-time collaboration to our document editor`
+**User phản hồi:** "Tao khoái cái góc nhìn khách ruột (5 và 6). Cái bộ công cụ trực tiếp (1) nghe có vẻ cần thiết nhưng hơi chán. Cái ý tưởng hợp tác xã (4) thì hay nhưng phức tạp quá. Cứ focus vào 1 + 5 + 6 gộp lại đi."
 
-### Phase 1: Understand & Expand
+**Skill phản hồi:**
 
-**Skill response:**
+Bản năng tốt đấy. Sự kết hợp đó có một luận điểm rõ ràng: **nắm trọn mối quan hệ với tệp khách xịn nhất, làm cho việc chốt đơn lại trở nên mượt mà, và ĐÉO ĐÒI HỎI chủ quán phải làm thêm việc.** Để tôi thử lửa nó xem sao.
 
-> **How might we** let multiple people work on the same document simultaneously in a way that feels natural, not chaotic?
+**Hướng A: Cỗ máy "Khách Ruột" (Lai giữa Biến thể 5 + 6)**
+Một công cụ tập trung 100% vào tập khách hàng quen của nhà hàng. Tự động chốt đơn, tự động tương tác, đéo cần quản lý.
 
-I scanned your codebase and see you're using a block-based editor architecture with a REST API for persistence. No WebSocket infrastructure currently. That's important context. A few questions:
+- **Luận điểm cốt lõi (Core bet):** Top 20% khách vip của nhà hàng sẽ chịu nhảy sang kênh đặt món trực tiếp nếu trải nghiệm đủ trơn tru và cá nhân hóa. Quán đéo cần khách *mới* — quán chỉ cần ngưng cúng 30% doanh thu từ những khách họ ĐÃ CÓ.
+- **Giá trị Người dùng:** Cao và Thấy ngay. Mỗi đơn trực tiếp giúp quán tiết kiệm 25-30%. Nếu một ông khách ruột mua 300k/tuần, quán đỡ mất ~4 triệu tiền phí/năm. 50 khách ruột = 200 triệu/năm. Tiền tươi thóc thật cho một cái quán nhỏ đấy.
+- **Độ khả thi:** Trung bình. Cái tech để đặt món/thanh toán là hàng chợ. Cái khó là: (a) làm sao định danh và onboard "khách ruột" mà chủ quán đéo phải làm bằng tay? (b) Giải quyết bài toán con gà quả trứng (cold start) thế nào — vì lịch sử mua hàng của khách đang nằm trên Grab/ShopeeFood chứ có nằm bên bạn đâu.
+- **Sự Khác biệt:** Cao trong ngách này. Bọn app tối ưu cho bài toán marketplace (tìm khách mới, logistics tài xế). Đéo có thằng nào tối ưu riêng cho cái bài toán "giữ khách ruột tự đặt món". Nó quá vụn vặt để Grab quan tâm, nhưng đó lại chính là cái nêm hoàn hảo để bạn chui vào.
+- **Các Giả định Ẩn (Hidden assumptions):**
+  - Khách ruột sẽ chịu cài/sử dụng thêm MỘT CÁI cách đặt món nữa (giả định dễ sập hầm nhất)
+  - Chủ quán sẽ chịu nhả data khách hàng ra cho bạn
+  - Đặt đồ trực tiếp sẽ đéo cắn lẹm vào doanh thu ăn tại quán (dine-in)
+- **Thứ gì sẽ giết chết nó:** Khách hàng đéo chịu đổi kênh. Thói quen là thứ đáng sợ — dù ShopeeFood đắt hơn, nó đã nằm sẵn trên điện thoại của họ rồi.
 
-1. **What's the collaboration pattern?** Are people editing the same paragraph at the same time (Google Docs style)? Or working in different sections (Notion style)? Or reviewing/commenting while one person edits?
-2. **How many simultaneous users?** 2-3 (pair editing)? 10+ (team workspace)?
-3. **What's driving this now?** Customer requests? Competitive pressure? Internal need?
+**Hướng B: Công cụ Kênh Trực tiếp + Giữ chân Khách hàng (Biến thể 1 + 5)**
+Quán có kênh đặt đồ gắn logo riêng *cộng thêm* bộ auto giữ chân khách. Hoàn thiện hơn nhưng cồng kềnh hơn.
 
-**User responds:** "2-5 people, usually working in different sections. Customers keep asking. We're losing deals to Notion because they assume any modern editor has this."
+- **Luận điểm cốt lõi:** Quán cần CẢ cái phễu (cách để nhận đơn) VÀ cái cỗ máy (cách để lôi khách quay lại cái phễu đó).
+- **Giá trị Người dùng:** Trần cao hơn, nhưng chỉ khi cả 2 chạy mượt. Làm cái phễu đặt đồ thì quá thường (bọn Sapo, KiotViet làm nát rồi). Làm cái máy giữ chân khách mà đéo có phễu thì khách đéo biết đặt ở đâu.
+- **Độ khả thi:** Thấp hơn. Bạn đang phải build cùng lúc 2 thứ và hy vọng chúng gộp lại sẽ ngon.
+- **Sự Khác biệt:** Trung bình. Gộp lại thì hay, nhưng bóc tách ra thì mỗi cái đều có đối thủ.
+- **Giả định ẩn:** Rằng cái trò gom cục này lại sẽ xịn hơn là đi làm partner (ví dụ: làm tính năng retention đắp vào hệ thống của Sapo).
+- **Thứ gì sẽ giết chết nó:** Phạm vi dự án (Scope). Cố làm 2 việc cho tốt thì độ khó đéo phải x2 mà là x10.
 
-**Skill continues:**
+**Đọc vị thật lòng nhé:** Hướng A sắc bén hơn nhiều. Hướng B an toàn nhưng kém khác biệt. Cái rủi ro to nhất của A là rào cản chuyển kênh (channel-switching) — làm sao lùa khách qua chỗ mới. Nếu bạn crack được chỗ này (và cái trò "zero effort" ở biến thể 6 có thể giúp — đặt món qua SMS đéo bắt ai cài thêm app nào cả), thì những cái khác tự động giải quyết được.
 
-The competitive pressure framing matters — this might be a checkbox feature (must-have to stay in the consideration set) rather than a differentiator. That changes how much you should invest.
-
-I see your document model uses independent blocks with a flat ordering system (`src/models/document.ts:45`). That's actually favorable — block-level granularity means conflicts are rarer than character-level editing.
-
-Here are 5 variations:
-
-1. **Block-Level Locking (Simplest Path):** When someone starts editing a block, it's locked for others. They see a presence indicator ("Alex is editing...") but can edit any other block freely. No conflict resolution needed. Your existing block model supports this with minimal changes — add a `locked_by` field and a WebSocket layer for presence.
-
-2. **Inversion — Async-First Collaboration:** Instead of real-time co-editing, lean into async. Inline suggestions, comments, and proposed edits that the document owner merges. Like suggestion mode, but as the *primary* collaboration model. Bet: for 2-5 people in different sections, async might actually be *better* than real-time.
-
-3. **Simplification — Presence Without Co-Editing:** Show who's viewing the document and what section they're looking at (cursors, avatars in margins), but don't enable simultaneous editing. People coordinate verbally. Sounds primitive, but might be 80% of the value at 10% of the engineering cost.
-
-4. **Combination — Collaboration + Version Branches:** Let people create "branches" of a document, edit independently, then merge. Each person gets their own space, no conflicts during editing, and you build a merge UI. Plays to your existing versioning system.
-
-5. **10x Version — AI-Mediated Collaboration:** Multiple people describe what they want in a section, and AI synthesizes their inputs into a draft they all iterate on. Nobody directly edits the same text — they all influence it. Radical, possibly too early, but worth naming.
-
-Given your architecture and the competitive context, I'd push you toward variation 1 or 3. You need to close deals, which means you need this shipped, which means you need the simplest version that checks the box. Variation 1 gives you real co-editing. Variation 3 is even cheaper but might not satisfy the "we need real-time" checkbox.
+Có một chỗ tôi muốn táng lại bạn: bạn bảo biến thể 1 nghe có vẻ "cần thiết nhưng chán". ĐM, chính cái tư duy ráng nhét những thứ "cần thiết" vào là nguyên nhân khiến các sản phẩm bị chệch hướng. Nếu cái "cỗ máy khách ruột" nó ngon, bạn đắp thêm phễu (channel) vào sau đéo muộn. Còn nếu đâm đầu vào build channel trước, bạn chỉ là 1 thằng clone KiotViet/Sapo đéo ai quan tâm.
 
 ---
 
-*Phase 2 would cluster into "minimum viable co-editing (1 or 3)" vs. "differentiated collaboration model (2 or 4)" — evaluating whether to check the competitive box quickly or invest in something that becomes a selling point.*
+### Giai đoạn 3: Mài sắc & Chốt hạ (Sharpen & Ship)
 
-*Phase 3 would produce a one-pager recommending block-level locking as the MVP, with a "Not Doing" list that includes character-level CRDT (too complex), offline sync (not needed for 2-5 users), and AI features (premature).*
+**Skill ói ra:**
+
+# ReOrder: Giữ Chân Khách Ruột Bằng Kênh Trực Tiếp
+
+## 🧩 User Story (Required) 📖 
+As a (Là một) Chủ nhà hàng độc lập nhỏ
+I want (Tôi muốn) hệ thống tự động chốt đơn qua SMS (zero-effort) cho top 20% khách ruột của tôi
+So that (Để) tôi có thể lôi họ ra khỏi bọn app giao hàng và tiết kiệm được 25-30% tiền hoa hồng trên những đơn hàng lặp lại liên tục này.
+
+## 💼 Business Context (Required) 📖 
+Các quán ăn đang bị cướp mất 30% doanh thu bởi bọn nền tảng giao hàng, kể cả với những tệp khách ĐÃ quen mặt và mê quán. Chúng ta cần một giải pháp lấy lại quyền kiểm soát với "khách ruột", nhưng ĐÉO ĐƯỢC ép chủ quán phải vục mặt vào quản lý thêm một cái app hay dashboard rườm rà nào nữa.
+
+## ✅ Acceptance Criteria (Required) 📖 
+Feature: Đặt món trực tiếp qua SMS cho Khách Ruột
+
+Scenario: Khách hàng nhận và chốt "món ruột" của họ
+  Given (Cho trước) Tôi là khách quen của quán Bún Bò bà O
+  And Quán đã setup "món ruột" của tôi vào hệ thống
+  When (Khi) Tôi nhận được tin nhắn SMS hằng tuần "Thứ 5 rồi, lấy tô bún bò nạm chả như mọi khi không anh?"
+  And Tôi reply lại chữ "Ok"
+  Then (Thì) Hệ thống phải đẻ ra một cái link thanh toán gửi lại cho tôi
+  And Khi tôi thanh toán xong, đơn hàng sẽ nhảy thẳng vào màn hình dashboard đơn giản của quán.
+
+## 🎨 User Flow / Design (Required if UI change) 📖 
+### User Flow
+1. **Chủ Quán:** Chịu khó add tay SĐT khách ruột + "món ruột" (Chỉ làm đúng 1 lần setup).
+2. **Hệ thống:** Tự động nã SMS theo lịch trình (Vd: 4h chiều Thứ Năm).
+3. **Khách hàng:** Reply "Ok" -> nhận link thanh toán -> quẹt thẻ/chuyển khoản.
+4. **Chủ Quán:** Nhìn thấy đơn nổi lên trên màn hình tablet/điện thoại cùi bắp của quán.
+
+## ☀️ Success Criteria & Tracking (Required) 📖 
+### Success Metrics
+| Metric (Chỉ số) | Current (Hiện tại) | Target (Mục tiêu) |
+|--------|---------|--------|
+| Hoa hồng app tiết kiệm được/tháng | $0 | ~8 triệu VNĐ/quán |
+| Tỷ lệ Chuyển đổi SMS (Khách reply Ok) | N/A | > 40% |
+
+### Tracking
+| Event (Sự kiện) | Dashboard / Report (Báo cáo) |
+|-------|--------------------|
+| SMS_Sent | Dashboard Tương tác (Engagement) |
+| Order_Confirmed | Dashboard Doanh thu (Revenue) |
+
+## 🧱 Technical Notes (Optional) 
+- **API / Service:** Dùng Twilio/Zalo ZNS để bắn SMS/Tin nhắn tự động, tích hợp PayME/MoMo/VNPay để tạo link thanh toán.
+- **Dependency:** Cần một cái web-view siêu mượt và nhẹ để chủ quán mở trên tablet coi đơn.
+- **Migration / Rollout:** MVP v1 ĐÉO CẦN tích hợp mẹ gì với POS (máy tính tiền) cả. Đơn chạy độc lập. Cần chú ý luật chống spam tin nhắn.
 
 ---
 
-## Example 3: Process/Workflow Idea (Non-Product)
+## Ví dụ 2: Ý tưởng Tính năng (Bên trong Một Sản phẩm Có sẵn - Codebase-Aware)
 
-**User invokes:** `/ideate a better way to run our weekly team retrospectives — they've gotten stale and people dread them`
+**User gọi lệnh:** `/ideate Thêm tính năng cộng tác theo thời gian thực (real-time collaboration) vào cái document editor của tụi tao`
 
-### Phase 1: Understand & Expand
+### Giai đoạn 1: Thấu hiểu & Mở rộng (Understand & Expand)
 
-**Skill response:**
+**Skill phản hồi:**
 
-> **How might we** make retrospectives genuinely useful — something the team looks forward to — instead of a recurring meeting people endure?
+> **Chúng ta có thể làm cách nào (How might we)** cho phép nhiều người cùng lúc chọc vào một cái doc mà cảm giác vẫn mượt mà, chứ không phải như một mớ hỗn độn?
 
-Before expanding:
+Tôi vừa scan qua codebase của bạn và thấy các bạn đang xài kiến trúc block-based editor với REST API để lưu trữ. Đéo thấy có cơ sở hạ tầng WebSocket nào. Context này quan trọng đấy. Vài câu hỏi nhé:
 
-1. **What's stale about them?** Same format every time? Same people talking? Action items that never get done? Topics feel repetitive?
-2. **Team size and dynamic?** 5 people who all speak up, or 15 where 3 dominate?
-3. **What does a *good* retro look like to you?** Have you had one that worked? What made it different?
+1. **Mô hình cộng tác là gì?** Cùng gõ chung vào 1 đoạn văn (như Google Docs)? Hay mỗi thằng sửa 1 block khác nhau (như Notion)? Hay là một thằng gõ, mấy thằng kia đứng ngoài comment?
+2. **Bao nhiêu mạng online cùng lúc?** 2-3 người (pair editing)? Hay 10+ (team workspace)?
+3. **Cái đéo gì đang thúc đẩy bạn làm tính năng này?** Khách hàng chửi? Đối thủ ép? Hay nội bộ ngứa mắt?
 
-**User responds:** "8 people, maybe 3-4 actually talk. Same 'what went well / what didn't / action items' format for a year. The action items pile up and nothing changes. People think it's theater."
+**User phản hồi:** "Khoảng 2-5 mạng, thường là sửa ở các phần khác nhau. Khách hàng hối như giặc. Tụi tao đang bị mất mối vào tay Notion vì khách nó tự mặc định là app editor hiện đại đéo nào chả có cái này."
 
-**Skill continues:**
+**Skill tiếp tục:**
 
-The action item problem is the real signal. If nothing changes after the retro, people rationally disengage. The meeting isn't stale — it's **broken at the output layer**. The format might be fine if the follow-through worked.
+Góc nhìn "bị đối thủ ép" rất quan trọng — tính năng này có thể chỉ là một cái "checkbox" (cần phải có để khách khỏi chê), chứ đéo phải là vũ khí cạnh tranh (differentiator). Nhận thức được cái này sẽ định hình mức độ khô máu mà bạn nên đầu tư.
 
-Here are 6 variations:
+Tôi thấy mô hình doc của bạn đang lưu các block độc lập với một thứ tự phẳng (flat ordering) ở `src/models/document.ts:45`. Cấu trúc này khá lợi thế — tính theo block nghĩa là tỷ lệ đụng độ (conflicts) sẽ thấp hơn nhiều so với việc bắt tracking từng ký tự (character-level).
 
-1. **Fix the Output, Not the Meeting:** Keep the retro format but completely change what happens after. One action item max per retro. Assigned an owner and a deadline during the meeting. Next retro starts with a 5-minute demo of the completed action. If it's not done, that *becomes* the retro topic. The constraint of one item forces prioritization.
+Dưới đây là 5 biến thể:
 
-2. **Inversion — Kill the Meeting:** Replace the synchronous retro with an async one. Everyone submits reflections in writing during the week. A rotating facilitator synthesizes themes and proposes one change. The "meeting" is a 15-minute standup to agree or disagree. Bet: writing produces more honest feedback than speaking in a group.
+1. **Block-Level Locking (Block Dễ Nhất):** Thằng nào nhảy vào sửa block nào, thì lock mẹ block đó lại đối với người khác. Họ chỉ thấy cái bảng "Alex đang gõ..." nhưng vẫn vô tư sửa các block khác. Đéo cần giải quyết conflict phức tạp (conflict resolution). Code hiện tại của bạn chỉ cần sửa chút đỉnh — nhét thêm trường `locked_by` và đắp thêm một lớp WebSocket mỏng để báo hiện diện (presence).
 
-3. **Audience Shift — Retro for the Quiet Ones:** Design the format for the 4-5 people who don't talk. Anonymous submission of topics. Dot-voting to prioritize. Small-group breakouts (pairs) before full-group discussion. The loud voices still participate, but the structure prevents them from dominating.
+2. **Đảo ngược — Async-First Collaboration (Ưu tiên Bất đồng bộ):** Dẹp mẹ real-time đi, dồn máu vào async (bất đồng bộ). Tạo cơ chế gợi ý inline (inline suggestions), comment, và các bản nháp chỉnh sửa để chủ doc có thể bấm "Merge" (chấp nhận). Y hệt chế độ suggestion của Google Doc, nhưng nó là mode MẶC ĐỊNH. Cược: với team 2-5 mạng, làm khác phần nhau, thì async có khi xịn hơn real-time.
 
-4. **Simplification — The One Question Retro:** Each retro has exactly one question, and it changes every week. "What's one thing that slowed you down?" "What did you learn that the team should know?" "If you could change one thing about how we work, what?" The constraint forces depth over breadth.
+3. **Tối giản — Có Tên nhưng Không Cho Sửa Cùng Lúc:** Chỉ hiện cái tên và con trỏ chuột báo xem ai đang dòm khu vực nào, nhưng ĐÉO CHO sửa cùng lúc. Anh em tự hú hét phối hợp bằng mồm. Nghe có vẻ nguyên thủy, nhưng nó mang lại 80% giá trị mà tốn có 10% công sức code.
 
-5. **Combination — Retro + Experimentation:** Treat each retro output as a hypothesis. "We believe that [change] will improve [outcome]." Run it as a 2-week experiment. Next retro: did it work? Keep, modify, or kill. Turns the retro into a continuous improvement engine with built-in accountability.
+4. **Lai tạp — Collaboration + Chia Nhánh (Version Branches):** Cho phép user bẻ nhánh (branch) cái doc ra, ai thích sửa gì thì sửa độc lập, rồi ghép (merge) lại sau. Mảnh đất của ai người nấy quẩy, đéo sợ conflict lúc sửa, bạn chỉ cần build cái UI để Merge. Hợp rơ với cái hệ thống versioning có sẵn của bạn.
 
-6. **Expert Lens — What Facilitators Know:** Experienced facilitators say the #1 retro killer is lack of safety, not format. People won't say what's really wrong if they fear consequences. The fix might not be structural — it might be starting with an anonymous "team health check" score (1-5) each week. When safety is high, retros naturally improve.
+5. **Phiên bản x10 — AI-Mediated Collaboration (AI đứng giữa):** Nhiều user cùng mô tả thứ họ muốn vào một section, AI sẽ đứng ra tổng hợp ý kiến và đẻ ra 1 cái draft chung. Đéo ai trực tiếp thò tay vào text cả — tất cả chỉ "tác động" vào nó thôi. Hơi viễn tưởng, có thể quá sớm, nhưng đáng để gọi tên.
 
-The interesting tension: variations 1 and 5 fix the *output* problem (nothing changes). Variations 2, 3, and 4 fix the *input* problem (same voices, same topics). Variation 6 says both are symptoms of a deeper issue. Where do you think the real bottleneck is?
-
----
-
-*Phase 2 would evaluate in terms of: effort to try (most are free — just change how you run the next meeting), risk (variation 2 is the biggest departure), and whether the team's real problem is output (action items die) or input (not enough honesty).*
-
-*Phase 3 would produce a one-pager recommending starting with variation 1 (one action item, demo next week) as a zero-cost experiment, combined with variation 3's anonymous submission. "Not Doing" list: new tools, elaborate facilitation techniques, or anything requiring budget. The first fix should take 0 minutes of prep and $0.*
+Dựa vào cái architecture hiện tại và áp lực bị đối thủ đè, tôi sẽ vote mạnh cho hướng 1 hoặc 3. Bạn cần chốt deal, tức là bạn cần phải release, tức là bạn cần một cái MVP nhanh nhất để check mẹ vào cái ô "có real-time". Hướng 1 là real-time thật. Hướng 3 rẻ bèo nhưng coi chừng chưa đủ đô để vượt qua bài test "checkbox".
 
 ---
 
-## What to Notice in These Examples
+*Giai đoạn 2 sẽ đi vào mổ xẻ "Minimum viable co-editing (hướng 1 hoặc 3)" vs. "Differentiated collaboration model (hướng 2 hoặc 4)" — đánh giá xem nên chốt nhanh để vượt qua cái ô checkbox, hay đầu tư khô máu để biến nó thành vũ khí bán hàng.*
 
-1. **The restatement changes the frame.** "Help restaurants compete" becomes "retain existing customers." "Add real-time collaboration" becomes "let people work simultaneously without chaos." "Fix stale retros" becomes "fix the output layer."
+*Giai đoạn 3 sẽ ói ra một document hoàn chỉnh bao gồm User Story (VD: Là thành viên team, tôi muốn sửa doc an toàn mà đéo sợ bị đè code), Business Context (thu hẹp khoảng cách với Notion), Acceptance Criteria cho tính năng block-locking, User Flow, Success Metrics (Tỷ lệ win rate khi đụng Notion), và Technical Notes (REST API, WebSocket presence).*
 
-2. **Questions diagnose before prescribing.** Each question determines which *type* of problem this actually is. The retro example reveals the problem is action item follow-through, not meeting format — and that changes every variation.
+---
 
-3. **Variations have reasons.** Each one explains *why* it exists (what lens generated it), not just *what* it is. The label (Inversion, Simplification, etc.) teaches the user to think this way themselves.
+## Ví dụ 3: Ý tưởng về Quy trình (Không phải Product)
 
-4. **The skill has opinions.** "I'd push you toward 1 or 3." "Variation 6 is worth sitting with." It tells you what it thinks matters and why — not just neutral options.
+**User gọi lệnh:** `/ideate Một cách xịn hơn để chạy mấy buổi retro hàng tuần của team — dạo này nó nhàm chán vl và ai cũng ngán ngẩm`
 
-5. **Phase 2 is honest.** Ideas get called out for low differentiation or high complexity. The skill pushes back: "That instinct to include the 'necessary' thing is how products lose focus."
+### Giai đoạn 1: Thấu hiểu & Mở rộng (Understand & Expand)
 
-6. **The output is actionable.** The one-pager ends with things you can *do* (validate assumptions, build the MVP, try the experiment), not things to *think about*.
+**Skill phản hồi:**
 
-7. **The "Not Doing" list does real work.** It's specific and reasoned. Each item is something you might *want* to do but shouldn't yet.
+> **Chúng ta có thể làm cách nào (How might we)** biến buổi retro thành một thứ gì đó thực sự hữu ích — một cái lịch mà team háo hức chờ đón — thay vì là một buổi tra tấn định kỳ ai cũng phải cắn răng chịu đựng?
 
-8. **The skill adapts to context.** A codebase-aware example references actual architecture. A process idea generates zero-cost experiments instead of products. The framework stays the same but the output matches the domain.
+Trước khi bung lụa:
+
+1. **Nhàm chán ở điểm nào?** Format tuần đéo nào cũng như tuần nào? Lại mấy cái gương mặt thân quen mở mồm? Action items đặt ra xong đéo ai làm? Topic lặp đi lặp lại?
+2. **Size team và Dynamic?** 5 người và cả 5 đều nhoi, hay 15 mạng nhưng chỉ có 3 con giời thi nhau gáy?
+3. **Thế nào là một buổi retro NGON theo ý bạn?** Bạn đã từng dự cái retro nào ra hồn chưa? Cái gì làm nó khác biệt?
+
+**User phản hồi:** "8 mạng, chắc được 3-4 ông là chịu nói. Vẫn cái format 'what went well / what didn't / action items' chạy cả năm nay. Đống action items cứ dồn cục đó đéo có gì thay đổi. Anh em chửi là diễn hề."
+
+**Skill tiếp tục:**
+
+Vấn đề về Action item là một tín hiệu cực mạnh. Nếu đéo có cái chó gì thay đổi sau buổi retro, việc người ta ngán ngẩm là điều quá hợp lý. Cái buổi meeting đéo phải là chán — nó bị **hư ở mẹ cái khâu Đầu ra (Output)**. Format có khi đéo sai nếu phần thực thi (follow-through) hoạt động ổn.
+
+Dưới đây là 6 biến thể:
+
+1. **Fix cái Đầu ra, Đéo fix cái Meeting:** Giữ nguyên format retro nhưng thay đổi hoàn toàn cách xử lý đầu ra. TỐI ĐA 1 action item mỗi buổi retro. Chỉ định đích danh 1 người ôm và dí deadline ngay trong meeting. Buổi retro tuần tới sẽ mở bát bằng 5 phút demo cái action item vừa rồi. Nếu đéo làm xong, đó *CHÍNH LÀ* topic của buổi retro tuần này. Sự bó buộc vào đúng 1 item sẽ ép team phải ưu tiên cực độ.
+
+2. **Đảo ngược — Giết mẹ cái meeting đi:** Thay cái retro trực tiếp bằng đồ bất đồng bộ (async). Mỗi người viết cảm nhận của mình trong tuần. 1 ông thay phiên nhau làm Host sẽ tổng hợp ý chính và đề xuất ĐÚNG 1 thay đổi. Cái "meeting" lúc này chỉ là 15 phút standup để anh em gật hoặc lắc. Cược: Viết ra chữ sẽ khiến người ta thành thật hơn là mở mồm nói trước đám đông.
+
+3. **Đổi Target Audience — Retro cho Người Trầm Cảm:** Thiết kế cái format nhắm vào 4 ông đéo bao giờ mở mồm. Nộp topic ẩn danh. Bắn bi (Dot-voting) để vote độ ưu tiên. Chia nhóm nhỏ (từng cặp) thảo luận trước khi ném ra hội trường. Mấy con giời ồn ào vẫn được gáy, nhưng cấu trúc này sẽ khóa mõm không cho họ thao túng diễn đàn.
+
+4. **Tối giản — Retro 1 Câu Hỏi:** Mỗi buổi retro chỉ có ĐÚNG 1 câu hỏi, và nó đổi mỗi tuần. "Có 1 thứ gì đang kéo chân mày lại?" "Tuần rồi học được chiêu gì mà team nên biết?" "Nếu được đổi 1 thứ trong cách làm việc của anh em, mày sẽ đổi cái đéo gì?" Ràng buộc này ép người ta phải đào sâu (depth) thay vì hời hợt (breadth).
+
+5. **Lai tạp — Retro + Khảo nghiệm (Experimentation):** Coi mỗi cái đầu ra của retro như một giả thuyết. "Tụi tao tin rằng [cái thay đổi này] sẽ cải thiện [kết quả này]." Chạy nó như một thử nghiệm 2 tuần. Retro tiếp theo: Nó chạy ngon không? Giữ, sửa, hay dẹp? Biến cái retro thành một cỗ máy CI/CD cho quy trình với tính accountability (trách nhiệm giải trình) bám rễ tận răng.
+
+6. **Lăng kính Chuyên gia — Mấy Lão Facilitator Rành Nhất:** Mấy bậc thầy điều phối sẽ nói sát thủ số 1 giết chết retro đéo phải là format, mà là sự thiếu an toàn (lack of safety). Người ta đéo dám nói thật nếu sợ bị đì. Có thể giải pháp đéo nằm ở mặt cấu trúc — mà là phải bắt đầu bằng một cái form ẩn danh "Khám sức khỏe team" (chấm điểm 1-5) mỗi tuần. Khi team cảm thấy an toàn, retro tự khắc sẽ ngon.
+
+Sự mâu thuẫn thú vị ở đây: Biến thể 1 và 5 fix cái bài toán *Đầu ra* (action items phế võ công). Biến thể 2, 3, và 4 fix bài toán *Đầu vào* (vẫn mấy cái họng đó, vẫn mấy chủ đề đó). Biến thể 6 bảo cả 2 cái trên đều chỉ là triệu chứng của một căn bệnh trầm kha bên trong. Bạn nghĩ cái điểm nghẽn cổ chai (bottleneck) THỰC SỰ đang nằm ở đâu?
+
+---
+
+*Giai đoạn 2 sẽ đi vào đánh giá dựa trên: mức độ nỗ lực để thử (hầu hết đều free — chỉ cần đổi cách chạy meeting tuần tới là xong), độ rủi ro (biến thể 2 là cái thay đổi máu chó nhất), và xem cái ung nhọt thực sự của team là Đầu ra (action items ngỏm củ tỏi) hay Đầu vào (đéo dám nói thật).*
+
+*Giai đoạn 3 sẽ đẻ ra một bản document hoàn chỉnh bao gồm User Story (Là một thành viên trong team, tôi muốn có kết quả retro rõ ràng để cải thiện cách làm việc...), Business Context, Acceptance Criteria cho format meeting mới, Flow, Success Metrics (Tỷ lệ hoàn thành action items), và Technical Notes (nếu có).*
+
+---
+
+## Nên Học Được Gì Từ Các Ví Dụ Này
+
+1. **Trình bày lại (Restatement) để đổi khung tư duy.** "Giúp nhà hàng cạnh tranh" biến thành "giữ chân khách ruột". "Thêm real-time collaboration" biến thành "cho người ta cùng sửa doc mà không đập nhau". "Fix retro chán" biến thành "fix khâu đầu ra".
+
+2. **Hỏi để chẩn bệnh trước khi bốc thuốc.** Mỗi câu hỏi nhằm xác định xem đây *THỰC SỰ* là loại bệnh gì. Cái ví dụ Retro lòi ra vấn đề là đéo ai follow-up action items, chứ đéo phải là format chán — và điều đó thay đổi toàn bộ hướng đi.
+
+3. **Mỗi biến thể đều có Lý Do (Reasons).** Mỗi cái đều phải giải thích TẠI SAO nó đẻ ra được (đứng từ lăng kính nào), chứ đéo phải chỉ nói nó LÀ CÁI GÌ. Gắn nhãn (Đảo ngược, Tối giản, v.v.) sẽ đào tạo user tự nghĩ theo cách đó.
+
+4. **Skill phải CÓ QUAN ĐIỂM (Opinions).** "Tôi vote mạnh cho hướng 1 hoặc 3." "Biến thể 6 đáng để suy ngẫm." Nó phải phang thẳng vào mặt user thứ mà nó nghĩ là quan trọng và tại sao — chứ đéo phải đưa ra một rổ option ba phải.
+
+5. **Giai đoạn 2 phải THẬT LÒNG.** Đéo ngần ngại vạch mặt mấy ý tưởng ít khác biệt hoặc quá cồng kềnh. Skill sẵn sàng tát thẳng mặt: "ĐM, chính cái tư duy ráng nhét những thứ 'cần thiết' vào là nguyên nhân khiến các sản phẩm bị chệch hướng."
+
+6. **Đầu ra phải Hành động được (Actionable).** Cái document chốt hạ bằng những thứ bạn có thể *LÀM* (validate giả định, build MVP, chạy experiment), đéo phải những thứ để *NGẪM*.
+
+7. **Sự gò ép của các template đặc thù.** Bằng cách yêu cầu bắt buộc có Acceptance Criteria chuẩn BDD và Success Metrics cụ thể, kết quả đầu ra đảm bảo rằng mọi ý tưởng đều có thể đo lường và kiểm thử được, chứ không chỉ là những ước mơ viển vông.
+
+8. **Skill linh hoạt theo Context.** Với ví dụ có code (codebase-aware) thì nó phải móc nối vào architecture thật. Với ví dụ về quy trình thì nó đẻ ra experiment (thử nghiệm) zero-cost thay vì làm product. Bộ khung (framework) thì bất biến, nhưng kết quả đầu ra (output) thì uốn lượn theo từng domain.

@@ -1,113 +1,113 @@
-# Refinement & Evaluation Criteria
+# Tiêu chí Đánh giá & Mài giũa
 
-Use this rubric during Phase 2 (Evaluate & Converge) to stress-test idea directions. Not every criterion applies to every idea — use judgment about which dimensions matter most for the specific context.
+Sử dụng bảng tiêu chí này trong Giai đoạn 2 (Đánh giá & Hội tụ) để thử lửa (stress-test) các hướng ý tưởng. Không phải tiêu chí nào cũng áp dụng cho mọi ý tưởng — hãy dùng phán đoán xem khía cạnh nào quan trọng nhất cho bối cảnh cụ thể.
 
-## Core Evaluation Dimensions
+## Các Khía cạnh Đánh giá Cốt lõi
 
-### 1. User Value
+### 1. Giá trị Người dùng (User Value)
 
-The most important dimension. If the value isn't clear, nothing else matters.
+Khía cạnh quan trọng nhất. Nếu giá trị không rõ ràng, mọi thứ khác đều vô nghĩa.
 
-**Painkiller vs. Vitamin:**
-- **Painkiller:** Solves an acute, frequent problem. Users will actively seek this out. They'll switch from their current solution. Signs: people describe the problem with emotion, they've built workarounds, they'll pay for a solution.
-- **Vitamin:** Nice to have. Makes something marginally better. Users won't go out of their way. Signs: people nod politely, say "that's cool," then don't change behavior.
+**Thuốc giảm đau (Painkiller) vs. Vitamin:**
+- **Thuốc giảm đau:** Giải quyết một vấn đề nhức nhối, thường xuyên. Người dùng sẽ chủ động tìm kiếm nó. Họ sẽ từ bỏ giải pháp hiện tại để chuyển sang xài nó. Dấu hiệu: người ta nói về vấn đề với nhiều cảm xúc, họ phải tự chế ra các cách làm thủ công (workarounds), họ sẵn sàng trả tiền cho một giải pháp.
+- **Vitamin:** Có thì tốt (Nice to have). Làm cho thứ gì đó tốt hơn một chút xíu. Người dùng sẽ không tốn công chuyển đổi. Dấu hiệu: người ta gật gù lịch sự, khen "nghe hay đấy", rồi sau đó chả thay đổi hành vi mẹ gì.
 
-**Questions to ask:**
-- Can you name 3 specific people who have this problem right now?
-- What are they doing today instead? (The real competitor is always the current workaround.)
-- Would they switch from their current approach? What would make them switch?
-- How often do they encounter this problem? (Daily problems > monthly problems)
-- Is this a "pull" problem (users are asking for this) or a "push" problem (you think they should want this)?
+**Các câu hỏi cần đặt ra:**
+- Bạn có thể chỉ đích danh 3 người cụ thể đang gặp vấn đề này ngay lúc này không?
+- Hiện tại họ đang làm gì để giải quyết nó? (Đối thủ cạnh tranh thực sự luôn luôn là cái cách làm thủ công hiện tại).
+- Họ có chịu từ bỏ cách làm hiện tại không? Điều gì sẽ khiến họ chuyển đổi?
+- Họ gặp vấn đề này với tần suất thế nào? (Vấn đề hàng ngày > vấn đề hàng tháng).
+- Đây là bài toán dạng "pull" (người dùng đang kêu gào đòi hỏi) hay dạng "push" (bạn tự nghĩ là họ sẽ cần)?
 
-**Red flags:**
-- "Everyone could use this" — if you can't name a specific user, the value isn't clear
-- "It's like X but better" — marginal improvements rarely drive adoption
-- The problem is real but rare — high intensity but low frequency rarely justifies a product
+**Cờ Đỏ (Red flags):**
+- "Ai cũng có thể dùng cái này" — nếu không gọi tên được một tập user cụ thể, giá trị là không rõ ràng.
+- "Nó giống cái X nhưng tốt hơn" — những cải tiến nhỏ giọt hiếm khi khiến người dùng chuyển đổi.
+- Vấn đề là có thật nhưng rất hiếm khi xảy ra — cường độ cao nhưng tần suất thấp thì hiếm khi đáng để xây thành một sản phẩm.
 
-### 2. Feasibility
+### 2. Độ Khả thi (Feasibility)
 
-Can you actually build this? Not just technically, but practically.
+Bạn có THỰC SỰ xây được cái này không? Không chỉ về mặt kỹ thuật, mà là trong thực tế.
 
-**Technical feasibility:**
-- Does the core technology exist and work reliably?
-- What's the hardest technical problem? Is it a known-hard problem or a novel one?
-- Are there dependencies on third parties, APIs, or data sources you don't control?
-- What's the minimum technical stack needed? (If the answer is "a lot," that's a signal.)
+**Khả thi về kỹ thuật (Technical feasibility):**
+- Công nghệ lõi đã tồn tại và hoạt động ổn định chưa?
+- Bài toán kỹ thuật khoai nhất là gì? Đó là một bài toán khó đã biết cách giải, hay là một bài toán mới toanh?
+- Có bị phụ thuộc vào bên thứ 3, API, hay nguồn dữ liệu nào mà mình đéo kiểm soát được không?
+- Tech stack tối thiểu cần có là gì? (Nếu câu trả lời là "cần rất nhiều thứ", đó là một dấu hiệu cảnh báo).
 
-**Resource feasibility:**
-- What's the minimum team/effort to build an MVP?
-- Does it require specialized expertise you don't have?
-- Are there regulatory, legal, or compliance requirements?
+**Khả thi về nguồn lực (Resource feasibility):**
+- Team tối thiểu / effort tối thiểu để ra được MVP là bao nhiêu?
+- Có cần chuyên môn đặc thù nào mà team đang thiếu không?
+- Có vướng mắc gì về quy định, pháp lý hay tuân thủ (compliance) không?
 
-**Time-to-value:**
-- How quickly can you get something in front of users?
-- Is there a version that delivers value in days/weeks, not months?
-- What's the critical path? What has to happen first?
+**Thời gian ra giá trị (Time-to-value):**
+- Bao lâu thì có thể mang một cái gì đó ra cho người dùng dùng thử?
+- Có phiên bản nào mang lại giá trị trong vài ngày/tuần thay vì vài tháng không?
+- Đâu là con đường trọng yếu (critical path)? Việc gì bắt buộc phải xảy ra đầu tiên?
 
-**Red flags:**
-- "We just need to solve [very hard research problem] first"
-- Multiple dependencies that all need to work simultaneously
-- MVP still requires months of work — likely not minimal enough
+**Cờ Đỏ (Red flags):**
+- "Chúng ta chỉ cần giải quyết xong [bài toán research cực khó] trước đã"
+- Phụ thuộc vào quá nhiều thứ cần phải hoàn thành cùng một lúc
+- MVP mà vẫn đòi hỏi làm mất vài tháng — khả năng cao là chưa đủ "tối thiểu" (minimal).
 
-### 3. Differentiation
+### 3. Sự Khác Biệt (Differentiation)
 
-What makes this genuinely different? Not better — *different*.
+Cái đéo gì làm cho ý tưởng này thực sự khác bọt? Không phải tốt hơn — mà là *khác biệt*.
 
-**Questions to ask:**
-- If a user described this to a friend, what would they say? Is that description compelling?
-- What's the one thing this does that nothing else does? (If you can't name one, that's a problem.)
-- Is this differentiation durable? Can a competitor copy it in a week?
-- Is the difference something users actually care about, or just something builders find interesting?
+**Các câu hỏi cần đặt ra:**
+- Nếu một user mô tả cái này cho bạn bè, họ sẽ nói gì? Lời mô tả đó nghe có hấp dẫn không?
+- Đâu là MỘT thứ mà cái này làm được trong khi đéo có thằng nào khác làm được? (Nếu không kể ra được 1 thứ, đó là vấn đề).
+- Sự khác biệt này có bền vững không? Đối thủ có copy được nó trong 1 tuần không?
+- Sự khác biệt này có phải là thứ người dùng THỰC SỰ quan tâm, hay chỉ là thứ mấy ông builder thấy thú vị?
 
-**Types of differentiation (strongest to weakest):**
-1. **New capability:** Does something that was previously impossible
-2. **10x improvement:** So much better on a key dimension that it changes behavior
-3. **New audience:** Brings an existing capability to people who were excluded
-4. **New context:** Works in a situation where existing solutions fail
-5. **Better UX:** Same capability, dramatically simpler experience
-6. **Cheaper:** Same thing, lower cost (weakest — easily competed away)
+**Các cấp độ Khác biệt (từ mạnh nhất đến yếu nhất):**
+1. **Năng lực mới toanh (New capability):** Làm được việc mà trước đây bất khả thi.
+2. **Cải tiến x10 (10x improvement):** Tốt hơn vượt bậc ở một khía cạnh trọng yếu khiến hành vi người dùng phải thay đổi.
+3. **Tệp khách hàng mới (New audience):** Mang một tính năng sẵn có đến cho những người trước giờ bị ngó lơ.
+4. **Bối cảnh mới (New context):** Hoạt động được ở những tình huống mà các giải pháp hiện tại bó tay.
+5. **UX Tốt hơn (Better UX):** Cùng tính năng, nhưng trải nghiệm đơn giản hơn đáng kể.
+6. **Rẻ hơn (Cheaper):** Y hệt, nhưng giá thấp hơn (Cấp độ yếu nhất — rất dễ bị đối thủ đạp giá theo).
 
-**Red flags:**
-- Differentiation is entirely about technology, not user experience
-- "We're faster/cheaper/prettier" without a structural reason why
-- The feature that differentiates is not the feature users care most about
+**Cờ Đỏ (Red flags):**
+- Sự khác biệt chỉ nằm ở mặt công nghệ, đéo liên quan gì đến trải nghiệm người dùng.
+- "Chúng ta nhanh hơn/rẻ hơn/đẹp hơn" mà đéo có lý do nền tảng tại sao lại làm được thế.
+- Cái tính năng tạo nên sự khác biệt lại đéo phải là tính năng người dùng quan tâm nhất.
 
-## Assumption Audit
+## Kiểm toán Giả định (Assumption Audit)
 
-For every idea direction, explicitly list assumptions in three categories:
+Với mỗi hướng ý tưởng, hãy liệt kê rõ ràng các giả định thành 3 nhóm:
 
-### Must Be True (Dealbreakers)
-Assumptions that, if wrong, kill the idea entirely. These need validation before building.
+### BẮT BUỘC Phải Đúng (Must Be True / Dealbreakers)
+Những giả định mà nếu sai, ý tưởng sẽ chết giãy đành đạch. Bọn này cần được test TRƯỚC KHI code.
 
-Example: "Users will share their data with us" — if they won't, the entire product doesn't work.
+Ví dụ: "Người dùng sẽ chịu chia sẻ dữ liệu của họ cho chúng ta" — nếu họ đéo chịu, toàn bộ sản phẩm vô dụng.
 
-### Should Be True (Important)
-Assumptions that significantly impact success but don't kill the idea. You can adjust the approach if these are wrong.
+### NÊN Đúng (Should Be True / Important)
+Những giả định có ảnh hưởng lớn đến thành công nhưng đéo làm chết ý tưởng. Bạn có thể điều chỉnh cách tiếp cận nếu bọn này sai.
 
-Example: "Users prefer self-serve over talking to a person" — if wrong, you need a different go-to-market, but the core product can still work.
+Ví dụ: "Người dùng thích tự dùng (self-serve) hơn là phải nói chuyện với nhân viên" — nếu sai, bạn đổi cách go-to-market, core product vẫn sống nhăn răng.
 
-### Might Be True (Nice to Have)
-Assumptions about secondary features or optimizations. Don't validate these until the core is proven.
+### CÓ THỂ Đúng (Might Be True / Nice to Have)
+Giả định về các tính năng phụ hoặc tối ưu hóa. Đừng cắm đầu vào test bọn này cho đến khi cái lõi đã được chứng minh.
 
-Example: "Users will want to share their results with teammates" — a growth feature, not a core value proposition.
+Ví dụ: "Người dùng sẽ muốn share kết quả cho đồng nghiệp" — đây là tính năng growth, đéo phải giá trị cốt lõi.
 
-## Decision Framework
+## Ma trận Ra quyết định (Decision Framework)
 
-When choosing between directions, rank on this matrix:
+Khi phải chọn giữa nhiều hướng đi, hãy xếp hạng chúng lên ma trận này:
 
-|                    | High Feasibility | Low Feasibility |
-|--------------------|-------------------|-----------------|
-| **High Value**     | Do this first     | Worth the risk   |
-| **Low Value**      | Only if trivial   | Don't do this    |
+|                    | Khả thi Cao (High Feasibility) | Khả thi Thấp (Low Feasibility) |
+|--------------------|---------------------------------|---------------------------------|
+| **Giá trị Cao**    | Ưu tiên làm luôn (Do this first)| Đáng để đánh cược (Worth the risk)|
+| **Giá trị Thấp**   | Chỉ làm nếu cực dễ (Trivial)    | BỎ ĐI (Don't do this)           |
 
-Then use differentiation as the tiebreaker between options in the same quadrant.
+Sau đó, dùng *Sự khác biệt (Differentiation)* làm tiêu chí phá vỡ thế hòa (tiebreaker) nếu có 2 option nằm chung một ô.
 
-## MVP Scoping Principles
+## Nguyên tắc Lên Tài liệu & Xác định Phạm vi (Documentation & Scoping Principles)
 
-When defining MVP scope for the chosen direction:
+Khi chốt lại yêu cầu cuối cùng cho hướng đi đã chọn:
 
-1. **One job, done well.** The MVP should nail exactly one user job. Not three jobs done partially.
-2. **The riskiest assumption first.** The MVP's primary purpose is to test the assumption most likely to be wrong.
-3. **Time-box, not feature-list.** "What can we build and test in [timeframe]?" is better than "What features do we need?"
-4. **The 'Not Doing' list is mandatory.** Explicitly name what you're cutting and why. This prevents scope creep and forces honest prioritization.
-5. **If it's not embarrassing, you waited too long.** The first version should feel incomplete to the builder. If it doesn't, you over-built.
+1. **Một User Story rõ ràng.** Tính năng phải phục vụ một user (role) cụ thể, nêu rõ mục tiêu và có giá trị kinh doanh đéo thể chối cãi. Đừng viết story gộp cho nhiều role không liên quan.
+2. **Acceptance Criteria Test được.** BẮT BUỘC DÙNG định dạng BDD (Given/When/Then) để đảm bảo logic nghiệp vụ có thể verify được mà không áp đặt giải pháp kỹ thuật.
+3. **Thành công Đo lường được.** Định nghĩa các Chỉ số Thành công (Success Metrics - Hiện tại vs Mục tiêu) chính xác và cách tracking chúng (Events/Dashboards). "Mọi người sẽ thích nó" đéo phải là một metric.
+4. **Luồng User Flow đi trước.** Luôn vạch ra User Flow hoặc đính kèm thiết kế prototype trước khi đụng vào code. Phải hiểu rõ chuỗi hành động từng bước một.
+5. **Ranh giới Kỹ thuật rạch ròi.** Dùng mục Technical Notes để làm nổi bật các ràng buộc, các API bị phụ thuộc, và kế hoạch rollout, giữ cho phần logic business luôn sạch sẽ.

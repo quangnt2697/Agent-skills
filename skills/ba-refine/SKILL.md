@@ -29,12 +29,13 @@ bash skills/idea-refine/scripts/idea-refine.sh
 
 ## Đầu Ra (Output)
 
-Sản phẩm cuối cùng là một bản tóm tắt markdown 1 trang (one-pager) được lưu vào `docs/ideas/[tên-ý-tưởng].md` (sau khi người dùng đã gật đầu đồng ý), bao gồm:
-- Tuyên bố Bài toán (Problem Statement)
-- Hướng đi Được Đề xuất (Recommended Direction)
-- Các Giả định Mấu chốt (Key Assumptions)
-- Phạm vi MVP (MVP Scope)
-- Danh sách ĐÉO LÀM (Not Doing list)
+Sản phẩm cuối cùng là một bản tài liệu markdown tổng hợp được lưu vào `docs/ideas/[tên-ý-tưởng].md` (sau khi người dùng đã gật đầu đồng ý), bao gồm đầy đủ các mục:
+- 🧩 User Story
+- 💼 Business Context
+- ✅ Acceptance Criteria
+- 🎨 User Flow / Design
+- ☀️ Success Criteria & Tracking
+- 🧱 Technical Notes
 
 ## Hướng dẫn Chi tiết (Detailed Instructions)
 
@@ -45,7 +46,7 @@ Bạn là một đối tác tư duy (ideation partner). Nhiệm vụ của bạn
 - Sự đơn giản là đỉnh cao của sự tinh tế. Hãy ép (Push) nó về cái phiên bản đơn giản nhất có thể mà vẫn giải quyết được cái vấn đề lõi.
 - Bắt đầu từ Trải nghiệm người dùng (user experience), rồi mới suy ngược lại về mặt Công nghệ (technology).
 - Dám nói KHÔNG với 1,000 thứ khác. Sự Tập trung (Focus) luôn chiến thắng Sự Dàn trải (breadth).
-- Thách thức MỌI giả định. Câu nói "Xưa nay người ta vẫn làm thế" đéo phải là một lý do hợp lệ.
+- Thách thức MỌI giả định. Câu nói "Xưa nay người ta vẫn làm thế" KHÔNG phải là một lý do hợp lệ.
 - Hãy cho người ta thấy Tương lai — đừng chỉ đưa cho họ một con ngựa chạy nhanh hơn.
 - Những đoạn code chìm đằng sau mà không ai thấy cũng phải đẹp đẽ y hệt cái giao diện phô ra bên ngoài.
 
@@ -59,16 +60,15 @@ Khi người dùng kích hoạt kỹ năng này cùng với một ý tưởng (`
 
 1. **Trình bày lại ý tưởng** dưới dạng một câu Tuyên bố Bài toán "Chúng Ta Có Thể Làm Cách Nào" (How Might We) thật sắc bén. Trò này sẽ ép chúng ta phải làm rõ xem RỐT CỤC là đang muốn giải quyết cái đéo gì.
 
-2. **Đặt ra 3-5 câu hỏi xoáy (sharpening questions)** — Không được nhiều hơn. Xoáy sâu vào:
-   - Cụ thể thì cái này LÀ DÀNH CHO AI?
-   - Thế nào gọi là Thành Công?
-   - Các Ràng buộc THỰC SỰ là gì (thời gian, công nghệ, con người)?
-   - Người ta đã từng thử làm cái này chưa?
-   - Tại sao lại là BÂY GIỜ?
-   - **(Với domain Tài chính/Ngân hàng)** Các yêu cầu tuân thủ (Pháp lý/Bảo mật) là gì và quy trình xử lý quyền riêng tư dữ liệu (data privacy) như thế nào?
-   - **(Với domain Tài chính/Ngân hàng)** Giới hạn kỳ vọng về độ trễ (latency) và khả năng xử lý đồng thời (concurrency) của các giao dịch (transactions) là bao nhiêu?
+2. **Làm rõ các thành phần cốt lõi của Sản phẩm** thông qua việc đặt câu hỏi xoáy cho user. Bắt buộc phải đào sâu để làm rõ các mục sau:
+   - **User Story:** Cụ thể tính năng này LÀ DÀNH CHO AI? (Role phải chi tiết, vd: KH giao dịch Margin). Họ muốn đạt được gì? TẠI SAO điều đó quan trọng mang lại business value gì?
+   - **Business Context:** Nhu cầu kinh doanh cốt lõi đằng sau là gì? Tại sao lại là BÂY GIỜ?
+   - **Acceptance Criteria:** Tiêu chí nghiệm thu dưới góc nhìn nghiệp vụ là gì? (Chuẩn bị để viết BDD Given-When-Then).
+   - **User Flow & UI:** Tính năng này có thay đổi UI không? Flow thao tác thế nào?
+   - **Success Criteria & Tracking:** Thế nào gọi là Thành Công? Chỉ số đo lường (Metrics) và event tracking là gì?
+   - **Technical Notes:** Các ràng buộc về kỹ thuật, API, Database, tính tuân thủ pháp lý/bảo mật, hay độ trễ (latency) là gì?
 
-   Dùng công cụ `AskUserQuestion` để thu thập câu trả lời. TUYỆT ĐỐI KHÔNG BƯỚC TIẾP cho tới khi bạn đã THỰC SỰ HIỂU nó dành cho ai và định nghĩa thành công của nó là gì.
+   Dùng công cụ `AskUserQuestion` để thu thập câu trả lời. TUYỆT ĐỐI KHÔNG BƯỚC TIẾP cho tới khi bạn đã THỰC SỰ HIỂU rõ tất cả các khía cạnh trên.
 
 3. **Đẻ ra 5-8 biến thể ý tưởng (idea variations)** dựa trên các lăng kính sau:
    - **Đảo ngược (Inversion):** "Nếu chúng ta làm điều NGƯỢC LẠI hoàn toàn thì sao?"
@@ -110,35 +110,70 @@ Sau khi user đã phản hồi lại đống ý tưởng ở Giai đoạn 1 (ch�
 
 #### Giai đoạn 3: Mài sắc & Chốt hạ (Phase 3: Sharpen & Ship)
 
-Ói ra một cái tạo tác (artifact) cụ thể — một bản tóm tắt markdown 1-trang giúp đẩy nhanh tiến độ công việc:
+Ói ra một cái tạo tác (artifact) cụ thể — một bản tài liệu markdown tổng hợp giúp đẩy nhanh tiến độ công việc, tuân thủ NGHIÊM NGẶT bố cục sau:
 
 ```markdown
-# [Tên Ý tưởng]
+# [Tên Tính năng / Ý tưởng]
 
-## Tuyên bố Bài toán (Problem Statement)
-[Đóng khung bài toán bằng 1 câu "Chúng Ta Có Thể Làm Cách Nào" (How Might We)]
+## 🧩 User Story (Required) 📖 
+As a [Tập người dùng cụ thể, KHÔNG DÙNG role chung chung]
+I want [Mục tiêu muốn đạt được, KHÔNG MÔ TẢ giải pháp kỹ thuật]
+So that [Giá trị kinh doanh/Giá trị người dùng mang lại]
 
-## Hướng đi Được Đề xuất (Recommended Direction)
-[Chốt lại hướng đi đã chọn và TẠI SAO lại chọn nó — Tối đa 2-3 đoạn văn]
+## 💼 Business Context (Required) 📖 
+[Mô tả ngắn gọn vấn đề hoặc nhu cầu kinh doanh cần giải quyết]
 
-## Các Giả định Mấu chốt cần Kiểm chứng (Key Assumptions to Validate)
-- [ ] [Giả định 1 — cách test nó]
-- [ ] [Giả định 2 — cách test nó]
-- [ ] [Giả định 3 — cách test nó]
+## ✅ Acceptance Criteria (Required) 📖 
+[Viết dưới góc nhìn nghiệp vụ, có thể kiểm thử được. Không mô tả giải pháp kỹ thuật]
 
-## Phạm vi MVP (MVP Scope)
-[Phiên bản TỐI THIỂU NHẤT để test được cái giả định cốt lõi. Cái gì LÀM, cái gì KHÔNG LÀM.]
+Feature: [Business Feature]
 
-## DANH SÁCH ĐÉO LÀM (và Tại sao) (Not Doing)
-- [Thứ 1] — [Lý do đéo làm]
-- [Thứ 2] — [Lý do đéo làm]
-- [Thứ 3] — [Lý do đéo làm]
+Scenario: [Business Scenario]
+  Given ...
+  When ...
+  Then ...
 
-## Các Câu hỏi Còn Đang Bỏ Ngỏ (Open Questions)
-- [Những câu hỏi BẮT BUỘC PHẢI TRẢ LỜI ĐƯỢC trước khi bắt tay vào code]
+## 🎨 User Flow / Design (Required if UI change) 📖 
+[Đính kèm User Flow (vẽ tay, Flow Chart hoặc Figma) và Design (Figma/Prototype) nếu có thay đổi UI]
+
+### User Flow
+...
+
+### Design
+...
+
+## ☀️ Success Criteria & Tracking (Required) 📖 
+
+### Success Metrics
+| Metric | Current | Target |
+|--------|---------|--------|
+| ...    | ...     | ...    |
+
+### Tracking
+| Event | Dashboard / Report |
+|-------|--------------------|
+| ...   | ...                |
+
+## 🧱 Technical Notes (Optional) 
+[Thông tin kỹ thuật tham khảo. Không thay thế Acceptance Criteria]
+
+- **API / Service:** ...
+- **Database:** ...
+- **Event / Message:** ...
+- **Dependency:** ...
+- **Migration / Rollout:** ...
 ```
 
-**Cái danh sách "ĐÉO LÀM" (Not Doing) có khi lại là cái phần giá trị nhất của cái file này.** Sự tập trung (Focus) là khả năng dám nói KHÔNG với những ý tưởng Rất Hay. Hãy làm cho những sự đánh đổi (trade-offs) hiện nguyên hình một cách rõ ràng.
+**Quy tắc CỐT LÕI khi viết User Story:**
+- **DO:**
+  - Role phải cực kỳ CỤ THỂ, RÕ RÀNG (VD: Là khách hàng giao dịch cổ phiếu có dùng Margin).
+  - Tập trung vào mục tiêu và giá trị. Đọc hiểu được luôn không cần tài liệu kỹ thuật.
+- **DON'T:**
+  - KHÔNG ghi chung chung kiểu "Là khách hàng tôi muốn...". KHÔNG gộp nhiều role vào 1 story.
+  - KHÔNG viết như 1 Task (VD: "Thêm nút Export PDF").
+  - KHÔNG mô tả giải pháp (VD: "Hệ thống gọi API...").
+  - KHÔNG nhét Business Rules hay Acceptance Criteria vào câu User Story.
+- **Definition of Done:** User Story tốt phải trả lời được: Ai cần? Muốn gì? Giá trị kinh doanh/người dùng là gì?
 
 Hỏi user xem họ có muốn lưu cái file này vào `docs/ideas/[tên-ý-tưởng].md` (hoặc vào chỗ nào họ thích) không. CHỈ ĐƯỢC LƯU khi họ gật đầu cái rụp.
 
@@ -164,7 +199,7 @@ Hỏi user xem họ có muốn lưu cái file này vào `docs/ideas/[tên-ý-tư
 - Lờ tịt đi câu hỏi "Cái này rốt cục là Xây cho Ai?".
 - Đéo lôi ra được tí Giả định (assumptions) nào mà đã vội cắm đầu vào chốt hướng đi.
 - Hùa theo nịnh hót (Yes-machining) mấy cái ý tưởng như lồn thay vì đập lại bằng những lập luận sắc bén (specificity).
-- Đẻ ra cái plan mà quên mẹ mất cái danh sách "ĐÉO LÀM" (Not Doing list).
+- Đẻ ra cái plan mà quên mẹ mất phần User Flow, Tracking hoặc không có định nghĩa Success Criteria rõ ràng.
 - Đứng múa ideate trong project mà ỉa mẹ lên đống ràng buộc (constraints) của cái codebase hiện tại.
 - Lười biếng nhảy cóc thẳng sang Output của Giai đoạn 3 mà đéo thèm chạy Giai đoạn 1 và 2.
 
@@ -175,7 +210,7 @@ Sau khi chạy xong một cuốc (session) Lên Ý tưởng:
 - [ ] Đã có 1 cái Tuyên bố Bài toán "Chúng Ta Có Thể Làm Cách Nào" (How Might We) trong vắt.
 - [ ] Chân dung User Mục tiêu và Tiêu chí Thành công đã được đóng đinh.
 - [ ] Đã mổ xẻ băm vằm NHIỀU hướng đi (directions) khác nhau, chứ đéo phải chỉ bám lấy cái ý tưởng gốc đầu tiên.
-- [ ] Lôi cổ đống Giả định ẩn (Hidden assumptions) ra ánh sáng, kèm theo cả chiến lược để Test chúng nó.
-- [ ] Phải có danh sách "ĐÉO LÀM" (Not Doing list) ghi rõ ràng những gì phải đánh đổi (trade-offs).
+- [ ] Có đầy đủ Acceptance Criteria dưới định dạng BDD, testable.
+- [ ] Phải có định nghĩa Success Metrics rõ ràng.
 - [ ] Cục Output phải là một cái tạo tác Cụ Thể (bản markdown one-pager), chứ đéo phải chỉ là dăm ba câu chat vu vơ.
 - [ ] User ĐÃ GẬT ĐẦU chốt cái hướng đi cuối cùng TRƯỚC KHI bắt tay vào viết bất kỳ dòng code nào.

@@ -38,7 +38,7 @@ Agent nhận đường dẫn file (VD: file API Controller hoặc Router) từ $
      5. **WebSocket (Nếu có):** Cấu trúc gói tin Broadcast, Ping/Pong interval, cơ chế Reconnect nằm trong Socket Manager.
 
 ### Bước 2: Gap Analysis (Tìm góc khuất)
-Từ đống logic thu thập được, đối chiếu với các nguyên tắc cơ bản của domain Tài chính - Ngân hàng:
+Từ đống logic thu thập được, đối chiếu với các nguyên tắc cơ bản của domain Chứng khoán - Tài chính - Ngân hàng:
 - Code có thiếu kiểm tra số dư (Balance check) trước khi trừ tiền không?
 - Có chặn giao dịch số âm không?
 - Có Rate limit hay Idempotency key chống double-spending không?

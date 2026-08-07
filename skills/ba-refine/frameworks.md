@@ -1,99 +1,99 @@
-# Ideation Frameworks Reference
+# Tài liệu Tham khảo: Khung Tư duy Lên Ý tưởng (Ideation Frameworks)
 
-Use these frameworks selectively. Pick the lens that fits the idea — don't mechanically run every framework. The goal is to unlock thinking, not to follow a checklist.
+Sử dụng các framework này một cách có chọn lọc. Hãy chọn ra lăng kính (lens) nào phù hợp với ý tưởng — đừng máy móc chạy từ trên xuống dưới như cái check-list. Mục tiêu là để khơi thông bế tắc trong tư duy, đéo phải là để trả bài.
 
 ## SCAMPER
 
-A structured way to transform an existing idea by applying seven different operations:
+Một phương pháp có cấu trúc để biến đổi một ý tưởng có sẵn thông qua 7 thao tác:
 
-- **Substitute:** What component, material, or process could you swap out? What if you replaced the core technology? The target audience? The business model?
-- **Combine:** What if you merged this with another product, service, or idea? What two things that don't usually go together would create something new?
-- **Adapt:** What else is like this? What ideas from other industries, domains, or time periods could you borrow? What parallel exists in nature?
-- **Modify (Magnify/Minimize):** What if you made it 10x bigger? 10x smaller? What if you exaggerated one feature? What if you stripped it to the absolute minimum?
-- **Put to other uses:** Who else could use this? What other problems could it solve? What happens if you use it in a completely different context?
-- **Eliminate:** What happens if you remove a feature entirely? What's the version with zero configuration? What would it look like with half the steps?
-- **Reverse/Rearrange:** What if you did the steps in the opposite order? What if the user did the work instead of the system (or vice versa)? What if you reversed the value chain?
+- **Substitute (Thay thế):** Có thể tráo đổi thành phần, vật liệu, hoặc quy trình nào? Sẽ ra sao nếu thay cái core tech? Thay target audience? Thay business model?
+- **Combine (Gộp lại):** Sẽ ra sao nếu gộp cái này với một sản phẩm, dịch vụ hoặc ý tưởng khác? Hai thứ đéo liên quan gì đến nhau gộp lại sẽ ra cái gì mới?
+- **Adapt (Thích nghi/Vay mượn):** Có cái gì khác na ná như vầy không? Có thể vay mượn ý tưởng nào từ các ngành khác, domain khác, hay thời đại khác? Có cái gì trong tự nhiên hoạt động giống vậy không?
+- **Modify (Biến đổi - Phóng to/Thu nhỏ):** Sẽ ra sao nếu làm nó To gấp 10 lần? Nhỏ đi 10 lần? Sẽ ra sao nếu phóng đại 1 tính năng lên tới nóc? Sẽ ra sao nếu lột sạch sành sanh chỉ giữ lại cái cốt lõi tối thiểu nhất?
+- **Put to other uses (Dùng cho việc khác):** Ai khác có thể xài cái này? Nó có thể giải quyết được bài toán nào khác? Sẽ ra sao nếu đem nó sang một bối cảnh (context) hoàn toàn khác?
+- **Eliminate (Loại bỏ):** Sẽ ra sao nếu xóa xổ mẹ luôn một tính năng? Phiên bản "Đéo cần config gì cả" trông sẽ như nào? Nó sẽ ra sao nếu chỉ cần 1 nửa số bước thao tác so với hiện tại?
+- **Reverse/Rearrange (Đảo ngược/Sắp xếp lại):** Sẽ ra sao nếu làm các bước theo thứ tự NGƯỢC LẠI hoàn toàn? Sẽ ra sao nếu user tự làm thay vì hệ thống làm (hoặc ngược lại)? Sẽ ra sao nếu đảo ngược chuỗi giá trị?
 
-**Best for:** Improving or reimagining existing products/features. Less useful for greenfield ideas.
+**Tốt nhất cho:** Cải tiến hoặc tái hình dung các sản phẩm/tính năng đang có. Ít tác dụng với các ý tưởng mới toanh (greenfield).
 
-## How Might We (HMW)
+## How Might We (HMW) - "Chúng Ta Có Thể Làm Cách Nào"
 
-Reframe problems as opportunities using the "How Might We..." format:
+Đóng khung lại vấn đề thành các cơ hội bằng mẫu câu "Chúng ta có thể làm cách nào...":
 
-- Start with an observation or pain point
-- Reframe it as "How might we [desired outcome] for [specific user] without [key constraint]?"
-- Generate multiple HMW framings of the same problem — different framings unlock different solutions
+- Bắt đầu từ một quan sát hoặc một nỗi đau (pain point).
+- Đóng khung nó lại thành: "Chúng ta có thể làm cách nào để [kết quả mong muốn] cho [user cụ thể] mà không [ràng buộc cốt lõi]?"
+- Đẻ ra nhiều góc nhìn HMW cho CÙNG 1 vấn đề — mỗi góc nhìn sẽ mở khóa một tập hợp giải pháp khác nhau.
 
-**Good HMW qualities:**
-- Narrow enough to be actionable ("...help new users find relevant content in their first 5 minutes")
-- Broad enough to allow creative solutions (not "...add a recommendation sidebar")
-- Contains a tension or constraint that forces creativity
+**Đặc điểm của một câu HMW Tốt:**
+- Đủ hẹp để có thể hành động ("...giúp người dùng mới tìm thấy content phù hợp trong 5 phút đầu tiên")
+- Đủ rộng để cho phép các giải pháp sáng tạo bay bổng (chứ không phải "...thêm một cái sidebar gợi ý")
+- Có chứa một sự căng thẳng hoặc ràng buộc để ép phải sáng tạo.
 
-**Bad HMW qualities:**
-- Too broad: "How might we make users happy?"
-- Too narrow: "How might we add a button to the settings page?"
-- Solution-embedded: "How might we build a chatbot for support?"
+**Đặc điểm của một câu HMW Rác rưởi:**
+- Quá rộng: "Làm sao để user cảm thấy vui?"
+- Quá hẹp: "Làm sao để thêm một cái nút bấm vào trang setting?"
+- Nhét mẹ luôn giải pháp vào câu hỏi: "Làm sao để xây một con chatbot cho support?"
 
-**Best for:** Reframing stuck thinking. When someone is anchored on a solution, pull them back to the problem.
+**Tốt nhất cho:** Giải phóng những luồng tư duy đang bị kẹt. Khi có ai đó đang bị dính chặt vào 1 giải pháp, hãy kéo họ quay về với cái vấn đề.
 
-## First Principles Thinking
+## Tư duy Từ Nguyên lý Cốt lõi (First Principles Thinking)
 
-Break the idea down to its fundamental truths, then rebuild from there:
+Đập vụn ý tưởng xuống tận cùng những sự thật nền tảng nhất, rồi xây lại từ đầu:
 
-1. **What do we know is true?** (not assumed, not conventional — actually true)
-2. **What are we assuming?** List every assumption, even the ones that feel obvious
-3. **Which assumptions can we challenge?** For each, ask: "Is this actually a law of physics, or just how it's been done?"
-4. **Rebuild from the truths.** If you only had the fundamental truths, what would you build?
+1. **Chúng ta ĐANG BIẾT cái đéo gì là SỰ THẬT?** (không phải giả định, không phải thói quen — mà là sự thật hiển nhiên).
+2. **Chúng ta đang MẶC ĐỊNH (assuming) điều gì?** Liệt kê MỌI giả định ra, kể cả những thứ nghe có vẻ hiển nhiên nhất.
+3. **Giả định nào có thể bị đạp đổ?** Với từng cái, hãy hỏi: "Cái này là định luật vật lý bất biến, hay chỉ là do xưa nay người ta vẫn làm thế?"
+4. **Xây lại từ Sự thật.** Nếu bạn chỉ có trong tay những Sự thật cốt lõi, bạn sẽ xây cái gì?
 
-**Best for:** Breaking out of incremental thinking. When every idea feels like a small improvement on the status quo.
+**Tốt nhất cho:** Thoát khỏi tư duy lối mòn (incremental thinking). Dùng khi mọi ý tưởng đẻ ra đều chỉ giống như một bản vá lỗi cho hiện tại.
 
-## Jobs to Be Done (JTBD)
+## Jobs to Be Done (JTBD) - Việc Cần Được Hoàn Thành
 
-Focus on what the user is trying to accomplish, not what they say they want:
+Tập trung vào thứ mà người dùng ĐANG CỐ GẮNG ĐẠT ĐƯỢC, chứ đéo phải thứ họ NÓI là họ muốn:
 
-- **Functional job:** What task are they trying to complete?
-- **Emotional job:** How do they want to feel?
-- **Social job:** How do they want to be perceived?
+- **Việc Chức năng (Functional job):** Họ đang cố gắng hoàn thành cái task mẹ gì?
+- **Việc Cảm xúc (Emotional job):** Họ muốn CẢM THẤY như thế nào?
+- **Việc Xã hội (Social job):** Họ muốn ĐƯỢC NHÌN NHẬN như thế nào trong mắt người khác?
 
-Format: "When I [situation], I want to [motivation], so I can [expected outcome]."
+**Cú pháp:** "Khi tôi [tình huống], tôi muốn [động lực], để tôi có thể [kết quả kỳ vọng]."
 
-**Key insight:** People don't buy products — they hire them to do a job. The competing product isn't always in the same category. (Netflix competes with sleep, not just other streaming services.)
+**Insight then chốt:** Người ta không mua sản phẩm — họ THUÊ (hire) sản phẩm để hoàn thành một CÔNG VIỆC. Đối thủ cạnh tranh không phải lúc nào cũng nằm cùng một ngành. (Netflix cạnh tranh với Giấc ngủ, chứ không chỉ cạnh tranh với các app xem phim khác).
 
-**Best for:** Understanding the real problem. When you're not sure if you're solving the right thing.
+**Tốt nhất cho:** Hiểu được bài toán thực sự. Dùng khi bạn đéo chắc là mình đang giải đúng bài toán hay không.
 
-## Constraint-Based Ideation
+## Tư duy Bức ép bằng Ràng buộc (Constraint-Based Ideation)
 
-Deliberately impose constraints to force creative solutions:
+Cố tình tự trói tay trói chân bằng các ràng buộc để ép bộ não phải sáng tạo:
 
-- **Time constraint:** "What if you only had 1 day to build this?"
-- **Feature constraint:** "What if it could only have one feature?"
-- **Tech constraint:** "What if you couldn't use [the obvious technology]?"
-- **Cost constraint:** "What if it had to be free forever?"
-- **Audience constraint:** "What if your user had never used a computer before?"
-- **Scale constraint:** "What if it needed to work for 1 billion users? What about just 10?"
+- **Ràng buộc Thời gian:** "Sẽ ra sao nếu chỉ có đúng 1 ngày để code cái này?"
+- **Ràng buộc Tính năng:** "Sẽ ra sao nếu chỉ được phép làm đúng 1 tính năng duy nhất?"
+- **Ràng buộc Công nghệ:** "Sẽ ra sao nếu đéo được xài [cái công nghệ hiển nhiên ai cũng xài]?"
+- **Ràng buộc Chi phí:** "Sẽ ra sao nếu cái này bắt buộc phải miễn phí trọn đời?"
+- **Ràng buộc Người dùng:** "Sẽ ra sao nếu user của bạn là một người chưa từng xài máy tính bao giờ?"
+- **Ràng buộc Scale:** "Sẽ ra sao nếu nó phải chạy cho 1 tỷ user? Hoặc nếu chỉ chạy cho đúng 10 user thì sao?"
 
-**Best for:** Cutting through complexity. When the idea is growing too large or too vague.
+**Tốt nhất cho:** Cắt phăng đi sự phức tạp. Dùng khi ý tưởng đang phình to ra mất kiểm soát hoặc quá mơ hồ.
 
-## Pre-mortem
+## Phân tích Tiền thất bại (Pre-mortem)
 
-Imagine the idea has already failed. Work backwards:
+Tưởng tượng ý tưởng này ĐÃ THẤT BẠI thảm hại. Hãy đi lùi lại:
 
-1. It's 12 months from now. The project shipped and flopped. What went wrong?
-2. List every plausible reason for failure — technical, market, team, timing
-3. For each failure mode: Is this preventable? Is this a signal the idea needs to change?
-4. Which failure modes are you willing to accept? Which ones would kill the project?
+1. Hiện tại là 12 tháng sau. Project đã launch và xịt ngòi. Chuyện đéo gì đã xảy ra?
+2. Liệt kê mọi lý do CHÍNH ĐÁNG có thể dẫn đến thất bại — technical, thị trường, team, thời điểm.
+3. Với mỗi lý do: Có thể phòng ngừa được không? Đây có phải là tín hiệu cho thấy ý tưởng cần thay đổi không?
+4. Thất bại kiểu nào bạn CHẤP NHẬN ĐƯỢC? Thất bại kiểu nào sẽ GIẾT CHẾT cả project?
 
-**Best for:** Phase 2 evaluation. Stress-testing ideas that feel good but haven't been pressure-tested.
+**Tốt nhất cho:** Giai đoạn 2 (Đánh giá). Thử lửa những ý tưởng nghe thì êm tai nhưng chưa từng bị quật cho te tua.
 
-## Analogous Inspiration
+## Nguồn cảm hứng Tương đồng (Analogous Inspiration)
 
-Look at how other domains solved similar problems:
+Nhìn sang cách các ngành khác giải bài toán tương tự:
 
-- What industry has already solved a version of this problem?
-- What would this look like if [specific company/product] built it?
-- What natural system works this way?
-- What historical precedent exists?
+- Ngành đéo nào đã giải xong bài toán kiểu này rồi?
+- Cái này trông sẽ thế nào nếu do [Một công ty cụ thể / Sản phẩm cụ thể] làm?
+- Có hệ thống nào trong tự nhiên hoạt động giống vầy không?
+- Có tiền lệ lịch sử nào không?
 
-The key is finding *structural* similarities, not surface-level ones. "Uber for X" is surface-level. "A two-sided marketplace that solves a trust problem between strangers" is structural.
+Chìa khóa ở đây là phải tìm ra sự tương đồng về mặt *CẤU TRÚC*, chứ không phải bề mặt. "Uber cho X" là tương đồng bề mặt. "Một thị trường 2 chiều (two-sided marketplace) giải quyết bài toán niềm tin giữa những người xa lạ" mới là tương đồng cấu trúc.
 
-**Best for:** Phase 1 expansion. Generating variations that feel genuinely different from the obvious approach.
+**Tốt nhất cho:** Giai đoạn 1 (Mở rộng). Dùng để đẻ ra các biến thể thực sự đột phá so với những cách làm hiển nhiên ai cũng nghĩ ra.

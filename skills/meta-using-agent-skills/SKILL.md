@@ -16,30 +16,16 @@ Khi nhận được một task, hãy xác định giai đoạn phát triển và
 ```text
 Task đến
     │
-    ├── Chưa biết thực sự mình muốn gì? ──────→ interview-me
-    ├── Có concept sơ bộ, cần thêm biến thể? → idea-refine
-    ├── Dự án/tính năng/thay đổi mới? ──→ tech-spec (spec-driven-development)
-    ├── Đã có spec, cần chia task? ──────→ planning-and-task-breakdown
-    ├── Cần thiết kế test cases/checklist? ────→ qa-test-design
-    ├── Đang bắt đầu viết code? ────────────→ incremental-implementation
-    │   ├── Làm về UI? ─────────────────→ frontend-ui-engineering
-    │   ├── Làm về API? ────────────────→ api-and-interface-design
-    │   ├── Cần ngữ cảnh tốt hơn? ─────→ context-engineering
-    │   ├── Cần code chuẩn theo docs? ───→ source-driven-development
-    │   └── Rủi ro cao / code lạ? ──→ doubt-driven-development
-    ├── Đang viết/chạy tests? ────────→ test-driven-development
-    │   └── Test trên trình duyệt? ───────────→ browser-testing-with-devtools
-    ├── Có thứ gì đó bị lỗi? ──────────────→ debugging-and-error-recovery
-    ├── Đang review code? ───────────────→ code-review-and-quality
-    │   ├── Code quá phức tạp? ─────────────→ code-simplification
-    │   ├── Lo ngại về bảo mật? ───────→ security-and-hardening
-    │   └── Lo ngại về hiệu năng? ────→ performance-optimization
-    ├── Commit/chia nhánh (branching)? ─────────→ git-workflow-and-versioning
-    ├── Làm về CI/CD pipeline? ──────────→ ci-cd-and-automation
-    ├── Khai tử code cũ/migrate? ────────→ deprecation-and-migration
-    ├── Viết docs/quyết định kiến trúc? ───────────→ documentation-and-adrs
-    ├── Thêm logs/metrics/alerts? ───→ observability-and-instrumentation
-    └── Deploy/launch sản phẩm? ─────────→ shipping-and-launch
+    ├── Chưa biết thực sự mình muốn gì? ─────────→ ba-interview-me
+    ├── Có mã Jira, cần phân tích yêu cầu? ──────→ ba-spec
+    ├── Có code sẵn, cần dịch ra docs (spec)? ───→ qa-code2spec
+    ├── Có concept sơ bộ, cần làm rõ/chốt hạ? ───→ ba-refine
+    ├── Cần lên checklist & kịch bản BDD? ───────→ qa-test-design
+    ├── Cần sinh code automation test? ──────────→ qa-auto-design
+    ├── Đang review code test hoặc app code? ────→ qa-code-review
+    ├── Code test phức tạp, cần refactor? ───────→ qa-code-simplify
+    ├── Cần tối ưu lại ngữ cảnh hiện tại? ───────→ meta-context
+    └── Muốn tìm xem có skill nào xài được? ─────→ meta-using-agent-skills
 ```
 
 ## Các Hành vi Cốt lõi (Core Operating Behaviors)
@@ -140,61 +126,39 @@ Luôn xem xét ngữ cảnh của domain và platform:
 
 2. **Kỹ năng là các luồng quy trình, không phải là lời khuyên.** Hãy tuân theo các bước theo thứ tự. Đừng bỏ qua các bước xác minh.
 
-3. **Nhiều kỹ năng có thể được áp dụng cùng lúc.** Một lần triển khai tính năng có thể liên quan đến chuỗi: `idea-refine` → `tech-spec` → `planning-and-task-breakdown` → `incremental-implementation` → `test-driven-development` → `code-review-and-quality` → `code-simplification` → `shipping-and-launch`.
+3. **Nhiều kỹ năng có thể được áp dụng cùng lúc.** Một lần xử lý yêu cầu có thể liên quan đến chuỗi: `ba-spec` → `ba-interview-me` → `ba-refine` → `qa-test-design` → `qa-auto-design` → `qa-code-review`.
 
-4. **Khi băn khoăn, hãy bắt đầu với một spec.** Nếu task không hề đơn giản và chưa có spec, hãy bắt đầu với `tech-spec`.
+4. **Khi băn khoăn, hãy bắt đầu với việc hiểu rõ yêu cầu.** Nếu task chưa rõ ràng, hãy gọi `ba-interview-me` hoặc `ba-spec` (nếu có link/mã Jira) trước khi làm bất kỳ việc gì khác.
 
 ## Trình tự Vòng đời (Lifecycle Sequence)
 
 Đối với một tính năng hoàn chỉnh, trình tự kỹ năng điển hình là:
 
 ```text
-1.  interview-me                → Rút ra những gì người dùng thực sự muốn
-2.  idea-refine                 → Tinh chỉnh những ý tưởng mơ hồ
-3.  tech-spec (spec-driven)     → Định nghĩa cái chúng ta sẽ xây dựng
-4.  planning-and-task-breakdown → Chia nhỏ thành các task có thể kiểm chứng
-5.  qa-test-design              → Thiết kế checklist test và kịch bản BDD
-6.  context-engineering         → Tải đúng ngữ cảnh cần thiết
-7.  source-driven-development   → Xác minh với tài liệu gốc chính thức
-8.  incremental-implementation  → Xây dựng từng lát cắt dọc
-9.  observability-and-instrumentation → Gắn log/metric trong lúc build (chạy song song với 8-10, không phải sau đó)
-10. doubt-driven-development    → Kiểm tra chéo (đóng vai ác) mọi quyết định quan trọng ngay lúc làm
-11. test-driven-development     → Chứng minh mỗi lát cắt hoạt động đúng
-12. code-review-and-quality     → Review trước khi merge
-13. code-simplification         → Giảm độ phức tạp không cần thiết trong khi vẫn giữ nguyên hành vi
-14. git-workflow-and-versioning → Lịch sử commit sạch sẽ
-15. documentation-and-adrs      → Ghi chép (Document) các quyết định
-16. deprecation-and-migration   → Khai tử hệ thống cũ và chuyển người dùng an toàn khi cần
-17. shipping-and-launch         → Deploy an toàn
+1.  ba-spec                     → Download và tổng hợp issue Jira thành Spec ban đầu
+2.  ba-interview-me             → Phỏng vấn bổ sung để bịt các lỗ hổng logic hoặc yêu cầu mờ ám
+3.  ba-refine                   → Mài giũa ý tưởng thành User Story/BDD sắc bén
+4.  qa-code2spec                → (Tùy chọn) Đọc code có sẵn để bóc tách luồng nghiệp vụ
+5.  qa-test-design              → Thiết kế checklist kiểm thử và kịch bản BDD chi tiết
+6.  qa-auto-design              → Sinh code automation test (Playwright/Pytest)
+7.  qa-code-simplify            → (Tùy chọn) Làm sạch và tối giản code test vừa sinh ra
+8.  qa-code-review              → Review lại chất lượng bộ test trước khi merge
+9.  meta-context                → (Chạy bất cứ lúc nào) Nạp và reset lại ngữ cảnh làm việc
 ```
 
-Không phải task nào cũng cần mọi kỹ năng. Một task fix bug có thể chỉ cần: `debugging-and-error-recovery` → `test-driven-development` → `code-review-and-quality`.
+Không phải task nào cũng cần mọi kỹ năng. Một task chỉ viết test cho API có sẵn có thể chỉ cần: `qa-code2spec` → `qa-test-design` → `qa-auto-design`.
 
 ## Bảng Tra cứu Nhanh (Quick Reference)
 
 | Giai đoạn | Kỹ năng | Tóm tắt |
 |-------|-------|-----------------|
-| Xác định (Define) | interview-me | Phơi bày những gì người dùng thực sự muốn trước khi có spec hay code |
-| Xác định | idea-refine | Tinh chỉnh ý tưởng thông qua tư duy phân kỳ và hội tụ có cấu trúc |
-| Xác định | tech-spec | Yêu cầu và tiêu chí chấp thuận phải có trước khi viết code |
-| Kế hoạch (Plan) | planning-and-task-breakdown | Phân rã thành các task nhỏ, có thể xác minh được |
-| Kế hoạch | qa-test-design | Thiết kế test 2 giai đoạn: checklists thực thi sau đó là BDD scenarios |
-| Xây dựng (Build) | incremental-implementation | Cắt các lát cắt dọc mỏng, test từng lát cắt trước khi mở rộng |
-| Xây dựng | source-driven-development | Xác minh lại với tài liệu chính thức trước khi triển khai |
-| Xây dựng | doubt-driven-development | Review chéo (adversarial review) với tư duy mới cho mọi quyết định khó |
-| Xây dựng | context-engineering | Đúng ngữ cảnh vào đúng thời điểm |
-| Xây dựng | frontend-ui-engineering | UI chuẩn production đảm bảo tính tiếp cận (accessibility) |
-| Xây dựng | api-and-interface-design | Giao diện ổn định với hợp đồng (contracts) rõ ràng |
-| Xác minh (Verify) | test-driven-development | Viết test bị fail trước, rồi làm cho nó pass |
-| Xác minh | browser-testing-with-devtools | Dùng Chrome DevTools MCP để xác minh lúc chạy (runtime) |
-| Xác minh | debugging-and-error-recovery | Tái hiện → cô lập → sửa → rào chắn bảo vệ |
-| Đánh giá (Review) | code-review-and-quality | Review 5-trục với các cổng chất lượng (quality gates) |
-| Đánh giá | code-simplification | Giữ nguyên hành vi đồng thời giảm độ phức tạp không cần thiết |
-| Đánh giá | security-and-hardening | Phòng chống OWASP, validate đầu vào, đặc quyền tối thiểu |
-| Đánh giá | performance-optimization | Đo lường trước, chỉ tối ưu những gì quan trọng |
-| Bàn giao (Ship) | git-workflow-and-versioning | Các commit nguyên tử (atomic), lịch sử sạch |
-| Bàn giao | ci-cd-and-automation | Các cổng chất lượng tự động trên mỗi thay đổi |
-| Bàn giao | deprecation-and-migration | Gỡ hệ thống cũ và migrate người dùng an toàn |
-| Bàn giao | documentation-and-adrs | Document vì sao làm, chứ không chỉ document làm cái gì |
-| Bàn giao | observability-and-instrumentation | Logs cấu trúc, RED metrics, traces, cảnh báo dựa trên triệu chứng |
-| Bàn giao | shipping-and-launch | Checklist trước ra mắt, giám sát (monitoring), kế hoạch rollback |
+| Phân tích (BA) | ba-spec | Download Jira issue và tổng hợp thành tài liệu markdown |
+| Phân tích (BA) | ba-interview-me | Phỏng vấn user để khai thác tận cùng những gì họ thực sự cần |
+| Phân tích (BA) | ba-refine | Mài giũa ý tưởng thô thành các bản concept/User Story/BDD sắc bén |
+| Phân tích (BA) | qa-code2spec | Dịch ngược mã nguồn (API/code) thành tài liệu đặc tả |
+| Thiết kế (QA) | qa-test-design | Thiết kế test artifacts: checklist kiểm thử và BDD scenarios |
+| Sinh Code (QA) | qa-auto-design | Viết code automation test (Playwright/Pytest) dựa trên BDD/Checklist |
+| Đánh giá (Review)| qa-code-review | Review đa chiều code (test hoặc app) trước khi merge |
+| Đánh giá (Review)| qa-code-simplify | Đơn giản hóa và làm sạch code mà không đổi hành vi |
+| Siêu kỹ năng | meta-context | Tối ưu hóa ngữ cảnh làm việc cho agent |
+| Siêu kỹ năng | meta-using-agent-skills | Khám phá và sử dụng các kỹ năng khác |
