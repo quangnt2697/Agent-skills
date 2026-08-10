@@ -26,9 +26,9 @@ Agent nhận đường dẫn file (VD: file API Controller hoặc Router) từ $
 3. Chủ động dùng công cụ đọc file (`view_file`) để "chui sâu" vào các file import đó.
 4. Thu thập các thông tin sau (bất kể là ngôn ngữ nào):
    - **Endpoints:** HTTP Method, URL path.
-   - **Payload/Schema:** Các trường dữ liệu, kiểu dữ liệu, bắt buộc/tùy chọn (Từ Pydantic/Zod/Interfaces).
+   - **Payload/Schema:** Các trường dữ liệu, kiểu dữ liệu, bắt buộc/tùy chọn (Từ Pydantic/Zod/Interfaces). **BẮT BUỘC trích xuất chính xác cấu trúc JSON mẫu của Request/Response (đối với API) và Event Payload (đối với WebSocket). Ghi chú rõ các trường có thể null hoặc bị ẩn (hidden fields).**
    - **Validation Rules:** Độ dài tối đa/tối thiểu, Regex, các kiểm tra tính hợp lệ.
-   - **Business Logic & Error Handling:** Các câu lệnh `if/else`, vòng lặp, các logic ném ngoại lệ (`raise Exception`, `throw Error`) để bắt Edge Cases.
+   - **Business Logic & Error Handling:** Các câu lệnh `if/else`, vòng lặp, các logic ném ngoại lệ (`raise Exception`, `throw Error`) để bắt Edge Cases. **Tìm kiếm và trích xuất cụ thể các mã lỗi (Error Codes) và thông báo lỗi (Error Messages) tương ứng được định nghĩa trong mã nguồn.**
    - **Dependencies:** Lời gọi đến Database hoặc API bên thứ ba.
    - **🔥 [CỐT LÕI BACKEND] Yêu cầu bắt buộc phải truy vết sâu 5 yếu tố sau:**
      1. **Database Schema & ORM:** Trích xuất các trường `nullable=False`, `unique=True` để tìm Test Case (VD: nhập trùng email).

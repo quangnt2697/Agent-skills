@@ -149,11 +149,16 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
 
 3. **Dữ liệu động:** Setup prefix_testname_timestamp cho mọi dữ liệu cần unique.
 
-4. **Teardown (Data Cleanup):** Dùng cơ chế `yield` trong pytest fixture để dọn dẹp data rác (xoá user, huỷ lệnh...) sau khi test xong.
+4. **Teardown (Data Cleanup):** Dùng cơ chế `yield` trong pytest fixture để dọn dẹp data rác (xoá user, huỷ lệnh...) sau khi test xong. **BẮT BUỘC ĐỐI VỚI API:** Phải gọi trực tiếp API Delete/Cancel trong block code sau `yield` để xóa bỏ dữ liệu rác vừa tạo ra, đảm bảo tính độc lập tuyệt đối giữa các test.
 
 5. **Authentication:**
    - KHÔNG hardcode tokens/passwords. Đọc từ `.env` / environment variables.
-   - Lấy Auth Token 1 lần ở session-scoped fixture, tái sử dụng giữa các tests.
+   - Lấy Auth Token 1 lần ở session-scoped fixture (`@pytest.fixture(scope="session")`), tái sử dụng giữa các tests để tránh spam API Login.
+
+6. **Xử lý Bất đồng bộ (WebSocket/Async API):**
+   - BẮT BUỘC sử dụng thư viện `pytest_asyncio` và mark `@pytest.mark.asyncio` cho các test case WebSocket.
+   - TUYỆT ĐỐI CẤM dùng hard sleep (`time.sleep` hay `asyncio.sleep`) để chờ event trả về.
+   - BẮT BUỘC dùng cơ chế Timeout/Wait For Event (ví dụ: `await asyncio.wait_for(ws.recv(), timeout=5.0)`) để hứng gói tin một cách an toàn và fail fast.
 
 ### Bước 6: Review Code (Quality Gate)
 

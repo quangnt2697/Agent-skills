@@ -110,8 +110,8 @@ Nếu không có file final.md, hỏi user cung cấp spec, PRD, hoặc mô tả
 
 #### Trích xuất chi tiết
 
-1. **Đọc spec hoặc yêu cầu** — xác định validation rules, error codes, state transitions, và ràng buộc nghiệp vụ. **QUAN TRỌNG:** Phải trích xuất nghiêm ngặt tất cả Business Rules chi tiết, các nhánh logic, và state transitions trong spec. KHÔNG được bỏ sót bất kỳ business logic nào.
-2. **Xem xét tài liệu API** — trích xuất endpoints, request/response schemas, yêu cầu xác thực
+1. **Đọc spec hoặc yêu cầu** — Đọc toàn bộ các thông tin trong spec, comment, ảnh trong sources và xác định business flow, validation rules, error codes, state transitions, và ràng buộc nghiệp vụ. **QUAN TRỌNG:** Phải trích xuất nghiêm ngặt tất cả Business Rules chi tiết, các nhánh logic, state transitions và các mẫu ví dụ, hình ảnh trong spec. KHÔNG được bỏ sót bất kỳ business logic và model mẫu nào.
+2. **Xem xét tài liệu API** — trích xuất endpoints/url, request/response schemas, yêu cầu xác thực, liệt kê đủ các field trong request và response.
 3. **Xác định phạm vi kiểm thử** — cái gì trong phạm vi (checklist này) vs ngoài phạm vi (checklist khác hoặc automated tests)
 4. **Ghi nhận môi trường & yêu cầu phi chức năng** — môi trường nào (UAT/Staging/Production), phiên bản thiết bị/build, ràng buộc (rate limits, latency kỳ vọng, định dạng ngày/giờ, cơ chế phân trang Cursor/Offset)
 5. **Xác định các phần tử đối xứng** — liệt kê tất cả nút, tab, section, input triggers, hoặc giá trị có cùng hành vi hoặc luồng xử lý. Ghi lại thành **nhóm đối xứng** để đảm bảo checklist và scenarios bao phủ TẤT CẢ phần tử trong mỗi nhóm.
@@ -229,6 +229,29 @@ Mỗi checklist phải bao gồm các cột sau:
 - [ ] Xác nhận hiển thị đúng format số tiền (VD: `1,000,000 VND`) — [P1]
 ```
 
+### Template Checklist Chuyên biệt cho API / WebSocket
+
+**Môi trường:** [UAT / Staging]
+**Base URL / Endpoint:** `[POST] /api/v1/orders`
+
+## 1. Kiểm tra Security & Auth (P0)
+- [ ] Xác nhận API trả về `401 Unauthorized` khi không truyền Header `Authorization` — [P0]
+- [ ] Xác nhận API trả về `403 Forbidden` khi Token hợp lệ nhưng user không có quyền (IDOR) — [P0]
+
+## 2. Kiểm tra Payload & Schema Validation (P1)
+- [ ] Xác nhận request schema liệt kê đủ các field bắt buộc theo spec — [P1]
+- [ ] Xác nhận API trả về `400 Bad Request` và thông báo lỗi đúng chuẩn khi thiếu trường bắt buộc `[trường_A]` — [P1]
+- [ ] Xác nhận API validate đúng data type của trường `[trường_B]` (từ chối chuỗi truyền vào mảng) — [P1]
+
+## 3. Kiểm tra HTTP Code & Response Structure (P1)
+- [ ] Xác nhận Response Header có chứa `Content-Type: application/json` — [P1]
+- [ ] Xác nhận cấu trúc body trả về (Success/Error) đúng chuẩn Schema đã định nghĩa (VD: có đủ `code`, `message`, `data`) — [P1]
+- [ ] Xác nhận response schema liệt kê đủ các field bắt buộc theo spec  — [P1]
+
+## 4. Kiểm tra Edge Cases & Rate Limit (P2)
+- [ ] Xác nhận API xử lý đúng tính chất Idempotency khi gửi lại cùng 1 `Idempotency-Key` (không tạo data đúp) — [P2]
+- [ ] Xác nhận WebSocket tự động reconnect và resubscribe vào channel khi bị ngắt kết nối đột ngột — [P2]
+
 ---
 
 ## Giai đoạn 2: Thiết kế BDD Gherkin
@@ -311,7 +334,8 @@ Feature: <Short title reflecting the behavior area>
 - **Bao phủ theo trạng thái:** Khi cùng hành động cho kết quả khác nhau tùy trạng thái hệ thống (đã đăng nhập / chưa, có data / trống, trong giờ / ngoài giờ), tạo scenario riêng cho mỗi trạng thái có kết quả khác biệt. Dùng Scenario Outline nếu chỉ khác data input/output; dùng Scenarios riêng nếu toàn bộ luồng khác nhau.
 - **Biến thể Schema API:** Nếu API có nhiều request/response schema dựa trên trường input cụ thể (VD: `accountType=individual` vs `accountType=corporate`), BẮT BUỘC tạo scenarios bao phủ validation cho TẤT CẢ biến thể.
 - **Bao phủ Schema Validation (API & WebSocket):** BẮT BUỘC có step/scenario tường minh để kiểm tra Response Schema (hoặc Event Payload Schema của WebSocket) đối chiếu với mẫu JSON/tài liệu lấy từ Jira. Không gộp ẩn vào các step nghiệp vụ chung chung.
-- **Validation Path và Tài khoản:** Đảm bảo có scenarios validate path variables (VD: ID sai định dạng, ID thuộc user khác) và ràng buộc truy cập tài khoản.
+- **Validation Path và Tài khoản:** Đảm bảo có scenarios validate path variables (VD: ID sai định dạng, ID thuộc user khác) và ràng buộc truy cập tài khoản (IDOR).
+- **Bao phủ Cách ly Dữ liệu (Data / Topic Isolation):** Đặc biệt với hệ thống Event-driven (WebSocket/Kafka) hoặc API đa luồng, **BẮT BUỘC** có scenario đảm bảo dữ liệu/event của kênh/thị trường này không bị rò rỉ (leak) hoặc gửi chéo sang kênh/thị trường khác (VD: Cross-market isolation, nhận chéo event của mã chứng khoán/thị trường không subscribe).
 - **Tương tác chéo giữa các trường:** Khi thay đổi trường A ảnh hưởng trường B (VD: đổi giá tính lại sức mua → thay đổi gợi ý khối lượng), bao gồm ít nhất 1 scenario kiểm tra hiệu ứng xuôi chiều lên trường B sau khi sửa trường A.
 
 **Quy tắc viết:**
@@ -358,7 +382,8 @@ Coi `Given / When / Then` như `Sắp xếp / Thực hiện / Xác minh`:
 - Dùng `And` để nối các steps cùng loại; dùng `But` thận trọng cho tương phản
 - Assertion trong `Then` phải **quan sát và xác minh được** — không assertion mơ hồ
 - Đặt tham số chuỗi trong **ngoặc kép** (`"giá trị"`)
-- Dùng doc strings (`"""..."""`) cho payload nhiều dòng (JSON, XML)
+- **API/WebSocket Payload:** Mọi payload API/WS dạng JSON **BẮT BUỘC** phải được bọc trong doc strings (`"""..."""`) ở các steps thay vì nối chuỗi ngang.
+- **Xác minh HTTP Status:** Mọi kịch bản API **BẮT BUỘC** phải có step `Then` kiểm tra rõ ràng mã trạng thái HTTP trả về (VD: `Then API trả về mã HTTP "400"`).
 
 ### Bước 10: Scenario Outline, Bảng dữ liệu và Tags
 

@@ -31,6 +31,7 @@ Code có làm đúng những gì nó tuyên bố không?
 - Đã xử lý các trường hợp ngoại lệ (edge cases) chưa (null, rỗng, giá trị biên)?
 - Đã xử lý các luồng lỗi (error paths) chưa (không chỉ test mỗi luồng thành công - happy path)?
 - Nó có pass tất cả các bài test không? Các bài test có đang thực sự đi test đúng trọng tâm không?
+- **Với code test API/WS:** Có xử lý Timeout không? Test có tự dọn dẹp data rác (teardown) hay đang xả rác vào DB? Các kết nối WebSocket có được đóng (`close`) an toàn trong khối `finally` không?
 - Có bị lỗi việt vị 1 đơn vị (off-by-one errors), lỗi tương tranh (race conditions), hay state bị thiếu nhất quán không?
 
 ### 2. Khả năng Đọc hiểu & Sự Đơn giản (Readability & Simplicity)
@@ -59,6 +60,7 @@ Sự thay đổi này có vừa vặn với thiết kế của hệ thống khô
 - Mức độ trừu tượng (abstraction level) có phù hợp không (không over-engineered, không quá dính chặt/coupled)?
 - **Đoạn refactor này làm giảm độ phức tạp hay chỉ đơn giản là bê độ phức tạp đi chỗ khác?** Hãy đếm số lượng khái niệm mà người đọc phải ghi nhớ để hiểu được phần thay đổi. Nếu một phiên bản "cleaner" vẫn bắt người đọc nhớ ngần ấy thứ, nó chưa sạch (clean) hơn — hãy ưu tiên cách cấu trúc lại nào giúp xóa sổ hoàn toàn các nhánh con, các trạng thái phụ, hoặc cả một layer, hơn là việc dồn cục mớ logic đó vào một chỗ khác (re-centralize). Hãy ưu tiên xóa bỏ một lớp trừu tượng hơn là cố gắng đánh bóng nó.
 - **Logic của một tính năng cụ thể có đang bị rò rỉ (leaking) vào trong một module dùng chung (shared/general-purpose) không?** Hãy giữ logic ở đúng layer sở hữu nó, tái sử dụng các hàm helper chuẩn mực đã có (canonical helper) thay vì viết thêm một bản sao na ná, và đừng bình thường hóa sự chệch hướng kiến trúc.
+- **Với code test API/WS:** Có nhúng thẳng token xác thực hay URL cứng vào file test không? Yêu cầu chuyển ra biến môi trường (`.env`) và config file.
 - **Ranh giới kiểu dữ liệu (type boundaries) có rõ ràng không?** Hãy đặt câu hỏi nếu thấy lạm dụng `any`/`unknown`/optional/ép-kiểu và các pha fallback âm thầm che đậy một cấu trúc dữ liệu không rõ ràng — việc làm rõ ranh giới kiểu dữ liệu thường khiến luồng điều khiển bao quanh nó trở nên đơn giản hơn rất nhiều.
 
 ### 4. Bảo mật (Security)

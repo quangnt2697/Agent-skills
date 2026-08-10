@@ -268,6 +268,23 @@ def process(data):
     if not data.has_permission():
         raise PermissionError("No permission")
     return do_work(data)
+
+# DỌN: Code Test API rườm rà lặp đi lặp lại (API Test Assertions)
+# Lúc trước
+def test_create_order(api_client):
+    response = api_client.post("/orders", json={"symbol": "AAPL", "qty": 10})
+    assert response.status_code == 201
+    data = response.json()
+    assert "id" in data
+    assert data["symbol"] == "AAPL"
+    assert data["qty"] == 10
+    assert data["status"] == "PENDING"
+# Sau khi dọn (Tạo Custom Assertion Helper dùng chung)
+def test_create_order_clean(api_client):
+    response = api_client.post("/orders", json={"symbol": "AAPL", "qty": 10})
+    assert_api_success(response, expected_status=201, expected_data={
+        "symbol": "AAPL", "qty": 10, "status": "PENDING"
+    })
 ```
 
 ### React / JSX
