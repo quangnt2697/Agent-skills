@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "addy-agent-skills",
+  "description": "Các kỹ năng kỹ thuật chuẩn production dành cho AI coding agents — bao phủ toàn bộ vòng đời phát triển phần mềm từ đặc tả (spec) cho đến khi ra mắt (ship).",
+  "owner": {
+    "name": "Addy Osmani",
+    "url": "https://github.com/addyosmani"
+  },
+  "plugins": [
+    {
+      "name": "agent-skills",
+      "version": "0.6.6",
+      "source": {
+        "source": "github",
+        "repo": "addyosmani/agent-skills"
+      },
+      "description": "Các kỹ năng kỹ thuật chuẩn production bao phủ mọi giai đoạn của quá trình phát triển phần mềm: đặc tả (spec), lên kế hoạch, xây dựng, xác minh, review, và ra mắt (ship).",
+      "homepage": "https://github.com/addyosmani/agent-skills",
+      "license": "MIT",
+      "keywords": ["skills", "agents", "engineering", "spec", "tdd", "review", "ship"]
+    }
+  ]
+}

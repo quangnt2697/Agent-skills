@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "agent-skills",
-      "description": "Production-grade engineering skills covering every phase of software development: spec, plan, build, verify, review, and ship.",
+      "description": "Các kỹ năng kỹ thuật chuẩn production bao phủ mọi giai đoạn của quá trình phát triển phần mềm: đặc tả (spec), lên kế hoạch, xây dựng, xác minh, review, và ra mắt (ship).",
       "source": {
         "source": "local",
         "path": "./"

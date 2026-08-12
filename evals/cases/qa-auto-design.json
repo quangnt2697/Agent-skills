@@ -1,0 +1,56 @@
+{
+  "skill_name": "qa-auto-design",
+  "trigger": {
+    "positive": [
+      { "prompt": "Sinh test automation code từ Gherkin", "top_k": 1 },
+      { "prompt": "Generate automation test từ feature files", "top_k": 1 },
+      { "prompt": "Viết test code cho scenarios đã có", "top_k": 3 },
+      { "prompt": "Convert Gherkin to pytest code", "top_k": 3 },
+      { "prompt": "Tạo automation test từ test design", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "Thiết kế test cases", "owner": "qa-test-design" },
+      { "prompt": "Chạy test automation", "owner": "qa-run-test" },
+      { "prompt": "Import Jira issue", "owner": "ba-spec" }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "execution",
+      "prompt": "Generate automation test code từ Gherkin feature file với 10 scenarios",
+      "expected_output": "Complete pytest test files với step definitions, reusable functions, và proper structure",
+      "files": [
+        "qa-auto-design"
+      ],
+      "expectations": [
+        "All Gherkin scenarios have corresponding test code",
+        "Step definitions implemented (@given, @when, @then)",
+        "Reusable helper functions extracted (not duplicated code)",
+        "Proper test structure (setup, teardown, fixtures)",
+        "No hardcoded credentials or secrets",
+        "Code passes syntax validation",
+        "Output saved to tests/qa-test-design/{issueKey}/steps/",
+        "Confidence level based on coverage and quality"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "execution",
+      "prompt": "Generate API automation tests với authentication, validation, và error handling",
+      "expected_output": "API test code covering happy path + edge cases + error scenarios",
+      "files": [
+        "qa-auto-design"
+      ],
+      "expectations": [
+        "Authentication handled properly (JWT/Bearer token)",
+        "Request validation tests (invalid params, missing fields)",
+        "Response validation tests (status codes, schema, data)",
+        "Error scenario tests (timeout, 4xx, 5xx)",
+        "Logging added for failed requests (request + response)",
+        "Retry logic for flaky endpoints (if needed)",
+        "Test data externalized (not hardcoded)"
+      ]
+    }
+  ]
+}

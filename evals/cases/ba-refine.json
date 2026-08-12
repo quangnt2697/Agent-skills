@@ -1,0 +1,57 @@
+{
+  "skill_name": "ba-refine",
+  "trigger": {
+    "positive": [
+      { "prompt": "Refine và làm rõ requirements", "top_k": 1 },
+      { "prompt": "Improve Business-Spec với more details", "top_k": 1 },
+      { "prompt": "Iterate trên spec hiện có", "top_k": 3 },
+      { "prompt": "Add missing details vào requirements", "top_k": 3 },
+      { "prompt": "Clarify ambiguous requirements", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "Import Jira issue lần đầu", "owner": "ba-spec" },
+      { "prompt": "Interview user về requirements", "owner": "ba-interview-me" },
+      { "prompt": "Viết Tech-Spec", "owner": "dev-spec-driven-development" }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "execution",
+      "prompt": "Refine Business-Spec với incomplete user stories và missing acceptance criteria",
+      "expected_output": "Updated Business-Spec với complete user stories, detailed acceptance criteria, và resolved ambiguities",
+      "files": [
+        "ba-refine"
+      ],
+      "expectations": [
+        "Incomplete user stories completed (As a, I want, So that)",
+        "Missing acceptance criteria added (Given, When, Then)",
+        "Ambiguous terms clarified with definitions",
+        "Edge cases identified and documented",
+        "Open questions from previous version resolved",
+        "Cross-references added between related requirements",
+        "Examples added for complex rules",
+        "Confidence level improved from previous version"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "execution",
+      "prompt": "Refine Business-Spec dựa trên feedback từ DEV và QA (missing API details, unclear validation rules)",
+      "expected_output": "Updated Business-Spec addressing all feedback with added technical details",
+      "files": [
+        "ba-refine"
+      ],
+      "expectations": [
+        "Feedback items tracked and addressed",
+        "API details added (endpoints, params, responses)",
+        "Validation rules clarified with BVA tables",
+        "Error scenarios expanded with examples",
+        "Performance requirements quantified (numbers, not adjectives)",
+        "Non-functional requirements detailed",
+        "Change log documenting what was refined",
+        "Sign-off section for stakeholder approval"
+      ]
+    }
+  ]
+}

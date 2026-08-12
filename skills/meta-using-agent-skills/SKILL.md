@@ -21,9 +21,9 @@ Task đến
     ├── Có code sẵn, cần dịch ra docs (spec)? ───→ qa-code2spec
     ├── Có concept sơ bộ, cần làm rõ/chốt hạ? ───→ ba-refine
     ├── Cần lên checklist & kịch bản BDD? ───────→ qa-test-design
-    ├── Cần sinh code automation test? ──────────→ qa-auto-design
-    ├── Đang review code test hoặc app code? ────→ qa-code-review
-    ├── Code test phức tạp, cần refactor? ───────→ qa-code-simplify
+    ├── Đánh giá chất lượng code/test ───────────→ review-code-and-quality
+    ├── Code test phức tạp, cần refactor? ───────→ code-simplification
+    ├── Kiến trúc bốc mùi, cần tự động audit & fix? ──→ dev-audit-and-fix
     ├── Cần tối ưu lại ngữ cảnh hiện tại? ───────→ meta-context
     └── Muốn tìm xem có skill nào xài được? ─────→ meta-using-agent-skills
 ```
@@ -78,7 +78,7 @@ Trước khi hoàn thành bất kỳ việc triển khai nào, hãy hỏi:
 - Những lớp trừu tượng (abstractions) này có đáng với sự phức tạp mà chúng mang lại không?
 - Một staff engineer nhìn vào cái này liệu có nói "sao bạn không làm thế này cho nhanh..." không?
 
-Nếu bạn viết 1000 dòng code trong khi 100 dòng là đủ, bạn đã thất bại. Hãy ưu tiên các giải pháp nhàm chán, hiển nhiên. Sự xảo diệu (cleverness) có giá rất đắt.
+Nếu bạn viết 1000 dòng code trong khi 100 dòng là đủ, bạn đã thất bại. Hãy ưu tiên những giải pháp nhàm chán nhưng hiển nhiên. Sự thông minh (cleverness) quá mức luôn phải trả giá đắt.
 
 ### 5. Duy trì Kỷ luật về Phạm vi (Maintain Scope Discipline)
 
@@ -126,7 +126,7 @@ Luôn xem xét ngữ cảnh của domain và platform:
 
 2. **Kỹ năng là các luồng quy trình, không phải là lời khuyên.** Hãy tuân theo các bước theo thứ tự. Đừng bỏ qua các bước xác minh.
 
-3. **Nhiều kỹ năng có thể được áp dụng cùng lúc.** Một lần xử lý yêu cầu có thể liên quan đến chuỗi: `ba-spec` → `ba-interview-me` → `ba-refine` → `qa-test-design` → `qa-auto-design` → `qa-code-review`.
+3. **Nhiều kỹ năng có thể được áp dụng cùng lúc.** Một lần xử lý yêu cầu có thể liên quan đến chuỗi: `ba-spec` → `ba-interview-me` → `ba-refine` → `qa-test-design` → `qa-auto-design` → `review-code-and-quality`.
 
 4. **Khi băn khoăn, hãy bắt đầu với việc hiểu rõ yêu cầu.** Nếu task chưa rõ ràng, hãy gọi `ba-interview-me` hoặc `ba-spec` (nếu có link/mã Jira) trước khi làm bất kỳ việc gì khác.
 
@@ -141,8 +141,8 @@ Luôn xem xét ngữ cảnh của domain và platform:
 4.  qa-code2spec                → (Tùy chọn) Đọc code có sẵn để bóc tách luồng nghiệp vụ
 5.  qa-test-design              → Thiết kế checklist kiểm thử và kịch bản BDD chi tiết
 6.  qa-auto-design              → Sinh code automation test (Playwright/Pytest)
-7.  qa-code-simplify            → (Tùy chọn) Làm sạch và tối giản code test vừa sinh ra
-8.  qa-code-review              → Review lại chất lượng bộ test trước khi merge
+7.  code-simplification         → (Tùy chọn) Làm sạch và tối giản code test vừa sinh ra
+8.  review-code-and-quality     → Đánh giá code (Code Review) code sinh ra chất lượng bộ test trước khi merge
 9.  meta-context                → (Chạy bất cứ lúc nào) Nạp và reset lại ngữ cảnh làm việc
 ```
 
@@ -158,7 +158,8 @@ Không phải task nào cũng cần mọi kỹ năng. Một task chỉ viết te
 | Phân tích (BA) | qa-code2spec | Dịch ngược mã nguồn (API/code) thành tài liệu đặc tả |
 | Thiết kế (QA) | qa-test-design | Thiết kế test artifacts: checklist kiểm thử và BDD scenarios |
 | Sinh Code (QA) | qa-auto-design | Viết code automation test (Playwright/Pytest) dựa trên BDD/Checklist |
-| Đánh giá (Review)| qa-code-review | Review đa chiều code (test hoặc app) trước khi merge |
-| Đánh giá (Review)| qa-code-simplify | Đơn giản hóa và làm sạch code mà không đổi hành vi |
+| Đánh giá (Review)| review-code-and-quality | Đánh giá code test tự động dựa trên standards |
+| Đánh giá (Review)| code-simplification | Đơn giản hóa và làm sạch code mà không đổi hành vi |
+| Đánh giá (Review)| dev-audit-and-fix | Kiểm toán toàn diện kiến trúc, tìm bug và tự động sửa (Auto-Fix) |
 | Siêu kỹ năng | meta-context | Tối ưu hóa ngữ cảnh làm việc cho agent |
 | Siêu kỹ năng | meta-using-agent-skills | Khám phá và sử dụng các kỹ năng khác |

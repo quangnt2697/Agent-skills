@@ -1,157 +1,154 @@
-# Getting Started with agent-skills
+# Bắt Đầu Với agent-skills
 
-agent-skills works with any AI coding agent that accepts Markdown instructions. This guide covers the universal approach. For tool-specific setup, see the dedicated guides.
+`agent-skills` hoạt động với bất kỳ AI coding agent nào hỗ trợ lệnh Markdown. Hướng dẫn này bao quát cách tiếp cận phổ quát nhất. Để xem hướng dẫn cài đặt cho từng công cụ cụ thể, vui lòng tham khảo các hướng dẫn chuyên biệt.
 
-## How Skills Work
+## Cách Thức Hoạt Động Của Skills
 
-Each skill is a Markdown file (`SKILL.md`) that describes a specific engineering workflow. When loaded into an agent's context, the agent follows the workflow — including verification steps, anti-patterns to avoid, and exit criteria.
+Mỗi skill là một file Markdown (`SKILL.md`) mô tả một quy trình công việc (workflow) kỹ thuật cụ thể. Khi được tải vào ngữ cảnh (context) của agent, agent sẽ tuân theo quy trình đó — bao gồm các bước xác minh, các phản mẫu (anti-patterns) cần tránh và tiêu chí hoàn thành.
 
-**Skills are not reference docs.** They're step-by-step processes the agent follows.
+**Skills không phải là tài liệu tham khảo.** Chúng là các quy trình từng-bước-một để agent làm theo.
 
-## Quick Start (Any Agent)
+## Bắt Đầu Nhanh (Cho Mọi Agent)
 
-### 1. Clone the repository
+### 1. Clone repository
 
 ```bash
 git clone https://github.com/addyosmani/agent-skills.git
 ```
 
-### 2. Choose a skill
+### 2. Chọn một skill
 
-Browse the `skills/` directory. Each subdirectory contains a `SKILL.md` with:
-- **When to use** — triggers that indicate this skill applies
-- **Process** — step-by-step workflow
-- **Verification** — how to confirm the work is done
-- **Common rationalizations** — excuses the agent might use to skip steps
-- **Red flags** — signs the skill is being violated
+Duyệt qua thư mục `skills/`. Mỗi thư mục con chứa một file `SKILL.md` với các phần sau:
+- **Khi nào sử dụng** — Các dấu hiệu cho thấy skill này nên được dùng
+- **Quy trình** — Quy trình công việc từng-bước-một
+- **Xác minh** — Cách xác nhận công việc đã hoàn thành
+- **Những sự ngụy biện phổ biến** — Những lý do agent có thể dùng để bỏ qua các bước
+- **Cờ đỏ (Red flags)** — Các dấu hiệu cho thấy skill đang bị vi phạm
 
-### 3. Load the skill into your agent
+### 3. Load skill vào agent của bạn
 
-Copy the relevant `SKILL.md` content into your agent's system prompt, rules file, or conversation. The most common approaches:
+Sao chép nội dung `SKILL.md` tương ứng vào system prompt, rules file hoặc khung chat của agent. Các cách tiếp cận phổ biến nhất:
 
-**System prompt:** Paste the skill content at the start of the session.
+**System prompt:** Dán nội dung skill vào lúc bắt đầu phiên làm việc.
 
-**Rules file:** Add skill content to your project's rules file (CLAUDE.md, .cursorrules, etc.).
+**Rules file:** Thêm nội dung skill vào file rules của dự án (như CLAUDE.md, .cursorrules, v.v.).
 
-**Conversation:** Reference the skill when giving instructions: "Follow the test-driven-development process for this change."
+**Trong khung chat:** Nhắc đến skill khi đưa ra yêu cầu: "Hãy làm theo quy trình dev-test-driven-development cho thay đổi này."
 
-### 4. Use the meta-skill for discovery
+### 4. Sử dụng meta-skill để định tuyến
 
-Start with the `using-agent-skills` skill loaded. It contains a flowchart that maps task types to the appropriate skill.
+Bắt đầu bằng việc load skill `meta-using-agent-skills`. Nó chứa một sơ đồ luồng (flowchart) giúp ánh xạ các loại task tới đúng skill cần thiết.
 
-## Recommended Setup
+## Thiết Lập Khuyên Dùng
 
-Rolling out to a real project? The **[Adoption Guide](adoption-guide.md)** covers two end-to-end paths: the full lifecycle from day one for a greenfield project, and an incremental, verification-first rollout for an established codebase. The setup below is the quick version.
+Áp dụng vào một dự án thực tế? **[Cẩm Nang Áp Dụng](adoption-guide.md)** bao quát hai lộ trình từ-đầu-đến-cuối: toàn bộ vòng đời phát triển ngay từ ngày đầu tiên cho một dự án mới tinh, và việc áp dụng từ từ, chú trọng vào xác minh cho một codebase đã có sẵn. Hướng dẫn thiết lập dưới đây là phiên bản tóm tắt nhanh.
 
-### Minimal (Start here)
+### Tối Thiểu (Bắt đầu từ đây)
 
-Load three essential skills into your rules file:
+Load 3 skills thiết yếu sau vào rules file của bạn:
 
-1. **spec-driven-development** — For defining what to build
-2. **test-driven-development** — For proving it works
-3. **code-review-and-quality** — For verifying quality before merge
+1. **dev-spec-driven-development** — Để định nghĩa xem cần xây dựng cái gì
+2. **dev-test-driven-development** — Để chứng minh code hoạt động đúng
+3. **review-code-and-quality** — Để xác minh chất lượng trước khi merge
 
-These three cover the most critical quality gaps in AI-assisted development.
+Ba skill này bao phủ các khoảng trống về chất lượng quan trọng nhất trong việc phát triển phần mềm với AI.
 
-### Full Lifecycle
+### Toàn Bộ Vòng Đời
 
-For comprehensive coverage, load skills by phase:
-
-```
-Starting a project:  spec-driven-development → planning-and-task-breakdown
-During development:  incremental-implementation + test-driven-development
-Before merge:        code-review-and-quality + security-and-hardening
-Before deploy:       shipping-and-launch
-```
-
-### Context-Aware Loading
-
-Don't load all skills at once — it wastes context. Load skills relevant to the current task:
-
-- Working on UI? Load `frontend-ui-engineering`
-- Debugging? Load `debugging-and-error-recovery`
-- Setting up CI? Load `ci-cd-and-automation`
-
-## Skill Anatomy
-
-Every skill follows the same structure:
+Để đạt độ bao phủ toàn diện, hãy load các skills theo từng giai đoạn:
 
 ```
-YAML frontmatter (name, description)
-├── Overview — What this skill does
-├── When to Use — Triggers and conditions
-├── Core Process — Step-by-step workflow
-├── Examples — Code samples and patterns
-├── Common Rationalizations — Excuses and rebuttals
-├── Red Flags — Signs the skill is being violated
-└── Verification — Exit criteria checklist
+Bắt đầu dự án:  dev-spec-driven-development → planning-and-task-breakdown
+Trong lúc Dev:  incremental-implementation + dev-test-driven-development
+Trước khi merge: review-code-and-quality + dev-security
 ```
 
-See [skill-anatomy.md](skill-anatomy.md) for the full specification.
+### Load Ngữ Cảnh Có Chọn Lọc
 
-## Using Agents
+Đừng load tất cả skills cùng lúc — việc này lãng phí ngữ cảnh. Hãy load các skills liên quan tới task hiện tại:
 
-The `agents/` directory contains pre-configured agent personas:
+- Làm việc với UI? Load `dev-frontend-engineering`
+- Debugging? Load `dev-debugging`
 
-| Agent | Purpose |
+## Cấu Phẫu Của Skill
+
+Mọi skill đều tuân theo cùng một cấu trúc:
+
+```
+YAML frontmatter (tên, mô tả)
+├── Tổng Quan — Skill này làm gì
+├── Khi Nào Sử Dụng — Triggers và điều kiện
+├── Quy Trình Cốt Lõi — Quy trình từng-bước-một
+├── Ví Dụ — Code mẫu và patterns
+├── Những Sự Ngụy Biện Phổ Biến — Lời bào chữa và phản bác
+├── Cờ Đỏ (Red Flags) — Dấu hiệu skill bị vi phạm
+└── Xác Minh — Checklist tiêu chí hoàn thành
+```
+
+Xem [skill-anatomy.md](skill-anatomy.md) để biết thêm chi tiết đặc tả đầy đủ.
+
+## Sử Dụng Các Agents
+
+Thư mục `agents/` chứa các định nghĩa agent (personas) đã được cấu hình sẵn:
+
+| Agent | Mục Đích |
 |-------|---------|
-| `code-reviewer.md` | Five-axis code review |
-| `qa.md` | Test strategy and writing |
-| `security-auditor.md` | Vulnerability detection |
-| `web-performance-auditor.md` | Core Web Vitals & performance audit (via `/webperf`) |
+| `code-reviewer.md` | Code review 5 phương diện |
+| `qa.md` | Chiến lược kiểm thử và viết kịch bản |
+| `security-auditor.md` | Phát hiện lỗ hổng bảo mật |
+| `web-performance-auditor.md` | Audit hiệu năng Core Web Vitals (qua `/webperf`) |
 
-Load an agent definition when you need specialized review. For example, ask your coding agent to "review this change using the code-reviewer agent persona" and provide the agent definition.
+Load một định nghĩa agent khi bạn cần sự đánh giá chuyên sâu. Ví dụ: yêu cầu coding agent của bạn "hãy review thay đổi này sử dụng persona code-reviewer" và cung cấp định nghĩa agent.
 
-## Using Commands
+## Sử Dụng Lệnh (Commands)
 
-The `.claude/commands/` directory contains slash commands for Claude Code:
+Thư mục `.claude/commands/` chứa các slash commands dành cho Claude Code:
 
-| Command | Skill Invoked |
+| Lệnh | Kích Hoạt Skill |
 |---------|---------------|
-| `/spec` | spec-driven-development |
+| `/tech-spec` | dev-spec-driven-development |
 | `/plan` | planning-and-task-breakdown |
-| `/build` | incremental-implementation + test-driven-development |
-| `/build auto` | planning-and-task-breakdown → incremental-implementation + test-driven-development (whole plan, one approval) |
-| `/test` | test-driven-development |
-| `/review` | code-review-and-quality |
+| `/build` | incremental-implementation |
+| `/unit-test` | dev-test-driven-development |
+| `/build auto` | planning-and-task-breakdown → incremental-implementation + dev-test-driven-development (làm toàn bộ plan, chỉ duyệt 1 lần) |
+| `/dev-audit` | dev-audit-and-fix (Review toàn diện, lập plan, và tự động sửa chữa toàn bộ sau khi duyệt) |
+| `/review` | review-code-and-quality |
 | `/code-simplify` | code-simplification |
-| `/ship` | shipping-and-launch |
-| `/webperf` | web-performance-auditor (specialist agent, web apps only) |
+| `/webperf` | web-performance-auditor (agent chuyên sâu, chỉ cho web app) |
 
-> **Note:** When installed as a Claude Code plugin you may see a warning like
+> **Lưu ý:** Khi cài đặt dưới dạng plugin cho Claude Code, bạn có thể thấy cảnh báo dạng
 > _"Default commands/ folder is ignored because the manifest sets 'commands'"_.
-> This is expected. The root `commands/` directory belongs to the Antigravity CLI
-> and is intentionally separate from `.claude/commands/`. All Claude Code slash
-> commands load correctly from `.claude/commands/`; the warning is cosmetic.
+> Điều này là bình thường. Thư mục `commands/` ở thư mục gốc thuộc về Antigravity CLI
+> và cố tình được tách biệt khỏi `.claude/commands/`. Mọi slash commands của Claude Code 
+> đều được load chính xác từ `.claude/commands/`; cảnh báo trên chỉ là vấn đề hiển thị.
 
-## Using References
+## Sử Dụng Tài Liệu Tham Khảo (References)
 
-The `references/` directory contains supplementary checklists:
+Thư mục `references/` chứa các checklist bổ trợ:
 
-| Reference | Use With |
+| Tài Liệu Tham Khảo | Dùng Với |
 |-----------|----------|
-| `testing-patterns.md` | test-driven-development |
-| `performance-checklist.md` | performance-optimization |
-| `security-checklist.md` | security-and-hardening |
-| `accessibility-checklist.md` | frontend-ui-engineering |
-| `definition-of-done.md` | all skills / every change |
-| `observability-checklist.md` | observability-and-instrumentation |
-| `orchestration-patterns.md` | doubt-driven-development |
+| `testing-patterns.md` | dev-test-driven-development |
+| `performance-checklist.md` | dev-performance |
+| `security-checklist.md` | dev-security |
+| `accessibility-checklist.md` | dev-frontend-engineering |
+| `definition-of-done.md` | toàn bộ skills / mọi thay đổi |
+| `orchestration-patterns.md` | dev-doubt-driven-development |
 
-Load a reference when you need detailed patterns beyond what the skill covers.
+Load một tài liệu tham khảo khi bạn cần những patterns chi tiết vượt ra ngoài phạm vi của một skill thông thường.
 
-## Spec and task artifacts
+## Spec và Task Artifacts
 
-The `/spec` and `/plan` commands create working artifacts (`SPEC.md`, `tasks/plan.md`, `tasks/todo.md`). Treat them as **living documents** while the work is in progress:
+Các lệnh `/tech-spec` và `/plan` sẽ tạo ra các file làm việc (như `final.md`, `tasks/plan.md`, `tasks/todo.md`). Hãy đối xử với chúng như **các tài liệu sống (living documents)** khi công việc đang diễn ra:
 
-- Keep them in version control during development so the human and the agent have a shared source of truth.
-- Update them when scope or decisions change.
-- If your repo doesn’t want these files long‑term, delete them before merge or add the folder to `.gitignore` — the workflow doesn’t require them to be permanent.
+- Lưu chúng trên version control (Git) trong quá trình phát triển để con người và agent có chung một source of truth.
+- Cập nhật chúng khi phạm vi (scope) hoặc quyết định thay đổi.
+- Nếu repo của bạn không muốn lưu giữ lâu dài, hãy xoá chúng trước khi merge hoặc cho thư mục đó vào `.gitignore` — quy trình này không bắt buộc chúng phải tồn tại vĩnh viễn.
 
-## Tips
+## Mẹo Nhanh (Tips)
 
-1. **Start with spec-driven-development** for any non-trivial work
-2. **Always load test-driven-development** when writing code
-3. **Don't skip verification steps** — they're the whole point
-4. **Load skills selectively** — more context isn't always better
-5. **Use the agents for review** — different perspectives catch different issues
+1. **Luôn bắt đầu bằng dev-spec-driven-development** cho những công việc phức tạp.
+2. **Luôn load dev-test-driven-development** khi viết code.
+3. **Đừng bao giờ bỏ qua bước xác minh** — đó là cốt lõi của quy trình.
+4. **Load skills có chọn lọc** — ngữ cảnh dài hơn không có nghĩa là tốt hơn.
+5. **Sử dụng các agents để review** — những góc nhìn khác nhau sẽ bắt được các lỗi khác nhau.

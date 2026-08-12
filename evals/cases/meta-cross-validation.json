@@ -1,0 +1,50 @@
+{
+  "skill_name": "meta-cross-validation",
+  "trigger": {
+    "positive": [
+      { "prompt": "Kiểm tra traceability giữa Business Rules và Tech-Spec", "top_k": 1 },
+      { "prompt": "Verify coverage từ Spec đến Test", "top_k": 1 },
+      { "prompt": "Tạo traceability matrix", "top_k": 3 },
+      { "prompt": "Check if all Business Rules are implemented", "top_k": 3 },
+      { "prompt": "Gap analysis giữa requirements và tests", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "Viết Tech-Spec từ Business-Spec", "owner": "dev-spec-driven-development" },
+      { "prompt": "Thiết kế test cases", "owner": "qa-test-design" },
+      { "prompt": "Import Jira issue", "owner": "ba-spec" }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "execution",
+      "prompt": "Tạo traceability matrix giữa Business Rules, Tech-Spec và Test Cases cho Order Management feature",
+      "expected_output": "Traceability matrix showing BR → Tech-Spec → Test mapping with coverage percentages and gap report",
+      "files": [
+        "meta-cross-validation"
+      ],
+      "expectations": [
+        "Matrix has 3 columns: Business Rule, Tech-Spec Section, Test Case",
+        "Coverage percentage calculated for Tech-Spec and Test",
+        "Gaps identified with priority (P0/P1/P2)",
+        "Action items provided for each gap",
+        "Overall confidence level included"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "execution",
+      "prompt": "Verify if all Business Rules from Spec are covered in Test Cases",
+      "expected_output": "Gap report showing missing test coverage with recommendations",
+      "files": [
+        "meta-cross-validation"
+      ],
+      "expectations": [
+        "All Business Rules extracted from Spec",
+        "Test Cases mapped to Business Rules",
+        "Missing coverage identified",
+        "Recommendations for fixing gaps"
+      ]
+    }
+  ]
+}

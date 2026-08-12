@@ -1,0 +1,16 @@
+description = "Triển khai các task một cách tăng dần — viết test, code, xác minh, commit"
+
+prompt = """
+Kích hoạt kỹ năng incremental-implementation (triển khai tăng dần).
+
+Lấy task chưa hoàn thành tiếp theo từ kế hoạch hiện tại (ví dụ: tasks/plan.md). Sau đó:
+
+1. Đọc các tiêu chí nghiệm thu của task
+2. Tải bối cảnh liên quan (code hiện có, pattern, type)
+3. Chạy vòng lặp TDD (viết test thất bại, cài đặt code tối thiểu, pass test, refactor)
+4. Xác minh tất cả test đều pass và build thành công
+5. Commit thay đổi của task này với message mô tả rõ ràng
+6. Đánh dấu task đã hoàn thành và dừng lại, sẵn sàng cho task tiếp theo
+
+Chỉ triển khai MỘT task duy nhất.
+"""

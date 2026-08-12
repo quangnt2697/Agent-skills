@@ -1,182 +1,182 @@
-# Skill Anatomy
+# Cấu Phẫu Kỹ Năng (Skill Anatomy)
 
-This document describes the structure and format of agent-skills skill files. Use this as a guide when contributing new skills or understanding existing ones.
+Tài liệu này mô tả cấu trúc và định dạng của các file kỹ năng (skill files) trong `agent-skills`. Hãy sử dụng tài liệu này như một bản hướng dẫn khi bạn muốn đóng góp thêm kỹ năng mới hoặc muốn hiểu các kỹ năng hiện có.
 
-## File Location
+## Vị Trí Lưu Trữ File
 
-Every skill lives in its own directory under `skills/`:
+Mỗi skill nằm trong một thư mục riêng biệt bên trong thư mục `skills/`:
 
 ```
 skills/
   skill-name/
-    SKILL.md           # Required: The skill definition
-    scripts/           # Optional: Runnable helpers used by the skill workflow
-    references/        # Optional: Skill-specific reference documentation
-    supporting-file.md # Optional: Reference material loaded on demand
+    SKILL.md           # Bắt buộc: Định nghĩa cốt lõi của skill
+    scripts/           # Tùy chọn: Các script thực thi hỗ trợ cho workflow
+    references/        # Tùy chọn: Các tài liệu tham khảo riêng của skill
+    supporting-file.md # Tùy chọn: Tài liệu hỗ trợ được load khi cần
 ```
 
-`SKILL.md` is the only required file. Add `scripts/` or `references/` only when the skill actually needs them, and omit them entirely for simpler skills.
+`SKILL.md` là file duy nhất bắt buộc phải có. Chỉ thêm `scripts/` hoặc `references/` khi skill thực sự cần chúng, và bỏ qua hoàn toàn đối với các skill đơn giản.
 
-## SKILL.md Format
+## Định Dạng Của SKILL.md
 
-### Frontmatter (Required)
+### Frontmatter (Bắt Buộc)
 
 ```yaml
 ---
 name: skill-name-with-hyphens
-description: Guides agents through [task/workflow]. Use when [specific trigger conditions].
+description: Hướng dẫn agent cách [thực hiện task/workflow]. Sử dụng khi [điều kiện kích hoạt cụ thể].
 ---
 ```
 
-**Rules:**
-- `name`: Lowercase, hyphen-separated. Must match the directory name.
-- `description`: Start with what the skill does in third person, then include one or more clear "Use when" trigger conditions. Include both *what* and *when*. Maximum 1024 characters.
+**Quy tắc:**
+- `name`: Viết thường, phân tách bằng dấu gạch ngang (hyphen-separated). Phải khớp với tên thư mục.
+- `description`: Bắt đầu bằng việc mô tả skill làm gì ở ngôi thứ ba, sau đó liệt kê một hoặc nhiều điều kiện "Sử dụng khi" rõ ràng. Phải bao gồm cả *làm gì* (what) và *khi nào* (when). Độ dài tối đa 1024 ký tự.
 
-**Why this matters:** Agents discover skills by reading descriptions. The description is injected into the system prompt, so it must tell the agent both what the skill provides and when to activate it. Do not summarize the workflow — if the description contains process steps, the agent may follow the summary instead of reading the full skill.
+**Tại sao điều này quan trọng:** Các agents khám phá các skills bằng cách đọc phần description. Description này được tiêm (injected) vào system prompt, vì vậy nó phải nói cho agent biết cả hai thứ: skill này cung cấp cái gì và khi nào nên kích hoạt nó. Tuyệt đối không tóm tắt workflow vào đây — nếu phần description có chứa các bước quy trình, agent có thể sẽ chỉ làm theo bản tóm tắt đó mà không thèm đọc nội dung chi tiết của skill.
 
-### Standard Sections (Recommended Pattern)
+### Các Phần Tiêu Chuẩn (Recommended Pattern)
 
-The frontmatter contract above is required. The section layout below is a recommended pattern, not a rigid template: equivalent headings are acceptable when they serve the same purpose clearly.
+Phần frontmatter ở trên là hợp đồng bắt buộc. Bố cục các phần (sections) dưới đây là mẫu khuyên dùng, không phải một template cứng nhắc: các tiêu đề tương đương đều có thể chấp nhận được miễn là chúng phục vụ cùng một mục đích một cách rõ ràng.
 
 ```markdown
-# Skill Title
+# Tên Skill
 
-## Overview
-One-two sentences explaining what this skill does and why it matters.
+## Tổng Quan (Overview)
+Một đến hai câu giải thích skill này làm gì và tại sao nó quan trọng.
 
-## When to Use
-- Bullet list of triggering conditions (symptoms, task types)
-- When NOT to use (exclusions)
+## Khi Nào Sử Dụng (When to Use)
+- Danh sách (bullet list) các điều kiện kích hoạt (dấu hiệu nhận biết, loại task)
+- Khi nào KHÔNG nên sử dụng (ngoại lệ)
 
-## [Core Process / The Workflow / Steps]
-The main workflow, broken into numbered steps or phases.
-Include code examples where they help.
-Use flowcharts (ASCII) where decision points exist.
+## [Quy Trình Cốt Lõi / The Workflow / Steps]
+Luồng công việc chính, được chia thành các bước hoặc các giai đoạn được đánh số.
+Bao gồm code ví dụ ở những chỗ cần thiết.
+Sử dụng lưu đồ (flowcharts bằng ASCII) ở những điểm cần đưa ra quyết định.
 
-## [Specific Techniques / Patterns]
-Detailed guidance for specific scenarios.
-Code examples, templates, configuration.
+## [Các Kỹ Thuật Cụ Thể / Patterns]
+Hướng dẫn chi tiết cho từng kịch bản cụ thể.
+Code ví dụ, templates, cấu hình.
 
-## Common Rationalizations
-| Rationalization | Reality |
+## Những Sự Ngụy Biện Phổ Biến (Common Rationalizations)
+| Sự Ngụy Biện | Thực Tế |
 |---|---|
-| Excuse agents use to skip steps | Why the excuse is wrong |
+| Lời bào chữa mà agent dùng để lách bước | Tại sao lời bào chữa đó là sai |
 
-## Red Flags
-- Behavioral patterns indicating the skill is being violated
-- Things to watch for during review
+## Cờ Đỏ (Red Flags)
+- Các hành vi cho thấy skill đang bị vi phạm
+- Những điều cần chú ý khi review
 
-## Verification
-After completing the skill's process, confirm:
-- [ ] Checklist of exit criteria
-- [ ] Evidence requirements
+## Xác Minh (Verification)
+Sau khi hoàn thành quy trình của skill, cần xác nhận:
+- [ ] Checklist các tiêu chí hoàn thành
+- [ ] Các yêu cầu về bằng chứng (evidence)
 ```
 
-## Section Purposes
+## Mục Đích Của Các Phần
 
-### Overview
-The "elevator pitch" for the skill. Should answer: What does this skill do, and why should an agent follow it?
+### Tổng Quan (Overview)
+Lời giới thiệu ngắn gọn (elevator pitch) cho skill. Phải trả lời được câu hỏi: Skill này làm gì, và tại sao agent nên làm theo nó?
 
-### When to Use
-Helps agents and humans decide if this skill applies to the current task. Include both positive triggers ("Use when X") and negative exclusions ("NOT for Y").
+### Khi Nào Sử Dụng (When to Use)
+Giúp agents và con người quyết định xem skill này có áp dụng cho task hiện tại hay không. Phải bao gồm cả các trigger tích cực ("Sử dụng khi X") và các trường hợp loại trừ tiêu cực ("KHÔNG dùng cho Y").
 
-### Core Process
-The heart of the skill. This is the step-by-step workflow the agent follows. Must be specific and actionable — not vague advice.
+### Quy Trình Cốt Lõi (Core Process)
+Trái tim của skill. Đây là luồng công việc từng bước một (step-by-step) mà agent phải tuân theo. Phải cụ thể và có thể hành động được (actionable) — không đưa ra lời khuyên chung chung.
 
-**Good:** "Run `npm test` and verify all tests pass"
-**Bad:** "Make sure the tests work"
+**Tốt:** "Chạy `npm test` và xác minh rằng tất cả các tests đều pass"
+**Kém:** "Đảm bảo rằng các tests hoạt động tốt"
 
-### Common Rationalizations
-The most distinctive feature of well-crafted skills. These are excuses agents use to skip important steps, paired with rebuttals. They prevent the agent from rationalizing its way out of following the process.
+### Những Sự Ngụy Biện Phổ Biến (Common Rationalizations)
+Đặc điểm khác biệt nhất của một skill được thiết kế tốt. Đây là những lời bào chữa mà agents thường dùng để bỏ qua các bước quan trọng, đi kèm với các phản bác. Chúng ngăn chặn việc agent tự viện cớ (rationalize) để trốn tránh việc tuân thủ quy trình.
 
-Think of every time an agent has said "I'll add tests later" or "This is simple enough to skip the spec" — those go here with a factual counter-argument.
+Hãy nghĩ về tất cả những lần agent từng nói "Tôi sẽ thêm tests sau" hoặc "Cái này đơn giản quá không cần viết spec" — hãy đưa chúng vào đây kèm theo một lập luận phản bác thực tế.
 
-### Red Flags
-Observable signs that the skill is being violated. Useful during code review and self-monitoring.
+### Cờ Đỏ (Red Flags)
+Các dấu hiệu có thể quan sát được cho thấy skill đang bị vi phạm. Hữu ích trong quá trình code review và tự giám sát (self-monitoring).
 
-### Verification
-The exit criteria. A checklist the agent uses to confirm the skill's process is complete. Every checkbox should be verifiable with evidence (test output, build result, screenshot, etc.).
+### Xác Minh (Verification)
+Các tiêu chí hoàn thành (exit criteria). Một checklist mà agent sử dụng để xác nhận rằng quy trình của skill đã hoàn tất. Mỗi hộp kiểm (checkbox) đều phải có thể xác minh được bằng bằng chứng (test output, build result, screenshot, v.v.).
 
-## Supporting Files
+## Các File Hỗ Trợ (Supporting Files)
 
-Create supporting files only when:
-- Reference material exceeds 100 lines (keep the main SKILL.md focused)
-- Code tools or scripts are needed
-- Checklists are long enough to justify separate files
+Chỉ tạo các file hỗ trợ khi:
+- Tài liệu tham khảo vượt quá 100 dòng (hãy giữ cho file SKILL.md chính tập trung)
+- Cần các công cụ code hoặc scripts
+- Checklists đủ dài để biện minh cho việc tách ra file riêng
 
-Keep patterns and principles inline when under 50 lines.
+Nên giữ các patterns và nguyên tắc ngay bên trong (inline) nếu chúng dưới 50 dòng.
 
-If a skill does not need runnable helpers, do not create an empty `scripts/` directory just to mirror other skills. Empty directories add noise without changing how the skill works.
+Nếu một skill không cần các helpers dạng thực thi được (runnable helpers), đừng tạo một thư mục `scripts/` trống trơn chỉ để làm cho giống các skills khác. Các thư mục trống tạo ra sự nhiễu loạn mà không thay đổi cách skill hoạt động.
 
-## Shared References
+## Tài Liệu Tham Khảo Dùng Chung (Shared References)
 
-Checklists used by more than one skill — testing, security, performance, accessibility, definition-of-done — live in `references/` at the repository root, deliberately *not* inside any skill directory.
+Các checklists được sử dụng bởi nhiều hơn một skill — như testing, security, performance, accessibility, definition-of-done — sẽ được lưu ở thư mục `references/` ở gốc kho lưu trữ, cố ý *không* nằm trong bất kỳ thư mục skill nào.
 
-This is a pack-level design choice. The Agent Skills spec describes a skill as a self-contained directory, but several skills here point at the same checklists. Colocating those would force one of two options: copy the checklist into every skill that uses it, or pick one skill to "own" it and have the others reach into that directory. Both drift over time. A single repo-root copy stays the source of truth.
+Đây là một sự lựa chọn thiết kế ở cấp độ gói (pack-level). Mặc dù chuẩn Agent Skills mô tả mỗi skill như một thư mục tự chứa độc lập (self-contained), nhưng có nhiều skills ở đây cùng trỏ đến chung một checklists. Nếu để chung vào một thư mục, chúng ta sẽ phải đối mặt với một trong hai lựa chọn: sao chép (copy) checklist đó vào mọi skill sử dụng nó, hoặc chọn một skill để "sở hữu" nó và bắt các skills khác chọc ngang sang thư mục đó. Cả hai cách này đều sẽ bị sai lệch (drift) theo thời gian. Một bản copy duy nhất ở thư mục gốc (repo-root) sẽ luôn giữ được vai trò là nguồn sự thật duy nhất (source of truth).
 
-The tradeoff is portability: a whole-repo install (such as the Claude Code marketplace plugin) carries `references/` along, but a per-skill install that copies only `skills/<name>/` leaves the repo-root sibling behind, and those links resolve to nothing. That gap is tracked in [#361](https://github.com/addyosmani/agent-skills/issues/361).
+Sự đánh đổi ở đây là tính di động (portability): việc cài đặt toàn bộ repo (như đối với Claude Code marketplace plugin) sẽ mang theo cả thư mục `references/`, nhưng nếu cài đặt trên từng skill bằng cách chỉ copy thư mục `skills/<name>/`, bản sao ở thư mục gốc sẽ bị bỏ lại, và các links tham chiếu sẽ bị gãy. Lỗ hổng này đang được theo dõi ở [#361](https://github.com/addyosmani/agent-skills/issues/361).
 
-Current convention: material used by exactly one skill is a supporting file inside that skill's directory; material shared across skills goes in `references/`.
+Quy ước hiện tại: các tài liệu chỉ dùng cho đúng một skill thì để dưới dạng file hỗ trợ (supporting file) bên trong thư mục của skill đó; các tài liệu dùng chung cho nhiều skills thì để ở `references/`.
 
-## Context Efficiency
+## Hiệu Suất Ngữ Cảnh (Context Efficiency)
 
-Skills load on demand: only the skill name and description sit in context at startup. The full `SKILL.md` loads only when an agent decides the skill is relevant. To keep that load cheap:
+Các skills chỉ được load khi cần (load on demand): chỉ có tên và description của skill nằm trong ngữ cảnh lúc khởi động. Toàn bộ `SKILL.md` chỉ được load khi một agent quyết định rằng skill đó liên quan. Để giữ cho việc tải này tiết kiệm chi phí:
 
-- **Keep `SKILL.md` under 500 lines.** Move detailed reference material into supporting files.
-- **Write specific descriptions.** A precise description helps the agent activate the skill at the right moment and skip it otherwise.
-- **Use progressive disclosure.** Reference supporting files that are read only when the workflow reaches them.
-- **Prefer scripts over inline code.** Executing a script consumes no context; only its output does. Inline code blocks are paid for on every load.
-- **Keep file references one level deep.** Link directly from `SKILL.md` to supporting files rather than chaining through intermediate documents.
+- **Giữ `SKILL.md` dưới 500 dòng.** Chuyển các tài liệu tham khảo chi tiết vào các file hỗ trợ.
+- **Viết descriptions thật cụ thể.** Một description chính xác giúp agent kích hoạt skill đúng lúc và bỏ qua nó khi không cần thiết.
+- **Sử dụng tiết lộ lũy tiến (progressive disclosure).** Trỏ tham chiếu tới các file hỗ trợ, và chúng chỉ được đọc khi workflow chạy đến bước cần thiết.
+- **Ưu tiên scripts hơn là inline code.** Việc thực thi một script không tốn tài nguyên context; chỉ có đầu ra (output) của nó mới tốn. Các block code inline (inline code blocks) sẽ bị tính phí token mỗi khi được load.
+- **Giữ các file references ở độ sâu 1 tầng.** Dẫn link trực tiếp từ `SKILL.md` tới các file hỗ trợ thay vì đi qua (chaining) các tài liệu trung gian.
 
-## Script Requirements
+## Yêu Cầu Về Script
 
-When a skill ships runnable helpers under `scripts/`, each script follows these conventions:
+Khi một skill cung cấp các helpers dạng thực thi được dưới thư mục `scripts/`, mỗi script phải tuân theo các quy ước sau:
 
-- Use a `#!/bin/bash` shebang.
-- Use `set -e` for fail-fast behavior.
-- Write status messages to stderr: `echo "Message" >&2`.
-- Write machine-readable output (JSON) to stdout.
-- Include a cleanup trap for temporary files.
-- Reference the script path as `skills/<skill-name>/scripts/<script>.sh` (repo-relative).
+- Dùng `#!/bin/bash` shebang.
+- Dùng `set -e` để có hành vi fail-fast (lỗi là dừng).
+- Ghi các messages trạng thái vào stderr: `echo "Message" >&2`.
+- Ghi output để máy đọc được (JSON) vào stdout.
+- Bao gồm một cleanup trap (bẫy dọn dẹp) cho các file tạm.
+- Tham chiếu đường dẫn script theo dạng `skills/<skill-name>/scripts/<script>.sh` (tương đối so với repo).
 
-## Writing Principles
+## Nguyên Tắc Viết (Writing Principles)
 
-1. **Process over knowledge.** Skills are workflows, not reference docs. Steps, not facts.
-2. **Specific over general.** "Run `npm test`" beats "verify the tests".
-3. **Evidence over assumption.** Every verification checkbox requires proof.
-4. **Anti-rationalization.** Every skip-worthy step needs a counter-argument in the rationalizations table.
-5. **Progressive disclosure.** Main SKILL.md is the entry point. Supporting files are loaded only when needed.
-6. **Token-conscious.** Every section must justify its inclusion. If removing it wouldn't change agent behavior, remove it.
+1. **Quy trình quan trọng hơn kiến thức (Process over knowledge).** Skills là các workflows, không phải tài liệu tham khảo. Cần các bước, không phải các sự thật.
+2. **Cụ thể thay vì chung chung.** "Chạy `npm test`" ăn đứt "hãy xác minh xem các tests có hoạt động không".
+3. **Bằng chứng quan trọng hơn sự giả định.** Mọi hộp kiểm xác minh (verification checkbox) đều cần có bằng chứng.
+4. **Chống ngụy biện (Anti-rationalization).** Bất kỳ bước nào mà agent có xu hướng muốn bỏ qua đều cần phải có một lập luận phản bác trong bảng rationalizations.
+5. **Tiết lộ lũy tiến (Progressive disclosure).** SKILL.md chính là điểm nhập (entry point). Các file hỗ trợ chỉ được load khi cần.
+6. **Ý thức về Token (Token-conscious).** Mọi section đều phải biện minh được sự có mặt của nó. Nếu xóa nó đi mà không làm thay đổi hành vi của agent, hãy xóa nó.
 
-## Naming Conventions
+## Quy Ước Đặt Tên (Naming Conventions)
 
-- Skill directories: `lowercase-hyphen-separated`
-- Skill files: `SKILL.md` (always uppercase)
-- Supporting files: `lowercase-hyphen-separated.md`
-- Shared references: stored in the root `references/` directory, not inside skill directories (see [Shared References](#shared-references) for why).
-- Skill-specific references: a single supporting doc can stay as a loose file in the skill directory (the `Supporting files` entry above); when several related docs travel with the skill, the emerging convention for self-contained, distributable skills is to group them in a `references/` directory inside the skill directory, so the skill carries its own supporting docs.
+- Thư mục skill: `viet-thuong-va-gach-ngang` (lowercase-hyphen-separated)
+- File skill: `SKILL.md` (luôn luôn viết hoa toàn bộ)
+- Các file hỗ trợ: `viet-thuong-va-gach-ngang.md`
+- Các tài liệu dùng chung: lưu trữ ở thư mục `references/` ở gốc repo, không nằm trong các thư mục skill (xem [Tài Liệu Tham Khảo Dùng Chung](#shared-references) để hiểu tại sao).
+- Các tài liệu dùng riêng cho skill: một tài liệu hỗ trợ duy nhất có thể được thả lỏng dưới dạng file nằm trực tiếp trong thư mục skill (mục `Các file hỗ trợ` ở bên trên); khi có nhiều docs liên quan cùng đi liền với skill, quy ước đang thành hình cho các skill tự chứa (self-contained) và có thể phân phối được là nhóm chúng lại trong một thư mục `references/` nằm bên trong thư mục skill đó, để bản thân skill tự mang theo các tài liệu hỗ trợ của chính nó.
 
-## Cross-Skill References
+## Tham Chiếu Chéo Giữa Các Skill (Cross-Skill References)
 
-Reference other skills by name:
+Tham chiếu các skills khác bằng tên:
 
 ```markdown
-Follow the `test-driven-development` skill for writing tests.
-If the build breaks, use the `debugging-and-error-recovery` skill.
+Hãy làm theo skill `dev-test-driven-development` để viết tests.
+Nếu build bị vỡ, hãy dùng skill `dev-debugging`.
 ```
 
-Don't duplicate content between skills — reference and link instead.
+Đừng sao chép lặp lại (duplicate) nội dung giữa các skills — hãy tham chiếu và liên kết (link) tới chúng.
 
-## Required vs Recommended
+## Bắt Buộc vs. Khuyên Dùng (Required vs Recommended)
 
-Required:
+Bắt buộc:
 
-- A `skills/<skill-name>/SKILL.md` file
-- Valid YAML frontmatter with `name` and `description`
-- A description that includes both what the skill does and when to use it
+- Phải có file `skills/<skill-name>/SKILL.md`
+- Phải có frontmatter YAML hợp lệ với trường `name` và `description`
+- Phải có một description mô tả được cả hai ý: skill này làm gì và khi nào nên dùng nó
 
-Recommended:
+Khuyên dùng:
 
-- The standard section flow shown above
-- Equivalent headings such as `How It Works`, `Core Process`, or `Workflow` when they read more naturally for the skill
-- Supporting files only when they keep the main `SKILL.md` focused
+- Luồng các sections tiêu chuẩn như đã minh họa ở trên
+- Các tiêu đề (headings) tương đương như `Cách Nó Hoạt Động (How It Works)`, `Quy Trình Cốt Lõi (Core Process)`, hay `Quy Trình (Workflow)` khi chúng có cảm giác tự nhiên hơn cho skill đó
+- Chỉ dùng các file hỗ trợ (Supporting files) khi chúng thực sự giúp giữ cho `SKILL.md` chính được tập trung

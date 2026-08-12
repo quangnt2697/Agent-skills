@@ -1,124 +1,124 @@
-# Agent Personas
+# Các Agent Personas
 
-Specialist personas that play a single role with a single perspective. Each persona is a Markdown file consumed as a system prompt by your harness (Claude Code, Cursor, Copilot, etc.).
+Các personas chuyên biệt đóng một vai trò duy nhất với một góc nhìn duy nhất. Mỗi persona là một file Markdown được sử dụng làm system prompt cho công cụ của bạn (Claude Code, Cursor, Copilot, v.v.).
 
-| Persona                                                         | Role | Best for |
+| Persona                                                         | Vai Trò | Phù hợp nhất cho |
 |-----------------------------------------------------------------|------|----------|
-| [code-reviewer](../agents/code-reviewer.md)                     | Senior Staff Engineer | Five-axis review before merge |
-| [security-auditor](../agents/security-auditor.md)               | Security Engineer | Vulnerability detection, OWASP-style audit |
-| [qa](../agents/qa.md)                                           | QA Engineer | Test strategy, coverage analysis, Prove-It pattern, checklist design, BDD Gherkin |
-| [web-performance-auditor](../agents/web-performance-auditor.md) | Web Performance Engineer | Core Web Vitals audit, loading/rendering/network analysis |
+| [code-reviewer](../agents/code-reviewer.md)                     | Senior Staff Engineer | Review code 5 phương diện trước khi merge |
+| [security-auditor](../agents/security-auditor.md)               | Security Engineer | Phát hiện lỗ hổng, audit theo chuẩn OWASP |
+| [qa](../agents/qa.md)                                           | QA Engineer | Chiến lược test, phân tích độ bao phủ, thiết kế checklist, BDD Gherkin |
+| [web-performance-auditor](../agents/web-performance-auditor.md) | Web Performance Engineer | Audit Core Web Vitals, phân tích load/render/network |
 
-## How personas relate to skills and commands
+## Personas liên quan đến skills và lệnh như thế nào
 
-Three layers, each with a distinct job:
+Có ba tầng (layers), mỗi tầng đảm nhiệm một công việc riêng biệt:
 
-| Layer | What it is | Example | Composition role |
+| Tầng | Định nghĩa | Ví dụ | Vai trò trong bố cục |
 |-------|-----------|---------|------------------|
-| **Skill** | A workflow with steps and exit criteria | `code-review-and-quality` | The *how* — invoked from inside a persona or command |
-| **Persona** | A role with a perspective and an output format | `code-reviewer` | The *who* — adopts a viewpoint, produces a report |
-| **Command** | A user-facing entry point | `/review`, `/ship` | The *when* — composes personas and skills |
+| **Skill** | Một quy trình với các bước và tiêu chí hoàn thành | `review-code-and-quality` | Từ *như thế nào* (how) — được gọi từ bên trong một persona hoặc một lệnh |
+| **Persona** | Một vai trò với góc nhìn và định dạng đầu ra | `code-reviewer` | Từ *ai* (who) — nhận một góc nhìn, đưa ra một báo cáo |
+| **Lệnh (Command)** | Điểm bắt đầu dành cho người dùng | `/review`, `/dev-audit` | Từ *khi nào* (when) — kết hợp personas và skills |
 
-The user (or a slash command) is the orchestrator. **Personas do not call other personas.** Skills are mandatory hops inside a persona's workflow.
+Người dùng (hoặc một slash command) đóng vai trò điều phối (orchestrator). **Personas không gọi các personas khác.** Skills là các bước bắt buộc bên trong quy trình làm việc của một persona.
 
-## When to use each
+## Khi nào nên dùng cái nào
 
-### Direct persona invocation
-Pick this when you want one perspective on the current change and the user is in the loop.
+### Gọi trực tiếp persona
+Hãy chọn cách này khi bạn muốn có một góc nhìn cho thay đổi hiện tại và người dùng đang trực tiếp làm việc.
 
-- "Review this PR" → invoke `code-reviewer` directly
-- "Are there security issues in `auth.ts`?" → invoke `security-auditor` directly
-- "What tests are missing for the checkout flow?" → invoke `test-engineer` directly
-- "Audit Core Web Vitals on the product page" → invoke `web-performance-auditor` directly
+- "Hãy review PR này" → gọi trực tiếp `code-reviewer`
+- "Có vấn đề bảo mật nào trong `auth.ts` không?" → gọi trực tiếp `security-auditor`
+- "Luồng checkout (thanh toán) đang thiếu những tests nào?" → gọi trực tiếp `qa`
+- "Audit Core Web Vitals trên trang sản phẩm" → gọi trực tiếp `web-performance-auditor`
 
-### Slash command (single persona behind it)
-Pick this when there's a repeatable workflow you'd otherwise re-explain every time.
+### Slash command (chỉ có 1 persona đứng sau)
+Hãy chọn cách này khi có một quy trình lặp đi lặp lại mà bình thường bạn sẽ phải giải thích lại mỗi lần.
 
-- `/review` → wraps `code-reviewer` with the project's review skill
-- `/test` → wraps `test-engineer` with TDD skill
-- `/qa` → wraps `test-engineer` with qa-test-design skill for checklist + BDD Gherkin design
-- `/webperf` → wraps `web-performance-auditor` for performance-focused audits on web apps
+- `/review` → bọc `code-reviewer` với skill review của dự án
+- `/unit-test` → bọc `qa` với skill TDD
+- `/qa` → bọc `qa` với skill qa-test-design để thiết kế checklist + BDD Gherkin
+- `/webperf` → bọc `web-performance-auditor` để audit chuyên sâu hiệu năng trên web apps
 
-### Slash command (orchestrator — fan-out)
-Pick this only when **independent** investigations can run in parallel and produce reports that a single agent then merges.
+### Slash command (điều phối viên — chạy song song / fan-out)
+Chỉ chọn cách này khi các đánh giá **độc lập** có thể chạy song song và tạo ra các báo cáo để một agent duy nhất có thể tổng hợp sau đó.
 
-- `/ship` → fans out to `code-reviewer` + `security-auditor` + `test-engineer` in parallel, then synthesizes their reports into a go/no-go decision
+- `/dev-audit` → chạy song song `code-reviewer` + `security-auditor` + `qa`, sau đó tổng hợp các báo cáo của chúng thành quyết định có nên duyệt (go/no-go) hay không.
 
-This is the only orchestration pattern this repo endorses. See [references/orchestration-patterns.md](../references/orchestration-patterns.md) for the full pattern catalog and anti-patterns.
+Đây là mô hình điều phối duy nhất mà kho lưu trữ này ủng hộ. Hãy xem [references/orchestration-patterns.md](../references/orchestration-patterns.md) để biết thêm danh mục đầy đủ các mẫu và phản mẫu.
 
-## Decision matrix
-
-```
-Is the work a single perspective on a single artifact?
-├── Yes → Direct persona invocation
-└── No  → Are the sub-tasks independent (no shared mutable state, no ordering)?
-         ├── Yes → Slash command with parallel fan-out (e.g. /ship)
-         └── No  → Sequential slash commands run by the user (/spec → /plan → /qa → /build → /test → /review)
-```
-
-## Worked example: valid orchestration
-
-`/ship` is the canonical fan-out orchestrator in this repo:
+## Ma trận quyết định
 
 ```
-/ship
-  ├── (parallel) code-reviewer    → review report
-  ├── (parallel) security-auditor → audit report
-  └── (parallel) test-engineer    → coverage report
+Công việc có phải là một góc nhìn duy nhất trên một tài liệu/thay đổi duy nhất không?
+├── Có → Gọi trực tiếp persona
+└── Không  → Các công việc con có độc lập không (không chia sẻ trạng thái, không phụ thuộc thứ tự)?
+         ├── Có → Slash command với chạy song song (VD: /dev-audit)
+         └── Không  → Slash commands chạy tuần tự bởi người dùng (/tech-spec → /plan → /qa → /build → /unit-test → /review)
+```
+
+## Ví dụ thực tiễn: Điều phối hợp lệ
+
+`/dev-audit` là điều phối viên fan-out tiêu chuẩn trong repo này:
+
+```
+/dev-audit
+  ├── (chạy song song) code-reviewer    → báo cáo review
+  ├── (chạy song song) security-auditor → báo cáo audit
+  └── (chạy song song) qa               → báo cáo độ bao phủ test
                   ↓
-        merge phase (main agent)
+         Giai đoạn hợp nhất (main agent)
                   ↓
-        go/no-go decision + rollback plan
+      Quyết định duyệt + kế hoạch sửa lỗi tự động
 ```
 
-Why this works:
-- Each sub-agent operates on the same diff but produces a **different perspective**
-- They have no dependencies on each other → genuine parallelism, real wall-clock savings
-- Each runs in a fresh context window → main session stays uncluttered
-- The merge step is small and benefits from full context, so it stays in the main agent
+Tại sao cách này hiệu quả:
+- Mỗi sub-agent làm việc trên cùng một mã thay đổi nhưng đưa ra một **góc nhìn khác nhau**
+- Chúng không phụ thuộc lẫn nhau → hoàn toàn song song, tiết kiệm thời gian thực
+- Mỗi sub-agent chạy trong một context riêng biệt → phiên làm việc chính luôn gọn ngay ngắn
+- Bước hợp nhất nhỏ và được hưởng lợi từ việc có đầy đủ context, do đó nó nằm ở phiên làm việc của agent chính.
 
-## Worked example: invalid orchestration (do not build this)
+## Ví dụ thực tiễn: Điều phối không hợp lệ (đừng làm theo)
 
-A `meta-orchestrator` persona whose job is "decide which other persona to call":
+Một persona `meta-orchestrator` có nhiệm vụ "quyết định xem nên gọi persona nào khác":
 
 ```
 /work-on-pr → meta-orchestrator
-                  ↓ (decides "this needs a review")
+                  ↓ (quyết định "cần review")
               code-reviewer
-                  ↓ (returns)
-              meta-orchestrator (paraphrases result)
+                  ↓ (trả về kết quả)
+              meta-orchestrator (tóm tắt lại kết quả)
                   ↓
-              user
+               user
 ```
 
-Why this fails:
-- Pure routing layer with no domain value
-- Adds two paraphrasing hops → information loss + 2× token cost
-- The user already knows they want a review; let them call `/review` directly
-- Replicates work that slash commands and `AGENTS.md` intent-mapping already do
+Tại sao cách này thất bại:
+- Chỉ là tầng điều hướng (routing) thuần túy không mang lại giá trị thực tế
+- Thêm hai vòng tóm tắt (paraphrasing hops) → làm mất thông tin + gấp 2 lần chi phí token
+- Người dùng đã biết họ muốn review; hãy để họ trực tiếp gọi `/review`
+- Lặp lại công việc mà slash commands và cấu hình ý định trong `AGENTS.md` đã làm tốt.
 
-## Rules for personas
+## Quy tắc dành cho personas
 
-1. A persona is a single role with a single output format. If you find yourself adding a second role, create a second persona.
-2. **Personas do not invoke other personas.** Composition is the job of slash commands or the user. On Claude Code this is also a hard platform constraint — *"subagents cannot spawn other subagents"* — so the rule is enforced for you.
-3. A persona may invoke skills (the *how*).
-4. Every persona file ends with a "Composition" block stating where it fits.
+1. Một persona là một vai trò duy nhất với một định dạng đầu ra duy nhất. Nếu bạn thấy mình đang thêm vai trò thứ hai, hãy tạo một persona thứ hai.
+2. **Personas không gọi các personas khác.** Việc kết hợp (Composition) là việc của slash commands hoặc người dùng. Trên Claude Code, đây cũng là rào cản từ hệ thống — *"subagents cannot spawn other subagents"* — nên quy tắc này đã được ép buộc sẵn.
+3. Một persona có thể gọi các skills (phần *như thế nào - how*).
+4. Mọi file persona phải kết thúc bằng một phần "Composition" ghi rõ nó phù hợp ở đâu.
 
-## Claude Code interop
+## Khả năng tương tác với Claude Code
 
-The personas in this repo are designed to work as Claude Code subagents and as Agent Teams teammates without modification:
+Các personas trong repo này được thiết kế để hoạt động như Claude Code subagents và như đồng đội trong Agent Teams mà không cần phải chỉnh sửa gì:
 
-- **As subagents:** auto-discovered when this plugin is enabled (no path config needed). Use the Agent tool with `subagent_type: code-reviewer` (or `security-auditor`, `test-engineer`). `/ship` is the canonical example.
-- **As Agent Teams teammates** (experimental, requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`): reference the same persona name when spawning a teammate. The persona's body is **appended to** the teammate's system prompt as additional instructions (not a replacement), so your persona text sits on top of the team-coordination instructions the lead installs (SendMessage, task-list tools, etc.).
+- **Dưới dạng subagents:** Tự động nhận diện khi plugin này được kích hoạt. Hãy sử dụng công cụ Agent với `subagent_type: code-reviewer` (hoặc `security-auditor`, `qa`). `/dev-audit` là ví dụ tiêu chuẩn.
+- **Dưới dạng đồng đội trong Agent Teams** (đang thử nghiệm, yêu cầu `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`): tham chiếu cùng tên persona khi gọi một đồng đội. Nội dung của persona được **nối thêm vào** system prompt của đồng đội dưới dạng chỉ dẫn bổ sung (không phải thay thế), vì vậy text của persona sẽ đè lên trên các chỉ dẫn phối hợp nhóm (SendMessage, task-list tools, v.v.).
 
-Subagents only report results back to the main agent. Agent Teams let teammates message each other directly. Use subagents when reports are enough; use Agent Teams when sub-agents need to challenge each other's findings (e.g. competing-hypothesis debugging). See [references/orchestration-patterns.md](../references/orchestration-patterns.md) for the full mapping.
+Subagents chỉ báo cáo kết quả về lại cho agent chính. Agent Teams cho phép đồng đội nhắn tin trực tiếp với nhau. Hãy dùng subagents khi bạn chỉ cần các báo cáo; dùng Agent Teams khi subagents cần đối chất về các kết quả của nhau (VD: debug các giả thuyết cạnh tranh nhau). Xem [references/orchestration-patterns.md](../references/orchestration-patterns.md) để xem chi tiết.
 
-Plugin agents do not support `hooks`, `mcpServers`, or `permissionMode` frontmatter — those fields are silently ignored. Avoid relying on them when authoring new personas here.
+Các plugin agents không hỗ trợ frontmatter `hooks`, `mcpServers`, hoặc `permissionMode` — các trường này bị bỏ qua một cách âm thầm. Tránh phụ thuộc vào chúng khi tạo personas mới ở đây.
 
-## Adding a new persona
+## Thêm một persona mới
 
-1. Create `agents/<role>.md` with the same frontmatter format used by existing personas.
-2. Define the role, scope, output format, and rules.
-3. Add a **Composition** block at the bottom (Invoke directly when / Invoke via / Do not invoke from another persona).
-4. Add the persona to the table at the top of this file.
-5. If the persona enables a new orchestration pattern, document it in `references/orchestration-patterns.md` rather than inventing the pattern in the persona file itself.
+1. Tạo `agents/<role>.md` với định dạng frontmatter tương tự như các personas hiện có.
+2. Định nghĩa vai trò, phạm vi, định dạng đầu ra và các quy tắc.
+3. Thêm một phần **Composition** ở cuối.
+4. Thêm persona vào bảng ở đầu file này.
+5. Nếu persona kích hoạt một mô hình điều phối mới, hãy viết tài liệu cho nó trong `references/orchestration-patterns.md` thay vì sáng chế ra mẫu điều phối đó bên trong chính file persona.

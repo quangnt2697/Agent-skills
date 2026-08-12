@@ -1,0 +1,35 @@
+---
+description: Sinh code automation test từ Gherkin file, chạy test, và xuất báo cáo kết quả
+---
+
+Kích hoạt skill qa-auto-design. Đọc file SKILL.md của skill qa-auto-design để thực hiện đúng workflow 7 bước.
+
+$ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
+
+## Nguồn đầu vào
+
+1. **File .feature:** `tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
+2. **File checklist:** `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md`
+3. **File spec (nếu có):** `specs/jira-import/{issueKey}/{issueKey}-final.md`
+4. **Code function có sẵn** trong workspace do dev team phát triển — tìm và tái sử dụng
+
+## Quy trình
+
+1. Bước 0: Kiểm tra kiến trúc project hiện có
+2. Bước 1: Nhận diện Task Type từ file .feature hoặc spec
+3. Bước 2: Đối chiếu Checklist ↔ Gherkin (Quality Gate) — đảm bảo coverage 100%
+4. Bước 3: Phân tích & Recon — tìm code có sẵn của dev để tái sử dụng
+5. Bước 4-5: Thiết kế POM/Service + Sinh code test (import code dev, chỉ viết tầng test)
+6. Bước 6: Review code tự động (Quality Gate)
+7. Bước 7: Chạy pytest + xuất báo cáo Markdown
+
+## Output
+
+- Test scripts: `tests/qa-test-design/{issueKey}/steps/test_*.py`
+- Báo cáo: `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
+
+## Quy tắc
+
+1. BẮT BUỘC tìm và tái sử dụng code API/WebSocket có sẵn của dev. KHÔNG viết lại từ đầu.
+2. Nếu file `.feature` chưa tồn tại, yêu cầu user chạy `/qa-test-design` trước.
+3. Tất cả output viết bằng TIẾNG VIỆT (trừ code và tags).

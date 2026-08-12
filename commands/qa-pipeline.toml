@@ -35,7 +35,7 @@ KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các ph
 - Bước 0-2: Scan workspace + đối chiếu .feature
 - Bước 3: Tìm & tái sử dụng code dev có sẵn
 - Bước 4-5: Sinh test scripts (`test_*.py`)
-- Bước 6: Code review tự động
+- Bước 6: Gọi skill `review-code-and-quality` dưới vai trò QA để review tự động
 - Bước 7: Chạy pytest + self-fix loop (chỉ sửa script error, KHÔNG ép FAIL→PASS)
 - Output: `tests/qa-test-design/{issueKey}/steps/test_*.py`
 - → Tự động chuyển Phase 4

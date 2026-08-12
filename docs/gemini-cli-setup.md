@@ -1,132 +1,127 @@
-# Using agent-skills with Gemini CLI
+# Sử dụng agent-skills với Gemini CLI
 
-## Setup
+## Cài Đặt (Setup)
 
-### Option 1: Install as Skills (Recommended)
+### Lựa chọn 1: Cài đặt dưới dạng Skills (Khuyên dùng)
 
-Gemini CLI has a native skills system that auto-discovers `SKILL.md` files in `.gemini/skills/` or `.agents/skills/` directories. Each skill activates on demand when it matches your task.
+Gemini CLI có một hệ thống skills tự nhiên giúp tự động phát hiện (auto-discover) các file `SKILL.md` nằm trong thư mục `.gemini/skills/` hoặc `.agents/skills/`. Mỗi skill sẽ tự động kích hoạt khi có nhu cầu dựa trên sự khớp (match) với task của bạn.
 
-**Install from the repo:**
+**Cài đặt từ repo:**
 
 ```bash
 gemini skills install https://github.com/addyosmani/agent-skills.git --path skills
 ```
 
-**Or install from a local clone:**
+**Hoặc cài đặt từ một bản clone cục bộ:**
 
 ```bash
 git clone https://github.com/addyosmani/agent-skills.git
 gemini skills install /path/to/agent-skills/skills/
 ```
 
-**Install for a specific workspace only:**
+**Chỉ cài đặt riêng cho workspace cụ thể:**
 
 ```bash
 gemini skills install /path/to/agent-skills/skills/ --scope workspace
 ```
 
-Skills installed at workspace scope go into `.gemini/skills/` (or `.agents/skills/`). User-level skills go into `~/.gemini/skills/`.
+Các skills cài đặt ở phạm vi workspace sẽ nằm trong `.gemini/skills/` (hoặc `.agents/skills/`). Các skills cấp user sẽ nằm ở `~/.gemini/skills/`.
 
-Once installed, verify with:
+Sau khi cài đặt xong, hãy xác minh bằng lệnh:
 
 ```
 /skills list
 ```
 
-Gemini CLI injects skill names and descriptions into the prompt automatically. When it recognizes a matching task, it asks permission to activate the skill before loading its full instructions.
+Gemini CLI sẽ tự động tiêm (inject) tên và mô tả của skill vào prompt. Khi nó nhận diện được task phù hợp, nó sẽ hỏi quyền để kích hoạt skill đó trước khi tải toàn bộ tài liệu hướng dẫn của skill.
 
-### Option 2: GEMINI.md (Persistent Context)
+### Lựa chọn 2: Dùng GEMINI.md (Ngữ cảnh cố định)
 
-For skills you want always loaded as persistent project context (rather than on-demand activation), add them to your project's `GEMINI.md`:
+Đối với các skills mà bạn muốn luôn được load làm ngữ cảnh cố định (persistent context) cho dự án (thay vì kích hoạt khi cần), hãy thêm chúng vào file `GEMINI.md` của dự án:
 
 ```bash
-# Create GEMINI.md with core skills as persistent context
+# Tạo GEMINI.md chứa các skills cốt lõi làm ngữ cảnh cố định
 cat /path/to/agent-skills/skills/incremental-implementation/SKILL.md > GEMINI.md
 echo -e "\n---\n" >> GEMINI.md
-cat /path/to/agent-skills/skills/code-review-and-quality/SKILL.md >> GEMINI.md
+cat /path/to/agent-skills/skills/review-code-and-quality/SKILL.md >> GEMINI.md
 ```
 
-You can also modularize by importing from separate files:
+Bạn cũng có thể module hóa bằng cách import từ các file riêng biệt:
 
 ```markdown
-# Project Instructions
+# Hướng dẫn dự án
 
-@skills/test-driven-development/SKILL.md
+@skills/dev-test-driven-development/SKILL.md
 @skills/incremental-implementation/SKILL.md
 ```
 
-Use `/memory show` to verify loaded context, and `/memory reload` to refresh after changes.
+Sử dụng `/memory show` để kiểm tra ngữ cảnh đã được load, và `/memory reload` để làm mới sau khi thay đổi.
 
-> **Skills vs GEMINI.md:** Skills are on-demand expertise that activate only when relevant, keeping your context window clean. GEMINI.md provides persistent context loaded for every prompt. Use skills for phase-specific workflows and GEMINI.md for always-on project conventions.
+> **Skills so với GEMINI.md:** Skills là những chuyên môn theo yêu cầu, chỉ kích hoạt khi thực sự cần, giúp context window của bạn gọn gàng. GEMINI.md cung cấp các ngữ cảnh cố định (persistent context) được load cho mọi prompt. Hãy dùng skills cho các luồng công việc theo từng giai đoạn nhất định và dùng GEMINI.md cho các quy ước chung của toàn dự án.
 
-## Recommended Configuration
+## Thiết Lập Khuyên Dùng
 
-### Always-On (GEMINI.md)
+### Luôn Bật (Always-On với GEMINI.md)
 
-Add these as persistent context for every session:
+Thêm các skills này làm ngữ cảnh cố định cho mọi phiên làm việc:
 
-- `incremental-implementation` — Build in small verifiable slices
-- `code-review-and-quality` — Five-axis review
+- `incremental-implementation` — Xây dựng bằng các phần cắt nhỏ có thể xác minh được
+- `review-code-and-quality` — Review 5 phương diện
 
-### On-Demand (Skills)
+### Gọi Khi Cần (On-Demand với Skills)
 
-Install these as skills so they activate only when relevant:
+Hãy cài đặt các skills này để chúng chỉ kích hoạt khi liên quan:
 
-- `test-driven-development` — Activates when implementing logic or fixing bugs
-- `spec-driven-development` — Activates when starting a new project or feature
-- `frontend-ui-engineering` — Activates when building UI
-- `security-and-hardening` — Activates during security reviews
-- `performance-optimization` — Activates during performance work
+- `dev-test-driven-development` — Kích hoạt khi implement logic hoặc sửa bug
+- `dev-spec-driven-development` — Kích hoạt khi bắt đầu một dự án hoặc tính năng mới
+- `dev-frontend-engineering` — Kích hoạt khi xây dựng UI (giao diện)
+- `dev-security` — Kích hoạt trong quá trình rà soát bảo mật
+- `dev-performance` — Kích hoạt khi làm các việc liên quan đến tối ưu hiệu năng
 
-## Advanced Configuration
+## Cấu Hình Nâng Cao
 
-### MCP Integration
+### Tích Hợp MCP
 
-Many skills in this pack leverage [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) tools to interact with the environment. For example:
+Nhiều skills trong bộ này tận dụng các công cụ [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) để tương tác với môi trường. Ví dụ:
 
-- `browser-testing-with-devtools` uses the `chrome-devtools` MCP extension.
-- `performance-optimization` can benefit from performance-related MCP tools.
+- `dev-browser-testing-with-devtools` sử dụng MCP extension `chrome-devtools`.
+- `dev-performance` có thể hưởng lợi từ các MCP tools liên quan đến hiệu năng.
 
-To enable these, ensure you have the relevant MCP extensions installed in your Gemini CLI configuration (`~/.gemini/config.json`).
+Để kích hoạt chúng, hãy đảm bảo bạn đã cài đặt các MCP extensions tương ứng trong file cấu hình Gemini CLI của bạn (`~/.gemini/config.json`).
 
-### Session Hooks
+### Các Session Hooks (Móc sự kiện phiên)
 
-Gemini CLI supports session lifecycle hooks. You can use these to automatically inject context or run validation scripts at the start of a session.
+Gemini CLI hỗ trợ session lifecycle hooks (các mốc sự kiện vòng đời phiên). Bạn có thể sử dụng chúng để tự động tiêm context hoặc chạy các script xác nhận vào lúc khởi tạo một phiên.
 
-To replicate the `agent-skills` experience from other tools, you can configure a `SessionStart` hook that reminds you of the available skills or loads a meta-skill.
+Để có trải nghiệm `agent-skills` giống như ở các công cụ khác, bạn có thể cấu hình một `SessionStart` hook để nhắc bạn về các skills đang có hoặc load luôn meta-skill.
 
-### Explicit Context Loading
+### Load Ngữ Cảnh Tường Minh (Explicit Context Loading)
 
-You can explicitly load any skill into your current session by referencing it with the `@` symbol in your prompt:
+Bạn có thể ép buộc (explicitly load) bất kỳ skill nào vào session hiện tại bằng cách gọi tên (tag) nó bằng ký hiệu `@` trong prompt của bạn:
 
 ```markdown
-Use the @skills/test-driven-development/SKILL.md skill to implement this fix.
+Hãy dùng skill @skills/dev-test-driven-development/SKILL.md để làm bản sửa lỗi (fix) này.
 ```
 
-This is useful when you want to ensure a specific workflow is followed without waiting for auto-discovery.
+Điều này rất hữu dụng khi bạn muốn chắc chắn một quy trình công việc cụ thể được tuân thủ mà không cần chờ tính năng tự phát hiện (auto-discovery) bắt sóng được.
 
-## Slash Commands
+## Các Lệnh (Slash Commands)
 
-The repo ships 8 slash commands under `.gemini/commands/`: 7 lifecycle commands plus the `/webperf` specialist audit. Gemini CLI auto-discovers them when you run from the project root.
+Repo cung cấp 7 slash commands dưới thư mục `.gemini/commands/`: 6 lệnh cho vòng đời phát triển cộng thêm lệnh `/webperf` chuyên cho audit. Gemini CLI sẽ tự động phát hiện chúng khi bạn đứng ở thư mục gốc của dự án.
 
-| Command | What it does |
+| Lệnh | Chức năng |
 |---------|--------------|
-| `/spec` | Write a structured spec before writing code |
-| `/planning` | Break work into small, verifiable tasks |
-| `/build` | Implement the next task incrementally |
-| `/test` | Run TDD workflow — red, green, refactor |
-| `/review` | Five-axis code review |
-| `/code-simplify` | Reduce complexity without changing behavior |
-| `/ship` | Pre-launch checklist via parallel persona fan-out |
-| `/webperf` | Audit browser-facing apps for Core Web Vitals and performance issues |
+| `/tech-spec` | Viết đặc tả có cấu trúc trước khi viết code |
+| `/plan` | Chia nhỏ công việc thành các task có thể kiểm chứng |
+| `/build` | Viết code cho task hiện tại |
+| `/unit-test` | Chạy workflow TDD — red, green, refactor |
+| `/review` | Review code 5 phương diện |
+| `/code-simplify` | Giảm độ phức tạp mà không làm thay đổi hành vi |
+| `/webperf` | Audit Core Web Vitals và hiệu năng cho web apps |
 
-Each command invokes the corresponding skill automatically — no manual skill loading required.
+## Mẹo Sử Dụng (Usage Tips)
 
-> **Note:** Use `/planning` instead of `/plan` — `/plan` conflicts with a Gemini CLI internal command name.
-
-## Usage Tips
-
-1. **Prefer skills over GEMINI.md** — Skills activate on demand and keep your context window focused. Only put skills in GEMINI.md if you want them always loaded.
-2. **Skill descriptions matter** — Each SKILL.md has a `description` field in its frontmatter that tells agents when to activate it. The descriptions in this repo are optimized for auto-discovery across all supported tools (Claude Code, Gemini CLI, etc.) by clearly stating both *what* the skill does and *when* it should be triggered.
-3. **Use agents for review** — Copy `agents/code-reviewer.md` content when requesting structured code reviews.
-4. **Combine with references** — Reference checklists from `references/` when working on specific quality areas like testing or performance.
+1. **Ưu tiên Skills thay vì GEMINI.md** — Skills kích hoạt on-demand và giúp context window của bạn luôn tập trung. Chỉ bỏ những skills nào bạn muốn lúc nào cũng phải load vào GEMINI.md.
+2. **Descriptions (Phần mô tả) của skill rất quan trọng** — Mỗi SKILL.md có một trường `description` trong cấu trúc frontmatter để nói cho agents biết khi nào cần kích hoạt nó. Các descriptions trong repo này đã được tối ưu hóa để tính năng auto-discovery có thể hoạt động tốt trên tất cả các công cụ hỗ trợ (Claude Code, Gemini CLI, v.v.) bằng cách khai báo rõ ràng *những gì* skill đó làm và *khi nào* nó nên được gọi.
+3. **Sử dụng agents để review** — Hãy copy nội dung của `agents/code-reviewer.md` khi bạn muốn yêu cầu một bài review code có cấu trúc.
+4. **Kết hợp với các tài liệu tham khảo (references)** — Tham chiếu tới các checklists từ thư mục `references/` khi làm việc trên một khu vực chất lượng cụ thể nào đó (như testing hoặc hiệu năng).

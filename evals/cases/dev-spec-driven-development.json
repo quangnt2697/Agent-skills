@@ -1,0 +1,54 @@
+{
+  "skill_name": "dev-spec-driven-development",
+  "trigger": {
+    "positive": [
+      { "prompt": "Viết Tech-Spec dựa trên Business-Spec", "top_k": 1 },
+      { "prompt": "Thiết kế kỹ thuật cho feature mới", "top_k": 3 },
+      { "prompt": "Tạo API contract và data model", "top_k": 3 },
+      { "prompt": "Document Architecture Decision", "top_k": 3 },
+      { "prompt": "Write technical specification from business requirements", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "Import Jira issue và phân tích yêu cầu", "owner": "ba-spec" },
+      { "prompt": "Chia nhỏ thành tasks có thể implement", "owner": "planning-and-task-breakdown" },
+      { "prompt": "Implement code cho feature", "owner": "incremental-implementation" }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "execution",
+      "prompt": "Viết Tech-Spec cho Order Management feature dựa trên Business-Spec đã có",
+      "expected_output": "Complete Tech-Spec with architecture, API contract, data model, business logic, error handling, and testing strategy",
+      "files": [
+        "dev-spec-driven-development"
+      ],
+      "expectations": [
+        "Tech-Spec reads Business-Spec from correct path",
+        "Architecture Decision aligns with existing project stack",
+        "API Contract includes detailed endpoints with request/response examples",
+        "Data Model has complete SQL DDL with indexes and constraints",
+        "Business Logic covers all Business Rules from Business-Spec",
+        "Error Handling includes retry logic, circuit breaker, idempotency",
+        "Testing Strategy has unit/integration/load test plans",
+        "Non-Functional Requirements are quantified (numbers, not adjectives)",
+        "Output file is generated at workspace/{issueKey}/planning/tech-spec.md"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "execution",
+      "prompt": "Review Tech-Spec and check if it covers all Business Rules from Business-Spec",
+      "expected_output": "Traceability matrix showing Business Rule → Tech-Spec section mapping, with gaps highlighted",
+      "files": [
+        "dev-spec-driven-development"
+      ],
+      "expectations": [
+        "Agent reads both Business-Spec and Tech-Spec",
+        "Creates mapping between Business Rules and Tech-Spec sections",
+        "Identifies missing Business Rules not covered in Tech-Spec",
+        "Provides recommendations to fill gaps"
+      ]
+    }
+  ]
+}

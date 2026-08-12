@@ -109,6 +109,6 @@ Khi thiết kế checklist thực thi hoặc kịch bản BDD Gherkin:
 ## Kết hợp
 
 - **Kích hoạt trực tiếp khi:** user yêu cầu thiết kế test, phân tích bao phủ, test Prove-It cho bug cụ thể, thiết kế checklist, hoặc kịch bản BDD Gherkin.
-- **Kích hoạt thông qua:** `/test` (workflow TDD) hoặc `/ship` (fan-out song song để phân tích khoảng trống bao phủ cùng `code-reviewer` và `security-auditor`).
+- **Kích hoạt thông qua:** `/unit-test` (workflow TDD) hoặc `/ship` (fan-out song song để phân tích khoảng trống bao phủ cùng `code-reviewer` và `security-auditor`).
 - **Không kích hoạt từ persona khác.** Đề xuất thêm tests thuộc về báo cáo của bạn; user hoặc slash command quyết định khi nào hành động. Xem [docs/agents.md](../docs/agents.md).
 

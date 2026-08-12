@@ -1,0 +1,51 @@
+{
+  "skill_name": "dev-refactoring",
+  "trigger": {
+    "positive": [
+      { "prompt": "Refactor code để giảm duplication", "top_k": 1 },
+      { "prompt": "Extract common logic to reusable function", "top_k": 1 },
+      { "prompt": "Clean up code smell", "top_k": 3 },
+      { "prompt": "Rename variables for clarity", "top_k": 3 },
+      { "prompt": "Split long function into smaller ones", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "Add new feature to existing code", "owner": "incremental-implementation" },
+      { "prompt": "Fix bug in function", "owner": "dev-debugging" },
+      { "prompt": "Write unit tests", "owner": "dev-test-driven-development" }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "execution",
+      "prompt": "Refactor duplicated validation logic across create_order() and update_order() functions",
+      "expected_output": "Extracted validation function with tests passing before and after refactoring",
+      "files": [
+        "dev-refactoring"
+      ],
+      "expectations": [
+        "Tests run and pass BEFORE refactoring",
+        "Common logic extracted to new function",
+        "Duplication removed from both functions",
+        "Tests run and pass AFTER refactoring",
+        "Separate commit for refactoring only",
+        "No behavior change (same test results)"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "execution",
+      "prompt": "Rename function f() to calculate_total_with_tax() and update all call sites",
+      "expected_output": "Function renamed with all references updated, tests passing",
+      "files": [
+        "dev-refactoring"
+      ],
+      "expectations": [
+        "Function renamed correctly",
+        "All call sites updated (no broken references)",
+        "Tests pass after rename",
+        "Commit message follows refactor convention"
+      ]
+    }
+  ]
+}

@@ -1,129 +1,129 @@
 <!--
-  This document is for developers evaluating the project. It is NOT a skill and
-  is not meant to be loaded into an agent's context. It lives in docs/ so it
-  stays out of the agent's working set.
+  Tài liệu này dành cho các lập trình viên đang đánh giá (evaluate) dự án. Nó KHÔNG phải là một skill và
+  không nhằm mục đích được load vào context của agent. Nó nằm trong thư mục docs/ để
+  giữ nó tách biệt khỏi tập tin làm việc (working set) của agent.
 -->
 
-# How agent-skills compares
+# So sánh agent-skills
 
-People often ask how **agent-skills** relates to the two other "skills for coding agents" collections they hear about most: **Superpowers** (Jesse Vincent / obra) and **Matt Pocock's skills**. All three are good, share a lot of DNA, and are worth learning from. This page is an honest map of how they are *shaped* differently, so you can pick the one that fits how you work, or borrow across all three.
+Mọi người thường hỏi **agent-skills** liên quan như thế nào so với hai bộ sưu tập "skills cho coding agents" được nhắc đến nhiều nhất khác: **Superpowers** (của Jesse Vincent / obra) và **Matt Pocock's skills**. Cả ba đều tốt, chia sẻ nhiều DNA chung, và đều đáng để học hỏi. Trang này là một bản đồ trung thực về việc chúng được *định hình* khác nhau ra sao, để bạn có thể chọn cái phù hợp với cách bạn làm việc, hoặc vay mượn từ cả ba.
 
-> **TL;DR** — They optimize for different moments. **agent-skills** organizes the *whole product lifecycle* (Define, Plan, Build, Verify, Review, Ship) with review personas, anti-rationalization guards, and an in-repo eval framework that checks the skills actually route and behave. **Superpowers** leans into *autonomous, reasoning-heavy* runs with subagents, a strict pipeline, and worktree isolation. **Matt Pocock's skills** are a *sharp, opinionated Claude Code toolkit* distilled from one expert's daily workflow, with a signature "grill me" interrogation loop. None is "best" in the abstract; it depends on the work in front of you.
+> **TL;DR** — Chúng tối ưu hóa cho những thời điểm khác nhau. **agent-skills** tổ chức *toàn bộ vòng đời sản phẩm* (Define, Plan, Build, Verify, Review) với các review personas, các hàng rào chống ngụy biện (anti-rationalization), và một bộ khung đánh giá (eval framework) nằm ngay trong repo để kiểm tra xem các skills có thực sự định tuyến và hành xử đúng không. **Superpowers** thiên về các phiên chạy *tự chủ, nặng về suy luận* (reasoning-heavy) với các subagents, một luồng pipeline nghiêm ngặt và cách ly bằng git-worktree. **Matt Pocock's skills** là một *bộ công cụ Claude Code sắc bén, mang đậm quan điểm cá nhân*, được đúc kết từ luồng làm việc hàng ngày của một chuyên gia, với điểm nhấn là vòng lặp tra khảo "grill me". Không có cái nào là "tốt nhất" một cách trừu tượng; điều đó phụ thuộc vào công việc trước mắt của bạn.
 
 ---
 
-## At a glance
+## Nhìn lướt qua
 
 | | **agent-skills** | **Superpowers** | **Matt Pocock's skills** |
 |---|---|---|---|
-| **Core idea** | Encode the full senior-engineering lifecycle as skills | A complete development *methodology* built on composable skills | One expert's Claude Code workflow, open-sourced and evolving |
-| **Organizing principle** | SDLC **phases** (Define to Ship) behind a meta-skill router | A single disciplined loop: brainstorm, plan, execute, review | A curated toolbox of focused, composable commands |
-| **Catalog size** | 24 skills spanning the whole lifecycle | ~14 skills, deep on the inner build loop | ~30 skills, grouped into engineering / productivity / in-progress / deprecated |
-| **Lifecycle coverage** | Broad: idea refinement, API and UI design, security, performance, CI/CD, observability, deprecation, ADRs, launch | Deep but narrow: TDD, debugging, planning, review, skill authoring | Define and Build heavy: grilling, PRDs, issues, TDD, architecture, bug triage, knowledge management |
-| **Entry points** | Slash commands mapped 1:1 to phases (`/spec` `/plan` `/build` `/test` `/review` `/code-simplify` `/ship`, plus `/webperf`), with a `/build auto` full-plan mode | Skill-chained pipeline (`brainstorming`, `writing-plans`, `subagent-driven-development`) | Slash commands (`/grill-me`, `/tdd`, `/to-prd`, `/diagnosing-bugs`, `/grill-with-docs`) |
-| **Distinctive mechanisms** | Anti-rationalization tables and Red Flags in every skill; parallel review **personas** in `/ship`; reference checklists; a **three-tier eval framework** in CI | Subagent-driven development with a task reviewer (spec + quality) and a fix loop; git-worktree isolation; skills-that-write-skills, pressure-tested | The **grilling** primitive (one question at a time, design-tree walking); seam-based TDD; explicit user-invoked vs model-invoked split; issue-tracker integration |
-| **Quality measurement** | Trigger, routing, and behavioral evals run against the catalog (in-repo, some in CI) | Pressure-testing methodology is core to its philosophy; the eval suite itself now lives in a separate repo | None shipped in-repo |
-| **Tooling reach** | Claude Code, Cursor, Gemini CLI, Antigravity, OpenCode, Windsurf, Copilot, Kiro, Codex, plus the `npx skills` CLI | One of the widest and most actively churned surfaces: Claude Code, Codex, Cursor, Copilot CLI, OpenCode, Kimi, Factory Droid, Antigravity, Pi | Claude Code first, distributed via `npx skills add`; other agents work with varying fidelity |
-| **Governance** | Actively reviews and merges community contributions; every skill ships an eval | Largely solo-authored; a substantial backlog of unmerged community PRs | Solo-authored, self-merged, developed openly in public |
-| **Best for** | Driving a feature through every phase with a human checkpoint at each | Long, autonomous, reasoning-heavy or exploratory work | A pragmatic, battle-tested daily loop, strongest at requirements and TDD |
+| **Ý tưởng cốt lõi** | Mã hóa toàn bộ vòng đời kỹ thuật senior thành các skills | Một *phương pháp luận* phát triển phần mềm hoàn chỉnh xây dựng trên các skills có thể kết hợp | Quy trình Claude Code của một chuyên gia, được mã nguồn mở và không ngừng tiến hóa |
+| **Nguyên tắc tổ chức** | Các **giai đoạn (phases)** của SDLC đứng đằng sau một meta-skill định tuyến | Một vòng lặp kỷ luật duy nhất: brainstorm, plan, execute, review | Một hộp công cụ gồm các lệnh tập trung, có thể lắp ghép được |
+| **Kích thước danh mục** | 24 skills bao phủ toàn bộ vòng đời | ~14 skills, đào sâu vào vòng lặp build lõi | ~30 skills, nhóm thành engineering / productivity / in-progress / deprecated |
+| **Độ phủ vòng đời** | Rộng: tinh chỉnh ý tưởng, thiết kế API và UI, bảo mật, hiệu năng, CI/CD, tính quan sát, gỡ bỏ mã cũ, ADRs | Sâu nhưng hẹp: TDD, debugging, planning, review, viết skill | Nặng về Define và Build: tra khảo (grilling), PRDs, issues, TDD, kiến trúc, phân loại bug, quản lý tri thức |
+| **Điểm truy cập (Entry points)** | Slash commands ánh xạ 1:1 với các giai đoạn (`/tech-spec` `/plan` `/build` `/unit-test` `/review` `/code-simplify`, cộng thêm `/webperf`), cùng với `/build auto` và `/dev-audit` (luồng Auto-fix) | Chuỗi skill pipeline (`brainstorming`, `writing-plans`, `subagent-driven-development`) | Slash commands (`/grill-me`, `/tdd`, `/to-prd`, `/diagnosing-bugs`, `/grill-with-docs`) |
+| **Cơ chế khác biệt** | Các bảng Chống Ngụy Biện (Anti-rationalization) và Cờ Đỏ (Red Flags) trong mọi skill; các **personas** review song song trong `/dev-audit`; các checklists tham chiếu; một **framework đánh giá 3 tầng** trong CI | Phát triển hướng subagent với một reviewer chấm task (spec + quality) và một vòng lặp sửa lỗi; cách ly bằng git-worktree; các skills viết ra skills, được thử lửa áp lực | Lệnh sơ khai **grilling** (hỏi từng câu một, duyệt qua cây thiết kế); TDD dựa trên ranh giới (seam-based); phân chia rõ ràng giữa do user gọi và do model gọi; tích hợp công cụ theo dõi lỗi (issue-tracker) |
+| **Đo lường chất lượng** | Các evals về Trigger, định tuyến và hành vi chạy đối chiếu với danh mục (trong repo, một phần trong CI) | Phương pháp luận thử lửa áp lực (Pressure-testing) là cốt lõi của triết lý; bản thân bộ eval hiện nằm ở một repo riêng biệt | Không đi kèm eval trong repo |
+| **Mức độ tương thích công cụ** | Claude Code, Cursor, Gemini CLI, Antigravity, OpenCode, Windsurf, Copilot, Kiro, Codex, và CLI `npx skills` | Một trong những diện tích phủ rộng nhất và biến động nhiều nhất: Claude Code, Codex, Cursor, Copilot CLI, OpenCode, Kimi, Factory Droid, Antigravity, Pi | Claude Code là ưu tiên số 1, phân phối qua `npx skills add`; các agents khác hoạt động với độ trung thực khác nhau |
+| **Quản trị (Governance)** | Tích cực review và merge các đóng góp từ cộng đồng; mọi skill đi kèm một eval | Phần lớn do một người viết; có một lượng lớn PR từ cộng đồng chưa được merge | Do một người viết, tự merge, phát triển mở công khai |
+| **Phù hợp nhất cho** | Thúc đẩy một tính năng đi qua mọi giai đoạn với một điểm kiểm tra của con người ở mỗi chốt | Các công việc dài hơi, tự chủ, đòi hỏi suy luận nặng hoặc mang tính khám phá | Một vòng lặp hàng ngày thực dụng, đã qua thực chiến, mạnh nhất ở khâu lấy yêu cầu (requirements) và TDD |
 
-*(We deliberately leave out star counts and adoption figures: they are cited wildly differently across blogs and change weekly. All three are actively used and maintained.)*
+*(Chúng tôi cố ý bỏ qua số lượng sao và số liệu áp dụng: chúng được trích dẫn rất khác nhau trên các blogs và thay đổi hàng tuần. Cả ba đều đang được sử dụng và bảo trì tích cực.)*
 
 ---
 
-## The three projects, in their own terms
+## Ba dự án, theo cách riêng của chúng
 
 ### Superpowers (obra)
 
-A full software-development *methodology* built on composable skills. It bets on **autonomy and upfront reasoning**. A session runs a deliberately linear pipeline: Socratic brainstorming that writes a dated spec and permits exactly one handoff, detailed plans written to be executable by "an enthusiastic junior engineer with poor taste and no context," then subagent-driven execution where a fresh subagent implements each task and a task reviewer signs off on both spec compliance and code quality before it closes, with a fix loop for anything it flags and a whole-branch review on the most capable model at the end. Git worktrees keep parallel work isolated, and its `writing-skills` skill applies TDD to documentation itself: no skill ships without a failing test first.
+Một *phương pháp luận* phát triển phần mềm hoàn chỉnh xây dựng trên các skills có thể kết hợp. Nó đặt cược vào **tính tự chủ và suy luận từ đầu (upfront reasoning)**. Một phiên chạy một luồng pipeline tuyến tính có chủ đích: Brainstorming kiểu Socrates để viết ra một spec có ngày tháng và chỉ cho phép bàn giao chính xác một lần; các kế hoạch chi tiết được viết ra để có thể thực thi bởi "một kỹ sư junior nhiệt huyết với tư duy thẩm mỹ kém và không có ngữ cảnh"; sau đó là quá trình thực thi do subagent đảm nhận (subagent-driven execution) nơi một subagent mới toanh sẽ implement mỗi task, và một reviewer task ký duyệt cả độ tuân thủ spec lẫn chất lượng code trước khi đóng task, với một vòng lặp sửa lỗi cho bất cứ thứ gì nó cắm cờ, và một đợt review toàn bộ branch trên model mạnh nhất ở bước cuối. Git worktrees giữ cho các luồng công việc song song được cách ly, và skill `writing-skills` của nó áp dụng TDD cho chính tài liệu: không có skill nào được đưa ra mà không có một test failing (báo lỗi) trước.
 
-Its strengths are real: hand off a sizable chunk and come back to a reviewed result, with strong guardrails against an agent rationalizing its way past the process. The trade-offs are the flip side of that discipline. Coverage is narrow (it is an inner-loop build methodology, not a security-to-launch lifecycle), the single pipeline can feel heavy on small changes, and the recent direction has been about paying down that cost, for example consolidating to a single task reviewer for roughly twice the speed and half the tokens. The loudest thing its community keeps asking for, multi-agent team execution, is not yet in the box.
+Điểm mạnh của nó là rất thật: ném cho nó một cục công việc to và quay lại với một kết quả đã được review, với các rào chắn mạnh mẽ chống lại việc agent tự biện hộ lách qua quy trình. Đổi lại của kỷ luật đó: Phạm vi phủ hẹp (nó là một phương pháp luận build vòng lặp trong, không phải một vòng đời từ bảo mật tới khi lên production), pipeline đơn nhất có thể tạo cảm giác quá nặng nề cho các thay đổi nhỏ, và định hướng gần đây là làm sao giảm bớt chi phí đó, ví dụ như gom về một task reviewer duy nhất để tăng gấp đôi tốc độ và giảm một nửa token. Điều mà cộng đồng của nó yêu cầu nhiều nhất, là khả năng thực thi bằng một nhóm (multi-agent team execution), vẫn chưa có sẵn trong hộp.
 
 **Repo:** <https://github.com/obra/superpowers>
 
 ### Matt Pocock's skills
 
-Matt open-sourced the Claude Code skills he actually uses, and the collection has grown into a broad, opinionated toolbox organized in public, complete with visible `in-progress/` and `deprecated/` directories that model the discipline the skills preach. The center of gravity is not TDD, it is **grilling**: a reusable interrogation loop that asks one question at a time, walks each branch of the design tree resolving dependencies in order, offers a recommended answer per question, prefers reading the codebase over asking, and refuses to proceed until you confirm a shared understanding. `grill-me` and `grill-with-docs` are thin wrappers over it. The TDD skill is distinctive too and cheerfully heterodox ("refactoring is not part of the loop," it belongs to code review), and there is a deliberate split between user-invoked and model-invoked skills to treat agent context as a scarce budget.
+Matt mã nguồn mở các Claude Code skills mà anh ấy thực sự sử dụng, và bộ sưu tập này đã phát triển thành một hộp công cụ phong phú, mang đậm quan điểm cá nhân được tổ chức công khai, hoàn chỉnh với các thư mục `in-progress/` và `deprecated/` có thể nhìn thấy rõ, làm hình mẫu cho kỷ luật mà các skills thuyết giảng. Trọng tâm của nó không phải là TDD, mà là **tra khảo (grilling)**: một vòng lặp chất vấn có thể tái sử dụng, hỏi từng câu một, duyệt qua từng nhánh của cây thiết kế để giải quyết các phụ thuộc theo thứ tự, đưa ra một câu trả lời đề xuất cho mỗi câu hỏi, ưu tiên việc đọc codebase hơn là hỏi, và từ chối đi tiếp cho đến khi bạn xác nhận đã hiểu ý nhau. `grill-me` và `grill-with-docs` là những lớp bọc mỏng bên trên nó. Kỹ năng TDD cũng rất khác biệt và khá là khác thường một cách vui vẻ ("refactoring không phải là một phần của vòng lặp", nó thuộc về code review), và có sự phân chia có chủ ý giữa skills do người dùng gọi (user-invoked) và skills do model tự gọi (model-invoked) nhằm coi context của agent như một ngân sách khan hiếm.
 
-Its strengths are authenticity and sharpness: this is how one very good engineer ships, not a committee's idea of a framework, and the requirements-grilling loop is genuinely excellent. The trade-offs: it is Claude Code first in practice (other agents surface reliability rough edges), there are no in-repo evals to catch regressions, lifecycle coverage past Build is thin, and some skills couple to a personal setup wizard and tracker conventions. Recent work is pushing from single-session skills toward multi-session orchestration through issue trackers (the in-progress `wayfinder`).
+Điểm mạnh của nó là tính chân thực và sự sắc bén: đây là cách một kỹ sư rất giỏi làm việc, không phải ý tưởng của một ủy ban về một framework, và vòng lặp lấy yêu cầu bằng grilling thực sự xuất sắc. Những sự đánh đổi: trên thực tế nó ưu tiên Claude Code nhất (các agents khác cho thấy sự thiếu mượt mà về độ tin cậy), không có evals trong repo để bắt lỗi regression, độ phủ vòng đời qua bước Build là khá mỏng, và một số skills bị gắn chặt với các conventions theo dõi cá nhân và wizard cài đặt cá nhân. Các công việc gần đây đang đẩy từ skills đơn phiên sang điều phối đa phiên thông qua các công cụ theo dõi lỗi (issue trackers) (như `wayfinder` đang được làm).
 
-**Repo:** <https://github.com/mattpocock/skills> · related: <https://github.com/mattpocock/agent-rules-books>
+**Repo:** <https://github.com/mattpocock/skills> · xem thêm: <https://github.com/mattpocock/agent-rules-books>
 
-### agent-skills (this project)
+### agent-skills (Dự án này)
 
-agent-skills organizes the **entire product lifecycle** as skills, with a meta-skill (`using-agent-skills`) that routes a task to the right one. Every skill carries a **Common Rationalizations** table (the excuses an agent makes to skip a step, each rebutted) and **Red Flags**. Slash commands map one-to-one to lifecycle phases; `/build auto` runs a whole approved plan in one pass; and `/ship` fans out review **personas** (`code-reviewer`, `security-auditor`, `test-engineer`, `web-performance-auditor`) in parallel, then merges them into a go/no-go. It keeps a human checkpoint at each phase, ships seven reference checklists including a Definition of Done, and runs across most major agent tools with a single-command install on several of them.
+agent-skills tổ chức **toàn bộ vòng đời sản phẩm** dưới dạng skills, với một meta-skill (`using-agent-skills`) để định tuyến một task tới đúng skill phù hợp. Mọi skill đều đi kèm một bảng **Những Sự Ngụy Biện Phổ Biến (Common Rationalizations)** (các lời bào chữa mà agent tạo ra để bỏ qua một bước, mỗi lời đều có luận điểm phản bác) và **Cờ Đỏ (Red Flags)**. Các Slash commands ánh xạ một-một tới các giai đoạn của vòng đời; `/build auto` chạy toàn bộ plan đã được duyệt trong một lần quét; và `/dev-audit` chạy song song (fan out) các **personas** review (`code-reviewer`, `security-auditor`, `qa`, `web-performance-auditor`), sau đó hợp nhất chúng lại thành quyết định go/no-go. Nó giữ một điểm kiểm tra (checkpoint) của con người ở mỗi giai đoạn, cung cấp bảy checklists tham chiếu bao gồm một Definition of Done, và chạy trơn tru trên hầu hết các công cụ agent chính với cài đặt chỉ bằng một lệnh duy nhất.
 
-What is newer, and the current point of difference: a **three-tier eval framework** lives in the repo. Tier 1 checks structure, Tier 2 checks that each skill's description carries the vocabulary users actually say and that no two skills collide on routing (deterministic, runs in CI), and Tier 3 grades an agent's real execution trace against per-skill expectations. Neither of the other two ships that kind of in-repo, catalog-wide measurement today. The honest trade-off in the other direction: agent-skills has less of a single opinionated "run" than Superpowers, and none of the three has yet solved durable cross-session memory well.
-
----
-
-## A real head-to-head: Superpowers vs. agent-skills
-
-Om Mishra ran a controlled experiment, same model, same repo, same prompt in Claude Code, changing only the skill framework, and wrote it up:
-
-**["Superpowers vs Agent-Skills: Faster Shipping, Safer Reasoning"](https://www.linkedin.com/pulse/superpowers-vs-agent-skills-faster-shipping-safer-reasoning-om-mishra-dzakf/)** by Om Mishra
-
-Summarized fairly:
-
-- **agent-skills** moved to code faster (~8 min vs ~12) and ran **more validation passes** (7 vs 5, including the full test suite). That broader validation caught a compatibility issue *outside* the immediate feature that the feature-specific tests missed. He gave it the edge on **validation depth** for that task.
-- **Superpowers** invested more **upfront architectural reasoning**, which he still prefers as his daily driver for evolving production systems and exploratory work with no established pattern to follow.
-- Token efficiency was effectively identical; both replanned once.
-
-It is one developer's single-task experiment, not a benchmark, but it is a concrete illustration of the core trade-off: **broad disciplined validation versus heavy upfront reasoning**. His own conclusion is the honest one: pick the tool to the task.
+Cái mới hơn, và là điểm khác biệt hiện tại: một **framework đánh giá 3 tầng (three-tier eval framework)** nằm ngay trong repo. Tầng 1 kiểm tra cấu trúc, Tầng 2 kiểm tra xem description của mỗi skill có chứa đúng các từ vựng mà người dùng hay nói không và đảm bảo không có hai skills nào xung đột trong quá trình định tuyến (hoạt động theo tính tất định, chạy trong CI), và Tầng 3 chấm điểm thực tế dấu vết chạy của một agent so với kỳ vọng của từng skill. Cả hai dự án kia đều không đi kèm kiểu đo lường ở quy mô toàn danh mục nằm ngay trong repo như thế này. Sự đánh đổi thành thực ở phía ngược lại: agent-skills có ít "đợt chạy" cố định mang tính quan điểm hơn so với Superpowers, và cả ba đều chưa giải quyết tốt vấn đề bộ nhớ bền vững xuyên suốt các phiên (durable cross-session memory).
 
 ---
 
-## How to decide what to use
+## So sánh trực diện: Superpowers vs. agent-skills
 
-The at-a-glance table tells you how they are shaped. This is how to choose in practice.
+Om Mishra đã thực hiện một thử nghiệm có kiểm soát (cùng model, cùng repo, cùng prompt trong Claude Code, chỉ thay đổi skill framework), và viết bài tóm tắt:
 
-### Start with the shape of your work
+**["Superpowers vs Agent-Skills: Faster Shipping, Safer Reasoning"](https://www.linkedin.com/pulse/superpowers-vs-agent-skills-faster-shipping-safer-reasoning-om-mishra-dzakf/)** bởi Om Mishra
 
-- **A whole feature, front to back?** agent-skills. It is the only one of the three that carries you from spec through security, performance, and launch with a checkpoint at each phase, so nothing quietly skips the review or the pre-flight.
-- **A big, ambiguous chunk you want to hand off and walk away from?** Superpowers. Its pipeline and subagent review are built to run for a long time and hand back a result that has already been reviewed against the spec.
-- **A fast, focused daily loop, especially getting requirements right before code?** Matt Pocock's skills. The grilling loop is the sharpest requirements tool of the three, and the toolkit stays out of your way.
+Tóm tắt công bằng:
 
-### Then weight what you actually care about
+- **agent-skills** chuyển sang viết code nhanh hơn (~8 phút so với ~12 phút) và chạy **nhiều lượt validation hơn** (7 so với 5, bao gồm toàn bộ test suite). Việc validation rộng hơn đó đã bắt được một lỗi không tương thích *nằm ngoài* tính năng trực tiếp đang làm mà các tests viết riêng cho tính năng đó đã bỏ qua. Anh ấy đánh giá agent-skills nhỉnh hơn về **chiều sâu validation (validation depth)** cho task đó.
+- **Superpowers** đầu tư nhiều **suy luận kiến trúc (architectural reasoning) từ đầu**, thứ mà anh ấy vẫn thích dùng làm luồng làm việc hàng ngày cho các hệ thống production đang tiến hóa và công việc mang tính khám phá khi chưa có một pattern nào được thiết lập sẵn để làm theo.
+- Hiệu suất token gần như giống hệt nhau; cả hai đều phải lập lại kế hoạch (replan) một lần.
 
-- **Breadth of coverage** (security, performance, CI/CD, observability, launch): agent-skills is the clear pick; the others are inner-loop focused.
-- **Autonomy over a long run**: Superpowers, by design.
-- **Low ceremony on small changes**: Pocock's toolkit is lightest; agent-skills offers a middle gear (a small change can skip straight to `/test` and `/review`); Superpowers is the most process-heavy.
-- **Confidence that the skills themselves work**: agent-skills is the only one with catalog-wide evals in the repo, so a description or routing regression fails CI rather than surfacing as a mysterious "why didn't the skill fire" later.
-- **Requirements interrogation**: Pocock's grilling is the reference implementation; agent-skills' `interview-me` is close in spirit and gaining an opt-in collaborative mode.
-- **Platform spread**: agent-skills and Superpowers both run almost everywhere; Pocock is happiest on Claude Code.
-- **A human gate at each step vs. a hands-off run**: agent-skills checkpoints by default; Superpowers minimizes mid-run check-ins on purpose.
-
-### Concrete scenarios
-
-- *"Ship a new endpoint with auth, tests, and a security pass before merge."* agent-skills: `/spec` to `/ship`, with the security-auditor and test-engineer personas fanning out at the end.
-- *"Refactor a gnarly subsystem overnight and review it in the morning."* Superpowers: hand it the plan, let subagent-driven development and the task reviewer run.
-- *"I have a vague idea and keep letting the agent guess the requirements."* Pocock's `grill-me` (or agent-skills' `interview-me`) to pin down intent before any code.
-- *"Fix one clear bug, test-first."* Any of them; reach for the lightest one you already have installed.
-- *"Standardize how a team of engineers uses agents across a repo."* agent-skills: the phase commands, personas, and shared checklists give a team a common vocabulary, and the evals keep custom skills honest.
-- *"Roll my own skills and know they trigger correctly."* agent-skills, and borrow Superpowers' pressure-testing discipline for the ones that must not be rationalized away.
-
-### Solo vs. team
-
-For a solo developer, taste and momentum win: pick the one whose defaults match how you already work, and the lowest-ceremony option is often the most-used one. For a team, the calculus shifts toward shared structure and guardrails you can enforce: named phases, review personas, checklists, and evals that fail CI are what keep five people (and their agents) converging on the same standard rather than five private workflows. That is the situation agent-skills is built for, though a team can absolutely adopt Superpowers' review discipline or Pocock's grilling loop within it.
-
-### The shared frontier (true of all three)
-
-None of these has solved **durable cross-session memory** well yet: what an agent learned in one session rarely carries cleanly into the next. All three are circling it (learnings files, handoff artifacts, tracker-backed planning maps). If that is your bottleneck, know that you are at the edge of what any of them ships today, and expect to stitch some of it yourself for now.
+Đây chỉ là thử nghiệm một task của một lập trình viên, không phải là một benchmark, nhưng nó là minh họa cụ thể cho sự đánh đổi cốt lõi: **validation rộng rãi có kỷ luật so với suy luận nặng nề ngay từ đầu**. Kết luận của riêng anh ấy cũng rất trung thực: hãy chọn công cụ phù hợp với công việc.
 
 ---
 
-## Combining them
+## Cách quyết định nên dùng cái nào
 
-You do not have to choose exclusively, but combine with care. These are Markdown skills, not runtimes, so cherry-picking *individual* skills works well: pull in Pocock's `grill-me`, a Superpowers isolation pattern, or a specific checklist alongside your main setup.
+Bảng "Nhìn lướt qua" cho bạn biết chúng được định hình như thế nào. Còn đây là cách để lựa chọn trên thực tế.
 
-What does not work is running two of them as your **active router at the same time**. Stacked meta-skills fight over command names (`/tdd` defined in two places), compete on routing logic, and pull in different TDD philosophies, so you get unpredictable behavior rather than the best of both. Pick one framework as your primary router, and borrow from the others a la carte.
+### Bắt đầu với hình thái công việc của bạn
+
+- **Một tính năng hoàn chỉnh, từ đầu đến cuối?** agent-skills. Đây là bộ duy nhất trong ba bộ dẫn bạn đi từ đặc tả (spec) qua bảo mật, hiệu năng, với một chốt kiểm tra (checkpoint) ở mỗi giai đoạn, vì vậy không có gì bị bỏ qua trong quá trình review hoặc tiền kiểm (pre-flight).
+- **Một cục công việc lớn, mơ hồ mà bạn muốn khoán trắng rồi đi chỗ khác?** Superpowers. Pipeline và chế độ review bằng subagent của nó được xây dựng để chạy trong một thời gian dài và trả lại kết quả đã được review cẩn thận đối chiếu với spec.
+- **Một vòng lặp công việc hàng ngày nhanh gọn, tập trung, đặc biệt là chốt chặt yêu cầu (requirements) trước khi code?** Matt Pocock's skills. Vòng lặp tra khảo (grilling) là công cụ lấy yêu cầu sắc bén nhất trong cả ba, và bộ công cụ này không hề gây cản trở bạn.
+
+### Sau đó cân nhắc những gì bạn thực sự quan tâm
+
+- **Độ phủ rộng** (bảo mật, hiệu năng, CI/CD, quan sát hệ thống): agent-skills là lựa chọn rõ ràng; các bộ kia tập trung vào vòng lặp build bên trong.
+- **Tính tự chủ xuyên suốt luồng chạy dài**: Superpowers, bởi thiết kế.
+- **Thủ tục gọn nhẹ cho các thay đổi nhỏ**: Bộ toolkit của Pocock là nhẹ nhất; agent-skills cung cấp một tầng giữa (một thay đổi nhỏ có thể nhảy thẳng tới `/unit-test` và `/review`); Superpowers thì quy trình nặng nề nhất.
+- **Sự tự tin rằng bản thân các skills hoạt động đúng**: agent-skills là bộ duy nhất có các evals toàn danh mục ngay trong repo, nên nếu có lỗi thoái lui về description hay routing, nó sẽ báo lỗi (fail) trong CI chứ không nổi lên dưới dạng câu hỏi bí ẩn "tại sao skill này lại không tự chạy" về sau.
+- **Chất vấn yêu cầu (Requirements interrogation)**: Tính năng grilling của Pocock là bản thực thi tham chiếu mẫu mực; `ba-interview-me` của agent-skills cũng mang tinh thần tương tự và đang có thêm một chế độ hợp tác chọn-khi-cần (opt-in).
+- **Độ lan tỏa trên nền tảng**: Cả agent-skills và Superpowers đều chạy mượt trên gần như mọi công cụ; Pocock thì hợp với Claude Code nhất.
+- **Cổng chốt của con người ở mỗi bước so với quy trình chạy rảnh tay**: agent-skills đặt checkpoints làm mặc định; Superpowers cố tình giảm thiểu các lần check-in giữa chừng.
+
+### Các kịch bản cụ thể
+
+- *"Làm một API endpoint mới kèm auth, tests, và review bảo mật trước khi merge."* agent-skills: dùng `/tech-spec` tới `/review`, sau đó chạy `/dev-audit` để các personas security-auditor và qa cùng review.
+- *"Refactor một hệ thống con rắc rối xuyên đêm và xem lại vào buổi sáng."* Superpowers: giao cho nó cái plan, để cho chế độ subagent-driven development và task reviewer chạy tự động.
+- *"Tôi có một ý tưởng mơ hồ và cứ để agent đoán mò yêu cầu."* Dùng `grill-me` của Pocock (hoặc `ba-interview-me` của agent-skills) để ghim chặt ý định trước khi viết dòng code nào.
+- *"Sửa một bug rõ ràng, theo kiểu test-first."* Dùng cái nào cũng được; cứ chọn cái nhẹ nhất mà bạn đã cài sẵn.
+- *"Chuẩn hóa cách một team kỹ sư sử dụng agents trên toàn bộ repo."* agent-skills: các lệnh theo giai đoạn, các personas, và các checklists dùng chung cung cấp cho một team một hệ từ vựng chung, và các evals giúp các skills tùy biến (custom skills) luôn giữ được độ tin cậy.
+- *"Tự viết skills của riêng mình và muốn biết chắc chắn là chúng kích hoạt đúng."* agent-skills, và mượn thêm kỷ luật thử lửa áp lực (pressure-testing) của Superpowers cho những skills tuyệt đối không được phép lách quy trình.
+
+### Cá nhân (Solo) vs. Đội nhóm (Team)
+
+Đối với lập trình viên cá nhân, gu thẩm mỹ và tính tiện dụng sẽ chiến thắng: hãy chọn cái có cấu hình mặc định khớp với cách bạn làm việc, và lựa chọn nào ít thủ tục rườm rà nhất thường sẽ được dùng nhiều nhất. Đối với một team, bài toán sẽ chuyển hướng sang cấu trúc dùng chung và các rào chắn (guardrails) mà bạn có thể ép buộc tuân thủ: các giai đoạn được đặt tên, các personas review, các checklists, và evals báo lỗi trong CI là những thứ giữ cho năm con người (và các agents của họ) cùng hội tụ về một chuẩn mực thay vì chạy năm workflows cá nhân. Đó chính là tình huống mà agent-skills được xây dựng để phục vụ, mặc dù một team hoàn toàn có thể áp dụng thêm kỷ luật review của Superpowers hay vòng lặp tra khảo của Pocock vào bên trong nó.
+
+### Ranh giới chung (Đúng với cả ba)
+
+Hiện tại chưa có công cụ nào giải quyết tốt được vấn đề **bộ nhớ bền vững xuyên suốt các phiên (durable cross-session memory)**: những gì một agent học được ở phiên này hiếm khi được mang sang nguyên vẹn phiên tiếp theo. Cả ba đều đang xoay quanh giải quyết nó (bằng các file ghi chép bài học, tài liệu bàn giao, các bản đồ kế hoạch dựa trên tracker). Nếu đó là nút thắt của bạn, hãy hiểu rằng bạn đang ở ranh giới ngoài cùng của những gì các công cụ này làm được hiện tại, và hãy chuẩn bị tinh thần phải tự khâu nối một vài phần lại với nhau.
 
 ---
 
-## Sources
+## Kết hợp chúng
+
+Bạn không nhất thiết phải chọn độc quyền một cái, nhưng hãy kết hợp cẩn thận. Đây là các skills định dạng Markdown, không phải runtimes, vì vậy việc chọn lọc (cherry-picking) *từng skill đơn lẻ* hoạt động rất tốt: lấy tính năng `grill-me` của Pocock, lấy một pattern cách ly của Superpowers, hoặc một checklist cụ thể nào đó đặt cạnh bộ cài chính của bạn.
+
+Điều sẽ thất bại là việc chạy hai trong số chúng làm **bộ định tuyến (router) chính cùng một lúc**. Các meta-skills xếp chồng lên nhau sẽ đánh nhau vì trùng tên lệnh (`/tdd` được định nghĩa ở tận hai nơi), cạnh tranh nhau về logic định tuyến, và lôi kéo những triết lý TDD khác nhau, dẫn đến hành vi không đoán trước được thay vì gom được những thứ tốt nhất của cả hai. Hãy chọn một framework làm bộ định tuyến (router) chính, và vay mượn từ các framework khác theo kiểu gọi món (a la carte).
+
+---
+
+## Nguồn tham khảo
 
 - Superpowers: <https://github.com/obra/superpowers>
 - Matt Pocock's skills: <https://github.com/mattpocock/skills>
 - Om Mishra, *Superpowers vs Agent-Skills*: <https://www.linkedin.com/pulse/superpowers-vs-agent-skills-faster-shipping-safer-reasoning-om-mishra-dzakf/>
 
-*Spotted something inaccurate about another project here? Open an issue or PR. We would rather be fair than flattering.*
+*Bạn phát hiện ra điều gì đó không chính xác về một dự án khác ở đây? Hãy mở một issue hoặc PR. Chúng tôi muốn công bằng hơn là nịnh bợ.*

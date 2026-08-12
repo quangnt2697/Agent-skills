@@ -23,8 +23,9 @@ Bạn chỉ cần gõ các lệnh sau vào khung chat:
 | `/qa-auto-design {Mã_Jira}` | Sinh code automation từ kịch bản + Chạy test. | QA |
 | `/qa-run-test {Mã_Jira}` | CHỈ chạy test đã có + Báo cáo (không sinh code). | QA |
 | **`/qa-pipeline {Mã_Jira}`** | **Chạy tự động toàn trình từ BA → QA (Bỏ qua Approval Gate).** | BA+QA |
-| `/qa-review` | Review chất lượng test code. | Bổ trợ |
-| `/qa-simplify` | Rút gọn, gộp step definitions trùng lặp. | Bổ trợ |
+| **`/dev-audit {path}`** | **Audit kiến trúc toàn diện & Tự động Code/Fix từ đầu đến cuối.** | Dev |
+| `/review` | Review chất lượng code/test theo tiêu chuẩn. | Bổ trợ |
+| `/code-simplify` | Rút gọn, làm sạch code (app hoặc test) theo persona. | Bổ trợ |
 
 ## 📚 Cấu trúc Thư mục
 

@@ -1,129 +1,126 @@
-# Adoption Guide: New Projects vs. Established Codebases
+# Hướng dẫn áp dụng (Adoption Guide): Dự án mới vs. Codebase đã có sẵn
 
-How to roll out agent-skills depends heavily on where your codebase is in its life. A greenfield project can adopt the full lifecycle from commit one. A codebase with years of history needs an incremental path that respects what already exists, its conventions, its undocumented decisions, and its lack of test coverage in places you'd rather not touch blind.
+Cách triển khai agent-skills phụ thuộc rất nhiều vào việc codebase của bạn đang ở giai đoạn nào trong vòng đời của nó. Một dự án mới toanh (greenfield) có thể áp dụng toàn bộ vòng đời ngay từ commit đầu tiên. Ngược lại, một codebase đã có lịch sử nhiều năm (brownfield) cần một lộ trình áp dụng từng bước, tôn trọng những gì đã tồn tại, các quy ước hiện có, các quyết định không được ghi chép lại, và sự thiếu vắng test coverage ở những nơi mà bạn thà không đụng vào còn hơn là đụng vào một cách mù quáng.
 
-This guide covers both paths. For installation mechanics, see [getting-started.md](getting-started.md) and the per-tool setup guides. For what each skill does, see the [skill catalog in the README](../README.md#all-24-skills).
+Hướng dẫn này bao gồm cả hai lộ trình. Để biết cơ chế cài đặt, hãy xem [getting-started.md](getting-started.md) và hướng dẫn thiết lập cho từng công cụ. Để biết mỗi skill làm gì, hãy xem [danh mục skill trong README](../README.md#all-24-skills).
 
 ---
 
-## Which path are you on?
+## Bạn đang ở lộ trình nào?
 
-| Signal                     | Greenfield                      | Brownfield                                   |
+| Dấu hiệu                     | Dự án mới (Greenfield)          | Codebase cũ (Brownfield)                     |
 | -------------------------- | ------------------------------- | -------------------------------------------- |
-| Age of codebase            | Days to weeks                   | Months to years                              |
-| Test coverage              | You control it from day one     | Uneven; some areas untested                  |
-| Conventions                | Defined as you go               | Established, often undocumented              |
-| Team habits                | Forming                         | Entrenched (for better or worse)             |
-| Risk of a bad agent change | Low blast radius                | Can break things nobody remembers how to fix |
-| Adoption strategy          | **Full lifecycle, immediately** | **Incremental, verification-first**          |
+| Tuổi đời codebase          | Vài ngày đến vài tuần           | Vài tháng đến vài năm                        |
+| Độ phủ test (coverage)     | Bạn kiểm soát từ ngày 1         | Không đồng đều; nhiều chỗ không có test      |
+| Quy ước (Conventions)      | Tự định nghĩa trong lúc làm     | Đã thiết lập sẵn, thường không có tài liệu   |
+| Thói quen của team         | Đang hình thành                 | Đã ăn sâu (dù tốt hay xấu)                   |
+| Rủi ro khi agent làm hỏng  | Bán kính ảnh hưởng thấp         | Có thể làm hỏng những thứ không ai biết sửa  |
+| Chiến lược áp dụng         | **Toàn bộ vòng đời, ngay lập tức** | **Từng bước, ưu tiên xác minh trước**       |
 
-If you're somewhere in between (a young project that already shipped to production), start with the brownfield path and accelerate, it converges on the same end state.
+Nếu dự án của bạn nằm đâu đó ở giữa (một dự án non trẻ nhưng đã release lên production), hãy bắt đầu với lộ trình cho codebase cũ rồi tăng tốc, cả hai cuối cùng cũng sẽ hội tụ về cùng một đích đến.
 
 ---
 
-## Path A | Greenfield: full lifecycle from day one
+## Lộ trình A | Dự án mới: toàn bộ vòng đời ngay từ ngày đầu
 
-A new project is the best-case scenario: there's no legacy behavior to preserve, so the skills' quality gates cost almost nothing and compound from the first commit.
+Một dự án mới toanh là kịch bản lý tưởng nhất: không có những hành vi (behavior) cũ kỹ nào cần phải bảo tồn, vì vậy các cổng kiểm soát chất lượng (quality gates) của các skills hầu như không tốn chi phí gì và tích lũy giá trị ngay từ commit đầu tiên.
 
-### Day 0 | Install and wire up
+### Ngày 0 | Cài đặt và kết nối
 
-1. Install the pack (`npx skills add addyosmani/agent-skills`, or the native integration for your tool, see [getting-started.md](getting-started.md)).
-2. Load `using-agent-skills` (the meta-skill) so the agent can route work to the right skill on its own.
-3. Add a short project rules file (`CLAUDE.md`, `.cursorrules`, etc.) with your stack, commands, and boundaries, `context-engineering` describes what belongs there.
+1. Cài đặt gói (`npx skills add addyosmani/agent-skills`, hoặc dùng tích hợp có sẵn cho công cụ của bạn, xem [getting-started.md](getting-started.md)).
+2. Load `meta-using-agent-skills` (skill siêu cấp) để agent có thể tự định tuyến công việc tới đúng skill cần thiết.
+3. Thêm một file quy tắc dự án ngắn gọn (`CLAUDE.md`, `.cursorrules`, v.v.) ghi rõ techstack, các lệnh build, và các ranh giới. Tham khảo `meta-context` để biết nên viết gì vào đó.
 
-### Day 0 | Define before you build
+### Ngày 0 | Định nghĩa (Define) trước khi code (Build)
 
-Run the lifecycle in order for the project's first real feature:
+Hãy chạy vòng đời theo đúng thứ tự cho tính năng thực sự đầu tiên của dự án:
 
 ```
-/spec   →  SPEC.md            (spec-driven-development)
+/tech-spec   →  SPEC.md            (dev-spec-driven-development)
 /plan   →  tasks/plan.md      (planning-and-task-breakdown)
-/build  →  one slice at a time (incremental-implementation + test-driven-development)
-/review →  before every merge  (code-review-and-quality)
-/ship   →  when going live     (shipping-and-launch)
+/build  →  từng lát cắt một    (incremental-implementation + dev-test-driven-development)
+/review →  trước mọi lần merge (review-code-and-quality)
 ```
 
-`/build auto` is a good fit for greenfield: you approve the plan once and every task still runs test-driven and commits individually. The spec and plan artifacts (`SPEC.md`, `tasks/`) are living documents, keep them in version control while the work is in flight.
+`/build auto` rất phù hợp cho dự án mới: bạn duyệt (approve) cái plan một lần và mỗi task sau đó vẫn được chạy theo kiểu test-driven và commit riêng biệt. Các tạo tác (artifacts) như spec và plan (`SPEC.md`, `tasks/`) là các tài liệu sống (living documents), hãy giữ chúng trong version control khi tính năng đang được phát triển.
 
-### From the start, treat these as always-on
+### Ngay từ đầu, hãy coi các skills này là luôn-bật (always-on)
 
-- **test-driven-development**, coverage debt is cheapest to avoid at zero.
-- **git-workflow-and-versioning**, atomic commits and ~100-line changes are habits, not retrofits.
-- **security-and-hardening**, auth, input validation, and secrets handling are structural; bolting them on later is a migration project.
-- **documentation-and-adrs**, the first architectural decisions are exactly the ones nobody will remember the _why_ of in two years. An ADR now prevents the brownfield archaeology described in Path B.
+- **dev-test-driven-development**, món nợ coverage là rẻ nhất nếu tránh nó ngay từ con số 0.
+- **git-workflow-and-versioning**, các commit nguyên tử (atomic commits) và các thay đổi tầm 100 dòng là thói quen, không phải thứ có thể làm bù về sau.
+- **dev-security**, xác thực (auth), xác thực đầu vào (input validation), và xử lý bí mật (secrets) là những yếu tố thuộc về cấu trúc; chắp vá chúng vào sau này sẽ trở thành một đợt di dân (migration) cực nhọc.
+- **documentation-and-adrs**, các quyết định kiến trúc đầu tiên lại chính là những thứ mà không ai nhớ nổi _tại sao_ lại làm vậy vào hai năm sau. Một file ADR bây giờ sẽ ngăn chặn cuộc khảo cổ học trong codebase cũ như được mô tả ở Lộ trình B.
 
-### Add as the project grows
+### Bổ sung dần khi dự án lớn lên
 
-| When                                | Load                                                          |
+| Khi nào                             | Load (Nên dùng)                                               |
 | ----------------------------------- | ------------------------------------------------------------- |
-| First public API or module boundary | `api-and-interface-design`                                    |
-| First UI work                       | `frontend-ui-engineering` (+ `browser-testing-with-devtools`) |
-| First CI pipeline                   | `ci-cd-and-automation`                                        |
-| First production deploy             | `observability-and-instrumentation`, `shipping-and-launch`    |
-| Performance requirements appear     | `performance-optimization`                                    |
+| Tạo public API hoặc ranh giới module đầu tiên| `dev-api-design`                                    |
+| Các công việc giao diện (UI) đầu tiên | `dev-frontend-engineering` (+ `dev-browser-testing-with-devtools`) |
+| CI pipeline đầu tiên                 | `ci-cd-and-automation`                                        |
+| Có yêu cầu tối ưu hiệu năng          | `dev-performance`                                    |
 
-### Greenfield anti-patterns
+### Các Phản-mẫu (Anti-patterns) ở Dự án mới
 
-- **Skipping `/spec` because "it's just a prototype."** Prototypes become products. The spec is the cheapest artifact you'll ever write for this codebase.
-- **Loading all 24 skills into every session.** It wastes context and dilutes the ones that matter. Load by phase; let `using-agent-skills` route.
-- **Deferring observability until "there's something to observe."** Instrument as you build, retrofitting structured logging is a Path B problem you're choosing to create.
-
----
-
-## Path B | Brownfield: incremental, verification-first
-
-In an established codebase, the risk profile inverts: the danger isn't building the wrong thing, it's _changing_ something whose behavior nobody fully specified. The adoption order therefore starts with the skills that **read and protect** the codebase, and only later moves to the skills that **change** it.
-
-### Phase 1 | Context and read-only skills
-
-Goal: the agent understands the codebase before it modifies anything.
-
-1. **`context-engineering` first.** Write the project rules file describing the real conventions, the ones in the code, not the ones in the wiki. Include build/test commands, directory meaning, known landmines ("don't touch `legacy/billing`, it has no tests and three known workarounds").
-2. **`code-review-and-quality` on incoming changes.** Reviewing is zero-risk and immediately valuable: the five-axis review and its severity labels (which separate what blocks a merge, Critical and Required, from what doesn't) work on any PR regardless of the codebase's state.
-3. **`debugging-and-error-recovery` for the bugs you were fixing anyway.** The five-step triage (reproduce → localize → reduce → fix → guard) shines in unfamiliar code, and the "guard" step starts building the regression suite you don't have.
-4. **`doubt-driven-development` as a safety net.** Legacy code is exactly the "unfamiliar code, high cost of being wrong" scenario this skill targets. Adversarial fresh-context review of the agent's claims about how the legacy system works catches confident hallucinations before they become commits.
-
-### Phase 2 | Tests before change
-
-Goal: every area the agent will touch gets a safety net first.
-
-- **`test-driven-development`, applied selectively.** Don't aim for global coverage; aim for coverage _where change is planned_. For untested legacy behavior, write characterization tests, tests that pin down what the code currently does, right or wrong, before any modification. The Beyonce Rule applies: if the agent liked a behavior enough to depend on it, it should have put a test on it.
-- **`code-simplification` on the worst hotspots.** Chesterton's Fence is the operative principle: the skill forces the agent to understand _why_ code exists before removing it. Behavior-preserving simplification plus characterization tests is the lowest-risk way to make legacy code changeable.
-- **`git-workflow-and-versioning` everywhere.** Small atomic commits matter _more_ in brownfield: when a change to old code breaks something subtle, a ~100-line commit is bisectable; a 2,000-line "modernization" commit is not.
-
-### Phase 3 | New work runs the full lifecycle
-
-Goal: two-speed adoption, legacy code stays under the Phase 1–2 regime; **new features get the greenfield treatment**.
-
-- New feature in the old codebase? `/spec → /plan → /build → /review`. The spec's boundaries section is where you declare what legacy surface the feature may and may not touch.
-- **`api-and-interface-design` at the seams.** When new code must talk to old code, design the boundary contract-first. Hyrum's Law is not theoretical in a years-old codebase, someone depends on every observable behavior, including the bugs.
-- **`security-and-hardening` as an audit, then a gate.** Run it once across the existing attack surface (auth, input handling, dependencies, the dependency audit alone usually pays for the exercise), file what you find, then enforce it on new changes.
-
-### Phase 4 | Pay down, deprecate, observe
-
-- **`deprecation-and-migration`** is the brownfield skill par excellence: code-as-liability, compulsory vs. advisory deprecation, and zombie-code removal give you a disciplined way to shrink the legacy surface instead of just wrapping it.
-- **`observability-and-instrumentation`** retrofitted along the paths you actually debug: structured logging and RED metrics on the top incident sources first.
-- **`performance-optimization`** when regressions matter, its measure-first rule prevents the classic legacy trap of optimizing code that was never the bottleneck.
-
-### Brownfield anti-patterns
-
-- **"Big bang" adoption.** Loading the full lifecycle onto a legacy codebase on day one produces specs for code that already exists and refactors without safety nets. Sequence it.
-- **Letting the agent refactor untested code.** No characterization tests, no refactor. This is the single most expensive shortcut in brownfield adoption.
-- **Skipping `context-engineering` because "the code is the documentation."** The agent will infer conventions from the worst file it happens to read. Tell it the real ones.
-- **Treating the legacy system's behavior as wrong by default.** Chesterton's Fence: the weird retry loop may be load-bearing. Understand, then change.
-- **Ratcheting nothing.** Adoption should make quality monotonically better: each phase adds a gate that doesn't come back off. If a month in you can't name what's now enforced that wasn't before, the rollout has stalled.
+- **Bỏ qua `/tech-spec` vì "đây chỉ là bản prototype".** Các prototypes thường sẽ trở thành products (sản phẩm thật). Bản spec là tạo tác rẻ nhất bạn có thể viết ra cho codebase này.
+- **Load toàn bộ 24 skills vào mọi phiên làm việc.** Nó lãng phí context và làm loãng đi những skills thực sự quan trọng lúc đó. Hãy load theo giai đoạn (phase); và hãy để `meta-using-agent-skills` làm nhiệm vụ định tuyến (route).
+- **Trì hoãn observability (tính quan sát) cho đến khi "có cái gì đó để quan sát".** Hãy gắn công cụ theo dõi ngay khi bạn code, việc chắp vá các cấu trúc log về sau là một vấn đề của Lộ trình B mà bạn đang tự tạo ra cho mình.
 
 ---
 
-## The two paths converge
+## Lộ trình B | Codebase cũ: áp dụng từng bước, ưu tiên xác minh trước
 
-Both end in the same steady state: `/spec → /plan → /build → /review → /ship` for new work, always-on TDD and git discipline, review gates before merge, and skills loaded by phase rather than in bulk. Greenfield gets there in days; brownfield gets there in a quarter, and the difference is exactly the safety nets (context, characterization tests, boundaries) that the old codebase never had.
+Trong một codebase đã được thiết lập từ lâu, hồ sơ rủi ro (risk profile) bị đảo ngược: mối nguy hiểm không phải là việc xây dựng sai thứ, mà là _thay đổi_ thứ mà hành vi của nó chưa từng được ai đặc tả đầy đủ. Do đó, thứ tự áp dụng phải bắt đầu từ các skills dùng để **đọc và bảo vệ** codebase, rồi sau đó mới chuyển sang các skills dùng để **thay đổi** nó.
 
-|                        | Greenfield                     | Brownfield                               |
+### Giai đoạn 1 | Ngữ cảnh và các skills chỉ-đọc (read-only)
+
+Mục tiêu: agent phải hiểu codebase trước khi nó sửa đổi bất cứ thứ gì.
+
+1. **`meta-context` luôn đi đầu.** Viết file quy tắc dự án mô tả những quy ước có thật, những thứ nằm trong code, chứ không phải những thứ ghi trên wiki. Bao gồm các lệnh build/test, ý nghĩa các thư mục, các bãi mìn đã biết ("đừng đụng vào `legacy/billing`, nó không có tests và có tới ba cái workarounds chưa ai biết").
+2. **`review-code-and-quality` đối với các thay đổi sắp vào.** Việc review có rủi ro bằng 0 và mang lại giá trị ngay lập tức: cách review 5 phương diện và các nhãn mức độ nghiêm trọng (giúp tách biệt rõ cái gì chặn việc merge - Critical/Required - với cái gì không chặn) có thể hoạt động tốt trên bất kỳ Pull Request nào, bất kể tình trạng của codebase ra sao.
+3. **`dev-debugging` cho những con bugs mà đằng nào bạn cũng phải sửa.** Quy trình khoanh vùng 5 bước (tái hiện → cô lập → thu hẹp → sửa lỗi → rào chắn) tỏa sáng rực rỡ trong những đoạn code lạ lẫm, và bước "rào chắn (guard)" chính là lúc bạn bắt đầu xây dựng bộ test chống thoái lui (regression suite) mà dự án đang thiếu.
+4. **`dev-doubt-driven-development` làm mạng lưới an toàn.** Code cũ là kịch bản điển hình của "code không quen, cái giá của sự sai lầm rất cao" mà skill này nhắm tới. Việc đánh giá đối kháng (adversarial review) dựa trên context mới (fresh-context) đối với các tuyên bố của agent về cách hệ thống cũ hoạt động sẽ bắt được những trường hợp "ảo giác tự tin" (confident hallucinations) trước khi chúng biến thành các commits.
+
+### Giai đoạn 2 | Tests trước khi thay đổi
+
+Mục tiêu: mọi khu vực mà agent sắp đụng tới đều phải có một mạng lưới an toàn trước đã.
+
+- **`dev-test-driven-development`, áp dụng có chọn lọc.** Đừng cố hướng tới độ phủ toàn cục (global coverage); hãy hướng tới độ phủ _ở những nơi có kế hoạch thay đổi_. Đối với các hành vi cũ không có test, hãy viết các bài characterization tests (các tests ghim chặt lại những gì code hiện tại đang làm, dù đúng hay sai), trước khi sửa bất cứ thứ gì. Áp dụng quy tắc Beyonce: nếu agent thích một hành vi đủ để phụ thuộc vào nó, nó nên viết test cho hành vi đó.
+- **`code-simplification` trên những điểm nóng (hotspots) tệ nhất.** Hàng rào Chesterton (Chesterton's Fence) là nguyên tắc hoạt động ở đây: skill này ép agent phải hiểu _tại sao_ đoạn code đó lại tồn tại trước khi quyết định xóa nó đi. Việc đơn giản hóa nhưng vẫn giữ nguyên hành vi cộng thêm characterization tests là cách an toàn nhất (lowest-risk) để làm cho code cũ có thể thay đổi được.
+- **`git-workflow-and-versioning` ở mọi nơi.** Các commit nguyên tử nhỏ (small atomic commits) quan trọng _hơn_ trong codebase cũ: khi một thay đổi vào code cũ làm hỏng một thứ gì đó tinh vi, một commit cỡ 100 dòng có thể dễ dàng dùng git bisect để khoanh vùng; còn một commit "hiện đại hóa" cỡ 2000 dòng thì không.
+
+### Giai đoạn 3 | Việc mới (New work) được chạy toàn bộ vòng đời
+
+Mục tiêu: áp dụng hai tốc độ chạy (two-speed), code cũ tiếp tục bị kìm kẹp dưới cơ chế Giai đoạn 1–2; **tính năng mới được hưởng quy trình của Greenfield**.
+
+- Làm tính năng mới trong codebase cũ? `/tech-spec → /plan → /build → /review`. Phần ranh giới (boundaries) của spec chính là nơi bạn khai báo xem bề mặt code cũ nào mà tính năng mới này được phép hoặc không được phép chạm vào.
+- **`dev-api-design` tại các đường nối (seams).** Khi code mới phải giao tiếp với code cũ, hãy thiết kế các ranh giới hợp đồng (contract-first). Định luật Hyrum (Hyrum's Law) không phải là lý thuyết suông trong một codebase nhiều năm tuổi, luôn có ai đó hoặc thứ gì đó đang phụ thuộc vào mọi hành vi có thể quan sát được, kể cả những con bugs.
+- **`dev-security` khởi đầu bằng một đợt audit, rồi biến nó thành một cổng chặn (gate).** Chạy nó một lần trên toàn bộ bề mặt tấn công hiện tại (xác thực, xử lý đầu vào, dependencies - riêng việc audit dependency cũng đã đủ bù đắp công sức bỏ ra rồi), ghi nhận những gì tìm được, sau đó ép nó thành quy tắc chặn đứng các thay đổi mới nếu vi phạm.
+
+### Giai đoạn 4 | Trả nợ, gỡ bỏ, quan sát
+
+- **`deprecation-and-migration`** là kỹ năng tuyệt hảo cho codebase cũ: coi code là tiêu sản, loại bỏ code chết (zombie-code), cảnh báo deprecated, mang lại cho bạn một phương pháp có kỷ luật để thu hẹp dần bề mặt code cũ thay vì chỉ bọc nó lại bằng một lớp mới.
+- **`dev-performance`** khi các vấn đề thoái lui (regressions) trở nên quan trọng, quy tắc "phải đo đạc trước" (measure-first) của nó giúp bạn tránh được cái bẫy kinh điển: cố tối ưu những đoạn code cũ mà thực chất chưa bao giờ là nút thắt cổ chai (bottleneck) của hệ thống.
+
+### Các Phản-mẫu (Anti-patterns) ở Codebase cũ
+
+- **Áp dụng kiểu "Big bang" (làm một cục to đùng).** Ném nguyên toàn bộ vòng đời vào một codebase cũ kỹ ngay từ ngày đầu tiên sẽ sinh ra các bản specs cho đống code đã tồn tại từ đời nào, và thực hiện refactor mà không hề có các mạng lưới an toàn (safety nets). Hãy sắp xếp nó theo đúng trình tự.
+- **Để agent refactor code không có test.** Không có characterization tests thì cấm tuyệt đối refactor. Đây là đường tắt đắt giá nhất khi áp dụng quy trình vào codebase cũ.
+- **Bỏ qua `meta-context` vì "bản thân code chính là tài liệu rồi".** Agent sẽ tự suy luận các quy ước từ cái file tồi tệ nhất mà vô tình nó đọc được. Hãy chỉ cho nó thấy các quy ước thực sự là gì.
+- **Mặc định coi hành vi của hệ thống cũ là sai.** Hàng rào Chesterton: cái vòng lặp retry kỳ quặc kia có thể là thứ đang gồng gánh cả hệ thống. Phải hiểu nó đã, rồi mới được thay đổi.
+- **Không siết chặt kỷ luật.** Việc áp dụng quy trình phải làm cho chất lượng tăng lên đơn điệu (không được thụt lùi): mỗi giai đoạn phải cài cắm thêm một cổng chặn không được phép bỏ qua. Nếu sau một tháng mà bạn không thể kể tên được quy tắc nào hiện đang được ép buộc (enforced) mà trước đây thì không, thì quá trình triển khai đã bị đình trệ.
+
+---
+
+## Hai lộ trình hội tụ
+
+Cả hai đều kết thúc ở cùng một trạng thái ổn định (steady state): `/tech-spec → /plan → /build → /review` cho công việc mới, luôn bật kỷ luật TDD và git, luôn có cổng review trước khi merge, và các skills được load theo từng giai đoạn (phase) thay vì nhét chung một cục. Greenfield đến đích trong vài ngày; brownfield đến đích trong một quý, và điểm khác biệt chính xác nằm ở các mạng lưới an toàn (ngữ cảnh, characterization tests, ranh giới) mà codebase cũ chưa từng có.
+
+|                        | Dự án mới (Greenfield)         | Codebase cũ (Brownfield)                 |
 | ---------------------- | ------------------------------ | ---------------------------------------- |
-| First skill loaded     | `using-agent-skills` + `/spec` | `context-engineering`                    |
-| First value delivered  | Spec'd, tested first feature   | Zero-risk reviews and safer bug fixes    |
-| TDD posture            | Universal from commit one      | Selective: tests where change is planned |
-| Refactoring rule       | Rare (little to refactor)      | Characterization tests first, always     |
-| Riskiest anti-pattern  | Skipping the spec              | Refactoring untested code                |
-| Time to full lifecycle | Day one                        | ~One quarter, two-speed in between       |
+| Skill đầu tiên được load| `meta-using-agent-skills` + `/tech-spec` | `meta-context`                    |
+| Giá trị đầu tiên tạo ra | Tính năng đầu tiên có spec, test | Review không rủi ro & sửa bug an toàn    |
+| Vị thế của TDD           | Phổ quát từ commit số 1        | Chọn lọc: viết test ở nơi định thay đổi  |
+| Quy tắc Refactoring     | Hiếm (chưa có gì để refactor)  | Luôn phải có Characterization tests trước|
+| Anti-pattern rủi ro nhất| Bỏ qua việc viết spec          | Refactor code chưa có test               |
+| Thời gian đạt full vòng đời| Ngày 1                     | ~Một quý, có 2 tốc độ chạy xen kẽ        |

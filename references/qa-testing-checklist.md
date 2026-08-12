@@ -247,6 +247,271 @@ Khi spec đề cập nhiều phần tử UI hoặc giá trị nghiệp vụ có 
 - [ ] Xác nhận hệ thống mở rộng form đặt lệnh khi nhấn nút BÁN — [P0]
 ```
 
+## WebSocket Testing Patterns
+
+WebSocket là giao thức real-time hai chiều (bidirectional) giữa client và server. Test WebSocket yêu cầu verify cả connection lifecycle, message flow, và error handling.
+
+### WebSocket Connection Lifecycle
+
+```
+[CLOSED] ──connect()──> [CONNECTING] ──handshake OK──> [OPEN]
+                              │                          │
+                              │                          │
+                         handshake fail           close()/error
+                              │                          │
+                              ▼                          ▼
+                          [CLOSED] <──────────────── [CLOSING]
+```
+
+### Test Coverage Checklist
+
+#### 1. Connection & Handshake
+
+| Test Case | Action | Expected Result | Priority |
+|-----------|--------|-----------------|----------|
+| **Connect Success** | Client connect tới ws://server/channel | Connection OPEN, nhận welcome message | P0 |
+| **Connect with Auth** | Connect với valid token trong header | Connection OPEN với user context | P0 |
+| **Connect Invalid URL** | Connect tới ws://invalid | Connection CLOSED với error | P1 |
+| **Connect No Auth** | Connect không có token (nếu require auth) | Connection REJECTED, status 401 | P0 |
+| **Connect Expired Token** | Connect với expired token | Connection REJECTED, status 403 | P1 |
+
+#### 2. Subscribe & Unsubscribe
+
+| Test Case | Action | Expected Result | Priority |
+|-----------|--------|-----------------|----------|
+| **Subscribe Channel** | Send `{"action":"subscribe","channel":"VNINDEX"}` | Receive `{"status":"subscribed","channel":"VNINDEX"}` | P0 |
+| **Subscribe Multiple** | Subscribe "VNM", "SSI", "VCB" | Nhận data từ cả 3 channels | P0 |
+| **Unsubscribe Channel** | Send `{"action":"unsubscribe","channel":"VNINDEX"}` | Stop nhận events từ channel đó | P0 |
+| **Subscribe Invalid Channel** | Subscribe channel không tồn tại | Receive error `{"error":"INVALID_CHANNEL"}` | P1 |
+| **Subscribe Duplicate** | Subscribe cùng channel 2 lần | Chỉ subscribe 1 lần (idempotent) | P2 |
+
+#### 3. Receive Real-time Data
+
+| Test Case | Action | Expected Result | Priority |
+|-----------|--------|-----------------|----------|
+| **Receive Market Data** | Subscribe "VNM" | Nhận price updates theo định dạng đúng | P0 |
+| **Message Format** | Parse message JSON | Có đủ fields: `symbol`, `price`, `volume`, `timestamp` | P0 |
+| **Message Order** | Nhận 100 messages liên tiếp | Messages đúng thứ tự (timestamp tăng dần) | P1 |
+| **High Frequency** | Server gửi 1000 msg/sec | Client xử lý không bị drop message | P1 |
+| **Large Message** | Nhận message 10MB | Client parse thành công | P2 |
+
+#### 4. Reconnection & Resilience
+
+| Test Case | Action | Expected Result | Priority |
+|-----------|--------|-----------------|----------|
+| **Auto Reconnect** | Server close connection | Client tự động reconnect sau 2-5s | P0 |
+| **Resubscribe After Reconnect** | Reconnect thành công | Client tự động resubscribe channels cũ | P0 |
+| **Reconnect with Backoff** | Server reject 3 lần liên tiếp | Client retry với exponential backoff (2s, 4s, 8s) | P1 |
+| **Max Reconnect Attempts** | Server down 10 phút | Client stop retry sau N attempts, show error | P1 |
+| **Network Switch** | Switch từ WiFi sang 4G | Connection drop → auto reconnect | P1 |
+
+#### 5. Error Handling
+
+| Test Case | Action | Expected Result | Priority |
+|-----------|--------|-----------------|----------|
+| **Server Error** | Server gửi `{"error":"INTERNAL_ERROR"}` | Client hiện notification, log error | P0 |
+| **Malformed Message** | Server gửi JSON invalid | Client log warning, bỏ qua message đó | P1 |
+| **Timeout** | Server không respond trong 30s | Client close connection, show timeout error | P1 |
+| **Rate Limit** | Client gửi > 100 msg/sec | Server từ chối với `{"error":"RATE_LIMIT"}` | P2 |
+
+#### 6. Cross-Channel Isolation
+
+| Test Case | Action | Expected Result | Priority |
+|-----------|--------|-----------------|----------|
+| **Channel Isolation** | Subscribe "VNM" và "SSI" | VNM events không xuất hiện trong SSI channel | P0 |
+| **Unsubscribe One** | Unsubscribe "VNM", giữ "SSI" | Chỉ stop nhận VNM, vẫn nhận SSI | P0 |
+| **Error in One Channel** | Error xảy ra ở channel A | Channel B vẫn hoạt động bình thường | P1 |
+
+#### 7. Ping/Pong Heartbeat
+
+| Test Case | Action | Expected Result | Priority |
+|-----------|--------|-----------------|----------|
+| **Heartbeat** | Client gửi ping frame | Server respond pong frame trong 5s | P1 |
+| **Detect Stale Connection** | Server không respond pong 3 lần liên tiếp | Client close connection, reconnect | P1 |
+| **Client Idle** | Client không gửi message 5 phút | Server không close connection (server-initiated ping) | P2 |
+
+### Gherkin Examples for WebSocket
+
+#### Connection & Subscribe
+
+```gherkin
+Scenario: Subscribe to market data channel successfully
+  Given WebSocket connection đã được thiết lập tới "ws://api.example.com/market"
+  When client gửi message subscribe với channel "VNINDEX"
+    """
+    {"action": "subscribe", "channel": "VNINDEX"}
+    """
+  Then client nhận được confirmation message
+    """
+    {"status": "subscribed", "channel": "VNINDEX"}
+    """
+  And client bắt đầu nhận real-time market data từ channel "VNINDEX"
+
+Scenario: Unsubscribe from channel
+  Given client đã subscribe channel "VNM"
+  When client gửi message unsubscribe
+    """
+    {"action": "unsubscribe", "channel": "VNM"}
+    """
+  Then client nhận confirmation
+    """
+    {"status": "unsubscribed", "channel": "VNM"}
+    """
+  And client không còn nhận data từ channel "VNM"
+```
+
+#### Reconnection
+
+```gherkin
+Scenario: Auto-reconnect after connection drop
+  Given client đã subscribe channel "SSI"
+  And client đang nhận real-time data
+  When server đóng connection (simulate: network interruption)
+  Then client phát hiện connection closed
+  And client tự động reconnect trong vòng 5 giây
+  And client tự động resubscribe channel "SSI"
+  And client tiếp tục nhận data sau khi reconnect
+
+Scenario: Exponential backoff on repeated failures
+  Given client đang cố gắng connect
+  When server reject connection lần 1
+  Then client retry sau 2 giây
+  When server reject connection lần 2
+  Then client retry sau 4 giây
+  When server reject connection lần 3
+  Then client retry sau 8 giây
+```
+
+#### Error Handling
+
+```gherkin
+Scenario: Handle invalid channel subscription
+  Given WebSocket connection đã OPEN
+  When client subscribe channel không tồn tại "INVALID_SYMBOL"
+  Then server trả về error message
+    """
+    {"error": "INVALID_CHANNEL", "message": "Channel không tồn tại"}
+    """
+  And connection vẫn OPEN (không bị close)
+
+Scenario: Handle malformed message from server
+  Given client đã subscribe channel "VNM"
+  When server gửi message JSON invalid (corrupted data)
+  Then client log warning "Received malformed message"
+  And client bỏ qua message đó
+  And client tiếp tục nhận messages tiếp theo bình thường
+```
+
+#### Cross-Channel Isolation
+
+```gherkin
+Scenario: Events from one channel do not leak to another
+  Given client đã subscribe cả 2 channels: "VNM" và "SSI"
+  When server gửi event cho channel "VNM"
+    """
+    {"channel": "VNM", "price": 50000, "volume": 1000}
+    """
+  Then client chỉ nhận event trong VNM handler
+  And SSI handler KHÔNG nhận event này
+
+Scenario: Error in one channel does not affect others
+  Given client subscribe "VNM", "SSI", "VCB"
+  When server gửi error cho channel "SSI"
+    """
+    {"channel": "SSI", "error": "DATA_UNAVAILABLE"}
+    """
+  Then client vẫn nhận data bình thường từ "VNM" và "VCB"
+  And SSI channel được đánh dấu error state
+```
+
+### WebSocket Automation Test (Python Example)
+
+```python
+import pytest
+import websocket
+import json
+import time
+
+@pytest.fixture
+def ws_connection():
+    """Setup WebSocket connection."""
+    ws = websocket.create_connection("ws://api.example.com/market")
+    yield ws
+    ws.close()
+
+def test_subscribe_channel(ws_connection):
+    """Test subscribe to market data channel."""
+    ws = ws_connection
+    
+    # Send subscribe message
+    subscribe_msg = {"action": "subscribe", "channel": "VNINDEX"}
+    ws.send(json.dumps(subscribe_msg))
+    
+    # Receive confirmation
+    response = json.loads(ws.recv())
+    assert response["status"] == "subscribed"
+    assert response["channel"] == "VNINDEX"
+    
+    # Receive first data message
+    data = json.loads(ws.recv())
+    assert "symbol" in data
+    assert "price" in data
+
+def test_reconnect_after_close(ws_connection):
+    """Test auto-reconnect after connection drop."""
+    ws = ws_connection
+    
+    # Subscribe first
+    ws.send(json.dumps({"action": "subscribe", "channel": "VNM"}))
+    ws.recv()  # confirmation
+    
+    # Close connection (simulate drop)
+    ws.close()
+    
+    # Reconnect
+    time.sleep(2)
+    ws_new = websocket.create_connection("ws://api.example.com/market")
+    
+    # Resubscribe
+    ws_new.send(json.dumps({"action": "subscribe", "channel": "VNM"}))
+    response = json.loads(ws_new.recv())
+    
+    assert response["status"] == "subscribed"
+    ws_new.close()
+
+def test_invalid_channel_error(ws_connection):
+    """Test error when subscribing invalid channel."""
+    ws = ws_connection
+    
+    # Subscribe to invalid channel
+    ws.send(json.dumps({"action": "subscribe", "channel": "INVALID"}))
+    
+    # Expect error response
+    response = json.loads(ws.recv())
+    assert "error" in response
+    assert response["error"] == "INVALID_CHANNEL"
+    
+    # Connection should still be open
+    assert ws.connected
+```
+
+### WebSocket Testing Tools
+
+- **Python:** `websocket-client`, `pytest-asyncio`
+- **JavaScript:** `ws` library, `jest` with `ws`
+- **Postman:** WebSocket request support
+- **Manual Testing:** Browser DevTools → Network → WS tab
+
+### Common WebSocket Issues
+
+| Issue | Symptom | Root Cause | Fix |
+|-------|---------|------------|-----|
+| **Message Loss** | Client miss events | Network congestion | Add buffer, batch messages |
+| **Duplicate Subscribe** | Receive duplicate data | Client không track subscription state | Idempotent subscribe |
+| **Reconnect Loop** | Connect/disconnect liên tục | Server reject, client retry ngay | Exponential backoff |
+| **Memory Leak** | Client memory tăng dần | Event listeners không cleanup | Unsubscribe on unmount |
+| **Stale Connection** | No data received | Connection idle too long | Ping/pong heartbeat |
+
 ### Áp dụng trong Gherkin (Phase 2)
 
 Ưu tiên dùng `Scenario Outline` để gom các biến thể đối xứng, tránh duplicate scenario:

@@ -1,0 +1,52 @@
+{
+  "skill_name": "qa-run-test",
+  "trigger": {
+    "positive": [
+      { "prompt": "Chạy test automation hiện có và xuất báo cáo", "top_k": 1 },
+      { "prompt": "Run regression test suite", "top_k": 3 },
+      { "prompt": "Chạy lại test sau khi fix bug", "top_k": 3 },
+      { "prompt": "Kiểm tra xem test suite có pass không", "top_k": 3 },
+      { "prompt": "Generate test report từ pytest", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "Viết test case mới cho login feature", "owner": "qa-test-design" },
+      { "prompt": "Sinh automation test code từ Gherkin file", "owner": "qa-auto-design" },
+      { "prompt": "Import Jira issue và phân tích yêu cầu", "owner": "ba-spec" }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "execution",
+      "prompt": "Chạy test suite trong thư mục tests/ và xuất báo cáo chi tiết kết quả",
+      "expected_output": "Test execution completed with detailed report showing pass/fail counts, error details, and recommendations",
+      "files": [
+        "qa-run-test"
+      ],
+      "expectations": [
+        "Pre-flight check detects test framework and dependencies",
+        "Test suite runs to completion without interruption",
+        "Report includes total/passed/failed/skipped metrics with percentages",
+        "Each failed test has detailed error message, stack trace, and root cause analysis",
+        "Report provides actionable recommendations with priority (P0/P1/P2)",
+        "Report file is generated at correct output path"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "execution",
+      "prompt": "Regression test: chạy lại test sau khi DEV fix bug về order validation",
+      "expected_output": "Test re-run shows previously failed test now passes, with comparison to previous run",
+      "files": [
+        "qa-run-test"
+      ],
+      "expectations": [
+        "Agent identifies which tests were previously failed",
+        "Test suite runs with focus on previously failed areas",
+        "Report compares current vs previous run results",
+        "Clear indication whether the bug fix resolved the issue",
+        "Recommendation on whether to approve merge or continue debugging"
+      ]
+    }
+  ]
+}

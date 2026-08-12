@@ -207,7 +207,7 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 
 ### Quy tắc quan trọng
 > File `*-final.md` là **single source of truth** sau khi import từ Jira.
-> Tất cả các bước tiếp theo (`/tech-spec`, `/planning`, `/qa-test-design`) đều đọc từ file này.
+> Tất cả các bước tiếp theo (`/tech-spec`, `/plan`, `/qa-test-design`) đều đọc từ file này.
 
 ---
 

@@ -1,111 +1,109 @@
-# Using agent-skills with Antigravity CLI (agy)
+# Sử dụng agent-skills với Antigravity CLI (agy)
 
-The `agent-skills` package can be installed as a native plugin in the Antigravity CLI (`agy`), giving the agent access to structured workflows, personas, and custom slash commands.
+Gói `agent-skills` có thể được cài đặt dưới dạng một native plugin (plugin bản địa) trong Antigravity CLI (`agy`), cung cấp cho agent quyền truy cập vào các workflows có cấu trúc, các personas và các slash commands tùy chỉnh.
 
-## Setup
+## Cài Đặt
 
-### Option 1: Native Plugin Installation (Recommended)
+### Lựa chọn 1: Cài đặt Native Plugin (Khuyên dùng)
 
-Antigravity CLI has a first-class plugin system that registers skills, agents, and custom commands.
+Antigravity CLI có một hệ thống plugin hạng nhất (first-class) để đăng ký các skills, agents và các lệnh tùy chỉnh.
 
-**Install from the remote repository:**
+**Cài đặt từ kho lưu trữ từ xa (remote repository):**
 
 ```bash
 agy plugin install https://github.com/addyosmani/agent-skills.git
 ```
 
-**Install from a local clone:**
+**Cài đặt từ một bản clone cục bộ:**
 
-1. Clone the repository:
+1. Clone repository:
    ```bash
    git clone https://github.com/addyosmani/agent-skills.git
    ```
-2. Install the plugin using `agy`:
+2. Cài đặt plugin bằng `agy`:
    ```bash
    agy plugin install /path/to/agent-skills
    ```
 
-This will validate the plugin and install it into your global Antigravity configuration directory (`~/.gemini/antigravity-cli/plugins/agent-skills/`).
+Quá trình này sẽ xác thực plugin và cài đặt nó vào thư mục cấu hình Antigravity toàn cục của bạn (`~/.gemini/antigravity-cli/plugins/agent-skills/`).
 
-### Option 2: Import from Gemini CLI
+### Lựa chọn 2: Import từ Gemini CLI
 
-If you have already installed `agent-skills` under your legacy Gemini CLI installation, you can import it directly:
+Nếu bạn đã cài đặt sẵn `agent-skills` trong phiên bản Gemini CLI cũ, bạn có thể import nó trực tiếp sang:
 ```bash
 agy plugin import gemini
 ```
 
-Once installed, verify the active plugin:
+Sau khi cài đặt, hãy xác minh plugin đang hoạt động:
 ```bash
 agy plugin list
 ```
 
 ---
 
-## Slash Commands
+## Các Lệnh (Slash Commands)
 
-The plugin registers 8 custom slash commands: 7 lifecycle commands plus the `/webperf` specialist audit:
+Plugin đăng ký 7 lệnh tùy chỉnh (slash commands): 6 lệnh theo vòng đời phát triển cộng thêm `/webperf` chuyên biệt cho audit hiệu năng:
 
-| Command | What it does | Activated Skill |
+| Lệnh | Chức Năng | Kích Hoạt Skill |
 |---------|--------------|-----------------|
-| `/spec` | Write a structured spec before writing code | `spec-driven-development` |
-| `/planning` | Break work into small, verifiable tasks | `planning-and-task-breakdown` |
-| `/build` | Implement the next task incrementally | `incremental-implementation` |
-| `/test` | Run TDD workflow — red, green, refactor | `test-driven-development` |
-| `/review` | Five-axis code review | `code-review-and-quality` |
-| `/code-simplify` | Reduce complexity without changing behavior | `code-simplification` |
-| `/ship` | Pre-launch checklist via parallel persona fan-out | `shipping-and-launch` |
-| `/webperf` | Audit browser-facing apps for Core Web Vitals and performance issues | `web-performance-auditor` |
+| `/tech-spec` | Viết đặc tả có cấu trúc trước khi viết code | `dev-spec-driven-development` |
+| `/plan` | Chia nhỏ công việc thành các task có thể kiểm chứng | `planning-and-task-breakdown` |
+| `/build` | Code từng bước (incrementally) cho task tiếp theo | `incremental-implementation` |
+| `/unit-test` | Chạy workflow TDD — red, green, refactor | `dev-test-driven-development` |
+| `/dev-audit` | Audit toàn diện và tự động sửa (Auto-Fix) | `dev-audit-and-fix` |
+| `/review` | Review code 5 phương diện | `review-code-and-quality` |
+| `/code-simplify` | Giảm độ phức tạp mà không thay đổi hành vi code | `code-simplification` |
+| `/webperf` | Audit hiệu năng và Core Web Vitals cho web apps | `web-performance-auditor` |
 
-Each command automatically invokes the corresponding skill and guides the agent step-by-step.
-
-> **Note:** Use `/planning` instead of `/plan` to avoid conflicts with Antigravity's internal plan-generation command.
+Mỗi lệnh sẽ tự động kích hoạt skill tương ứng và hướng dẫn agent theo từng bước một.
 
 ---
 
-## Skills & Discovery
+## Skills & Sự Khám Phá (Discovery)
 
-Antigravity automatically discovers skills inside the plugin's `skills/` directory. 
-* Antigravity matches user tasks and intents to relevant skills on-demand.
-* If a task matches a skill, the agent will load the skill and prompt you for permission before executing.
+Antigravity tự động phát hiện (discover) các skills nằm trong thư mục `skills/` của plugin. 
+* Antigravity sẽ tự động khớp (match) các tasks và ý định (intents) của người dùng tới các skills liên quan khi có nhu cầu (on-demand).
+* Nếu một task khớp với một skill, agent sẽ load skill đó và xin phép bạn trước khi thực thi.
 
 ---
 
-## Verification & Validation
+## Xác Minh & Thẩm Định (Verification & Validation)
 
-To validate that your local plugin is correctly structured and contains all skills, run:
+Để kiểm tra xem plugin ở local của bạn đã được cấu trúc đúng hay chưa và có chứa đầy đủ tất cả các skills không, hãy chạy:
 ```bash
 agy plugin validate /path/to/agent-skills
 ```
 
 ---
 
-## How It Works
+## Cách Hoạt Động (How It Works)
 
-### 1. On-Demand Skill Activation
-Antigravity CLI automatically discovers the `SKILL.md` files located in the `skills/` directory of the installed plugin. Using the trigger descriptions in each skill's frontmatter, the agent will dynamically activate the appropriate workflow when it detects matching developer intent.
+### 1. Kích Hoạt Skill Theo Nhu Cầu (On-Demand Activation)
+Antigravity CLI tự động phát hiện các file `SKILL.md` nằm trong thư mục `skills/` của plugin đã cài đặt. Sử dụng phần mô tả trigger (điều kiện kích hoạt) trong frontmatter của mỗi skill, agent sẽ linh hoạt (dynamically) kích hoạt workflow phù hợp khi nó nhận diện được ý định (intent) tương ứng từ phía lập trình viên.
 
-For example, when you ask the agent to:
-- **Design a new system** &rarr; It will suggest/activate `spec-driven-development`.
-- **Implement a feature** &rarr; It will activate `incremental-implementation` and `test-driven-development`.
-- **Fix a bug** &rarr; It will activate `debugging-and-error-recovery`.
+Ví dụ, khi bạn yêu cầu agent:
+- **Thiết kế một hệ thống mới** &rarr; Nó sẽ gợi ý/kích hoạt `dev-spec-driven-development`.
+- **Implement một tính năng** &rarr; Nó sẽ kích hoạt `incremental-implementation` và `dev-test-driven-development`.
+- **Sửa một bug** &rarr; Nó sẽ kích hoạt `dev-debugging`.
 
-### 2. Specialized Agent Personas
-The plugin registers reusable subagent definitions from the `agents/` directory:
+### 2. Các Personas Chuyên Biệt (Specialized Agent Personas)
+Plugin đăng ký các định nghĩa subagent (có thể tái sử dụng) từ thư mục `agents/`:
 - `code-reviewer.md`
 - `security-auditor.md`
 - `qa.md`
 
-You can invoke these personas directly within your session or when delegating tasks using subagents.
+Bạn có thể gọi trực tiếp các personas này ngay trong phiên làm việc của bạn, hoặc gọi khi ủy thác công việc (delegating) qua các subagents.
 
 ---
 
-## Configuration & Customization
+## Cấu Hình & Tùy Biến (Configuration & Customization)
 
-### Project-Specific Enforcements (`AGENTS.md`)
-To enforce strict skill compliance (e.g. requiring a spec or plan before writing code), copy or link `AGENTS.md` into the root of your workspace. Antigravity CLI reads this file to align the agent's behavior and planning phase with your team's conventions.
+### Ép Buộc Quy Tắc Riêng Của Dự Án (`AGENTS.md`)
+Để ép buộc hệ thống phải tuân thủ nghiêm ngặt các skills (ví dụ: bắt buộc phải có tech-spec hoặc plan trước khi viết code), hãy copy hoặc link file `AGENTS.md` vào gốc (root) của workspace của bạn. Antigravity CLI sẽ đọc file này để uốn nắn hành vi và quá trình lập kế hoạch của agent sao cho khớp với các quy ước của team bạn.
 
-### Sandbox Mode
-If you want to run skills or scripts with limited terminal permissions (for safety when running third-party validation tests), launch the CLI with:
+### Chế Độ Sandbox
+Nếu bạn muốn chạy các skills hoặc scripts với quyền hạn terminal bị giới hạn (vì lý do an toàn, ví dụ như khi chạy các bài test xác minh từ bên thứ ba), hãy khởi chạy CLI với:
 
 ```bash
 agy --sandbox
@@ -113,11 +111,11 @@ agy --sandbox
 
 ---
 
-## Usage Tips
+## Mẹo Sử Dụng (Usage Tips)
 
-1. **Keep plugins up-to-date:** You can update the CLI or check for newer plugin versions using:
+1. **Luôn cập nhật plugins:** Bạn có thể update CLI hoặc kiểm tra các phiên bản plugin mới hơn bằng lệnh:
    ```bash
    agy update
    ```
-2. **Review before execution:** When agents execute complex refactoring tasks using these skills, use `Ctrl+r` to enter the **Artifact Review** screen to review, edit, or approve code before it is committed.
-3. **Control permissions:** You can use the `--dangerously-skip-permissions` flag only in trusted local projects where you want to bypass manual tool approval prompts.
+2. **Review trước khi thực thi:** Khi các agents thực hiện các tác vụ refactor phức tạp thông qua những skills này, hãy nhấn `Ctrl+r` để vào màn hình **Artifact Review**. Tại đây bạn có thể xem lại, chỉnh sửa hoặc duyệt (approve) code trước khi nó được commit.
+3. **Kiểm soát quyền:** Bạn chỉ nên sử dụng cờ `--dangerously-skip-permissions` trong các dự án local hoàn toàn tin tưởng, nơi bạn muốn bỏ qua các lời nhắc phê duyệt công cụ (tool approval prompts) thủ công.

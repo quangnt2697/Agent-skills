@@ -53,8 +53,9 @@ Tạo một file rule (quy tắc) tồn tại xuyên suốt các phiên làm vi�
 - Mài giũa ý tưởng: dùng skill `ba-refine`
 - Khai thác yêu cầu người dùng: dùng skill `ba-interview-me`
 - Dịch ngược Code thành Spec: `/qa-code2spec {đường_dẫn_file_api}`
-- Đánh giá code (Code Review): dùng skill `qa-code-review`
-- Đơn giản hóa code: dùng skill `qa-code-simplify`
+- Kiểm toán và Tự động sửa mã nguồn: `/dev-audit` hoặc dùng skill `dev-audit-and-fix`
+- Đánh giá code (Code Review): dùng skill `review-code-and-quality`
+- Đơn giản hóa code: dùng skill `code-simplification`
 - Thiết kế Kiểm thử (Checklist, BDD): dùng skill `qa-test-design`
 - Sinh Code Automation Test: `/qa-auto-design`
 

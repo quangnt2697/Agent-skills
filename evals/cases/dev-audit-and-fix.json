@@ -1,0 +1,56 @@
+{
+  "skill_name": "dev-audit-and-fix",
+  "trigger": {
+    "positive": [
+      { "prompt": "Audit toàn bộ codebase và tự động sửa lỗi", "top_k": 1 },
+      { "prompt": "Chạy full dev audit pipeline", "top_k": 1 },
+      { "prompt": "Review code và auto-fix issues", "top_k": 3 },
+      { "prompt": "Scan code for bugs và apply fixes", "top_k": 3 },
+      { "prompt": "Comprehensive code quality check + repair", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "Review code chỉ một file", "owner": "review-code-and-quality" },
+      { "prompt": "Refactor code", "owner": "dev-refactoring" },
+      { "prompt": "Debug một bug cụ thể", "owner": "dev-debugging" }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "execution",
+      "prompt": "Audit codebase với 5 files, phát hiện bugs, code smells, và auto-fix",
+      "expected_output": "Audit report với findings list + auto-fixed code + verification results",
+      "files": [
+        "dev-audit-and-fix"
+      ],
+      "expectations": [
+        "All files scanned for issues",
+        "Findings categorized by severity (Critical, High, Medium, Low)",
+        "Findings categorized by type (Bug, Code Smell, Performance, Security)",
+        "Auto-fix applied for safe fixes",
+        "Manual fix recommendations for complex issues",
+        "Tests run after auto-fix to verify no regression",
+        "Report includes before/after comparison",
+        "Confidence level based on fix success rate"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "execution",
+      "prompt": "Audit với focus trên security issues (SQL injection, XSS, hardcoded secrets)",
+      "expected_output": "Security audit report với vulnerabilities + fixes applied",
+      "files": [
+        "dev-audit-and-fix"
+      ],
+      "expectations": [
+        "Security vulnerabilities identified (OWASP Top 10)",
+        "Hardcoded secrets detected and removed",
+        "SQL injection risks fixed (parameterized queries)",
+        "XSS risks fixed (input sanitization)",
+        "Authentication/Authorization issues flagged",
+        "Fixes applied with security best practices",
+        "Security test cases added to verify fixes"
+      ]
+    }
+  ]
+}

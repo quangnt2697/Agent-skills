@@ -1,0 +1,16 @@
+description = "Chia nhỏ công việc thành các task nhỏ có thể kiểm chứng được, kèm theo tiêu chí nghiệm thu"
+
+prompt = """
+Kích hoạt kỹ năng planning-and-task-breakdown.
+
+Đọc bản đặc tả (spec) hiện có và các phần liên quan của codebase. Sau đó:
+
+1. Chuyển sang chế độ kế hoạch (plan mode) — chỉ đọc, không thay đổi code
+2. Xác định biểu đồ phụ thuộc giữa các component
+3. Cắt công việc theo chiều dọc (một luồng hoàn chỉnh mỗi task)
+4. Viết các task với tiêu chí nghiệm thu và các bước kiểm chứng
+5. Đặt các điểm dừng giữa các giai đoạn
+6. Trình bày kế hoạch cho con người review
+
+Lưu kế hoạch vào tasks/plan.md và danh sách công việc vào tasks/todo.md.
+"""

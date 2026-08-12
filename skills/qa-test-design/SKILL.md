@@ -45,14 +45,36 @@ KHÔNG được chuyển sang Giai đoạn 2 khi Giai đoạn 1 chưa hoàn thà
 
 ### Gate: User Approval (giữa Giai đoạn 1 và Giai đoạn 2)
 
+**Kiểm tra Auto-Approve Mode:**
+
+Agent kiểm tra xem có đang chạy trong auto-approve mode không:
+```python
+# Check 1: Environment variable (from /qa-pipeline)
+auto_approve = os.getenv("PIPELINE_AUTO_APPROVE") == "true"
+
+# Check 2: Explicit parameter (from skill invocation)
+auto_approve = auto_approve or skill_params.get("autoApprove") == True
+
+# Check 3: Context variable (from agent memory)
+auto_approve = auto_approve or context.get("pipeline_mode") == "auto"
+```
+
+**Nếu auto_approve = False (Manual Mode):**
+
 Sau khi hoàn thành Giai đoạn 1, agent **BẮT BUỘC**:
-1. Trình bày **toàn bộ checklist** cho user dưới dạng Markdown artifact
+1. Trình bày **toàn bộ checklist** cho user dưới dạng Markdown
 2. Hỏi rõ ràng: _"Checklist đã đầy đủ và chính xác chưa? Có item nào cần bổ sung, sửa, hoặc xoá không?"_
 3. **CHỈ chuyển sang Giai đoạn 2** khi user xác nhận rõ ràng ("Đã duyệt", "OK", "Tiếp", "Đồng ý")
 4. Nếu user sửa → cập nhật checklist → trình bày lại → hỏi lại cho đến khi được duyệt
-5. **Ngoại lệ duy nhất:** Khi được gọi từ lệnh `/qa-pipeline` (auto-approve mode), agent tự động duyệt checklist và chuyển sang Giai đoạn 2 mà không cần user confirm
 
-> **Lưu ý:** Gate này KHÔNG áp dụng khi pipeline chạy trong auto-approve mode (`/qa-pipeline`).
+**Nếu auto_approve = True (Auto Mode — từ `/qa-pipeline`):**
+
+Agent tự động:
+1. Trình bày checklist (vẫn show cho user, nhưng không hỏi)
+2. Log: `[AUTO-APPROVE] Checklist approved automatically by pipeline`
+3. Chuyển sang Giai đoạn 2 ngay lập tức
+
+> **Lưu ý:** Gate này KHÔNG áp dụng khi `autoApprove=true`.
 > Trong auto-approve mode, agent tự động chuyển tiếp giữa các phase mà không dừng lại.
 
 ---
