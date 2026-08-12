@@ -32,10 +32,40 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 
 ### Bước 4: Tự động Thực thi (Auto-Fix / Build Auto)
 *Tận dụng lăng kính của `incremental-implementation`, `dev-test-driven-development`, `source-driven-development`, `dev-frontend-engineering`, `dev-api-design`.*
-- Khi người dùng phản hồi "OK" hoặc "Đồng ý", hãy bắt tay vào thực thi Kế hoạch ở Bước 2.
-- Tuân thủ nguyên tắc `build auto`: Thực hiện từng task một trong `tasks-agent/plan.md`, cập nhật trạng thái `[x]` vào file plan, chạy bộ test nếu có (`dev-test-driven-development`), tự động sửa lỗi (Fix) nếu gặp fail (`dev-debugging`).
+
+**QUAN TRỌNG: Tự động Apply Fixes vào Code**
+- Khi người dùng phản hồi "OK" hoặc "Đồng ý", BẮT BUỘC **APPLY TRỰC TIẾP** các fixes vào source files bằng Edit/Write tools.
+- **KHÔNG BAO GIỜ** chỉ show diff/code block để user tự copy/paste — đó là anti-pattern, gây lãng phí thời gian.
+- **LUÔN LUÔN** dùng Edit tool để thay đổi code trực tiếp trong file.
+
+**Quy trình Auto-Fix:**
+- Tuân thủ nguyên tắc `build auto`: Thực hiện từng task một trong `tasks-agent/plan.md`, cập nhật trạng thái `[x]` vào file plan.
+- **Với mỗi fix:**
+  1. Read file cần fix
+  2. Apply fix bằng Edit tool (không show diff cho user)
+  3. Run tests nếu có (`dev-test-driven-development`)
+  4. Nếu test fail → tự động debug và fix lại (`dev-debugging`)
+  5. Mark task `[x]` trong plan.md
 - Trong lúc code, BẮT BUỘC tham khảo tài liệu chính thức (`source-driven-development`), thiết kế giao diện chuẩn production (`dev-frontend-engineering`), hoặc định nghĩa API/Types chặt chẽ (`dev-api-design`) tuỳ theo tính chất của task.
 - Hoàn thành toàn bộ kế hoạch từ đầu đến cuối MÀ KHÔNG CẦN DỪNG LẠI HỎI Ý KIẾN giữa chừng (trừ khi gặp lỗi nghiêm trọng block toàn bộ).
+
+**Output Format sau mỗi fix:**
+```
+✅ Fixed: [File path]
+- Issue: [Brief description]
+- Solution: [What was changed]
+- Verification: [Test results if any]
+```
+
+**KHÔNG BAO GIỜ:**
+- ❌ Show diff block và nói "copy code này vào file X"
+- ❌ Show full file content và nói "replace file X với code này"
+- ❌ Nói "bạn có muốn tôi apply fix này không?" sau khi đã được approve ở Bước 3
+
+**LUÔN LUÔN:**
+- ✅ Edit file trực tiếp
+- ✅ Verify bằng tests
+- ✅ Report kết quả ngắn gọn
 
 ## Nguyên tắc Chất lượng
 - **Đóng khung Phạm vi:** Đừng lan man sang các module không liên quan. Nếu Audit phần Thanh toán, chỉ tập trung vào Thanh toán.
@@ -46,6 +76,9 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 - Bỏ qua Bước 3 (Approval Gate) và nhảy thẳng vào viết code sửa lỗi.
 - Đề xuất kế hoạch quá sơ sài, thiếu đánh giá tận gốc về kiến trúc.
 - Khi thực thi (Bước 4) lại dừng liên tục để hỏi người dùng dù họ đã duyệt "chạy tự động".
+- **CHỈ show diff/code block** thay vì apply trực tiếp vào file — đây là **ANTI-PATTERN nghiêm trọng**.
+- Nói "bạn có muốn tôi apply fix này không?" sau khi đã được approve ở Bước 3.
+- Show full file content và nói "replace file X với code này" thay vì dùng Edit tool.
 
 ## Kết hợp
 - **Kích hoạt trực tiếp qua:** lệnh `/dev-audit`

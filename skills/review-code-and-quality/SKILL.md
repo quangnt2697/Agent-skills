@@ -109,3 +109,45 @@ Dán nhãn cho mọi comment với mức độ nghiêm trọng (severity) để 
 ## Kết hợp
 - **Kích hoạt trực tiếp khi:** user yêu cầu đánh giá chất lượng (review code) của một đoạn mã, file, hoặc một Pull Request cụ thể.
 - **Lệnh tương tác:** Gọi thông qua lệnh `/review`. Lệnh này sẽ định tuyến prompt dựa trên persona hiện tại (Dev hoặc QA) để đưa ra lăng kính đánh giá phù hợp nhất.
+
+## Output Format
+
+Skill này **CHỈ REPORT findings**, KHÔNG tự động apply fixes. Output format:
+
+```markdown
+## 🔍 Code Review: [File/PR Name]
+
+**Persona:** [Dev / QA]  
+**Reviewed:** [File paths or PR #]
+
+### ❌ Critical Issues (Must Fix)
+1. **[File:Line]** [Category] — [Issue description]
+   - **Impact:** [Consequences]
+   - **Fix:** [Suggested solution]
+
+### ⚠️ Required Changes
+2. **[File:Line]** [Category] — [Issue description]
+   - **Fix:** [Suggested solution]
+
+### 💡 Optional Improvements
+3. **Nit:** [File:Line] — [Suggestion]
+
+### ✅ What's Done Well
+- [Positive feedback]
+
+### 📊 Verdict
+- [ ] **Approve** — Ready to merge
+- [x] **Request Changes** — Must address 2 critical + 3 required issues
+
+---
+
+**Next Steps:**
+Bạn có muốn tôi tự động sửa các issues này không? 
+→ Dùng `/dev-audit` để tự động fix (với approval gate)
+```
+
+**QUAN TRỌNG:**
+- ❌ **KHÔNG** tự động apply fixes trong skill này
+- ❌ **KHÔNG** show diff/code blocks với lời "copy vào file X"
+- ✅ **CHỈ** report findings với suggested solutions
+- ✅ **GỢI Ý** dùng `/dev-audit` nếu user muốn auto-fix
