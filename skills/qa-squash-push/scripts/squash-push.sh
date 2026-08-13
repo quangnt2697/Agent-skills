@@ -39,8 +39,8 @@ if [[ -f "$ENV_FILE" ]]; then
     export $(grep -v '^#' "$ENV_FILE" | xargs)
 fi
 
-if [[ -z "${SQUASH_BASE_URL:-}" || -z "${SQUASH_USERNAME:-}" || -z "${SQUASH_PASSWORD:-}" ]]; then
-    log_error "Thiếu cấu hình đăng nhập Squash TM (SQUASH_BASE_URL, SQUASH_USERNAME, SQUASH_PASSWORD) trong .env"
+if [[ -z "${SQUASH_BASE_URL:-}" || -z "${SQUASH_API_TOKEN:-}" ]]; then
+    log_error "Thiếu cấu hình đăng nhập Squash TM (SQUASH_BASE_URL, SQUASH_API_TOKEN) trong .env"
     exit 1
 fi
 
@@ -54,7 +54,7 @@ if [[ ! -f "$GHERKIN_FILE" ]]; then
     exit 1
 fi
 
-AUTH_B64=$(echo -n "${SQUASH_USERNAME}:${SQUASH_PASSWORD}" | base64)
+
 
 # Hàm gọi API
 call_api() {
@@ -64,11 +64,11 @@ call_api() {
     
     if [[ -z "$payload" ]]; then
         curl -s -X "$method" "${SQUASH_BASE_URL}${endpoint}" \
-            -H "Authorization: Basic ${AUTH_B64}" \
+            -H "Authorization: Bearer ${SQUASH_API_TOKEN}" \
             -H "Accept: application/json"
     else
         curl -s -X "$method" "${SQUASH_BASE_URL}${endpoint}" \
-            -H "Authorization: Basic ${AUTH_B64}" \
+            -H "Authorization: Bearer ${SQUASH_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -H "Accept: application/json" \
             -d "$payload"
@@ -77,16 +77,16 @@ call_api() {
 
 log_info "1. Tìm Sprint mới nhất từ Requirement Workspace (Folder G.3.1)..."
 
-REQ_FOLDERS_JSON=$(call_api "GET" "/api/rest/latest/requirement-folders/${SQUASH_REQ_G31_FOLDER_ID}/requirement-folders")
+REQ_FOLDERS_JSON=$(call_api "GET" "/api/rest/latest/requirement-folders/${SQUASH_REQ_G31_FOLDER_ID}/content")
 
 # Trích xuất thư mục có dạng "EnTrade Sprint xxx" lớn nhất
 TARGET_SPRINT_NAME=$(echo "$REQ_FOLDERS_JSON" | jq -r '
-  ._embedded.requirementFolders[]? 
+  ._embedded.content[]? 
   | select(.name | test("EnTrade Sprint [0-9]+")) 
   | .name as $name 
   | ($name | capture("EnTrade Sprint (?<num>[0-9]+)") | .num | tonumber) as $num 
   | {name: $name, num: $num}
-' | jq -s 'sort_by(.num) | last | .name')
+' | jq -r -s 'sort_by(.num) | last | .name')
 
 if [[ -z "$TARGET_SPRINT_NAME" || "$TARGET_SPRINT_NAME" == "null" ]]; then
     log_error "Không tìm thấy thư mục nào có định dạng 'EnTrade Sprint xxx' bên Requirement Workspace!"
@@ -97,8 +97,8 @@ log_ok "Tìm thấy Sprint mới nhất: $TARGET_SPRINT_NAME"
 
 log_info "2. Kiểm tra/Đồng bộ thư mục sang Test Case Workspace (Folder G.3.1)..."
 
-TC_FOLDERS_JSON=$(call_api "GET" "/api/rest/latest/test-case-folders/${SQUASH_TC_G31_FOLDER_ID}/test-case-folders")
-TARGET_TC_FOLDER_ID=$(echo "$TC_FOLDERS_JSON" | jq -r "._embedded.testCaseFolders[]? | select(.name == \"$TARGET_SPRINT_NAME\") | .id" | head -n 1)
+TC_FOLDERS_JSON=$(call_api "GET" "/api/rest/latest/test-case-folders/${SQUASH_TC_G31_FOLDER_ID}/content")
+TARGET_TC_FOLDER_ID=$(echo "$TC_FOLDERS_JSON" | jq -r "._embedded.content[]? | select(.name == \"$TARGET_SPRINT_NAME\") | .id" | head -n 1)
 
 if [[ -z "$TARGET_TC_FOLDER_ID" || "$TARGET_TC_FOLDER_ID" == "null" ]]; then
     log_info "Thư mục '$TARGET_SPRINT_NAME' chưa tồn tại bên Test Case. Khởi tạo thư mục mới..."
@@ -128,17 +128,17 @@ fi
 
 log_info "3. Kiểm tra Test Case: $TEST_CASE_NAME"
 
-SEARCH_RES=$(call_api "GET" "/api/rest/latest/test-cases?search=name~\"${TEST_CASE_NAME}\"")
-TC_ID=$(echo "$SEARCH_RES" | jq -r "._embedded.testCases[]? | select(.name == \"${TEST_CASE_NAME}\") | .id" | head -n 1)
+ENCODED_SEARCH=$(jq -rn --arg x "name~\"${TEST_CASE_NAME}\"" '$x|@uri')
+SEARCH_RES=$(call_api "GET" "/api/rest/latest/test-cases?search=${ENCODED_SEARCH}")
+TC_ID=$(echo "$SEARCH_RES" | jq -r "._embedded.\"test-cases\"[]? | select(.name == \"${TEST_CASE_NAME}\") | .id" | head -n 1)
 
 if [[ -z "$TC_ID" || "$TC_ID" == "null" ]]; then
     log_info "Test case chưa tồn tại. Tạo mới..."
     CREATE_TC_PAYLOAD=$(cat <<EOF
 {
-  "_type": "test-case",
+  "_type": "scripted-test-case",
   "name": "${TEST_CASE_NAME}",
   "description": "Auto-generated test case from Jira",
-  "format": "GHERKIN",
   "parent": {
     "_type": "test-case-folder",
     "id": "${TARGET_TC_FOLDER_ID}"
@@ -164,6 +164,7 @@ log_info "4. Cập nhật script Gherkin..."
 GHERKIN_CONTENT=$(cat "$GHERKIN_FILE" | jq -Rs .)
 PATCH_PAYLOAD=$(cat <<EOF
 {
+  "_type": "scripted-test-case",
   "script": ${GHERKIN_CONTENT}
 }
 EOF

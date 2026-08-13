@@ -28,7 +28,8 @@ Tự động đẩy tài liệu Test Case (định dạng Gherkin) đã thiết 
 
 ## Quy trình Thực hiện (Workflow)
 
-Agent CHỈ CẦN gọi bash script tự động đã được xây dựng sẵn để xử lý toàn bộ thao tác giao tiếp REST API phức tạp với Squash TM:
+Agent CHỈ CẦN gọi bash script tự động đã được xây dựng sẵn để xử lý toàn bộ thao tác giao tiếp REST API phức tạp với Squash TM.
+Lưu ý đặc biệt: Phải chạy luồng này một cách liền mạch, gọi trực tiếp script từ đầu đến cuối (tự động điền các tham số) mà KHÔNG dừng lại hỏi ý kiến người dùng hay yêu cầu xác nhận trung gian. Chạy 1 lệnh bash duy nhất để user chỉ phải cấp quyền một lần.
 
 ### Bước 1: Thu thập Tham số
 - Lấy `issueKey` từ `$ARGUMENTS`.
