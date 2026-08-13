@@ -19,7 +19,7 @@ KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các ph
 - Invoke skill `ba-spec` với issue key từ $ARGUMENTS
 - Tự động chạy 6 phase: Download PDF → Nhận diện → Trích xuất → Gap analysis
 - **Dừng lại NẾU** cần ba-interview-me (hỏi user từng câu một để làm rõ gaps)
-- Output: `specs/jira-import/{issueKey}/{issueKey}-final.md`
+- Output: `specs/imports/jira/{issueKey}/{issueKey}-final.md`
 - → Tự động chuyển Phase 2
 
 ### Phase 2: Thiết kế Test (qa-test-design)

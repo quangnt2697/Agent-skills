@@ -7,7 +7,7 @@ KHÔNG được bỏ qua Phase 1 — checklist là nguồn sự thật duy nhấ
 
 ## Nguồn đầu vào
 
-1. **Ưu tiên cao nhất:** Đọc file `specs/jira-import/{issueKey}/{issueKey}-final.md` nếu tồn tại.
+1. **Ưu tiên cao nhất:** Đọc file `specs/imports/jira/{issueKey}/{issueKey}-final.md` nếu tồn tại.
    - File này là **single source of truth** sau khi import từ Jira, đã qua phân tích và interview.
    - Sử dụng trực tiếp các sections: Business Rules, Acceptance Criteria, User Flow, Form & Input, Edge Cases, API endpoints... làm đầu vào cho checklist.
    - Nhận diện loại task từ header `**Loại task:**` (APP/WEB/API) để điều chỉnh chiều kiểm thử phù hợp.

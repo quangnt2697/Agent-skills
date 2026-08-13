@@ -1,84 +1,215 @@
 ---
 name: ba-spec
 description: >
-  Download Jira issue dưới dạng PDF theo {issueKey}, tự động nhận diện loại task
-  ([APP]/[WEB]/[OpenAPI]/[BE]) từ tên issue, chọn bộ trích xuất & câu hỏi phù hợp,
-  chạy interview-me để làm rõ yêu cầu, tổng hợp thành bản markdown chi tiết.
-  Trigger: "biz-spec", "import jira", "lấy task jira", "/ba-spec {issueKey}".
+  Import tài liệu từ Jira/Confluence, tự động scan tài liệu tham chiếu,
+  trình danh sách duyệt trước khi tải, nhận diện loại task, trích xuất &
+  phân tích đa nguồn, chạy interview-me làm rõ, tổng hợp thành markdown chi tiết.
+  Trigger: "biz-spec", "import jira", "/ba-spec {issueKey}", "/ba-spec confluence {keyword}".
 ---
 
-# Skill: biz-spec
+# Skill: ba-spec
 
 ## Mục đích
 
-Tự động hoá quy trình: **Jira Task → PDF → Trích xuất → Phân tích → Làm rõ → Markdown chi tiết**.
+Tự động hoá quy trình import và phân tích tài liệu từ **Jira** và **Confluence**:
 
-Agent nhận `{issueKey}` từ user, tải task Jira về dạng PDF, nhận diện loại task từ tên, trích xuất thông tin có cấu trúc theo profile phù hợp, chạy interview-me để làm rõ
-các điểm mơ hồ, rồi tổng hợp thành 1 file markdown chi tiết.
-
----
-
-## Workflow — 6 Phase
-
-```
-Phase 1          Phase 1.5          Phase 2           Phase 3
-Download PDF ──→ Nhận diện     ──→ Trích xuất    ──→ Phân tích &
-                 loại task          theo profile       xác định gaps
-    │                │                  │                  │
-    ▼                ▼                  ▼                  ▼
-  [Auto]           [Auto]            [Auto]            [Auto]
-
-              Phase 4           Phase 5
-          ──→ Interview-me ──→ Tổng hợp
-              làm rõ gaps       final.md
-                  │                │
-                  ▼                ▼
-            [Interactive]      [Auto]
-```
+- **Luồng Jira:** `{issueKey}` → Scan tham chiếu → Duyệt → Tải → Phân tích đa nguồn → `final.md`
+- **Luồng Confluence:** `{keyword}` → Tìm kiếm → Duyệt → Tải → Phân tích đa nguồn → `final.md`
 
 ---
 
-## Phase 1: Download PDF từ Jira
+## Điều kiện Tiên quyết (Authentication)
 
-### Điều kiện tiên quyết
-- File `.env` phải tồn tại tại workspace root với các biến: `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`
-- Nếu chưa có `.env`, hướng dẫn user tạo theo `.env.example`
+File `.env` tại workspace root phải chứa các biến Atlassian (dùng chung cho Jira & Confluence):
 
-### Các bước thực hiện
-1. Đọc file `.env` để lấy credentials
-2. Chạy script `jira-auth-check.sh` để kiểm tra kết nối
-3. Gọi REST API: `GET /rest/api/3/issue/{issueKey}` để lấy JSON metadata
-4. Trích xuất từ JSON: `summary`, `status`, `priority`, `assignee`, `reporter`, `labels`, `sprint`, `attachment list`
-5. Export issue thành PDF:
+```
+ATLASSIAN_BASE_URL=https://your-domain.atlassian.net
+ATLASSIAN_EMAIL=your-email@company.com
+ATLASSIAN_API_TOKEN=your-api-token
+```
+
+Nếu chưa có `.env`, hướng dẫn user tạo theo `.env.example`.
+
+---
+
+## Cấu trúc Thư mục
+
+```text
+specs/imports/
+├── jira/
+│   └── {issueKey}/
+│       ├── source/
+│       │   ├── {issueKey}.pdf
+│       │   ├── metadata.json
+│       │   └── references/
+│       │       ├── {tên-slug}-{pageId}.pdf          # Confluence tham chiếu
+│       │       ├── wireframe-v3.pdf                  # Attachment gốc
+│       │       └── flowchart-order-flow.png          # Ảnh đính kèm
+│       └── {issueKey}-final.md
+│
+└── confluence/
+    └── {keyword}/
+        ├── source/
+        │   ├── {tên-slug}-{pageId}.pdf               # Trang Confluence gốc
+        │   ├── metadata.json
+        │   └── references/
+        │       ├── {tên-slug-con}-{childPageId}.pdf  # Confluence con
+        │       ├── mockup-checkout-page.png           # Ảnh đính kèm
+        │       └── data-mapping.xlsx                  # File đính kèm
+        └── {keyword}-final.md
+```
+
+### Quy ước Đặt tên File
+
+**Confluence pages:** `{tên-ngắn-gọn-slug}-{pageId}.pdf`
+- Viết thường, bỏ dấu tiếng Việt, thay khoảng trắng bằng `-`.
+- Cắt tối đa 50 ký tự phần tên (trước pageId).
+- VD: `"Thiết kế luồng Thanh Toán VNPay"` (pageId: 12345) → `thiet-ke-luong-thanh-toan-vnpay-12345.pdf`
+
+**File đính kèm:** Giữ nguyên tên gốc từ Jira/Confluence.
+
+---
+
+## Bộ lọc Định dạng File
+
+| Nhóm | Định dạng | Hành động |
+|------|-----------|-----------|
+| 📄 Văn bản | `.pdf, .doc, .docx, .txt, .md, .rtf` | ✅ Tải + Đọc nội dung |
+| 📊 Bảng tính | `.xls, .xlsx, .csv` | ✅ Tải + Trích xuất data |
+| 🖼️ Hình ảnh | `.png, .jpg, .jpeg, .gif, .svg, .webp` | ✅ Tải (wireframe, mockup, flowchart, ERD) |
+| 📐 Sơ đồ | `.drawio, .vsdx, .figma` | ✅ Tải (giữ nguyên format) |
+| 💻 Code/Config | `.json, .yaml, .xml, .sql` | ✅ Tải + Đọc nội dung |
+| 🎬 Video | `.mp4, .mov, .avi` | ❌ Bỏ qua (quá nặng) |
+| 📦 Nén | `.zip, .rar, .7z, .tar.gz` | ❌ Bỏ qua (không đọc trực tiếp được) |
+
+---
+
+## LUỒNG A: `/ba-spec {issueKey}` — Import từ Jira
+
+### Workflow tổng quan
+
+```
+Phase 0              Phase 1              Phase 1.5           Phase 2
+Scan & Duyệt   ──→  Tải file thiếu  ──→  Nhận diện     ──→  Trích xuất
+danh sách                                 loại task          theo profile
+    │                    │                    │                   │
+    ▼                    ▼                    ▼                   ▼
+[Auto+Approval]       [Auto]              [Auto]              [Auto]
+
+            Phase 3           Phase 4           Phase 5
+        ──→ Phân tích &  ──→  Interview-me ──→  Tổng hợp
+            xác định gaps     làm rõ gaps       final.md
+                │                 │                │
+                ▼                 ▼                ▼
+              [Auto]        [Interactive]       [Auto]
+```
+
+---
+
+### Phase 0: Scan & Tổng hợp Danh sách (APPROVAL GATE)
+
+**Mục tiêu:** Trước khi tải bất kỳ file nào, quét nhanh Jira task để tìm tất cả tài liệu Confluence/file đính kèm liên quan, đối chiếu với file đã có trong dự án, rồi trình danh sách cho User duyệt.
+
+**Các bước:**
+
+1. **Gọi API lấy metadata Jira** (chưa tải PDF):
+   ```
+   GET /rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels,sprint
+   ```
+
+2. **Trích xuất danh sách liên kết tham chiếu:**
+   - Từ field `issuelinks`: Lấy các Confluence page được link.
+   - Gọi thêm Remote Links: `GET /rest/api/3/issue/{issueKey}/remotelink` — lấy link Confluence/trang ngoài.
+   - Từ field `description`: Dùng Regex quét URL chứa pattern `*/wiki/spaces/*` hoặc `*/wiki/pages/*`.
+   - Từ field `attachment`: Lấy danh sách file đính kèm (tên, dung lượng, định dạng).
+
+3. **Kiểm tra Cache — file đã tải trước đó:**
+   - Với mỗi Confluence pageId → Quét thư mục `specs/imports/confluence/` và `specs/imports/jira/*/source/references/` xem đã có file `*-{pageId}.pdf` chưa.
+   - Với mỗi attachment → Kiểm tra tên file đã tồn tại trong dự án chưa.
+
+4. **Trình bảng Danh sách cho User duyệt:**
+
+   ```markdown
+   📋 **Danh sách tài liệu liên quan đến {issueKey}:**
+
+   | # | Loại | Tên | Trạng thái | Đường dẫn / Hành động |
+   |---|------|-----|------------|----------------------|
+   | 1 | 📄 Jira PDF | {issueKey} | 🆕 Chưa tải | → Sẽ tải mới |
+   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `specs/imports/confluence/thanh-toan/source/thiet-ke-luong-thanh-toan-12345.pdf` |
+   | 3 | 📝 Confluence | API Specification v2 (ID: 67890) | 🆕 Chưa tải | → `api-specification-v2-67890.pdf` |
+   | 4 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
+   | 5 | 🖼️ Ảnh | flowchart-order-flow.png (800KB) | 🆕 Chưa tải | → Sẽ tải mới |
+   | 6 | 🎬 Video | demo-flow.mp4 (50MB) | ⏭️ Bỏ qua | Định dạng không hỗ trợ |
+
+   **Tổng cộng:** 4 file cần tải mới, 1 file đã có sẵn, 1 file bỏ qua.
+
+   Bạn có muốn tôi tiến hành tải không? (Gõ **OK** hoặc chỉnh sửa danh sách)
+   ```
+
+5. **DỪNG LẠI (Approval Gate):** Chờ User phản hồi "OK" hoặc chỉnh sửa.
+
+---
+
+### Phase 1: Download (Chỉ tải những gì còn thiếu)
+
+Sau khi User đồng ý:
+
+1. **Tải Jira task thành PDF:**
    - **Phương án A** (ưu tiên): Gọi endpoint HTML view → dùng `wkhtmltopdf` convert thành PDF
    - **Phương án B** (fallback): Dùng browser subagent mở trang issue → Print to PDF
-6. Download tất cả file attachment đính kèm (giữ nguyên format gốc: .pdf, .doc, .png, .xlsx...)
-7. Tạo file `metadata.json` chứa thông tin issue
-8. Lưu tất cả vào `specs/jira-import/{issueKey}/source/`
 
-### Cấu trúc thư mục output
-```
-specs/jira-import/{issueKey}/
-├── source/
-│   ├── {issueKey}.pdf            # PDF chính (issue content + ảnh)
-│   ├── attachment-*.{ext}         # File đính kèm gốc
-│   └── metadata.json              # Metadata + task_type
-└── {issueKey}-final.md           # ← Output cuối cùng (Phase 5)
-```
+2. **Tải các Confluence page chưa có:**
+   - Lấy metadata mỗi page: `GET /wiki/rest/api/content/{pageId}`
+   - Export PDF: `GET /wiki/spaces/flyingpdf/pdfpageexport.action?pageId={pageId}`
+   - Tải file đính kèm của Confluence: `GET /wiki/rest/api/content/{pageId}/child/attachment`
+   - Lưu với quy ước tên: `{tên-slug}-{pageId}.pdf`
+
+3. **Tải các file attachment Jira chưa có** (giữ nguyên tên gốc).
+
+4. **Tạo `metadata.json`:**
+   ```json
+   {
+     "issueKey": "PROJ-123",
+     "summary": "...",
+     "task_type": "APP",
+     "references": [
+       {
+         "type": "confluence",
+         "pageId": "12345",
+         "title": "Thiết kế luồng thanh toán",
+         "status": "downloaded",
+         "path": "source/references/thiet-ke-luong-thanh-toan-12345.pdf"
+       },
+       {
+         "type": "confluence",
+         "pageId": "67890",
+         "title": "API Specification v2",
+         "status": "cached",
+         "path": "../../confluence/api-spec/source/api-specification-v2-67890.pdf"
+       },
+       {
+         "type": "attachment",
+         "filename": "wireframe-v3.pdf",
+         "status": "downloaded",
+         "path": "source/references/wireframe-v3.pdf"
+       }
+     ]
+   }
+   ```
+
+5. **Lưu tất cả vào:** `specs/imports/jira/{issueKey}/source/` và `source/references/`.
 
 ---
 
-## Phase 1.5: Nhận diện loại task
-
-### Quy tắc nhận diện (case-insensitive)
+### Phase 1.5: Nhận diện loại task
 
 Đọc trường `summary` (tên task) từ JSON metadata, tìm tag prefix:
 
 | Tag trong tên task | Loại task | Profile áp dụng |
-|-------------------|-----------|-----------------|
+|-------------------|-----------|--------------------|
 | `[APP]` | 📱 Mobile App | `references/profile-app.md` |
 | `[WEB]` | 🌐 Web Application | `references/profile-web.md` |
-| `[OpenAPI]` hoặc `[BE]` hoặc `[WS]` hoặc `[WebSocket]`| 🔌 Backend / API / WebSocket | `references/profile-api.md` |
+| `[OpenAPI]` / `[BE]` / `[WS]` / `[WebSocket]` | 🔌 Backend / API / WebSocket | `references/profile-api.md` |
 | Không có tag / Nhiều tag | 🔀 Hybrid | Kết hợp tất cả profiles |
 
 ### Logic phát hiện
@@ -90,14 +221,6 @@ summary.lower() chứa "[be]"        → task_type = "API"
 summary.lower() chứa "[websocket]" → task_type = "API"
 summary.lower() chứa "[ws]"        → task_type = "API"
 không match nào                    → task_type = "HYBRID"
-```
-
-### Ghi nhận vào metadata.json
-```json
-{
-  "task_type": "APP",
-  "task_type_detected_from": "[APP] in summary"
-}
 ```
 
 ### Xử lý khi không chắc chắn
@@ -112,9 +235,14 @@ Bạn xác nhận đây là task loại gì?
 
 ---
 
-## Phase 2: Trích xuất có cấu trúc theo Profile
+### Phase 2: Trích xuất có cấu trúc theo Profile (ĐỌC ĐA NGUỒN)
 
-Agent đọc PDF + tất cả attachments, sau đó đọc file profile tương ứng:
+Agent đọc **tất cả** các file liên quan — bao gồm:
+- File PDF gốc của Jira task.
+- Các file Confluence/attachment mới tải trong `source/references/`.
+- Các file Confluence/attachment **đã có sẵn** (theo path ghi trong `metadata.json`).
+
+Sau đó đọc file profile tương ứng:
 - 📱 APP → đọc `references/profile-app.md`
 - 🌐 WEB → đọc `references/profile-web.md`
 - 🔌 API → đọc `references/profile-api.md`
@@ -129,7 +257,9 @@ Agent trích xuất thông tin theo **9 chiều phân tích** được định n
 
 ---
 
-## Phase 3: Phân tích yêu cầu & Xác định gaps
+### Phase 3: Phân tích yêu cầu & Xác định gaps (ĐỌC ĐA NGUỒN)
+
+Agent PHẢI đọc cả file Jira gốc LẪN tất cả các file references để phát hiện gaps toàn diện:
 
 ### Gaps chung (tất cả loại task)
 1. **Xung đột logic** — Acceptance Criteria nói A nhưng User Flow mô tả B
@@ -153,9 +283,8 @@ Danh sách câu hỏi cần làm rõ, sắp xếp theo mức độ:
 
 ---
 
-## Phase 4: Interview-me — Làm rõ yêu cầu
+### Phase 4: Interview-me — Làm rõ yêu cầu
 
-### Quy trình
 1. Agent tự động invoke skill `interview-me`
 2. Trình bày **hypothesis** kèm **confidence level** cho từng điểm mơ hồ
 3. Hỏi user **từng câu một** (kèm guess) — bắt đầu từ câu 🔴 Critical
@@ -169,22 +298,23 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 
 ---
 
-## Phase 5: Tổng hợp bản Markdown chi tiết
+### Phase 5: Tổng hợp bản Markdown chi tiết
 
 ### File output
-📄 `specs/jira-import/{issueKey}/{issueKey}-final.md`
+📄 `specs/imports/jira/{issueKey}/{issueKey}-final.md`
 
 ### Template header (chung cho tất cả loại task)
 ```markdown
 # [{issueKey}] <Summary>
 
-**Jira Link:** {JIRA_BASE_URL}/browse/{issueKey} ← cho phép click vào link để mở Jira
-**Loại task:** 📱 APP | 🌐 WEB | 🔌 API  | OpenAPI | WebSocket ← tự detect
+**Jira Link:** {ATLASSIAN_BASE_URL}/browse/{issueKey}
+**Loại task:** 📱 APP | 🌐 WEB | 🔌 API | OpenAPI | WebSocket ← tự detect
 **Priority:** <Priority> | **Status:** <Status>
 **Assignee:** <Assignee> | **Reporter:** <Reporter>
 **Labels:** <Labels> | **Sprint:** <Sprint>
 **Ngày trích xuất:** <Date>
 **Source PDF:** [{issueKey}.pdf](./source/{issueKey}.pdf)
+**Tài liệu tham chiếu:** [Xem danh sách](./source/metadata.json)
 ```
 
 ### Sections 2–8 thay đổi theo loại task
@@ -199,15 +329,78 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 | 7 | Offline & Push Notification | Data Display & Real-time | Dependencies & Data Flow |
 | 8 | Business Rules & Edge Cases | Business Rules & Edge Cases | Business Rules & Edge Cases |
 
-### Sections cố định (9–12)
+### Sections cố định (9–13)
 - **9. Acceptance Criteria (Reframed)**
 - **10. Assumptions & Decisions**
 - **11. Open Questions**
-- **12. Tham khảo**
+- **12. Tài liệu Tham chiếu** — Danh sách link + path tới tất cả Confluence/file references đã sử dụng
+- **13. Traceability Matrix** — Ánh xạ giữa yêu cầu nghiệp vụ ↔ tài liệu nguồn
 
 ### Quy tắc quan trọng
-> File `*-final.md` là **single source of truth** sau khi import từ Jira.
+> File `*-final.md` là **single source of truth** sau khi import.
 > Tất cả các bước tiếp theo (`/tech-spec`, `/plan`, `/qa-test-design`) đều đọc từ file này.
+
+---
+
+## LUỒNG B: `/ba-spec confluence {keyword}` — Import từ Confluence
+
+### Phase 1A: Tìm kiếm & Xác nhận (APPROVAL GATE)
+
+1. **Tìm kiếm bằng CQL:**
+   ```
+   GET /wiki/rest/api/search?cql=title~"{keyword}" OR text~"{keyword}"&limit=5
+   ```
+
+2. **Hiển thị top 3-5 kết quả:**
+   ```markdown
+   📋 **Kết quả tìm kiếm Confluence cho "{keyword}":**
+
+   | # | Tiêu đề | Space | Tác giả | Cập nhật |
+   |---|---------|-------|---------|----------|
+   | 1 | Thiết kế luồng thanh toán VNPay | DEV | Nguyen A | 2024-01-10 |
+   | 2 | API Specification - Payment | API | Tran B | 2024-01-08 |
+   | 3 | Checklist UAT thanh toán | QA | Le C | 2023-12-20 |
+
+   Bạn muốn tải tài liệu nào? (Gõ số thứ tự, VD: **1** hoặc **1,2**)
+   ```
+
+3. **DỪNG LẠI** chờ User chọn.
+
+### Phase 1B: Scan & Duyệt References (APPROVAL GATE)
+
+Sau khi User chọn trang, Agent quét trang đó để tìm references (Depth=1):
+
+1. **Quét nội dung trang** để tìm link tới Confluence page khác.
+2. **Lấy danh sách attachments:** `GET /wiki/rest/api/content/{pageId}/child/attachment`
+3. **Kiểm tra Cache** (file đã có trong dự án chưa?).
+4. **Trình danh sách cho User duyệt** (giống Phase 0 của Jira).
+5. **DỪNG LẠI** chờ User đồng ý.
+
+### Phase 1C: Download
+
+Sau khi User đồng ý:
+1. Tải trang Confluence gốc thành PDF: `{tên-slug}-{pageId}.pdf`
+2. Tải các Confluence con (nếu có): `{tên-slug-con}-{childPageId}.pdf`
+3. Tải các file đính kèm (giữ nguyên tên gốc).
+4. Tạo `metadata.json` với danh sách references.
+5. Lưu vào `specs/imports/confluence/{keyword}/source/` và `source/references/`.
+
+### Phase 2 → Phase 5: Phân tích & Tổng hợp
+
+Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
+- Đọc trang gốc + tất cả references → Trích xuất → Phân tích gaps → Interview-me → Tổng hợp `{keyword}-final.md`.
+
+---
+
+## Chiến lược Scan Hiệu quả (Chống Tốn Thời Gian)
+
+| Chiến lược | Mô tả |
+|-----------|-------|
+| **Depth = 1** | Chỉ scan link ở tầng trực tiếp. KHÔNG đào sâu thêm. |
+| **API-first** | Ưu tiên dùng REST API (`issuelinks`, `remotelink`, `attachment`, CQL search) thay vì để AI đọc text tìm link. Nhanh hơn 10x. |
+| **Cache Check** | Trước khi tải, luôn kiểm tra file đã có trong dự án (`specs/imports/`). Tiết kiệm thời gian và bandwidth. |
+| **Smart Filter** | Chỉ tải file trong bộ lọc cho phép (xem bảng ở trên). Bỏ qua video, file nén. |
+| **Approval Gate** | Luôn trình danh sách cho User duyệt trước khi tải. User có quyền loại bỏ file không cần thiết. |
 
 ---
 
@@ -217,17 +410,24 @@ Hỏi user muốn tiếp tục với pipeline nào:
 
 | Tùy chọn | Command | Mô tả |
 |-----------|---------|-------|
+| Thiết kế kỹ thuật | `/tech-spec` | Tạo Tech-Spec từ Business-Spec |
 | Thiết kế test | `/qa-test-design` | Tạo checklist + BDD Gherkin |
-| Sinh automation test | `/qa-auto-design` | Sinh code test từ Gherkin file (yêu cầu đã có `.feature`) |
+| Sinh automation test | `/qa-auto-design` | Sinh code test từ Gherkin file |
 | Full QA pipeline | `/qa-pipeline` | Tự động: ba-spec → checklist → Gherkin → sinh code → chạy test → báo cáo |
 
-### Quy trình QA tổng thể
+### Quy trình tổng thể
 
 ```
 Giai đoạn 1              Giai đoạn 2              Giai đoạn 3              Giai đoạn 4
-/ba-spec            →   /qa-test-design      →   /qa-auto-design           →   Báo cáo
-Import Jira              Thiết kế Checklist       Sinh code automation     Chạy test &
+/ba-spec            →   /tech-spec           →   /plan                →   /build
+Import Jira/Conf         Thiết kế kỹ thuật        Chia nhỏ task            Code implementation
+→ Phân tích spec         → API Contract           → Kiểm soát scope       → Incremental
+→ Tổng hợp final.md      → Data Model                                     → Test-driven
+
+                    hoặc
+
+/ba-spec            →   /qa-test-design      →   /qa-auto-design      →   Báo cáo
+Import Jira/Conf         Thiết kế Checklist       Sinh code automation     Chạy test &
 → Phân tích spec         → Viết Gherkin file      → Review code            Xuất report
                                                   → Chạy test
 ```
-

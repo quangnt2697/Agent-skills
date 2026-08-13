@@ -9,7 +9,7 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 
 1. **File .feature:** `tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
 2. **File checklist:** `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md`
-3. **File spec (nếu có):** `specs/jira-import/{issueKey}/{issueKey}-final.md`
+3. **File spec (nếu có):** `specs/imports/jira/{issueKey}/{issueKey}-final.md`
 4. **Code function có sẵn** trong workspace do dev team phát triển — tìm và tái sử dụng
 
 ## Quy trình

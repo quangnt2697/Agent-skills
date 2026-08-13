@@ -306,7 +306,7 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 | Giai đoạn | Skill | Input | Output |
 |-----------|-------|-------|--------|
-| 1 | `biz-spec` | Jira Issue Key | `specs/jira-import/{issueKey}/{issueKey}-final.md` |
+| 1 | `biz-spec` | Jira Issue Key | `specs/imports/jira/{issueKey}/{issueKey}-final.md` |
 | 2 | `qa-test-design` | File `*-final.md` | `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
 | 3 | `auto-test` | File `.feature` + code có sẵn | `tests/qa-test-design/{issueKey}/steps/test_*.py` |
 | 4 | `auto-test` (Bước 7) | Test scripts | `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
