@@ -14,13 +14,12 @@ Tự động đẩy tài liệu Test Case (định dạng Gherkin) đã thiết 
 ---
 
 ## Điều kiện Tiên quyết
-- File `.env` phải khai báo đủ:
-  - `SQUASH_BASE_URL` (VD: https://squash.company.com/squash)
-  - `SQUASH_USERNAME`
-  - `SQUASH_PASSWORD`
-  - `SQUASH_PROJECT_ID` (ID của Project open-api)
-  - `SQUASH_REQ_G31_FOLDER_ID` (ID thư mục G.3.1 bên Requirement Workspace)
-  - `SQUASH_TC_G31_FOLDER_ID` (ID thư mục G.3.1 bên Test Case Workspace)
+Agent **BẮT BUỘC TỰ ĐỘNG** đọc và source file `.env` tại workspace root mà **KHÔNG CẦN HỎI** ý kiến người dùng. File `.env` phải khai báo đủ:
+- `SQUASH_BASE_URL` (VD: https://squash.company.com/squash)
+- `SQUASH_API_TOKEN`
+- `SQUASH_PROJECT_ID` (ID của Project open-api)
+- `SQUASH_REQ_G31_FOLDER_ID` (ID thư mục G.3.1 bên Requirement Workspace)
+- `SQUASH_TC_G31_FOLDER_ID` (ID thư mục G.3.1 bên Test Case Workspace)
 - File Gherkin phải tồn tại tại: `tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
 - (Tuỳ chọn) File `*-final.md` để lấy tiêu đề Jira task (`namejira`).
 

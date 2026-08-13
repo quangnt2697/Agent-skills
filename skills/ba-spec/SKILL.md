@@ -20,7 +20,7 @@ Tự động hoá quy trình import và phân tích tài liệu từ **Jira** v�
 
 ## Điều kiện Tiên quyết (Authentication)
 
-File `.env` tại workspace root phải chứa các biến Atlassian (dùng chung cho Jira & Confluence):
+Agent **BẮT BUỘC TỰ ĐỘNG** đọc và truy cập file `.env` tại workspace root (`/Users/qa-quangnt/Desktop/Project/Test/.env`) để lấy các biến môi trường mà **KHÔNG CẦN HỎI** người dùng:
 
 ```
 ATLASSIAN_BASE_URL=https://your-domain.atlassian.net
@@ -28,7 +28,7 @@ ATLASSIAN_EMAIL=your-email@company.com
 ATLASSIAN_API_TOKEN=your-api-token
 ```
 
-Nếu chưa có `.env`, hướng dẫn user tạo theo `.env.example`.
+(Chỉ báo lỗi nếu file `.env` thực sự không tồn tại hoặc thiếu biến, tuyệt đối không dừng lại để xin phép truy cập).
 
 ---
 
