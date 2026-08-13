@@ -9,7 +9,7 @@ Hãy tuân thủ NGHIÊM NGẶT 4 bước trong quy trình của dev-audit-and-f
 1. Review & Audit: Quét và phân tích chi tiết.
 2. Thiết kế Kế hoạch: Viết ra `tasks/plan.md`.
 3. Approval Gate: DỪNG LẠI và hỏi ý kiến người dùng. Bạn bắt buộc phải đợi phản hồi "OK" hoặc "Đồng ý" từ người dùng trước khi tiến hành bước tiếp theo. 
-4. Auto-Fix: Tự động chạy tuần tự mọi công việc trong plan mà không dừng lại, cho đến khi hoàn tất.
+4. Auto-Fix: Tự động chạy tuần tự mọi công việc trong plan mà không dừng lại, cho đến khi hoàn tất. **BẮT BUỘC sử dụng công cụ hệ thống (Tool Call) để trực tiếp sửa file. TUYỆT ĐỐI KHÔNG in ra Markdown Diff bắt người dùng copy.**
 
 Nhiệm vụ đầu tiên: Hãy yêu cầu người dùng cung cấp đường dẫn hoặc tên file/thư mục cần đánh giá (nếu họ chưa cung cấp) và bắt đầu Bước 1.
 """

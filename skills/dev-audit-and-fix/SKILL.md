@@ -33,18 +33,18 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 ### Bước 4: Tự động Thực thi (Auto-Fix / Build Auto)
 *Tận dụng lăng kính của `incremental-implementation`, `dev-test-driven-development`, `source-driven-development`, `dev-frontend-engineering`, `dev-api-design`.*
 
-**QUAN TRỌNG: Tự động Apply Fixes vào Code**
-- Khi người dùng phản hồi "OK" hoặc "Đồng ý", BẮT BUỘC **APPLY TRỰC TIẾP** các fixes vào source files bằng Edit/Write tools.
-- **KHÔNG BAO GIỜ** chỉ show diff/code block để user tự copy/paste — đó là anti-pattern, gây lãng phí thời gian.
-- **LUÔN LUÔN** dùng Edit tool để thay đổi code trực tiếp trong file.
+**QUAN TRỌNG: Tự động Apply Fixes vào Code bằng CÔNG CỤ (TOOL CALLS)**
+- Khi người dùng phản hồi "OK" hoặc "Đồng ý", bạn BẮT BUỘC phải thực hiện hành động **GỌI CÔNG CỤ CỦA HỆ THỐNG** (ví dụ: `replace_file_content`, `multi_replace_file_content`, `write_to_file`, `edit_file`, hoặc bất kỳ công cụ chỉnh sửa file nào mà hệ thống cấp cho bạn) để áp dụng trực tiếp các thay đổi vào mã nguồn.
+- **TUYỆT ĐỐI CẤM** việc chỉ in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste — đó là anti-pattern, gây lãng phí thời gian.
+- **LUÔN LUÔN** Hành động (Action) thay vì Trò chuyện (Chat).
 
 **Quy trình Auto-Fix:**
 - Tuân thủ nguyên tắc `build auto`: Thực hiện từng task một trong `tasks-agent/plan.md`, cập nhật trạng thái `[x]` vào file plan.
 - **Với mỗi fix:**
-  1. Read file cần fix
-  2. Apply fix bằng Edit tool (không show diff cho user)
-  3. Run tests nếu có (`dev-test-driven-development`)
-  4. Nếu test fail → tự động debug và fix lại (`dev-debugging`)
+  1. Đọc nội dung file cần sửa.
+  2. Dùng **Tool Call** để chỉnh sửa file trực tiếp. (Không in Markdown ra màn hình chat).
+  3. Run tests nếu có (`dev-test-driven-development`).
+  4. Nếu test fail → tự động debug và fix lại (`dev-debugging`).
   5. Mark task `[x]` trong plan.md
 - Trong lúc code, BẮT BUỘC tham khảo tài liệu chính thức (`source-driven-development`), thiết kế giao diện chuẩn production (`dev-frontend-engineering`), hoặc định nghĩa API/Types chặt chẽ (`dev-api-design`) tuỳ theo tính chất của task.
 - Hoàn thành toàn bộ kế hoạch từ đầu đến cuối MÀ KHÔNG CẦN DỪNG LẠI HỎI Ý KIẾN giữa chừng (trừ khi gặp lỗi nghiêm trọng block toàn bộ).
@@ -58,9 +58,9 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 ```
 
 **KHÔNG BAO GIỜ:**
-- ❌ Show diff block và nói "copy code này vào file X"
-- ❌ Show full file content và nói "replace file X với code này"
-- ❌ Nói "bạn có muốn tôi apply fix này không?" sau khi đã được approve ở Bước 3
+- ❌ In ra Markdown code block và bảo người dùng "Hãy dán đoạn code này vào file X".
+- ❌ In ra toàn bộ nội dung file mới trên màn hình chat và bảo "Cập nhật file X bằng đoạn code trên".
+- ❌ Hỏi "Bạn có muốn tôi apply đoạn code này không?" sau khi đã được approve ở Bước 3.
 
 **LUÔN LUÔN:**
 - ✅ Edit file trực tiếp
