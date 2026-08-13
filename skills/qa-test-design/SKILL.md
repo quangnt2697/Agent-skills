@@ -564,7 +564,9 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 | 3 | `auto-test` | File `.feature` + code có sẵn | `tests/qa-test-design/{issueKey}/steps/test_*.py` |
 | 4 | `auto-test` (Bước 7) | Test scripts | `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
 
-**Sau khi hoàn thành Giai đoạn 2 (qa-test-design)**, có thể chuyển sang Giai đoạn 3 bằng lệnh `/qa-auto-design` để tự động sinh code automation test từ file `.feature` vừa tạo.
+**Sau khi hoàn thành Giai đoạn 2 (qa-test-design)**, bạn có 2 lựa chọn tiếp theo:
+1. **Push lên Squash TM**: Nếu dự án có sử dụng Squash TM, chạy lệnh `/qa-push-squash {issueKey}` để tự động tạo/cập nhật test case và đẩy Gherkin file lên hệ thống quản lý test.
+2. **Sinh code Automation test**: Chuyển sang Giai đoạn 3 bằng lệnh `/qa-auto-design` để tự động sinh code automation test từ file `.feature` vừa tạo.
 
 ## Xem thêm
 

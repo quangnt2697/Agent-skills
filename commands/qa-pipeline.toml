@@ -28,6 +28,7 @@ KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các ph
 - Giai đoạn 2: Viết Gherkin (.feature) từ checklist
 - Chạy `qa-validate.sh` kiểm tra format
 - Output: `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
+- **(Mới)** Nếu có `.env` cấu hình Squash TM, kích hoạt `/qa-push-squash` để tự động đẩy Gherkin file lên Squash TM.
 - → Tự động chuyển Phase 3
 
 ### Phase 3: Sinh Code & Chạy Test (qa-auto-design)

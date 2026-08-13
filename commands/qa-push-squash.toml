@@ -1,0 +1,17 @@
+description = "Đẩy test case Gherkin (.feature) lên Squash TM thông qua REST API"
+
+prompt = """
+Invoke the qa-squash-push skill. Đọc file SKILL.md để thực hiện đúng workflow.
+
+$ARGUMENTS chứa Issue Key (VD: PROJ-123).
+
+1. Đọc file spec `specs/imports/jira/{issueKey}/{issueKey}-final.md` để lấy tiêu đề Jira task (tìm `namejira` hoặc `Summary`).
+   - Nếu tiêu đề dài hoặc chứa khoảng trắng, hãy slug hóa nó thành `namejira` (ví dụ: `Thiet-ke-luong-thanh-toan`).
+2. Xác nhận file `.feature` có tồn tại ở `tests/qa-test-design/{issueKey}/features/{issueKey}.feature` hay không.
+3. Chạy script bash:
+   ```bash
+   bash skills/qa-squash-push/scripts/squash-push.sh {issueKey} {namejira} tests/qa-test-design/{issueKey}/features/{issueKey}.feature
+   ```
+
+4. Phân tích output từ bash script và thông báo cho người dùng.
+"""
