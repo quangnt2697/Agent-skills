@@ -155,8 +155,9 @@ danh sách                                 loại task          theo profile
 Sau khi User đồng ý:
 
 1. **Tải Jira task thành PDF:**
-   - **Phương án A** (ưu tiên): Gọi endpoint HTML view → dùng `wkhtmltopdf` convert thành PDF
-   - **Phương án B** (fallback): Dùng browser subagent mở trang issue → Print to PDF
+   - **Phương án A** (ưu tiên): Gọi endpoint HTML view → dùng `wkhtmltopdf` convert thành PDF.
+   - **Phương án B** (fallback): Viết script python gọi Jira API convert ADF sang Markdown rồi chuyển thành PDF.
+   - ⚠️ **LƯU Ý QUAN TRỌNG VỀ FILE TẠM:** Nếu cần viết script python để convert (hoặc tải file json trung gian), **TUYỆT ĐỐI KHÔNG** tạo thư mục `scratch/` hay `temp/` trong thư mục dự án của user. Bắt buộc phải tạo file script và file json trong `/tmp/` của hệ điều hành hoặc thư mục `scratch/` của system artifacts, sau đó copy kết quả về thư mục đích và dọn dẹp file tạm.
 
 2. **Tải các Confluence page chưa có:**
    - Lấy metadata mỗi page: `GET /wiki/rest/api/content/{pageId}`
