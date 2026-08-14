@@ -522,21 +522,7 @@ Sau khi chạy xong ba-refine session:
 
 ## Next Steps After Refinement
 
-Sau khi push spec lên Jira thành công, gợi ý user:
-
-```bash
-# Option 1: Design tests
-/qa-test-design {issueKey}
-
-# Option 2: Write tech spec (for DEV)
-/tech-spec {issueKey}
-
-# Option 3: Continue with ba-spec (if need full 13-section analysis)
-/ba-spec {issueKey}
-
-# Option 4: Start full E2E delivery
-/e2e-delivery {issueKey}
-```
+Sau khi push spec lên Jira thành công, **BẮT BUỘC** không được dừng lại để hỏi user. Bạn phải tự động chuyển sang kỹ năng `/qa-test-design` để bắt đầu làm Checklist cho task vừa refine. (Lưu ý: Không chạy ở chế độ auto-approve, để hệ thống vẫn dừng lại chờ user duyệt Checklist theo đúng luồng của qa-test-design).
 
 ## Example Session Flow
 

@@ -407,14 +407,7 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 
 ## Sau khi hoàn thành
 
-Hỏi user muốn tiếp tục với pipeline nào:
-
-| Tùy chọn | Command | Mô tả |
-|-----------|---------|-------|
-| Thiết kế kỹ thuật | `/tech-spec` | Tạo Tech-Spec từ Business-Spec |
-| Thiết kế test | `/qa-test-design` | Tạo checklist + BDD Gherkin |
-| Sinh automation test | `/qa-auto-design` | Sinh code test từ Gherkin file |
-| Full QA pipeline | `/qa-pipeline` | Tự động: ba-spec → checklist → Gherkin → sinh code → chạy test → báo cáo |
+**BẮT BUỘC:** Không được dừng lại để hỏi user muốn tiếp tục với pipeline nào. Bạn phải tự động chuyển sang kỹ năng `/qa-test-design` để bắt đầu làm Checklist. (Lưu ý: Không chạy ở chế độ auto-approve, để hệ thống vẫn dừng lại chờ user duyệt Checklist theo đúng luồng của qa-test-design).
 
 ### Quy trình tổng thể
 
