@@ -1,6 +1,6 @@
 ---
 name: ba-refine
-description: Download Jira task có ý tưởng thô/mơ hồ, mài giũa (refine) thành spec chi tiết và rõ ràng thông qua tư duy phân kỳ-hội tụ, sau đó push lại lên Jira theo cấu trúc chuẩn. Sử dụng khi Jira task thiếu chi tiết, mơ hồ, hoặc cần làm rõ requirements. Trigger: "/ba-refine {issueKey}", "refine jira task", "clarify requirements".
+description: 'Download Jira task có ý tưởng thô/mơ hồ, mài giũa (refine) thành spec chi tiết và rõ ràng thông qua tư duy phân kỳ-hội tụ, sau đó push lại lên Jira theo cấu trúc chuẩn. Sử dụng khi Jira task thiếu chi tiết, mơ hồ, hoặc cần làm rõ requirements. Trigger: "/ba-refine {issueKey}", "refine jira task", "clarify requirements".'
 ---
 
 # Skill: ba-refine — Mài giũa Spec nghiệp vụ
