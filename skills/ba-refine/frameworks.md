@@ -1,99 +1,266 @@
-# Tài liệu Tham khảo: Khung Tư duy Lên Ý tưởng (Ideation Frameworks)
+# Ideation Frameworks
 
-Sử dụng các framework này một cách có chọn lọc. Hãy chọn ra lăng kính (lens) nào phù hợp với ý tưởng — đừng máy móc chạy từ trên xuống dưới như cái check-list. Mục tiêu là để khơi thông bế tắc trong tư duy, đéo phải là để trả bài.
+Các khung tư duy sáng tạo (ideation frameworks) để đẻ ra variations trong Phase 1.
 
-## SCAMPER
+## Core Lenses (7 lăng kính cốt lõi)
 
-Một phương pháp có cấu trúc để biến đổi một ý tưởng có sẵn thông qua 7 thao tác:
+### 1. Inversion (Đảo ngược)
 
-- **Substitute (Thay thế):** Có thể tráo đổi thành phần, vật liệu, hoặc quy trình nào? Sẽ ra sao nếu thay cái core tech? Thay target audience? Thay business model?
-- **Combine (Gộp lại):** Sẽ ra sao nếu gộp cái này với một sản phẩm, dịch vụ hoặc ý tưởng khác? Hai thứ đéo liên quan gì đến nhau gộp lại sẽ ra cái gì mới?
-- **Adapt (Thích nghi/Vay mượn):** Có cái gì khác na ná như vầy không? Có thể vay mượn ý tưởng nào từ các ngành khác, domain khác, hay thời đại khác? Có cái gì trong tự nhiên hoạt động giống vậy không?
-- **Modify (Biến đổi - Phóng to/Thu nhỏ):** Sẽ ra sao nếu làm nó To gấp 10 lần? Nhỏ đi 10 lần? Sẽ ra sao nếu phóng đại 1 tính năng lên tới nóc? Sẽ ra sao nếu lột sạch sành sanh chỉ giữ lại cái cốt lõi tối thiểu nhất?
-- **Put to other uses (Dùng cho việc khác):** Ai khác có thể xài cái này? Nó có thể giải quyết được bài toán nào khác? Sẽ ra sao nếu đem nó sang một bối cảnh (context) hoàn toàn khác?
-- **Eliminate (Loại bỏ):** Sẽ ra sao nếu xóa xổ mẹ luôn một tính năng? Phiên bản "Đéo cần config gì cả" trông sẽ như nào? Nó sẽ ra sao nếu chỉ cần 1 nửa số bước thao tác so với hiện tại?
-- **Reverse/Rearrange (Đảo ngược/Sắp xếp lại):** Sẽ ra sao nếu làm các bước theo thứ tự NGƯỢC LẠI hoàn toàn? Sẽ ra sao nếu user tự làm thay vì hệ thống làm (hoặc ngược lại)? Sẽ ra sao nếu đảo ngược chuỗi giá trị?
+**Câu hỏi:** "Nếu chúng ta làm điều NGƯỢC LẠI hoàn toàn thì sao?"
 
-**Tốt nhất cho:** Cải tiến hoặc tái hình dung các sản phẩm/tính năng đang có. Ít tác dụng với các ý tưởng mới toanh (greenfield).
+**Example:**
+- Original: "Add export button to reports"
+- Inversion: "Instead of export, make reports live-shareable with auto-refresh"
+- Inversion 2: "Instead of user exports, system auto-sends reports proactively"
 
-## How Might We (HMW) - "Chúng Ta Có Thể Làm Cách Nào"
+**When to use:** Khi solution hiện tại quá obvious, cần break mental model
 
-Đóng khung lại vấn đề thành các cơ hội bằng mẫu câu "Chúng ta có thể làm cách nào...":
+---
 
-- Bắt đầu từ một quan sát hoặc một nỗi đau (pain point).
-- Đóng khung nó lại thành: "Chúng ta có thể làm cách nào để [kết quả mong muốn] cho [user cụ thể] mà không [ràng buộc cốt lõi]?"
-- Đẻ ra nhiều góc nhìn HMW cho CÙNG 1 vấn đề — mỗi góc nhìn sẽ mở khóa một tập hợp giải pháp khác nhau.
+### 2. Constraint Removal (Đạp đổ Ràng buộc)
 
-**Đặc điểm của một câu HMW Tốt:**
-- Đủ hẹp để có thể hành động ("...giúp người dùng mới tìm thấy content phù hợp trong 5 phút đầu tiên")
-- Đủ rộng để cho phép các giải pháp sáng tạo bay bổng (chứ không phải "...thêm một cái sidebar gợi ý")
-- Có chứa một sự căng thẳng hoặc ràng buộc để ép phải sáng tạo.
+**Câu hỏi:** "Nếu tiền/thời gian/công nghệ không phải vấn đề thì sao?"
 
-**Đặc điểm của một câu HMW Rác rưởi:**
-- Quá rộng: "Làm sao để user cảm thấy vui?"
-- Quá hẹp: "Làm sao để thêm một cái nút bấm vào trang setting?"
-- Nhét mẹ luôn giải pháp vào câu hỏi: "Làm sao để xây một con chatbot cho support?"
+**Example:**
+- Original: "Simple PDF export"
+- No constraints: "AI-generated personalized reports with predictive insights"
+- No constraints 2: "Real-time collaborative reports like Google Docs"
 
-**Tốt nhất cho:** Giải phóng những luồng tư duy đang bị kẹt. Khi có ai đó đang bị dính chặt vào 1 giải pháp, hãy kéo họ quay về với cái vấn đề.
+**When to use:** Để tìm "ideal state", sau đó work backwards về MVP
 
-## Tư duy Từ Nguyên lý Cốt lõi (First Principles Thinking)
+---
 
-Đập vụn ý tưởng xuống tận cùng những sự thật nền tảng nhất, rồi xây lại từ đầu:
+### 3. Audience Shift (Đổi Target User)
 
-1. **Chúng ta ĐANG BIẾT cái đéo gì là SỰ THẬT?** (không phải giả định, không phải thói quen — mà là sự thật hiển nhiên).
-2. **Chúng ta đang MẶC ĐỊNH (assuming) điều gì?** Liệt kê MỌI giả định ra, kể cả những thứ nghe có vẻ hiển nhiên nhất.
-3. **Giả định nào có thể bị đạp đổ?** Với từng cái, hãy hỏi: "Cái này là định luật vật lý bất biến, hay chỉ là do xưa nay người ta vẫn làm thế?"
-4. **Xây lại từ Sự thật.** Nếu bạn chỉ có trong tay những Sự thật cốt lõi, bạn sẽ xây cái gì?
+**Câu hỏi:** "Nếu build cho [user khác] thì sao?"
 
-**Tốt nhất cho:** Thoát khỏi tư duy lối mòn (incremental thinking). Dùng khi mọi ý tưởng đẻ ra đều chỉ giống như một bản vá lỗi cho hiện tại.
+**Example:**
+- Original: "Export for individual traders"
+- Shift to CFO: "Consolidated portfolio reports across all accounts"
+- Shift to Auditor: "Tamper-proof audit trail with blockchain"
 
-## Jobs to Be Done (JTBD) - Việc Cần Được Hoàn Thành
+**When to use:** Khi stuck với một user persona, cần expand perspective
 
-Tập trung vào thứ mà người dùng ĐANG CỐ GẮNG ĐẠT ĐƯỢC, chứ đéo phải thứ họ NÓI là họ muốn:
+---
 
-- **Việc Chức năng (Functional job):** Họ đang cố gắng hoàn thành cái task mẹ gì?
-- **Việc Cảm xúc (Emotional job):** Họ muốn CẢM THẤY như thế nào?
-- **Việc Xã hội (Social job):** Họ muốn ĐƯỢC NHÌN NHẬN như thế nào trong mắt người khác?
+### 4. Combination (Lai tạp)
 
-**Cú pháp:** "Khi tôi [tình huống], tôi muốn [động lực], để tôi có thể [kết quả kỳ vọng]."
+**Câu hỏi:** "Nếu gộp với [feature lân cận] thì sao?"
 
-**Insight then chốt:** Người ta không mua sản phẩm — họ THUÊ (hire) sản phẩm để hoàn thành một CÔNG VIỆC. Đối thủ cạnh tranh không phải lúc nào cũng nằm cùng một ngành. (Netflix cạnh tranh với Giấc ngủ, chứ không chỉ cạnh tranh với các app xem phim khác).
+**Example:**
+- Original: "PDF export"
+- Combine with alerts: "Export + schedule auto-send when conditions met"
+- Combine with sharing: "Export + encrypted sharing with expiration"
 
-**Tốt nhất cho:** Hiểu được bài toán thực sự. Dùng khi bạn đéo chắc là mình đang giải đúng bài toán hay không.
+**When to use:** Khi có nhiều related features, tìm synergy
 
-## Tư duy Bức ép bằng Ràng buộc (Constraint-Based Ideation)
+---
 
-Cố tình tự trói tay trói chân bằng các ràng buộc để ép bộ não phải sáng tạo:
+### 5. Extreme Simplification (Đơn giản hóa cực đoan)
 
-- **Ràng buộc Thời gian:** "Sẽ ra sao nếu chỉ có đúng 1 ngày để code cái này?"
-- **Ràng buộc Tính năng:** "Sẽ ra sao nếu chỉ được phép làm đúng 1 tính năng duy nhất?"
-- **Ràng buộc Công nghệ:** "Sẽ ra sao nếu đéo được xài [cái công nghệ hiển nhiên ai cũng xài]?"
-- **Ràng buộc Chi phí:** "Sẽ ra sao nếu cái này bắt buộc phải miễn phí trọn đời?"
-- **Ràng buộc Người dùng:** "Sẽ ra sao nếu user của bạn là một người chưa từng xài máy tính bao giờ?"
-- **Ràng buộc Scale:** "Sẽ ra sao nếu nó phải chạy cho 1 tỷ user? Hoặc nếu chỉ chạy cho đúng 10 user thì sao?"
+**Câu hỏi:** "Phiên bản đơn giản gấp 10 lần?"
 
-**Tốt nhất cho:** Cắt phăng đi sự phức tạp. Dùng khi ý tưởng đang phình to ra mất kiểm soát hoặc quá mơ hồ.
+**Example:**
+- Original: "Full-featured report builder"
+- 10x simpler: "One-click screenshot to clipboard"
+- 10x simpler 2: "Email me current view"
 
-## Phân tích Tiền thất bại (Pre-mortem)
+**When to use:** Khi solution đang overengineered, cần MVP
 
-Tưởng tượng ý tưởng này ĐÃ THẤT BẠI thảm hại. Hãy đi lùi lại:
+---
 
-1. Hiện tại là 12 tháng sau. Project đã launch và xịt ngòi. Chuyện đéo gì đã xảy ra?
-2. Liệt kê mọi lý do CHÍNH ĐÁNG có thể dẫn đến thất bại — technical, thị trường, team, thời điểm.
-3. Với mỗi lý do: Có thể phòng ngừa được không? Đây có phải là tín hiệu cho thấy ý tưởng cần thay đổi không?
-4. Thất bại kiểu nào bạn CHẤP NHẬN ĐƯỢC? Thất bại kiểu nào sẽ GIẾT CHẾT cả project?
+### 6. 10x Scale (Nhân 10 lên)
 
-**Tốt nhất cho:** Giai đoạn 2 (Đánh giá). Thử lửa những ý tưởng nghe thì êm tai nhưng chưa từng bị quật cho te tua.
+**Câu hỏi:** "Nếu chạy ở quy mô lớn gấp 10x thì sao?"
 
-## Nguồn cảm hứng Tương đồng (Analogous Inspiration)
+**Example:**
+- Original: "Export reports for 1K users"
+- 10x scale: "Export for 10K users → Need async queue + CDN caching"
+- 10x scale 2: "10K exports/minute → Need distributed system"
 
-Nhìn sang cách các ngành khác giải bài toán tương tự:
+**When to use:** Để identify scalability bottlenecks sớm
 
-- Ngành đéo nào đã giải xong bài toán kiểu này rồi?
-- Cái này trông sẽ thế nào nếu do [Một công ty cụ thể / Sản phẩm cụ thể] làm?
-- Có hệ thống nào trong tự nhiên hoạt động giống vầy không?
-- Có tiền lệ lịch sử nào không?
+---
 
-Chìa khóa ở đây là phải tìm ra sự tương đồng về mặt *CẤU TRÚC*, chứ không phải bề mặt. "Uber cho X" là tương đồng bề mặt. "Một thị trường 2 chiều (two-sided marketplace) giải quyết bài toán niềm tin giữa những người xa lạ" mới là tương đồng cấu trúc.
+### 7. Expert Lens (Lăng kính Chuyên gia)
 
-**Tốt nhất cho:** Giai đoạn 1 (Mở rộng). Dùng để đẻ ra các biến thể thực sự đột phá so với những cách làm hiển nhiên ai cũng nghĩ ra.
+**Câu hỏi:** "Chuyên gia trong ngành coi điều gì là hiển nhiên?"
+
+**Example:**
+- Original: "Export to PDF"
+- Expert view (Compliance): "PDF/A format with digital signature"
+- Expert view (Trader): "Export with machine-readable format for algo trading"
+
+**When to use:** Khi thiếu domain knowledge, cần input từ experts
+
+---
+
+## Advanced Frameworks (Khung nâng cao)
+
+### SCAMPER
+
+- **S**ubstitute: Thay thế component nào?
+- **C**ombine: Kết hợp với gì?
+- **A**dapt: Điều chỉnh từ industry khác?
+- **M**odify: Thay đổi thuộc tính nào?
+- **P**ut to other use: Dùng cho mục đích khác?
+- **E**liminate: Loại bỏ gì?
+- **R**everse: Đảo ngược flow?
+
+**Example:**
+- Original: "PDF export button"
+- Substitute: Replace PDF with interactive dashboard embed
+- Combine: PDF + annotations + comments
+- Adapt: Copy Notion's "Export as" multi-format
+- Modify: Change export trigger (auto vs manual)
+- Put to other use: Use export engine for internal audit reports
+- Eliminate: Remove export entirely, just share live link
+- Reverse: Instead of user pulls, system pushes
+
+---
+
+### Jobs to Be Done (JTBD)
+
+**Framework:** User "hires" product to do a job
+
+**Questions:**
+- What job is user hiring this feature for?
+- What alternatives are they using now?
+- What would make them "fire" current solution?
+
+**Example:**
+- Original: "Export report"
+- Job #1: "Help me save evidence for compliance audit"
+- Job #2: "Help me share trading results with my advisor"
+- Job #3: "Help me analyze patterns offline"
+
+→ Each job suggests different solution
+
+---
+
+### First Principles
+
+**Framework:** Break down to fundamental truths, rebuild from scratch
+
+**Questions:**
+- What are we REALLY trying to achieve?
+- What assumptions can we challenge?
+- If starting from zero today, what would we build?
+
+**Example:**
+- Original: "Export report"
+- First principle: User wants to keep trading history
+- Challenge: Why export? Why not just reliable access?
+- Rebuild: Instead of export, guarantee data availability + API access
+
+---
+
+### Blue Ocean Strategy
+
+**Framework:** Create uncontested market space
+
+**Questions:**
+- What can we eliminate (industry takes for granted)?
+- What can we reduce (below standard)?
+- What can we raise (above standard)?
+- What can we create (never offered)?
+
+**Example:**
+- Original: "Standard PDF export"
+- Eliminate: Manual export trigger
+- Reduce: Feature complexity (one-click only)
+- Raise: Security (encrypted + watermarked)
+- Create: AI-generated insights in export
+
+---
+
+## Fintech-Specific Lenses
+
+### Compliance-First Lens
+
+**Question:** "If regulatory compliance is THE priority?"
+
+**Example:**
+- Add immutable audit trail
+- PDF/A format with digital signatures
+- Automatic retention policy enforcement
+- Redaction for sensitive data
+
+---
+
+### Security-First Lens
+
+**Question:** "If security is THE priority?"
+
+**Example:**
+- End-to-end encryption
+- Watermarking with user ID + timestamp
+- Time-limited access (self-destruct)
+- No-download mode (view-only)
+
+---
+
+### Performance-First Lens
+
+**Question:** "If speed/scale is THE priority?"
+
+**Example:**
+- Pre-generated reports (async)
+- Incremental exports (delta only)
+- Streaming for large datasets
+- Edge caching via CDN
+
+---
+
+## How to Use These Frameworks
+
+**In Phase 1 (Divergent):**
+
+1. **Pick 2-3 lenses** that fit the problem
+   - Don't force all 7 core lenses
+   - Choose based on context
+
+2. **Generate 1-2 variations per lens**
+   - Quality over quantity
+   - Each variation needs rationale
+
+3. **Mix and match**
+   - Combine lenses for richer ideas
+   - Example: Inversion + Expert Lens
+
+4. **Stay grounded**
+   - Reference existing codebase
+   - Consider technical constraints
+   - Cite similar patterns in industry
+
+**Anti-patterns:**
+- ❌ Forcing all frameworks (overkill)
+- ❌ Generating 20+ shallow variations
+- ❌ Ignoring codebase constraints
+- ❌ Pure blue-sky thinking without feasibility check
+
+---
+
+## Example: Applying Lenses
+
+**Original Jira:** "Add export button to trading reports"
+
+**Lens 1: Inversion**
+→ "Instead of user exports data, system proactively sends daily digest"
+
+**Lens 2: 10x Simplification**
+→ "One-click email current screen as PDF"
+
+**Lens 3: Expert (Compliance)**
+→ "Export with tamper-proof audit trail + PDF/A format"
+
+**Lens 4: Combination**
+→ "Export + scheduled auto-send + encrypted sharing"
+
+**Lens 5: Audience Shift (CFO)**
+→ "Consolidated multi-account portfolio export with tax summary"
+
+**Lens 6: First Principles**
+→ "Why export? Give permanent API access + data warehouse connection instead"
+
+**Result:** 6 diverse variations, each with distinct angle

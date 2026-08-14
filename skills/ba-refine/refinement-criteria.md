@@ -1,113 +1,226 @@
-# Tiêu chí Đánh giá & Mài giũa
+# ba-refine — Refinement Criteria
 
-Sử dụng bảng tiêu chí này trong Giai đoạn 2 (Đánh giá & Hội tụ) để thử lửa (stress-test) các hướng ý tưởng. Không phải tiêu chí nào cũng áp dụng cho mọi ý tưởng — hãy dùng phán đoán xem khía cạnh nào quan trọng nhất cho bối cảnh cụ thể.
+Bảng tiêu chí đánh giá (rubric) để stress-test các hướng đi trong Phase 2.
 
-## Các Khía cạnh Đánh giá Cốt lõi
+## Tiêu chí Đánh giá
 
-### 1. Giá trị Người dùng (User Value)
+### 1. User Value (Giá trị Người dùng)
 
-Khía cạnh quan trọng nhất. Nếu giá trị không rõ ràng, mọi thứ khác đều vô nghĩa.
+**Câu hỏi:**
+- Ai được lợi từ solution này?
+- Lợi ích đến mức nào? (Quantify if possible)
+- Painkiller (giải quyết nỗi đau thực sự) hay Vitamin (nice-to-have)?
+- Có bao nhiêu users bị ảnh hưởng?
 
-**Thuốc giảm đau (Painkiller) vs. Vitamin:**
-- **Thuốc giảm đau:** Giải quyết một vấn đề nhức nhối, thường xuyên. Người dùng sẽ chủ động tìm kiếm nó. Họ sẽ từ bỏ giải pháp hiện tại để chuyển sang xài nó. Dấu hiệu: người ta nói về vấn đề với nhiều cảm xúc, họ phải tự chế ra các cách làm thủ công (workarounds), họ sẵn sàng trả tiền cho một giải pháp.
-- **Vitamin:** Có thì tốt (Nice to have). Làm cho thứ gì đó tốt hơn một chút xíu. Người dùng sẽ không tốn công chuyển đổi. Dấu hiệu: người ta gật gù lịch sự, khen "nghe hay đấy", rồi sau đó chả thay đổi hành vi mẹ gì.
+**Scoring:**
+- ⭐⭐⭐⭐⭐ (5/5): Critical painkiller, nhiều users, ROI rõ ràng
+- ⭐⭐⭐⭐ (4/5): Strong painkiller, targeted users, measurable impact
+- ⭐⭐⭐ (3/5): Nice-to-have, some users benefit
+- ⭐⭐ (2/5): Marginal benefit, very few users
+- ⭐ (1/5): Unclear benefit, no clear users
 
-**Các câu hỏi cần đặt ra:**
-- Bạn có thể chỉ đích danh 3 người cụ thể đang gặp vấn đề này ngay lúc này không?
-- Hiện tại họ đang làm gì để giải quyết nó? (Đối thủ cạnh tranh thực sự luôn luôn là cái cách làm thủ công hiện tại).
-- Họ có chịu từ bỏ cách làm hiện tại không? Điều gì sẽ khiến họ chuyển đổi?
-- Họ gặp vấn đề này với tần suất thế nào? (Vấn đề hàng ngày > vấn đề hàng tháng).
-- Đây là bài toán dạng "pull" (người dùng đang kêu gào đòi hỏi) hay dạng "push" (bạn tự nghĩ là họ sẽ cần)?
+**Red flags:**
+- Không identify được target user cụ thể
+- Benefit không đo lường được
+- "Có thì tốt, không có cũng được"
 
-**Cờ Đỏ (Red flags):**
-- "Ai cũng có thể dùng cái này" — nếu không gọi tên được một tập user cụ thể, giá trị là không rõ ràng.
-- "Nó giống cái X nhưng tốt hơn" — những cải tiến nhỏ giọt hiếm khi khiến người dùng chuyển đổi.
-- Vấn đề là có thật nhưng rất hiếm khi xảy ra — cường độ cao nhưng tần suất thấp thì hiếm khi đáng để xây thành một sản phẩm.
+---
 
-### 2. Độ Khả thi (Feasibility)
+### 2. Feasibility (Độ Khả thi)
 
-Bạn có THỰC SỰ xây được cái này không? Không chỉ về mặt kỹ thuật, mà là trong thực tế.
+**Câu hỏi:**
+- Chi phí kỹ thuật và tài nguyên? (Time, people, money)
+- Đoạn khó nhất là gì?
+- Dependencies? (External APIs, third-party services)
+- Technical risks?
+- Có cần thay đổi infrastructure không?
 
-**Khả thi về kỹ thuật (Technical feasibility):**
-- Công nghệ lõi đã tồn tại và hoạt động ổn định chưa?
-- Bài toán kỹ thuật khoai nhất là gì? Đó là một bài toán khó đã biết cách giải, hay là một bài toán mới toanh?
-- Có bị phụ thuộc vào bên thứ 3, API, hay nguồn dữ liệu nào mà mình đéo kiểm soát được không?
-- Tech stack tối thiểu cần có là gì? (Nếu câu trả lời là "cần rất nhiều thứ", đó là một dấu hiệu cảnh báo).
+**Scoring:**
+- ⭐⭐⭐⭐⭐ (5/5): Low cost, 1-3 days, no dependencies
+- ⭐⭐⭐⭐ (4/5): Medium cost, 1 week, minor dependencies
+- ⭐⭐⭐ (3/5): Medium-high cost, 2-3 weeks, some dependencies
+- ⭐⭐ (2/5): High cost, 1-2 months, major dependencies
+- ⭐ (1/5): Very high cost, >2 months, blocking dependencies
 
-**Khả thi về nguồn lực (Resource feasibility):**
-- Team tối thiểu / effort tối thiểu để ra được MVP là bao nhiêu?
-- Có cần chuyên môn đặc thù nào mà team đang thiếu không?
-- Có vướng mắc gì về quy định, pháp lý hay tuân thủ (compliance) không?
+**Red flags:**
+- Cần major infrastructure changes
+- Dependencies nằm ngoài control (third-party chưa có API)
+- Technical debt quá lớn để overcome
 
-**Thời gian ra giá trị (Time-to-value):**
-- Bao lâu thì có thể mang một cái gì đó ra cho người dùng dùng thử?
-- Có phiên bản nào mang lại giá trị trong vài ngày/tuần thay vì vài tháng không?
-- Đâu là con đường trọng yếu (critical path)? Việc gì bắt buộc phải xảy ra đầu tiên?
+---
 
-**Cờ Đỏ (Red flags):**
-- "Chúng ta chỉ cần giải quyết xong [bài toán research cực khó] trước đã"
-- Phụ thuộc vào quá nhiều thứ cần phải hoàn thành cùng một lúc
-- MVP mà vẫn đòi hỏi làm mất vài tháng — khả năng cao là chưa đủ "tối thiểu" (minimal).
+### 3. Differentiation (Sự Khác biệt)
 
-### 3. Sự Khác Biệt (Differentiation)
+**Câu hỏi:**
+- Điều gì làm cho solution này khác biệt so với competitors?
+- Có đủ hấp dẫn để users chuyển từ solution hiện tại sang không?
+- Unique value proposition là gì?
+- Barriers to imitation? (Có dễ copy không?)
 
-Cái đéo gì làm cho ý tưởng này thực sự khác bọt? Không phải tốt hơn — mà là *khác biệt*.
+**Scoring:**
+- ⭐⭐⭐⭐⭐ (5/5): Truly unique, hard to copy, strong moat
+- ⭐⭐⭐⭐ (4/5): Strong differentiation, some barriers
+- ⭐⭐⭐ (3/5): Moderate differentiation, table stakes
+- ⭐⭐ (2/5): Weak differentiation, me-too feature
+- ⭐ (1/5): No differentiation, already exists everywhere
 
-**Các câu hỏi cần đặt ra:**
-- Nếu một user mô tả cái này cho bạn bè, họ sẽ nói gì? Lời mô tả đó nghe có hấp dẫn không?
-- Đâu là MỘT thứ mà cái này làm được trong khi đéo có thằng nào khác làm được? (Nếu không kể ra được 1 thứ, đó là vấn đề).
-- Sự khác biệt này có bền vững không? Đối thủ có copy được nó trong 1 tuần không?
-- Sự khác biệt này có phải là thứ người dùng THỰC SỰ quan tâm, hay chỉ là thứ mấy ông builder thấy thú vị?
+**Red flags:**
+- "Everyone has this feature"
+- Không có unique angle
+- Easy to copy, no defensibility
 
-**Các cấp độ Khác biệt (từ mạnh nhất đến yếu nhất):**
-1. **Năng lực mới toanh (New capability):** Làm được việc mà trước đây bất khả thi.
-2. **Cải tiến x10 (10x improvement):** Tốt hơn vượt bậc ở một khía cạnh trọng yếu khiến hành vi người dùng phải thay đổi.
-3. **Tệp khách hàng mới (New audience):** Mang một tính năng sẵn có đến cho những người trước giờ bị ngó lơ.
-4. **Bối cảnh mới (New context):** Hoạt động được ở những tình huống mà các giải pháp hiện tại bó tay.
-5. **UX Tốt hơn (Better UX):** Cùng tính năng, nhưng trải nghiệm đơn giản hơn đáng kể.
-6. **Rẻ hơn (Cheaper):** Y hệt, nhưng giá thấp hơn (Cấp độ yếu nhất — rất dễ bị đối thủ đạp giá theo).
+---
 
-**Cờ Đỏ (Red flags):**
-- Sự khác biệt chỉ nằm ở mặt công nghệ, đéo liên quan gì đến trải nghiệm người dùng.
-- "Chúng ta nhanh hơn/rẻ hơn/đẹp hơn" mà đéo có lý do nền tảng tại sao lại làm được thế.
-- Cái tính năng tạo nên sự khác biệt lại đéo phải là tính năng người dùng quan tâm nhất.
+### 4. Risk (Financial/Security — for Fintech/Banking)
 
-## Kiểm toán Giả định (Assumption Audit)
+**Câu hỏi:**
+- Có rủi ro mất tiền không? (Fraud, errors, double-charging)
+- Có rủi ro lộ lọt dữ liệu không? (PII, financial data)
+- ACID compliance? (Transaction consistency)
+- Audit trail? (Compliance requirements)
+- Có đủ validation và error handling không?
+- Performance at scale? (Latency, throughput)
 
-Với mỗi hướng ý tưởng, hãy liệt kê rõ ràng các giả định thành 3 nhóm:
+**Scoring:**
+- ⭐⭐⭐⭐⭐ (5/5): Very low risk, strong safeguards, fully compliant
+- ⭐⭐⭐⭐ (4/5): Low risk, good safeguards, mostly compliant
+- ⭐⭐⭐ (3/5): Medium risk, acceptable safeguards, needs review
+- ⭐⭐ (2/5): High risk, weak safeguards, compliance gaps
+- ⭐ (1/5): Critical risk, no safeguards, non-compliant
 
-### BẮT BUỘC Phải Đúng (Must Be True / Dealbreakers)
-Những giả định mà nếu sai, ý tưởng sẽ chết giãy đành đạch. Bọn này cần được test TRƯỚC KHI code.
+**Red flags:**
+- Không có fraud detection
+- Missing audit trail
+- Weak authentication/authorization
+- No rate limiting hoặc abuse prevention
+- Không handle race conditions
+- Missing transaction rollback logic
 
-Ví dụ: "Người dùng sẽ chịu chia sẻ dữ liệu của họ cho chúng ta" — nếu họ đéo chịu, toàn bộ sản phẩm vô dụng.
+---
 
-### NÊN Đúng (Should Be True / Important)
-Những giả định có ảnh hưởng lớn đến thành công nhưng đéo làm chết ý tưởng. Bạn có thể điều chỉnh cách tiếp cận nếu bọn này sai.
+## Aggregated Scoring
 
-Ví dụ: "Người dùng thích tự dùng (self-serve) hơn là phải nói chuyện với nhân viên" — nếu sai, bạn đổi cách go-to-market, core product vẫn sống nhăn răng.
+Tính tổng điểm để compare các hướng đi:
 
-### CÓ THỂ Đúng (Might Be True / Nice to Have)
-Giả định về các tính năng phụ hoặc tối ưu hóa. Đừng cắm đầu vào test bọn này cho đến khi cái lõi đã được chứng minh.
+```
+Total Score = User Value + Feasibility + Differentiation + Risk Mitigation
+Max Score = 20 points (5 + 5 + 5 + 5)
+```
 
-Ví dụ: "Người dùng sẽ muốn share kết quả cho đồng nghiệp" — đây là tính năng growth, đéo phải giá trị cốt lõi.
+**Interpretation:**
+- **18-20 points:** Excellent — Pursue immediately
+- **15-17 points:** Strong — Good candidate, minor improvements needed
+- **12-14 points:** Moderate — Needs significant improvements
+- **9-11 points:** Weak — Reconsider approach
+- **< 9 points:** Poor — Pivot or drop
 
-## Ma trận Ra quyết định (Decision Framework)
+---
 
-Khi phải chọn giữa nhiều hướng đi, hãy xếp hạng chúng lên ma trận này:
+## Example Scoring
 
-|                    | Khả thi Cao (High Feasibility) | Khả thi Thấp (Low Feasibility) |
-|--------------------|---------------------------------|---------------------------------|
-| **Giá trị Cao**    | Ưu tiên làm luôn (Do this first)| Đáng để đánh cược (Worth the risk)|
-| **Giá trị Thấp**   | Chỉ làm nếu cực dễ (Trivial)    | BỎ ĐI (Don't do this)           |
+### Direction A: Simple PDF Export Button
 
-Sau đó, dùng *Sự khác biệt (Differentiation)* làm tiêu chí phá vỡ thế hòa (tiebreaker) nếu có 2 option nằm chung một ô.
+| Criterion | Score | Rationale |
+|-----------|-------|-----------|
+| User Value | ⭐⭐⭐ (3/5) | Nice-to-have, many users but not critical |
+| Feasibility | ⭐⭐⭐⭐⭐ (5/5) | Very low cost, 2-3 days, no dependencies |
+| Differentiation | ⭐⭐ (2/5) | Table stakes, everyone has it |
+| Risk | ⭐⭐⭐⭐ (4/5) | Low risk, just rendering existing data |
+| **Total** | **14/20** | **Moderate** — Good quick win but not strategic |
 
-## Nguyên tắc Lên Tài liệu & Xác định Phạm vi (Documentation & Scoping Principles)
+### Direction C: Compliance-First Export with Audit Trail
 
-Khi chốt lại yêu cầu cuối cùng cho hướng đi đã chọn:
+| Criterion | Score | Rationale |
+|-----------|-------|-----------|
+| User Value | ⭐⭐⭐⭐ (4/5) | Strong for regulated customers, measurable compliance benefit |
+| Feasibility | ⭐⭐⭐ (3/5) | Medium cost, 1-2 weeks, need audit storage |
+| Differentiation | ⭐⭐⭐⭐⭐ (5/5) | Unique angle, hard to copy well, strong moat |
+| Risk | ⭐⭐⭐⭐⭐ (5/5) | Actually reduces risk, enhances compliance |
+| **Total** | **17/20** | **Strong** — Strategic play, worth the investment |
 
-1. **Một User Story rõ ràng.** Tính năng phải phục vụ một user (role) cụ thể, nêu rõ mục tiêu và có giá trị kinh doanh đéo thể chối cãi. Đừng viết story gộp cho nhiều role không liên quan.
-2. **Acceptance Criteria Test được.** BẮT BUỘC DÙNG định dạng BDD (Given/When/Then) để đảm bảo logic nghiệp vụ có thể verify được mà không áp đặt giải pháp kỹ thuật.
-3. **Thành công Đo lường được.** Định nghĩa các Chỉ số Thành công (Success Metrics - Hiện tại vs Mục tiêu) chính xác và cách tracking chúng (Events/Dashboards). "Mọi người sẽ thích nó" đéo phải là một metric.
-4. **Luồng User Flow đi trước.** Luôn vạch ra User Flow hoặc đính kèm thiết kế prototype trước khi đụng vào code. Phải hiểu rõ chuỗi hành động từng bước một.
-5. **Ranh giới Kỹ thuật rạch ròi.** Dùng mục Technical Notes để làm nổi bật các ràng buộc, các API bị phụ thuộc, và kế hoạch rollout, giữ cho phần logic business luôn sạch sẽ.
+---
+
+## Fintech-Specific Considerations
+
+### Transaction Integrity
+- [ ] ACID properties maintained?
+- [ ] Idempotency key for duplicate prevention?
+- [ ] Transaction timeout and rollback logic?
+- [ ] Optimistic locking for concurrent updates?
+
+### Security
+- [ ] Authentication required?
+- [ ] Authorization checks (row-level security)?
+- [ ] Sensitive data encrypted at rest and in transit?
+- [ ] PII masking in logs?
+- [ ] Rate limiting to prevent abuse?
+
+### Compliance
+- [ ] Audit trail for all actions?
+- [ ] Data retention policy compliant?
+- [ ] Right to deletion (GDPR)?
+- [ ] Financial reporting requirements met?
+- [ ] Regulatory approval needed?
+
+### Performance
+- [ ] Latency < 200ms for critical path?
+- [ ] Throughput handles peak load (e.g., 10K TPS)?
+- [ ] Database query optimization?
+- [ ] Caching strategy?
+- [ ] Monitoring and alerting?
+
+---
+
+## Questions to Surface Hidden Assumptions
+
+Use these questions in Phase 2 to uncover what you're betting is true but haven't verified:
+
+**User Assumptions:**
+- "We assume users want [X]" — Have we validated this?
+- "We assume users will find this via [Y]" — How do we know?
+- "We assume users will adopt this quickly" — Based on what evidence?
+
+**Technical Assumptions:**
+- "We assume the API will handle this" — Have we tested?
+- "We assume performance will be acceptable" — At what scale?
+- "We assume no breaking changes needed" — Have we audited dependencies?
+
+**Business Assumptions:**
+- "We assume this will drive [metric]" — What's the baseline?
+- "We assume competitors don't have this" — Have we checked recently?
+- "We assume legal/compliance will approve" — Have we asked?
+
+**Resource Assumptions:**
+- "We assume this takes 2 weeks" — Based on what estimate?
+- "We assume team has capacity" — Have we checked roadmap?
+- "We assume no external dependencies" — Have we mapped the full flow?
+
+---
+
+## Output Format (for Phase 2)
+
+```markdown
+## Direction A: [Name]
+
+### Scores
+| Criterion | Score | Rationale |
+|-----------|-------|-----------|
+| User Value | ⭐⭐⭐ | [Brief explanation] |
+| Feasibility | ⭐⭐⭐⭐⭐ | [Brief explanation] |
+| Differentiation | ⭐⭐ | [Brief explanation] |
+| Risk | ⭐⭐⭐⭐ | [Brief explanation] |
+| **Total** | **14/20** | **Moderate** |
+
+### Assumptions
+**Betting on (unverified):**
+- Users want PDF specifically (not Excel/CSV)
+- Current report data is complete
+
+**Could kill this:**
+- Performance issues with large reports
+- Legal requires audit trail (we don't have)
+
+**Explicitly ignoring:**
+- Advanced features (filters, custom templates)
+- Reason: Keep it simple for v1, iterate later
+```
