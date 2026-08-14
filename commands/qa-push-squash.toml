@@ -1,4 +1,4 @@
-description = "Đẩy test case Gherkin (.feature) lên Squash TM thông qua REST API"
+description = "Đẩy test case Gherkin (.feature) lên Squash TM, rồi gán test case vào requirement tương ứng bên Campaign Workspace"
 
 prompt = """
 Invoke the qa-squash-push skill. Đọc file SKILL.md để thực hiện đúng workflow.
@@ -14,4 +14,11 @@ $ARGUMENTS chứa Issue Key (VD: PROJ-123).
    ```
 
 4. Phân tích output từ bash script và thông báo cho người dùng.
+   - Script gồm 2 phase: Phase A đẩy Gherkin lên Test Case Workspace, Phase B gán test case
+     vào test plan của requirement bên Campaign Workspace.
+   - Phase B là best-effort: thất bại chỉ in cảnh báo, exit code vẫn là 0.
+   - Vì vậy KHÔNG được suy ra "mọi thứ thành công" chỉ từ exit code 0. Bắt buộc đọc dòng
+     `- Campaign Workspace:` trong output cuối để biết bước gán có chạy được không, và báo lại
+     lý do bỏ qua (nếu có) cho người dùng.
+   - Nếu Phase B bị bỏ qua, tra bảng "Xử lý sự cố (Phase B)" trong SKILL.md để gợi ý cách khắc phục.
 """
