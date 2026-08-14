@@ -39,9 +39,13 @@ GIAI ĐOẠN 1: CHECKLIST           GIAI ĐOẠN 2: GHERKIN
                                       │
                                       ▼
                                 ✅ Feature file hoàn thành
+                                      │
+                                      ▼
+                                🚀 TỰ ĐỘNG PUSH SQUASH TM (Không cần hỏi)
 ```
 
 KHÔNG được chuyển sang Giai đoạn 2 khi Giai đoạn 1 chưa hoàn thành. Checklist là nguồn sự thật duy nhất cho phạm vi kiểm thử.
+Sau khi hoàn thành Giai đoạn 2, **BẮT BUỘC** tự động gọi script `/qa-squash-push` để đẩy tài liệu lên hệ thống mà không cần hỏi thêm.
 
 ### Gate: User Approval (giữa Giai đoạn 1 và Giai đoạn 2)
 
