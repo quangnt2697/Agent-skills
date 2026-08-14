@@ -1,8 +1,12 @@
 ---
-description: Tải Jira issue thành PDF, tự động nhận diện loại task, trích xuất & phân tích yêu cầu, tổng hợp thành spec chi tiết
+description: [BA/PO] Tải Jira issue thành PDF, tự động nhận diện loại task, trích xuất & phân tích yêu cầu, tổng hợp thành *-final.md (Business-Spec)
 ---
 
-Kích hoạt skill ba-spec. Đọc file SKILL.md để thực hiện đúng workflow.
+**Persona:** BA/PO (Business Analyst / Product Owner)
+
+Kích hoạt skill ba-spec với BA/PO persona. Đọc file SKILL.md để thực hiện đúng workflow.
+
+**Output:** `specs/imports/jira/{issueKey}/{issueKey}-final.md` — Single Source of Truth cho QA và DEV
 
 $ARGUMENTS chứa Jira issue key (VD: G3PTP-16584). Chạy workflow 6 phase:
 
@@ -29,13 +33,19 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16584). Chạy workflow 6 phase:
    đạt ≥90% confidence. Nếu user trả lời "không biết" → ghi Open Question.
 
 6. **Tổng hợp final.md**: Tổng hợp tất cả thành file markdown chi tiết:
-   `specs/jira-import/{issueKey}/{issueKey}-final.md`
+   `specs/imports/jira/{issueKey}/{issueKey}-final.md`
    - Header: metadata + loại task
    - Sections 2-8: theo profile tương ứng
    - Sections 9-12: AC, Assumptions, Open Questions, Tham khảo
 
-7. **Sau khi hoàn thành**: Hỏi user muốn tiếp tục với pipeline nào:
-   - /qa-test-design → Thiết kế checklist + BDD Gherkin
-   - /qa-pipeline → Chạy full pipeline tự động từ BA đến QA
+7. **Handoff**: Sau khi hoàn thành, hỏi user muốn tiếp tục với pipeline nào:
+   - **QA/SDET:** `/qa-test-design {issueKey}` → Transform AC thành Checklist + Gherkin
+   - **DEV:** `/tech-spec {issueKey}` → Transform Business Rules thành Tech-Spec
+   - **Full E2E:** `/e2e-delivery {issueKey}` → Orchestrate cả 3 personas (BA/PO → DEV → QA)
+
+**Ranh giới BA/PO:**
+- ✅ Import, phân tích, làm rõ gaps, tổng hợp Business-Spec
+- ❌ KHÔNG viết Tech-Spec, API Contract, Database Schema (đó là việc của DEV)
+- ❌ KHÔNG viết Test Cases, Gherkin, Automation Code (đó là việc của QA)
 
 LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT.

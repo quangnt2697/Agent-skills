@@ -1,0 +1,119 @@
+---
+description: [BA/PO] Vẽ Business Process diagram (BPMN, flowchart, swim lane) để visualize quy trình nghiệp vụ. Identify actors, activities, decision points, start/end. Generate Mermaid diagram.
+---
+
+**Persona:** BA/PO (Business Analyst / Product Owner)
+
+Kích hoạt skill ba-process-modeling với BA/PO persona. Đọc `skills/ba-process-modeling/SKILL.md` để thực hiện đúng workflow.
+
+$ARGUMENTS có thể chứa:
+- Process name (VD: "Đặt lệnh cổ phiếu")
+- Hoặc Jira issue key (VD: G3PTP-16584) → Đọc từ `*-final.md` Section 5 (User Flow)
+- Hoặc không có arguments → Agent sẽ hỏi process details
+
+**Workflow:**
+
+1. **Đọc Input** (Process Description):
+   - Nếu có issueKey: Đọc từ `*-final.md` Section 5 (User Flow)
+   - Nếu có Gap Analysis: Đọc từ `docs/gap-analysis/{issueKey}-gap-analysis.md`
+   - Nếu text từ user: Parse process description trực tiếp
+
+2. **Identify Components**:
+   - **Actors (WHO):** Khách hàng, Broker, Hệ thống, External systems
+   - **Activities (WHAT):** Tasks/Actions với duration estimates
+   - **Decision Points (IF/ELSE):** Branches trong process
+   - **Start/End Events:** Trigger và termination states
+
+3. **Choose Diagram Type**:
+   - **Flowchart** (Simple): 1-2 actors, linear process, 0-1 decision points
+   - **Swim Lane** (Multi-Actor): 3+ actors, cross-functional, nhiều handoffs
+   - **BPMN** (Formal): Standard notation, compliance documentation
+
+4. **Create Diagram** (Mermaid Syntax):
+   - Generate Mermaid flowchart code
+   - Swim lanes: Use `subgraph` cho từng actor
+   - Annotations: Pain points (🐢 slow, ⚠️ error), metrics (⏱️ time)
+   - Colors: Red = bottleneck, Orange = medium issue, Green = improvement
+
+5. **AS-IS vs TO-BE** (if applicable):
+   - AS-IS: Current state với pain points highlighted
+   - TO-BE: Target state với improvements highlighted
+   - Comparison table: Time, Steps, Error rate, Actors, Technology
+
+6. **Output**:
+   - AS-IS: `docs/processes/{issueKey}-as-is-process.md`
+   - TO-BE: `docs/processes/{issueKey}-to-be-process.md`
+
+**Diagram Types:**
+
+### Type 1: Flowchart (Simple)
+```markdown
+```mermaid
+flowchart TD
+    Start([Khách hàng muốn đặt lệnh])
+    A[Gọi điện]
+    B[Broker ghi sổ tay]
+    C{Đủ margin?}
+    D[Gửi lên sàn]
+    End([Success])
+    
+    Start --> A --> B --> C
+    C -->|Yes| D --> End
+\```
+```
+
+### Type 2: Swim Lane (Multi-Actor)
+```markdown
+```mermaid
+flowchart TD
+    subgraph KH["🧑 Khách hàng"]
+        Start([Muốn đặt lệnh])
+    end
+    
+    subgraph Broker["👨‍💼 Broker"]
+        B1["Nhập HO<br/>🐢 3-5 phút"]
+    end
+    
+    subgraph HO["🖥️ Hệ thống"]
+        C1{Kiểm tra margin}
+    end
+    
+    Start -.-> B1 -.-> C1 --> End([✅ Success])
+\```
+```
+
+### Type 3: BPMN Elements
+- Start Event: Circle
+- Task: Rectangle
+- Gateway: Diamond (decision)
+- End Event: Circle (bold)
+
+**AS-IS vs TO-BE Comparison:**
+
+| Aspect | AS-IS | TO-BE | Improvement |
+|--------|-------|-------|-------------|
+| Total Time | 10-15 phút | < 30 giây | 🎯 Giảm 95% |
+| Manual Steps | 6 steps | 0 steps | ✅ Full automation |
+| Error Rate | 2-3% | < 0.5% | 🎯 Giảm 80% |
+| Actors | 3 (KH, Broker, HO) | 2 (KH, OMS) | Loại bỏ bottleneck |
+
+**Ranh giới BA/PO:**
+- ✅ Vẽ process diagram từ góc nhìn business/user (WHO does WHAT)
+- ✅ Identify pain points, bottlenecks, manual steps
+- ✅ Visualize AS-IS và TO-BE để communicate với stakeholders
+- ❌ KHÔNG vẽ technical architecture diagram (class diagram, sequence diagram) — đó là việc của DEV
+- ❌ KHÔNG vẽ data flow diagram (database schema, ERD) — đó là việc của DEV
+
+**Handoff**: Sau khi hoàn thành Process Modeling:
+- **Gap Analysis:** `/ba-gap-analysis` → Dùng AS-IS diagram để identify gaps
+- **User Stories:** `/ba-user-stories` → Transform TO-BE process thành User Stories
+- **DEV:** `/tech-spec` → DEV đọc TO-BE diagram để hiểu target architecture
+- **Stakeholders:** Present diagrams trong review meeting để align understanding
+
+**Tips:**
+- Keep diagram simple (< 20 nodes) — Nếu quá phức tạp, chia nhỏ thành sub-processes
+- Use swim lanes cho multi-actor processes — Dễ thấy handoffs
+- Annotate pain points với colors/icons — Visual impact cao hơn text
+- Validate diagram với stakeholders — Ensure accuracy trước khi finalize
+
+LƯU Ý: Tất cả labels trong diagram phải bằng TIẾNG VIỆT (trừ keywords Mermaid như `flowchart`, `subgraph`).

@@ -1,0 +1,89 @@
+---
+name: qa-full-pipeline
+description: Chạy full QA pipeline từ test design đến test execution trong 1 lệnh. Orchestrate qa-test-design → qa-auto-design → qa-run-test. Sử dụng khi cần workflow tự động end-to-end cho QA testing.
+whenToUse: |
+  - Cần chạy full QA workflow tự động (từ spec đến report)
+  - Regression testing sau mỗi sprint
+  - CI/CD pipeline integration
+  - Muốn giảm context switches (1 command thay vì 3-4)
+---
+
+# qa-full-pipeline
+
+Orchestrate toàn bộ QA workflow trong 1 lệnh.
+
+## Usage
+
+```bash
+# Manual mode (default) - có approval gates
+/qa-full-pipeline {issueKey}
+
+# Auto mode - chạy thẳng không hỏi
+/qa-full-pipeline {issueKey} --auto
+
+# Resume từ phase cụ thể
+/qa-full-pipeline {issueKey} --resume=phase2
+
+# Skip automation, chỉ test design
+/qa-full-pipeline {issueKey} --no-automation
+```
+
+## Parameters
+
+- `{issueKey}` — Jira issue key (e.g., JIRA-123)
+- `--auto` — Auto-approve mode (skip all gates)
+- `--resume=<phase>` — Resume from specific phase (phase1, phase2, phase3)
+- `--no-automation` — Stop after test design (manual testing only)
+- `--no-squash` — Skip Squash TM push
+- `--dry-run` — Preview without executing
+
+## Workflow
+
+```
+Phase 0: Validation
+         └─ Check *-final.md exists
+
+Phase 1: /qa-test-design
+         ├─ Generate Checklist
+         ├─ [GATE] Approval
+         └─ Generate Gherkin
+
+[DECISION] Generate automation?
+
+Phase 2: /qa-auto-design
+         └─ Generate test code
+
+Phase 3: /qa-run-test
+         └─ Run tests & report
+```
+
+## Examples
+
+**Full automation:**
+```bash
+/qa-full-pipeline JIRA-123 --auto
+```
+
+**Manual testing only:**
+```bash
+/qa-full-pipeline JIRA-456 --no-automation
+```
+
+**Resume after failure:**
+```bash
+/qa-full-pipeline JIRA-789 --resume=phase2
+```
+
+## Outputs
+
+- `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md`
+- `tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
+- `tests/qa-test-design/{issueKey}/steps/test_*.py`
+- `tests/qa-test-design/{issueKey}/reports/{issueKey}-pipeline-summary.md`
+
+## See Also
+
+- `qa-test-design` — Phase 1 (test design)
+- `qa-auto-design` — Phase 2 (automation)
+- `qa-run-test` — Phase 3 (execution)
+- `references/pipeline-states.md` — State machine diagram

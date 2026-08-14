@@ -20,10 +20,10 @@ Command này orchestrate cả 2 personas (QA/BA và DEV) để deliver một fea
 - ✅ Code reviewed
 - ✅ Ready for merge
 
-## Pipeline Flow (11 Phases)
+## Pipeline Flow (8 Phases — Optimized)
 
 ```
-Phase 1:  ba-spec                    [QA/BA] Import & analyze Jira
+Phase 1:  ba-spec                    [BA/PO] Import & analyze Jira
    ↓
 Phase 2:  tech-spec                  [DEV]   Design technical solution
    ↓
@@ -35,16 +35,13 @@ Phase 5:  build                      [DEV]   Implement code
    ↓
 Phase 6:  unit-test                  [DEV]   Write & run unit tests
    ↓
-Phase 7:  qa-test-design             [QA]    Design test cases
+Phase 7:  qa-full-pipeline           [QA]    Full QA workflow (design → automation → execution)
+         (replaces old Phases 7-10)
    ↓
-Phase 8:  cross-validation (round 2) [Meta]  Verify Tech → Test mapping
-   ↓
-Phase 9:  qa-auto-design             [QA]    Generate automation tests
-   ↓
-Phase 10: qa-run-test                [QA]    Run all tests
-   ↓
-Phase 11: review                     [DEV+QA] Final review before merge
+Phase 8:  review                     [DEV+QA] Final review before merge
 ```
+
+**Major change:** Phases 7-10 consolidated into single `/qa-full-pipeline` command for efficiency.
 
 ## Modes
 
@@ -181,83 +178,63 @@ Dừng sau MỖI phase để user review.
 
 ---
 
-### Phase 7: qa-test-design (QA) — Test Cases
+### Phase 7-10: qa-full-pipeline (QA) — Full QA Workflow
 
-**Invoke:** Skill `qa-test-design`
+**Invoke:** `/qa-full-pipeline JIRA-123 --auto`
 
 **Input:** Business-Spec từ Phase 1
+
+**Includes 4 sub-phases:**
+- Phase 7a: Test Design (Checklist + Gherkin)
+- Phase 7b: [GATE] User approval (skip in auto mode)
+- Phase 8: Test Automation (Generate test code)
+- Phase 9: Test Execution (Run tests + report)
 
 **Output:**
 - `tests/qa-test-design/JIRA-123/JIRA-123-checklist.md`
 - `tests/qa-test-design/JIRA-123/features/JIRA-123.feature`
+- `tests/qa-test-design/JIRA-123/steps/test_*.py`
+- `tests/qa-test-design/JIRA-123/reports/JIRA-123-pipeline-summary.md`
 
 **Gate Check:**
-- If confidence ≥ 90% → Continue
-- If confidence < 90% → Ask user
+- If pass rate ≥ 90% → Continue
+- If pass rate < 90% → STOP
+  - Automation tests fail → QA fix test code
+  - Need re-run → `/qa-full-pipeline JIRA-123 --resume=phase3`
+
+**Why changed:** 
+- Consolidated Phases 7-10 into single `/qa-full-pipeline` command
+- Reduces context switches (1 command vs 4)
+- Auto-handles gates and resume logic
+- Traceability check (Phase 8 cross-validation) now embedded in qa-test-design confidence calculation
 
 ---
 
-### Phase 8: meta-cross-validation (Meta) — Traceability Check #2
+### Phase 10: meta-cross-validation (Meta) — Final Traceability Check
 
 **Invoke:** `meta-cross-validation`
 
 **Input:**
 - Tech-Spec từ Phase 2
-- Test Checklist + Gherkin từ Phase 7
+- Test artifacts từ Phase 7-9 (via qa-full-pipeline)
+- Unit test coverage từ Phase 6
 
 **Output:**
-- Traceability matrix: Tech-Spec → Test Cases
+- End-to-end traceability matrix: BR → Tech-Spec → Tests
+- Coverage report (unit + E2E)
 - Gap report
 
 **Gate Check:**
 - If coverage ≥ 90% → Continue
-- If coverage < 90% → STOP, fix gaps in Phase 7
+- If coverage < 90% → STOP, fix gaps
 
 ---
 
-### Phase 9: qa-auto-design (QA) — Automation Code
-
-**Invoke:** Skill `qa-auto-design`
-
-**Input:**
-- Gherkin từ Phase 7
-- App code từ Phase 5 (để reuse)
-
-**Output:**
-- `tests/qa-test-design/JIRA-123/steps/test_*.py`
-- Automation test code
-
-**Gate Check:**
-- If code generated + syntax valid → Continue
-- If syntax errors → STOP, fix, re-run Phase 9
-
----
-
-### Phase 10: qa-run-test (QA) — Run All Tests
-
-**Invoke:** `/qa-run-test`
-
-**Input:**
-- Unit tests từ Phase 6
-- Automation tests từ Phase 9
-
-**Output:**
-- Test report with pass/fail
-- `tests/qa-test-design/JIRA-123/reports/JIRA-123-report.md`
-
-**Gate Check:**
-- If pass rate ≥ 90% (unit + automation) → Continue
-- If pass rate < 90% → STOP
-  - If unit tests fail → DEV fix app code (back to Phase 5)
-  - If automation tests fail → QA fix test code (back to Phase 9)
-
----
-
-### Phase 11: review (DEV + QA) — Final Review
+### Phase 8: review (DEV + QA) — Final Review
 
 **Invoke:** `/review` với persona=dev, sau đó persona=qa
 
-**Input:** All code từ Phase 5, 6, 9
+**Input:** All code từ Phase 5, 6, 7
 
 **Output:**
 - Code review report
@@ -271,14 +248,14 @@ Dừng sau MỖI phase để user review.
 
 ## Final Output
 
-Sau khi hoàn thành 11 phases thành công:
+Sau khi hoàn thành 8 phases thành công:
 
 ```markdown
 🎉 **E2E Delivery COMPLETED Successfully**
 
 **Issue:** JIRA-123 — Order Management System
 **Mode:** Semi-Auto
-**Total Duration:** 28 phút 15 giây
+**Total Duration:** 26 phút 40 giây
 **Overall Confidence:** 94% (High)
 
 ---
@@ -287,17 +264,14 @@ Sau khi hoàn thành 11 phases thành công:
 
 | # | Phase | Persona | Status | Confidence | Duration |
 |---|-------|---------|--------|------------|----------|
-| 1 | ba-spec | QA/BA | ✅ Pass | 92% | 2m 15s |
+| 1 | ba-spec | BA/PO | ✅ Pass | 92% | 2m 15s |
 | 2 | tech-spec | DEV | ✅ Pass | 95% | 4m 30s |
-| 3 | cross-validation #1 | Meta | ✅ Pass | 100% | 1m 10s |
+| 3 | cross-validation | Meta | ✅ Pass | 100% | 1m 10s |
 | 4 | plan | DEV | ✅ Pass | 90% | 2m 05s |
 | 5 | build | DEV | ✅ Pass | 93% | 6m 20s |
 | 6 | unit-test | DEV | ✅ Pass | 88% | 3m 15s |
-| 7 | qa-test-design | QA | ✅ Pass | 96% | 3m 40s |
-| 8 | cross-validation #2 | Meta | ✅ Pass | 95% | 1m 20s |
-| 9 | qa-auto-design | QA | ✅ Pass | 97% | 2m 10s |
-| 10 | qa-run-test | QA | ✅ Pass | 100% | 45s |
-| 11 | review | DEV+QA | ✅ Pass | 92% | 45s |
+| 7 | qa-full-pipeline | QA | ✅ Pass | 96% | 6m 20s |
+| 8 | review | DEV+QA | ✅ Pass | 92% | 45s |
 
 ---
 
@@ -315,9 +289,10 @@ Sau khi hoàn thành 11 phases thành công:
 - ✅ QA Automation: `tests/qa-test-design/JIRA-123/steps/test_*.py` (8 files)
 
 ### Test Artifacts
-- ✅ Test Checklist: `tests/qa-test-design/JIRA-123/JIRA-123-checklist.md` (42 items)
+- ✅ Test Checklist: `tests/qa-test-design/JIRA-123/features/JIRA-123-checklist.md` (42 items)
 - ✅ Gherkin Features: `tests/qa-test-design/JIRA-123/features/JIRA-123.feature` (28 scenarios)
-- ✅ Test Report: `tests/qa-test-design/JIRA-123/reports/JIRA-123-report.md`
+- ✅ QA Pipeline Summary: `tests/qa-test-design/JIRA-123/reports/JIRA-123-pipeline-summary.md`
+- ✅ Test Report: `tests/qa-test-design/JIRA-123/reports/JIRA-123-test-report.md`
 
 ### Git
 - ✅ Feature Branch: `feature/JIRA-123-order-management`
@@ -471,11 +446,11 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 
 | Aspect | /e2e-delivery | Separate Commands |
 |--------|---------------|-------------------|
-| **Phases** | 11 phases tự động | Manual invoke từng command |
-| **Coordination** | Auto-coordinate QA + DEV | User coordinate manually |
-| **Duration** | ~25-30 phút | ~6-8 giờ (with manual wait) |
+| **Phases** | 8 phases tự động | Manual invoke từng command |
+| **Coordination** | Auto-coordinate BA/PO + QA + DEV | User coordinate manually |
+| **Duration** | ~22-26 phút | ~6-8 giờ (with manual wait) |
 | **Consistency** | Consistent workflow | Có thể skip steps |
-| **Traceability** | Built-in (Phase 3, 8) | Manual verify |
+| **Traceability** | Built-in (Phase 3, embedded in Phase 7) | Manual verify |
 | **Error Recovery** | Auto-detect + rollback | Manual troubleshoot |
 | **Best for** | Standard features | Custom/complex flows |
 
@@ -484,7 +459,7 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 ## Best Practices
 
 1. **Use semi-auto for production work** — balance speed và quality
-2. **Review traceability reports** — Phase 3 và 8 outputs
+2. **Review traceability reports** — Phase 3 output và Phase 7 (embedded in qa-full-pipeline summary)
 3. **Fix findings before merge** — Ít nhất critical + high findings
 4. **Re-run tests after code fix** — Không assume tests vẫn pass
 5. **Document deviations** — Nếu skip phase hoặc manual fix, ghi chú lý do
@@ -511,16 +486,16 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 - Run `/e2e-delivery` cho từng sub-task
 - Hoặc: dùng `/plan` + `/build` riêng với manual control
 
-### "Phase 10 tests fail, không rõ root cause"
+### "Phase 7 (qa-full-pipeline) fails at test execution"
 
-**Reason:** Unit test fail vs automation test fail khác nhau.
+**Reason:** Test pass rate < 90%.
 
 **Solution:**
-1. Read test report: `tests/qa-test-design/JIRA-123/reports/JIRA-123-report.md`
+1. Read pipeline summary: `tests/qa-test-design/JIRA-123/reports/JIRA-123-pipeline-summary.md`
 2. Identify failed test type:
-   - Unit test → app code bug → fix Phase 5
-   - Automation test → test code bug → fix Phase 9
-3. Re-run appropriate phase
+   - E2E test → app code bug OR test code bug
+   - Check root cause in report
+3. Fix and re-run: `/qa-full-pipeline JIRA-123 --resume=phase3`
 
 ### "Want to skip Phase 6 (unit tests)"
 
@@ -535,6 +510,6 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 
 ## Xem thêm
 
-- `/qa-pipeline` — QA-only pipeline (Phase 1, 7-10)
+- `/qa-full-pipeline` — QA-only pipeline (Phases 7a-7c consolidated)
 - `/build` — DEV-only implementation (Phase 4-6)
 - `meta-cross-validation` — Traceability validation

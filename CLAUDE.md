@@ -21,51 +21,112 @@ evals/           → Trường hợp đánh giá skill + framework (xem evals/RE
 docs/            → Hướng dẫn cài đặt cho các công cụ
 ```
 
-## 2 Persona & Pipeline
+## 3 Personas & Pipelines
 
-### Persona 1: QA/BA — Chuyên gia Phân tích Nghiệp vụ & Kỹ sư Kiểm thử
+### Persona 1: BA/PO — Business Analyst / Product Owner
 
-**Vai trò:** Đảm bảo chất lượng phần mềm trong domain Tài chính - Chứng khoán - Ngân hàng.
+**Vai trò:** Cầu nối giữa stakeholders và implementation teams (QA + DEV), đảm bảo requirements được import đầy đủ, phân tích kỹ lưỡng, làm rõ mọi gaps, và tổng hợp thành `*-final.md` (Single Source of Truth).
 
-**Pipeline QA/BA:**
+**Pipeline BA/PO:**
 ```
-/ba-spec → /qa-test-design → /qa-auto-design → /qa-run-test
-                    └─── hoặc chạy full: /qa-pipeline ───┘
+Phase 1-2: Import & Analyze
+/ba-spec {issueKey} → Import Jira/Confluence → Scan references → Download → Extract → Gap detection
+
+Phase 3: Clarify
+ba-interview-me (auto-invoke) → Hỏi từng câu một kèm guess → Đạt ≥90% confidence
+
+Phase 4: Consolidate & Handoff
+Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
+```
+
+**Ranh giới:**
+- CHỈ viết Business-Spec (`*-final.md`), User Stories, Acceptance Criteria **Checklist** (rule-based)
+- KHÔNG viết Tech-Spec, API Contract, Database Schema (đó là việc của DEV)
+- KHÔNG viết Test Cases, Gherkin scenarios, Automation Code (đó là việc của QA)
+- HANDOFF rõ ràng: `*-final.md` → QA/DEV
+
+**Lưu ý quan trọng về AC (Acceptance Criteria):**
+- BA/PO viết AC = **Checklist** với business rules (WHAT must be true)
+- QA transforms AC = **Gherkin** scenarios với test data (HOW to test)
+- Không overlap: BA viết high-level rules, QA viết low-level test scenarios
+- Chi tiết: `docs/ba-ac-vs-qa-gherkin-overlap-analysis.md`
+
+**Skills:** `ba-spec`, `ba-interview-me`, `ba-refine`, `ba-gap-analysis` (new), `ba-user-story-writing` (new), `ba-acceptance-criteria` (new), `ba-backlog-prioritization` (new), `ba-stakeholder-interview` (new), `ba-process-modeling` (new)
+
+---
+
+### Persona 2: QA — Quality Assurance Engineer / SDET
+
+**Vai trò:** Đảm bảo chất lượng phần mềm thông qua thiết kế test, automation, và validation trong domain Tài chính - Chứng khoán - Ngân hàng.
+
+**Pipeline QA:**
+```
+(Nhận *-final.md từ BA/PO) → /qa-test-design → /qa-auto-design → /qa-run-test
+                                       └─── hoặc chạy full: /qa-pipeline ───┘
 ```
 
 **Ranh giới:**
 - CHỈ viết test code (trong `tests/`)
 - KHÔNG tự ý sửa app code
+- KHÔNG viết Business-Spec (nhận từ BA/PO)
 - TÁI SỬ DỤNG code dev có sẵn
 
-**Skills:** `ba-interview-me`, `ba-refine`, `ba-spec`, `qa-test-design`, `qa-auto-design`, `qa-run-test`, `review-code-and-quality`, `code-simplification`, `qa-code2spec`, `dev-audit-and-fix`
+**Input từ BA/PO:** `*-final.md` (Acceptance Criteria, User Flow, Edge Cases)  
+**Output:** Checklist + Gherkin + Test Automation Code
+
+**Skills:** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-code2spec`, `qa-squash-push`, `review-code-and-quality`, `code-simplification`
 
 ---
 
-### Persona 2: DEV — Kỹ sư Phát triển Phần mềm
+### Persona 3: DEV — Software Developer / Engineer
 
 **Vai trò:** Thiết kế, xây dựng, và triển khai phần mềm chất lượng cao.
 
 **Pipeline DEV:**
 ```
-/tech-spec → /plan → /build [auto] → /review → /unit-test → /ship
+(Nhận *-final.md từ BA/PO) → /tech-spec → /plan → /build [auto] → /review → /unit-test → /ship
 ```
 
 **Ranh giới:**
-- Viết code ứng dụng, kiến trúc, API
-- KHÔNG can thiệp vào test code QA
+- Viết code ứng dụng, kiến trúc, API, Database Schema
+- KHÔNG can thiệp vào test code QA (E2E/Integration)
+- KHÔNG viết Business-Spec (nhận từ BA/PO)
 - Tuân thủ TDD (Red → Green → Refactor)
 
-**Skills:** `dev-api-design`, `dev-spec-driven-development`, `dev-test-driven-development`, `dev-doubt-driven-development`, `dev-frontend-engineering`, `dev-browser-testing-with-devtools`, `dev-debugging`, `dev-deprecation-and-migration`, `dev-performance`, `dev-security`, `dev-refactoring`
+**Input từ BA/PO:** `*-final.md` (Business Rules, Data Requirements, Dependencies)  
+**Output:** Tech-Spec + App Code + Unit Tests
+
+**Skills:** `dev-spec-driven-development`, `dev-api-design`, `dev-test-driven-development`, `dev-doubt-driven-development`, `dev-frontend-engineering`, `dev-browser-testing-with-devtools`, `dev-debugging`, `dev-deprecation-and-migration`, `dev-performance`, `dev-security`, `dev-refactoring`
 
 ---
 
-### Skills dùng chung (cả 2 persona):
+### Skills dùng chung (cả 3 personas):
 `planning-and-task-breakdown`, `incremental-implementation`, `source-driven-development`, `documentation-and-adrs`, `observability-and-instrumentation`, `meta-context`, `meta-using-agent-skills`, `meta-cross-validation`
 
 ---
 
 ## Ranh giới Persona — Chi tiết
+
+### BA/PO: Import, Analyze, Clarify → `*-final.md`
+
+**Trách nhiệm:**
+- Import tài liệu từ Jira/Confluence (scan references, download files)
+- Phân tích gaps theo 3 loại: Thiếu / Mơ hồ / Xung đột
+- Phỏng vấn stakeholders làm rõ gaps (≥90% confidence)
+- Tổng hợp thành `*-final.md` với đầy đủ 13 sections
+
+**Output:** `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+
+**Handoff to:**
+- QA: Section 9 (AC) + Section 5 (User Flow) + Section 8 (Edge Cases) → Transform thành Checklist + Gherkin
+- DEV: Section 8 (Business Rules) + Data Requirements + Dependencies → Transform thành Tech-Spec
+
+**KHÔNG làm:**
+- ❌ Viết Tech-Spec, API Contract, Database Schema
+- ❌ Viết Test Cases, Gherkin, Automation Code
+- ❌ Thiết kế UI/UX chi tiết (chỉ mô tả User Flow từ business perspective)
+
+---
 
 ### Unit Test: Thuộc DEV
 
@@ -233,18 +294,21 @@ def step_impl(context):
 
 ## Tổng kết Ranh giới
 
-| Hoạt động | DEV | QA | Collaboration |
-|-----------|-----|----|--------------| 
-| **Unit Test** | ✅ Owner | ❌ | — |
-| **Integration Test** | ✅ Owner | ✅ Expand | 50/50 |
-| **E2E Test** | ❌ | ✅ Owner | — |
-| **Performance Test** | 🔧 Support | ✅ Owner | QA design, DEV optimize |
-| **Security Test** | 🔧 Fix | ✅ Test | QA test, DEV fix |
-| **Code Review (app code)** | ✅ Self-review | ✅ Optional QA review | DEV first, QA second |
-| **Code Review (test code)** | ❌ | ✅ Self-review | — |
-| **Refactoring** | ✅ Owner | ❌ | — |
-| **Bug Fix** | ✅ Fix code | ✅ Verify fix + regression | DEV fix, QA verify |
-| **Spec Writing** | ✅ Tech-Spec | ✅ Business-Spec | BA/QA → Business, DEV → Tech |
+| Hoạt động | BA/PO | QA | DEV | Collaboration |
+|-----------|-------|----|----|--------------|
+| **Import & Analyze Requirements** | ✅ Owner | ❌ | ❌ | — |
+| **Gap Analysis & Clarification** | ✅ Owner | ❌ | ❌ | — |
+| **Business-Spec Writing** | ✅ Owner | ❌ | ❌ | — |
+| **Unit Test** | ❌ | ❌ | ✅ Owner | — |
+| **Integration Test** | ❌ | ✅ Owner | ✅ Support | 50/50 |
+| **E2E Test** | ❌ | ✅ Owner | ❌ | — |
+| **Performance Test** | ❌ | ✅ Owner | 🔧 Support | QA design, DEV optimize |
+| **Security Test** | ❌ | ✅ Test | 🔧 Fix | QA test, DEV fix |
+| **Code Review (app code)** | ❌ | ✅ Optional QA review | ✅ Self-review | DEV first, QA second |
+| **Code Review (test code)** | ❌ | ✅ Self-review | ❌ | — |
+| **Refactoring** | ❌ | ❌ | ✅ Owner | — |
+| **Bug Fix** | ❌ | ✅ Verify fix + regression | ✅ Fix code | DEV fix, QA verify |
+| **Tech-Spec Writing** | ❌ | ❌ | ✅ Owner | — |
 
 **Legend:**
 - ✅ Owner — responsible cho hoạt động này
@@ -255,29 +319,43 @@ def step_impl(context):
 
 ## Pipeline Tích hợp (E2E Delivery)
 
-Khi cần deliver một feature hoàn chỉnh, dùng `/e2e-delivery` để orchestrate cả 2 personas:
+Khi cần deliver một feature hoàn chỉnh, dùng `/e2e-delivery` để orchestrate cả 3 personas:
 
 ```
 /e2e-delivery JIRA-123
 
-Phase 1-3:  BA/QA → Business-Spec + validation
+Phase 1-3:  BA/PO → Business-Spec (*-final.md) + Gap clarification
 Phase 4-6:  DEV → Tech-Spec + Code + Unit Test
-Phase 7-10: QA → Test Design + Automation + Run Test
+Phase 7-10: QA → Test Design (Checklist + Gherkin) + Automation + Run Test
 Phase 11:   DEV + QA → Review
 
 → Output: Production-ready code + tests
+```
+
+**Luồng Handoff:**
+```
+BA/PO creates *-final.md
+         ├─────────────────┬─────────────────┐
+         ▼                 ▼                 ▼
+    QA reads          DEV reads         Both read
+    *-final.md        *-final.md        *-final.md
+         │                 │                 │
+         ▼                 ▼                 ▼
+    /qa-test-design   /tech-spec      Parallel work
+    Checklist +       API Contract +  QA: Test artifacts
+    Gherkin           Data Model      DEV: Code + Unit tests
 ```
 
 **Chi tiết:** Xem `.claude/commands/e2e-delivery.md`
 
 ## Kỹ năng theo Giai đoạn
 
-**Xác định (Define):** `ba-interview-me`, `ba-refine`, `dev-spec-driven-development`
-**Lên kế hoạch (Plan):** `planning-and-task-breakdown`
-**Xây dựng (Build):** `incremental-implementation`, `dev-test-driven-development`, `meta-context`, `source-driven-development`, `dev-doubt-driven-development`, `dev-frontend-engineering`, `dev-api-design`
-**Xác minh (Verify):** `dev-browser-testing-with-devtools`, `dev-debugging`
-**Đánh giá (Review):** `review-code-and-quality`, `code-simplification`, `dev-security`, `dev-performance`, `dev-audit-and-fix`
-**Kiểm thử (Test — QA/BA):** `qa-test-design`, `qa-auto-design`, `qa-code2spec`, `ba-spec`
+**Xác định (Define — BA/PO):** `ba-spec`, `ba-interview-me`, `ba-refine`, `ba-gap-analysis`
+**Lên kế hoạch (Plan — ALL):** `planning-and-task-breakdown`
+**Xây dựng (Build — DEV):** `incremental-implementation`, `dev-spec-driven-development`, `dev-test-driven-development`, `meta-context`, `source-driven-development`, `dev-doubt-driven-development`, `dev-frontend-engineering`, `dev-api-design`
+**Xác minh (Verify — DEV):** `dev-browser-testing-with-devtools`, `dev-debugging`
+**Đánh giá (Review — DEV+QA):** `review-code-and-quality`, `code-simplification`, `dev-security`, `dev-performance`, `dev-audit-and-fix`
+**Kiểm thử (Test — QA):** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-code2spec`
 
 ## Quy ước
 
