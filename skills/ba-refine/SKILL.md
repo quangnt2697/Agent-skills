@@ -337,85 +337,20 @@ Sau khi user chọn hướng đi cuối cùng, tạo file markdown:
 
 **Cấu trúc (tuân thủ nghiêm ngặt):**
 
-```markdown
-# [{issueKey}] {Tên Feature}
+📄 **Template chuẩn:** `skills/ba-refine/templates/jira-description-template.md`
 
-## 🧩 User Story (Bắt buộc)
+Agent BẮT BUỘC đọc và tuân theo template trên khi tạo spec. Template bao gồm:
 
-Là [Tập người dùng CỤ THỂ, KHÔNG chung chung]
-Tôi muốn [Mục tiêu, KHÔNG mô tả giải pháp kỹ thuật]
-Để [Giá trị kinh doanh/người dùng]
+- 🧩 User Story (Required) 📖
+- 💼 Business Context (Required) 📖
+- ✅ Acceptance Criteria (Required) 📖 — hỗ trợ 2 format:
+  - Format 1: BDD code block (Gherkin)
+  - Format 2: AC table với testable conditions
+- 🎨 User Flow / Design (Required if UI change) 📖
+- ☀️ Success Criteria & Tracking (Required) 📖
+- 🧱 Technical Notes (Optional)
 
-## 💼 Bối cảnh Nghiệp vụ (Bắt buộc)
-
-[Mô tả ngắn gọn vấn đề hoặc nhu cầu kinh doanh cần giải quyết]
-
-**Tại sao Bây giờ:** [Lý do tính cấp thiết/timing]
-
-## ✅ Tiêu chí Nghiệm thu (Bắt buộc)
-
-**Feature:** [Tên Business Feature]
-
-**Kịch bản 1:** [Main happy path]
-- **Given** [Trạng thái ban đầu]
-- **When** [Hành động]
-- **Then** [Kết quả mong đợi]
-
-**Kịch bản 2:** [Edge case hoặc validation]
-- **Given** [Trạng thái ban đầu]
-- **When** [Hành động]
-- **Then** [Kết quả mong đợi]
-
-## 🎨 User Flow / Thiết kế (Bắt buộc nếu thay đổi UI)
-
-### User Flow
-[Mô tả từng bước hành trình người dùng]
-
-### Ghi chú Thiết kế
-[Tham chiếu wireframe/mockup, nguyên tắc thiết kế]
-
-## ☀️ Tiêu chí Thành công & Tracking (Bắt buộc)
-
-### Metrics Thành công
-| Metric | Hiện tại | Mục tiêu | Phương pháp Đo lường |
-|--------|----------|----------|----------------------|
-| [Metric 1] | [Baseline] | [Goal] | [Cách đo] |
-| [Metric 2] | [Baseline] | [Goal] | [Cách đo] |
-
-### Event Tracking
-| Tên Event | Trigger | Dashboard |
-|-----------|---------|-----------|
-| [event_name] | [Khi nào fire] | [Xem ở đâu] |
-
-## 🧱 Ghi chú Kỹ thuật (Tùy chọn)
-
-**API / Service:**
-- [Endpoints cần có]
-- [Authentication/Authorization]
-
-**Database:**
-- [Thay đổi schema]
-- [Chiến lược migration]
-
-**Dependencies:**
-- [External systems]
-- [Third-party services]
-
-**Bảo mật & Tuân thủ:**
-- [Xử lý PII]
-- [Yêu cầu audit trail]
-- [Nhu cầu mã hóa]
-
-**Hiệu năng:**
-- [Yêu cầu về latency]
-- [Yêu cầu về throughput]
-
-## 📋 Các Bước Tiếp theo (Tùy chọn)
-
-- [ ] [Task 1]
-- [ ] [Task 2]
-- [ ] [Task 3]
-```
+**Xem chi tiết template tại:** `skills/ba-refine/templates/jira-description-template.md`
 
 **LƯU Ý QUAN TRỌNG:**
 - ❌ KHÔNG bao gồm: "Giả định & Rủi ro", "Ngoài Phạm vi", "Đánh giá Độ tin cậy"

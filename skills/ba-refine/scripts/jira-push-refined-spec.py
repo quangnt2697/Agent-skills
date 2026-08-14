@@ -162,73 +162,12 @@ def push_to_jira(base_url: str, email: str, token: str, issue_key: str, spec_fil
 
     print("✅ Description updated")
 
-    # Add comment
-    print(f"💬 Adding comment...")
-
-    comment_url = f"{base_url}/rest/api/3/issue/{issue_key}/comment"
-
-    comment_payload = {
-        "body": {
-            "type": "doc",
-            "version": 1,
-            "content": [
-                {
-                    "type": "paragraph",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": f"✅ Spec đã được refine bởi ba-refine skill\n\n"
-                        },
-                        {
-                            "type": "text",
-                            "text": f"🔗 Local file: {spec_file}\n",
-                            "marks": [{"type": "code"}]
-                        },
-                        {
-                            "type": "text",
-                            "text": f"📅 Refined date: {datetime.now().isoformat()}"
-                        }
-                    ]
-                }
-            ]
-        }
-    }
-
-    response = requests.post(comment_url, auth=auth, headers=headers, json=comment_payload)
-
-    if response.status_code not in [200, 201]:
-        print(f"⚠️  Failed to add comment: {response.status_code}")
-        print(response.text)
-    else:
-        print("✅ Comment added")
-
-    # Add label
-    print(f"🏷️  Adding label...")
-
-    # Get current labels
-    get_url = f"{base_url}/rest/api/3/issue/{issue_key}"
-    response = requests.get(get_url, auth=auth)
-
-    if response.status_code == 200:
-        current_labels = response.json().get("fields", {}).get("labels", [])
-
-        if "refined-by-agent" not in current_labels:
-            current_labels.append("refined-by-agent")
-
-            label_payload = {
-                "fields": {
-                    "labels": current_labels
-                }
-            }
-
-            response = requests.put(url, auth=auth, headers=headers, json=label_payload)
-
-            if response.status_code not in [200, 204]:
-                print(f"⚠️  Failed to add label: {response.status_code}")
-            else:
-                print("✅ Label added: refined-by-agent")
-        else:
-            print("✅ Label already exists: refined-by-agent")
+    # NOTE: According to ba-refine SKILL.md (line 448-451):
+    # - ❌ KHÔNG push comment lên Jira
+    # - ❌ KHÔNG thêm label
+    # - ✅ CHỈ update description với spec rõ ràng
+    #
+    # Comment and label logic has been removed to comply with skill requirements.
 
     # Create push log
     log_dir = spec_file.parent
