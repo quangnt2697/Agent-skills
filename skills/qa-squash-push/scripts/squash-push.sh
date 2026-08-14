@@ -308,23 +308,30 @@ assign_test_case_to_sprint() {
     # --- 6. Tìm node Sprint trong campaign-tree ---
     log_info "6. Dò node Sprint trong Campaign Workspace..."
 
-    # Lượt 1: lấy các node gốc để biết cần mở những nhánh nào
-    ROOT_TREE=$(call_backend "POST" "/backend/campaign-tree" '{"openedNodes":[],"selectedNodes":[]}')
-    log_debug "campaign-tree (root): $ROOT_TREE"
+    # Lượt 1: lấy các node gốc
+    TREE_JSON=$(call_backend "POST" "/backend/campaign-tree" '{"openedNodes":[],"selectedNodes":[]}')
+    log_debug "campaign-tree (root): $TREE_JSON"
 
-    OPENED_NODES=$(echo "$ROOT_TREE" | jq -c '
-      [ .. | objects | .id? // empty | tostring
-        | select(test("^(CampaignLibrary|SprintGroup|CampaignFolder)-[0-9]+$")) ]
-      | unique
-    ' 2>/dev/null || echo '[]')
+    # Mở dần các nhánh theo chiều sâu (SprintGroup, CampaignFolder) cho đến khi lộ ra node Sprint
+    # Chỉ mở CampaignLibrary tương ứng với SQUASH_PROJECT_ID để tối ưu
+    PREV_OPENED="[]"
+    while true; do
+        OPENED_NODES=$(echo "$TREE_JSON" | jq -c --arg pid "${SQUASH_PROJECT_ID:-}" '
+          [ .. | objects | .id? // empty | tostring
+            | select(test("^(CampaignLibrary|SprintGroup|CampaignFolder)-[0-9]+$"))
+            | select( (startswith("CampaignLibrary-") | not) or (. == "CampaignLibrary-\($pid)") ) ]
+          | unique
+        ' 2>/dev/null || echo '[]')
 
-    # Lượt 2: mở các nhánh đó để lộ danh sách Sprint
-    if [[ "$OPENED_NODES" != "[]" ]]; then
-        FULL_TREE=$(call_backend "POST" "/backend/campaign-tree" \
+        if [[ "$OPENED_NODES" == "$PREV_OPENED" || "$OPENED_NODES" == "[]" ]]; then
+            break
+        fi
+
+        PREV_OPENED="$OPENED_NODES"
+        TREE_JSON=$(call_backend "POST" "/backend/campaign-tree" \
             "{\"openedNodes\":${OPENED_NODES},\"selectedNodes\":[]}")
-    else
-        FULL_TREE="$ROOT_TREE"
-    fi
+    done
+    FULL_TREE="$TREE_JSON"
     log_debug "campaign-tree (expanded): $FULL_TREE"
 
     SPRINT_NODES=$(echo "$FULL_TREE" | jq -c '
