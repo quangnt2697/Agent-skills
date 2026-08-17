@@ -142,10 +142,10 @@ danh sách                                 loại task          theo profile
 
    | # | Loại | Tên | Trạng thái | Đường dẫn / Hành động |
    |---|------|-----|------------|----------------------|
-   | 1 | 📄 Jira PDF | {issueKey} | 🆕 Chưa tải | → Sẽ tải mới |
-   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `specs/imports/confluence/thanh-toan/source/thiet-ke-luong-thanh-toan-12345.pdf` |
+   | 1 | 📄 Jira PDF | {issueKey} - {Tiêu đề Task} | 🆕 Chưa tải | → Sẽ tải mới |
+   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `specs/imports/confluence/...` |
    | 3 | 📝 Confluence | API Specification v2 (ID: 67890) | 🆕 Chưa tải | → `api-specification-v2-67890.pdf` |
-   | 4 | 📄 Jira PDF | {relatedIssueKey} (Từ kết quả tìm kiếm) | 🆕 Chưa tải | → Sẽ tải mới |
+   | 4 | 📄 Jira PDF | {relatedIssueKey} - {Tiêu đề Task liên quan} | 🆕 Chưa tải | → Sẽ tải mới |
    | 5 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
    | 6 | 🖼️ Ảnh | flowchart-order-flow.png (800KB) | 🆕 Chưa tải | → Sẽ tải mới |
    | 7 | 🎬 Video | demo-flow.mp4 (50MB) | ⏭️ Bỏ qua | Định dạng không hỗ trợ |
@@ -247,8 +247,9 @@ Bạn xác nhận đây là task loại gì?
 
 ### Phase 2: Trích xuất có cấu trúc theo Profile (ĐỌC ĐA NGUỒN)
 
-Agent đọc **tất cả** các file liên quan — bao gồm:
-- File PDF gốc của Jira task.
+Agent **BẮT BUỘC ĐỌC QUA TOÀN BỘ** các tài liệu đã được user cấp phép tải về (bao gồm cả các Jira task và Confluence liên quan) để lấy thông tin hoàn chỉnh. Danh sách tài liệu cần đọc bao gồm:
+- File PDF gốc của Jira task chính.
+- Các file PDF của **các Jira task liên quan** (từ bước tìm kiếm mở rộng).
 - Các file Confluence/attachment mới tải trong `source/references/`.
 - Các file Confluence/attachment **đã có sẵn** (theo path ghi trong `metadata.json`).
 
@@ -269,7 +270,7 @@ Agent trích xuất thông tin theo **9 chiều phân tích** được định n
 
 ### Phase 3: Phân tích yêu cầu & Xác định gaps (ĐỌC ĐA NGUỒN)
 
-Agent PHẢI đọc cả file Jira gốc LẪN tất cả các file references để phát hiện gaps toàn diện:
+Dựa trên việc đọc **TOÀN BỘ** các Jira task, Confluence page và file tham chiếu liên quan, Agent tiến hành đối chiếu thông tin để phát hiện gaps toàn diện:
 
 ### Gaps chung (tất cả loại task)
 1. **Xung đột logic** — Acceptance Criteria nói A nhưng User Flow mô tả B
