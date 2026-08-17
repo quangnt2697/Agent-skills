@@ -122,12 +122,20 @@ danh sách                                 loại task          theo profile
    - Gọi thêm Remote Links: `GET /rest/api/3/issue/{issueKey}/remotelink` — lấy link Confluence/trang ngoài.
    - Từ field `description`: Dùng Regex quét URL chứa pattern `*/wiki/spaces/*` hoặc `*/wiki/pages/*`.
    - Từ field `attachment`: Lấy danh sách file đính kèm (tên, dung lượng, định dạng).
+   - ⚠️ **LỌC BỎ (Ignore):** Tự động loại bỏ các link tham chiếu là tài liệu chung của dự án (VD: "Guidelines", "Template", "Hướng dẫn", "Quy trình") thường có sẵn trong template mô tả Jira.
 
-3. **Kiểm tra Cache — file đã tải trước đó:**
+3. **Tìm kiếm mở rộng bằng Tên Task (Summary):**
+   - Lấy giá trị trường `summary` của Jira (VD: `Là khách hàng, tôi muốn biết những mã nào giao dịch theo Random End`).
+   - Lọc các từ khóa chính từ `summary` để tạo `{keyword}` (VD: `mã giao dịch theo Random End`).
+   - Tìm kiếm Confluence: `GET /wiki/rest/api/search?cql=text~"{keyword}" OR title~"{keyword}"&limit=5`
+   - Tìm kiếm Jira task liên quan: `GET /rest/api/3/search?jql=summary~"{keyword}" AND issuekey != {issueKey}&maxResults=5`
+   - Gộp các kết quả tìm được vào danh sách tài liệu cần duyệt.
+
+4. **Kiểm tra Cache — file đã tải trước đó:**
    - Với mỗi Confluence pageId → Quét thư mục `specs/imports/confluence/` và `specs/imports/jira/*/source/references/` xem đã có file `*-{pageId}.pdf` chưa.
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại trong dự án chưa.
 
-4. **Trình bảng Danh sách cho User duyệt:**
+5. **Trình bảng Danh sách cho User duyệt:**
 
    ```markdown
    📋 **Danh sách tài liệu liên quan đến {issueKey}:**
@@ -137,16 +145,17 @@ danh sách                                 loại task          theo profile
    | 1 | 📄 Jira PDF | {issueKey} | 🆕 Chưa tải | → Sẽ tải mới |
    | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `specs/imports/confluence/thanh-toan/source/thiet-ke-luong-thanh-toan-12345.pdf` |
    | 3 | 📝 Confluence | API Specification v2 (ID: 67890) | 🆕 Chưa tải | → `api-specification-v2-67890.pdf` |
-   | 4 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
-   | 5 | 🖼️ Ảnh | flowchart-order-flow.png (800KB) | 🆕 Chưa tải | → Sẽ tải mới |
-   | 6 | 🎬 Video | demo-flow.mp4 (50MB) | ⏭️ Bỏ qua | Định dạng không hỗ trợ |
+   | 4 | 📄 Jira PDF | {relatedIssueKey} (Từ kết quả tìm kiếm) | 🆕 Chưa tải | → Sẽ tải mới |
+   | 5 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
+   | 6 | 🖼️ Ảnh | flowchart-order-flow.png (800KB) | 🆕 Chưa tải | → Sẽ tải mới |
+   | 7 | 🎬 Video | demo-flow.mp4 (50MB) | ⏭️ Bỏ qua | Định dạng không hỗ trợ |
 
-   **Tổng cộng:** 4 file cần tải mới, 1 file đã có sẵn, 1 file bỏ qua.
+   **Tổng cộng:** 5 file cần tải mới, 1 file đã có sẵn, 1 file bỏ qua.
 
    Bạn có muốn tôi tiến hành tải không? (Gõ **OK** hoặc chỉnh sửa danh sách)
    ```
 
-5. **DỪNG LẠI (Approval Gate):** Chờ User phản hồi "OK" hoặc chỉnh sửa.
+6. **DỪNG LẠI (Approval Gate):** Chờ User phản hồi "OK" hoặc chỉnh sửa.
 
 ---
 

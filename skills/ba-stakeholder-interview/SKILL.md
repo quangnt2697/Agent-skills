@@ -45,30 +45,30 @@ Liệt kê tất cả stakeholders liên quan đến feature/project này:
 
 **Stakeholder Categories:**
 
-| Category | Examples | Why Interview Them |
-|----------|----------|-------------------|
-| **Executive** | CEO, CFO, COO | Business strategy, budget approval, high-level goals |
-| **Product** | Product Manager, Product Owner | Feature priority, roadmap, user personas |
-| **Business** | Sales, Marketing, Business Analyst | Market needs, competitor analysis, revenue impact |
-| **End Users** | Customers, Traders, Brokers | Pain points, usability, actual workflows |
-| **Operations** | Support Team, Customer Success | Common issues, workarounds, edge cases |
-| **Technical** | CTO, Architects, Dev Lead | Technical constraints, integration, scalability |
-| **Compliance** | Legal, Risk Management | Regulatory requirements, audit trails |
-| **Finance** | Accounting, Finance Team | Cost tracking, billing, financial reports |
+| Category       | Examples                           | Why Interview Them                                     |
+|----------------|------------------------------------|--------------------------------------------------------|
+| **Executive**  | CEO, CFO, COO                      | Business strategy, budget approval, high-level goals   |
+| **Product**    | Product Manager, Product Owner     | Feature priority, roadmap, user personas               |
+| **Business**   | Sales, Marketing, Business Analyst | Market needs, competitor analysis, revenue impact      |
+| **End Users**  | Customers, Traders, Brokers        | Pain points, usability, actual workflows               |
+| **Operations** | Support Team, Customer Success     | Common issues, workarounds, edge cases                 |
+| **Technical**  | CTO, Architects, Dev Lead          | Technical constraints, integration, scalability        |
+| **Compliance** | Legal, Risk Management             | Regulatory requirements, audit trails                  |
+| **Finance**    | Accounting, Finance Team           | Cost tracking, billing, financial reports              |
 
 **Example:**
 ```markdown
 ### Stakeholders for "Mobile Trading App" Project
 
-| # | Name | Role | Category | Interview Priority |
-|---|------|------|----------|-------------------|
-| 1 | Nguyễn Văn A | CEO | Executive | 🔴 High (strategy, budget) |
-| 2 | Trần Thị B | Product Manager | Product | 🔴 High (roadmap, features) |
-| 3 | Lê Văn C | Head of Support | Operations | 🟡 Medium (pain points) |
-| 4 | Phạm Thị D | Senior Trader (VIP) | End User | 🔴 High (real workflows) |
-| 5 | Hoàng Văn E | CTO | Technical | 🟡 Medium (tech constraints) |
-| 6 | Đặng Thị F | Compliance Officer | Compliance | 🟡 Medium (regulatory) |
-| 7 | Ngô Văn G | CFO | Executive | 🟢 Low (budget already approved) |
+| # | Name         | Role                | Category   | Interview Priority               |
+|---|--------------|---------------------|------------|----------------------------------|
+| 1 | Nguyễn Văn A | CEO                 | Executive  | 🔴 High (strategy, budget)       |
+| 2 | Trần Thị B   | Product Manager     | Product    | 🔴 High (roadmap, features)      |
+| 3 | Lê Văn C     | Head of Support     | Operations | 🟡 Medium (pain points)          |
+| 4 | Phạm Thị D   | Senior Trader (VIP) | End User   | 🔴 High (real workflows)         |
+| 5 | Hoàng Văn E  | CTO                 | Technical  | 🟡 Medium (tech constraints)     |
+| 6 | Đặng Thị F   | Compliance Officer  | Compliance | 🟡 Medium (regulatory)           |
+| 7 | Ngô Văn G    | CFO                 | Executive  | 🟢 Low (budget already approved) |
 
 **Total:** 7 stakeholders, 3 High priority, 3 Medium, 1 Low
 ```
@@ -326,14 +326,14 @@ Tổng hợp findings từ tất cả interviews thành matrix:
 ```markdown
 ### Stakeholder Matrix
 
-| Stakeholder | Role | Key Needs | Constraints | Priority (Must-have) | Concerns/Risks |
-|-------------|------|-----------|-------------|---------------------|----------------|
-| Nguyễn Văn A | CEO | Revenue growth, market share | Budget ~3 tỷ, Q4 launch | Mobile app, LO orders | Timeline tight (6 months ambitious) |
-| Trần Thị B | PM | User adoption, NPS > 4.0 | Feature parity với VPS | Real-time notification, Templates | Feature creep (too many nice-to-haves) |
-| Phạm Thị D | Trader | Speed (< 30s), reliability | None | Fast order placement, Order status | App crash during peak hours |
-| Lê Văn C | Support | Reduce tickets, easy to train | Support bandwidth | Clear error messages, Tutorial | Customers không biết dùng app |
-| Hoàng Văn E | CTO | Scalability, maintainability | Legacy HO system | API-first, Cloud-native | Integration với HO (FIX Gateway complex) |
-| Đặng Thị F | Compliance | Regulatory compliance | HOSE rules | Margin check, Audit logs | Regulatory approval delay (2-3 months) |
+| Stakeholder   | Role       | Key Needs                     | Constraints             | Priority (Must-have)               | Concerns/Risks                           |
+|---------------|------------|-------------------------------|-------------------------|------------------------------------|------------------------------------------|
+| Nguyễn Văn A  | CEO        | Revenue growth, market share  | Budget ~3 tỷ, Q4 launch | Mobile app, LO orders              | Timeline tight (6 months ambitious)      |
+| Trần Thị B    | PM         | User adoption, NPS > 4.0      | Feature parity với VPS  | Real-time notification, Templates  | Feature creep (too many nice-to-haves)   |
+| Phạm Thị D    | Trader     | Speed (< 30s), reliability    | None                    | Fast order placement, Order status | App crash during peak hours              |
+| Lê Văn C      | Support    | Reduce tickets, easy to train | Support bandwidth       | Clear error messages, Tutorial     | Customers không biết dùng app            |
+| Hoàng Văn E   | CTO        | Scalability, maintainability  | Legacy HO system        | API-first, Cloud-native            | Integration với HO (FIX Gateway complex) |
+| Đặng Thị F    | Compliance | Regulatory compliance         | HOSE rules              | Margin check, Audit logs           | Regulatory approval delay (2-3 months)   |
 ```
 
 **4.2. Consolidated Requirements**
@@ -470,12 +470,12 @@ Sau khi synthesize, share findings back:
 ```markdown
 ### Open Questions (Need Follow-up)
 
-| # | Question | Stakeholder | Action | Deadline |
-|---|----------|-------------|--------|----------|
-| 1 | HOSE approval timeline cho mobile app? | Compliance | Đặng Thị F escalate to HOSE | 2026-08-20 |
-| 2 | Budget final approval (~3 tỷ)? | CFO | Ngô Văn G present to board | 2026-08-15 |
-| 3 | FIX Gateway sandbox access? | CTO | Hoàng Văn E contact HNX/HSX | 2026-08-18 |
-| 4 | Trader beta testing group (100 users)? | PM | Trần Thị B recruit from VIP list | 2026-09-01 |
+| # | Question                               | Stakeholder   | Action                           | Deadline   |
+|---|----------------------------------------|---------------|----------------------------------|------------|
+| 1 | HOSE approval timeline cho mobile app? | Compliance    | Đặng Thị F escalate to HOSE      | 2026-08-20 |
+| 2 | Budget final approval (~3 tỷ)?         | CFO           | Ngô Văn G present to board       | 2026-08-15 |
+| 3 | FIX Gateway sandbox access?            | CTO           | Hoàng Văn E contact HNX/HSX      | 2026-08-18 |
+| 4 | Trader beta testing group (100 users)? | PM            | Trần Thị B recruit from VIP list | 2026-09-01 |
 ```
 
 ## Đầu ra (Output)
