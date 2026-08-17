@@ -313,6 +313,13 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 
 ### File output
 📄 `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+*(Hoặc `specs/imports/confluence/{keyword}/{keyword}-final.md` đối với luồng Confluence)*
+
+### Bước kiểm tra trước khi ghi đè (Overwrite check):
+Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem file `{issueKey}-final.md` (hoặc `{keyword}-final.md`) đã tồn tại trong dự án chưa.
+- Nếu đã tồn tại, Agent **BẮT BUỘC** hỏi người dùng: "File `{issueKey}-final.md` đã tồn tại. Bạn có muốn ghi đè lên file cũ bằng bản tổng hợp mới không? (Yes/No)".
+- Nếu User chọn "No", Agent không ghi đè, giữ nguyên file cũ, và **bắt buộc tiếp tục tự động** sang bước tiếp theo của luồng (vd: chuyển sang kỹ năng `/qa-test-design` hoặc `/tech-spec`).
+- Nếu User chọn "Yes" (hoặc file chưa tồn tại), Agent tiến hành tạo/ghi đè file output theo template dưới đây.
 
 ### Template header (chung cho tất cả loại task)
 ```markdown

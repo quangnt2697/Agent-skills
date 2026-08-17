@@ -173,8 +173,20 @@ fi
 log_info "3. Kiểm tra Test Case: $TEST_CASE_NAME"
 
 ENCODED_SEARCH=$(jq -rn --arg x "name~\"${TEST_CASE_NAME}\"" '$x|@uri')
-SEARCH_RES=$(call_api "GET" "/api/rest/latest/test-cases?search=${ENCODED_SEARCH}")
-TC_ID=$(echo "$SEARCH_RES" | jq -r "._embedded.\"test-cases\"[]? | select(.name == \"${TEST_CASE_NAME}\") | .id" | head -n 1)
+PAGE=0
+TC_ID=""
+while true; do
+    SEARCH_RES=$(call_api "GET" "/api/rest/latest/test-cases?search=${ENCODED_SEARCH}&page=${PAGE}&size=100")
+    TC_ID=$(echo "$SEARCH_RES" | jq -r "._embedded.\"test-cases\"[]? | select(.name == \"${TEST_CASE_NAME}\") | .id" | head -n 1)
+    if [[ -n "$TC_ID" && "$TC_ID" != "null" ]]; then
+        break
+    fi
+    TOTAL_PAGES=$(echo "$SEARCH_RES" | jq -r '.page.totalPages // 0')
+    PAGE=$((PAGE + 1))
+    if [[ "$PAGE" -ge "$TOTAL_PAGES" ]]; then
+        break
+    fi
+done
 
 if [[ -z "$TC_ID" || "$TC_ID" == "null" ]]; then
     log_info "Test case chưa tồn tại. Tạo mới..."
