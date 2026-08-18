@@ -222,8 +222,8 @@ Pipeline lưu state vào `.pipeline-state.json`:
     }
   },
   "artifacts": {
-    "checklist": "tests/qa-test-design/JIRA-123/features/JIRA-123-checklist.md",
-    "gherkin": "tests/qa-test-design/JIRA-123/features/JIRA-123.feature"
+    "checklist": "workspace/{issueKey}/tests/qa-test-design/JIRA-123/features/JIRA-123-checklist.md",
+    "gherkin": "workspace/{issueKey}/tests/qa-test-design/JIRA-123/features/JIRA-123.feature"
   }
 }
 ```
@@ -239,7 +239,7 @@ Pipeline lưu state vào `.pipeline-state.json`:
 ### Rollback Phase 1.2 (Re-generate Gherkin)
 ```bash
 # Delete Gherkin file
-rm tests/qa-test-design/JIRA-123/features/JIRA-123.feature
+rm workspace/{issueKey}/tests/qa-test-design/JIRA-123/features/JIRA-123.feature
 
 # Resume from Phase 1.2
 /qa-full-pipeline JIRA-123 --resume=phase1.2
@@ -248,7 +248,7 @@ rm tests/qa-test-design/JIRA-123/features/JIRA-123.feature
 ### Rollback Phase 2 (Re-generate Test Code)
 ```bash
 # Delete test code
-rm -rf tests/qa-test-design/JIRA-123/steps/*.py
+rm -rf workspace/{issueKey}/tests/qa-test-design/JIRA-123/steps/*.py
 
 # Resume from Phase 2
 /qa-full-pipeline JIRA-123 --resume=phase2
@@ -257,7 +257,7 @@ rm -rf tests/qa-test-design/JIRA-123/steps/*.py
 ### Full Rollback (Start from Scratch)
 ```bash
 # Delete all outputs
-rm -rf tests/qa-test-design/JIRA-123/
+rm -rf workspace/{issueKey}/tests/qa-test-design/JIRA-123/
 
 # Run full pipeline
 /qa-full-pipeline JIRA-123
@@ -278,7 +278,7 @@ Pipeline hỗ trợ chạy concurrent cho nhiều issueKeys:
 ```
 
 **Isolation:**
-- Mỗi issueKey có directory riêng: `tests/qa-test-design/{issueKey}/`
+- Mỗi issueKey có directory riêng: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/`
 - State files riêng: `.pipeline-state-{issueKey}.json`
 - Report files riêng: `{issueKey}-*.md`
 

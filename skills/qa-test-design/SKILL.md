@@ -47,39 +47,30 @@ GIAI ĐOẠN 1: CHECKLIST           GIAI ĐOẠN 2: GHERKIN
 KHÔNG được chuyển sang Giai đoạn 2 khi Giai đoạn 1 chưa hoàn thành. Checklist là nguồn sự thật duy nhất cho phạm vi kiểm thử.
 Sau khi hoàn thành Giai đoạn 2, **BẮT BUỘC** tự động gọi script `/qa-squash-push` để đẩy tài liệu lên hệ thống mà không cần hỏi thêm.
 
-### Gate: User Approval (giữa Giai đoạn 1 và Giai đoạn 2)
+### Cổng chuyển Giai đoạn 1 → Giai đoạn 2
 
-**Kiểm tra Auto-Approve Mode:**
+Theo `.claude/rules/autonomy-contract.md`, mặc định là **tự chạy tiếp**. Agent chuyển sang
+Giai đoạn 2 ngay khi cổng kiểm chứng được sau đây pass:
 
-Agent kiểm tra xem có đang chạy trong auto-approve mode không:
-```python
-# Check 1: Environment variable (from /qa-pipeline)
-auto_approve = os.getenv("PIPELINE_AUTO_APPROVE") == "true"
+- [ ] File checklist tồn tại và không rỗng
+- [ ] Có ít nhất 1 item P0
+- [ ] Mọi Business Rule trong `*-final.md` đều ánh xạ được tới ≥1 checklist item
+- [ ] Không có item nào gắn nhãn `[Blocked]`
 
-# Check 2: Explicit parameter (from skill invocation)
-auto_approve = auto_approve or skill_params.get("autoApprove") == True
+Nếu pass → trình bày checklist cho user **để họ nắm thông tin** (không phải để xin phép),
+log một dòng rồi chạy tiếp ngay:
 
-# Check 3: Context variable (from agent memory)
-auto_approve = auto_approve or context.get("pipeline_mode") == "auto"
+```
+[AUTO] Giai đoạn 1 → Giai đoạn 2 (checklist: 45 items, P0: 15, blocked: 0)
 ```
 
-**Nếu auto_approve = False (Manual Mode):**
+**Chế độ `--step` (opt-in):** khi chuỗi `$ARGUMENTS` chứa `--step` hoặc `--manual`, agent
+dừng sau Giai đoạn 1, trình bày checklist và hỏi user duyệt trước khi sang Giai đoạn 2.
+Đây là chế độ phải được yêu cầu rõ ràng — không phải mặc định.
 
-Sau khi hoàn thành Giai đoạn 1, agent **BẮT BUỘC**:
-1. Trình bày **toàn bộ checklist** cho user dưới dạng Markdown
-2. Hỏi rõ ràng: _"Checklist đã đầy đủ và chính xác chưa? Có item nào cần bổ sung, sửa, hoặc xoá không?"_
-3. **CHỈ chuyển sang Giai đoạn 2** khi user xác nhận rõ ràng ("Đã duyệt", "OK", "Tiếp", "Đồng ý")
-4. Nếu user sửa → cập nhật checklist → trình bày lại → hỏi lại cho đến khi được duyệt
-
-**Nếu auto_approve = True (Auto Mode — từ `/qa-pipeline`):**
-
-Agent tự động:
-1. Trình bày checklist (vẫn show cho user, nhưng không hỏi)
-2. Log: `[AUTO-APPROVE] Checklist approved automatically by pipeline`
-3. Chuyển sang Giai đoạn 2 ngay lập tức
-
-> **Lưu ý:** Gate này KHÔNG áp dụng khi `autoApprove=true`.
-> Trong auto-approve mode, agent tự động chuyển tiếp giữa các phase mà không dừng lại.
+**Trường hợp buộc dừng:** chỉ khi rơi vào danh sách đóng của `autonomy-contract.md` —
+điển hình là thiếu `*-final.md` (trường hợp 1) hoặc có câu hỏi 🔴 Critical chưa được trả
+lời (trường hợp 3).
 
 ---
 
@@ -91,13 +82,13 @@ Có thể khởi tạo thư mục output trước khi bắt đầu:
 bash skills/qa-test-design/scripts/qa-init.sh [output-dir]
 ```
 
-Lệnh này tạo thư mục con `checklists/` và `features/` trong đường dẫn chỉ định (mặc định: `tests/qa-test-design/`).
+Lệnh này tạo thư mục con `checklists/` và `features/` trong đường dẫn chỉ định (mặc định: `workspace/{issueKey}/tests/qa-test-design/`).
 
 ### Đường dẫn output
 
 Khi đầu vào từ jira-import, output sẽ lưu tại chung một thư mục theo cấu trúc:
 ```
-tests/qa-test-design/{issueKey}/
+workspace/{issueKey}/tests/qa-test-design/{issueKey}/
 ├── features/
 │   ├── {issueKey}-checklist.md
 │   └── {issueKey}.feature
@@ -111,7 +102,7 @@ tests/qa-test-design/{issueKey}/
 
 Trước khi viết bất kỳ item checklist nào, thu thập đầu vào:
 
-#### Nguồn đầu vào chính: `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+#### Nguồn đầu vào chính: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
 
 Nếu file này tồn tại, đây là **single source of truth** đã qua phân tích và interview.
 Agent đọc file này và ánh xạ các sections sang các nhóm kiểm thử:
@@ -563,15 +554,17 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 | Giai đoạn | Skill | Input | Output |
 |-----------|-------|-------|--------|
-| 1 | `biz-spec` | Jira Issue Key | `specs/imports/jira/{issueKey}/{issueKey}-final.md` |
-| 2 | `qa-test-design` | File `*-final.md` | `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
-| 3 | `auto-test` | File `.feature` + code có sẵn | `tests/qa-test-design/{issueKey}/steps/test_*.py` |
-| 4 | `auto-test` (Bước 7) | Test scripts | `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
+| 1 | `biz-spec` | Jira Issue Key | `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` |
+| 2 | `qa-test-design` | File `*-final.md` | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
+| 3 | `auto-test` | File `.feature` + code có sẵn | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py` |
+| 4 | `auto-test` (Bước 7) | Test scripts | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
 
 **Sau khi hoàn thành Giai đoạn 2 (qa-test-design)**, Agent BẮT BUỘC TỰ ĐỘNG thực hiện ngay việc Push kịch bản lên Squash TM mà KHÔNG CẦN hỏi ý kiến người dùng:
 1. Agent tự động trích xuất `issueKey` và `namejira` từ tên file feature và file `*-final.md`.
 2. Lập tức chạy lệnh script push lên Squash TM theo quy trình của `qa-squash-push` (chạy script `bash skills/qa-squash-push/scripts/squash-push.sh ...`).
-3. Sau khi đẩy lên Squash thành công, báo cáo kết quả và hỏi người dùng có muốn chuyển sang Giai đoạn 3 (`/qa-auto-design`) không.
+3. Sau khi đẩy lên Squash thành công, báo cáo kết quả và **tự động chuyển sang Giai đoạn 3** (`qa-auto-design`) — không hỏi xin phép.
+
+> Ở chế độ `--step`, dừng lại sau bước 3 để user duyệt trước khi sang Giai đoạn 3.
 
 ## Xem thêm
 

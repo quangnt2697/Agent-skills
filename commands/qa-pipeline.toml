@@ -19,7 +19,7 @@ KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các ph
 - Invoke skill `ba-spec` với issue key từ $ARGUMENTS
 - Tự động chạy 6 phase: Download PDF → Nhận diện → Trích xuất → Gap analysis
 - **Dừng lại NẾU** cần ba-interview-me (hỏi user từng câu một để làm rõ gaps)
-- Output: `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+- Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
 - → Tự động chuyển Phase 2
 
 ### Phase 2: Thiết kế Test (qa-test-design)
@@ -27,7 +27,7 @@ KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các ph
 - Giai đoạn 1: Viết Checklist (P0/P1/P2) → tự động duyệt, KHÔNG hỏi user
 - Giai đoạn 2: Viết Gherkin (.feature) từ checklist
 - Chạy `qa-validate.sh` kiểm tra format
-- Output: `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
+- Output: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
 - **(Mới)** Nếu có `.env` cấu hình Squash TM, kích hoạt `/qa-push-squash` để tự động đẩy Gherkin file lên Squash TM.
 - → Tự động chuyển Phase 3
 
@@ -38,13 +38,13 @@ KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các ph
 - Bước 4-5: Sinh test scripts (`test_*.py`)
 - Bước 6: Gọi skill `review-code-and-quality` dưới vai trò QA để review tự động
 - Bước 7: Chạy pytest + self-fix loop (chỉ sửa script error, KHÔNG ép FAIL→PASS)
-- Output: `tests/qa-test-design/{issueKey}/steps/test_*.py`
+- Output: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py`
 - → Tự động chuyển Phase 4
 
 ### Phase 4: Xuất Báo cáo
 - Sinh báo cáo Markdown từ kết quả pytest
 - Bao gồm bảng truy vết end-to-end: Ba-spec → Checklist → Gherkin → Test → Kết quả
-- Output: `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
+- Output: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
 
 ## Sau khi hoàn thành
 
@@ -54,4 +54,8 @@ Trình bày cho user:
 3. Đường dẫn đến tất cả output files
 
 LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT (trừ code và tags).
+
+<critical_instruction>
+HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+</critical_instruction>
 """

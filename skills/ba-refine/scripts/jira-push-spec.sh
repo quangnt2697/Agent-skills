@@ -6,7 +6,7 @@
 # Sử dụng: bash jira-push-spec.sh <JIRA_ISSUE_KEY> <FILE_MD>
 #
 # Ví dụ:
-#   bash jira-push-spec.sh G3PTP-16584 ./specs/imports/jira/final.md
+#   bash jira-push-spec.sh G3PTP-16584 ./workspace/{issueKey}/specs/imports/jira/final.md
 # ==============================================================================
 
 set -euo pipefail
@@ -26,7 +26,7 @@ log_info()  { echo -e "${BLUE}ℹ️  $1${NC}"; }
 if [[ $# -lt 2 ]]; then
     echo "Sử dụng: bash jira-push-spec.sh <JIRA_ISSUE_KEY> <FILE_MD>"
     echo ""
-    echo "Ví dụ: bash jira-push-spec.sh G3PTP-16584 ./specs/imports/jira/final.md"
+    echo "Ví dụ: bash jira-push-spec.sh G3PTP-16584 ./workspace/{issueKey}/specs/imports/jira/final.md"
     exit 1
 fi
 

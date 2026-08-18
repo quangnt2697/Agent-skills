@@ -29,10 +29,10 @@ Phát hiện **gaps** (thiếu sót) và **redundancies** (trùng lặp) để �
 ## Input & Output
 
 **Input (bắt buộc):**
-1. Business-Spec: `specs/imports/jira/{issueKey}/{issueKey}-final.md` hoặc `workspace/{issueKey}/specs/`
+1. Business-Spec: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` hoặc `workspace/{issueKey}/specs/`
 2. Tech-Spec: `workspace/{issueKey}/planning/tech-spec.md`
-3. Test Checklist: `tests/qa-test-design/{issueKey}/{issueKey}-checklist.md`
-4. Test Feature: `tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
+3. Test Checklist: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/{issueKey}-checklist.md`
+4. Test Feature: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
 
 **Output:**
 - Traceability Matrix: `workspace/{issueKey}/reports/traceability-matrix.md`

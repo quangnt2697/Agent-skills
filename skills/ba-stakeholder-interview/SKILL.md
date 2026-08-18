@@ -576,7 +576,7 @@ A: CEO, responsible for company strategy và revenue growth...
 [... raw notes từ interviews, không structured ...]
 ```
 
-**Lưu vào:** `docs/stakeholder-interviews/{issueKey}-stakeholder-interviews.md`
+**Lưu vào:** `workspace/{issueKey}/docs/stakeholder-interviews/{issueKey}-stakeholder-interviews.md`
 
 ## Tương tác với các Skills khác
 
@@ -642,7 +642,7 @@ Sau khi chạy skill này:
 - [ ] Đã identify và resolve conflicts (document resolutions)
 - [ ] Đã validate với stakeholders (sign-off meeting)
 - [ ] Đã escalate open questions với deadlines
-- [ ] Output file đã lưu: `docs/stakeholder-interviews/{issueKey}-stakeholder-interviews.md`
+- [ ] Output file đã lưu: `workspace/{issueKey}/docs/stakeholder-interviews/{issueKey}-stakeholder-interviews.md`
 - [ ] Stakeholders approve consolidated requirements (email confirmation)
 
 ## Ví dụ

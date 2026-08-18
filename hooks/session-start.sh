@@ -8,7 +8,11 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="$(dirname "$SCRIPT_DIR")/skills"
-META_SKILL="$SKILLS_DIR/using-agent-skills/SKILL.md"
+
+# The meta-skill directory is meta-using-agent-skills/ in this repo; upstream
+# ships it as using-agent-skills/. Accept either so the hook works in both.
+META_SKILL="$SKILLS_DIR/meta-using-agent-skills/SKILL.md"
+[ -f "$META_SKILL" ] || META_SKILL="$SKILLS_DIR/using-agent-skills/SKILL.md"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "agent-skills: jq is required for the session-start hook but was not found on PATH. Install jq (e.g. `brew install jq` or `apt-get install jq`) to enable meta-skill injection. Skills remain available individually."}}'
@@ -24,5 +28,5 @@ if [ -f "$META_SKILL" ]; then
 $CONTENT" \
     '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $context}}'
 else
-  echo '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "agent-skills: using-agent-skills meta-skill not found. Skills may still be available individually."}}'
+  echo '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "agent-skills: meta-using-agent-skills meta-skill not found. Skills may still be available individually."}}'
 fi

@@ -7,7 +7,7 @@
 #
 # Ví dụ:
 #   bash jira-fetch-pdf.sh G3PTP-16584
-#   bash jira-fetch-pdf.sh G3PTP-16584 ./specs/imports/jira
+#   bash jira-fetch-pdf.sh G3PTP-16584 ./workspace/{issueKey}/specs/imports/jira
 #
 # Env vars yêu cầu:
 #   JIRA_BASE_URL   - URL Jira (VD: https://your-company.atlassian.net)
@@ -49,12 +49,12 @@ if [[ $# -lt 1 ]]; then
     echo ""
     echo "Ví dụ:"
     echo "  bash jira-fetch-pdf.sh G3PTP-16584"
-    echo "  bash jira-fetch-pdf.sh G3PTP-16584 ./specs/imports/jira"
+    echo "  bash jira-fetch-pdf.sh G3PTP-16584 ./workspace/{issueKey}/specs/imports/jira"
     exit 1
 fi
 
 ISSUE_KEY="$1"
-OUTPUT_BASE="${2:-./specs/imports/jira}"
+OUTPUT_BASE="${2:-./workspace/{issueKey}/specs/imports/jira}"
 
 # --- Đọc .env ---
 ENV_FILE="${ENV_FILE:-.env}"

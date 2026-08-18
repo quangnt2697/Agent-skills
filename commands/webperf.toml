@@ -24,4 +24,8 @@ Kích hoạt vai trò web-performance-auditor. Cung cấp rõ ràng:
 Trả về một bảng điểm (chỉ chứa các giá trị có nguồn tham chiếu), danh sách các vấn đề được sắp xếp theo ưu tiên, các điểm tốt, và các đề xuất hành động.
 
 Trình bày toàn bộ báo cáo cho người dùng. Không cần tổng hợp hay gộp.
+
+<critical_instruction>
+HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+</critical_instruction>
 """

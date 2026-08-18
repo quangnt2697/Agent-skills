@@ -54,7 +54,7 @@ Kích hoạt skill này khi:
 
 **Input A: Business-Spec Section 5 (User Flow)**
 ```bash
-specs/imports/jira/{issueKey}/{issueKey}-final.md
+workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md
 ```
 
 Trích xuất:
@@ -65,7 +65,7 @@ Trích xuất:
 
 **Input B: Gap Analysis (AS-IS process)**
 ```bash
-docs/gap-analysis/{issueKey}-gap-analysis.md
+workspace/{issueKey}/docs/gap-analysis/{issueKey}-gap-analysis.md
 ```
 
 Trích xuất:
@@ -502,7 +502,7 @@ flowchart TD
 
 ## Next Steps
 
-1. **Gap Analysis:** Identify gaps để đi từ AS-IS → TO-BE (xem `docs/gap-analysis/`)
+1. **Gap Analysis:** Identify gaps để đi từ AS-IS → TO-BE (xem `workspace/{issueKey}/docs/gap-analysis/`)
 2. **Prioritization:** Ưu tiên gaps theo business value (xem `docs/backlog/`)
 3. **Implementation:** Breakdown TO-BE process thành User Stories (xem `docs/user-stories/`)
 

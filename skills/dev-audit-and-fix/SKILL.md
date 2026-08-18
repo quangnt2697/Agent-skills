@@ -22,13 +22,14 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 ### Bước 2: Thiết kế Kế hoạch Đề xuất (Planning)
 *Tận dụng lăng kính của `planning-and-task-breakdown`.*
 - Từ danh sách vấn đề ở Bước 1, lập ra một kế hoạch thực thi rõ ràng.
-- BẮT BUỘC lưu kế hoạch ra artifact `tasks-agent/plan.md` với định dạng checklist (`- [ ] Task 1...`) để chuẩn bị cho việc Auto-Build.
+- BẮT BUỘC lưu kế hoạch ra artifact `workspace/{issueKey}/tasks/plan.md` và danh sách task vào `workspace/{issueKey}/tasks/todo.md` với định dạng checklist (`- [ ] Task 1...`) để chuẩn bị cho việc Auto-Build.
 - Phân chia các task nhỏ, ưu tiên các lỗi nghiêm trọng hoặc vấn đề kiến trúc cốt lõi làm trước.
 
 ### Bước 3: Cổng Chờ Phê duyệt (Approval Gate) - BẮT BUỘC DỪNG
 - Trình bày tóm tắt bản Audit và Kế hoạch (Plan) cho người dùng một cách rõ ràng.
 - Đặt câu hỏi rõ ràng: *"Tôi đã lập xong kế hoạch tối ưu. Bạn có đồng ý với đề xuất này không? Vui lòng gõ **'OK'** để tôi tự động tiến hành sửa toàn bộ các mục (Auto-Fix)."*
-- **DỪNG LẠI (PAUSE LẠI CHỜ NGƯỜI DÙNG PHẢN HỒI).** Tuyệt đối KHÔNG viết mã hoặc chạy lệnh thay đổi code khi chưa có "OK".
+- DỪNG LẠI và chờ phản hồi từ người dùng bằng cách kết thúc lượt trả lời tại đây. Tuyệt đối KHÔNG viết mã hoặc chạy lệnh thay đổi code khi chưa có "OK".
+  (Đây là cổng dừng hợp lệ theo trường hợp 5 của `.claude/rules/autonomy-contract.md` — sửa code hàng loạt là hành động khó hoàn tác. Sau khi có "OK", Bước 4 chạy thẳng đến hết, KHÔNG hỏi lại lần nào nữa.)
 
 ### Bước 4: Tự động Thực thi (Auto-Fix / Build Auto)
 *Tận dụng lăng kính của `incremental-implementation`, `dev-test-driven-development`, `source-driven-development`, `dev-frontend-engineering`, `dev-api-design`.*
@@ -38,14 +39,14 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 - **TUYỆT ĐỐI CẤM** việc chỉ in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste — đó là anti-pattern, gây lãng phí thời gian.
 - **LUÔN LUÔN** Hành động (Action) thay vì Trò chuyện (Chat).
 
-**Quy trình Auto-Fix:**
-- Tuân thủ nguyên tắc `build auto`: Thực hiện từng task một trong `tasks-agent/plan.md`, cập nhật trạng thái `[x]` vào file plan.
-- **Với mỗi fix:**
-  1. Đọc nội dung file cần sửa.
-  2. Dùng **Tool Call** để chỉnh sửa file trực tiếp. (Không in Markdown ra màn hình chat).
-  3. Run tests nếu có (`dev-test-driven-development`).
-  4. Nếu test fail → tự động debug và fix lại (`dev-debugging`).
-  5. Mark task `[x]` trong plan.md
+**Quy trình Auto-Fix (Test-Driven Fix):**
+- Tuân thủ nguyên tắc `build auto`: Thực hiện từng task một trong danh sách task ở `workspace/{issueKey}/tasks/todo.md`, cập nhật trạng thái `[x]` vào file.
+- **Test-Driven Fix (Bắt buộc):** Với mỗi bug/issue, bạn PHẢI tuân thủ TDD:
+  1. **Viết Test trước:** Dùng **Tool Call** để thêm test case tái hiện lỗi. Run test và đảm bảo test FAIL (để chứng minh test bắt đúng lỗi).
+  2. **Sửa Code:** Dùng **Tool Call** để sửa file mã nguồn trực tiếp. (Không in Markdown ra màn hình chat).
+  3. **Verify:** Run lại test và đảm bảo test PASS.
+  4. Nếu test vẫn fail → tự động debug và fix lại (`dev-debugging`).
+  5. Đánh dấu task đã hoàn thành `[x]` trong `todo.md`.
 - Trong lúc code, BẮT BUỘC tham khảo tài liệu chính thức (`source-driven-development`), thiết kế giao diện chuẩn production (`dev-frontend-engineering`), hoặc định nghĩa API/Types chặt chẽ (`dev-api-design`) tuỳ theo tính chất của task.
 - Hoàn thành toàn bộ kế hoạch từ đầu đến cuối MÀ KHÔNG CẦN DỪNG LẠI HỎI Ý KIẾN giữa chừng (trừ khi gặp lỗi nghiêm trọng block toàn bộ).
 

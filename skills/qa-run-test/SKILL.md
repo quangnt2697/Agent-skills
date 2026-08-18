@@ -31,7 +31,7 @@ Trước khi chạy test, xác định:
 
 1. **Test directory:** Test nằm ở đâu?
    - `tests/` (convention phổ biến)
-   - `tests/qa-test-design/{issueKey}/steps/` (theo qa-auto-design)
+   - `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/` (theo qa-auto-design)
    - `tests/e2e/`, `tests/integration/`
    - Hoặc đường dẫn custom user chỉ định
 
@@ -278,7 +278,7 @@ Xuất báo cáo dạng Markdown với cấu trúc chuẩn:
 # Báo cáo Kết quả Kiểm thử Automation
 
 **Ngày chạy:** 2024-01-15 10:30:00
-**Test Suite:** `tests/qa-test-design/JIRA-123/steps/`
+**Test Suite:** `workspace/{issueKey}/tests/qa-test-design/JIRA-123/steps/`
 **Framework:** pytest 7.4.0
 **Environment:** UAT
 **Triggered by:** Manual / CI/CD / Regression
@@ -507,7 +507,7 @@ reports/
 └── {issueKey}-test-report.md   # Markdown report (chi tiết nhất)
 ```
 
-**Đường dẫn đầy đủ:** `tests/qa-test-design/{issueKey}/reports/`
+**Đường dẫn đầy đủ:** `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/`
 
 ## Tích hợp với Pipeline
 

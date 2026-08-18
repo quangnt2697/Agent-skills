@@ -41,7 +41,7 @@ Kích hoạt skill này khi:
 
 **Input A: File `*-final.md`**
 ```bash
-specs/imports/jira/{issueKey}/{issueKey}-final.md
+workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md
 ```
 
 Trích xuất:
@@ -545,7 +545,7 @@ Dùng **Value vs Effort** matrix:
 - [Market Research: Mobile Trading Trends](...)
 ```
 
-**Lưu vào:** `docs/gap-analysis/{issueKey}-gap-analysis.md`
+**Lưu vào:** `workspace/{issueKey}/docs/gap-analysis/{issueKey}-gap-analysis.md`
 
 ## Tương tác với các Skills khác
 
@@ -610,7 +610,7 @@ Sau khi chạy skill này:
 - [ ] Roadmap có phased approach với timeline rõ ràng
 - [ ] Risks identified với mitigation plans
 - [ ] Action items assigned với owner + deadline
-- [ ] Output file đã lưu: `docs/gap-analysis/{issueKey}-gap-analysis.md`
+- [ ] Output file đã lưu: `workspace/{issueKey}/docs/gap-analysis/{issueKey}-gap-analysis.md`
 - [ ] Stakeholders đã review và approve budget + timeline
 
 ## Ví dụ
