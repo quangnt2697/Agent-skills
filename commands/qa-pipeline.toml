@@ -1,61 +1,84 @@
-description = "Chạy full QA pipeline tự động — ba-spec → qa-test-design → qa-auto-design → qa-run-test → báo cáo. Tự động duyệt giữa các phase dựa trên Confidence Level, chỉ dừng khi confidence < 90% hoặc có blockers."
+description = "Chạy full QA pipeline tự động — ba-spec → qa-test-design → qa-auto-design → qa-run-test → báo cáo. Chạy xuyên suốt theo autonomy-contract, thêm --step nếu muốn dừng review sau mỗi phase."
 
 prompt = """
-Chạy pipeline QA đầy đủ cho $ARGUMENTS (Jira issue key) ở CHẾ ĐỘ TỰ ĐỘNG.
+Chạy QA pipeline đầy đủ cho `$ARGUMENTS` (Jira issue key), **bao gồm cả bước import Jira**.
 
-## Nguyên tắc Auto-approve
+Lệnh này = `/ba-spec` + `/qa-full-pipeline`. Phần orchestrate QA nằm trong kỹ năng
+`qa-full-pipeline` — đọc `skills/qa-full-pipeline/SKILL.md` và làm theo, không diễn giải lại.
 
-Pipeline này chạy **xuyên suốt không dừng** giữa các phase. Agent tự động duyệt
-output của mỗi phase và chuyển sang phase tiếp theo. CHỈ dừng lại khi:
-- Cần thông tin từ user mà agent không thể tự suy luận (VD: interview-me)
-- Gặp lỗi nghiêm trọng không thể self-fix (VD: Jira connection failed, test framework lỗi)
-- User chủ động yêu cầu dừng
+## Quy trình
 
-KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các phase.
+```
+Phase 0: ba-spec           Import Jira/Confluence → {issueKey}-final.md
+   ↓
+Phase 1-4: qa-full-pipeline   Test design → Automation → Execution → Summary
+```
 
-## Pipeline 4 Phase
+**Phase 0 — `ba-spec`**
+1. Kích hoạt kỹ năng `ba-spec` với issue key, truyền nguyên `$ARGUMENTS` xuống.
+2. Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
+3. Cổng chuyển Phase 1: file tồn tại, không rỗng, có mục Acceptance Criteria.
+   Đạt → chạy tiếp ngay, log một dòng. Không đạt → xem `autonomy-contract.md`.
 
-### Phase 1: Import & Phân tích Yêu cầu (ba-spec)
-- Invoke skill `ba-spec` với issue key từ $ARGUMENTS
-- Tự động chạy 6 phase: Download PDF → Nhận diện → Trích xuất → Gap analysis
-- **Dừng lại NẾU** cần ba-interview-me (hỏi user từng câu một để làm rõ gaps)
-- Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
-- → Tự động chuyển Phase 2
+**Phase 1-4 — `qa-full-pipeline`**
+Kích hoạt kỹ năng `qa-full-pipeline` với cùng `$ARGUMENTS`. Kỹ năng đó tự lo
+test design, automation, execution, báo cáo, resume và xử lý lỗi.
 
-### Phase 2: Thiết kế Test (qa-test-design)
-- Invoke skill `qa-test-design` ở **auto-approve mode**
-- Giai đoạn 1: Viết Checklist (P0/P1/P2) → tự động duyệt, KHÔNG hỏi user
-- Giai đoạn 2: Viết Gherkin (.feature) từ checklist
-- Chạy `qa-validate.sh` kiểm tra format
-- Output: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
-- **(Mới)** Nếu có `.env` cấu hình Squash TM, kích hoạt `/qa-squash-push` để tự động đẩy Gherkin file lên Squash TM.
-- → Tự động chuyển Phase 3
+## Cú pháp
 
-### Phase 3: Sinh Code & Chạy Test (qa-auto-design)
-- Invoke skill `qa-auto-design` với issue key
-- Bước 0-2: Scan workspace + đối chiếu .feature
-- Bước 3: Tìm & tái sử dụng code dev có sẵn
-- Bước 4-5: Sinh test scripts (`test_*.py`)
-- Bước 6: Gọi skill `review-code-and-quality` dưới vai trò QA để review tự động
-- Bước 7: Chạy pytest + self-fix loop (chỉ sửa script error, KHÔNG ép FAIL→PASS)
-- Output: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py`
-- → Tự động chuyển Phase 4
+```bash
+# Mặc định: chạy thẳng từ import Jira đến báo cáo, không dừng
+/qa-pipeline {issueKey}
 
-### Phase 4: Xuất Báo cáo
-- Sinh báo cáo Markdown từ kết quả pytest
-- Bao gồm bảng truy vết end-to-end: Ba-spec → Checklist → Gherkin → Test → Kết quả
-- Output: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
+# Dừng sau mỗi phase để review (opt-in)
+/qa-pipeline {issueKey} --step
 
-## Sau khi hoàn thành
+# Đã có *-final.md rồi, bỏ qua Phase 0
+/qa-full-pipeline {issueKey}
+```
+
+Bộ cờ giống hệt `/qa-full-pipeline` — xem bảng trong `.claude/commands/qa-full-pipeline.md`.
+
+> Cú pháp `--mode semi-auto|full-auto|manual` cũ **không còn dùng**. Confidence Level
+> chỉ dùng để **báo cáo chất lượng**, không còn chặn luồng — xem
+> `.claude/rules/confidence-level.md` và `.claude/rules/autonomy-contract.md`.
+
+## Khi nào dùng lệnh nào
+
+| Tình huống | Lệnh |
+|---|---|
+| Có issue key, chưa có `*-final.md` | `/qa-pipeline {issueKey}` |
+| Đã có `*-final.md` từ BA/PO | `/qa-full-pipeline {issueKey}` |
+| Cần cả DEV (tech-spec, code, unit test) lẫn QA | `/e2e-delivery {issueKey}` |
+| Chỉ thiết kế test, không automation | `/qa-full-pipeline {issueKey} --no-automation` |
+| Đã có test code, chỉ cần chạy lại | `/qa-run-test {issueKey}` |
+
+## Đầu ra
+
+```
+workspace/{issueKey}/
+├── specs/imports/jira/{issueKey}/{issueKey}-final.md        # Phase 0
+└── tests/qa-test-design/{issueKey}/
+    ├── features/{issueKey}-checklist.md                     # Phase 1
+    ├── features/{issueKey}.feature                          # Phase 1
+    ├── steps/test_*.py                                      # Phase 2
+    └── reports/{issueKey}-pipeline-summary.md               # Phase 4
+```
+
+## Báo cáo cuối
 
 Trình bày cho user:
-1. Tổng kết: X passed / Y failed / Z skipped
-2. Nếu có test FAILED → hiển thị chi tiết lỗi + đề xuất hành động
-3. Đường dẫn đến tất cả output files
+1. Bảng kết quả từng phase (trạng thái, số artifact, thời gian)
+2. Tổng kết test: X passed / Y failed / Z skipped
+3. Nếu có test FAILED → chi tiết lỗi kèm Request/Response và đề xuất hành động
+4. Ma trận truy vết end-to-end: Business Rule → Checklist → Gherkin → Test → Kết quả
+5. Đường dẫn tới tất cả output files
 
-LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT (trừ code và tags).
+LƯU Ý: Mọi output bằng TIẾNG VIỆT (trừ code và tags).
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## Xem thêm
+
+- `skills/qa-full-pipeline/SKILL.md` — quy trình QA đầy đủ (nguồn sự thật)
+- `skills/ba-spec/SKILL.md` — quy trình import Jira/Confluence
+- `.claude/rules/autonomy-contract.md` — cổng dừng/chạy tiếp
 """

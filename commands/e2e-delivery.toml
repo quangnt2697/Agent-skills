@@ -42,39 +42,28 @@ Phase 8:  review                     [DEV+QA] Final review before merge
 
 **Major change:** Phases 7-10 consolidated into single `/qa-full-pipeline` command for efficiency.
 
-## Modes
+## Cú pháp
 
-### 1. Semi-Auto Mode (Default, Recommended)
-
-Dừng lại khi:
-- Confidence < 90% ở bất kỳ phase nào
-- Có blockers critical
-- User cần quyết định (multiple approaches, conflicts)
-
-**Usage:**
 ```bash
-/e2e-delivery JIRA-123
-# hoặc
-/e2e-delivery JIRA-123 --mode semi-auto
+# Mặc định: chạy xuyên suốt 8 phase, không dừng
+/e2e-delivery {issueKey}
+
+# Dừng sau mỗi phase để review (opt-in)
+/e2e-delivery {issueKey} --step
 ```
 
-### 2. Full-Auto Mode (Advanced)
+| Cờ | Ý nghĩa |
+|---|---|
+| _(không cờ)_ | Chạy tự động xuyên suốt — đây là mặc định |
+| `--step` | Dừng sau mỗi phase chờ user review |
 
-Chạy xuyên suốt bất kể confidence. Chỉ dừng khi error fatal.
+Bộ cờ giống hệt `/qa-full-pipeline` và `/qa-pipeline`. Cú pháp
+`--mode semi-auto|full-auto|manual` cũ **không còn dùng**.
 
-**Usage:**
-```bash
-/e2e-delivery JIRA-123 --mode full-auto
-```
-
-### 3. Manual Mode
-
-Dừng sau MỖI phase để user review.
-
-**Usage:**
-```bash
-/e2e-delivery JIRA-123 --mode manual
-```
+**Chỉ dừng luồng** khi rơi vào một trong 5 trường hợp của
+`.claude/rules/autonomy-contract.md` — trong đó phase 8 (trước khi merge vào
+`main`) là cổng người bắt buộc theo `.claude/rules/git-workflow.md`.
+Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 ## Detailed Phase Breakdown
 
@@ -179,13 +168,13 @@ Dừng sau MỖI phase để user review.
 
 ### Phase 7-10: qa-full-pipeline (QA) — Full QA Workflow
 
-**Invoke:** `/qa-full-pipeline JIRA-123 --auto`
+**Invoke:** `/qa-full-pipeline {issueKey}` (truyền tiếp `--step` nếu có)
 
 **Input:** Business-Spec từ Phase 1
 
 **Includes 4 sub-phases:**
 - Phase 7a: Test Design (Checklist + Gherkin)
-- Phase 7b: [GATE] User approval (skip in auto mode)
+- Phase 7b: [CỔNG TỰ ĐỘNG] Kiểm tra checklist + P0 + không có [Blocked] → chạy tiếp
 - Phase 8: Test Automation (Generate test code)
 - Phase 9: Test Execution (Run tests + report)
 
@@ -370,7 +359,7 @@ Sau khi hoàn thành 8 phases thành công:
 - **Code Quality:** High (0 critical bugs)
 - **Test Coverage:** 87% (unit) + 100% (E2E scenarios)
 - **Confidence:** 94% (High)
-- **User Interventions:** 0 (full auto-approve)
+- **User Interventions:** 0 (chỉ dừng ở cổng commit/merge)
 
 **Estimated Manual Effort Saved:** ~6-8 hours
 
@@ -433,7 +422,7 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 ### Use Case 3: Complex Feature (Manual Review)
 
 ```bash
-/e2e-delivery JIRA-789 --mode manual
+/e2e-delivery JIRA-789 --step
 # → Dừng sau mỗi phase
 # → User review kỹ từng output
 # → Phù hợp với feature critical (payment, auth, security)
@@ -457,7 +446,7 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 
 ## Best Practices
 
-1. **Use semi-auto for production work** — balance speed và quality
+1. **Dùng mặc định (không cờ) cho production work** — pipeline tự chạy, chỉ dừng ở cổng thật
 2. **Review traceability reports** — Phase 3 output và Phase 7 (embedded in qa-full-pipeline summary)
 3. **Fix findings before merge** — Ít nhất critical + high findings
 4. **Re-run tests after code fix** — Không assume tests vẫn pass
