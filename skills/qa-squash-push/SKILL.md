@@ -42,7 +42,7 @@ Agent **BẮT BUỘC TỰ ĐỘNG** đọc và source file `.env` tại workspac
 - `SQUASH_PASSWORD` — mật khẩu tương ứng
 
 **Khác:**
-- File Gherkin phải tồn tại tại: `tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
+- File Gherkin phải tồn tại tại: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
 - (Tuỳ chọn) File `*-final.md` để lấy tiêu đề Jira task (`namejira`).
 - (Debug) Đặt `SQUASH_DEBUG=1` để in raw response của các API nội bộ khi cần soi cấu trúc.
 
@@ -57,8 +57,8 @@ Lưu ý đặc biệt: Phải chạy luồng này một cách liền mạch, g�
 
 ### Bước 1: Thu thập Tham số
 - Lấy `issueKey` từ `$ARGUMENTS`.
-- Lấy `namejira` (Tiêu đề task Jira) bằng cách quét file `specs/imports/jira/{issueKey}/{issueKey}-final.md`. Nếu không có, dùng chung tên là `{issueKey}`.
-- Lấy đường dẫn file Gherkin: `tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
+- Lấy `namejira` (Tiêu đề task Jira) bằng cách quét file `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`. Nếu không có, dùng chung tên là `{issueKey}`.
+- Lấy đường dẫn file Gherkin: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
 
 ### Bước 2: Gọi Bash Script Tự Động
 - Execute file script: `skills/qa-squash-push/scripts/squash-push.sh`

@@ -75,7 +75,7 @@ Trích xuất:
 
 **Input B: Gap Analysis**
 ```bash
-docs/gap-analysis/{issueKey}-gap-analysis.md
+workspace/{issueKey}/docs/gap-analysis/{issueKey}-gap-analysis.md
 ```
 
 Trích xuất:

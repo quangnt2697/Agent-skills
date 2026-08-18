@@ -132,7 +132,7 @@ danh sách                                 loại task          theo profile
    - Gộp các kết quả tìm được vào danh sách tài liệu cần duyệt.
 
 4. **Kiểm tra Cache — file đã tải trước đó:**
-   - Với mỗi Confluence pageId → Quét thư mục `specs/imports/confluence/` và `specs/imports/jira/*/source/references/` xem đã có file `*-{pageId}.pdf` chưa.
+   - Với mỗi Confluence pageId → Quét thư mục `workspace/{issueKey}/specs/imports/confluence/` và `workspace/{issueKey}/specs/imports/jira/*/source/references/` xem đã có file `*-{pageId}.pdf` chưa.
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại trong dự án chưa.
 
 5. **Trình bảng Danh sách cho User duyệt:**
@@ -143,7 +143,7 @@ danh sách                                 loại task          theo profile
    | # | Loại | Tên | Trạng thái | Đường dẫn / Hành động |
    |---|------|-----|------------|----------------------|
    | 1 | 📄 Jira PDF | {issueKey} - {Tiêu đề Task} | 🆕 Chưa tải | → Sẽ tải mới |
-   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `specs/imports/confluence/...` |
+   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `workspace/{issueKey}/specs/imports/confluence/...` |
    | 3 | 📝 Confluence | API Specification v2 (ID: 67890) | 🆕 Chưa tải | → `api-specification-v2-67890.pdf` |
    | 4 | 📄 Jira PDF | {relatedIssueKey} - {Tiêu đề Task liên quan} | 🆕 Chưa tải | → Sẽ tải mới |
    | 5 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
@@ -207,7 +207,7 @@ Sau khi User đồng ý:
    }
    ```
 
-5. **Lưu tất cả vào:** `specs/imports/jira/{issueKey}/source/` và `source/references/`.
+5. **Lưu tất cả vào:** `workspace/{issueKey}/specs/imports/jira/{issueKey}/source/` và `source/references/`.
 
 ---
 
@@ -312,8 +312,8 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 ### Phase 5: Tổng hợp bản Markdown chi tiết
 
 ### File output
-📄 `specs/imports/jira/{issueKey}/{issueKey}-final.md`
-*(Hoặc `specs/imports/confluence/{keyword}/{keyword}-final.md` đối với luồng Confluence)*
+📄 `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
+*(Hoặc `workspace/{issueKey}/specs/imports/confluence/{keyword}/{keyword}-final.md` đối với luồng Confluence)*
 
 ### Bước kiểm tra trước khi ghi đè (Overwrite check):
 Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem file `{issueKey}-final.md` (hoặc `{keyword}-final.md`) đã tồn tại trong dự án chưa.
@@ -401,7 +401,7 @@ Sau khi User đồng ý:
 2. Tải các Confluence con (nếu có): `{tên-slug-con}-{childPageId}.pdf`
 3. Tải các file đính kèm (giữ nguyên tên gốc).
 4. Tạo `metadata.json` với danh sách references.
-5. Lưu vào `specs/imports/confluence/{keyword}/source/` và `source/references/`.
+5. Lưu vào `workspace/{issueKey}/specs/imports/confluence/{keyword}/source/` và `source/references/`.
 
 ### Phase 2 → Phase 5: Phân tích & Tổng hợp
 
@@ -424,7 +424,9 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 
 ## Sau khi hoàn thành
 
-**BẮT BUỘC:** Không được dừng lại để hỏi user muốn tiếp tục với pipeline nào. Bạn phải tự động chuyển sang kỹ năng `/qa-test-design` để bắt đầu làm Checklist. (Lưu ý: Không chạy ở chế độ auto-approve, để hệ thống vẫn dừng lại chờ user duyệt Checklist theo đúng luồng của qa-test-design).
+**BẮT BUỘC:** Không dừng lại hỏi user muốn tiếp tục với pipeline nào. Tự động chuyển sang kỹ năng `qa-test-design` để bắt đầu làm Checklist, và chạy tiếp xuyên suốt theo `.claude/rules/autonomy-contract.md` — bao gồm cả cổng Giai đoạn 1 → Giai đoạn 2 của `qa-test-design`.
+
+> Chỉ dừng khi rơi vào danh sách đóng 5 trường hợp của `autonomy-contract.md`, hoặc khi user chạy với `--step`.
 
 ### Quy trình tổng thể
 

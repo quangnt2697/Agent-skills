@@ -2,11 +2,15 @@
 
 ## Tổng quan
 
-Mỗi skill output có **Confidence Level** (mức độ tin cậy) để agent/user đánh giá chất lượng output và quyết định có cần review thêm không. Confidence Level giúp:
+Mỗi skill output có **Confidence Level** (mức độ tin cậy) để agent/user đánh giá chất lượng output. Confidence Level giúp:
 
-1. **Auto/Manual gating** — Pipeline tự động duyệt khi confidence cao (≥90%), dừng lại khi thấp (<90%)
-2. **Risk assessment** — User biết output nào cần review kỹ
-3. **Quality metrics** — Track chất lượng output theo thời gian
+1. **Báo cáo chất lượng** — user biết output nào cần review kỹ
+2. **Risk assessment** — ghi nhận gap và giả định vào output
+3. **Quality metrics** — track chất lượng output theo thời gian
+
+> **KHÔNG dùng Confidence Level làm cổng chặn luồng.** Việc dừng hay chạy tiếp do
+> `.claude/rules/autonomy-contract.md` quyết định. Xem mục *Pipeline Auto-Approve Logic*
+> ở cuối file.
 
 ## Confidence Levels
 
@@ -14,9 +18,12 @@ Mỗi skill output có **Confidence Level** (mức độ tin cậy) để agent/
 
 | Level | Range | Meaning | Action |
 |-------|-------|---------|--------|
-| 🟢 **High** | 90-100% | Output hoàn chỉnh, đã verify đầy đủ | Auto-approve OK |
-| 🟡 **Medium** | 70-89% | Output đầy đủ nhưng có gaps nhỏ | Ask user confirm 1 lần |
-| 🔴 **Low** | <70% | Output thiếu sót hoặc uncertain | STOP, không chạy tiếp |
+| 🟢 **High** | 90-100% | Output hoàn chỉnh, đã verify đầy đủ | Chạy tiếp |
+| 🟡 **Medium** | 70-89% | Output đầy đủ nhưng có gaps nhỏ | Chạy tiếp — ghi gap vào mục *Giả định & Rủi ro* |
+| 🔴 **Low** | <70% | Output thiếu sót hoặc uncertain | Chạy tiếp — ghi cảnh báo rõ ở đầu output, đề xuất user review |
+
+> Không mức nào trong bảng này tự nó chặn pipeline. Chỉ 5 trường hợp trong
+> `autonomy-contract.md` mới được dừng luồng.
 
 ### Confidence Score Calculation
 
@@ -309,26 +316,23 @@ Tất cả skills BẮT BUỘC xuất confidence level ở cuối output theo fo
 
 ## Pipeline Auto-Approve Logic
 
-Pipeline (như `/qa-pipeline`) check confidence để quyết định auto-approve:
+> **⚠️ ĐÃ THAY ĐỔI:** Confidence Level **KHÔNG còn được dùng làm cổng chặn luồng**.
+> Việc dừng hay chạy tiếp do `.claude/rules/autonomy-contract.md` quyết định — dựa trên
+> tín hiệu kiểm chứng được (file tồn tại, exit code, số lượng artifact), không dựa trên
+> điểm số tự chấm.
+>
+> Lý do đổi: *certainty* trong công thức là cảm tính, agent thường tự chấm rơi vào dải
+> 70–89%, mà 70–89% lại đúng là dải kích hoạt "hỏi user" — hệ thống bị thiết kế để luôn
+> rơi vào chỗ hỏi.
 
-```python
-def should_auto_approve(skill_output):
-    confidence = skill_output.get("confidence_level")
-    blockers = skill_output.get("blockers", [])
-    
-    if blockers:
-        return False  # Có blockers → STOP
-    
-    if confidence >= 0.90:
-        log(f"[AUTO-APPROVE] Confidence {confidence*100:.0f}% ≥ 90%")
-        return True
-    elif confidence >= 0.70:
-        log(f"[ASK USER] Confidence {confidence*100:.0f}% between 70-90%")
-        return ask_user_confirm()
-    else:
-        log(f"[STOP] Confidence {confidence*100:.0f}% < 70%")
-        return False
-```
+Confidence Level từ nay chỉ có **2 tác dụng**:
+
+1. **Báo cáo chất lượng** trong output (mục 📊 Confidence Assessment ở cuối mỗi artifact)
+2. **Ghi nhận rủi ro** — confidence thấp thì liệt kê gap vào mục *Giả định & Rủi ro*, rồi chạy tiếp
+
+Pipeline vẫn chạy tiếp bình thường ở mọi mức confidence. Chỉ dừng khi rơi vào danh sách
+đóng 5 trường hợp của `autonomy-contract.md` (thiếu input bắt buộc, thiếu credential,
+câu hỏi 🔴 Critical, sắp commit/merge, hành động không hoàn tác được).
 
 ## Anti-patterns (Tránh)
 

@@ -26,7 +26,7 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 1. **Phân tích Yêu cầu (`/ba-spec`)**: Đọc Jira, phỏng vấn user, tổng hợp thành Đặc tả (`final.md`).
 2. **Thiết kế Kiểm thử (`/qa-test-design`)**: Sinh ra Checklist (BVA, EP) và viết kịch bản BDD (Gherkin).
 3. **Sinh Code & Chạy (`/qa-auto-design`)**: Từ Gherkin, sinh code Automation, tự chạy test và xuất báo cáo.
-4. **Quy trình Toàn trình (`/qa-pipeline`)**: Chạy mượt mà từ bước 1 đến 3 mà không dừng lại hỏi user.
+4. **Quy trình Toàn trình (`/qa-full-pipeline`)**: Chạy mượt mà từ bước 1 đến 3 mà không dừng lại hỏi user. Thêm cờ `--step` nếu muốn dừng review sau mỗi phase.
 
 ## 5. Chuẩn Mực Đầu Ra (Output Standards)
 - **Ngôn ngữ:** Mọi tài liệu (Spec, Checklist, Kịch bản, Báo cáo) BẮT BUỘC viết bằng Tiếng Việt rõ ràng, mạch lạc.
@@ -34,5 +34,7 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 - **Log Lỗi:** Trong báo cáo test API/WebSocket, bắt buộc in ra Request/Response để debug.
 
 ## 6. Tự Chủ & Chủ Động
+- **Mặc định là TỰ CHẠY.** Chỉ dừng hỏi user khi rơi vào 5 trường hợp của danh sách đóng trong `.claude/rules/autonomy-contract.md`: thiếu input bắt buộc, thiếu credential, có câu hỏi 🔴 Critical, sắp commit/merge vào main, hoặc hành động không hoàn tác được bằng `git revert`.
+- Không được hỏi "có tiếp không", "đã đủ chưa", "có apply không" — mọi trường hợp đó đều tự quyết và chạy tiếp.
 - Nếu phát hiện Spec có lỗ hổng logic, chủ động dùng `ba-interview-me` để chất vấn user.
-- Nếu gặp lỗi (Test fail, Build fail), chủ động tự sửa code (Self-fix) và chạy lại.
+- Nếu gặp lỗi (Test fail, Build fail), chủ động tự sửa code (Self-fix) và chạy lại — tối đa 3 vòng rồi mới báo cáo.

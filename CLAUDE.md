@@ -448,3 +448,17 @@ Trước khi thêm kỹ năng mới hoặc chỉnh sửa lớn một kỹ năng 
 - ✅ Verify nhiều lần (test + build) trong quá trình code, NHƯNG chỉ commit 1 lần SAU KHI hoàn thành task
 - ✅ Merge vào main CHỈ SAU KHI: (1) Test pass + (2) Build success + (3) User approve
 - 📖 Xem chi tiết: `.claude/rules/git-workflow.md`
+
+## Tự chủ (Autonomy)
+
+**Mặc định là TỰ CHẠY.** Agent chỉ dừng hỏi user khi rơi vào 5 trường hợp của danh sách đóng:
+1. Thiếu file input bắt buộc không thể tự tạo
+2. Thiếu credential/secret không thể tự lấy
+3. Có câu hỏi 🔴 Critical làm thay đổi bản chất output
+4. Sắp commit/merge vào `main`
+5. Hành động không thể hoàn tác bằng `git revert`
+
+Mọi trường hợp khác: tự quyết, ghi giả định vào output, chạy tiếp. Confidence Level chỉ dùng
+để **báo cáo**, không dùng chặn luồng.
+
+- 📖 Xem chi tiết: `.claude/rules/autonomy-contract.md`

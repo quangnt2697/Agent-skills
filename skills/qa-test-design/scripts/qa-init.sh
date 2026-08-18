@@ -8,10 +8,10 @@ set -e
 # test steps, and reports per issue key.
 #
 # Convention: issueKey is always stored in LOWER CASE for consistency.
-# Example: qa-init.sh G3PTP-16825 tests/qa-test-design
+# Example: qa-init.sh G3PTP-16825 workspace/{issueKey}/tests/qa-test-design
 
 ISSUE_KEY_RAW="${1:?Usage: qa-init.sh <issueKey> [output-base-dir]}"
-OUTPUT_BASE="${2:-tests/qa-test-design}"
+OUTPUT_BASE="${2:-workspace/{issueKey}/tests/qa-test-design}"
 
 # Normalize issue key to lower case for consistent directory naming
 ISSUE_KEY=$(echo "$ISSUE_KEY_RAW" | tr '[:upper:]' '[:lower:]')

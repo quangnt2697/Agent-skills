@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(bash skills/qa-test-design/scripts/qa-init.sh:*)",
+      "Bash(bash skills/qa-test-design/scripts/qa-validate.sh:*)",
+      "Bash(bash skills/qa-squash-push/scripts/squash-push.sh:*)",
+      "Bash(bash skills/ba-spec/scripts/jira-auth-check.sh:*)",
+      "Bash(bash skills/ba-spec/scripts/jira-fetch-pdf.sh:*)",
+      "Bash(bash skills/ba-refine/scripts/idea-refine.sh:*)",
+      "Bash(bash skills/ba-refine/scripts/jira-push-spec.sh:*)",
+      "Bash(bash hooks/session-start.sh)",
+
+      "Bash(pytest:*)",
+      "Bash(python3 -m pytest:*)",
+      "Bash(behave:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(node scripts/validate-skills.js:*)",
+      "Bash(node scripts/validate-commands.js:*)",
+      "Bash(node scripts/validate-reference-links.js:*)",
+      "Bash(node scripts/validate-artifact-paths.js:*)",
+      "Bash(node scripts/run-evals.js:*)",
+
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git add:*)",
+      "Bash(git stash list:*)",
+
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(wc:*)",
+      "Bash(jq:*)",
+      "Bash(mkdir -p:*)",
+
+      "Read(//Users/qa-quangnt/Desktop/Project/Test/.env)",
+      "Read(//Users/qa-quangnt/Desktop/Project/Test/**)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin master:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(rm -rf /:*)",
+      "Bash(rm -rf ~:*)",
+      "Bash(curl:* | bash)",
+      "Bash(curl:* | sh)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/hooks/session-start.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

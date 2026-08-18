@@ -139,23 +139,18 @@ Dừng sau MỖI phase để user review và approve.
 - → Tự động chuyển Phase 2
 
 ### Phase 2: Thiết kế Test (qa-test-design)
-- Invoke skill `qa-test-design` với mode từ pipeline
-- **Pass parameters:**
-  - `autoApprove=true` (nếu mode=full-auto)
-  - `autoApprove=false` (nếu mode=manual)
-  - Nếu mode=semi-auto: autoApprove dựa trên confidence Phase 1
+- Invoke skill `qa-test-design`, truyền nguyên chuỗi `$ARGUMENTS` xuống (skill tự đọc `--step` nếu có)
 - Giai đoạn 1: Viết Checklist (P0/P1/P2)
 - Giai đoạn 2: Viết Gherkin (.feature) từ checklist
 - Chạy `qa-validate.sh` kiểm tra format
 - **Output:**
-  - `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
-  - `confidence_level: XX%`
-- **Check confidence:**
-  - If confidence ≥ 90% AND mode != manual → Auto continue Phase 3
-  - If confidence 70-89% AND mode = semi-auto → Ask user
-  - If confidence < 70% → STOP (recommend fix)
-  - If mode = full-auto → Always continue
-  - If mode = manual → Always ask user
+  - `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
+  - `confidence_level: XX%` (chỉ để báo cáo, không dùng chặn luồng)
+- **Cổng chuyển Phase 3** — theo `.claude/rules/autonomy-contract.md`:
+  - Checklist + Gherkin tồn tại, không rỗng → chạy tiếp
+  - `qa-validate.sh` exit 0 → chạy tiếp
+  - Số scenario ≥ số checklist item P0 → chạy tiếp
+  - Có item `[Blocked]` hoặc thiếu `*-final.md` → dừng theo mục 5 của autonomy-contract
 
 ### Phase 3: Sinh Code & Chạy Test (qa-auto-design)
 - Invoke skill `qa-auto-design` với issue key

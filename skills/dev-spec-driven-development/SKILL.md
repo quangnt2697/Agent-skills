@@ -25,7 +25,7 @@ Viết Tech-Spec (Technical Specification) chi tiết dựa trên Business-Spec 
 ## Input & Output
 
 **Input (bắt buộc):**
-- Business-Spec: `specs/imports/jira/{issueKey}/{issueKey}-final.md` (từ `/ba-spec`)
+- Business-Spec: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` (từ `/ba-spec`)
 - Hoặc: `SPEC.md`, `docs/SPEC.md`, `spec/*.md`
 
 **Output:**
@@ -40,7 +40,7 @@ Trước khi viết bất kỳ dòng Tech-Spec nào, đọc kỹ Business-Spec:
 
 ```bash
 # Tìm Business-Spec theo thứ tự ưu tiên
-1. specs/imports/jira/{issueKey}/{issueKey}-final.md  # Từ /ba-spec (Jira)
+1. workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md  # Từ /ba-spec (Jira)
 2. workspace/{issueKey}/specs/{issueKey}-final.md     # New structure
 3. SPEC.md                                             # Root level
 4. docs/SPEC.md                                        # Docs folder

@@ -118,7 +118,7 @@ specs/refine/
    - Từ `attachment`: Lấy danh sách file đính kèm (tên, dung lượng, định dạng)
 
 4. **Kiểm tra Cache — file đã tải trước đó:**
-   - Với mỗi Confluence pageId → Quét `specs/imports/confluence/` và `specs/refine/jira/*/source/references/` xem đã có `*-{pageId}.pdf` chưa
+   - Với mỗi Confluence pageId → Quét `workspace/{issueKey}/specs/imports/confluence/` và `specs/refine/jira/*/source/references/` xem đã có `*-{pageId}.pdf` chưa
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại chưa
 
 5. **Trình bảng Danh sách cho User duyệt:**
@@ -129,7 +129,7 @@ specs/refine/
    | # | Loại | Tên | Trạng thái | Đường dẫn / Hành động |
    |---|------|-----|------------|----------------------|
    | 1 | 📄 Jira PDF | {issueKey} | 🆕 Chưa tải | → Sẽ tải mới |
-   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `specs/imports/confluence/.../thiet-ke-luong-12345.pdf` |
+   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `workspace/{issueKey}/specs/imports/confluence/.../thiet-ke-luong-12345.pdf` |
    | 3 | 📝 Confluence | API Spec v2 (ID: 67890) | 🆕 Chưa tải | → `api-spec-v2-67890.pdf` |
    | 4 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
    | 5 | 🖼️ Ảnh | flowchart.png (800KB) | 🆕 Chưa tải | → Sẽ tải mới |

@@ -13,4 +13,8 @@ Quy trình TDD (Test-Driven Development) bắt buộc: Đỏ, Xanh, Refactor. Đ
 
 Lặp lại quy trình này cho đến khi toàn bộ logic hoặc tính năng được hoàn thành.
 Bao gồm một script đơn giản để chạy các test đó ngay lúc này (ví dụ: `npm test`, `pytest`, v.v.).
+
+<critical_instruction>
+HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+</critical_instruction>
 """

@@ -19,4 +19,8 @@ Tập trung vào:
 - Dọn dẹp code rác trong Page Object hoặc Teardown.
 
 Dù ở persona nào, BẮT BUỘC duy trì nguyên vẹn hành vi và các bài kiểm tra (tests) hiện có vẫn phải vượt qua. Đừng đụng chạm những gì không hiểu.
+
+<critical_instruction>
+HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+</critical_instruction>
 """

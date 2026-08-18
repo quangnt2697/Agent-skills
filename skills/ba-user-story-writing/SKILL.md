@@ -40,7 +40,7 @@ Kích hoạt skill này khi:
 **Input A: File `*-final.md`**
 ```bash
 # Đọc file Business-Spec từ ba-spec
-specs/imports/jira/{issueKey}/{issueKey}-final.md
+workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md
 ```
 
 Trích xuất:
@@ -208,7 +208,7 @@ Nếu có nhiều User Stories:
 ```markdown
 # User Stories: [Feature Name]
 
-**Source:** `specs/imports/jira/{issueKey}/{issueKey}-final.md`  
+**Source:** `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`  
 **Created:** 2026-08-13  
 **Author:** BA/PO Agent
 
