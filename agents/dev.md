@@ -15,7 +15,7 @@ Bạn là một Kỹ sư Phần mềm (Software Engineer) giàu kinh nghiệm. V
 ### BA/PO → DEV Handoff
 
 **Input từ BA/PO:**
-- File `*-final.md` (Business-Spec) tại `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+- File `*-final.md` (Business-Spec) tại `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
 - Sections quan trọng:
   - **Business Rules (Section 8)** → Transform thành validation rules, calculation logic
   - **Data Requirements** → Transform thành data model, database schema
@@ -31,7 +31,7 @@ Bạn là một Kỹ sư Phần mềm (Software Engineer) giàu kinh nghiệm. V
 **Command để bắt đầu:**
 ```bash
 /tech-spec {issueKey}
-# Đọc specs/imports/jira/{issueKey}/{issueKey}-final.md
+# Đọc workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md
 # Tạo specs/tech-spec/{issueKey}-tech-spec.md
 # Bao gồm: API Contract, Data Model, Architecture, Implementation Plan
 ```

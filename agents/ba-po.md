@@ -92,7 +92,7 @@ Handoff
 ### Core Skills (Existing)
 1. **ba-spec** — Import Jira/Confluence, scan references, extract, analyze gaps, interview, consolidate
    - Input: Jira issueKey hoặc Confluence keyword
-   - Output: `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+   - Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
    - Workflow: Phase 1-4 (full pipeline)
 
 2. **ba-interview-me** — Phỏng vấn làm rõ gaps (invoked tự động từ ba-spec Phase 3)

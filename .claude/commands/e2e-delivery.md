@@ -84,7 +84,7 @@ Dừng sau MỖI phase để user review.
 **Invoke:** `ba-spec JIRA-123`
 
 **Output:**
-- `specs/jira-import/JIRA-123/JIRA-123-final.md`
+- `workspace/JIRA-123/specs/imports/jira/JIRA-123/JIRA-123-final.md`
 - Confidence level
 
 **Gate Check:**
@@ -118,7 +118,7 @@ Dừng sau MỖI phase để user review.
 **Invoke:** `meta-cross-validation`
 
 **Input:**
-- `specs/jira-import/JIRA-123/JIRA-123-final.md` (Business Rules)
+- `workspace/JIRA-123/specs/imports/jira/JIRA-123/JIRA-123-final.md` (Business Rules)
 - `workspace/JIRA-123/planning/tech-spec.md` (Tech-Spec)
 
 **Output:**
@@ -191,10 +191,10 @@ Dừng sau MỖI phase để user review.
 - Phase 9: Test Execution (Run tests + report)
 
 **Output:**
-- `tests/qa-test-design/JIRA-123/JIRA-123-checklist.md`
-- `tests/qa-test-design/JIRA-123/features/JIRA-123.feature`
-- `tests/qa-test-design/JIRA-123/steps/test_*.py`
-- `tests/qa-test-design/JIRA-123/reports/JIRA-123-pipeline-summary.md`
+- `workspace/JIRA-123/tests/qa-test-design/JIRA-123/JIRA-123-checklist.md`
+- `workspace/JIRA-123/tests/qa-test-design/JIRA-123/features/JIRA-123.feature`
+- `workspace/JIRA-123/tests/qa-test-design/JIRA-123/steps/test_*.py`
+- `workspace/JIRA-123/tests/qa-test-design/JIRA-123/reports/JIRA-123-pipeline-summary.md`
 
 **Gate Check:**
 - If pass rate ≥ 90% → Continue
@@ -278,7 +278,7 @@ Sau khi hoàn thành 8 phases thành công:
 ## 📦 Deliverables
 
 ### Documentation
-- ✅ Business Spec: `specs/jira-import/JIRA-123/JIRA-123-final.md`
+- ✅ Business Spec: `workspace/JIRA-123/specs/imports/jira/JIRA-123/JIRA-123-final.md`
 - ✅ Tech Spec: `workspace/JIRA-123/planning/tech-spec.md`
 - ✅ Implementation Plan: `workspace/JIRA-123/planning/plan.md`
 - ✅ Traceability Report: `workspace/JIRA-123/reports/traceability-matrix.md`
@@ -286,13 +286,13 @@ Sau khi hoàn thành 8 phases thành công:
 ### Code
 - ✅ Application Code: `src/services/order_service.py` (+ 5 files)
 - ✅ Unit Tests: `tests/unit/test_order_service.py` (+ 3 files)
-- ✅ QA Automation: `tests/qa-test-design/JIRA-123/steps/test_*.py` (8 files)
+- ✅ QA Automation: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/steps/test_*.py` (8 files)
 
 ### Test Artifacts
-- ✅ Test Checklist: `tests/qa-test-design/JIRA-123/features/JIRA-123-checklist.md` (42 items)
-- ✅ Gherkin Features: `tests/qa-test-design/JIRA-123/features/JIRA-123.feature` (28 scenarios)
-- ✅ QA Pipeline Summary: `tests/qa-test-design/JIRA-123/reports/JIRA-123-pipeline-summary.md`
-- ✅ Test Report: `tests/qa-test-design/JIRA-123/reports/JIRA-123-test-report.md`
+- ✅ Test Checklist: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/features/JIRA-123-checklist.md` (42 items)
+- ✅ Gherkin Features: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/features/JIRA-123.feature` (28 scenarios)
+- ✅ QA Pipeline Summary: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/reports/JIRA-123-pipeline-summary.md`
+- ✅ Test Report: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/reports/JIRA-123-test-report.md`
 
 ### Git
 - ✅ Feature Branch: `feature/JIRA-123-order-management`
@@ -491,7 +491,7 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 **Reason:** Test pass rate < 90%.
 
 **Solution:**
-1. Read pipeline summary: `tests/qa-test-design/JIRA-123/reports/JIRA-123-pipeline-summary.md`
+1. Read pipeline summary: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/reports/JIRA-123-pipeline-summary.md`
 2. Identify failed test type:
    - E2E test → app code bug OR test code bug
    - Check root cause in report

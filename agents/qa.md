@@ -15,7 +15,7 @@ Bạn là Kỹ sư QA/SDET giàu kinh nghiệm, tập trung vào chiến lược
 ### BA/PO → QA Handoff
 
 **Input từ BA/PO:**
-- File `*-final.md` (Business-Spec) tại `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+- File `*-final.md` (Business-Spec) tại `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
 - Sections quan trọng:
   - **Section 9: Acceptance Criteria (Reframed)** → Transform thành checklist items
   - **User Flow (Section 5)** → Test scenarios (happy path + alternative flows)
@@ -31,9 +31,9 @@ Bạn là Kỹ sư QA/SDET giàu kinh nghiệm, tập trung vào chiến lược
 **Command để bắt đầu:**
 ```bash
 /qa-test-design {issueKey}
-# Đọc specs/imports/jira/{issueKey}/{issueKey}-final.md
-# Tạo tests/qa-test-design/{issueKey}/checklist.md
-# Tạo tests/qa-test-design/{issueKey}/steps/*.feature
+# Đọc workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md
+# Tạo workspace/{issueKey}/tests/qa-test-design/{issueKey}/checklist.md
+# Tạo workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/*.feature
 ```
 
 ### QA → BA/PO Feedback

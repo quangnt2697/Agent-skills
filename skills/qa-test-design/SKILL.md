@@ -17,7 +17,7 @@ Thiết kế test artifacts theo workflow 2 giai đoạn có cổng kiểm soát
 - Chuẩn bị tài liệu xác minh có cấu trúc với các mức ưu tiên (P0/P1/P2)
 - Xây dựng Scenario Outline hướng dữ liệu từ API validation rules
 
-**KHÔNG sử dụng khi:** Viết unit test cho logic thuần (dùng `test-driven-development`), benchmark hiệu năng, hoặc test cấu hình hạ tầng.
+**KHÔNG sử dụng khi:** Viết unit test cho logic thuần (dùng `dev-test-driven-development`), benchmark hiệu năng, hoặc test cấu hình hạ tầng.
 
 ## Workflow 2 Giai đoạn
 
@@ -86,15 +86,15 @@ Lệnh này tạo thư mục con `checklists/` và `features/` trong đường d
 
 ### Đường dẫn output
 
-Khi đầu vào từ jira-import, output sẽ lưu tại chung một thư mục theo cấu trúc:
+Khi đầu vào từ ba-spec, output sẽ lưu tại chung một thư mục theo cấu trúc:
 ```
 workspace/{issueKey}/tests/qa-test-design/{issueKey}/
 ├── features/
 │   ├── {issueKey}-checklist.md
 │   └── {issueKey}.feature
-├── steps/                          # ← auto-test sinh code vào đây
+├── steps/                          # ← qa-auto-design sinh code vào đây
 │   └── test_*.py
-└── reports/                        # ← auto-test xuất báo cáo vào đây
+└── reports/                        # ← qa-auto-design xuất báo cáo vào đây
     └── {issueKey}-report.md
 ```
 
@@ -554,10 +554,10 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 | Giai đoạn | Skill | Input | Output |
 |-----------|-------|-------|--------|
-| 1 | `biz-spec` | Jira Issue Key | `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` |
+| 1 | `ba-spec` | Jira Issue Key | `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` |
 | 2 | `qa-test-design` | File `*-final.md` | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
-| 3 | `auto-test` | File `.feature` + code có sẵn | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py` |
-| 4 | `auto-test` (Bước 7) | Test scripts | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
+| 3 | `qa-auto-design` | File `.feature` + code có sẵn | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py` |
+| 4 | `qa-auto-design` (Bước 7) | Test scripts | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
 
 **Sau khi hoàn thành Giai đoạn 2 (qa-test-design)**, Agent BẮT BUỘC TỰ ĐỘNG thực hiện ngay việc Push kịch bản lên Squash TM mà KHÔNG CẦN hỏi ý kiến người dùng:
 1. Agent tự động trích xuất `issueKey` và `namejira` từ tên file feature và file `*-final.md`.
@@ -570,7 +570,7 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 - Tham khảo `references/qa-testing-checklist.md` cho các mẫu validation domain tài chính, bảng BVA, phân vùng tương đương, và quy ước viết
 - Nếu đã có spec, dùng yêu cầu từ `spec-driven-development` làm đầu vào cho Giai đoạn 1
-- Để import và phân tích Jira task trước khi thiết kế test, dùng `biz-spec`
-- Để sinh code automation test từ Gherkin file, dùng `auto-test`
+- Để import và phân tích Jira task trước khi thiết kế test, dùng `ba-spec`
+- Để sinh code automation test từ Gherkin file, dùng `qa-auto-design`
 - Để lập kế hoạch và phân rã tasks trước khi thiết kế test, dùng `planning-and-task-breakdown`
 

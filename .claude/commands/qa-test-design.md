@@ -8,7 +8,7 @@ KHÔNG được bỏ qua Phase 1 — checklist là nguồn sự thật duy nhấ
 
 ## Nguồn đầu vào
 
-1. **Ưu tiên cao nhất:** Đọc file `specs/jira-import/{issueKey}/{issueKey}-final.md` nếu tồn tại.
+1. **Ưu tiên cao nhất:** Đọc file `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` nếu tồn tại.
    - File này là **single source of truth** sau khi import từ Jira, đã qua phân tích và interview.
    - Sử dụng trực tiếp các sections: Business Rules, Acceptance Criteria, User Flow, Form & Input, Edge Cases, API endpoints... làm đầu vào cho checklist.
    - Nhận diện loại task từ header `**Loại task:**` (APP/WEB/API) để điều chỉnh chiều kiểm thử phù hợp.
@@ -23,4 +23,4 @@ Trình bày checklist cho user review trước khi chuyển sang Phase 2.
 2. Mỗi scenario trong .feature phải truy vết được về 1 item trong checklist.
 3. Tham khảo `references/qa-testing-checklist.md` cho bảng BVA, phân vùng tương đương (equivalence partitioning), và các mẫu validation domain tài chính.
 4. KHÔNG tạo code implementation test — command này chỉ thiết kế test artifacts. Dùng `/qa-auto-design` để sinh code automation.
-5. BẮT BUỘC chỉ sinh ra chính xác 1 file checklist và 1 file .feature duy nhất cho toàn bộ Jira task. Gom tất cả các tính năng/kịch bản vào chung 1 file `.feature`. Output lưu tại đường dẫn `tests/qa-test-design/{issueKey}/` với định dạng tên 2 file là: `{issueKey}-checklist.md` và `{issueKey}.feature`.
+5. BẮT BUỘC chỉ sinh ra chính xác 1 file checklist và 1 file .feature duy nhất cho toàn bộ Jira task. Gom tất cả các tính năng/kịch bản vào chung 1 file `.feature`. Output lưu tại đường dẫn `workspace/{issueKey}/tests/qa-test-design/{issueKey}/` với định dạng tên 2 file là: `{issueKey}-checklist.md` và `{issueKey}.feature`.

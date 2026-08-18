@@ -115,7 +115,7 @@ Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
 - Phỏng vấn stakeholders làm rõ gaps (≥90% confidence)
 - Tổng hợp thành `*-final.md` với đầy đủ 13 sections
 
-**Output:** `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+**Output:** `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
 
 **Handoff to:**
 - QA: Section 9 (AC) + Section 5 (User Flow) + Section 8 (Edge Cases) → Transform thành Checklist + Gherkin
@@ -249,7 +249,7 @@ def test_create_order_api():
 - Test business scenarios (Gherkin scenarios)
 
 **Đặt ở đâu:**
-- `tests/qa-test-design/{issueKey}/steps/`
+- `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/`
 - `tests/e2e/`
 
 **Framework:**
@@ -264,7 +264,7 @@ def test_create_order_api():
 
 **Example:**
 ```python
-# tests/qa-test-design/JIRA-123/steps/test_order.py (QA writes this)
+# workspace/JIRA-123/tests/qa-test-design/JIRA-123/steps/test_order.py (QA writes this)
 @given('người dùng đã đăng nhập với tài khoản "1234567890"')
 def step_impl(context):
     login("1234567890", "password")

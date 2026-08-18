@@ -1,5 +1,5 @@
 ---
-name: performance-optimization
+name: dev-performance
 description: Tối ưu hóa hiệu năng ứng dụng bao gồm frontend, backend, truy vấn (queries), và cơ sở dữ liệu. Sử dụng khi có các yêu cầu về hiệu năng, khi bạn nghi ngờ có sự suy giảm hiệu năng (regression), khi điểm số Core Web Vitals hoặc thời gian tải cần được cải thiện, khi các pattern N+1 query cần được sửa chữa, hoặc khi profiling chỉ ra điểm nghẽn (bottleneck).
 ---
 

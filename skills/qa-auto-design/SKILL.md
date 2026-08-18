@@ -1,9 +1,9 @@
 ---
 name: qa-auto-design
-description: Viết code automation test bằng Playwright/Pytest (Web, API, WebSocket). Trigger bằng lệnh /qa-auto-design. Đọc Task Type từ Jira và dựa vào checklist, Gherkin file (.feature) để sinh code theo đúng quy tắc.
+description: Viết code automation test bằng Playwright/Pytest (Web, API, WebSocket). Sử dụng khi đã có file Gherkin (.feature) và checklist, cần sinh code automation tương ứng rồi chạy thử. Đọc Task Type từ Jira và dựa vào checklist, Gherkin file để sinh code theo đúng quy tắc. Trigger bằng lệnh /qa-auto-design.
 ---
 
-# Kỹ năng Automation Testing (auto-test)
+# Kỹ năng Automation Testing (qa-auto-design)
 
 ## Mục đích
 
@@ -294,7 +294,7 @@ Sau khi hoàn thành, Agent tự kiểm tra:
 
 ## Quy trình QA tổng thể
 
-Skill `auto-test` nằm ở **Giai đoạn 3-4** trong pipeline QA:
+Skill `qa-auto-design` nằm ở **Giai đoạn 3-4** trong pipeline QA:
 
 ```
 Giai đoạn 1              Giai đoạn 2              Giai đoạn 3              Giai đoạn 4
@@ -306,10 +306,10 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 | Giai đoạn | Skill | Input | Output |
 |-----------|-------|-------|--------|
-| 1 | `biz-spec` | Jira Issue Key | `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` |
+| 1 | `ba-spec` | Jira Issue Key | `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` |
 | 2 | `qa-test-design` | File `*-final.md` | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
-| 3 | `auto-test` | File `.feature` + code có sẵn | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py` |
-| 4 | `auto-test` (Bước 7) | Test scripts | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
+| 3 | `qa-auto-design` | File `.feature` + code có sẵn | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py` |
+| 4 | `qa-auto-design` (Bước 7) | Test scripts | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
 
 ## Xem thêm
 
@@ -318,6 +318,6 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 - Tham khảo code mẫu UI tại `examples/web_ui_pom.py`
 - Tham khảo code mẫu API/WS (tái sử dụng code có sẵn) tại `examples/api_ws_service.py`
 - Tham khảo conftest.py mẫu (fixtures dùng chung) tại `examples/conftest_template.py`
-- Để import và phân tích Jira task, dùng skill `biz-spec`
+- Để import và phân tích Jira task, dùng skill `ba-spec`
 - Để thiết kế Gherkin/Checklist trước khi viết code, dùng skill `qa-test-design`
 - Để review code trước khi merge, dùng skill `code-review-and-quality`

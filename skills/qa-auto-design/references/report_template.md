@@ -118,7 +118,7 @@ Body:
 
 ## Truy vết End-to-End (Biz-spec → Checklist → Gherkin → Test)
 
-> Bảng ánh xạ từ yêu cầu gốc (biz-spec) xuyên suốt đến kết quả test.
+> Bảng ánh xạ từ yêu cầu gốc (ba-spec) xuyên suốt đến kết quả test.
 > Giúp trả lời: "Yêu cầu nào đã được test? Yêu cầu nào chưa?"
 
 | Biz-spec Section | Checklist Item (ID) | Gherkin Scenario | Test Method | Kết quả |

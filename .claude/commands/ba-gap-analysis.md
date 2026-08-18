@@ -7,7 +7,7 @@ description: [BA/PO] Phân tích khoảng cách AS-IS vs TO-BE, identify gaps (f
 Kích hoạt skill ba-gap-analysis với BA/PO persona. Đọc `skills/ba-gap-analysis/SKILL.md` để thực hiện đúng workflow.
 
 $ARGUMENTS có thể chứa:
-- Jira issue key (VD: G3PTP-16584) → Đọc từ `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+- Jira issue key (VD: G3PTP-16584) → Đọc từ `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
 - Hoặc requirements từ user (text input)
 
 **Workflow:**

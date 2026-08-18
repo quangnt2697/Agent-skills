@@ -26,7 +26,7 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
      - Chi tiết từng test case
      - Chi tiết lỗi (nếu có)
      - Bảng truy vết Scenario ↔ Test method (nếu có file .feature)
-     - Bảng truy vết End-to-End (nếu có file biz-spec)
+     - Bảng truy vết End-to-End (nếu có file Business-Spec (ba-spec))
    - Lưu tại `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
 
 4. **Trình bày kết quả cho user:**

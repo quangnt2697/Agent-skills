@@ -4,6 +4,7 @@ description: >
   Tự động đẩy file Gherkin test case (.feature) lên hệ thống Squash TM thông qua REST API,
   sau đó gán test case vào test plan của requirement tương ứng bên Campaign Workspace.
   Hỗ trợ quét Requirement Workspace để lấy Sprint mới nhất, đồng bộ tạo thư mục bên Test Case Workspace và tự động dán đè script.
+  Sử dụng khi đã có file .feature hoàn chỉnh và cần đồng bộ test case lên Squash TM.
   Trigger: "/qa-push-squash {issueKey}"
 ---
 

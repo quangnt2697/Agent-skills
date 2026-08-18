@@ -4,7 +4,8 @@ description: >
   Import tài liệu từ Jira/Confluence, tự động scan tài liệu tham chiếu,
   trình danh sách duyệt trước khi tải, nhận diện loại task, trích xuất &
   phân tích đa nguồn, chạy interview-me làm rõ, tổng hợp thành markdown chi tiết.
-  Trigger: "biz-spec", "import jira", "/ba-spec {issueKey}", "/ba-spec confluence {keyword}".
+  Sử dụng khi cần import và phân tích một Jira issue hoặc trang Confluence thành Business-Spec (*-final.md) để bàn giao cho QA/DEV.
+  Trigger: "import jira", "/ba-spec {issueKey}", "/ba-spec confluence {keyword}".
 ---
 
 # Skill: ba-spec
@@ -20,7 +21,21 @@ Tự động hoá quy trình import và phân tích tài liệu từ **Jira** v�
 
 ## Điều kiện Tiên quyết (Authentication)
 
-Agent **BẮT BUỘC TỰ ĐỘNG** đọc và truy cập file `.env` tại workspace root (`/Users/qa-quangnt/Desktop/Project/Test/.env`) để lấy các biến môi trường mà **KHÔNG CẦN HỎI** người dùng:
+Agent **BẮT BUỘC TỰ ĐỘNG** đọc file `.env` để lấy các biến môi trường mà **KHÔNG CẦN HỎI** người dùng.
+
+**Thứ tự tìm file `.env`** — lấy file đầu tiên tồn tại:
+1. `${CLAUDE_PROJECT_DIR}/.env` — trong repo hiện tại
+2. `${CLAUDE_PROJECT_DIR}/../.env` — workspace root (thư mục cha của repo)
+3. `.env` tại thư mục làm việc hiện tại
+
+```bash
+# Tìm .env theo thứ tự ưu tiên
+for p in "${CLAUDE_PROJECT_DIR:-.}/.env" "${CLAUDE_PROJECT_DIR:-.}/../.env" ".env"; do
+  [ -f "$p" ] && ENV_FILE="$p" && break
+done
+```
+
+Các biến cần có:
 
 ```
 ATLASSIAN_BASE_URL=https://your-domain.atlassian.net
@@ -28,7 +43,7 @@ ATLASSIAN_EMAIL=your-email@company.com
 ATLASSIAN_API_TOKEN=your-api-token
 ```
 
-(Chỉ báo lỗi nếu file `.env` thực sự không tồn tại hoặc thiếu biến, tuyệt đối không dừng lại để xin phép truy cập).
+Chỉ báo lỗi khi không tìm thấy `.env` ở cả 3 vị trí, hoặc file có nhưng thiếu biến — khi đó dừng theo **trường hợp 2** của `.claude/rules/autonomy-contract.md`. Tuyệt đối không dừng lại để xin phép truy cập file.
 
 ---
 
