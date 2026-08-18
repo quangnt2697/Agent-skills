@@ -73,6 +73,49 @@ test('accepts documented Vietnamese heading aliases', () => {
   assert.deepEqual(errors, []);
 });
 
+test('matches headings by keyword, not exact string', () => {
+  // Free-form parentheticals and title-case wording that no alias list would
+  // have enumerated — these are real headings from skills in this repo.
+  const content = skillDoc({
+    description: 'Tối ưu ngữ cảnh. Sử dụng khi cần reset context.',
+    sections: [
+      '## Tổng Quan',
+      '## Khi Nào Sử Dụng',
+      '## Những Sự Ngụy Biện Phổ Biến (Common Rationalizations)',
+      '## Cờ Đỏ (Red Flags)',
+      '## Xác Minh (Verification)',
+    ],
+  });
+  const { errors } = lintSkillContent('demo-skill', content, KNOWN);
+  assert.deepEqual(errors, []);
+});
+
+test('keyword matching does not accept an unrelated heading', () => {
+  const content = skillDoc({
+    description: 'Demo. Sử dụng khi cần demo.',
+    sections: [
+      '## Tổng quan',
+      '## Khi nào sử dụng',
+      '## Các Biện hộ Thường gặp',
+      '## Dấu hiệu Cảnh báo (Red Flags)',
+      '## Tích hợp với Pipeline',   // KHÔNG phải Verification
+    ],
+  });
+  const { errors } = lintSkillContent('demo-skill', content, KNOWN);
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /Missing required section: ## Verification/);
+});
+
+test('an H3 heading does not satisfy a required H2 section', () => {
+  const content =
+    `---\nname: demo-skill\ndescription: Demo. Sử dụng khi cần.\n---\n\n` +
+    VN_SECTIONS.filter(h => h !== '## Xác minh').map(h => `${h}\n\nnội dung.\n`).join('\n') +
+    '\n### Xác minh\n\nnội dung.\n';
+  const { errors } = lintSkillContent('demo-skill', content, KNOWN);
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /Missing required section: ## Verification/);
+});
+
 test('reports a genuinely missing section even when the rest is Vietnamese', () => {
   const content = skillDoc({
     description: 'Chạy test automation. Sử dụng khi cần chạy lại test đã có.',

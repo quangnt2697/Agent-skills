@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "agent-skills",
-      "version": "0.6.6",
+      "version": "1.0.0",
       "source": {
         "source": "github",
         "repo": "addyosmani/agent-skills"
@@ -17,7 +17,15 @@
       "description": "Các kỹ năng kỹ thuật chuẩn production bao phủ mọi giai đoạn của quá trình phát triển phần mềm: đặc tả (spec), lên kế hoạch, xây dựng, xác minh, review, và ra mắt (ship).",
       "homepage": "https://github.com/addyosmani/agent-skills",
       "license": "MIT",
-      "keywords": ["skills", "agents", "engineering", "spec", "tdd", "review", "ship"]
+      "keywords": [
+        "skills",
+        "agents",
+        "engineering",
+        "spec",
+        "tdd",
+        "review",
+        "ship"
+      ]
     }
   ]
 }

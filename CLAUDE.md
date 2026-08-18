@@ -428,9 +428,20 @@ Trước khi thêm kỹ năng mới hoặc chỉnh sửa lớn một kỹ năng 
 
 ## Lệnh
 
-- `npm test` — Không áp dụng (đây là dự án tài liệu)
-- Xác thực: Kiểm tra tất cả SKILL.md có YAML frontmatter hợp lệ với name và description
-- Đánh giá: `node scripts/run-evals.js` — đánh giá trigger/routing cho mọi kỹ năng (CI); `--behavioral <skill>` cho chạy có chấm điểm
+- `npm test` — chạy toàn bộ cổng chất lượng: 5 validator + unit test (phải xanh trước khi merge)
+- `npm run validate` — chỉ chạy 5 validator (skills, commands, versions, links, artifact paths)
+- `npm run test:unit` — chỉ chạy unit test của các script
+- `npm run evals` — đánh giá trigger/routing cho mọi kỹ năng; `node scripts/run-evals.js --behavioral <skill>` cho chạy có chấm điểm
+
+Chạy riêng từng validator khi cần khoanh vùng lỗi:
+
+| Lệnh | Kiểm tra |
+|---|---|
+| `npm run validate:skills` | SKILL.md có frontmatter hợp lệ, `name` khớp thư mục, đủ 5 section bắt buộc |
+| `npm run validate:commands` | `.claude/commands` và `commands/` khớp nhau về tên lệnh và description |
+| `npm run validate:versions` | Các plugin manifest khai báo cùng một version |
+| `npm run validate:links` | Link tới `references/` trong skill giải được đúng đường dẫn |
+| `npm run validate:paths` | Đường dẫn artifact trong tài liệu theo đúng quy ước |
 
 ## Ranh giới
 

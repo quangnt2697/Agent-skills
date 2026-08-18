@@ -107,17 +107,35 @@ Hãy dùng skill @skills/dev-test-driven-development/SKILL.md để làm bản s
 
 ## Các Lệnh (Slash Commands)
 
-Repo cung cấp 7 slash commands dưới thư mục `.gemini/commands/`: 6 lệnh cho vòng đời phát triển cộng thêm lệnh `/webperf` chuyên cho audit. Gemini CLI sẽ tự động phát hiện chúng khi bạn đứng ở thư mục gốc của dự án.
+> **Lưu ý:** Bản fork này **không ship thư mục `.gemini/commands/`**. Slash commands chỉ có sẵn cho Claude Code (`.claude/commands/`, định dạng `.md`) và Antigravity CLI (`commands/`, định dạng `.toml`).
+>
+> Nếu bạn muốn dùng slash commands với Gemini CLI, copy các file `.toml` từ `commands/` sang `.gemini/commands/`:
+>
+> ```bash
+> mkdir -p .gemini/commands && cp commands/*.toml .gemini/commands/
+> ```
+>
+> Phần còn lại của tài liệu này (skills auto-discovery) vẫn áp dụng bình thường cho Gemini CLI.
+
+Danh sách lệnh hiện có trong `commands/` (24 lệnh, cùng bộ với Claude Code):
 
 | Lệnh | Chức năng |
 |---------|--------------|
-| `/tech-spec` | Viết đặc tả có cấu trúc trước khi viết code |
+| `/ba-spec` | Import & phân tích Jira/Confluence thành Business-Spec |
+| `/ba-refine` | Mài giũa ý tưởng thô trong Jira thành spec rõ ràng |
+| `/tech-spec` | Viết đặc tả kỹ thuật trước khi viết code |
 | `/plan` | Chia nhỏ công việc thành các task có thể kiểm chứng |
 | `/build` | Viết code cho task hiện tại |
 | `/unit-test` | Chạy workflow TDD — red, green, refactor |
 | `/review` | Review code 5 phương diện |
 | `/code-simplify` | Giảm độ phức tạp mà không làm thay đổi hành vi |
+| `/qa-test-design` | Thiết kế Checklist + Gherkin |
+| `/qa-auto-design` | Sinh code automation từ Gherkin |
+| `/qa-run-test` | Chạy test đã có và xuất báo cáo |
+| `/qa-full-pipeline` | Chạy toàn bộ QA pipeline trong 1 lệnh |
 | `/webperf` | Audit Core Web Vitals và hiệu năng cho web apps |
+
+Xem đầy đủ bằng `ls commands/`.
 
 ## Mẹo Sử Dụng (Usage Tips)
 

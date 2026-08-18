@@ -13,6 +13,18 @@ Skill này tự động hóa việc sinh code kiểm thử (test scripts) dựa 
 
 Người dùng gọi lệnh `/qa-auto-design` hoặc yêu cầu "viết code automation test", "chuyển file feature thành code"...
 
+## Khi nào sử dụng
+
+- Đã có file `{issueKey}.feature` và checklist từ `qa-test-design`, cần sinh code automation
+- Cần bổ sung test case cho scenario mới thêm vào file `.feature` đã có
+- Chạy như Phase 2 của `qa-full-pipeline`
+
+**KHÔNG sử dụng khi:**
+- Chưa có file `.feature` — chạy `qa-test-design` trước, đừng tự sáng tác test case
+- Đã có test code, chỉ cần chạy lại → dùng `qa-run-test`
+- Cần viết unit test cho logic thuần → đó là việc của DEV, dùng `dev-test-driven-development`
+- Cần dựng spec từ code có sẵn → dùng `qa-code2spec`
+
 ## Nguyên Tắc Cốt Lõi
 
 1. **AI DOM Recon First (chỉ UI):** Agent phải sử dụng browser MCP để mở trình duyệt, inspect DOM thật. TUYỆT ĐỐI không suy đoán locator.
@@ -256,6 +268,32 @@ Sau khi test chạy xong, Agent **BẮT BUỘC** xuất báo cáo kết quả d�
 - Screenshot lỗi (nếu UI test): `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/screenshots/`
 
 ---
+
+## Các Biện hộ Thường gặp
+
+| Lý do biện hộ | Thực tế |
+|---|---|
+| "Locator này chắc là `#submit-btn`, viết luôn cho nhanh" | Suy đoán locator là nguyên nhân số một khiến test UI vỡ. Bước 3 bắt buộc mở trình duyệt inspect DOM thật — không có ngoại lệ. |
+| "Thêm `sleep(2)` cho chắc ăn, chờ trang load xong" | Hard sleep làm test vừa chậm vừa flaky: máy nhanh thì phí 2 giây, máy chậm thì vẫn fail. Dùng auto-waiting assertion. |
+| "Test này fail, sửa assertion cho khớp kết quả thực tế là xong" | Self-fix loop chỉ được sửa lỗi script (ImportError, SyntaxError). Ép FAIL thành PASS là xoá mất chính cái tín hiệu mà test sinh ra để báo. |
+| "Viết lại client API cho sạch, code cũ của dev lộn xộn" | Bước 5 yêu cầu tái sử dụng code dev có sẵn. Viết lại tạo ra hai nguồn sự thật, và người đọc test không nhận ra logic quen thuộc. |
+| "File `.feature` có 30 scenario nhưng 5 cái trùng ý, bỏ bớt" | Coverage phải 100%. Thấy scenario trùng thì báo ngược lại cho `qa-test-design`, không tự ý bỏ. |
+| "Chưa có `.feature` nhưng tôi hiểu yêu cầu rồi, viết test luôn" | Không có thiết kế test đầu vào thì không truy vết được, và chắc chắn bỏ sót edge case mà checklist đã liệt kê. |
+| "Hardcode token vào test cho nhanh, môi trường UAT thôi mà" | Token UAT vẫn là bí mật, và file test sẽ được commit. Đọc từ `.env`. |
+| "Không cần teardown, data rác trên UAT không sao" | Data rác làm test lần sau fail vì trùng dữ liệu — đúng loại lỗi tốn nhiều giờ nhất để truy. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- Số test case sinh ra ít hơn số `Scenario` + dòng `Examples` trong file `.feature`
+- Có `time.sleep()` hoặc `wait_for_timeout()` trong test code
+- Locator xuất hiện trong file test thay vì trong Page Object
+- Assertion nằm trong Page Object hoặc Service class thay vì trong tầng test
+- Self-fix loop chạy quá 3 vòng — code sinh ra có vấn đề hệ thống, không phải lỗi cú pháp lẻ
+- Chuỗi credential, token, hoặc URL môi trường viết thẳng trong test code
+- Test tạo dữ liệu mà không có fixture `yield` dọn dẹp
+- Tên dữ liệu test không có timestamp/prefix — chạy lần hai sẽ trùng
+- Có test method không map được về scenario nào trong `.feature`
+- Viết client API/WebSocket mới trong khi workspace đã có sẵn client cho cùng endpoint
 
 ## Verification Checklist
 

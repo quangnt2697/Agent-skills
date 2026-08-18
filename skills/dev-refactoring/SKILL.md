@@ -599,6 +599,21 @@ git merge --no-ff refactor/extract-order-validator
 - Có lý do rõ ràng (reduce duplication, improve readability)
 - Refactor trước khi thêm feature mới (prep work)
 
+## Dấu hiệu Cảnh báo (Red Flags)
+
+Khác với mục Anti-patterns ở trên (những việc không được làm), đây là các **triệu chứng quan sát được** cho thấy đợt refactor đang đi sai hướng. Gặp bất kỳ dấu hiệu nào → dừng, revert về commit xanh gần nhất, chia nhỏ bước lại:
+
+- Phải sửa test để nó pass — hành vi đã đổi, đây không còn là refactor
+- Số test pass sau ít hơn trước, dù "chỉ vài test không quan trọng"
+- Diff phình quá 200 dòng mà chưa tới điểm dừng an toàn nào
+- Không giải thích được vì sao đoạn code cũ tồn tại (Hàng rào Chesterton) nhưng vẫn xoá
+- Xuất hiện tham số kiểu boolean/flag mới chỉ để giữ cho hai luồng cũ cùng chạy được
+- Lớp trừu tượng mới chỉ có đúng một nơi gọi
+- Phải mở quá 3 file cùng lúc mới hiểu được một luồng vừa tách ra — đã tách sai chỗ
+- Đang refactor mà phát hiện bug thật, rồi sửa luôn bug đó trong cùng diff
+- Chạy test mất quá lâu nên bắt đầu bỏ bước verify giữa các step
+- Commit message phải dùng chữ "và" để mô tả (dấu hiệu một commit đang làm hai việc)
+
 ## Khi nào dừng Refactor?
 
 **Dừng lại khi:**

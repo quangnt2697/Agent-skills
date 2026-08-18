@@ -625,6 +625,21 @@ npm test -- --watch
 npm test -- --coverage --coverageThreshold='{"global":{"branches":80}}'
 ```
 
+## Dấu hiệu Cảnh báo (Red Flags)
+
+Các triệu chứng cho thấy kết quả chạy test không đáng tin, dù báo cáo có màu xanh:
+
+- Pass rate 100% ngay lần chạy đầu trên môi trường vừa dựng — thường là test chưa thực sự chạm hệ thống
+- Test pass khi chạy cả suite nhưng fail khi chạy riêng lẻ (phụ thuộc thứ tự thực thi)
+- Sửa assertion cho khớp kết quả thực tế để test chuyển sang PASS
+- Đánh dấu `@skip` một test đang fail rồi báo cáo pass rate cao hơn
+- Re-run nhiều lần tới khi may mắn xanh, gọi đó là "flaky" mà không điều tra
+- Thời gian chạy giảm đột ngột so với lần trước — có test bị bỏ qua âm thầm
+- Test fail nhưng exit code = 0, hoặc pipeline vẫn báo thành công
+- Báo cáo API/WebSocket không in Request/Response nên không debug được (vi phạm chuẩn output của repo)
+- Số test chạy ít hơn số scenario trong file `.feature`
+- Kết luận "do môi trường" mà không có bằng chứng cụ thể (log, status code, response)
+
 ## Anti-patterns (Tránh)
 
 ❌ **KHÔNG:**
@@ -646,4 +661,4 @@ npm test -- --coverage --coverageThreshold='{"global":{"branches":80}}'
 - `qa-auto-design` — Sinh test code từ Gherkin (giai đoạn trước)
 - `qa-pipeline` — Full pipeline bao gồm chạy test
 - `dev-debugging` — Debug khi test failed do app bug
-- `references/qa-testing-checklist.md` — Baseline test coverage
+- `../../references/qa-testing-checklist.md` — Baseline test coverage

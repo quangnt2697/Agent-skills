@@ -293,6 +293,20 @@ Phase 4: /qa-run-test
 - Trước khi QA sinh automation code
 - Nếu coverage < 90% → STOP, fix gaps trước
 
+## Dấu hiệu Cảnh báo (Red Flags)
+
+Các triệu chứng cho thấy kết quả cross-validation không đáng tin — coverage nhìn thì đẹp nhưng không phản ánh thực tế:
+
+- Coverage đạt 100% ngay từ lần chạy đầu tiên mà không tìm ra gap nào
+- Một Business Rule map tới test case chỉ vì trùng từ khoá, đọc kỹ thì test đang kiểm thứ khác
+- Business Rule map tới test case chỉ có happy path, không có nhánh phủ định
+- Gap được đánh dấu "đã fix" nhưng chưa chạy lại cross-validation để xác nhận
+- Một test case được tính cho nhiều Business Rule để đẩy con số coverage lên
+- Business Rule trong `*-final.md` mơ hồ tới mức không thể map dứt khoát, nhưng vẫn được tính là "covered"
+- Ma trận truy vết có ô trống nhưng báo cáo tổng kết không nhắc tới
+- Gap Critical được hạ xuống High vì sắp tới ngày release
+- Tech-Spec coverage cao nhưng Test coverage thấp — code đã viết mà chưa ai kiểm
+
 ## Anti-patterns (Tránh)
 
 ❌ **KHÔNG:**

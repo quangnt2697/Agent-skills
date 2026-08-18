@@ -8,6 +8,19 @@ description: Kiểm toán (audit) toàn diện kiến trúc, techstack, tìm bug
 ## Tổng quan
 Kỹ năng này cung cấp một quy trình khép kín, một chạm cho Developer: từ việc tự động đánh giá chuyên sâu (Review) một chức năng, tìm ra lỗ hổng/bug, cho đến việc lập kế hoạch (Plan) và tự động sửa chữa (Auto-Build) sau khi nhận được sự phê duyệt của người dùng. Kỹ năng này đóng vai trò như một Pipeline Orchestrator tận dụng các kỹ năng khác.
 
+## Khi nào sử dụng
+
+- Cần rà soát toàn diện một chức năng đã có rồi tự động sửa các vấn đề tìm được trong một lượt
+- Tiếp nhận module kế thừa, muốn biết nợ kỹ thuật nằm ở đâu và xử lý luôn
+- Sau một giai đoạn phát triển gấp, cần dọn nợ kỹ thuật có kiểm soát
+- Nghi ngờ có lỗ hổng bảo mật hoặc điểm nghẽn hiệu năng nhưng chưa xác định được ở đâu
+
+**KHÔNG sử dụng khi:**
+- Chỉ cần review, không muốn agent sửa code → dùng `review-code-and-quality`
+- Chỉ cần dọn code cho dễ đọc, không tìm bug → dùng `code-simplification`
+- Đang triển khai tính năng mới → dùng `/build` với `incremental-implementation`
+- Chưa có test nào cho phần code sắp đụng vào — Bước 4 dựa trên TDD, không có lưới an toàn thì rủi ro cao
+
 ## Quy trình Thực thi Chặt chẽ (4 Bước)
 
 Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự, không được bỏ qua hay gộp bước:
@@ -67,6 +80,30 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 - ✅ Edit file trực tiếp
 - ✅ Verify bằng tests
 - ✅ Report kết quả ngắn gọn
+
+## Các Biện hộ Thường gặp
+
+| Lý do biện hộ | Thực tế |
+|---|---|
+| "Bug rõ ràng quá, sửa luôn ở Bước 1 cho nhanh" | Bước 1 là để nhìn toàn cảnh. Sửa ngay khi mới đọc được một nửa dẫn tới sửa triệu chứng thay vì nguyên nhân, và user mất cơ hội duyệt phạm vi. |
+| "User bảo tự động rồi, khỏi cần cổng duyệt ở Bước 3" | Bước 3 là cổng hợp lệ theo trường hợp 5 của `autonomy-contract.md` — sửa code hàng loạt là hành động khó hoàn tác. Nhưng sau khi có "OK" thì chạy thẳng tới hết, không hỏi lại. |
+| "Viết test trước cho mỗi bug thì lâu quá" | Không có test fail trước thì không chứng minh được đã sửa đúng chỗ. Test pass ngay từ đầu nghĩa là nó không kiểm cái bug bạn tưởng. |
+| "Tiện tay dọn luôn module bên cạnh" | Audit phần Thanh toán thì chỉ đụng Thanh toán. Diff lan rộng làm user không thể review, và bug mới lẫn vào không truy được. |
+| "In diff ra cho user xem rồi họ tự dán vào" | Anti-pattern nghiêm trọng của skill này. Luôn dùng Edit tool áp trực tiếp. |
+| "Sửa xong rồi, chắc là chạy được" | Chưa chạy test thì chưa xong. Đây là điều kiện bắt buộc, không phải bước tuỳ chọn. |
+
+## Xác minh
+
+Sau khi hoàn thành Bước 4:
+
+- [ ] Mọi task trong `workspace/{issueKey}/tasks/todo.md` đều đã đánh dấu `[x]`
+- [ ] Mỗi bug đã sửa có một test tương ứng, và test đó **đã từng fail** trước khi sửa
+- [ ] Toàn bộ test suite pass, không có test nào bị `skip` thêm so với trước khi audit
+- [ ] Build thành công, lint/typecheck không lỗi mới
+- [ ] `git diff` chỉ chạm vào phạm vi đã khai báo ở Bước 1 — không lan sang module khác
+- [ ] Mọi thay đổi được áp bằng tool call, không có đoạn nào chỉ in ra màn hình chờ user dán
+- [ ] Mỗi fix có dòng báo cáo theo Output Format (File / Issue / Solution / Verification)
+- [ ] Chưa commit — chờ user approve theo `.claude/rules/git-workflow.md`
 
 ## Nguyên tắc Chất lượng
 - **Đóng khung Phạm vi:** Đừng lan man sang các module không liên quan. Nếu Audit phần Thanh toán, chỉ tập trung vào Thanh toán.

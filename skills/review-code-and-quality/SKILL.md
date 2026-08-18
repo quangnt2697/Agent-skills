@@ -11,6 +11,18 @@ description: Thực hiện đánh giá code đa chiều (multi-axis code review)
 
 **Tiêu chuẩn phê duyệt (Approval standard):** Hãy phê duyệt một thay đổi khi nó chắc chắn cải thiện được sức khỏe tổng thể của codebase, ngay cả khi nó không hoàn hảo. Không tồn tại thứ gọi là code hoàn hảo — mục tiêu là sự cải tiến liên tục. Đừng chặn (block) một thay đổi chỉ vì nó không được viết chính xác theo cách bạn muốn. Nếu nó làm codebase tốt lên và tuân thủ các quy ước của dự án, hãy approve nó.
 
+## Khi nào sử dụng
+
+- Trước khi merge bất kỳ thay đổi nào vào nhánh chính — không có ngoại lệ
+- Review round 1: DEV tự review code mình vừa viết, trước khi trình bày kết quả cho user
+- Review round 2 (tuỳ chọn): QA review từ góc độ testability cho các thay đổi critical (thanh toán, auth, bảo mật), thay đổi phức tạp nhiều edge case, hoặc bug fix cần xác nhận đúng root cause
+- Sau khi `qa-auto-design` sinh code automation — review chất lượng test code trước khi chạy
+
+**KHÔNG sử dụng khi:**
+- Chỉ cần dọn dẹp code đã chạy đúng mà không tìm lỗi → dùng `code-simplification`
+- Cần audit toàn diện kèm tự động sửa từ đầu đến cuối → dùng `dev-audit-and-fix`
+- Chỉ cần chạy lại test đã có → dùng `qa-run-test`
+
 ## Phân chia Trách nhiệm theo Persona (Persona-based Review)
 
 Tuỳ thuộc vào việc bạn đang đóng vai trò (persona) nào, trọng tâm đánh giá của bạn sẽ khác nhau để đảm bảo chất lượng toàn diện mà không giẫm chân lên nhau:
@@ -100,11 +112,38 @@ Dán nhãn cho mọi comment với mức độ nghiêm trọng (severity) để 
 - [ ] **Yêu cầu thay đổi (Request changes)** — Bắt buộc phải giải quyết các issues
 ```
 
+## Các Biện hộ Thường gặp
+
+| Lý do biện hộ | Thực tế |
+|---|---|
+| "Code chạy được rồi, review làm gì cho mất thời gian" | Review bắt lỗi mà test không bắt được: ranh giới module bị phá, edge case chưa nghĩ tới, lỗ hổng auth. Test chỉ kiểm những gì đã nghĩ ra để kiểm. |
+| "PR to quá, review lướt cho nhanh" | PR càng to thì tỉ lệ lọt bug càng cao — đó là lý do phải review kỹ hơn, không phải lướt nhanh hơn. Nếu thực sự quá lớn, yêu cầu tách PR. |
+| "Tôi tin dev này, code chắc ổn" | Review là về code, không phải về người. Người giỏi nhất vẫn tạo ra bug khi mệt hoặc thiếu ngữ cảnh. |
+| "Chỗ này chưa hoàn hảo nhưng thôi, sửa sau" | "Sửa sau" hiếm khi xảy ra. Hoặc yêu cầu sửa trước merge, hoặc tạo ticket cụ thể có người nhận — đừng để trôi. |
+| "Không đúng cách tôi hay viết nên tôi request changes" | Tiêu chuẩn là *có làm codebase tốt lên và tuân thủ quy ước dự án không*, không phải *có giống cách tôi viết không*. Sở thích cá nhân thì ghi là `nit:`, đừng chặn merge. |
+| "Bug fix nhỏ xíu, khỏi cần test regression" | Không có test regression thì đúng bug đó sẽ quay lại. Bug fix mà không kèm test là fix chưa xong. |
+| "QA sẽ bắt được lỗi này lúc test" | Bắt lỗi ở review rẻ hơn nhiều so với bắt ở khâu test, và rẻ hơn rất nhiều so với bắt ở production. |
+
 ## Các Dấu hiệu Cảnh báo (Red Flags)
-- Type "LGTM" trong khi chả có mẩu bằng chứng nào chứng minh bạn đã đọc code.
-- Chấp nhận câu chót lưỡi đầu môi "I'll fix it later" — yêu cầu dọn dẹp trước khi merge.
-- Thay đổi khiến cái file đang to vãi cứt còn to hơn, thay vì chặt nhỏ nó ra.
-- Fix Bug tạo PR mà không thèm kèm cái bài test regression vào.
+- Type "LGTM" trong khi không có bằng chứng nào cho thấy đã thực sự đọc code.
+- Chấp nhận lời hứa "để tôi sửa sau" — yêu cầu dọn dẹp trước khi merge.
+- Thay đổi khiến một file vốn đã quá lớn trở nên lớn hơn, thay vì tách nhỏ nó ra.
+- PR fix bug mà không kèm test regression.
+- Review chỉ đọc diff mà không mở file gốc để hiểu ngữ cảnh xung quanh.
+- Toàn bộ nhận xét đều là `nit:` — dấu hiệu chưa chạm tới correctness, kiến trúc hay bảo mật.
+- Approve một PR đụng tới auth/thanh toán/dữ liệu tiền mà không ai review trục Bảo mật.
+
+## Xác minh
+
+Một lượt review chỉ coi là xong khi:
+
+- [ ] Đã quét đủ 5 trục (chính xác, dễ đọc, kiến trúc, bảo mật, hiệu năng) — trục nào không áp dụng thì nói rõ vì sao
+- [ ] Mỗi nhận xét đều trỏ tới `file:line` cụ thể, không có nhận xét chung chung
+- [ ] Mỗi nhận xét đã được phân loại: Blocking / Nên sửa / `nit:`
+- [ ] Mỗi nhận xét Blocking đều nêu được kịch bản hỏng cụ thể (input nào → kết quả sai nào)
+- [ ] Với PR fix bug: đã xác nhận có test regression tái hiện đúng bug đó
+- [ ] Với persona QA: đã đối chiếu thay đổi với Acceptance Criteria trong `*-final.md`
+- [ ] Kết luận cuối cùng là một trong ba trạng thái rõ ràng: Approve / Approve kèm nit / Request changes
 
 ## Kết hợp
 - **Kích hoạt trực tiếp khi:** user yêu cầu đánh giá chất lượng (review code) của một đoạn mã, file, hoặc một Pull Request cụ thể.

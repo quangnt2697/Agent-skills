@@ -1,4 +1,4 @@
-description = "Chạy full QA pipeline tự động: ba-spec → qa-test-design → qa-auto-design → báo cáo. Tự động duyệt giữa các phase, chỉ dừng khi cần input từ user."
+description = "Chạy full QA pipeline tự động — ba-spec → qa-test-design → qa-auto-design → qa-run-test → báo cáo. Tự động duyệt giữa các phase dựa trên Confidence Level, chỉ dừng khi confidence < 90% hoặc có blockers."
 
 prompt = """
 Chạy pipeline QA đầy đủ cho $ARGUMENTS (Jira issue key) ở CHẾ ĐỘ TỰ ĐỘNG.
@@ -28,7 +28,7 @@ KHÔNG dừng để hỏi "bạn có muốn tiếp tục không?" giữa các ph
 - Giai đoạn 2: Viết Gherkin (.feature) từ checklist
 - Chạy `qa-validate.sh` kiểm tra format
 - Output: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature`
-- **(Mới)** Nếu có `.env` cấu hình Squash TM, kích hoạt `/qa-push-squash` để tự động đẩy Gherkin file lên Squash TM.
+- **(Mới)** Nếu có `.env` cấu hình Squash TM, kích hoạt `/qa-squash-push` để tự động đẩy Gherkin file lên Squash TM.
 - → Tự động chuyển Phase 3
 
 ### Phase 3: Sinh Code & Chạy Test (qa-auto-design)

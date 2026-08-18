@@ -5,7 +5,7 @@ description: >
   sau đó gán test case vào test plan của requirement tương ứng bên Campaign Workspace.
   Hỗ trợ quét Requirement Workspace để lấy Sprint mới nhất, đồng bộ tạo thư mục bên Test Case Workspace và tự động dán đè script.
   Sử dụng khi đã có file .feature hoàn chỉnh và cần đồng bộ test case lên Squash TM.
-  Trigger: "/qa-push-squash {issueKey}"
+  Trigger: "/qa-squash-push {issueKey}"
 ---
 
 # Skill: qa-squash-push
@@ -25,6 +25,19 @@ Phase A tự động quét **Requirement Workspace** để tìm "EnTrade Sprint 
 Phase B đăng nhập bằng session, dò node Sprint tương ứng trong campaign-tree, tìm requirement có `reference == {issueKey}` và gán test case vào test plan của nó.
 
 > **Lưu ý kiến trúc:** Phase B dùng API nội bộ `/backend` mà UI Squash gọi, không phải REST API công khai. Nhóm endpoint này **không có cam kết ổn định** và có thể đổi khi Squash TM nâng version. Đó là lý do Phase B được thiết kế best-effort: hỏng thì cảnh báo chứ không đánh hỏng kết quả Phase A.
+
+---
+
+## Khi nào sử dụng
+
+- Đã hoàn thành Giai đoạn 2 của `qa-test-design` và có file `{issueKey}.feature` hợp lệ
+- Cần đồng bộ test case lên Squash TM để team QA thủ công thực thi
+- Chạy lại sau khi sửa Gherkin — script tự động ghi đè bản cũ trên Squash
+
+**KHÔNG sử dụng khi:**
+- File `.feature` chưa qua `qa-validate.sh` — đẩy Gherkin sai cú pháp lên Squash rồi phải dọn tay
+- Chưa có `.env` khai báo đủ biến Phase A (xem Điều kiện Tiên quyết)
+- Chỉ muốn chạy test automation — đó là `qa-run-test`, không liên quan Squash
 
 ---
 
@@ -123,3 +136,34 @@ Nếu script thất bại (Thiếu env, không tìm thấy file, lỗi API Phase
 | `Không khớp được node Sprint` | Tên sprint bên Campaign khác bên Requirement (vd `Sprint 46` vs `EnTrade Sprint 046`) | Kiểm tra và đồng bộ lại quy ước đặt tên |
 | `Không tìm thấy requirement nào có reference '{issueKey}'` | Requirement chưa được thêm vào Sprint, hoặc field Reference bỏ trống | Vào Campaign Workspace điền Reference = issueKey |
 | `Gán test case thất bại (HTTP 4xx)` | Endpoint `/backend` đã đổi ở version Squash mới | Capture lại request từ DevTools và cập nhật script |
+
+---
+
+## Các Biện hộ Thường gặp
+
+| Lý do biện hộ | Thực tế |
+|---|---|
+| "Exit code 0 rồi, coi như xong" | Exit 0 chỉ xác nhận Phase A. Phase B là best-effort — phải đọc dòng `- Campaign Workspace:` mới biết test case đã gán vào requirement hay chưa. |
+| "Đẩy trước, validate Gherkin sau cũng được" | Squash ghi đè theo tên file. Đẩy bản sai lên rồi thì bản sai là thứ QA thủ công nhìn thấy, và phải dọn tay trên UI. |
+| "Chạy từng lệnh curl một cho dễ debug" | Mỗi lệnh bash là một lần xin quyền. Skill được thiết kế chạy một lệnh script duy nhất — xem mục Workflow. |
+| "Hardcode token vào lệnh cho nhanh, lát xoá" | Token vào shell history và có thể lọt vào transcript. Luôn đọc từ `.env`. |
+| "Phase B hỏng chắc do script sai, sửa script luôn" | Nhóm `/backend` là API nội bộ không có cam kết ổn định. Kiểm tra bảng Xử lý sự cố trước — phần lớn là do cấu hình hoặc quy ước đặt tên, không phải script. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- Đẩy file `.feature` chưa chạy qua `qa-validate.sh`
+- Bỏ qua dòng `- Campaign Workspace:` trong output rồi báo với user là "đã xong"
+- In token, cookie `JSESSIONID`, hoặc `SQUASH_PASSWORD` ra log/chat
+- `.env` chưa nằm trong `.gitignore`
+- Sửa script Phase B trước khi loại trừ các nguyên nhân cấu hình ở bảng Xử lý sự cố
+- Chạy nhiều lệnh bash rời rạc thay vì một lệnh script duy nhất
+- Đẩy lên Squash khi `{issueKey}` trong tên file không khớp issueKey được truyền vào
+
+## Xác minh
+
+- [ ] Script exit code = 0
+- [ ] Output ghi rõ số test case đã đẩy, khớp số `Scenario` + `Scenario Outline` trong file `.feature`
+- [ ] Dòng `- Test Case Workspace:` xác nhận đã tạo/ghi đè đúng thư mục Sprint
+- [ ] Dòng `- Campaign Workspace:` cho biết rõ **đã gán** hay **bỏ qua kèm lý do** — và lý do đó đã được báo lại cho user
+- [ ] Không có token, cookie, hay mật khẩu nào xuất hiện trong output hiển thị cho user
+- [ ] Mở Squash TM kiểm tra test case hiện đúng ở Sprint mới nhất (kiểm tra thủ công một lần sau mỗi lần đổi cấu hình)

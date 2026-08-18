@@ -19,6 +19,19 @@ Tự động hoá quy trình import và phân tích tài liệu từ **Jira** v�
 
 ---
 
+## Khi nào sử dụng
+
+- Có issueKey Jira với yêu cầu tương đối rõ ràng, cần phân tích và tổng hợp thành Business-Spec
+- Có keyword Confluence, cần gom tài liệu thiết kế rải rác thành một nguồn sự thật duy nhất
+- Bắt đầu bất kỳ pipeline nào cần `*-final.md` làm đầu vào (`/qa-test-design`, `/tech-spec`, `/e2e-delivery`)
+- Cần tài liệu bàn giao cho QA và DEV cùng đọc, thay vì mỗi bên tự diễn giải Jira theo cách riêng
+
+**KHÔNG sử dụng khi:**
+- Jira chỉ có ý tưởng thô, mơ hồ, cần brainstorm để làm rõ trước → dùng `ba-refine`
+- Không có Jira/Confluence, chỉ có code đang chạy → dùng `qa-code2spec`
+- Đã có `{issueKey}-final.md` và không có gì thay đổi — đọc file đó, đừng import lại
+- Chỉ cần làm rõ vài điểm mơ hồ trong spec đã có → dùng `ba-interview-me`
+
 ## Điều kiện Tiên quyết (Authentication)
 
 Agent **BẮT BUỘC TỰ ĐỘNG** đọc file `.env` để lấy các biến môi trường mà **KHÔNG CẦN HỎI** người dùng.
@@ -434,6 +447,47 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 | **Cache Check** | Trước khi tải, luôn kiểm tra file đã có trong dự án (`specs/imports/`). Tiết kiệm thời gian và bandwidth. |
 | **Smart Filter** | Chỉ tải file trong bộ lọc cho phép (xem bảng ở trên). Bỏ qua video, file nén. |
 | **Approval Gate** | Luôn trình danh sách cho User duyệt trước khi tải. User có quyền loại bỏ file không cần thiết. |
+
+---
+
+## Các Biện hộ Thường gặp
+
+| Lý do biện hộ | Thực tế |
+|---|---|
+| "Jira mô tả đủ rồi, khỏi cần scan Confluence tham chiếu" | Phần lớn business rule chi tiết nằm ở trang thiết kế được link, không nằm trong mô tả Jira. Bỏ scan là bỏ sót nguồn chính. |
+| "Ảnh wireframe/flowchart không đọc được, bỏ qua" | Wireframe và flowchart là nơi luồng người dùng được định nghĩa rõ nhất. Tải về và đọc — chúng nằm trong bộ lọc cho phép vì lý do đó. |
+| "Có 3 chỗ mơ hồ nhưng tôi đoán được, viết luôn cho nhanh" | Đoán sai ở tầng spec sẽ nhân lên thành checklist sai, Gherkin sai, và test sai. Đây chính là lý do Phase 4 tồn tại. |
+| "Confidence mới 78%, cứ ghi vào rồi chạy tiếp" | Đúng — chạy tiếp là hành vi đúng. Nhưng phải ghi gap vào mục *Giả định & Rủi ro*, không được im lặng lấp đầy chỗ trống. |
+| "File `-final.md` đã tồn tại, hỏi user có ghi đè không" | Ghi đè. Bản cũ đã nằm trong git history. Đây là câu hỏi thừa theo `autonomy-contract.md`. |
+| "Task này đơn giản, không cần đủ 13 section" | Section không áp dụng thì ghi rõ "Không áp dụng" kèm lý do. Bỏ trống khiến người đọc sau không phân biệt được *không cần* với *quên mất*. |
+| "Copy nguyên mô tả Jira vào final.md cho nhanh" | `*-final.md` là kết quả phân tích, không phải bản sao. Chép nguyên nghĩa là chưa làm gì cả. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- `*-final.md` không có mục Acceptance Criteria, hoặc AC viết dạng mô tả thay vì checklist rule
+- Mục Open Questions rỗng ở một task không tầm thường — chưa phân tích đủ sâu, không phải đã rõ hết
+- Business Rule viết bằng tính từ mơ hồ: "hợp lệ", "nhanh", "phù hợp" — QA không chuyển được thành test data
+- Danh sách đóng (loại lệnh, trạng thái tài khoản, loại thị trường) chỉ liệt kê ví dụ thay vì liệt kê đủ
+- Không có mục *Giả định & Rủi ro* dù quá trình phân tích có chỗ phải đoán
+- Chỉ đọc file PDF của Jira, bỏ qua toàn bộ file trong `source/references/`
+- Có tài liệu tham chiếu tải về nhưng không đoạn nào trong `final.md` trích dẫn tới
+- Spec chứa API contract, database schema, hoặc test case — vượt ranh giới BA/PO (xem CLAUDE.md)
+- Loại task (APP/WEB/API) không được nhận diện, nên trích xuất theo profile sai
+
+## Xác minh
+
+Trước khi bàn giao `*-final.md` cho QA hoặc DEV:
+
+- [ ] File tồn tại tại `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` và không rỗng
+- [ ] Header khai báo rõ loại task (📱 APP / 🌐 WEB / 🔌 API)
+- [ ] Đủ 13 section — section không áp dụng phải ghi "Không áp dụng" kèm lý do, không để trống
+- [ ] Mỗi tài liệu đã tải trong `source/` và `source/references/` được trích dẫn ít nhất một lần
+- [ ] Mỗi Business Rule phát biểu được dưới dạng kiểm chứng được (có ngưỡng, có giá trị, có điều kiện)
+- [ ] Mọi danh sách đóng liệt kê đủ giá trị, không dùng "v.v." hay "..."
+- [ ] Mỗi Acceptance Criteria là một mệnh đề Pass/Fail duy nhất
+- [ ] Câu hỏi 🔴 Critical đã được trả lời qua Phase 4, hoặc được nêu rõ là điểm dừng theo trường hợp 3 của `autonomy-contract.md`
+- [ ] Gap chưa giải quyết được ghi vào mục *Giả định & Rủi ro* kèm mức ảnh hưởng
+- [ ] Không chứa Tech-Spec, API contract, database schema, hay test case
 
 ---
 
