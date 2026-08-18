@@ -76,10 +76,10 @@ Phase 3: /qa-run-test
 
 ## Outputs
 
-- `tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md`
-- `tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
-- `tests/qa-test-design/{issueKey}/steps/test_*.py`
-- `tests/qa-test-design/{issueKey}/reports/{issueKey}-pipeline-summary.md`
+- `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md`
+- `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}.feature`
+- `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py`
+- `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-pipeline-summary.md`
 
 ## See Also
 

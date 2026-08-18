@@ -34,20 +34,41 @@ const KEBAB_CASE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 // A description must state WHEN to use the skill, not just what it does
 // (docs/skill-anatomy.md → Required). Accept the canonical "Use when …"
 // plus the equivalent "Use before/after/during …" phrasings in use today.
-// Reject negated forms ("Do not use when …", "Don't use when …") — those
+// This repo authors skills in Vietnamese (CLAUDE.md → Chuẩn mực Đầu ra), so the
+// Vietnamese equivalents are first-class triggers, not a fallback.
+// Reject negated forms ("Do not use when …", "Không sử dụng khi …") — those
 // describe exclusions, not trigger conditions.
-const DESCRIPTION_TRIGGER        = /\buse (this )?when\b|\buse (before|after|during)\b/i;
-const DESCRIPTION_TRIGGER_NEGATE = /\b(do not|don't|never) use (this )?(when|before|after|during)\b/i;
+//
+// The Vietnamese alternatives use Unicode lookarounds rather than \b: JS word
+// boundaries are ASCII-only, so \b never matches next to an accented letter
+// ("Áp dụng", "để") and the trigger would be missed.
+const DESCRIPTION_TRIGGER = new RegExp(
+  '\\buse (this )?when\\b' +
+  '|\\buse (before|after|during)\\b' +
+  '|(?<!\\p{L})(sử dụng|dùng|áp dụng|kích hoạt)\\s+(kỹ năng này\\s+)?' +
+    '(khi|trước khi|sau khi|trong khi|để|cho)(?!\\p{L})',
+  'iu'
+);
+
+const DESCRIPTION_TRIGGER_NEGATE = new RegExp(
+  '\\b(do not|don\'t|never) use (this )?(when|before|after|during)\\b' +
+  '|(?<!\\p{L})(không|đừng|tuyệt đối không)\\s+(nên\\s+)?(sử dụng|dùng|áp dụng)(?!\\p{L})',
+  'iu'
+);
 
 // Sections every standard SKILL.md must contain.
 // Each entry is an array of acceptable heading strings — the first
 // match wins, so you can list canonical + legacy aliases.
+// Vietnamese headings are listed alongside the English ones because this repo's
+// output standard is Vietnamese; a skill satisfies a section with either form.
 const REQUIRED_SECTIONS = [
-  ['## Overview'],
-  ['## When to Use'],
-  ['## Common Rationalizations'],
-  ['## Red Flags'],
-  ['## Verification'],
+  ['## Overview',                '## Tổng quan', '## Mục đích'],
+  ['## When to Use',             '## Khi nào sử dụng', '## Khi nào cần sử dụng'],
+  ['## Common Rationalizations', '## Các Biện hộ Thường gặp', '## Các lý do biện minh thường gặp',
+                                 '## Anti-patterns (Tránh)'],
+  ['## Red Flags',               '## Dấu hiệu Cảnh báo (Red Flags)', '## Các Dấu hiệu Cảnh báo (Red Flags)',
+                                 '## Cờ đỏ cảnh báo'],
+  ['## Verification',            '## Xác minh', '## Verification Checklist', '## Checklist Xác minh'],
 ];
 
 // Skills that are intentionally exempt from section checks.
@@ -55,8 +76,8 @@ const REQUIRED_SECTIONS = [
 // cannot bypass the validator by editing their own skill file.
 // Every entry must have a documented reason.
 const SECTION_EXEMPT_SKILLS = {
-  'using-agent-skills': 'Meta-skill — orchestrates other skills; When-to-Use and Verification are not applicable to a routing document.',
-  'idea-refine':        'Legacy structure predating skill-anatomy.md — uses How-It-Works/Usage/Anti-patterns instead of standard headings. Tracked for conformance in https://github.com/addyosmani/agent-skills/issues',
+  'meta-using-agent-skills': 'Meta-skill — orchestrates other skills; When-to-Use and Verification are not applicable to a routing document.',
+  'ba-refine':               'Legacy structure predating skill-anatomy.md — uses How-It-Works/Usage/Anti-patterns instead of standard headings. Tracked for conformance in https://github.com/addyosmani/agent-skills/issues',
 };
 
 // Regex patterns that indicate an explicit cross-skill reference.
@@ -89,18 +110,50 @@ function stripFencedCodeBlocks(content) {
  * Parse YAML-style frontmatter from the top of a markdown file.
  * Returns a key→value object, or null if no frontmatter block found.
  * Values are stripped of surrounding quotes.
+ *
+ * Supports block scalars (`key: >` folded and `key: |` literal, with optional
+ * chomping indicators). Several skills declare their description that way; a
+ * line-only parser would read the value as ">" and every content check against
+ * it — length, trigger phrase — would be scanning a one-character string.
  */
 function parseFrontmatter(content) {
   const match = content.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*\r?\n/);
   if (!match) return null;
 
   const result = {};
-  for (const line of match[1].split(/\r?\n/)) {
+  const lines  = match[1].split(/\r?\n/);
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Continuation lines of a block scalar are consumed by the branch below.
     const colonIdx = line.indexOf(':');
     if (colonIdx === -1) continue;
-    const key   = line.slice(0, colonIdx).trim();
-    const value = line.slice(colonIdx + 1).trim().replace(/^['"]|['"]$/g, '');
-    if (key) result[key] = value;
+    // Only treat a line as a new key if it starts at column 0 — indented lines
+    // belong to the block scalar above them.
+    if (/^\s/.test(line)) continue;
+
+    const key = line.slice(0, colonIdx).trim();
+    if (!key) continue;
+    const rawValue = line.slice(colonIdx + 1).trim();
+
+    if (/^[>|][-+]?\d*$/.test(rawValue)) {
+      // Block scalar: gather the indented lines that follow.
+      const parts = [];
+      let j = i + 1;
+      for (; j < lines.length; j++) {
+        if (lines[j].trim() === '') { parts.push(''); continue; }
+        if (!/^\s/.test(lines[j])) break;   // dedent ends the block
+        parts.push(lines[j].trim());
+      }
+      i = j - 1;
+      // Folded (>) joins with spaces; literal (|) keeps newlines. Either way the
+      // lint rules only need the text, so join folded-style and trim.
+      const joined = rawValue.startsWith('|') ? parts.join('\n') : parts.join(' ');
+      result[key] = joined.replace(/\s+/g, ' ').trim();
+    } else {
+      result[key] = rawValue.replace(/^['"]|['"]$/g, '');
+    }
   }
   return result;
 }

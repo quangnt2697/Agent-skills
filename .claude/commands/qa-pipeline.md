@@ -135,7 +135,7 @@ Dừng sau MỖI phase để user review và approve.
 - Invoke skill `ba-spec` với issue key từ $ARGUMENTS
 - Tự động chạy 6 phase: Download PDF → Nhận diện → Trích xuất → Gap analysis
 - **Dừng lại NẾU** cần ba-interview-me (hỏi user từng câu một để làm rõ gaps)
-- Output: `specs/jira-import/{issueKey}/{issueKey}-final.md`
+- Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
 - → Tự động chuyển Phase 2
 
 ### Phase 2: Thiết kế Test (qa-test-design)
@@ -159,13 +159,13 @@ Dừng sau MỖI phase để user review và approve.
 - Bước 4-5: Sinh test scripts (`test_*.py`)
 - Bước 6: Gọi lệnh `/review` hoặc dùng kỹ năng `review-code-and-quality` dưới vai trò QA để review tự động
 - Bước 7: Chạy pytest + self-fix loop (chỉ sửa script error, KHÔNG ép FAIL→PASS)
-- Output: `tests/qa-test-design/{issueKey}/steps/test_*.py`
+- Output: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py`
 - → Tự động chuyển Phase 4
 
 ### Phase 4: Xuất Báo cáo
 - Sinh báo cáo Markdown từ kết quả pytest
 - Bao gồm bảng truy vết end-to-end: Ba-spec → Checklist → Gherkin → Test → Kết quả
-- Output: `tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
+- Output: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
 
 ## Sau khi hoàn thành
 
@@ -189,11 +189,11 @@ Dừng sau MỖI phase để user review và approve.
 **Overall Confidence:** 96% (High)
 
 **Deliverables:**
-- Business-Spec: `specs/jira-import/JIRA-123/JIRA-123-final.md`
-- Test Checklist: `tests/qa-test-design/JIRA-123/JIRA-123-checklist.md`
-- Gherkin Feature: `tests/qa-test-design/JIRA-123/features/JIRA-123.feature`
-- Test Code: `tests/qa-test-design/JIRA-123/steps/test_*.py`
-- Test Report: `tests/qa-test-design/JIRA-123/reports/JIRA-123-report.md`
+- Business-Spec: `workspace/JIRA-123/specs/imports/jira/JIRA-123/JIRA-123-final.md`
+- Test Checklist: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/JIRA-123-checklist.md`
+- Gherkin Feature: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/features/JIRA-123.feature`
+- Test Code: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/steps/test_*.py`
+- Test Report: `workspace/JIRA-123/tests/qa-test-design/JIRA-123/reports/JIRA-123-report.md`
 
 **Test Results:**
 - Total: 28 tests

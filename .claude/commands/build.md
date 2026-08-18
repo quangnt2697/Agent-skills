@@ -2,7 +2,7 @@
 description: Triển khai các task một cách tăng dần — viết test, code, xác minh. Thêm "auto" để chạy toàn bộ kế hoạch trong một lần duyệt. Tự động tạo feature branch, chỉ commit & merge SAU KHI user approve.
 ---
 
-Kích hoạt kỹ năng incremental-implementation (triển khai tăng dần) cùng với test-driven-development (TDD).
+Kích hoạt kỹ năng incremental-implementation (triển khai tăng dần) cùng với dev-test-driven-development (TDD).
 
 ## Git Workflow Tích hợp
 
@@ -51,9 +51,9 @@ Sử dụng chế độ này khi đã có spec và bạn muốn gộp quá trìn
 5. **Một điểm dừng (checkpoint) duy nhất.** Trình bày toàn bộ kế hoạch và chờ câu trả lời đồng ý rõ ràng (vd: "approve", "go", "yes"). Những câu trả lời lấp lửng ("looks reasonable", "I guess") được coi là **không** đồng ý. Đây là cổng kiểm soát duy nhất của con người — sau khi được duyệt, hãy chạy tự động.
 6. **Thực thi mọi task theo thứ tự phụ thuộc.** Sử dụng các phụ thuộc (dependency) được khai báo của mỗi task; nếu không khai báo, chạy theo thứ tự liệt kê trong kế hoạch. Với mỗi task, chạy vòng lặp mặc định ở trên (RED → GREEN → hồi quy → build → đánh dấu hoàn thành). **KHÔNG commit** sau mỗi task — tất cả thay đổi được ghi nhận trong working tree.
 7. **Dừng lại và hỏi user** (không tự ý đẩy qua) khi:
-    - một test không thể pass hoặc build bị hỏng mà không có cách sửa rõ ràng → làm theo kỹ năng debugging-and-error-recovery
+    - một test không thể pass hoặc build bị hỏng mà không có cách sửa rõ ràng → làm theo kỹ năng dev-debugging
     - spec mơ hồ, hoặc task cần một quyết định mà spec không đề cập
-    - một task có rủi ro cao hoặc không thể đảo ngược — thay đổi quyền/auth, di chuyển dữ liệu có tính phá hủy, thanh toán, xóa, deploy, bất kỳ thứ gì đụng đến secret, **hoặc bất kỳ thứ gì bạn không thể hoàn tác (undo) bằng `git revert`** → làm theo kỹ năng doubt-driven-development và yêu cầu ký duyệt rõ ràng trước khi tiếp tục
+    - một task có rủi ro cao hoặc không thể đảo ngược — thay đổi quyền/auth, di chuyển dữ liệu có tính phá hủy, thanh toán, xóa, deploy, bất kỳ thứ gì đụng đến secret, **hoặc bất kỳ thứ gì bạn không thể hoàn tác (undo) bằng `git revert`** → làm theo kỹ năng dev-doubt-driven-development và yêu cầu ký duyệt rõ ràng trước khi tiếp tục
 
    Sau khi user giải quyết xong điểm nghẽn, họ gọi lại `/build auto` — nó sẽ tiếp tục từ task chưa hoàn thành tiếp theo.
 8. **Trình bày kết quả và chờ approval.** Sau khi hoàn thành tất cả tasks:
@@ -84,4 +84,4 @@ Sử dụng chế độ này khi đã có spec và bạn muốn gộp quá trìn
    git merge --no-ff feature/{branch-name}
    ```
 
-Nếu bất kỳ bước nào thất bại, làm theo kỹ năng debugging-and-error-recovery.
+Nếu bất kỳ bước nào thất bại, làm theo kỹ năng dev-debugging.

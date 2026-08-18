@@ -7,7 +7,7 @@ description: [BA/PO] Viết User Stories chuẩn INVEST từ Business-Spec hoặ
 Kích hoạt skill ba-user-story-writing với BA/PO persona. Đọc `skills/ba-user-story-writing/SKILL.md` để thực hiện đúng workflow.
 
 $ARGUMENTS có thể chứa:
-- Jira issue key (VD: G3PTP-16584) → Đọc từ `specs/imports/jira/{issueKey}/{issueKey}-final.md`
+- Jira issue key (VD: G3PTP-16584) → Đọc từ `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
 - Hoặc requirements thô từ user (text input)
 
 **Workflow:**

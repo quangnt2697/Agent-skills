@@ -202,7 +202,7 @@ Hãy nêu thật rõ ràng cái gì nằm trong scope và cái gì KHÔNG NẰM 
 
 ## Checklist Increment
 
-Sau mỗi increment, hãy xác minh bằng các công cụ nội bộ của repository (xem phần Khám phá Stack của skill test-driven-development):
+Sau mỗi increment, hãy xác minh bằng các công cụ nội bộ của repository (xem phần Khám phá Stack của skill dev-test-driven-development):
 
 - [ ] Thay đổi chỉ tập trung vào một việc và làm trọn vẹn việc đó
 - [ ] Tất cả các tests hiện tại vẫn pass (lệnh test của repo: `npm test`, `./gradlew test`, `pytest`, ...)

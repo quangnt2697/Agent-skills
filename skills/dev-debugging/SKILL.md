@@ -1,5 +1,5 @@
 ---
-name: debugging-and-error-recovery
+name: dev-debugging
 description: Hướng dẫn debug (gỡ lỗi) tìm nguyên nhân gốc rễ một cách có hệ thống. Sử dụng khi test fail, build hỏng, hành vi không đúng như mong đợi, hoặc khi bạn gặp bất kỳ lỗi bất ngờ nào. Sử dụng khi bạn cần một phương pháp tiếp cận có hệ thống để tìm và sửa nguyên nhân gốc thay vì chỉ đoán mò.
 ---
 
@@ -72,7 +72,7 @@ Không thể tái hiện theo yêu cầu:
 │   └── Tài liệu hóa các điều kiện đã quan sát thấy và quay lại kiểm tra khi nó tái phát
 ```
 
-Đối với các bài test bị fail (ví dụ dùng npm — hãy thay thế bằng lệnh test thực tế của repository, xem mục 'Khám phá Stack trước' của skill test-driven-development):
+Đối với các bài test bị fail (ví dụ dùng npm — hãy thay thế bằng lệnh test thực tế của repository, xem mục 'Khám phá Stack trước' của skill dev-test-driven-development):
 ```bash
 # Chạy duy nhất bài test bị fail đó
 npm test -- --grep "tên bài test"

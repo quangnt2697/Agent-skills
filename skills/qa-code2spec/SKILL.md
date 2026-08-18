@@ -2,6 +2,7 @@
 name: qa-code2spec
 description: >
   Dịch ngược mã nguồn (Code) thành Tài liệu Đặc tả (Spec) thông qua việc truy vết đồ thị phụ thuộc (Deep Trace) đa ngôn ngữ. 
+  Sử dụng khi cần dựng lại tài liệu đặc tả từ codebase đã có mà không còn spec gốc, hoặc khi cần đối chiếu code thực tế với spec.
   Sử dụng kỹ năng qa-code-review để đọc code và ba-interview-me để làm rõ với user. Đầu ra là file final.md chuẩn tắc.
   Trigger: "/qa-code2spec {đường_dẫn_file_api}".
 ---

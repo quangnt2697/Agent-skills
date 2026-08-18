@@ -1,6 +1,6 @@
 # Tham khảo Jira REST API
 
-## Endpoints sử dụng trong skill jira-import
+## Endpoints sử dụng trong skill ba-spec
 
 ### 1. Kiểm tra xác thực
 ```

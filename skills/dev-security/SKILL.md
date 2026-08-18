@@ -1,5 +1,5 @@
 ---
-name: security-and-hardening
+name: dev-security
 description: Gia cố code (hardening) chống lại các lỗ hổng bảo mật. Sử dụng khi xử lý đầu vào của người dùng, xác thực (authentication), lưu trữ dữ liệu, hoặc tích hợp hệ thống ngoài. Sử dụng khi xây dựng bất kỳ tính năng nào có nhận dữ liệu không đáng tin (untrusted data), quản lý phiên người dùng (user sessions), hoặc tương tác với dịch vụ bên thứ ba.
 ---
 

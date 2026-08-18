@@ -11,7 +11,7 @@ Những gì mọi người yêu cầu và những gì họ thực sự muốn th
 
 Thời điểm rẻ nhất để tìm ra khoảng trống (gap) này là trước khi có bất kỳ kế hoạch, spec, hoặc dòng code nào được viết ra. Một khi bạn đã bắt đầu xây dựng, chi phí thay đổi là rất lớn, và người dùng sẽ có xu hướng hợp lý hóa thứ bị sai thành "đủ tốt rồi". Sự không khớp này sẽ bị khóa chặt lại.
 
-Kỹ năng này đóng lại khoảng trống đó trước khi nó gây ra tốn kém. Các kỹ năng thuộc giai đoạn Define (Xác định) khác thường giả định rằng bạn đã biết sơ bộ những gì mình muốn: `idea-refine` tạo ra các biến thể từ một ý tưởng, `tech-spec` viết ra các yêu cầu, `doubt-driven-development` kiểm tra chéo một kế hoạch sau khi bạn đã phác thảo nó. Kỹ năng `interview-me` là phần nằm trước tất cả những thứ đó, nơi bạn hỏi từng câu hỏi một, kèm theo phỏng đoán tốt nhất của bạn, cho đến khi bạn có thể dự đoán được người dùng sẽ nói gì trước khi họ thực sự nói ra.
+Kỹ năng này đóng lại khoảng trống đó trước khi nó gây ra tốn kém. Các kỹ năng thuộc giai đoạn Define (Xác định) khác thường giả định rằng bạn đã biết sơ bộ những gì mình muốn: `idea-refine` tạo ra các biến thể từ một ý tưởng, `tech-spec` viết ra các yêu cầu, `dev-doubt-driven-development` kiểm tra chéo một kế hoạch sau khi bạn đã phác thảo nó. Kỹ năng `interview-me` là phần nằm trước tất cả những thứ đó, nơi bạn hỏi từng câu hỏi một, kèm theo phỏng đoán tốt nhất của bạn, cho đến khi bạn có thể dự đoán được người dùng sẽ nói gì trước khi họ thực sự nói ra.
 
 ## Khi nào cần sử dụng
 
@@ -182,7 +182,7 @@ Chỉ sau hai câu hỏi, agent đã phát hiện ra yêu cầu thực sự khô
 - **`idea-refine`**: kỹ năng theo sau (downstream). Nếu ý định được xác nhận là "Tôi muốn X nhưng tôi không biết cách khoanh vùng nó", hãy bàn giao cho `idea-refine` để tạo ra các biến thể dựa trên ý định giờ đã rõ ràng.
 - **`tech-spec`**: kỹ năng theo sau. Nếu ý định được xác nhận là cụ thể ("Tôi muốn X cho đối tượng người dùng Y với tiêu chí thành công Z"), hãy bàn giao cho `tech-spec` để viết nó ra thành tài liệu.
 - **`planning-and-task-breakdown`**: cách kỹ năng này hai bước về phía sau (sau khi đã có spec).
-- **`doubt-driven-development`**: nằm ở đầu kia của dòng thời gian. Interview-me là việc trích xuất ý định TRƯỚC KHI ra quyết định; doubt-driven là việc kiểm tra chéo SAU KHI đã có quyết định/kế hoạch. Cả hai đều nhằm bắt lỗi sai lệch, nhưng ở những thời điểm khác nhau.
+- **`dev-doubt-driven-development`**: nằm ở đầu kia của dòng thời gian. Interview-me là việc trích xuất ý định TRƯỚC KHI ra quyết định; dev-doubt-driven-development là việc kiểm tra chéo SAU KHI đã có quyết định/kế hoạch. Cả hai đều nhằm bắt lỗi sai lệch, nhưng ở những thời điểm khác nhau.
 - **`source-driven-development`**: vuông góc (không liên quan trực tiếp). Interview-me làm rõ người dùng muốn gì; SDD xác minh các thông tin kỹ thuật của framework. Chúng không cạnh tranh với nhau.
 
 ## Những lời Biện minh Thường gặp (Rationalizations)
