@@ -57,18 +57,38 @@ const DESCRIPTION_TRIGGER_NEGATE = new RegExp(
 );
 
 // Sections every standard SKILL.md must contain.
-// Each entry is an array of acceptable heading strings — the first
-// match wins, so you can list canonical + legacy aliases.
-// Vietnamese headings are listed alongside the English ones because this repo's
-// output standard is Vietnamese; a skill satisfies a section with either form.
+//
+// Matched by keyword rather than by an exact heading string. The repo authors
+// headings in Vietnamese with free-form parentheticals and inconsistent casing
+// — "## Xác Minh (Verification)", "## Cờ Đỏ (Red Flags)", "## Những lời Biện
+// minh Thường gặp" — and an exact-alias list never keeps up: every new
+// phrasing reads as a missing section and buries the genuine gaps.
+//
+// Each entry is { label, pattern }. `label` is what an error message names;
+// `pattern` is tested against each H2 heading line (case-insensitive).
 const REQUIRED_SECTIONS = [
-  ['## Overview',                '## Tổng quan', '## Mục đích'],
-  ['## When to Use',             '## Khi nào sử dụng', '## Khi nào cần sử dụng'],
-  ['## Common Rationalizations', '## Các Biện hộ Thường gặp', '## Các lý do biện minh thường gặp',
-                                 '## Anti-patterns (Tránh)'],
-  ['## Red Flags',               '## Dấu hiệu Cảnh báo (Red Flags)', '## Các Dấu hiệu Cảnh báo (Red Flags)',
-                                 '## Cờ đỏ cảnh báo'],
-  ['## Verification',            '## Xác minh', '## Verification Checklist', '## Checklist Xác minh'],
+  {
+    label: '## Overview',
+    pattern: /^##\s+(overview|tổng\s+quan|mục\s+đích)\b/i,
+  },
+  {
+    label: '## When to Use',
+    pattern: /^##\s+.*(when\s+to\s+use|khi\s+nào\s+(cần\s+)?(sử\s+dụng|dùng|áp\s+dụng))/i,
+  },
+  {
+    label: '## Common Rationalizations',
+    // "Anti-patterns" is accepted: it is the shape several skills already use
+    // to record the same thing — the excuses that lead people to skip the work.
+    pattern: /^##\s+.*(rationalization|biện\s+hộ|biện\s+minh|ngụy\s+biện|anti[-\s]?pattern|phản\s+mẫu)/i,
+  },
+  {
+    label: '## Red Flags',
+    pattern: /^##\s+.*(red\s+flag|dấu\s+hiệu\s+cảnh\s+báo|cờ\s+đỏ)/i,
+  },
+  {
+    label: '## Verification',
+    pattern: /^##\s+.*(verification|xác\s+minh|kiểm\s+chứng)/i,
+  },
 ];
 
 // Skills that are intentionally exempt from section checks.
@@ -244,16 +264,15 @@ function lintSkillContent(dirName, content, knownSkills) {
 
   if (!exempt) {
     // Strip fenced code blocks so headings inside examples/templates don't
-    // satisfy the check, and match headings at the start of a line so
-    // `### Verification` inside a block doesn't satisfy `## Verification`.
-    const proseContent = stripFencedCodeBlocks(content);
-    for (const aliases of REQUIRED_SECTIONS) {
-      const found = aliases.some(heading => {
-        const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        return new RegExp(`^${escaped}\\s*$`, 'm').test(proseContent);
-      });
-      if (!found) {
-        errors.push(`Missing required section: ${aliases[0]}`);
+    // satisfy the check, then test each H2 line on its own — anchoring per
+    // heading keeps `### Verification` inside a block from satisfying `## Verification`.
+    const headings = stripFencedCodeBlocks(content)
+      .split(/\r?\n/)
+      .filter(line => /^##\s/.test(line));
+
+    for (const { label, pattern } of REQUIRED_SECTIONS) {
+      if (!headings.some(h => pattern.test(h))) {
+        errors.push(`Missing required section: ${label}`);
       }
     }
   }

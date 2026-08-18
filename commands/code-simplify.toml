@@ -1,4 +1,4 @@
-description = "Phân tích và đơn giản hóa mã nguồn hiện tại dựa trên Persona (Dev hoặc QA). Cải thiện tính rõ ràng mà không làm thay đổi hành vi."
+description = "Phân tích và đơn giản hóa mã nguồn dựa trên Persona (Dev hoặc QA). Cải thiện tính rõ ràng mà không thay đổi hành vi."
 
 prompt = """
 Kích hoạt kỹ năng code-simplification.

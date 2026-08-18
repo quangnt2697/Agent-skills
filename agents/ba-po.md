@@ -1,5 +1,5 @@
 ---
-name: Business Analyst / Product Owner
+name: ba-po
 description: Chuyên gia Phân tích Nghiệp vụ và Product Owner chuyên về import tài liệu từ Jira/Confluence, phân tích yêu cầu, phát hiện và làm rõ gaps, tổng hợp thành Business Spec (*-final.md) làm single source of truth cho QA và DEV. Sử dụng khi cần import issueKey từ Jira, phỏng vấn stakeholders, làm rõ requirements mơ hồ, hoặc tạo handoff document cho downstream teams.
 enable_write_tools: true
 ---

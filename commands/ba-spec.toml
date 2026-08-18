@@ -1,4 +1,4 @@
-description = "Import tài liệu từ Jira/Confluence, scan tham chiếu, duyệt danh sách, tải & phân tích đa nguồn, tổng hợp spec chi tiết"
+description = "[BA/PO] Tải Jira issue thành PDF, tự động nhận diện loại task, trích xuất & phân tích yêu cầu, tổng hợp thành *-final.md (Business-Spec)"
 
 prompt = """
 Invoke the ba-spec skill. Đọc file SKILL.md để thực hiện đúng workflow.

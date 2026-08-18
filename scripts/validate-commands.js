@@ -2,14 +2,17 @@
 /**
  * validate-commands.js
  *
- * Guards against silent drift across the three slash-command directories:
- *   .claude/commands/  (.md — Claude Code)
- *   .gemini/commands/  (.toml — Gemini CLI)
+ * Guards against silent drift across the slash-command directories:
+ *   .claude/commands/  (.md   — Claude Code)
  *   commands/          (.toml — Antigravity CLI)
  *
+ * This fork does not ship .gemini/commands/, so Gemini CLI is not part of the
+ * parity check. Upstream carries that directory; if it is ever added back here,
+ * put it back in DIRS and the check picks it up automatically.
+ *
  * Checks (errors block CI):
- *   - Every command present in one directory exists in all three
- *   - The 'description' field is identical across all three equivalents
+ *   - Every command present in one directory exists in the others
+ *   - The 'description' field is identical across equivalents
  *
  * What this does NOT check:
  *   Prompt body differences are intentional — each tool has its own
@@ -29,15 +32,14 @@ const ROOT = path.resolve(__dirname, '..');
 
 const DIRS = {
   claude:     { dir: path.join(ROOT, '.claude', 'commands'), ext: '.md'   },
-  gemini:     { dir: path.join(ROOT, '.gemini', 'commands'), ext: '.toml' },
   antigravity:{ dir: path.join(ROOT, 'commands'),            ext: '.toml' },
 };
 
 // Commands where the file stem differs between Claude and the TOML dirs.
-// Key = Claude stem, value = TOML stem.
-const NAME_MAP = {
-  plan: 'planning',
-};
+// Key = Claude stem, value = TOML stem. Empty today — the two directories use
+// identical stems, and keeping a stale mapping here silently hides a real
+// mismatch (an entry for a stem that no longer exists always "resolves").
+const NAME_MAP = {};
 const NAME_MAP_REVERSE = Object.fromEntries(
   Object.entries(NAME_MAP).map(([k, v]) => [v, k])
 );
@@ -92,17 +94,13 @@ function loadCommands({ dir, ext }) {
 function main() {
   const byTool = {
     claude:      loadCommands(DIRS.claude),
-    gemini:      loadCommands(DIRS.gemini),
     antigravity: loadCommands(DIRS.antigravity),
   };
 
   // Canonical command list: use Claude stems as the reference.
   // Map each Claude stem to its TOML equivalent for lookup.
   const claudeStems = Object.keys(byTool.claude).sort();
-  const allTomlStems = new Set([
-    ...Object.keys(byTool.gemini),
-    ...Object.keys(byTool.antigravity),
-  ]);
+  const allTomlStems = new Set(Object.keys(byTool.antigravity));
   const allCanonicalStems = new Set([
     ...claudeStems,
     ...[...allTomlStems].map(s => NAME_MAP_REVERSE[s] ?? s),
@@ -117,7 +115,6 @@ function main() {
   for (const stem of claudeStems) {
     const tomlStem = NAME_MAP[stem] ?? stem;
     const missing  = [];
-    if (!(tomlStem in byTool.gemini))      missing.push('.gemini/commands');
     if (!(tomlStem in byTool.antigravity)) missing.push('commands');
     if (missing.length) {
       console.log(`  ✗  ${stem} — missing in: ${missing.join(', ')}`);
@@ -142,13 +139,11 @@ function main() {
   for (const claudeStem of claudeStems) {
     const tomlStem   = NAME_MAP[claudeStem] ?? claudeStem;
     const descClaude = byTool.claude[claudeStem];
-    const descGemini = byTool.gemini[tomlStem];
     const descAgy    = byTool.antigravity[tomlStem];
 
     const malformed = [
       ['.claude/commands', byTool.claude, claudeStem],
-      ['.gemini/commands', byTool.gemini, tomlStem],
-      ['commands/', byTool.antigravity, tomlStem],
+      ['commands', byTool.antigravity, tomlStem],
     ].filter(([, commands, stem]) => Object.prototype.hasOwnProperty.call(commands, stem) && commands[stem] == null);
 
     if (malformed.length) {
@@ -160,19 +155,18 @@ function main() {
       continue;
     }
 
-    if (descClaude == null || descGemini == null || descAgy == null) {
+    if (descClaude == null || descAgy == null) {
       // Missing file already flagged by parity check
       continue;
     }
 
-    const allMatch = descClaude === descGemini && descGemini === descAgy;
+    const allMatch = descClaude === descAgy;
 
     if (allMatch) {
       console.log(`  ✓  ${claudeStem}`);
     } else {
       console.log(`  ✗  ${claudeStem}`);
       console.log(`       .claude:      ${descClaude}`);
-      console.log(`       .gemini:      ${descGemini}`);
       console.log(`       commands/:    ${descAgy}`);
       errors++;
     }

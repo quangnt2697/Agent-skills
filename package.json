@@ -1,0 +1,21 @@
+{
+  "name": "agent-skills",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bộ sưu tập kỹ năng cấp sản xuất cho AI coding agents — BA/QA/DEV.",
+  "license": "MIT",
+  "scripts": {
+    "test": "npm run validate && npm run test:unit",
+    "validate": "npm run validate:skills && npm run validate:commands && npm run validate:versions && npm run validate:links && npm run validate:paths",
+    "validate:skills": "node scripts/validate-skills.js",
+    "validate:commands": "node scripts/validate-commands.js",
+    "validate:versions": "node scripts/validate-versions.js",
+    "validate:links": "node scripts/validate-reference-links.js",
+    "validate:paths": "node scripts/validate-artifact-paths.js",
+    "test:unit": "node --test scripts/*-test.js",
+    "evals": "node scripts/run-evals.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

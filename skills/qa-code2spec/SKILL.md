@@ -18,6 +18,20 @@ Từ file Đặc tả này, hệ thống sẽ sử dụng lại luồng QA tiêu
 
 ---
 
+## Khi nào sử dụng
+
+- Có API/service đang chạy production nhưng không còn Jira ticket hoặc spec gốc
+- Cần viết test cho code kế thừa (legacy) mà không ai trong team nắm rõ luồng nghiệp vụ
+- Nghi ngờ code thực tế đã lệch khỏi spec — cần dựng lại spec từ code để đối chiếu
+- Tiếp nhận bàn giao module từ team khác, cần hiểu luật nghiệp vụ trước khi sửa
+
+**KHÔNG sử dụng khi:**
+- Đã có `{issueKey}-final.md` từ `ba-spec` — dùng file đó, đừng dựng lại từ code
+- Chỉ cần đọc hiểu một hàm đơn lẻ (dùng `review-code-and-quality`)
+- Code chưa chạy được / đang viết dở — spec dựng từ code chưa hoàn thiện sẽ sai
+
+---
+
 ## Workflow — 4 Bước (Đa ngôn ngữ)
 
 ### Bước 1: Deep Trace (Sử dụng kỹ năng `qa-code-review`)
@@ -58,6 +72,40 @@ Từ đống logic thu thập được, đối chiếu với các nguyên tắc 
 - Lấy tên file gốc làm gốc (VD: `order_api`), xuất file vào: 
   `specs/code-import/{tên_file}/{tên_file}-final.md`.
 - Cấu trúc file `final.md` phải tuân thủ chuẩn của bộ `ba-spec` (Gồm: Overview, Endpoints, Request/Response, Validation, Business Rules, Edge Cases...).
+
+---
+
+## Các Biện hộ Thường gặp
+
+| Lý do biện hộ | Thực tế |
+|---|---|
+| "Code là nguồn sự thật, đọc code xong viết spec là đủ, không cần phỏng vấn" | Code cho biết hệ thống **đang** làm gì, không cho biết nó **nên** làm gì. Một giá trị hardcode có thể là business rule, cũng có thể là bug tồn tại 2 năm. Chỉ user phân biệt được — đó là lý do Bước 3 tồn tại. |
+| "Đọc file controller là ra hết luồng rồi" | Validation nằm ở DTO, business rule nằm ở service, ràng buộc thật nằm ở schema DB (`unique`, `nullable=False`). Dừng ở controller là bỏ sót phần lớn test case. |
+| "API này đơn giản, không cần truy vết 5 yếu tố backend" | Transaction scope và message queue là chỗ sinh ra bug đắt nhất trong domain tài chính (trừ tiền hai lần, event mất). Đơn giản ở tầng HTTP không có nghĩa đơn giản ở tầng dữ liệu. |
+| "Không thấy code xử lý timeout nên chắc là không cần test" | Thiếu xử lý là một **gap**, không phải một quyết định. Ghi vào Bước 2 và hỏi user, đừng im lặng bỏ qua. |
+| "Spec dựng từ code thì mặc định là đúng" | Nếu code có bug, spec dựng ra sẽ chuẩn hoá luôn cái bug đó thành yêu cầu, rồi test sẽ khoá chặt nó lại. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- Viết `final.md` mà chưa chạy Bước 3 (phỏng vấn) — spec chỉ mô tả lại code, không xác nhận ý định
+- Không có mục Edge Cases, hoặc Edge Cases chỉ chép lại các `raise` có sẵn trong code
+- Không trích được mã lỗi và thông báo lỗi cụ thể từ mã nguồn
+- Bỏ trống Request/Response schema mẫu vì "đọc code là hiểu"
+- Truy vết dừng ở tầng controller/router, không chạm tới service, model, hay schema DB
+- Ghi các giá trị hardcode vào spec như business rule mà chưa hỏi user xác nhận
+- Không ghi nhận API bên thứ ba hoặc event queue mà code có gọi tới
+
+## Xác minh
+
+Trước khi bàn giao `final.md` cho `/qa-test-design`:
+
+- [ ] File `final.md` tồn tại tại `specs/code-import/{tên_file}/{tên_file}-final.md` và không rỗng
+- [ ] Mỗi endpoint có đủ: HTTP method, path, request schema, response schema, mã lỗi
+- [ ] Mỗi `if/else` phân nhánh nghiệp vụ trong code ánh xạ được tới ít nhất một Business Rule trong spec
+- [ ] Mỗi mã lỗi tìm thấy trong mã nguồn đều xuất hiện trong mục Error Handling của spec
+- [ ] 5 yếu tố backend đã được truy vết và ghi nhận (hoặc ghi rõ "không áp dụng" kèm lý do)
+- [ ] Danh sách Gap từ Bước 2 đã được user trả lời, hoặc được ghi rõ vào mục *Giả định & Rủi ro*
+- [ ] Cấu trúc file khớp chuẩn của `ba-spec` để `/qa-test-design` đọc được
 
 ---
 

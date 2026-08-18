@@ -1,4 +1,4 @@
-description = "Bắt đầu quy trình TDD (Test-Driven Development) — viết unit test trước khi tiến hành code"
+description = "Thực thi quy trình TDD (Test-Driven Development) — viết unit test trước khi tiến hành code"
 
 prompt = """
 Kích hoạt kỹ năng dev-test-driven-development.

@@ -1034,6 +1034,21 @@ Thiết kế kỹ thuật  Chia task nhỏ      Code implementation
 - Chuyển sang `/plan` để chia nhỏ thành tasks
 - Hoặc nếu đơn giản, chuyển thẳng sang `/build`
 
+## Dấu hiệu Cảnh báo (Red Flags)
+
+Các triệu chứng cho thấy Tech-Spec chưa sẵn sàng bàn giao cho `/plan` và `/build`:
+
+- Có Business Rule trong `*-final.md` không tìm được chỗ nào trong Tech-Spec nhắc tới
+- Non-Functional Requirement viết bằng tính từ: "nhanh", "ổn định", "chịu tải tốt"
+- API Contract chỉ có happy path, không định nghĩa response khi lỗi
+- Error Codes có mã nhưng không nói rõ mã nào trả về trong tình huống nào
+- Database Schema thiếu ràng buộc (`nullable`, `unique`, index) — QA không viết được test trùng dữ liệu
+- State machine vẽ trạng thái nhưng không liệt kê các chuyển đổi bị cấm
+- Mục Open Questions rỗng ở một feature không tầm thường — nghĩa là chưa nghĩ đủ sâu, không phải đã rõ hết
+- Tech-Spec mô tả giải pháp mà không nói vì sao loại bỏ phương án khác (thiếu Architecture Decision)
+- Dùng thư viện/pattern không có trong tech stack hiện tại mà không giải trình
+- Dev đọc xong vẫn phải hỏi "cái này lưu ở đâu / gọi ai / trả về gì"
+
 ## Anti-patterns (Tránh)
 
 ❌ **KHÔNG:**
@@ -1057,4 +1072,4 @@ Thiết kế kỹ thuật  Chia task nhỏ      Code implementation
 - `ba-spec` — Import và phân tích Business-Spec (giai đoạn trước)
 - `planning-and-task-breakdown` — Chia nhỏ Tech-Spec thành tasks (giai đoạn sau)
 - `/build` — Code implementation từ tasks (giai đoạn sau)
-- `references/definition-of-done.md` — Tiêu chuẩn hoàn thành
+- `../../references/definition-of-done.md` — Tiêu chuẩn hoàn thành

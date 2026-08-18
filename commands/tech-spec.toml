@@ -1,4 +1,4 @@
-description = "Sinh tài liệu Tech Spec dựa trên business-spec (*-final.md) hoặc yêu cầu của người dùng, sử dụng dev-spec-driven-development."
+description = "Bắt đầu phát triển hướng đặc tả — viết một tài liệu tech-spec dựa trên business-spec (*-final.md)"
 
 prompt = """
 Kích hoạt kỹ năng dev-spec-driven-development.

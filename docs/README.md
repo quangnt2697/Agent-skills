@@ -28,6 +28,24 @@ Chi tiết về 3 personas và ranh giới trách nhiệm:
 
 ---
 
+## 📖 Tài liệu tham chiếu tách từ CLAUDE.md
+
+Hai file dưới đây chứa phần diễn giải chi tiết. CLAUDE.md chỉ giữ luật rút gọn và
+trỏ tới đây — mục đích là để chỉ thị trong CLAUDE.md không bị loãng.
+
+### [test-ownership.md](test-ownership.md)
+**Ai viết loại test nào**
+
+Chi tiết từng loại test kèm ví dụ code: unit (DEV), integration (DEV + QA),
+E2E (QA), performance, security, và hai vòng code review.
+
+### [ba-workflow-detail.md](ba-workflow-detail.md)
+**Ranh giới BA/PO — chi tiết**
+
+Trách nhiệm đầy đủ của BA/PO, handoff sang QA/DEV, và so sánh `ba-spec` với `ba-refine`.
+
+---
+
 ## 🔍 Analysis & Review Documents
 
 ### [ba-po-separation-proposal.md](ba-po-separation-proposal.md)

@@ -59,6 +59,28 @@ Chỉ đơn giản hóa ở những đoạn code vừa mới bị sửa đổi g
 3. Nếu test Pass → commit (hoặc đi tiếp). Nếu test Fail → Revert lại ngay.
 4. Kiểm chứng kết quả cuối cùng xem có thực sự "đơn giản hơn" không.
 
+## Các Biện hộ Thường gặp
+
+| Lý do biện hộ | Thực tế |
+|---|---|
+| "Code này chạy tốt rồi, đơn giản hoá làm gì cho rủi ro" | Rủi ro nằm ở lần sửa tiếp theo, không phải hôm nay. Hàm 200 dòng lồng 5 tầng `if` là chỗ bug tiếp theo sẽ sinh ra. |
+| "Tôi gộp luôn việc đơn giản hoá vào PR tính năng cho tiện" | Reviewer không phân biệt được đâu là thay đổi hành vi, đâu là dọn dẹp. Diff trộn lẫn thì lỗi hành vi trôi qua review. |
+| "Test fail sau khi refactor, sửa test một chút là xong" | Test fail nghĩa là hành vi đã đổi — đó không còn là đơn giản hoá nữa. Revert, rồi làm lại từng bước nhỏ hơn. |
+| "Đoạn này thừa, tôi xoá cho gọn" | Hàng rào Chesterton. Chưa biết vì sao nó tồn tại thì chưa được xoá — `git log -S` đoạn code đó trước. |
+| "Gộp 3 hàm giống nhau thành 1 hàm tổng quát sẽ DRY hơn" | Ba thứ trông giống nhau nhưng thay đổi vì ba lý do khác nhau thì phải tách riêng. Trừu tượng hoá sai còn đắt hơn lặp code. |
+| "Ít dòng hơn nghĩa là đơn giản hơn" | Một biểu thức ba tầng ternary ngắn hơn nhưng khó đọc hơn `if/else`. Thước đo là thời gian người mới hiểu được, không phải số dòng. |
+
+## Xác minh
+
+Chỉ coi là hoàn thành khi tất cả các mục sau đúng:
+
+- [ ] Toàn bộ test suite pass **mà không sửa một dòng test nào**
+- [ ] `git diff` chỉ chạm vào các file nằm trong phạm vi đã khai báo — không lan sang module lân cận
+- [ ] Không có đoạn `try/except`, kiểm tra null, hay xử lý lỗi nào bị xoá
+- [ ] Không có PR nào trộn chung đơn giản hoá với thay đổi tính năng
+- [ ] Với persona QA: test vẫn chạy độc lập được (chạy riêng lẻ từng file vẫn pass, không phụ thuộc thứ tự)
+- [ ] Trả lời được câu hỏi "người mới đọc bản này có hiểu nhanh hơn bản cũ không?" bằng một lý do cụ thể, không phải cảm tính
+
 ## Dấu hiệu Cảnh báo (Red Flags)
 - Phải đi sửa lại cả bộ Tests để nó pass (đồng nghĩa đã làm thay đổi hành vi).
 - Xóa các đoạn xử lý lỗi (error handling) chỉ để code trông "clean".

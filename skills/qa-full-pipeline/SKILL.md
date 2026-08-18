@@ -173,6 +173,33 @@ workspace/{issueKey}/tests/qa-test-design/{issueKey}/
 └── .pipeline-state.json                     # Resume state
 ```
 
+## Dấu hiệu Cảnh báo (Red Flags)
+
+Các triệu chứng cho thấy pipeline đang chạy nhưng kết quả không dùng được:
+
+- Pipeline chạy xong trong thời gian ngắn bất thường — thường là một phase bị skip âm thầm
+- Phase 2 sinh ra ít file test hơn số scenario trong `.feature`
+- Self-fix loop chạy quá 3 vòng ở Phase 2 — code sinh ra đang có vấn đề hệ thống, không phải lỗi cú pháp lẻ
+- Phase 3 báo pass 100% nhưng số test chạy bằng 0
+- Resume tự động nhảy qua một phase mà artifact của phase đó rỗng
+- Dừng lại hỏi user ở chỗ không nằm trong danh sách đóng của `autonomy-contract.md`
+- Báo cáo tổng kết thiếu ma trận truy vết, hoặc ma trận có ô trống không giải thích
+- File `.pipeline-state.json` bị commit vào git
+- Pipeline tiếp tục chạy dù `*-final.md` rỗng hoặc chỉ có tiêu đề
+
+## Xác minh
+
+Pipeline được coi là hoàn thành khi:
+
+- [ ] Cả 4 phase đều có artifact tồn tại và không rỗng tại đúng đường dẫn ở mục Output Files
+- [ ] `qa-validate.sh` trên thư mục features exit code = 0
+- [ ] Số scenario trong `.feature` ≥ số checklist item P0
+- [ ] Số test case sinh ra ở Phase 2 ≥ số scenario trong `.feature`
+- [ ] Phase 3 có kết quả thực thi thật: tổng số test > 0, và pass/fail/skip cộng lại bằng tổng
+- [ ] Báo cáo `{issueKey}-pipeline-summary.md` có ma trận truy vết đầy đủ từ Business Rule tới kết quả test
+- [ ] Mọi lần dừng giữa chừng đều truy được về đúng một trong 5 trường hợp của `autonomy-contract.md`
+- [ ] `.pipeline-state.json` không nằm trong staging area của git
+
 ## Anti-patterns (Tránh)
 
 ❌ **KHÔNG:**

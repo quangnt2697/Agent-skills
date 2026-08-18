@@ -1,4 +1,4 @@
-description = "Chia nhỏ công việc thành các task nhỏ có thể kiểm chứng được, kèm theo tiêu chí nghiệm thu"
+description = "Chia nhỏ công việc thành các task nhỏ có thể kiểm chứng được, kèm theo tiêu chí nghiệm thu và thứ tự phụ thuộc"
 
 prompt = """
 Kích hoạt kỹ năng planning-and-task-breakdown.
