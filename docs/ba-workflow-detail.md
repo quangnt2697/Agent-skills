@@ -58,7 +58,7 @@
 **Focus:** Clarity & Detail (mài giũa ý tưởng thành spec rõ ràng)
 
 **Output:** 
-- Local: `specs/refine/jira/{issueKey}/{issueKey}-refined.md`
+- Local: `workspace/{issueKey}/specs/refine/jira/{issueKey}/{issueKey}-refined.md`
 - Jira: Updated description với cấu trúc chuẩn
 
 **Ranh giới:**

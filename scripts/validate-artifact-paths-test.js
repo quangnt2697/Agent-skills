@@ -114,3 +114,78 @@ test('skips guarded files that do not exist', () => {
   assert.equal(result.status, 0, result.stdout + result.stderr);
   assert.match(result.stdout, /1 files checked — 0 error\(s\) — PASSED/);
 });
+
+// --- Per-issue workspace convention -----------------------------------------
+
+test('passes when per-issue artifacts carry the workspace/{issueKey}/ prefix', () => {
+  const root = makeSandbox();
+  writeFile(
+    root,
+    'skills/ba-spec/SKILL.md',
+    'Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`.\n',
+  );
+
+  const result = run(root);
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /Checking per-issue workspace artifact paths/);
+  assert.match(result.stdout, /1 files checked — 0 error\(s\) — PASSED/);
+});
+
+test('fails when a skill writes a per-issue artifact outside the workspace (the ba-refine drift)', () => {
+  const root = makeSandbox();
+  writeFile(
+    root,
+    'skills/ba-refine/SKILL.md',
+    'Refined spec goes to `specs/refine/jira/{issueKey}/{issueKey}-refined.md`.\n',
+  );
+
+  const result = run(root);
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /skills\/ba-refine\/SKILL\.md/);
+  assert.match(result.stdout, /L1: specs\/refine\/ — missing workspace\/\{issueKey\}\/ prefix/);
+});
+
+test('accepts a literal issue key in place of the {issueKey} placeholder', () => {
+  const root = makeSandbox();
+  writeFile(root, 'agents/qa.md', 'Read `workspace/PROJ-123/specs/imports/jira/PROJ-123/`.\n');
+
+  const result = run(root);
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('does not flag tree children that hang off a workspace root', () => {
+  const root = makeSandbox();
+  writeFile(
+    root,
+    '.claude/commands/qa-pipeline.md',
+    [
+      '```',
+      'workspace/{issueKey}/',
+      '├── specs/imports/jira/{issueKey}/{issueKey}-final.md',
+      '└── tests/qa-test-design/{issueKey}/',
+      '```',
+      '',
+    ].join('\n'),
+  );
+
+  const result = run(root);
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('still flags a tree root that is missing the workspace prefix', () => {
+  const root = makeSandbox();
+  writeFile(
+    root,
+    'skills/ba-spec/SKILL.md',
+    ['```text', 'specs/imports/', '├── jira/', '```', ''].join('\n'),
+  );
+
+  const result = run(root);
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /L2: specs\/imports\//);
+});

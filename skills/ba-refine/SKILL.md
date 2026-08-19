@@ -46,7 +46,7 @@ ATLASSIAN_API_TOKEN=your-api-token
 ## Cấu trúc Thư mục
 
 ```
-specs/refine/
+workspace/{issueKey}/specs/refine/
 └── jira/
     └── {issueKey}/
         ├── source/
@@ -118,7 +118,7 @@ specs/refine/
    - Từ `attachment`: Lấy danh sách file đính kèm (tên, dung lượng, định dạng)
 
 4. **Kiểm tra Cache — file đã tải trước đó:**
-   - Với mỗi Confluence pageId → Quét `workspace/{issueKey}/specs/imports/confluence/` và `specs/refine/jira/*/source/references/` xem đã có `*-{pageId}.pdf` chưa
+   - Với mỗi Confluence pageId → Quét `workspace/{issueKey}/specs/imports/confluence/` và `workspace/{issueKey}/specs/refine/jira/*/source/references/` xem đã có `*-{pageId}.pdf` chưa
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại chưa
 
 5. **Trình bảng Danh sách cho User duyệt:**
@@ -148,7 +148,7 @@ specs/refine/
      ```bash
      python skills/ba-spec/scripts/jira_pdf_export.py \
        --issue-key {issueKey} \
-       --output-dir specs/refine/jira/{issueKey}/source
+       --output-dir workspace/{issueKey}/specs/refine/jira/{issueKey}/source
      ```
    
    - **Tải Confluence pages chưa có:**
@@ -163,7 +163,7 @@ specs/refine/
 
 8. **Tạo cấu trúc thư mục:**
    ```
-   specs/refine/jira/{issueKey}/
+   workspace/{issueKey}/specs/refine/jira/{issueKey}/
    ├── source/
    │   ├── {issueKey}-original.pdf
    │   ├── metadata.json
@@ -333,7 +333,7 @@ specs/refine/
 
 Sau khi user chọn hướng đi cuối cùng, tạo file markdown:
 
-**Đường dẫn file:** `specs/refine/jira/{issueKey}/{issueKey}-refined.md`
+**Đường dẫn file:** `workspace/{issueKey}/specs/refine/jira/{issueKey}/{issueKey}-refined.md`
 
 **Cấu trúc (tuân thủ nghiêm ngặt):**
 
@@ -438,7 +438,7 @@ confidence = (user_story * 0.30) + (ac_complete * 0.30) +
      "issueKey": "PROJ-123",
      "pushDate": "2026-08-14T10:30:00Z",
      "confidence": 0.95,
-     "localFile": "specs/refine/jira/PROJ-123/PROJ-123-refined.md",
+     "localFile": "workspace/PROJ-123/specs/refine/jira/PROJ-123/PROJ-123-refined.md",
      "jiraUrl": "https://domain.atlassian.net/browse/PROJ-123",
      "sectionsIncluded": [
        "User Story",
@@ -533,7 +533,7 @@ Agent:
 [Phase 0] Downloading PROJ-123...
 ✅ Task downloaded: "Add export button to report page"
 📋 Type: Story | Reporter: john@company.com
-📁 Files: specs/refine/jira/PROJ-123/
+📁 Files: workspace/PROJ-123/specs/refine/jira/PROJ-123/
 
 [Phase 1] Understanding the problem...
 
@@ -591,7 +591,7 @@ Assumptions:
 [Phase 3] Sharpening Direction A...
 
 Creating refined spec at:
-specs/refine/jira/PROJ-123/PROJ-123-refined.md
+workspace/PROJ-123/specs/refine/jira/PROJ-123/PROJ-123-refined.md
 
 [Spec content generated with full structure...]
 
