@@ -6,7 +6,7 @@ Invoke the ba-spec skill. Đọc file SKILL.md để thực hiện đúng workfl
 $ARGUMENTS chứa đầu vào. Agent PHẢI tự nhận diện loại input:
 
 **Luồng Jira** (nếu đầu vào có dạng Issue Key, VD: `PROJ-123`, `G3PTP-16584`):
-1. **Phase 0 — Scan & Duyệt**: Gọi API Jira lấy metadata (CHƯA tải PDF). Trích xuất danh sách Confluence pages tham chiếu (từ issuelinks, remotelink, description) + file đính kèm. Kiểm tra cache trong `specs/imports/` xem file nào đã tải trước đó (hiển thị path). Trình bảng danh sách cho user duyệt → DỪNG LẠI chờ "OK".
+1. **Phase 0 — Scan & Duyệt**: Gọi API Jira lấy metadata (CHƯA tải PDF). Trích xuất danh sách Confluence pages tham chiếu (từ issuelinks, remotelink, description) + file đính kèm. Kiểm tra cache trong `workspace/{issueKey}/specs/imports/` xem file nào đã tải trước đó (hiển thị path). Trình bảng danh sách cho user duyệt → DỪNG LẠI chờ "OK".
 2. **Phase 1 — Download**: Chỉ tải Jira PDF + các file Confluence/attachment CÒN THIẾU. Lưu vào `workspace/{issueKey}/specs/imports/jira/{issueKey}/source/` và `source/references/`. Tên file Confluence theo quy ước: `{tên-slug}-{pageId}.pdf`.
 3. **Phase 1.5 → Phase 5**: Nhận diện loại task → Trích xuất (đọc ĐA NGUỒN: Jira PDF + tất cả references + file đã có sẵn) → Phân tích gaps → Interview-me → Tổng hợp `{issueKey}-final.md`.
 

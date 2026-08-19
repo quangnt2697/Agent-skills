@@ -63,7 +63,7 @@ Chỉ báo lỗi khi không tìm thấy `.env` ở cả 3 vị trí, hoặc file
 ## Cấu trúc Thư mục
 
 ```text
-specs/imports/
+workspace/{issueKey}/specs/imports/
 ├── jira/
 │   └── {issueKey}/
 │       ├── source/
@@ -444,7 +444,7 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 |-----------|-------|
 | **Depth = 1** | Chỉ scan link ở tầng trực tiếp. KHÔNG đào sâu thêm. |
 | **API-first** | Ưu tiên dùng REST API (`issuelinks`, `remotelink`, `attachment`, CQL search) thay vì để AI đọc text tìm link. Nhanh hơn 10x. |
-| **Cache Check** | Trước khi tải, luôn kiểm tra file đã có trong dự án (`specs/imports/`). Tiết kiệm thời gian và bandwidth. |
+| **Cache Check** | Trước khi tải, luôn kiểm tra file đã có trong dự án (`workspace/{issueKey}/specs/imports/`). Tiết kiệm thời gian và bandwidth. |
 | **Smart Filter** | Chỉ tải file trong bộ lọc cho phép (xem bảng ở trên). Bỏ qua video, file nén. |
 | **Approval Gate** | Luôn trình danh sách cho User duyệt trước khi tải. User có quyền loại bỏ file không cần thiết. |
 
