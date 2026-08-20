@@ -15,13 +15,16 @@ Download Jira task → Scan & approve tài liệu → Refine idea (divergent →
 
 ## Arguments
 
-- `{issueKey}` (required) — Jira issue key (VD: PROJ-123, G3PTP-456)
+- `{issueKey}` (required) — Jira issue key (VD: PROJ-123, G3PTP-456).
+  Chấp nhận cả URL đầy đủ — key được bóc ra bằng regex `[A-Z][A-Z0-9]*-[0-9]+`
+  trước khi dùng làm tên thư mục workspace.
 
 ## Examples
 
 ```bash
 /ba-refine PROJ-123
 /ba-refine G3PTP-456
+/ba-refine https://your-domain.atlassian.net/browse/G3PTP-456
 ```
 
 ## Workflow
@@ -49,8 +52,7 @@ Phase 3: Sharpen & Structure
     - Create refined spec markdown
     ↓
 Phase 4: Push to Jira
-    - Update Jira description
-    - Add comment + label
+    - Update Jira description (KHÔNG comment, KHÔNG label)
     - Return Jira URL
 ```
 

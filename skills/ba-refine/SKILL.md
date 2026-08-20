@@ -97,7 +97,24 @@ workspace/{issueKey}/
 
 **Mục tiêu:** Quét Jira/Confluence tìm tài liệu liên quan, đối chiếu với file đã có, trình danh sách cho user duyệt TRƯỚC KHI tải
 
-1. **Đọc credentials từ `.env`**
+1. **Chuẩn hoá `{issueKey}` TRƯỚC MỌI THỨ KHÁC**
+
+   User thường dán nguyên URL từ thanh địa chỉ trình duyệt. Nếu dùng thẳng chuỗi
+   đó làm `{issueKey}`, cả URL sẽ trở thành tên thư mục
+   (`workspace/https:/entrade.atlassian.net%2Fbrowse%2F.../spec/refined.md`) và
+   mọi handoff phía sau đứt.
+
+   ```bash
+   # Chấp nhận: "G3PTP-17057" | ".../browse/G3PTP-17057" | ".../browse/G3PTP-17057#icft=G3PTP-17057"
+   ISSUE_KEY=$(echo "$ARGUMENTS" | grep -oiE '[A-Z][A-Z0-9]*-[0-9]+' | head -1 | tr '[:lower:]' '[:upper:]')
+   [ -z "$ISSUE_KEY" ] && { echo "❌ Không nhận diện được Jira issue key từ: $ARGUMENTS"; exit 1; }
+   echo "✅ issueKey = $ISSUE_KEY"
+   ```
+
+   Từ đây trở đi, `{issueKey}` LUÔN là giá trị đã chuẩn hoá này — không bao giờ
+   là chuỗi thô user nhập.
+
+2. **Đọc credentials từ `.env`**
    ```bash
    # Tự động đọc từ workspace root/.env (KHÔNG HỎI user)
    ATLASSIAN_BASE_URL=...
@@ -105,45 +122,45 @@ workspace/{issueKey}/
    ATLASSIAN_API_TOKEN=...
    ```
 
-2. **Sử dụng lệnh `curl` gọi API lấy metadata Jira** (chưa tải PDF). BẮT BUỘC phải trích xuất chính xác trường `fields.summary` từ JSON trả về để làm Tiêu đề Task:
+3. **Sử dụng lệnh `curl` gọi API lấy metadata Jira** (chưa tải PDF). BẮT BUỘC phải trích xuất chính xác trường `fields.summary` từ JSON trả về để làm Tiêu đề Task:
    ```bash
    curl -s -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
      -H "Accept: application/json" \
      "${ATLASSIAN_BASE_URL}/rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels"
    ```
 
-3. **Trích xuất danh sách liên kết tham chiếu:**
+4. **Trích xuất danh sách liên kết tham chiếu:**
    - Từ `issuelinks`: Lấy Confluence pages được link
    - Gọi Remote Links: `GET /rest/api/3/issue/{issueKey}/remotelink` → Lấy link Confluence
    - Từ `description`: Regex quét URL pattern `*/wiki/spaces/*` hoặc `*/wiki/pages/*`
    - Từ `attachment`: Lấy danh sách file đính kèm (tên, dung lượng, định dạng)
 
-4. **Kiểm tra Cache — file đã tải trước đó:**
+5. **Kiểm tra Cache — file đã tải trước đó:**
    - Với mỗi Confluence pageId → Quét `workspace/{issueKey}/source/refs/` xem đã có `*-{pageId}.pdf` chưa (kể cả từ lần chạy `ba-spec` trước — cả hai skill dùng chung thư mục này)
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại chưa
 
-5. **Trình bảng Danh sách cho User duyệt:**
+6. **Trình bảng Danh sách cho User duyệt:**
 
    ```markdown
    📋 **Danh sách tài liệu liên quan đến {issueKey}:**
 
-   | # | Loại | Tên | Trạng thái | Đường dẫn / Hành động |
-   |---|------|-----|------------|----------------------|
-   | 1 | 📄 Jira PDF | {issueKey} - {Tiêu đề Task} | 🆕 Chưa tải | → Sẽ tải mới |
-   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf` |
-   | 3 | 📝 Confluence | API Spec v2 (ID: 67890) | 🆕 Chưa tải | → `api-spec-v2-67890.pdf` |
-   | 4 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
-   | 5 | 🖼️ Ảnh | flowchart.png (800KB) | 🆕 Chưa tải | → Sẽ tải mới |
-   | 6 | 🎬 Video | demo.mp4 (50MB) | ⏭️ Bỏ qua | Định dạng không hỗ trợ |
+   | # | Loại            | Tên                                      | Trạng thái         | Đường dẫn / Hành động                                        |
+   |---|------------------------------------------------------------|--------------------|--------------------------------------------------------------|
+   | 1 | 📄 Jira PDF     | {issueKey} - {Tiêu đề Task}              | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
+   | 2 | 📝 Confluence   | Thiết kế luồng thanh toán (ID: 12345)    | ✅ Đã có           | `workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf`  |
+   | 3 | 📝 Confluence   | API Spec v2 (ID: 67890)                  | 🆕 Chưa tải        | → `api-spec-v2-67890.pdf`                                    |
+   | 4 | 📎 File         | wireframe-v3.pdf (2.1MB)                 | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
+   | 5 | 🖼️ Ảnh          | flowchart.png (800KB)                    | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
+   | 6 | 🎬 Video        | demo.mp4 (50MB)                          | ⏭️ Bỏ qua          | Định dạng không hỗ trợ                                       |
 
    **Tổng cộng:** 4 file cần tải mới, 1 file đã có sẵn, 1 file bỏ qua.
 
    Bạn có muốn tôi tiến hành tải không? (Gõ **OK** hoặc chỉnh sửa)
    ```
 
-6. **DỪNG LẠI (Approval Gate):** Chờ User phản hồi "OK" hoặc chỉnh sửa danh sách.
+7. **DỪNG LẠI (Approval Gate):** Chờ User phản hồi "OK" hoặc chỉnh sửa danh sách.
 
-7. **Sau khi User đồng ý → Tạo thư mục làm việc TRƯỚC (BẮT BUỘC, không được bỏ qua):**
+8. **Sau khi User đồng ý → Tạo thư mục làm việc TRƯỚC (BẮT BUỘC, không được bỏ qua):**
 
    Luôn neo (anchor) vào root của repo git rồi `cd` vào đó trước khi chạy bất kỳ lệnh tải file nào — KHÔNG dùng đường dẫn tương đối theo cwd hiện tại của agent, vì cwd có thể đang ở một thư mục con khác nhau giữa các lần chạy. Đây là nguyên nhân gây ra lệch đường dẫn (VD: tạo nhầm `project/{issueKey}/...` thay vì `workspace/{issueKey}/...`).
 
@@ -156,9 +173,9 @@ workspace/{issueKey}/
    `workspace/{issueKey}/spec/` — tính từ root repo. Không tự ý đổi tên thư mục gốc
    (`project/`, `data/`, `output/`...) và không tạo thêm gốc thứ 6.
 
-8. **Tải file thiếu vào thư mục vừa tạo:**
+9. **Tải file thiếu vào thư mục vừa tạo:**
 
-   - **Tải Jira task PDF:** Dùng script từ ba-spec (script tự `mkdir -p` bên trong `OUTPUT_DIR`, nhưng vẫn phải chạy từ root repo — đã `cd` ở Bước 7 — để path tương đối không lệch)
+   - **Tải Jira task PDF:** Dùng script từ ba-spec (script tự `mkdir -p` bên trong `OUTPUT_DIR`, nhưng vẫn phải chạy từ root repo — đã `cd` ở Bước 8 — để path tương đối không lệch)
      ```bash
      bash skills/ba-spec/scripts/jira-fetch-pdf.sh {issueKey} workspace
      ```
@@ -179,7 +196,7 @@ workspace/{issueKey}/
 
    - ⚠️ **LƯU Ý:** File tạm phải tạo trong `/tmp/` hoặc system scratch, KHÔNG tạo `scratch/` trong dự án user
 
-9. **Kết quả cấu trúc thư mục sau Bước 7-8:**
+10. **Kết quả cấu trúc thư mục sau Bước 8-9:**
    ```
    workspace/{issueKey}/
    ├── source/
@@ -192,11 +209,11 @@ workspace/{issueKey}/
    └── spec/                                     # (các file khác tạo sau)
    ```
 
-10. **Cập nhật hoặc tạo `metadata.json` (BẮT BUỘC dùng đúng `summary` đã trích xuất ở Bước 2):**
+11. **Cập nhật hoặc tạo `metadata.json` (BẮT BUỘC dùng đúng `summary` đã trích xuất ở Bước 3):**
    ```json
    {
      "issueKey": "PROJ-123",
-     "summary": "{Tiêu đề Task đã trích xuất ở Bước 2}",
+     "summary": "{Tiêu đề Task đã trích xuất ở Bước 3}",
      "task_type": "APP",
      "references": [
        {
@@ -358,18 +375,41 @@ Sau khi user chọn hướng đi cuối cùng, tạo file markdown:
 
 📄 **Template chuẩn:** `skills/ba-refine/templates/jira-description-template.md`
 
-Agent BẮT BUỘC đọc và tuân theo template trên khi tạo spec. Template bao gồm:
+File template là **skeleton thuần** — mọi dòng trong đó đều là nội dung sẽ lên
+Jira. Agent copy skeleton, thay các placeholder `[...]` bằng nội dung thật, và
+**không thêm bất cứ dòng nào của riêng mình** vào đầu/cuối file.
 
-- 🧩 User Story (Required) 📖
-- 💼 Business Context (Required) 📖
-- ✅ Acceptance Criteria (Required) 📖 — hỗ trợ 2 format:
-  - Format 1: BDD code block (Gherkin)
-  - Format 2: AC table với testable conditions
-- 🎨 User Flow / Design (Required if UI change) 📖
-- ☀️ Success Criteria & Tracking (Required) 📖
-- 🧱 Technical Notes (Optional)
+| Section                        | Bắt buộc?                       | Bỏ nội dung section khi              |
+|--------------------------------|---------------------------------|--------------------------------------|
+| 🧩 User Story                  | Có                              | —                                    |
+| 💼 Business Context            | Có                              | —                                    |
+| ✅ Acceptance Criteria         | Có                              | —                                    |
+| 🎨 User Flow / Design          | Có (nếu đổi UI, cần link figma) | Task không đụng tới UI               |
+| ☀️ Success Criteria & Tracking | Có                              | —                                    |
+| 🧱 Technical Notes             | Không                           | Không có thông tin kỹ thuật đáng ghi |
 
-**Xem chi tiết template tại:** `skills/ba-refine/templates/jira-description-template.md`
+Trong 🧱 Technical Notes, xoá luôn các sub-heading không có nội dung — đừng để
+lại heading rỗng hay `[placeholder]` chưa thay.
+
+**❌ TUYỆT ĐỐI KHÔNG được xuất hiện trong `refined.md`** (đây chính là nguyên
+nhân description bị "thừa chữ" ở các lần chạy trước):
+
+- Tiêu đề/mô tả của bản thân file template ("Jira Description Template for ba-refine"...)
+- Câu hướng dẫn dành cho agent ("Viết dưới góc nhìn nghiệp vụ...", "Đính kèm User Flow...", "Thông tin kỹ thuật tham khảo...")
+- Nhãn chọn format ("Format 1: BDD Style", "Format 2: AC List")
+- Hậu tố `(Required)` / `(Optional)` trong heading
+- Footer chữ ký ("Generated by: ba-refine skill", "Local file: ...")
+- Placeholder `[...]` còn sót chưa thay
+- Đường kẻ ngang `---` giữa các section (heading đã đủ phân tách; `---` render thành gạch ngang thừa trên Jira)
+
+**Acceptance Criteria dùng đúng MỘT format:** Gherkin trong code block ```` ```gherkin ````.
+Nếu AC không mang tính hành vi (VD: ràng buộc dữ liệu, chính sách), viết bullet
+list `- [ ]` — **không** dùng bảng, vì bảng AC lồng Given/When/Then rất khó đọc
+trên Jira.
+
+**Bảng markdown:** chỉ dùng ở Success Metrics và Tracking. Script push dựng
+bảng ADF thật, nên phải viết đúng cú pháp GFM (có hàng phân cách `|---|`) và
+mọi hàng phải cùng số cột.
 
 **LƯU Ý QUAN TRỌNG:**
 - ❌ KHÔNG bao gồm: "Giả định & Rủi ro", "Ngoài Phạm vi", "Đánh giá Độ tin cậy"
@@ -404,51 +444,52 @@ confidence = (user_story * 0.30) + (ac_complete * 0.30) +
 - ❌ KHÔNG thêm label
 - ✅ CHỈ update description với spec rõ ràng
 
-1. **Chuẩn bị nội dung push**
-   
-   Từ file `{issueKey}-refined.md`, CHỈ lấy các phần:
-   - 🧩 User Story
-   - 💼 Bối cảnh Nghiệp vụ
-   - ✅ Tiêu chí Nghiệm thu
-   - 🎨 User Flow / Thiết kế (nếu có)
-   - ☀️ Tiêu chí Thành công & Tracking
-   - 🧱 Ghi chú Kỹ thuật (nếu có)
-   
-   **BỎ QUA các phần nội bộ:**
-   - ❌ Giả định & Rủi ro
-   - ❌ Ngoài Phạm vi
-   - ❌ Đánh giá Độ tin cậy
-   - ❌ Chi tiết tính toán confidence
-   - ❌ Stress-test scores
-   - ❌ Các Bước Tiếp theo
+1. **Kiểm tra nội dung file trước khi push**
 
-2. **Format cho Jira**
-   
-   Convert markdown sang Jira Wiki Markup:
-   - `#` → `h1.`
-   - `##` → `h2.`
-   - `**bold**` → `*bold*`
-   - Bullet lists → `-` 
-   - Tables → Jira table syntax
+   `workspace/{issueKey}/spec/refined.md` phải là file **đúng bằng** nội dung sẽ
+   lên Jira — không cắt gọt gì thêm ở bước này. Nếu file còn chứa phần nội bộ
+   (Giả định & Rủi ro, Ngoài Phạm vi, Đánh giá Độ tin cậy, stress-test score,
+   Các Bước Tiếp theo) thì **quay lại Giai đoạn 3 sửa file**, chứ không lọc
+   ngầm lúc push — lọc ngầm khiến file local và Jira lệch nhau.
+
+   ```bash
+   cd "$(git rev-parse --show-toplevel)"
+
+   # Không được còn dấu vết của template / phần nội bộ
+   grep -nE 'Jira Description Template|Format [12]:|\(Required\)|\(Optional\)|Generated by:|Giả định & Rủi ro|Ngoài Phạm vi|Đánh giá Độ tin cậy' \
+     "workspace/{issueKey}/spec/refined.md" && echo "❌ Còn dòng thừa — quay lại Giai đoạn 3"
+
+   # Không được còn placeholder chưa thay
+   grep -nE '\[(role/persona|goal/action|business value|KPI [0-9]|baseline|goal|Step [0-9]|Event name)' \
+     "workspace/{issueKey}/spec/refined.md" && echo "❌ Còn placeholder chưa thay"
+   ```
+
+   Cả hai lệnh không in ra gì → sạch, đi tiếp.
+
+2. **Xem trước ADF (khuyến nghị, không gọi Jira)**
+
+   ```bash
+   DRY_RUN=1 bash skills/ba-refine/scripts/jira-push-spec.sh {issueKey} \
+     "workspace/{issueKey}/spec/refined.md" | head -40
+   ```
+
+   Kiểm tra dòng tóm tắt `→ N block, trong đó M bảng`: `M` phải khớp số bảng
+   markdown trong file (Success Metrics + Tracking = 2). Nếu `M = 0` mà file có
+   bảng → cú pháp bảng sai (thiếu hàng `|---|` hoặc lệch số cột).
 
 3. **Cập nhật Jira description**
-   
+
+   Dùng đúng script này — **không** tự dựng ADF bằng `curl` thủ công. Script đã
+   xử lý bảng, ngắt dòng mềm và chuẩn hoá issue key; ADF tự chế mỗi lần một kiểu
+   chính là nguyên nhân description bị lệch style.
+
    ```bash
-   # Sử dụng Jira REST API
-   curl -X PUT \
-     -H "Authorization: Basic $(echo -n $EMAIL:$TOKEN | base64)" \
-     -H "Content-Type: application/json" \
-     "$BASE_URL/rest/api/3/issue/{issueKey}" \
-     -d '{
-       "fields": {
-         "description": {
-           "type": "doc",
-           "version": 1,
-           "content": [...]
-         }
-       }
-     }'
+   bash skills/ba-refine/scripts/jira-push-spec.sh {issueKey} \
+     "workspace/{issueKey}/spec/refined.md"
    ```
+
+   Script nhận cả issue key trần lẫn URL Jira đầy đủ, và đọc credentials
+   `ATLASSIAN_BASE_URL` / `ATLASSIAN_EMAIL` / `ATLASSIAN_API_TOKEN` từ `.env`.
 
 4. **Ghi log push history**
    
@@ -461,11 +502,11 @@ confidence = (user_story * 0.30) + (ac_complete * 0.30) +
      "jiraUrl": "https://domain.atlassian.net/browse/PROJ-123",
      "sectionsIncluded": [
        "User Story",
-       "Bối cảnh Nghiệp vụ",
-       "Tiêu chí Nghiệm thu",
+       "Business Context",
+       "Acceptance Criteria",
        "User Flow",
-       "Tiêu chí Thành công",
-       "Ghi chú Kỹ thuật"
+       "Success Criteria",
+       "Technical Notes"
      ]
    }
    ```
@@ -483,10 +524,10 @@ confidence = (user_story * 0.30) + (ac_complete * 0.30) +
 
 **Nội dung đã push:**
 - User Story
-- Bối cảnh Nghiệp vụ
-- Tiêu chí Nghiệm thu (Given-When-Then)
-- Tiêu chí Thành công & Metrics
-- Ghi chú Kỹ thuật
+- Business Context
+- Acceptance Criteria (Given-When-Then)
+- Success Criteria & Metrics
+- Technical Notes
 
 **File local:** `{localPath}`
 
@@ -814,7 +855,7 @@ Xem `skills/ba-refine/examples.md` để có ví dụ đầy đủ về một ph
 
 ## Checklist Trước khi Push to Jira
 
-Trước khi gọi `jira-push-refined-spec.py`, verify:
+Trước khi gọi `jira-push-spec.sh`, verify:
 
 - [ ] **User Story:** Có đầy đủ Role + Goal + Value, KHÔNG chung chung
 - [ ] **Acceptance Criteria:** ≥2 scenarios, dạng Given-When-Then, testable
@@ -822,6 +863,8 @@ Trước khi gọi `jira-push-refined-spec.py`, verify:
 - [ ] **Assumptions:** Đã surface ≥3 giả định + risks
 - [ ] **Confidence:** ≥90%
 - [ ] **Tone:** Đã review, không có weasel words ("có lẽ", "có thể", "chắc")
+- [ ] **Sạch template:** 2 lệnh `grep` ở Giai đoạn 4 Bước 1 không in ra gì
+- [ ] **Bảng đúng cú pháp:** `DRY_RUN=1` báo đúng số bảng mong đợi
 
 Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
 

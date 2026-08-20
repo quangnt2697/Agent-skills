@@ -95,7 +95,14 @@ Sau khi refine, có thể tiếp tục với:
 
 ## Scripts
 
-- `scripts/jira-push-refined-spec.py` - Push refined spec lên Jira
+- `scripts/jira-push-spec.sh` — đường push DUY NHẤT: Markdown → ADF → Jira description.
+  Nhận cả issue key trần lẫn URL. `DRY_RUN=1` để xem trước ADF mà không gọi Jira.
+- `scripts/jira-push-spec.js` — phần lõi convert (bọc `md-to-adf` để bù bảng + ngắt dòng mềm).
+
+## Templates
+
+- `templates/jira-description-template.md` — skeleton thuần của Jira description.
+  Mọi dòng trong file đều sẽ lên Jira; hướng dẫn sử dụng nằm ở Giai đoạn 3 của `SKILL.md`.
 
 ## Reference Files
 

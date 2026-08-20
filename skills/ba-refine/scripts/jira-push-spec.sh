@@ -2,11 +2,20 @@
 # ==============================================================================
 # jira-push-spec.sh — Đẩy tài liệu Markdown lên Jira Description
 # ==============================================================================
-# Mục đích: Đọc file Markdown, chuyển sang ADF và ghi đè lên Description của ticket
-# Sử dụng: bash jira-push-spec.sh <JIRA_ISSUE_KEY> <FILE_MD>
+# Đường push DUY NHẤT của ba-refine. Đọc file Markdown, chuyển sang ADF và ghi
+# đè lên Description của ticket.
+#
+# Sử dụng: bash jira-push-spec.sh <JIRA_ISSUE_KEY|URL> <FILE_MD>
 #
 # Ví dụ:
-#   bash jira-push-spec.sh G3PTP-16584 ./workspace/{issueKey}/spec/final.md
+#   bash jira-push-spec.sh G3PTP-16584 workspace/G3PTP-16584/spec/refined.md
+#   bash jira-push-spec.sh https://x.atlassian.net/browse/G3PTP-16584 workspace/G3PTP-16584/spec/refined.md
+#
+# Xem trước ADF mà không gọi Jira:
+#   DRY_RUN=1 bash jira-push-spec.sh G3PTP-16584 workspace/G3PTP-16584/spec/refined.md
+#
+# Credentials đọc từ .env (ưu tiên ATLASSIAN_*, fallback JIRA_*):
+#   ATLASSIAN_BASE_URL / ATLASSIAN_EMAIL / ATLASSIAN_API_TOKEN
 # ==============================================================================
 
 set -euo pipefail
@@ -24,14 +33,28 @@ log_error() { echo -e "${RED}❌ $1${NC}"; }
 log_info()  { echo -e "${BLUE}ℹ️  $1${NC}"; }
 
 if [[ $# -lt 2 ]]; then
-    echo "Sử dụng: bash jira-push-spec.sh <JIRA_ISSUE_KEY> <FILE_MD>"
+    echo "Sử dụng: bash jira-push-spec.sh <JIRA_ISSUE_KEY|URL> <FILE_MD>"
     echo ""
-    echo "Ví dụ: bash jira-push-spec.sh G3PTP-16584 ./workspace/{issueKey}/spec/final.md"
+    echo "Ví dụ: bash jira-push-spec.sh G3PTP-16584 workspace/G3PTP-16584/spec/refined.md"
     exit 1
 fi
 
-ISSUE_KEY="$1"
+RAW_KEY="$1"
 FILE_MD="$2"
+
+# Bóc issue key khỏi URL nếu user dán nguyên link trình duyệt. Không bóc thì cả
+# URL bị dùng làm tên thư mục workspace ở các bước sau.
+ISSUE_KEY="$(printf '%s' "$RAW_KEY" | grep -oiE '[A-Z][A-Z0-9]*-[0-9]+' | head -1 | tr '[:lower:]' '[:upper:]' || true)"
+
+if [[ -z "$ISSUE_KEY" ]]; then
+    log_error "Không nhận diện được Jira issue key từ: \"${RAW_KEY}\""
+    log_info "Ví dụ hợp lệ: G3PTP-17057 hoặc https://domain.atlassian.net/browse/G3PTP-17057"
+    exit 1
+fi
+
+if [[ "$ISSUE_KEY" != "$RAW_KEY" ]]; then
+    log_info "Issue key chuẩn hoá: \"${RAW_KEY}\" → \"${ISSUE_KEY}\""
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

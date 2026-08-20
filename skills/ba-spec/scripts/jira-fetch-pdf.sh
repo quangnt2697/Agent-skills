@@ -53,8 +53,22 @@ if [[ $# -lt 1 ]]; then
     exit 1
 fi
 
-ISSUE_KEY="$1"
+RAW_KEY="$1"
 OUTPUT_BASE="${2:-./workspace}"
+
+# Bóc issue key khỏi URL nếu user dán nguyên link trình duyệt. Không bóc thì cả
+# URL bị dùng làm tên thư mục dưới workspace/ và handoff BA → QA/DEV đứt.
+ISSUE_KEY="$(printf '%s' "$RAW_KEY" | grep -oiE '[A-Z][A-Z0-9]*-[0-9]+' | head -1 | tr '[:lower:]' '[:upper:]' || true)"
+
+if [[ -z "$ISSUE_KEY" ]]; then
+    log_error "Không nhận diện được Jira issue key từ: \"${RAW_KEY}\""
+    log_info "Ví dụ hợp lệ: G3PTP-16584 hoặc https://domain.atlassian.net/browse/G3PTP-16584"
+    exit 1
+fi
+
+if [[ "$ISSUE_KEY" != "$RAW_KEY" ]]; then
+    log_info "Issue key chuẩn hoá: \"${RAW_KEY}\" → \"${ISSUE_KEY}\""
+fi
 
 # --- Đọc .env ---
 ENV_FILE="${ENV_FILE:-.env}"
@@ -64,6 +78,11 @@ if [[ -f "$ENV_FILE" ]]; then
 fi
 
 # --- Kiểm tra biến môi trường ---
+# .env của repo dùng ATLASSIAN_*; JIRA_* giữ lại cho các shell đã export sẵn.
+JIRA_BASE_URL="${JIRA_BASE_URL:-${ATLASSIAN_BASE_URL:-}}"
+JIRA_EMAIL="${JIRA_EMAIL:-${ATLASSIAN_EMAIL:-}}"
+JIRA_API_TOKEN="${JIRA_API_TOKEN:-${ATLASSIAN_API_TOKEN:-}}"
+
 if [[ -z "${JIRA_BASE_URL:-}" ]] || [[ -z "${JIRA_EMAIL:-}" ]] || [[ -z "${JIRA_API_TOKEN:-}" ]]; then
     log_error "Thiếu biến môi trường. Chạy jira-auth-check.sh trước."
     exit 1
