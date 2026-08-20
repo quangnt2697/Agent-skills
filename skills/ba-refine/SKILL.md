@@ -106,9 +106,11 @@ workspace/{issueKey}/specs/refine/
    ATLASSIAN_API_TOKEN=...
    ```
 
-2. **Gọi API lấy metadata Jira** (chưa tải PDF):
+2. **Sử dụng lệnh `curl` gọi API lấy metadata Jira** (chưa tải PDF). BẮT BUỘC phải trích xuất chính xác trường `fields.summary` từ JSON trả về để làm Tiêu đề Task:
    ```bash
-   GET /rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels
+   curl -s -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
+     -H "Accept: application/json" \
+     "${ATLASSIAN_BASE_URL}/rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels"
    ```
 
 3. **Trích xuất danh sách liên kết tham chiếu:**
@@ -128,7 +130,7 @@ workspace/{issueKey}/specs/refine/
 
    | # | Loại | Tên | Trạng thái | Đường dẫn / Hành động |
    |---|------|-----|------------|----------------------|
-   | 1 | 📄 Jira PDF | {issueKey} | 🆕 Chưa tải | → Sẽ tải mới |
+   | 1 | 📄 Jira PDF | {issueKey} - {Tiêu đề Task} | 🆕 Chưa tải | → Sẽ tải mới |
    | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `workspace/{issueKey}/specs/imports/confluence/.../thiet-ke-luong-12345.pdf` |
    | 3 | 📝 Confluence | API Spec v2 (ID: 67890) | 🆕 Chưa tải | → `api-spec-v2-67890.pdf` |
    | 4 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
@@ -146,9 +148,7 @@ workspace/{issueKey}/specs/refine/
    
    - **Tải Jira task PDF:** Dùng script từ ba-spec
      ```bash
-     python skills/ba-spec/scripts/jira_pdf_export.py \
-       --issue-key {issueKey} \
-       --output-dir workspace/{issueKey}/specs/refine/jira/{issueKey}/source
+     bash skills/ba-spec/scripts/jira-fetch-pdf.sh {issueKey} workspace/{issueKey}/specs/refine/jira
      ```
    
    - **Tải Confluence pages chưa có:**
@@ -174,11 +174,11 @@ workspace/{issueKey}/specs/refine/
    └── (các file khác tạo sau)
    ```
 
-9. **Tạo `metadata.json`:**
+9. **Cập nhật hoặc tạo `metadata.json` (BẮT BUỘC dùng đúng `summary` đã trích xuất ở Bước 2):**
    ```json
    {
      "issueKey": "PROJ-123",
-     "summary": "...",
+     "summary": "{Tiêu đề Task đã trích xuất ở Bước 2}",
      "task_type": "APP",
      "references": [
        {
@@ -219,10 +219,11 @@ workspace/{issueKey}/specs/refine/
 **Mục tiêu:** Hiểu vấn đề gốc và mở rộng các hướng đi có thể
 
 1. **Tái trình bày vấn đề dưới dạng câu hỏi "Làm sao để..." (How Might We)**
+   (BẮT BUỘC sử dụng Tiêu đề Task thật sự đã lấy được ở Phase 0, KHÔNG dùng câu ví dụ bên dưới).
    
-   Ví dụ:
+   Ví dụ (Chỉ là mẫu):
    ```
-   Jira gốc: "Thêm nút Export PDF cho báo cáo"
+   Jira gốc: "[Tên task của user]"
    
    Câu HMW: "Làm sao để khách hàng có thể lưu trữ và chia sẻ 
    báo cáo giao dịch của họ một cách dễ dàng và bảo mật?"
