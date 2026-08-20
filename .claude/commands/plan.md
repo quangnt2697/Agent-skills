@@ -13,4 +13,4 @@ Kích hoạt kỹ năng planning-and-task-breakdown.
 5. Đặt các điểm dừng (checkpoints) giữa các giai đoạn
 6. Trình bày kế hoạch cho con người review
 
-Lưu kế hoạch vào file `tasks/plan.md` và danh sách công việc vào `tasks/todo.md`.
+Lưu kế hoạch vào file `tech/plan.md` và danh sách công việc vào `tech/todo.md`.

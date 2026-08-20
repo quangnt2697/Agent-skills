@@ -61,10 +61,10 @@ Refine jira task PROJ-456
 ## Output
 
 **Local:**
-- `workspace/{issueKey}/specs/refine/jira/{issueKey}/{issueKey}-refined.md` - Spec đã refine
-- `workspace/{issueKey}/specs/refine/jira/{issueKey}/source/` - Jira task gốc (PDF + metadata)
-- `workspace/{issueKey}/specs/refine/jira/{issueKey}/source/references/` - Confluence pages + attachments
-- `workspace/{issueKey}/specs/refine/jira/{issueKey}/push-log.json` - Lịch sử push
+- `workspace/{issueKey}/spec/refined.md` - Spec đã refine
+- `workspace/{issueKey}/source/` - Jira task gốc (PDF + metadata)
+- `workspace/{issueKey}/source/refs/` - Confluence pages + attachments
+- `workspace/{issueKey}/spec/push-log.json` - Lịch sử push
 
 **Jira:**
 - Description updated với structured spec

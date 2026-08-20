@@ -40,7 +40,7 @@ Kích hoạt skill này khi:
 **Input A: File `*-final.md`**
 ```bash
 # Đọc file Business-Spec từ ba-spec
-workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md
+workspace/{issueKey}/spec/final.md
 ```
 
 Trích xuất:
@@ -208,7 +208,7 @@ Nếu có nhiều User Stories:
 ```markdown
 # User Stories: [Feature Name]
 
-**Source:** `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`  
+**Source:** `workspace/{issueKey}/spec/final.md`  
 **Created:** 2026-08-13  
 **Author:** BA/PO Agent
 
@@ -255,7 +255,15 @@ So that **không phải nhập lại thông tin giống nhau mỗi lần đặt 
 - And khách hàng chỉ cần nhập giá và xác nhận
 ```
 
-**Lưu vào:** `docs/user-stories/{issueKey}-user-stories.md`
+**Lưu vào:** `workspace/{issueKey}/spec/user-stories.md`
+
+Trước khi ghi file, BẮT BUỘC neo về root repo và tạo thư mục đích — `Write` không tự tạo
+thư mục cha, và cwd của agent có thể đang lệch (xem `.claude/rules/workspace-paths.md`):
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+mkdir -p workspace/{issueKey}/spec
+```
 
 ### Format 2: Jira-ready (nếu user muốn push lên Jira)
 
@@ -344,7 +352,7 @@ Sau khi chạy skill này:
 - [ ] Tất cả User Stories đã pass INVEST validation (6/6 tiêu chí ✅)
 - [ ] Nếu có tiêu chí ❌ → Đã đề xuất cách sửa và viết lại
 - [ ] User Stories đã được group (Epic/Feature) và prioritize (MoSCoW/Story Points)
-- [ ] Output file đã lưu vào `docs/user-stories/{issueKey}-user-stories.md`
+- [ ] Output file đã lưu vào `workspace/{issueKey}/spec/user-stories.md`
 - [ ] User đã review và approve trước khi handoff to QA/DEV
 
 ## Ví dụ

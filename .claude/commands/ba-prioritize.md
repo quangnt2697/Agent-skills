@@ -7,8 +7,8 @@ description: [BA/PO] Ưu tiên backlog theo MoSCoW (Must/Should/Could/Won't) ho�
 Kích hoạt skill ba-backlog-prioritization với BA/PO persona. Đọc `skills/ba-backlog-prioritization/SKILL.md` để thực hiện đúng workflow.
 
 $ARGUMENTS có thể chứa:
-- Jira issue key (VD: G3PTP-16584) → Đọc từ `docs/user-stories/{issueKey}-user-stories.md`
-- Hoặc đọc từ `docs/gap-analysis/{issueKey}-gap-analysis.md`
+- Jira issue key (VD: G3PTP-16584) → Đọc từ `workspace/{issueKey}/spec/user-stories.md`
+- Hoặc đọc từ `workspace/{issueKey}/spec/gap-analysis.md`
 
 **Workflow:**
 
@@ -47,7 +47,7 @@ $ARGUMENTS có thể chứa:
 
 5. **Dependency Map**: Visualize dependencies giữa các stories
 
-6. **Output**: Lưu vào `docs/backlog/{issueKey}-prioritized-backlog.md`
+6. **Output**: Lưu vào `workspace/{issueKey}/spec/backlog.md`
 
 **WSJF Scoring Template:**
 

@@ -46,8 +46,8 @@ Sử dụng chế độ này khi đã có spec và bạn muốn gộp quá trìn
 
 1. **Yêu cầu phải có spec.** Chỉ tìm spec ở đường dẫn đã biết: `SPEC.md` tại thư mục gốc, `docs/SPEC.md`, hoặc một file trong `spec/`. README hay tài liệu bất kỳ **không** được tính. Nếu không có spec, dừng lại và yêu cầu user chạy `/spec` trước — không tự bịa ra yêu cầu.
 2. **Tạo feature branch.** Kiểm tra xem đã có branch feature chưa. Nếu chưa, tạo branch mới (xem Git Workflow phía trên).
-3. **Thiết lập baseline sạch sẽ.** Chạy `git status --porcelain`. Nếu có thay đổi chưa stage ngoài các artifact kế hoạch dự kiến (`SPEC.md`, `docs/SPEC.md`, `spec/*`, `tasks/plan.md`, `tasks/todo.md`), dừng lại và hỏi user để xác nhận cách xử lý.
-4. **Lên kế hoạch nếu cần.** Nếu chưa có `tasks/plan.md`, gọi kỹ năng planning-and-task-breakdown để tạo.
+3. **Thiết lập baseline sạch sẽ.** Chạy `git status --porcelain`. Nếu có thay đổi chưa stage ngoài các artifact kế hoạch dự kiến (`SPEC.md`, `docs/SPEC.md`, `spec/*`, `tech/plan.md`, `tech/todo.md`), dừng lại và hỏi user để xác nhận cách xử lý.
+4. **Lên kế hoạch nếu cần.** Nếu chưa có `tech/plan.md`, gọi kỹ năng planning-and-task-breakdown để tạo.
 5. **Một điểm dừng (checkpoint) duy nhất.** Trình bày toàn bộ kế hoạch và chờ câu trả lời đồng ý rõ ràng (vd: "approve", "go", "yes"). Những câu trả lời lấp lửng ("looks reasonable", "I guess") được coi là **không** đồng ý. Đây là cổng kiểm soát duy nhất của con người — sau khi được duyệt, hãy chạy tự động.
 6. **Thực thi mọi task theo thứ tự phụ thuộc.** Sử dụng các phụ thuộc (dependency) được khai báo của mỗi task; nếu không khai báo, chạy theo thứ tự liệt kê trong kế hoạch. Với mỗi task, chạy vòng lặp mặc định ở trên (RED → GREEN → hồi quy → build → đánh dấu hoàn thành). **KHÔNG commit** sau mỗi task — tất cả thay đổi được ghi nhận trong working tree.
 7. **Dừng lại và hỏi user** (không tự ý đẩy qua) khi:

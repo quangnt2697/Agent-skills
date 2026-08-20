@@ -54,7 +54,7 @@ Kích hoạt skill này khi:
 
 **Input A: Business-Spec Section 5 (User Flow)**
 ```bash
-workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md
+workspace/{issueKey}/spec/final.md
 ```
 
 Trích xuất:
@@ -65,7 +65,7 @@ Trích xuất:
 
 **Input B: Gap Analysis (AS-IS process)**
 ```bash
-workspace/{issueKey}/docs/gap-analysis/{issueKey}-gap-analysis.md
+workspace/{issueKey}/spec/gap-analysis.md
 ```
 
 Trích xuất:
@@ -502,9 +502,9 @@ flowchart TD
 
 ## Next Steps
 
-1. **Gap Analysis:** Identify gaps để đi từ AS-IS → TO-BE (xem `workspace/{issueKey}/docs/gap-analysis/`)
-2. **Prioritization:** Ưu tiên gaps theo business value (xem `docs/backlog/`)
-3. **Implementation:** Breakdown TO-BE process thành User Stories (xem `docs/user-stories/`)
+1. **Gap Analysis:** Identify gaps để đi từ AS-IS → TO-BE (xem `workspace/{issueKey}/spec/`)
+2. **Prioritization:** Ưu tiên gaps theo business value (xem `workspace/{issueKey}/spec/`)
+3. **Implementation:** Breakdown TO-BE process thành User Stories (xem `workspace/{issueKey}/spec/`)
 
 ---
 
@@ -534,8 +534,16 @@ flowchart TD
 ```
 
 **Lưu vào:**
-- AS-IS: `docs/processes/{issueKey}-as-is-process.md`
-- TO-BE: `docs/processes/{issueKey}-to-be-process.md`
+- AS-IS: `workspace/{issueKey}/spec/process-as-is.md`
+- TO-BE: `workspace/{issueKey}/spec/process-to-be.md`
+
+Trước khi ghi file, BẮT BUỘC neo về root repo và tạo thư mục đích — `Write` không tự tạo
+thư mục cha, và cwd của agent có thể đang lệch (xem `.claude/rules/workspace-paths.md`):
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+mkdir -p workspace/{issueKey}/spec
+```
 
 ## Tương tác với các Skills khác
 
@@ -601,7 +609,7 @@ Sau khi chạy skill này:
 - [ ] TO-BE diagram có improvements highlighted
 - [ ] Có comparison table (AS-IS vs TO-BE metrics)
 - [ ] Mermaid syntax valid (test render trước khi save)
-- [ ] Output files đã lưu: `docs/processes/{issueKey}-{as-is|to-be}-process.md`
+- [ ] Output files đã lưu: `workspace/{issueKey}/spec/process-{as-is|to-be}.md`
 - [ ] Stakeholders đã review và approve diagrams
 
 ## Ví dụ

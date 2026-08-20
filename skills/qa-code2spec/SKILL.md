@@ -70,7 +70,7 @@ Từ đống logic thu thập được, đối chiếu với các nguyên tắc 
 ### Bước 4: Chốt hạ Đặc tả (`final.md`)
 - Sau khi được User xác nhận qua phỏng vấn, tổng hợp toàn bộ thành 1 file Markdown.
 - Lấy tên file gốc làm gốc (VD: `order_api`), xuất file vào: 
-  `specs/code-import/{tên_file}/{tên_file}-final.md`.
+  `workspace/{tên_file}/spec/final.md`.
 - Cấu trúc file `final.md` phải tuân thủ chuẩn của bộ `ba-spec` (Gồm: Overview, Endpoints, Request/Response, Validation, Business Rules, Edge Cases...).
 
 ---
@@ -99,7 +99,7 @@ Từ đống logic thu thập được, đối chiếu với các nguyên tắc 
 
 Trước khi bàn giao `final.md` cho `/qa-test-design`:
 
-- [ ] File `final.md` tồn tại tại `specs/code-import/{tên_file}/{tên_file}-final.md` và không rỗng
+- [ ] File `final.md` tồn tại tại `workspace/{tên_file}/spec/final.md` và không rỗng
 - [ ] Mỗi endpoint có đủ: HTTP method, path, request schema, response schema, mã lỗi
 - [ ] Mỗi `if/else` phân nhánh nghiệp vụ trong code ánh xạ được tới ít nhất một Business Rule trong spec
 - [ ] Mỗi mã lỗi tìm thấy trong mã nguồn đều xuất hiện trong mục Error Handling của spec

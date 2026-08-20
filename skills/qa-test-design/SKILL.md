@@ -82,27 +82,26 @@ Có thể khởi tạo thư mục output trước khi bắt đầu:
 bash skills/qa-test-design/scripts/qa-init.sh [output-dir]
 ```
 
-Lệnh này tạo thư mục con `checklists/` và `features/` trong đường dẫn chỉ định (mặc định: `workspace/{issueKey}/tests/qa-test-design/`).
+Lệnh này tạo thư mục `steps/` và `result/` trong đường dẫn chỉ định (mặc định: `workspace/{issueKey}/test/`).
 
 ### Đường dẫn output
 
 Khi đầu vào từ ba-spec, output sẽ lưu tại chung một thư mục theo cấu trúc:
 ```
-workspace/{issueKey}/tests/qa-test-design/{issueKey}/
-├── features/
-│   ├── {issueKey}-checklist.md
-│   └── {issueKey}.feature
+workspace/{issueKey}/test/
+├── checklist.md
+├── {issueKey}.feature
 ├── steps/                          # ← qa-auto-design sinh code vào đây
 │   └── test_*.py
-└── reports/                        # ← qa-auto-design xuất báo cáo vào đây
-    └── {issueKey}-report.md
+└── result/                         # ← qa-auto-design xuất báo cáo vào đây
+    └── report.md
 ```
 
 ### Bước 1: Thu thập yêu cầu
 
 Trước khi viết bất kỳ item checklist nào, thu thập đầu vào:
 
-#### Nguồn đầu vào chính: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
+#### Nguồn đầu vào chính: `workspace/{issueKey}/spec/final.md`
 
 Nếu file này tồn tại, đây là **single source of truth** đã qua phân tích và interview.
 Agent đọc file này và ánh xạ các sections sang các nhóm kiểm thử:
@@ -554,10 +553,10 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 | Giai đoạn | Skill | Input | Output |
 |-----------|-------|-------|--------|
-| 1 | `ba-spec` | Jira Issue Key | `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` |
-| 2 | `qa-test-design` | File `*-final.md` | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
-| 3 | `qa-auto-design` | File `.feature` + code có sẵn | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py` |
-| 4 | `qa-auto-design` (Bước 7) | Test scripts | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
+| 1 | `ba-spec` | Jira Issue Key | `workspace/{issueKey}/spec/final.md` |
+| 2 | `qa-test-design` | File `*-final.md` | `workspace/{issueKey}/test/checklist.md` + `{issueKey}.feature` |
+| 3 | `qa-auto-design` | File `.feature` + code có sẵn | `workspace/{issueKey}/test/steps/test_*.py` |
+| 4 | `qa-auto-design` (Bước 7) | Test scripts | `workspace/{issueKey}/test/result/report.md` |
 
 **Sau khi hoàn thành Giai đoạn 2 (qa-test-design)**, Agent BẮT BUỘC TỰ ĐỘNG thực hiện ngay việc Push kịch bản lên Squash TM mà KHÔNG CẦN hỏi ý kiến người dùng:
 1. Agent tự động trích xuất `issueKey` và `namejira` từ tên file feature và file `*-final.md`.

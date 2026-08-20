@@ -427,7 +427,7 @@ Agent: Perfect. Moving to Phase 3 to sharpen the spec...
 ```
 Agent: Creating refined spec...
 
-📁 File: workspace/PROJ-456/specs/refine/jira/PROJ-456/PROJ-456-refined.md
+📁 File: workspace/PROJ-456/spec/refined.md
 ```
 
 **[File content generated with full structure from SKILL.md template]**
@@ -621,7 +621,7 @@ Agent: Pushing to Jira...
 ✅ Label added: "refined-by-agent"
 
 📋 Creating push log...
-✅ Push log: workspace/PROJ-456/specs/refine/jira/PROJ-456/push-log.json
+✅ Push log: workspace/PROJ-456/spec/push-log.json
 
 🔗 View updated task: https://your-domain.atlassian.net/browse/PROJ-456
 

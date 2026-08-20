@@ -16,7 +16,7 @@ Phase 1-4: qa-full-pipeline   Test design → Automation → Execution → Summa
 
 **Phase 0 — `ba-spec`**
 1. Kích hoạt kỹ năng `ba-spec` với issue key, truyền nguyên `$ARGUMENTS` xuống.
-2. Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
+2. Output: `workspace/{issueKey}/spec/final.md`
 3. Cổng chuyển Phase 1: file tồn tại, không rỗng, có mục Acceptance Criteria.
    Đạt → chạy tiếp ngay, log một dòng. Không đạt → xem `autonomy-contract.md`.
 
@@ -57,12 +57,12 @@ Bộ cờ giống hệt `/qa-full-pipeline` — xem bảng trong `.claude/comman
 
 ```
 workspace/{issueKey}/
-├── specs/imports/jira/{issueKey}/{issueKey}-final.md        # Phase 0
-└── tests/qa-test-design/{issueKey}/
-    ├── features/{issueKey}-checklist.md                     # Phase 1
-    ├── features/{issueKey}.feature                          # Phase 1
-    ├── steps/test_*.py                                      # Phase 2
-    └── reports/{issueKey}-pipeline-summary.md               # Phase 4
+├── spec/final.md                    # Phase 0
+└── test/
+    ├── checklist.md                 # Phase 1
+    ├── {issueKey}.feature           # Phase 1
+    ├── steps/test_*.py              # Phase 2
+    └── result/summary.md            # Phase 4
 ```
 
 ## Báo cáo cuối

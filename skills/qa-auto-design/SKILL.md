@@ -196,10 +196,17 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
 
 1. **Chạy test:** Thực thi `pytest` trên code vừa sinh ra.
    ```bash
+   # Neo về root repo và tạo sẵn thư mục report (xem .claude/rules/workspace-paths.md)
+   cd "$(git rev-parse --show-toplevel)"
+   ISSUE_KEY="{issueKey}"
+   TEST_DIR="workspace/${ISSUE_KEY}/test/steps"
+   REPORT_DIR="workspace/${ISSUE_KEY}/test/result"
+   mkdir -p "$REPORT_DIR"
+
    # Chạy test và sinh báo cáo HTML
-   pytest tests/ -v --html=reports/report.html --self-contained-html
+   pytest "$TEST_DIR" -v --html="$REPORT_DIR/${ISSUE_KEY}-report.html" --self-contained-html
    # Hoặc nếu dùng Allure
-   pytest tests/ -v --alluredir=reports/allure-results
+   pytest "$TEST_DIR" -v --alluredir="$REPORT_DIR/allure-results"
    ```
 2. **Self-fix Loop (chỉ sửa lỗi script, KHÔNG sửa kết quả test):**
    - Nếu `pytest` **không thể thực thi được** (lỗi runtime: ImportError, SyntaxError, fixture thiếu, timeout config sai, connection refused...) → đọc log lỗi → sửa code script → chạy lại → lặp cho đến khi script chạy hoàn tất.
@@ -263,9 +270,9 @@ Sau khi test chạy xong, Agent **BẮT BUỘC** xuất báo cáo kết quả d�
 ```
 
 **Đường dẫn output báo cáo:**
-- File báo cáo Markdown: `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md`
-- File báo cáo HTML (nếu dùng pytest-html): `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.html`
-- Screenshot lỗi (nếu UI test): `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/screenshots/`
+- File báo cáo Markdown: `workspace/{issueKey}/test/result/report.md`
+- File báo cáo HTML (nếu dùng pytest-html): `workspace/{issueKey}/test/result/report.html`
+- Screenshot lỗi (nếu UI test): `workspace/{issueKey}/test/result/screenshots/`
 
 ---
 
@@ -344,10 +351,10 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 | Giai đoạn | Skill | Input | Output |
 |-----------|-------|-------|--------|
-| 1 | `ba-spec` | Jira Issue Key | `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` |
-| 2 | `qa-test-design` | File `*-final.md` | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/features/{issueKey}-checklist.md` + `{issueKey}.feature` |
-| 3 | `qa-auto-design` | File `.feature` + code có sẵn | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/test_*.py` |
-| 4 | `qa-auto-design` (Bước 7) | Test scripts | `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/{issueKey}-report.md` |
+| 1 | `ba-spec` | Jira Issue Key | `workspace/{issueKey}/spec/final.md` |
+| 2 | `qa-test-design` | File `*-final.md` | `workspace/{issueKey}/test/checklist.md` + `{issueKey}.feature` |
+| 3 | `qa-auto-design` | File `.feature` + code có sẵn | `workspace/{issueKey}/test/steps/test_*.py` |
+| 4 | `qa-auto-design` (Bước 7) | Test scripts | `workspace/{issueKey}/test/result/report.md` |
 
 ## Xem thêm
 

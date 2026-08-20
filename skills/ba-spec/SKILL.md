@@ -62,29 +62,32 @@ Chỉ báo lỗi khi không tìm thấy `.env` ở cả 3 vị trí, hoặc file
 
 ## Cấu trúc Thư mục
 
+Cả hai luồng (Jira và Confluence) đều sinh ra **cùng một cấu trúc** — chỉ khác khoá của
+đơn vị công việc: luồng Jira dùng `{issueKey}`, luồng Confluence dùng `{keyword}`.
+Nguồn gốc (jira hay confluence) được ghi trong `metadata.json`, không nằm trong tên thư mục.
+
 ```text
-workspace/{issueKey}/specs/imports/
-├── jira/
-│   └── {issueKey}/
-│       ├── source/
-│       │   ├── {issueKey}.pdf
-│       │   ├── metadata.json
-│       │   └── references/
-│       │       ├── {tên-slug}-{pageId}.pdf          # Confluence tham chiếu
-│       │       ├── wireframe-v3.pdf                  # Attachment gốc
-│       │       └── flowchart-order-flow.png          # Ảnh đính kèm
-│       └── {issueKey}-final.md
-│
-└── confluence/
-    └── {keyword}/
-        ├── source/
-        │   ├── {tên-slug}-{pageId}.pdf               # Trang Confluence gốc
-        │   ├── metadata.json
-        │   └── references/
-        │       ├── {tên-slug-con}-{childPageId}.pdf  # Confluence con
-        │       ├── mockup-checkout-page.png           # Ảnh đính kèm
-        │       └── data-mapping.xlsx                  # File đính kèm
-        └── {keyword}-final.md
+workspace/{issueKey}/                                  # LUỒNG A — /ba-spec {issueKey}
+├── source/
+│   ├── {issueKey}.pdf
+│   ├── metadata.json
+│   └── refs/
+│       ├── {tên-slug}-{pageId}.pdf                    # Confluence tham chiếu
+│       ├── wireframe-v3.pdf                           # Attachment gốc
+│       └── flowchart-order-flow.png                   # Ảnh đính kèm
+└── spec/
+    └── final.md
+
+workspace/{keyword}/                                   # LUỒNG B — /ba-spec confluence {keyword}
+├── source/
+│   ├── {tên-slug}-{pageId}.pdf                        # Trang Confluence gốc
+│   ├── metadata.json
+│   └── refs/
+│       ├── {tên-slug-con}-{childPageId}.pdf           # Confluence con
+│       ├── mockup-checkout-page.png                   # Ảnh đính kèm
+│       └── data-mapping.xlsx                          # File đính kèm
+└── spec/
+    └── final.md
 ```
 
 ### Quy ước Đặt tên File
@@ -160,7 +163,7 @@ danh sách                                 loại task          theo profile
    - Gộp các kết quả tìm được vào danh sách tài liệu cần duyệt.
 
 4. **Kiểm tra Cache — file đã tải trước đó:**
-   - Với mỗi Confluence pageId → Quét thư mục `workspace/{issueKey}/specs/imports/confluence/` và `workspace/{issueKey}/specs/imports/jira/*/source/references/` xem đã có file `*-{pageId}.pdf` chưa.
+   - Với mỗi Confluence pageId → Quét `workspace/{issueKey}/source/refs/` xem đã có file `*-{pageId}.pdf` chưa (kể cả từ lần chạy `ba-refine` trước — cả hai skill dùng chung thư mục này).
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại trong dự án chưa.
 
 5. **Trình bảng Danh sách cho User duyệt:**
@@ -171,7 +174,7 @@ danh sách                                 loại task          theo profile
    | # | Loại | Tên | Trạng thái | Đường dẫn / Hành động |
    |---|------|-----|------------|----------------------|
    | 1 | 📄 Jira PDF | {issueKey} - {Tiêu đề Task} | 🆕 Chưa tải | → Sẽ tải mới |
-   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `workspace/{issueKey}/specs/imports/confluence/...` |
+   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf` |
    | 3 | 📝 Confluence | API Specification v2 (ID: 67890) | 🆕 Chưa tải | → `api-specification-v2-67890.pdf` |
    | 4 | 📄 Jira PDF | {relatedIssueKey} - {Tiêu đề Task liên quan} | 🆕 Chưa tải | → Sẽ tải mới |
    | 5 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
@@ -216,7 +219,7 @@ Sau khi User đồng ý:
          "pageId": "12345",
          "title": "Thiết kế luồng thanh toán",
          "status": "downloaded",
-         "path": "source/references/thiet-ke-luong-thanh-toan-12345.pdf"
+         "path": "source/refs/thiet-ke-luong-thanh-toan-12345.pdf"
        },
        {
          "type": "confluence",
@@ -229,13 +232,13 @@ Sau khi User đồng ý:
          "type": "attachment",
          "filename": "wireframe-v3.pdf",
          "status": "downloaded",
-         "path": "source/references/wireframe-v3.pdf"
+         "path": "source/refs/wireframe-v3.pdf"
        }
      ]
    }
    ```
 
-5. **Lưu tất cả vào:** `workspace/{issueKey}/specs/imports/jira/{issueKey}/source/` và `source/references/`.
+5. **Lưu tất cả vào:** `workspace/{issueKey}/source/` (PDF gốc + `metadata.json`) và `workspace/{issueKey}/source/refs/` (Confluence + attachment).
 
 ---
 
@@ -278,7 +281,7 @@ Bạn xác nhận đây là task loại gì?
 Agent **BẮT BUỘC ĐỌC QUA TOÀN BỘ** các tài liệu đã được user cấp phép tải về (bao gồm cả các Jira task và Confluence liên quan) để lấy thông tin hoàn chỉnh. Danh sách tài liệu cần đọc bao gồm:
 - File PDF gốc của Jira task chính.
 - Các file PDF của **các Jira task liên quan** (từ bước tìm kiếm mở rộng).
-- Các file Confluence/attachment mới tải trong `source/references/`.
+- Các file Confluence/attachment mới tải trong `source/refs/`.
 - Các file Confluence/attachment **đã có sẵn** (theo path ghi trong `metadata.json`).
 
 Sau đó đọc file profile tương ứng:
@@ -340,8 +343,8 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 ### Phase 5: Tổng hợp bản Markdown chi tiết
 
 ### File output
-📄 `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
-*(Hoặc `workspace/{issueKey}/specs/imports/confluence/{keyword}/{keyword}-final.md` đối với luồng Confluence)*
+📄 `workspace/{issueKey}/spec/final.md`
+*(Hoặc `workspace/{keyword}/spec/final.md` đối với luồng Confluence)*
 
 ### Bước kiểm tra trước khi ghi đè (Overwrite check):
 Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem file `{issueKey}-final.md` (hoặc `{keyword}-final.md`) đã tồn tại trong dự án chưa.
@@ -429,7 +432,7 @@ Sau khi User đồng ý:
 2. Tải các Confluence con (nếu có): `{tên-slug-con}-{childPageId}.pdf`
 3. Tải các file đính kèm (giữ nguyên tên gốc).
 4. Tạo `metadata.json` với danh sách references.
-5. Lưu vào `workspace/{issueKey}/specs/imports/confluence/{keyword}/source/` và `source/references/`.
+5. Lưu vào `workspace/{keyword}/source/` (PDF trang gốc + `metadata.json`) và `workspace/{keyword}/source/refs/` (trang con + attachment).
 
 ### Phase 2 → Phase 5: Phân tích & Tổng hợp
 
@@ -444,7 +447,7 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 |-----------|-------|
 | **Depth = 1** | Chỉ scan link ở tầng trực tiếp. KHÔNG đào sâu thêm. |
 | **API-first** | Ưu tiên dùng REST API (`issuelinks`, `remotelink`, `attachment`, CQL search) thay vì để AI đọc text tìm link. Nhanh hơn 10x. |
-| **Cache Check** | Trước khi tải, luôn kiểm tra file đã có trong dự án (`workspace/{issueKey}/specs/imports/`). Tiết kiệm thời gian và bandwidth. |
+| **Cache Check** | Trước khi tải, luôn kiểm tra file đã có trong dự án (`workspace/{issueKey}/source/refs/`). Tiết kiệm thời gian và bandwidth. |
 | **Smart Filter** | Chỉ tải file trong bộ lọc cho phép (xem bảng ở trên). Bỏ qua video, file nén. |
 | **Approval Gate** | Luôn trình danh sách cho User duyệt trước khi tải. User có quyền loại bỏ file không cần thiết. |
 
@@ -469,7 +472,7 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 - Business Rule viết bằng tính từ mơ hồ: "hợp lệ", "nhanh", "phù hợp" — QA không chuyển được thành test data
 - Danh sách đóng (loại lệnh, trạng thái tài khoản, loại thị trường) chỉ liệt kê ví dụ thay vì liệt kê đủ
 - Không có mục *Giả định & Rủi ro* dù quá trình phân tích có chỗ phải đoán
-- Chỉ đọc file PDF của Jira, bỏ qua toàn bộ file trong `source/references/`
+- Chỉ đọc file PDF của Jira, bỏ qua toàn bộ file trong `source/refs/`
 - Có tài liệu tham chiếu tải về nhưng không đoạn nào trong `final.md` trích dẫn tới
 - Spec chứa API contract, database schema, hoặc test case — vượt ranh giới BA/PO (xem CLAUDE.md)
 - Loại task (APP/WEB/API) không được nhận diện, nên trích xuất theo profile sai
@@ -478,10 +481,10 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 
 Trước khi bàn giao `*-final.md` cho QA hoặc DEV:
 
-- [ ] File tồn tại tại `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md` và không rỗng
+- [ ] File tồn tại tại `workspace/{issueKey}/spec/final.md` và không rỗng
 - [ ] Header khai báo rõ loại task (📱 APP / 🌐 WEB / 🔌 API)
 - [ ] Đủ 13 section — section không áp dụng phải ghi "Không áp dụng" kèm lý do, không để trống
-- [ ] Mỗi tài liệu đã tải trong `source/` và `source/references/` được trích dẫn ít nhất một lần
+- [ ] Mỗi tài liệu đã tải trong `source/` và `source/refs/` được trích dẫn ít nhất một lần
 - [ ] Mỗi Business Rule phát biểu được dưới dạng kiểm chứng được (có ngưỡng, có giá trị, có điều kiện)
 - [ ] Mọi danh sách đóng liệt kê đủ giá trị, không dùng "v.v." hay "..."
 - [ ] Mỗi Acceptance Criteria là một mệnh đề Pass/Fail duy nhất
