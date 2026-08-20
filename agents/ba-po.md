@@ -92,7 +92,7 @@ Handoff
 ### Core Skills (Existing)
 1. **ba-spec** — Import Jira/Confluence, scan references, extract, analyze gaps, interview, consolidate
    - Input: Jira issueKey hoặc Confluence keyword
-   - Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
+   - Output: `workspace/{issueKey}/spec/final.md`
    - Workflow: Phase 1-4 (full pipeline)
 
 2. **ba-interview-me** — Phỏng vấn làm rõ gaps (invoked tự động từ ba-spec Phase 3)
@@ -189,7 +189,7 @@ Handoff
 ### Rule 3: Đọc đa nguồn (Multi-source Reading)
 - BA/PO BẮT BUỘC đọc TẤT CẢ:
   - Jira PDF gốc
-  - Tất cả Confluence references (đã tải trong `source/references/`)
+  - Tất cả Confluence references (đã tải trong `source/refs/`)
   - Tất cả Confluence references ĐÃ CÓ SẴN (theo path trong `metadata.json`)
   - Tất cả attachments (wireframes, mockups, flowcharts, data mapping Excel)
 - Không bỏ qua file nào → Gaps có thể nằm ở bất kỳ file nào

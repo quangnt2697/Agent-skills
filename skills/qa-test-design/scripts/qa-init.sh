@@ -2,21 +2,22 @@
 set -e
 
 # qa-init.sh — Initialize directory structure for QA test artifacts.
-# Usage: bash skills/qa-test-design/scripts/qa-init.sh [issueKey] [output-base]
+# Usage: bash skills/qa-test-design/scripts/qa-init.sh <issueKey> [workspace-root]
 #
-# Creates a standardized directory layout for test checklists, .feature files,
-# test steps, and reports per issue key.
+# Creates workspace/<issueKey>/test/{steps,result}/ per the canonical layout in
+# .claude/rules/workspace-paths.md. checklist.md and <issueKey>.feature are
+# written directly into test/ by the skill, so they need no subdirectory.
 #
 # Convention: issueKey is always stored in LOWER CASE for consistency.
-# Example: qa-init.sh G3PTP-16825 workspace/{issueKey}/tests/qa-test-design
+# Example: qa-init.sh G3PTP-16825
 
-ISSUE_KEY_RAW="${1:?Usage: qa-init.sh <issueKey> [output-base-dir]}"
-OUTPUT_BASE="${2:-workspace/{issueKey}/tests/qa-test-design}"
+ISSUE_KEY_RAW="${1:?Usage: qa-init.sh <issueKey> [workspace-root]}"
+WORKSPACE_ROOT="${2:-workspace}"
 
 # Normalize issue key to lower case for consistent directory naming
 ISSUE_KEY=$(echo "$ISSUE_KEY_RAW" | tr '[:upper:]' '[:lower:]')
 
-OUTPUT_DIR="${OUTPUT_BASE}/${ISSUE_KEY}"
+OUTPUT_DIR="${WORKSPACE_ROOT}/${ISSUE_KEY}/test"
 
 cleanup() {
   # No temporary files to clean in this script
@@ -35,13 +36,12 @@ if [ -d "$OUTPUT_DIR" ]; then
 fi
 
 # Create standardized directory structure
-mkdir -p "$OUTPUT_DIR/features"
 mkdir -p "$OUTPUT_DIR/steps"
-mkdir -p "$OUTPUT_DIR/reports"
+mkdir -p "$OUTPUT_DIR/result"
 
 echo "Created QA output directory at: $OUTPUT_DIR" >&2
-echo "  ├── features/    (checklist + .feature files)" >&2
-echo "  ├── steps/        (test_*.py automation scripts)" >&2
-echo "  └── reports/      (test result reports)" >&2
+echo "  ├── checklist.md   (written by qa-test-design)" >&2
+echo "  ├── steps/         (test_*.py automation scripts)" >&2
+echo "  └── result/        (test result reports)" >&2
 
-echo "{\"status\": \"ready\", \"issue_key\": \"$ISSUE_KEY\", \"output_dir\": \"$OUTPUT_DIR\", \"structure\": {\"features\": \"$OUTPUT_DIR/features\", \"steps\": \"$OUTPUT_DIR/steps\", \"reports\": \"$OUTPUT_DIR/reports\"}}"
+echo "{\"status\": \"ready\", \"issue_key\": \"$ISSUE_KEY\", \"output_dir\": \"$OUTPUT_DIR\", \"structure\": {\"steps\": \"$OUTPUT_DIR/steps\", \"result\": \"$OUTPUT_DIR/result\"}}"

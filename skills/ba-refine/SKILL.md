@@ -46,18 +46,17 @@ ATLASSIAN_API_TOKEN=your-api-token
 ## Cấu trúc Thư mục
 
 ```
-workspace/{issueKey}/specs/refine/
-└── jira/
-    └── {issueKey}/
-        ├── source/
-        │   ├── {issueKey}-original.pdf
-        │   ├── metadata.json
-        │   └── references/
-        │       ├── {tên-slug}-{pageId}.pdf          # Confluence tham chiếu
-        │       ├── wireframe-v3.pdf                  # Attachment gốc
-        │       └── flowchart-order-flow.png          # Ảnh đính kèm
-        ├── {issueKey}-refined.md
-        └── push-log.json
+workspace/{issueKey}/
+├── source/
+│   ├── {issueKey}-original.pdf
+│   ├── metadata.json
+│   └── refs/
+│       ├── {tên-slug}-{pageId}.pdf          # Confluence tham chiếu
+│       ├── wireframe-v3.pdf                  # Attachment gốc
+│       └── flowchart-order-flow.png          # Ảnh đính kèm
+└── spec/
+    ├── refined.md
+    └── push-log.json
 ```
 
 ### Quy ước Đặt tên File
@@ -120,7 +119,7 @@ workspace/{issueKey}/specs/refine/
    - Từ `attachment`: Lấy danh sách file đính kèm (tên, dung lượng, định dạng)
 
 4. **Kiểm tra Cache — file đã tải trước đó:**
-   - Với mỗi Confluence pageId → Quét `workspace/{issueKey}/specs/imports/confluence/` và `workspace/{issueKey}/specs/refine/jira/*/source/references/` xem đã có `*-{pageId}.pdf` chưa
+   - Với mỗi Confluence pageId → Quét `workspace/{issueKey}/source/refs/` xem đã có `*-{pageId}.pdf` chưa (kể cả từ lần chạy `ba-spec` trước — cả hai skill dùng chung thư mục này)
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại chưa
 
 5. **Trình bảng Danh sách cho User duyệt:**
@@ -131,7 +130,7 @@ workspace/{issueKey}/specs/refine/
    | # | Loại | Tên | Trạng thái | Đường dẫn / Hành động |
    |---|------|-----|------------|----------------------|
    | 1 | 📄 Jira PDF | {issueKey} - {Tiêu đề Task} | 🆕 Chưa tải | → Sẽ tải mới |
-   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `workspace/{issueKey}/specs/imports/confluence/.../thiet-ke-luong-12345.pdf` |
+   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf` |
    | 3 | 📝 Confluence | API Spec v2 (ID: 67890) | 🆕 Chưa tải | → `api-spec-v2-67890.pdf` |
    | 4 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
    | 5 | 🖼️ Ảnh | flowchart.png (800KB) | 🆕 Chưa tải | → Sẽ tải mới |
@@ -144,37 +143,56 @@ workspace/{issueKey}/specs/refine/
 
 6. **DỪNG LẠI (Approval Gate):** Chờ User phản hồi "OK" hoặc chỉnh sửa danh sách.
 
-7. **Sau khi User đồng ý → Tải file thiếu:**
-   
-   - **Tải Jira task PDF:** Dùng script từ ba-spec
+7. **Sau khi User đồng ý → Tạo thư mục làm việc TRƯỚC (BẮT BUỘC, không được bỏ qua):**
+
+   Luôn neo (anchor) vào root của repo git rồi `cd` vào đó trước khi chạy bất kỳ lệnh tải file nào — KHÔNG dùng đường dẫn tương đối theo cwd hiện tại của agent, vì cwd có thể đang ở một thư mục con khác nhau giữa các lần chạy. Đây là nguyên nhân gây ra lệch đường dẫn (VD: tạo nhầm `project/{issueKey}/...` thay vì `workspace/{issueKey}/...`).
+
+   ```bash
+   cd "$(git rev-parse --show-toplevel)"
+   mkdir -p "workspace/{issueKey}/source/refs"
+   ```
+
+   Tài liệu tải về ghi vào `workspace/{issueKey}/source/`, spec mài giũa ghi vào
+   `workspace/{issueKey}/spec/` — tính từ root repo. Không tự ý đổi tên thư mục gốc
+   (`project/`, `data/`, `output/`...) và không tạo thêm gốc thứ 6.
+
+8. **Tải file thiếu vào thư mục vừa tạo:**
+
+   - **Tải Jira task PDF:** Dùng script từ ba-spec (script tự `mkdir -p` bên trong `OUTPUT_DIR`, nhưng vẫn phải chạy từ root repo — đã `cd` ở Bước 7 — để path tương đối không lệch)
      ```bash
-     bash skills/ba-spec/scripts/jira-fetch-pdf.sh {issueKey} workspace/{issueKey}/specs/refine/jira
+     bash skills/ba-spec/scripts/jira-fetch-pdf.sh {issueKey} workspace
      ```
-   
+
    - **Tải Confluence pages chưa có:**
      ```bash
-     GET /wiki/spaces/flyingpdf/pdfpageexport.action?pageId={pageId}
-     # Lưu với tên: {tên-slug}-{pageId}.pdf
+     curl -s -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
+       "${ATLASSIAN_BASE_URL}/wiki/spaces/flyingpdf/pdfpageexport.action?pageId={pageId}" \
+       -o "workspace/{issueKey}/source/refs/{tên-slug}-{pageId}.pdf"
      ```
-   
-   - **Tải attachments chưa có:** Giữ nguyên tên gốc
-   
+
+   - **Tải attachments chưa có:** Giữ nguyên tên gốc, lưu vào cùng thư mục `source/refs/`
+     ```bash
+     curl -s -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
+       "{attachment_content_url}" \
+       -o "workspace/{issueKey}/source/refs/{tên-file-gốc}"
+     ```
+
    - ⚠️ **LƯU Ý:** File tạm phải tạo trong `/tmp/` hoặc system scratch, KHÔNG tạo `scratch/` trong dự án user
 
-8. **Tạo cấu trúc thư mục:**
+9. **Kết quả cấu trúc thư mục sau Bước 7-8:**
    ```
-   workspace/{issueKey}/specs/refine/jira/{issueKey}/
+   workspace/{issueKey}/
    ├── source/
    │   ├── {issueKey}-original.pdf
    │   ├── metadata.json
-   │   └── references/
+   │   └── refs/
    │       ├── {tên-slug}-{pageId}.pdf          # Confluence
    │       ├── wireframe-v3.pdf                  # Attachment
    │       └── flowchart.png                     # Ảnh
-   └── (các file khác tạo sau)
+   └── spec/                                     # (các file khác tạo sau)
    ```
 
-9. **Cập nhật hoặc tạo `metadata.json` (BẮT BUỘC dùng đúng `summary` đã trích xuất ở Bước 2):**
+10. **Cập nhật hoặc tạo `metadata.json` (BẮT BUỘC dùng đúng `summary` đã trích xuất ở Bước 2):**
    ```json
    {
      "issueKey": "PROJ-123",
@@ -193,13 +211,13 @@ workspace/{issueKey}/specs/refine/
          "pageId": "67890",
          "title": "API Spec v2",
          "status": "downloaded",
-         "path": "source/references/api-spec-v2-67890.pdf"
+         "path": "source/refs/api-spec-v2-67890.pdf"
        },
        {
          "type": "attachment",
          "filename": "wireframe-v3.pdf",
          "status": "downloaded",
-         "path": "source/references/wireframe-v3.pdf"
+         "path": "source/refs/wireframe-v3.pdf"
        }
      ]
    }
@@ -334,7 +352,7 @@ workspace/{issueKey}/specs/refine/
 
 Sau khi user chọn hướng đi cuối cùng, tạo file markdown:
 
-**Đường dẫn file:** `workspace/{issueKey}/specs/refine/jira/{issueKey}/{issueKey}-refined.md`
+**Đường dẫn file:** `workspace/{issueKey}/spec/refined.md`
 
 **Cấu trúc (tuân thủ nghiêm ngặt):**
 
@@ -439,7 +457,7 @@ confidence = (user_story * 0.30) + (ac_complete * 0.30) +
      "issueKey": "PROJ-123",
      "pushDate": "2026-08-14T10:30:00Z",
      "confidence": 0.95,
-     "localFile": "workspace/PROJ-123/specs/refine/jira/PROJ-123/PROJ-123-refined.md",
+     "localFile": "workspace/PROJ-123/spec/refined.md",
      "jiraUrl": "https://domain.atlassian.net/browse/PROJ-123",
      "sectionsIncluded": [
        "User Story",
@@ -534,7 +552,7 @@ Agent:
 [Phase 0] Downloading PROJ-123...
 ✅ Task downloaded: "Add export button to report page"
 📋 Type: Story | Reporter: john@company.com
-📁 Files: workspace/PROJ-123/specs/refine/jira/PROJ-123/
+📁 Files: workspace/PROJ-123/spec/
 
 [Phase 1] Understanding the problem...
 
@@ -592,7 +610,7 @@ Assumptions:
 [Phase 3] Sharpening Direction A...
 
 Creating refined spec at:
-workspace/PROJ-123/specs/refine/jira/PROJ-123/PROJ-123-refined.md
+workspace/PROJ-123/spec/refined.md
 
 [Spec content generated with full structure...]
 

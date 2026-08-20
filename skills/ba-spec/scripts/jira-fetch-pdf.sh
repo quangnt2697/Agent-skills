@@ -3,11 +3,11 @@
 # jira-fetch-pdf.sh — Tải Jira issue thành PDF + nhận diện loại task
 # ==============================================================================
 # Mục đích: Tải issue từ Jira, export thành PDF, detect loại task từ tên
-# Sử dụng: bash jira-fetch-pdf.sh <JIRA_ISSUE_KEY> [output_dir]
+# Sử dụng: bash jira-fetch-pdf.sh <JIRA_ISSUE_KEY> [workspace-root]
 #
 # Ví dụ:
 #   bash jira-fetch-pdf.sh G3PTP-16584
-#   bash jira-fetch-pdf.sh G3PTP-16584 ./workspace/{issueKey}/specs/imports/jira
+#   bash jira-fetch-pdf.sh G3PTP-16584 ./workspace
 #
 # Env vars yêu cầu:
 #   JIRA_BASE_URL   - URL Jira (VD: https://your-company.atlassian.net)
@@ -45,16 +45,16 @@ log_info()  { echo -e "${BLUE}ℹ️  $1${NC}"; }
 
 # --- Kiểm tra tham số ---
 if [[ $# -lt 1 ]]; then
-    echo "Sử dụng: bash jira-fetch-pdf.sh <JIRA_ISSUE_KEY> [output_dir]"
+    echo "Sử dụng: bash jira-fetch-pdf.sh <JIRA_ISSUE_KEY> [workspace-root]"
     echo ""
     echo "Ví dụ:"
     echo "  bash jira-fetch-pdf.sh G3PTP-16584"
-    echo "  bash jira-fetch-pdf.sh G3PTP-16584 ./workspace/{issueKey}/specs/imports/jira"
+    echo "  bash jira-fetch-pdf.sh G3PTP-16584 ./workspace"
     exit 1
 fi
 
 ISSUE_KEY="$1"
-OUTPUT_BASE="${2:-./workspace/{issueKey}/specs/imports/jira}"
+OUTPUT_BASE="${2:-./workspace}"
 
 # --- Đọc .env ---
 ENV_FILE="${ENV_FILE:-.env}"

@@ -29,11 +29,29 @@ Chạy automation test đã có sẵn trong project và xuất báo cáo kết q
 
 Trước khi chạy test, xác định:
 
-1. **Test directory:** Test nằm ở đâu?
-   - `tests/` (convention phổ biến)
-   - `workspace/{issueKey}/tests/qa-test-design/{issueKey}/steps/` (theo qa-auto-design)
-   - `tests/e2e/`, `tests/integration/`
-   - Hoặc đường dẫn custom user chỉ định
+1. **Neo đường dẫn (BẮT BUỘC — chạy trước mọi lệnh khác):**
+
+   Test code và báo cáo đều là artifact của một issue, nên phải nằm trong
+   `workspace/{issueKey}/`. Neo về root repo trước để đường dẫn tương đối không lệch theo
+   cwd hiện tại của agent (xem `.claude/rules/workspace-paths.md`):
+
+   ```bash
+   cd "$(git rev-parse --show-toplevel)"
+   export ISSUE_KEY="{issueKey}"
+   export TEST_DIR="workspace/${ISSUE_KEY}/test/steps"
+   export REPORT_DIR="workspace/${ISSUE_KEY}/test/result"
+   mkdir -p "$REPORT_DIR"
+   ```
+
+   `export` là cần thiết vì bước phân tích kết quả (Bước 3) đọc `REPORT_DIR` từ tiến trình
+   Python con.
+
+   `mkdir -p` là bắt buộc: `pytest --junitxml`, `tee`, và `--cov-report` **không** tự tạo
+   thư mục cha — thiếu bước này report sẽ ghi hụt hoặc lệch chỗ.
+
+   Nếu user chỉ định một test suite có sẵn ngoài workspace (VD regression suite của repo
+   sản phẩm), giữ nguyên `TEST_DIR` do user chỉ định nhưng **`REPORT_DIR` vẫn ghi vào
+   `workspace/{issueKey}/`** — báo cáo luôn thuộc về issue đang chạy.
 
 2. **Test framework:** Dự án đang dùng framework gì?
    ```bash
@@ -53,10 +71,10 @@ Trước khi chạy test, xác định:
    ```
 
 3. **Test pattern:** Chạy tất cả hay chỉ một phần?
-   - Tất cả: `pytest tests/`
-   - Theo tag: `pytest -m smoke`
-   - Theo file: `pytest tests/test_login.py`
-   - Theo pattern: `pytest tests/test_order*.py`
+   - Tất cả: `pytest "$TEST_DIR"`
+   - Theo tag: `pytest "$TEST_DIR" -m smoke`
+   - Theo file: `pytest "$TEST_DIR/test_login.py"`
+   - Theo pattern: `pytest "$TEST_DIR"/test_order*.py`
 
 ### Bước 1: Kiểm tra Môi trường (Pre-flight Check)
 
@@ -67,7 +85,7 @@ Trước khi chạy test, verify dependencies:
 pytest --version || echo "pytest not installed"
 
 # 2. Check test files exist
-ls -la tests/ || echo "No tests/ directory"
+ls -la "$TEST_DIR" || echo "Không thấy thư mục test: $TEST_DIR"
 
 # 3. Check environment variables (nếu test cần)
 # VD: API_BASE_URL, DB_CONNECTION_STRING
@@ -99,32 +117,32 @@ Chạy test với options phù hợp cho framework:
 #### **Pytest (Python)**
 ```bash
 # Basic run
-pytest tests/ -v
+pytest "$TEST_DIR" -v
 
 # With coverage
-pytest tests/ --cov=src --cov-report=html --cov-report=term
+pytest "$TEST_DIR" --cov=src --cov-report=html:"$REPORT_DIR/coverage" --cov-report=term
 
 # With markers (tags)
-pytest tests/ -m "smoke or regression" -v
+pytest "$TEST_DIR" -m "smoke or regression" -v
 
 # With output format
-pytest tests/ --junitxml=reports/junit.xml --html=reports/report.html
+pytest "$TEST_DIR" --junitxml="$REPORT_DIR/junit.xml" --html="$REPORT_DIR/report.html"
 
 # Parallel execution
-pytest tests/ -n auto  # requires pytest-xdist
+pytest "$TEST_DIR" -n auto  # requires pytest-xdist
 
 # Stop on first failure
-pytest tests/ -x
+pytest "$TEST_DIR" -x
 
 # Full command (recommended)
-pytest tests/ \
+pytest "$TEST_DIR" \
   -v \
   --tb=short \
-  --junitxml=reports/junit.xml \
-  --html=reports/report.html \
+  --junitxml="$REPORT_DIR/junit.xml" \
+  --html="$REPORT_DIR/report.html" \
   --self-contained-html \
   --cov=src \
-  --cov-report=html:reports/coverage
+  --cov-report=html:"$REPORT_DIR/coverage"
 ```
 
 #### **Jest (JavaScript/TypeScript)**
@@ -136,7 +154,7 @@ npm test
 npm test -- --coverage
 
 # Specific file
-npm test -- tests/login.test.js
+npm test -- "$TEST_DIR/login.test.js"
 
 # Watch mode
 npm test -- --watch
@@ -147,7 +165,7 @@ npm test -- --reporters=default --reporters=jest-junit
 # Full command
 npm test -- \
   --coverage \
-  --coverageDirectory=reports/coverage \
+  --coverageDirectory="$REPORT_DIR/coverage" \
   --testResultsProcessor=jest-junit \
   --verbose
 ```
@@ -161,13 +179,13 @@ mvn test
 ./gradlew test
 
 # With reports
-mvn test -Dsurefire.reports.directory=reports/junit
+mvn test -Dsurefire.reports.directory="$REPORT_DIR/junit"
 ```
 
 **Lưu output vào file:**
 ```bash
 # Capture stdout + stderr
-pytest tests/ -v 2>&1 | tee reports/test-output.log
+pytest "$TEST_DIR" -v 2>&1 | tee "$REPORT_DIR/test-output.log"
 ```
 
 ### Bước 3: Phân tích Kết quả
@@ -178,9 +196,10 @@ Sau khi test chạy xong, phân tích kết quả:
 
 ```python
 # Parse pytest output
+import os
 import re
 
-output = open('reports/test-output.log').read()
+output = open(os.environ["REPORT_DIR"] + "/test-output.log").read()
 
 # Extract metrics
 total = re.search(r'(\d+) passed', output)
@@ -278,7 +297,7 @@ Xuất báo cáo dạng Markdown với cấu trúc chuẩn:
 # Báo cáo Kết quả Kiểm thử Automation
 
 **Ngày chạy:** 2024-01-15 10:30:00
-**Test Suite:** `workspace/{issueKey}/tests/qa-test-design/JIRA-123/steps/`
+**Test Suite:** `workspace/{issueKey}/test/steps/`
 **Framework:** pytest 7.4.0
 **Environment:** UAT
 **Triggered by:** Manual / CI/CD / Regression
@@ -456,17 +475,19 @@ Cannot connect to database: Missing DB_HOST
 
 ## 📁 Artifacts
 
-- **JUnit XML:** `reports/junit.xml`
-- **HTML Report:** `reports/report.html`
-- **Coverage Report:** `reports/coverage/index.html`
-- **Log Output:** `reports/test-output.log`
+Tất cả nằm trong `workspace/{issueKey}/test/result/`:
+
+- **JUnit XML:** `junit.xml`
+- **HTML Report:** `report.html`
+- **Coverage Report:** `coverage/index.html`
+- **Log Output:** `test-output.log`
 
 ---
 
 ## 🚀 Next Steps
 
 1. Fix 3 failed tests theo priority (P0 → P1 → P2)
-2. Re-run full test suite: `pytest tests/ -v`
+2. Re-run full test suite: `pytest "$TEST_DIR" -v`
 3. Nếu pass 100% → Approve để merge vào main
 4. Nếu còn fail → Debug và repeat
 ```
@@ -495,10 +516,11 @@ Dựa trên kết quả, đề xuất hành động cụ thể:
 
 ## Output Files
 
-Skill này tạo các output files sau:
+Skill này tạo các output files sau — **luôn nằm dưới `workspace/{issueKey}/`**, không bao
+giờ ghi ra gốc repo (xem `.claude/rules/workspace-paths.md`):
 
 ```
-reports/
+workspace/{issueKey}/test/result/
 ├── test-output.log              # Raw output từ test runner
 ├── junit.xml                    # JUnit format (cho CI/CD)
 ├── report.html                  # HTML report (human-readable)
@@ -506,8 +528,6 @@ reports/
 │   └── index.html
 └── {issueKey}-test-report.md   # Markdown report (chi tiết nhất)
 ```
-
-**Đường dẫn đầy đủ:** `workspace/{issueKey}/tests/qa-test-design/{issueKey}/reports/`
 
 ## Tích hợp với Pipeline
 

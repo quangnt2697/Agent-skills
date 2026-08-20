@@ -28,7 +28,7 @@
         "Task type detected ([APP]/[WEB]/[API])",
         "All sections extracted: Summary, User Stories, Business Rules, API Requirements, Error Scenarios",
         "Gap analysis completed with open questions",
-        "Output saved to specs/imports/jira/{issueKey}/{issueKey}-final.md",
+        "Output saved to workspace/{issueKey}/spec/final.md",
         "Confidence level calculated based on completeness"
       ]
     },

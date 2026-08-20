@@ -41,7 +41,7 @@ Kích hoạt skill này khi:
 
 **Input A: File `*-final.md`**
 ```bash
-workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md
+workspace/{issueKey}/spec/final.md
 ```
 
 Trích xuất:
@@ -545,7 +545,15 @@ Dùng **Value vs Effort** matrix:
 - [Market Research: Mobile Trading Trends](...)
 ```
 
-**Lưu vào:** `workspace/{issueKey}/docs/gap-analysis/{issueKey}-gap-analysis.md`
+**Lưu vào:** `workspace/{issueKey}/spec/gap-analysis.md`
+
+Trước khi ghi file, BẮT BUỘC neo về root repo và tạo thư mục đích — `Write` không tự tạo
+thư mục cha, và cwd của agent có thể đang lệch (xem `.claude/rules/workspace-paths.md`):
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+mkdir -p workspace/{issueKey}/spec
+```
 
 ## Tương tác với các Skills khác
 
@@ -610,7 +618,7 @@ Sau khi chạy skill này:
 - [ ] Roadmap có phased approach với timeline rõ ràng
 - [ ] Risks identified với mitigation plans
 - [ ] Action items assigned với owner + deadline
-- [ ] Output file đã lưu: `workspace/{issueKey}/docs/gap-analysis/{issueKey}-gap-analysis.md`
+- [ ] Output file đã lưu: `workspace/{issueKey}/spec/gap-analysis.md`
 - [ ] Stakeholders đã review và approve budget + timeline
 
 ## Ví dụ

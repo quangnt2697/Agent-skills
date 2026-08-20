@@ -8,7 +8,7 @@ Mục tiêu: Đánh giá một chức năng (techstack, kiến trúc), tìm bug,
 
 Hãy tuân thủ NGHIÊM NGẶT 4 bước trong quy trình của dev-audit-and-fix:
 1. Review & Audit: Quét và phân tích chi tiết.
-2. Thiết kế Kế hoạch: Viết ra `tasks/plan.md`.
+2. Thiết kế Kế hoạch: Viết ra `tech/plan.md`.
 3. Approval Gate: DỪNG LẠI và hỏi ý kiến người dùng. Bạn bắt buộc phải đợi phản hồi "OK" hoặc "Đồng ý" từ người dùng trước khi tiến hành bước tiếp theo. 
 4. Auto-Fix: **TỰ ĐỘNG APPLY FIXES TRỰC TIẾP VÀO FILES** bằng Edit/Write tools. Tự động chạy tuần tự mọi công việc trong plan mà không dừng lại, cho đến khi hoàn tất.
 

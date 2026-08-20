@@ -46,7 +46,8 @@ $ARGUMENTS có thể chứa:
    - Sign-off (email confirmation)
    - Open questions → Escalate với deadlines
 
-6. **Output**: Lưu vào `docs/stakeholder-interviews/{project-name}-stakeholder-interviews.md`
+6. **Output**: Lưu vào `workspace/{issueKey}/spec/stakeholders.md`
+   (không có issueKey → dùng slug của project name làm khoá, VD `workspace/mobile-trading-app/`)
 
 **Interview Template:**
 

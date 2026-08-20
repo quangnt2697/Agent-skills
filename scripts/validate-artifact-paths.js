@@ -43,8 +43,8 @@ const ROOT = path.resolve(__dirname, '..');
 const ARTIFACT_ALLOWLIST = new Set([
   'SPEC.md',        // spec, project root (produced by /spec, read by /build)
   'docs/SPEC.md',   // spec, alternate location accepted by /build
-  'tasks/plan.md',  // plan (produced by /plan, read by /build)
-  'tasks/todo.md',  // task list (produced by /plan)
+  'tech/plan.md',   // plan (produced by /plan, read by /build)
+  'tech/todo.md',   // task list (produced by /plan)
 ]);
 
 // The files that make up the spec -> plan -> build pipeline. Absent files are
@@ -67,15 +67,52 @@ const ARTIFACT_RE = /(?:[A-Za-z0-9._[\]-]+\/)*(?:spec|plan|todo)\.md/gi;
 
 // --- Per-issue workspace convention -----------------------------------------
 
-// The artifact roots that belong to a single Jira issue. Every mention of one
-// of these must carry a `workspace/{issueKey}/` prefix so BA, QA and DEV read
-// and write the same directory for a given issue.
-const WORKSPACE_ROOT_RE =
-  /(?:[A-Za-z0-9._{}[\]-]+\/)*(?:specs\/(?:imports|refine)|tests\/qa-test-design)\//g;
+// The artifact roots that belong to a single unit of work (a Jira issue, or a
+// module name when reverse-engineering). Every mention of one of these must
+// carry a `workspace/{issueKey}/` prefix so BA, QA and DEV read and write the
+// same directory for a given issue. Keep in sync with the canonical tree in
+// .claude/rules/workspace-paths.md.
+//
+// Placeholders may be non-ASCII ({tên_file} in qa-code2spec) and skills build
+// paths from shell variables (workspace/${ISSUE_KEY}/...), so the segment class
+// is Unicode-aware and admits `$` rather than being [A-Za-z0-9].
+const PATH_SEGMENT = '[\\p{L}\\p{N}._{}$[\\]-]+';
 
-// A match is well-formed when it starts with workspace/<segment>/ — the segment
-// is the issue key, either a placeholder ({issueKey}) or a literal (PROJ-123).
-const WORKSPACE_PREFIX_RE = /^workspace\/[A-Za-z0-9._{}[\]-]+\//;
+// The five artifact roots of the canonical layout, and the only directory names
+// allowed directly under workspace/<key>/. Keep in sync with the canonical tree
+// in .claude/rules/workspace-paths.md.
+const WORKSPACE_ROOTS = ['source', 'spec', 'tech', 'test', 'trace'];
+
+// Finds `workspace/<key>/<next>` and captures <next>, so a skill that invents a
+// sixth root (workspace/{issueKey}/output/) is caught. Deliberately anchored on
+// the literal `workspace/` prefix: after flattening, the roots are generic words
+// ("spec", "test", "source") that appear all over ordinary prose, so matching
+// them bare would drown real drift in false positives. Regression to the OLD
+// layout is caught by LEGACY_PATHS below instead.
+const WORKSPACE_CHILD_RE = new RegExp(
+  `workspace\\/${PATH_SEGMENT}\\/(${PATH_SEGMENT})`,
+  'gu'
+);
+
+// Directory names from the pre-flattening layout. These are gone for good: the
+// old tree repeated {issueKey} up to three times in one path, nested six levels
+// deep, and used `reports/` for two unrelated things. Any reappearance means a
+// file was written against the old convention, so fail loudly and name the
+// replacement instead of silently accepting a path nothing else resolves.
+const LEGACY_PATHS = [
+  { re: /specs\/imports/g, hint: 'workspace/{issueKey}/spec/ + source/' },
+  { re: /specs\/refine/g, hint: 'workspace/{issueKey}/spec/refined.md' },
+  { re: /specs\/code-import/g, hint: 'workspace/{tên_file}/spec/final.md' },
+  { re: /tests\/qa-test-design/g, hint: 'workspace/{issueKey}/test/' },
+  { re: /docs\/user-stories/g, hint: 'workspace/{issueKey}/spec/user-stories.md' },
+  { re: /docs\/gap-analysis/g, hint: 'workspace/{issueKey}/spec/gap-analysis.md' },
+  { re: /docs\/backlog/g, hint: 'workspace/{issueKey}/spec/backlog.md' },
+  { re: /docs\/processes/g, hint: 'workspace/{issueKey}/spec/process-{as-is|to-be}.md' },
+  {
+    re: /docs\/stakeholder-interviews/g,
+    hint: 'workspace/{issueKey}/spec/stakeholders.md',
+  },
+];
 
 // Lines that continue an ASCII directory tree are relative to the root printed
 // above them, so their paths are correct without a prefix of their own. The
@@ -135,12 +172,30 @@ function findWorkspaceViolations(relPath) {
   const violations = [];
   const lines = fs.readFileSync(abs, 'utf8').split(/\r?\n/);
   lines.forEach((line, i) => {
+    // Any surviving mention of the old layout, tree lines included.
+    for (const { re, hint } of LEGACY_PATHS) {
+      re.lastIndex = 0;
+      for (const m of line.matchAll(re)) {
+        violations.push({
+          line: i + 1,
+          match: m[0],
+          detail: `legacy layout — use ${hint}`,
+        });
+      }
+    }
+
     if (TREE_CONTINUATION_RE.test(line)) return;
-    const matches = line.match(WORKSPACE_ROOT_RE);
-    if (!matches) return;
-    for (const match of matches) {
-      if (!WORKSPACE_PREFIX_RE.test(match)) {
-        violations.push({ line: i + 1, match });
+
+    WORKSPACE_CHILD_RE.lastIndex = 0;
+    for (const m of line.matchAll(WORKSPACE_CHILD_RE)) {
+      const child = m[1];
+      if (child.startsWith('.')) continue; // .pipeline-state.json et al
+      if (!WORKSPACE_ROOTS.includes(child)) {
+        violations.push({
+          line: i + 1,
+          match: m[0],
+          detail: `"${child}" is not a workspace root (${WORKSPACE_ROOTS.join(', ')})`,
+        });
       }
     }
   });
@@ -208,8 +263,8 @@ function main() {
 
     if (violations.length > 0) {
       console.log(`  ✗  ${relPath}`);
-      for (const { line, match } of violations) {
-        console.log(`       L${line}: ${match} — missing workspace/{issueKey}/ prefix`);
+      for (const { line, match, detail } of violations) {
+        console.log(`       L${line}: ${match} — ${detail}`);
         wsErrors++;
       }
     }
@@ -219,9 +274,9 @@ function main() {
   console.log(`${wsChecked} files checked — ${wsErrors} error(s) — ${wsStatus}`);
 
   if (wsErrors > 0) {
-    console.log('\nPer-issue artifacts live under workspace/{issueKey}/ so BA, QA and DEV');
-    console.log('resolve the same directory for an issue. Prefix the path, or exclude the');
-    console.log('file from WORKSPACE_GUARDED_GLOBS if it documents a historical layout.');
+    console.log('\nPer-issue artifacts live under workspace/{issueKey}/ in exactly five roots:');
+    console.log(`  ${WORKSPACE_ROOTS.join('/  ')}/`);
+    console.log('See .claude/rules/workspace-paths.md for the canonical tree.');
   }
 
   if (errors > 0 || wsErrors > 0) {

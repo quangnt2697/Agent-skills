@@ -65,7 +65,7 @@ Kích hoạt skill này khi:
 
 **Input A: User Stories file**
 ```bash
-docs/user-stories/{issueKey}-user-stories.md
+workspace/{issueKey}/spec/user-stories.md
 ```
 
 Trích xuất:
@@ -75,7 +75,7 @@ Trích xuất:
 
 **Input B: Gap Analysis**
 ```bash
-workspace/{issueKey}/docs/gap-analysis/{issueKey}-gap-analysis.md
+workspace/{issueKey}/spec/gap-analysis.md
 ```
 
 Trích xuất:
@@ -465,7 +465,15 @@ Sprint 1:          Sprint 2:              Sprint 3:
 | 2026-08-20 | Moved Story 2 to Sprint 3 | Story 1 dependency discovered |
 ```
 
-**Lưu vào:** `docs/backlog/{issueKey}-prioritized-backlog.md`
+**Lưu vào:** `workspace/{issueKey}/spec/backlog.md`
+
+Trước khi ghi file, BẮT BUỘC neo về root repo và tạo thư mục đích — `Write` không tự tạo
+thư mục cha, và cwd của agent có thể đang lệch (xem `.claude/rules/workspace-paths.md`):
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+mkdir -p workspace/{issueKey}/spec
+```
 
 ## Tương tác với các Skills khác
 
@@ -525,7 +533,7 @@ Sau khi chạy skill này:
 - [ ] Sprint plan đã tạo với realistic velocity
 - [ ] Stakeholders đã review và approve priority
 - [ ] Risk identified với mitigation plans
-- [ ] Output file đã lưu: `docs/backlog/{issueKey}-prioritized-backlog.md`
+- [ ] Output file đã lưu: `workspace/{issueKey}/spec/backlog.md`
 - [ ] Team (DEV + QA) đã review Sprint 1 scope và commit
 
 ## Ví dụ

@@ -199,7 +199,7 @@ Sửa line 41 trong `skills/incremental-implementation/SKILL.md`:
 
 ### Skill: `planning-and-task-breakdown`
 
-Output `tasks/plan.md` và `tasks/todo.md` KHÔNG cần commit riêng.
+Output `tech/plan.md` và `tech/todo.md` KHÔNG cần commit riêng.
 Chỉ commit KHI hoàn thành toàn bộ plan + user approve để bắt đầu code.
 
 ### Command: `/build auto`

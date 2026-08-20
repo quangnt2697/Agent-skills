@@ -43,10 +43,10 @@ afterEach(() => {
 test('passes when producers and consumers use the canonical artifact paths', () => {
   const root = makeSandbox();
   writeFile(root, '.claude/commands/spec.md', 'Save the spec as `SPEC.md` in the project root.\n');
-  writeFile(root, '.claude/commands/plan.md', 'Save the plan to `tasks/plan.md` and task list to `tasks/todo.md`.\n');
-  writeFile(root, '.claude/commands/build.md', 'Look for a spec at `SPEC.md`, `docs/SPEC.md`, or under `spec/`. Require `tasks/plan.md`.\n');
-  writeFile(root, 'skills/spec-driven-development/SKILL.md', 'Save the plan to `tasks/plan.md` and the task list to `tasks/todo.md`.\n');
-  writeFile(root, 'skills/planning-and-task-breakdown/SKILL.md', 'Save to `tasks/plan.md` and `tasks/todo.md`.\n');
+  writeFile(root, '.claude/commands/plan.md', 'Save the plan to `tech/plan.md` and task list to `tech/todo.md`.\n');
+  writeFile(root, '.claude/commands/build.md', 'Look for a spec at `SPEC.md`, `docs/SPEC.md`, or under `spec/`. Require `tech/plan.md`.\n');
+  writeFile(root, 'skills/spec-driven-development/SKILL.md', 'Save the plan to `tech/plan.md` and the task list to `tech/todo.md`.\n');
+  writeFile(root, 'skills/planning-and-task-breakdown/SKILL.md', 'Save to `tech/plan.md` and `tech/todo.md`.\n');
 
   const result = run(root);
 
@@ -59,7 +59,7 @@ test('fails when a producer drifts to an unapproved artifact path (the #93 regre
   // Only the producers are changed to the per-feature layout; consumers stay on the old paths.
   writeFile(root, '.claude/commands/spec.md', 'Save the spec to `docs/features/[feature-name]/spec.md`.\n');
   writeFile(root, '.claude/commands/plan.md', 'Save the plan to `docs/features/[feature-name]/plan.md`.\n');
-  writeFile(root, '.claude/commands/build.md', 'Require a spec at `SPEC.md` and a plan at `tasks/plan.md`.\n');
+  writeFile(root, '.claude/commands/build.md', 'Require a spec at `SPEC.md` and a plan at `tech/plan.md`.\n');
 
   const result = run(root);
 
@@ -95,7 +95,7 @@ test('ignores non-artifact markdown references (no false positives)', () => {
   writeFile(
     root,
     'skills/spec-driven-development/SKILL.md',
-    'See `SKILL.md` and `references/testing-patterns.md`. Save the plan to `tasks/plan.md`.\n',
+    'See `SKILL.md` and `references/testing-patterns.md`. Save the plan to `tech/plan.md`.\n',
   );
 
   const result = run(root);
@@ -116,13 +116,25 @@ test('skips guarded files that do not exist', () => {
 });
 
 // --- Per-issue workspace convention -----------------------------------------
+//
+// Canonical layout (see .claude/rules/workspace-paths.md):
+//   workspace/{issueKey}/{source,spec,tech,test,trace}/
+// Two independent guards: the roots directly under workspace/<key>/ must be one
+// of the five, and no file may mention a directory from the old nested layout.
 
-test('passes when per-issue artifacts carry the workspace/{issueKey}/ prefix', () => {
+test('passes when per-issue artifacts use the five canonical roots', () => {
   const root = makeSandbox();
   writeFile(
     root,
     'skills/ba-spec/SKILL.md',
-    'Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`.\n',
+    [
+      'Output: `workspace/{issueKey}/spec/final.md`.',
+      'Downloads land in `workspace/{issueKey}/source/refs/`.',
+      'DEV writes `workspace/{issueKey}/tech/tech-spec.md`.',
+      'QA writes `workspace/{issueKey}/test/checklist.md`.',
+      'Traceability: `workspace/{issueKey}/trace/matrix.md`.',
+      '',
+    ].join('\n'),
   );
 
   const result = run(root);
@@ -132,24 +144,50 @@ test('passes when per-issue artifacts carry the workspace/{issueKey}/ prefix', (
   assert.match(result.stdout, /1 files checked — 0 error\(s\) — PASSED/);
 });
 
-test('fails when a skill writes a per-issue artifact outside the workspace (the ba-refine drift)', () => {
+test('flags a sixth root invented under workspace/<key>/', () => {
   const root = makeSandbox();
-  writeFile(
-    root,
-    'skills/ba-refine/SKILL.md',
-    'Refined spec goes to `specs/refine/jira/{issueKey}/{issueKey}-refined.md`.\n',
-  );
+  writeFile(root, 'skills/ba-x/SKILL.md', 'Save to `workspace/{issueKey}/output/report.md`.\n');
 
   const result = run(root);
 
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stdout, /skills\/ba-refine\/SKILL\.md/);
-  assert.match(result.stdout, /L1: specs\/refine\/ — missing workspace\/\{issueKey\}\/ prefix/);
+  assert.match(result.stdout, /"output" is not a workspace root/);
 });
 
 test('accepts a literal issue key in place of the {issueKey} placeholder', () => {
   const root = makeSandbox();
-  writeFile(root, 'agents/qa.md', 'Read `workspace/PROJ-123/specs/imports/jira/PROJ-123/`.\n');
+  writeFile(root, 'agents/qa.md', 'Read `workspace/PROJ-123/spec/final.md`.\n');
+
+  const result = run(root);
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('accepts a non-ASCII placeholder as the unit-of-work segment (qa-code2spec)', () => {
+  const root = makeSandbox();
+  writeFile(root, 'skills/qa-code2spec/SKILL.md', 'Xuất ra `workspace/{tên_file}/spec/final.md`.\n');
+
+  const result = run(root);
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('accepts a workspace path built from a shell variable', () => {
+  const root = makeSandbox();
+  writeFile(
+    root,
+    'skills/qa-run-test/SKILL.md',
+    'REPORT_DIR="workspace/${ISSUE_KEY}/test/result"\n',
+  );
+
+  const result = run(root);
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('accepts a dotfile directly under the workspace key', () => {
+  const root = makeSandbox();
+  writeFile(root, 'skills/qa-pipeline/SKILL.md', 'State: `workspace/{issueKey}/.pipeline-state.json`.\n');
 
   const result = run(root);
 
@@ -164,8 +202,10 @@ test('does not flag tree children that hang off a workspace root', () => {
     [
       '```',
       'workspace/{issueKey}/',
-      '├── specs/imports/jira/{issueKey}/{issueKey}-final.md',
-      '└── tests/qa-test-design/{issueKey}/',
+      '├── spec/final.md',
+      '└── test/',
+      '    ├── checklist.md',
+      '    └── result/summary.md',
       '```',
       '',
     ].join('\n'),
@@ -176,16 +216,55 @@ test('does not flag tree children that hang off a workspace root', () => {
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
 
-test('still flags a tree root that is missing the workspace prefix', () => {
+test('rejects every directory name from the pre-flattening layout', () => {
+  const legacy = [
+    ['specs/imports/jira/{issueKey}/{issueKey}-final.md', 'spec/'],
+    ['specs/refine/jira/{issueKey}/{issueKey}-refined.md', 'spec/refined.md'],
+    ['specs/code-import/{tên_file}-final.md', 'spec/final.md'],
+    ['tests/qa-test-design/{issueKey}/steps/', 'test/'],
+    ['docs/user-stories/{issueKey}-user-stories.md', 'spec/user-stories.md'],
+    ['docs/gap-analysis/{issueKey}-gap-analysis.md', 'spec/gap-analysis.md'],
+    ['docs/backlog/{issueKey}-prioritized-backlog.md', 'spec/backlog.md'],
+    ['docs/processes/{issueKey}-as-is-process.md', 'spec/process-'],
+    ['docs/stakeholder-interviews/{issueKey}-x.md', 'spec/stakeholders.md'],
+  ];
+
+  for (const [oldPath, hintFragment] of legacy) {
+    const sandbox = makeSandbox();
+    writeFile(sandbox, 'skills/ba-x/SKILL.md', `Lưu vào \`${oldPath}\`.\n`);
+
+    const result = run(sandbox);
+
+    assert.equal(result.status, 1, `${oldPath}: ${result.stdout}${result.stderr}`);
+    assert.match(result.stdout, /legacy layout — use/, oldPath);
+    assert.ok(result.stdout.includes(hintFragment), `${oldPath} should suggest ${hintFragment}`);
+  }
+});
+
+test('catches the legacy layout even when correctly workspace-prefixed', () => {
   const root = makeSandbox();
   writeFile(
     root,
     'skills/ba-spec/SKILL.md',
-    ['```text', 'specs/imports/', '├── jira/', '```', ''].join('\n'),
+    'Output: `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`.\n',
   );
 
   const result = run(root);
 
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stdout, /L2: specs\/imports\//);
+  assert.match(result.stdout, /legacy layout/);
+});
+
+test('catches the legacy layout inside an ASCII tree line', () => {
+  const root = makeSandbox();
+  writeFile(
+    root,
+    'skills/ba-spec/SKILL.md',
+    ['```', 'workspace/{issueKey}/', '└── tests/qa-test-design/{issueKey}/', '```', ''].join('\n'),
+  );
+
+  const result = run(root);
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /legacy layout — use workspace\/\{issueKey\}\/test\//);
 });

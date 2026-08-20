@@ -10,7 +10,7 @@
 - Phỏng vấn stakeholders làm rõ gaps (≥90% confidence)
 - Tổng hợp thành `*-final.md` với đầy đủ 13 sections
 
-**Output:** `workspace/{issueKey}/specs/imports/jira/{issueKey}/{issueKey}-final.md`
+**Output:** `workspace/{issueKey}/spec/final.md`
 
 **Handoff to:**
 - QA: Section 9 (AC) + Section 5 (User Flow) + Section 8 (Edge Cases) → Transform thành Checklist + Gherkin
@@ -58,7 +58,7 @@
 **Focus:** Clarity & Detail (mài giũa ý tưởng thành spec rõ ràng)
 
 **Output:** 
-- Local: `workspace/{issueKey}/specs/refine/jira/{issueKey}/{issueKey}-refined.md`
+- Local: `workspace/{issueKey}/spec/refined.md`
 - Jira: Updated description với cấu trúc chuẩn
 
 **Ranh giới:**

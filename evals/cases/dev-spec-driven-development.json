@@ -32,7 +32,7 @@
         "Error Handling includes retry logic, circuit breaker, idempotency",
         "Testing Strategy has unit/integration/load test plans",
         "Non-Functional Requirements are quantified (numbers, not adjectives)",
-        "Output file is generated at workspace/{issueKey}/planning/tech-spec.md"
+        "Output file is generated at workspace/{issueKey}/tech/tech-spec.md"
       ]
     },
     {

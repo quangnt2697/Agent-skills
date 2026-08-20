@@ -30,7 +30,7 @@
         "Proper test structure (setup, teardown, fixtures)",
         "No hardcoded credentials or secrets",
         "Code passes syntax validation",
-        "Output saved to tests/qa-test-design/{issueKey}/steps/",
+        "Output saved to workspace/{issueKey}/test/steps/",
         "Confidence level based on coverage and quality"
       ]
     },
