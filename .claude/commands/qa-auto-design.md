@@ -8,9 +8,9 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 
 ## Nguồn đầu vào
 
-1. **File .feature:** `workspace/{issueKey}/test/{issueKey}.feature`
-2. **File checklist:** `workspace/{issueKey}/test/checklist.md`
-3. **File spec (nếu có):** `workspace/{issueKey}/spec/final.md`
+1. **File .feature:** `/project-root/workspace/{issueKey}/test/{issueKey}.feature`
+2. **File checklist:** `/project-root/workspace/{issueKey}/test/checklist.md`
+3. **File spec (nếu có):** `/project-root/workspace/{issueKey}/spec/final.md`
 4. **Code function có sẵn** trong workspace do dev team phát triển — tìm và tái sử dụng
 
 ## Quy trình
@@ -25,8 +25,8 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 
 ## Output
 
-- Test scripts: `workspace/{issueKey}/test/steps/test_*.py`
-- Báo cáo: `workspace/{issueKey}/test/result/report.md`
+- Test scripts: `/project-root/workspace/{issueKey}/test/steps/test_*.py`
+- Báo cáo: `/project-root/workspace/{issueKey}/test/result/report.md`
 
 ## Quy tắc
 

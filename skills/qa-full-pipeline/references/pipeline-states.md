@@ -222,8 +222,8 @@ Pipeline lưu state vào `.pipeline-state.json`:
     }
   },
   "artifacts": {
-    "checklist": "workspace/{issueKey}/test/checklist.md",
-    "gherkin": "workspace/{issueKey}/test/{issueKey}.feature"
+    "checklist": "/project-root/workspace/{issueKey}/test/checklist.md",
+    "gherkin": "/project-root/workspace/{issueKey}/test/{issueKey}.feature"
   }
 }
 ```
@@ -239,7 +239,7 @@ Pipeline lưu state vào `.pipeline-state.json`:
 ### Rollback Phase 1.2 (Re-generate Gherkin)
 ```bash
 # Delete Gherkin file
-rm workspace/{issueKey}/test/{issueKey}.feature
+rm /project-root/workspace/{issueKey}/test/{issueKey}.feature
 
 # Resume from Phase 1.2
 /qa-full-pipeline JIRA-123 --resume=phase1.2
@@ -248,7 +248,7 @@ rm workspace/{issueKey}/test/{issueKey}.feature
 ### Rollback Phase 2 (Re-generate Test Code)
 ```bash
 # Delete test code
-rm -rf workspace/{issueKey}/test/steps/*.py
+rm -rf /project-root/workspace/{issueKey}/test/steps/*.py
 
 # Resume from Phase 2
 /qa-full-pipeline JIRA-123 --resume=phase2
@@ -257,7 +257,7 @@ rm -rf workspace/{issueKey}/test/steps/*.py
 ### Full Rollback (Start from Scratch)
 ```bash
 # Delete all outputs
-rm -rf workspace/{issueKey}/test/
+rm -rf /project-root/workspace/{issueKey}/test/
 
 # Run full pipeline
 /qa-full-pipeline JIRA-123
@@ -278,7 +278,7 @@ Pipeline hỗ trợ chạy concurrent cho nhiều issueKeys:
 ```
 
 **Isolation:**
-- Mỗi issueKey có directory riêng: `workspace/{issueKey}/test/`
+- Mỗi issueKey có directory riêng: `/project-root/workspace/{issueKey}/test/`
 - State files riêng: `.pipeline-state-{issueKey}.json`
 - Report files riêng: `{issueKey}-*.md`
 

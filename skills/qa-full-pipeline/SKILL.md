@@ -77,7 +77,7 @@ Mặc định là **chạy tự động xuyên suốt** theo `.claude/rules/auto
 
 ### Bước 1: Verify Input
 1. Kiểm tra format của `issueKey`. Nếu sai, báo lỗi và dừng.
-2. Kiểm tra file Business-Spec `workspace/{issueKey}/spec/final.md` có tồn tại không.
+2. Kiểm tra file Business-Spec `/project-root/workspace/{issueKey}/spec/final.md` có tồn tại không.
 3. Nếu không tìm thấy → đây là **trường hợp 1** của autonomy-contract: dừng, hướng dẫn người dùng chạy `/ba-spec {issueKey}` trước.
 
 ### Bước 2: Detect Resume Mode
@@ -92,7 +92,7 @@ Mặc định là **chạy tự động xuyên suốt** theo `.claude/rules/auto
 2. Ghi nhận Confidence Level vào báo cáo — **không dùng nó để chặn luồng**.
 
 ### Bước 2: Verify Outputs
-1. Kiểm tra file Checklist và Gherkin đã được tạo tại `workspace/{issueKey}/test/` chưa.
+1. Kiểm tra file Checklist và Gherkin đã được tạo tại `/project-root/workspace/{issueKey}/test/` chưa.
 2. Báo cáo số lượng test items và chuyển sang Phase 2.
 
 ## Chuyển Phase 1 → Phase 2
@@ -106,7 +106,7 @@ log một dòng tóm tắt Test Design artifacts. Chỉ ở chế độ `--step`
 2. Quan sát số vòng lặp tự sửa (self-fix iterations). Nếu > 3, cảnh báo người dùng về chất lượng code tiềm ẩn.
 
 ### Bước 2: Verify Test Code
-1. Đảm bảo thư mục `workspace/{issueKey}/test/steps/` đã được tạo và có chứa test file.
+1. Đảm bảo thư mục `/project-root/workspace/{issueKey}/test/steps/` đã được tạo và có chứa test file.
 2. Báo cáo tổng số test cases và chuyển sang Phase 3.
 
 ## Phase 3: Test Execution (qa-run-test)
@@ -121,7 +121,7 @@ log một dòng tóm tắt Test Design artifacts. Chỉ ở chế độ `--step`
 3. Đánh giá trạng thái chung: SUCCESS (100%), PARTIAL (>= 80%), FAILED (< 80%).
 
 ## Phase 4: Summary & Next Steps
-Tạo file `workspace/{issueKey}/test/result/summary.md` chứa:
+Tạo file `/project-root/workspace/{issueKey}/test/result/summary.md` chứa:
 - Tóm tắt Artifacts từng Phase.
 - Kết quả test (Pass/Fail rate).
 - Ma trận truy vết (Traceability Matrix).
@@ -158,7 +158,7 @@ Trước khi chạy một phase, kiểm tra xem artifact đầu ra của nó đ�
 Pipeline tạo các files sau:
 
 ```
-workspace/{issueKey}/
+/project-root/workspace/{issueKey}/
 ├── .pipeline-state.json                     # Resume state
 └── test/
     ├── checklist.md                         # Phase 1.1

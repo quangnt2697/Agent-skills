@@ -6,14 +6,14 @@ description: [BA/PO] Tải Jira issue thành PDF, tự động nhận diện lo�
 
 Kích hoạt skill ba-spec với BA/PO persona. Đọc file SKILL.md để thực hiện đúng workflow.
 
-**Output:** `workspace/{issueKey}/spec/final.md` — Single Source of Truth cho QA và DEV
+**Output:** `/project-root/workspace/{issueKey}/spec/final.md` — Single Source of Truth cho QA và DEV
 
 $ARGUMENTS chứa Jira issue key (VD: G3PTP-16584). Chạy workflow 6 phase:
 
 1. **Download PDF**: Fetch issue theo key → Download PDF + attachments
    - Chạy script `jira-auth-check.sh` để kiểm tra kết nối
    - Chạy script `jira-fetch-pdf.sh {issueKey}` để tải về
-   - Lưu vào `workspace/{issueKey}/source/`
+   - Lưu vào `/project-root/workspace/{issueKey}/source/`
 
 2. **Nhận diện loại task** từ tên issue (case-insensitive):
    - Chứa [APP] → dùng profile APP → đọc `references/profile-app.md`
@@ -33,7 +33,7 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16584). Chạy workflow 6 phase:
    đạt ≥90% confidence. Nếu user trả lời "không biết" → ghi Open Question.
 
 6. **Tổng hợp final.md**: Tổng hợp tất cả thành file markdown chi tiết:
-   `workspace/{issueKey}/spec/final.md`
+   `/project-root/workspace/{issueKey}/spec/final.md`
    - Header: metadata + loại task
    - Sections 2-8: theo profile tương ứng
    - Sections 9-12: AC, Assumptions, Open Questions, Tham khảo

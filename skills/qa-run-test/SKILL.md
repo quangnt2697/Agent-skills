@@ -32,14 +32,14 @@ Trước khi chạy test, xác định:
 1. **Neo đường dẫn (BẮT BUỘC — chạy trước mọi lệnh khác):**
 
    Test code và báo cáo đều là artifact của một issue, nên phải nằm trong
-   `workspace/{issueKey}/`. Neo về root repo trước để đường dẫn tương đối không lệch theo
+   `/project-root/workspace/{issueKey}/`. Neo về root repo trước để đường dẫn tương đối không lệch theo
    cwd hiện tại của agent (xem `.claude/rules/workspace-paths.md`):
 
    ```bash
    cd "$(git rev-parse --show-toplevel)"
    export ISSUE_KEY="{issueKey}"
-   export TEST_DIR="workspace/${ISSUE_KEY}/test/steps"
-   export REPORT_DIR="workspace/${ISSUE_KEY}/test/result"
+   export TEST_DIR="/project-root/workspace/${ISSUE_KEY}/test/steps"
+   export REPORT_DIR="/project-root/workspace/${ISSUE_KEY}/test/result"
    mkdir -p "$REPORT_DIR"
    ```
 
@@ -51,7 +51,7 @@ Trước khi chạy test, xác định:
 
    Nếu user chỉ định một test suite có sẵn ngoài workspace (VD regression suite của repo
    sản phẩm), giữ nguyên `TEST_DIR` do user chỉ định nhưng **`REPORT_DIR` vẫn ghi vào
-   `workspace/{issueKey}/`** — báo cáo luôn thuộc về issue đang chạy.
+   `/project-root/workspace/{issueKey}/`** — báo cáo luôn thuộc về issue đang chạy.
 
 2. **Test framework:** Dự án đang dùng framework gì?
    ```bash
@@ -297,7 +297,7 @@ Xuất báo cáo dạng Markdown với cấu trúc chuẩn:
 # Báo cáo Kết quả Kiểm thử Automation
 
 **Ngày chạy:** 2024-01-15 10:30:00
-**Test Suite:** `workspace/{issueKey}/test/steps/`
+**Test Suite:** `/project-root/workspace/{issueKey}/test/steps/`
 **Framework:** pytest 7.4.0
 **Environment:** UAT
 **Triggered by:** Manual / CI/CD / Regression
@@ -306,14 +306,14 @@ Xuất báo cáo dạng Markdown với cấu trúc chuẩn:
 
 ## 📊 Tổng quan (Summary)
 
-| Metric | Value |
-|--------|-------|
-| **Total Tests** | 45 |
-| **Passed** | 40 (88.9%) |
-| **Failed** | 3 (6.7%) |
-| **Skipped** | 2 (4.4%) |
-| **Duration** | 2m 34s |
-| **Pass Rate** | 88.9% |
+|      Metric     |    Value    |
+|-----------------|-------------|
+| **Total Tests** | 45          |
+| **Passed**      | 40 (88.9%)  |
+| **Failed**      | 3 (6.7%)    |
+| **Skipped**     | 2 (4.4%)    |
+| **Duration**    | 2m 34s      |
+| **Pass Rate**   | 88.9%       |
 
 **Status:** ⚠️ **FAILED** (3 critical failures)
 
@@ -428,11 +428,11 @@ Cannot connect to database: Missing DB_HOST
 
 **Overall Coverage:** 78%
 
-| Module | Coverage | Missing Lines |
-|--------|----------|---------------|
-| `src/api/orders.py` | 92% | Lines 45-48 |
-| `src/api/auth.py` | 85% | Lines 67-70, 89 |
-| `src/utils/validation.py` | 65% | Lines 12-25 |
+| Module                    | Coverage   | Missing Lines   |
+|---------------------------|------------|-----------------|
+| `src/api/orders.py`       | 92%        | Lines 45-48     |
+| `src/api/auth.py`         | 85%        | Lines 67-70, 89 |
+| `src/utils/validation.py` | 65%        | Lines 12-25     |
 
 **Recommendation:** Tăng coverage cho `validation.py` (hiện chỉ 65%)
 
@@ -442,11 +442,11 @@ Cannot connect to database: Missing DB_HOST
 
 Ánh xạ từ Business Spec → Checklist → Gherkin → Test → Result:
 
-| Business Rule | Checklist ID | Gherkin Scenario | Test Case | Result |
-|---------------|--------------|------------------|-----------|--------|
-| Khối lượng phải > 0 | CHK-001 | Scenario: Từ chối lệnh với quantity=0 | test_order_creation_with_invalid_quantity | ❌ FAILED |
-| Giá trong Sàn-Trần | CHK-002 | Scenario: Từ chối lệnh giá vượt trần | test_order_price_ceiling_validation | ✅ PASSED |
-| User đã login | CHK-003 | Scenario: API yêu cầu token hợp lệ | test_auth_required_for_orders | ✅ PASSED |
+| Business Rule       | Checklist ID   | Gherkin Scenario                      | Test Case                                 | Result    |
+|---------------------|----------------|---------------------------------------|-------------------------------------------|-----------|
+| Khối lượng phải > 0 | CHK-001        | Scenario: Từ chối lệnh với quantity=0 | test_order_creation_with_invalid_quantity | ❌ FAILED |
+| Giá trong Sàn-Trần  | CHK-002        | Scenario: Từ chối lệnh giá vượt trần  | test_order_price_ceiling_validation       | ✅ PASSED |
+| User đã login       | CHK-003        | Scenario: API yêu cầu token hợp lệ    | test_auth_required_for_orders             | ✅ PASSED |
 
 ---
 
@@ -475,7 +475,7 @@ Cannot connect to database: Missing DB_HOST
 
 ## 📁 Artifacts
 
-Tất cả nằm trong `workspace/{issueKey}/test/result/`:
+Tất cả nằm trong `/project-root/workspace/{issueKey}/test/result/`:
 
 - **JUnit XML:** `junit.xml`
 - **HTML Report:** `report.html`
@@ -516,11 +516,11 @@ Dựa trên kết quả, đề xuất hành động cụ thể:
 
 ## Output Files
 
-Skill này tạo các output files sau — **luôn nằm dưới `workspace/{issueKey}/`**, không bao
+Skill này tạo các output files sau — **luôn nằm dưới `/project-root/workspace/{issueKey}/`**, không bao
 giờ ghi ra gốc repo (xem `.claude/rules/workspace-paths.md`):
 
 ```
-workspace/{issueKey}/test/result/
+/project-root/workspace/{issueKey}/test/result/
 ├── test-output.log              # Raw output từ test runner
 ├── junit.xml                    # JUnit format (cho CI/CD)
 ├── report.html                  # HTML report (human-readable)

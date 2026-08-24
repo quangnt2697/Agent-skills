@@ -80,13 +80,13 @@ Dù ở persona nào, bạn cũng cần quét qua các trục sau:
 
 Dán nhãn cho mọi comment với mức độ nghiêm trọng (severity) để tác giả biết đâu là bắt buộc vs tùy chọn:
 
-| Tiền tố (Prefix) | Ý nghĩa | Hành động của Tác giả (Author Action) |
-|--------|---------|---------------|
-| *(Không có tiền tố)* | Bắt buộc phải thay đổi | Bắt buộc phải sửa trước khi merge |
-| **Critical:** | Chặn không cho merge | Lỗ hổng bảo mật, mất data, tính năng hỏng |
-| **Nit:** | Lặt vặt, tùy chọn | Tác giả có thể kệ (ignore) — format, style cá nhân |
-| **Optional:** / **Consider:** | Gợi ý | Đáng để cân nhắc nhưng không bắt buộc |
-| **FYI** | Chỉ mang tính cung cấp thông tin | Không cần làm gì — chỉ để tham khảo sau này |
+| Tiền tố (Prefix)              | Ý nghĩa                          | Hành động của Tác giả (Author Action)              |
+|-------------------------------|----------------------------------|----------------------------------------------------|
+| *(Không có tiền tố)*          | Bắt buộc phải thay đổi           | Bắt buộc phải sửa trước khi merge                  |
+| **Critical:**                 | Chặn không cho merge             | Lỗ hổng bảo mật, mất data, tính năng hỏng          |
+| **Nit:**                      | Lặt vặt, tùy chọn                | Tác giả có thể kệ (ignore) — format, style cá nhân |
+| **Optional:** / **Consider:** | Gợi ý                            | Đáng để cân nhắc nhưng không bắt buộc              |
+| **FYI**                       | Chỉ mang tính cung cấp thông tin | Không cần làm gì — chỉ để tham khảo sau này        |
 
 ## Checklist cho việc Đánh giá (Review Checklist)
 
@@ -114,15 +114,15 @@ Dán nhãn cho mọi comment với mức độ nghiêm trọng (severity) để 
 
 ## Các Biện hộ Thường gặp
 
-| Lý do biện hộ | Thực tế |
-|---|---|
-| "Code chạy được rồi, review làm gì cho mất thời gian" | Review bắt lỗi mà test không bắt được: ranh giới module bị phá, edge case chưa nghĩ tới, lỗ hổng auth. Test chỉ kiểm những gì đã nghĩ ra để kiểm. |
-| "PR to quá, review lướt cho nhanh" | PR càng to thì tỉ lệ lọt bug càng cao — đó là lý do phải review kỹ hơn, không phải lướt nhanh hơn. Nếu thực sự quá lớn, yêu cầu tách PR. |
-| "Tôi tin dev này, code chắc ổn" | Review là về code, không phải về người. Người giỏi nhất vẫn tạo ra bug khi mệt hoặc thiếu ngữ cảnh. |
-| "Chỗ này chưa hoàn hảo nhưng thôi, sửa sau" | "Sửa sau" hiếm khi xảy ra. Hoặc yêu cầu sửa trước merge, hoặc tạo ticket cụ thể có người nhận — đừng để trôi. |
+| Lý do biện hộ                                          | Thực tế                                                                                                                                                                  |
+|--------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| "Code chạy được rồi, review làm gì cho mất thời gian"  | Review bắt lỗi mà test không bắt được: ranh giới module bị phá, edge case chưa nghĩ tới, lỗ hổng auth. Test chỉ kiểm những gì đã nghĩ ra để kiểm.                        |
+| "PR to quá, review lướt cho nhanh"                     | PR càng to thì tỉ lệ lọt bug càng cao — đó là lý do phải review kỹ hơn, không phải lướt nhanh hơn. Nếu thực sự quá lớn, yêu cầu tách PR.                                 |
+| "Tôi tin dev này, code chắc ổn"                        | Review là về code, không phải về người. Người giỏi nhất vẫn tạo ra bug khi mệt hoặc thiếu ngữ cảnh.                                                                      |
+| "Chỗ này chưa hoàn hảo nhưng thôi, sửa sau"            | "Sửa sau" hiếm khi xảy ra. Hoặc yêu cầu sửa trước merge, hoặc tạo ticket cụ thể có người nhận — đừng để trôi.                                                            |
 | "Không đúng cách tôi hay viết nên tôi request changes" | Tiêu chuẩn là *có làm codebase tốt lên và tuân thủ quy ước dự án không*, không phải *có giống cách tôi viết không*. Sở thích cá nhân thì ghi là `nit:`, đừng chặn merge. |
-| "Bug fix nhỏ xíu, khỏi cần test regression" | Không có test regression thì đúng bug đó sẽ quay lại. Bug fix mà không kèm test là fix chưa xong. |
-| "QA sẽ bắt được lỗi này lúc test" | Bắt lỗi ở review rẻ hơn nhiều so với bắt ở khâu test, và rẻ hơn rất nhiều so với bắt ở production. |
+| "Bug fix nhỏ xíu, khỏi cần test regression"            | Không có test regression thì đúng bug đó sẽ quay lại. Bug fix mà không kèm test là fix chưa xong.                                                                        |
+| "QA sẽ bắt được lỗi này lúc test"                      | Bắt lỗi ở review rẻ hơn nhiều so với bắt ở khâu test, và rẻ hơn rất nhiều so với bắt ở production.                                                                       |
 
 ## Các Dấu hiệu Cảnh báo (Red Flags)
 - Type "LGTM" trong khi không có bằng chứng nào cho thấy đã thực sự đọc code.

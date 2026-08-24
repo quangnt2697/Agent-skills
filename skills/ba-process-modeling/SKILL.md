@@ -54,7 +54,7 @@ Kích hoạt skill này khi:
 
 **Input A: Business-Spec Section 5 (User Flow)**
 ```bash
-workspace/{issueKey}/spec/final.md
+/project-root/workspace/{issueKey}/spec/final.md
 ```
 
 Trích xuất:
@@ -65,7 +65,7 @@ Trích xuất:
 
 **Input B: Gap Analysis (AS-IS process)**
 ```bash
-workspace/{issueKey}/spec/gap-analysis.md
+/project-root/workspace/{issueKey}/spec/gap-analysis.md
 ```
 
 Trích xuất:
@@ -93,12 +93,12 @@ Liệt kê tất cả actors tham gia process:
 ```markdown
 ### Actors Identified
 
-| Actor | Role | Type |
-|-------|------|------|
-| Khách hàng | End user, trigger process | Human |
-| Broker | Process orders, manual entry | Human |
-| Hệ thống HO | Back-office system, validate | System |
-| Sàn (HNX/HSX) | Exchange, match orders | External System |
+| Actor         | Role                         | Type            |
+|---------------|------------------------------|-----------------|
+| Khách hàng    | End user, trigger process    | Human           |
+| Broker        | Process orders, manual entry | Human           |
+| Hệ thống HO   | Back-office system, validate | System          |
+| Sàn (HNX/HSX) | Exchange, match orders       | External System |
 ```
 
 **2.2. Activities (WHAT)**
@@ -108,14 +108,14 @@ Liệt kê tất cả activities (tasks, actions):
 ```markdown
 ### Activities Identified
 
-| # | Activity | Actor | Type | Duration |
-|---|----------|-------|------|----------|
-| 1 | Gọi điện cho broker | Khách hàng | Manual | 2 phút |
-| 2 | Ghi lệnh vào sổ tay | Broker | Manual | 30 giây |
-| 3 | Nhập lệnh vào HO | Broker | Manual | 3-5 phút |
-| 4 | Kiểm tra margin | Hệ thống HO | Automated | 1 giây |
-| 5 | Gửi lệnh lên sàn | Hệ thống HO | Automated | 2 giây |
-| 6 | Gọi lại khách hàng (nếu reject) | Broker | Manual | 2 phút |
+| # | Activity                        | Actor       | Type      | Duration   |
+|---|---------------------------------|-------------|-----------|------------|
+| 1 | Gọi điện cho broker             | Khách hàng  | Manual    | 2 phút     |
+| 2 | Ghi lệnh vào sổ tay             | Broker      | Manual    | 30 giây    |
+| 3 | Nhập lệnh vào HO                | Broker      | Manual    | 3-5 phút   |
+| 4 | Kiểm tra margin                 | Hệ thống HO | Automated | 1 giây     |
+| 5 | Gửi lệnh lên sàn                | Hệ thống HO | Automated | 2 giây     |
+| 6 | Gọi lại khách hàng (nếu reject) | Broker      | Manual    | 2 phút     |
 ```
 
 **2.3. Decision Points (IF/ELSE)**
@@ -125,10 +125,10 @@ Identify branches trong process:
 ```markdown
 ### Decision Points
 
-| # | Decision | Condition | True Path | False Path |
-|---|----------|-----------|-----------|------------|
-| D1 | Đủ margin? | account_balance >= order_value * 1.5 | → Activity 5 (gửi lên sàn) | → Activity 6 (reject, gọi lại) |
-| D2 | Thị trường mở? | time in [9:00-11:30, 13:00-14:30] | → Continue | → Reject "Ngoài giờ giao dịch" |
+| #   | Decision       | Condition                            | True Path                  | False Path                     |
+|-----|----------------|--------------------------------------|----------------------------|--------------------------------|
+| D1  | Đủ margin?     | account_balance >= order_value * 1.5 | → Activity 5 (gửi lên sàn) | → Activity 6 (reject, gọi lại) |
+| D2  | Thị trường mở? | time in [9:00-11:30, 13:00-14:30]    | → Continue                 | → Reject "Ngoài giờ giao dịch" |
 ```
 
 **2.4. Start/End Events**
@@ -136,11 +136,11 @@ Identify branches trong process:
 ```markdown
 ### Start/End Events
 
-| Type | Event | Trigger |
-|------|-------|---------|
-| Start | Khách hàng muốn đặt lệnh | Phone call to broker |
-| End (Success) | Lệnh lên sàn | HO sends FIX message |
-| End (Failure) | Lệnh bị reject | Margin không đủ OR Ngoài giờ |
+| Type          | Event                    | Trigger                      |
+|---------------|--------------------------|------------------------------|
+| Start         | Khách hàng muốn đặt lệnh | Phone call to broker         |
+| End (Success) | Lệnh lên sàn             | HO sends FIX message         |
+| End (Failure) | Lệnh bị reject           | Margin không đủ OR Ngoài giờ |
 ```
 
 ### Bước 3: Choose Diagram Type
@@ -149,11 +149,11 @@ Dựa trên complexity, chọn diagram type:
 
 **Decision Matrix:**
 
-| Scenario | Actors | Decision Points | Recommended Type |
-|----------|--------|----------------|-----------------|
-| Simple linear process | 1-2 | 0-1 | Flowchart |
-| Multi-actor với handoffs | 3+ | Any | Swim Lane |
-| Formal documentation | Any | Any | BPMN |
+| Scenario                 | Actors   | Decision Points   | Recommended Type   |
+|--------------------------|----------|-------------------|--------------------|
+| Simple linear process    | 1-2      | 0-1               | Flowchart          |
+| Multi-actor với handoffs | 3+       | Any               | Swim Lane          |
+| Formal documentation     | Any      | Any               | BPMN               |
 
 **Example:**
 - Process "Đặt lệnh" có 4 actors (Khách hàng, Broker, HO, Sàn) + 2 decision points
@@ -396,14 +396,14 @@ flowchart TD
 ```markdown
 ## AS-IS vs TO-BE Comparison
 
-| Aspect | AS-IS | TO-BE | Improvement |
-|--------|-------|-------|-------------|
-| **Total Time** | 10-15 phút | < 30 giây | 🎯 Giảm 95% |
-| **Manual Steps** | 6 steps (Broker manual) | 0 steps (Automated) | ✅ Full automation |
-| **Error Rate** | 2-3% (nhập sai) | < 0.5% (validation real-time) | 🎯 Giảm 80% lỗi |
-| **Actors Involved** | 3 (KH, Broker, HO) | 2 (KH, OMS) | Loại bỏ Broker bottleneck |
-| **Technology** | Phone + Desktop | Mobile App + Cloud | ✅ Modern stack |
-| **Transparency** | Không (phải gọi hỏi) | Real-time notification | ✅ User visibility |
+| Aspect              | AS-IS                   | TO-BE                         | Improvement               |
+|---------------------|-------------------------|-------------------------------|---------------------------|
+| **Total Time**      | 10-15 phút              | < 30 giây                     | 🎯 Giảm 95%               |
+| **Manual Steps**    | 6 steps (Broker manual) | 0 steps (Automated)           | ✅ Full automation        |
+| **Error Rate**      | 2-3% (nhập sai)         | < 0.5% (validation real-time) | 🎯 Giảm 80% lỗi           |
+| **Actors Involved** | 3 (KH, Broker, HO)      | 2 (KH, OMS)                   | Loại bỏ Broker bottleneck |
+| **Technology**      | Phone + Desktop         | Mobile App + Cloud            | ✅ Modern stack           |
+| **Transparency**    | Không (phải gọi hỏi)    | Real-time notification        | ✅ User visibility        |
 
 ### Diagram Links
 
@@ -502,9 +502,9 @@ flowchart TD
 
 ## Next Steps
 
-1. **Gap Analysis:** Identify gaps để đi từ AS-IS → TO-BE (xem `workspace/{issueKey}/spec/`)
-2. **Prioritization:** Ưu tiên gaps theo business value (xem `workspace/{issueKey}/spec/`)
-3. **Implementation:** Breakdown TO-BE process thành User Stories (xem `workspace/{issueKey}/spec/`)
+1. **Gap Analysis:** Identify gaps để đi từ AS-IS → TO-BE (xem `/project-root/workspace/{issueKey}/spec/`)
+2. **Prioritization:** Ưu tiên gaps theo business value (xem `/project-root/workspace/{issueKey}/spec/`)
+3. **Implementation:** Breakdown TO-BE process thành User Stories (xem `/project-root/workspace/{issueKey}/spec/`)
 
 ---
 
@@ -524,25 +524,25 @@ flowchart TD
 
 ### Appendix C: Process Metadata
 
-| Metadata | Value |
-|----------|-------|
-| Process Type | Order-to-Cash |
-| Domain | Securities Trading |
-| Frequency | ~1,000 orders/day |
-| Compliance | HOSE Rule 15, SBV Circular 01/2021 |
-| Last Updated | 2026-08-13 |
+| Metadata     | Value                              |
+|--------------|------------------------------------|
+| Process Type | Order-to-Cash                      |
+| Domain       | Securities Trading                 |
+| Frequency    | ~1,000 orders/day                  |
+| Compliance   | HOSE Rule 15, SBV Circular 01/2021 |
+| Last Updated | 2026-08-13                         |
 ```
 
 **Lưu vào:**
-- AS-IS: `workspace/{issueKey}/spec/process-as-is.md`
-- TO-BE: `workspace/{issueKey}/spec/process-to-be.md`
+- AS-IS: `/project-root/workspace/{issueKey}/spec/process-as-is.md`
+- TO-BE: `/project-root/workspace/{issueKey}/spec/process-to-be.md`
 
 Trước khi ghi file, BẮT BUỘC neo về root repo và tạo thư mục đích — `Write` không tự tạo
 thư mục cha, và cwd của agent có thể đang lệch (xem `.claude/rules/workspace-paths.md`):
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-mkdir -p workspace/{issueKey}/spec
+mkdir -p /project-root/workspace/{issueKey}/spec
 ```
 
 ## Tương tác với các Skills khác
@@ -609,7 +609,7 @@ Sau khi chạy skill này:
 - [ ] TO-BE diagram có improvements highlighted
 - [ ] Có comparison table (AS-IS vs TO-BE metrics)
 - [ ] Mermaid syntax valid (test render trước khi save)
-- [ ] Output files đã lưu: `workspace/{issueKey}/spec/process-{as-is|to-be}.md`
+- [ ] Output files đã lưu: `/project-root/workspace/{issueKey}/spec/process-{as-is|to-be}.md`
 - [ ] Stakeholders đã review và approve diagrams
 
 ## Ví dụ

@@ -427,13 +427,13 @@ Agent: Tuyệt. Chuyển sang Giai đoạn 3 để mài sắc spec...
 Agent: Bắt đầu Giai đoạn 3...
 
 [Bước 3.1] Tạo bản nháp spec...
-📁 File: workspace/PROJ-456/spec/refined-draft.md
+📁 File: /project-root/workspace/PROJ-456/spec/refined-draft.md
 ```
 
 ```
 [Bước 3.2] 📝 BẢN NHÁP SPEC — Vui lòng review kỹ trước khi chốt:
 
-📄 File: workspace/PROJ-456/spec/refined-draft.md
+📄 File: /project-root/workspace/PROJ-456/spec/refined-draft.md
 ────────────────────────────────────────────
 ```
 
@@ -594,7 +594,7 @@ User: "OK, chốt"
 
 ```
 [Bước 3.3] ✅ Bản cuối cùng đã chốt!
-📄 File: workspace/PROJ-456/spec/refined.md
+📄 File: /project-root/workspace/PROJ-456/spec/refined.md
 📊 Confidence: 94%
 
 Bạn có muốn push lên Jira không? (Gõ OK hoặc Không)
@@ -614,7 +614,7 @@ Agent: Đang push lên Jira...
 ✅ Description đã cập nhật
 
 📋 Tạo push log...
-✅ Push log: workspace/PROJ-456/spec/push-log.json
+✅ Push log: /project-root/workspace/PROJ-456/spec/push-log.json
 
 🔗 Xem task đã cập nhật: https://your-domain.atlassian.net/browse/PROJ-456
 

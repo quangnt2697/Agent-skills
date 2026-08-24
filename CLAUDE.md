@@ -126,7 +126,7 @@ Hai skill BA chính:
 |---|---|---|
 | Unit | DEV | `tests/unit/` hoặc `src/__tests__/` |
 | Integration | DEV thiết kế, QA mở rộng | `tests/integration/` |
-| E2E | QA | `workspace/{issueKey}/test/steps/` |
+| E2E | QA | `/project-root/workspace/{issueKey}/test/steps/` |
 | Performance | QA thiết kế, DEV tối ưu | — |
 | Security | Security-Auditor / QA test, DEV fix | — |
 
@@ -211,10 +211,10 @@ BA/PO creates *-final.md
 
 ## Chuẩn mực Đầu ra
 
-- **Đường dẫn:** MỌI artifact sinh ra bởi skill BẮT BUỘC nằm dưới `workspace/{issueKey}/`,
+- **Đường dẫn:** MỌI artifact sinh ra bởi skill BẮT BUỘC nằm dưới `/project-root/workspace/{issueKey}/`,
   trong đúng **5 thư mục gốc**: `source/` (tài liệu tải về) · `spec/` (BA) · `tech/` (DEV) ·
   `test/` (QA) · `trace/` (truy vết). Trước khi ghi file đầu tiên, luôn chạy
-  `cd "$(git rev-parse --show-toplevel)"` rồi `mkdir -p workspace/{issueKey}/<root>`.
+  `cd "$(git rev-parse --show-toplevel)"` rồi `mkdir -p /project-root/workspace/{issueKey}/<root>`.
   Không ghi ra gốc repo, không tự đặt gốc thứ 6, không lặp lại `{issueKey}` ở thư mục con.
   📖 Chi tiết + cây thư mục chuẩn: `.claude/rules/workspace-paths.md`
 - **Ngôn ngữ:** Mọi tài liệu (Spec, Checklist, Kịch bản, Báo cáo) BẮT BUỘC viết bằng Tiếng Việt

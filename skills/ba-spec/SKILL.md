@@ -23,13 +23,13 @@ Tự động hoá quy trình import và phân tích tài liệu từ **Jira** v�
 
 - Có issueKey Jira với yêu cầu tương đối rõ ràng, cần phân tích và tổng hợp thành Business-Spec
 - Có keyword Confluence, cần gom tài liệu thiết kế rải rác thành một nguồn sự thật duy nhất
-- Bắt đầu bất kỳ pipeline nào cần `*-final.md` làm đầu vào (`/qa-test-design`, `/tech-spec`, `/e2e-delivery`)
+- Bắt đầu bất kỳ pipeline nào cần spec làm đầu vào (`/qa-test-design`, `/tech-spec`, `/e2e-delivery`)
 - Cần tài liệu bàn giao cho QA và DEV cùng đọc, thay vì mỗi bên tự diễn giải Jira theo cách riêng
 
 **KHÔNG sử dụng khi:**
 - Jira chỉ có ý tưởng thô, mơ hồ, cần brainstorm để làm rõ trước → dùng `ba-refine`
 - Không có Jira/Confluence, chỉ có code đang chạy → dùng `qa-code2spec`
-- Đã có `{issueKey}-final.md` và không có gì thay đổi — đọc file đó, đừng import lại
+- Đã có `/project-root/workspace/{issueKey}/spec/final.md` và không có gì thay đổi — đọc file đó, đừng import lại
 - Chỉ cần làm rõ vài điểm mơ hồ trong spec đã có → dùng `ba-interview-me`
 
 ## Điều kiện Tiên quyết (Authentication)
@@ -67,7 +67,7 @@ Cả hai luồng (Jira và Confluence) đều sinh ra **cùng một cấu trúc*
 Nguồn gốc (jira hay confluence) được ghi trong `metadata.json`, không nằm trong tên thư mục.
 
 ```text
-workspace/{issueKey}/                                  # LUỒNG A — /ba-spec {issueKey}
+/project-root/workspace/{issueKey}/                                  # LUỒNG A — /ba-spec {issueKey}
 ├── source/
 │   ├── {issueKey}.pdf
 │   ├── metadata.json
@@ -78,7 +78,7 @@ workspace/{issueKey}/                                  # LUỒNG A — /ba-spec 
 └── spec/
     └── final.md
 
-workspace/{keyword}/                                   # LUỒNG B — /ba-spec confluence {keyword}
+/project-root/workspace/{keyword}/                                   # LUỒNG B — /ba-spec confluence {keyword}
 ├── source/
 │   ├── {tên-slug}-{pageId}.pdf                        # Trang Confluence gốc
 │   ├── metadata.json
@@ -103,15 +103,15 @@ workspace/{keyword}/                                   # LUỒNG B — /ba-spec 
 
 ## Bộ lọc Định dạng File
 
-| Nhóm | Định dạng | Hành động |
-|------|-----------|-----------|
-| 📄 Văn bản | `.pdf, .doc, .docx, .txt, .md, .rtf` | ✅ Tải + Đọc nội dung |
-| 📊 Bảng tính | `.xls, .xlsx, .csv` | ✅ Tải + Trích xuất data |
-| 🖼️ Hình ảnh | `.png, .jpg, .jpeg, .gif, .svg, .webp` | ✅ Tải (wireframe, mockup, flowchart, ERD) |
-| 📐 Sơ đồ | `.drawio, .vsdx, .figma` | ✅ Tải (giữ nguyên format) |
-| 💻 Code/Config | `.json, .yaml, .xml, .sql` | ✅ Tải + Đọc nội dung |
-| 🎬 Video | `.mp4, .mov, .avi` | ❌ Bỏ qua (quá nặng) |
-| 📦 Nén | `.zip, .rar, .7z, .tar.gz` | ❌ Bỏ qua (không đọc trực tiếp được) |
+| Nhóm           | Định dạng                              | Hành động                                  |
+|----------------|----------------------------------------|--------------------------------------------|
+| 📄 Văn bản     | `.pdf, .doc, .docx, .txt, .md, .rtf`   | ✅ Tải + Đọc nội dung                      |
+| 📊 Bảng tính   | `.xls, .xlsx, .csv`                    | ✅ Tải + Trích xuất data                   |
+| 🖼️ Hình ảnh    | `.png, .jpg, .jpeg, .gif, .svg, .webp` | ✅ Tải (wireframe, mockup, flowchart, ERD) |
+| 📐 Sơ đồ       | `.drawio, .vsdx, .figma`               | ✅ Tải (giữ nguyên format)                 |
+| 💻 Code/Config | `.json, .yaml, .xml, .sql`             | ✅ Tải + Đọc nội dung                      |
+| 🎬 Video       | `.mp4, .mov, .avi`                     | ❌ Bỏ qua (quá nặng)                       |
+| 📦 Nén         | `.zip, .rar, .7z, .tar.gz`             | ❌ Bỏ qua (không đọc trực tiếp được)       |
 
 ---
 
@@ -163,7 +163,7 @@ danh sách                                 loại task          theo profile
    - Gộp các kết quả tìm được vào danh sách tài liệu cần duyệt.
 
 4. **Kiểm tra Cache — file đã tải trước đó:**
-   - Với mỗi Confluence pageId → Quét `workspace/{issueKey}/source/refs/` xem đã có file `*-{pageId}.pdf` chưa (kể cả từ lần chạy `ba-refine` trước — cả hai skill dùng chung thư mục này).
+   - Với mỗi Confluence pageId → Quét `/project-root/workspace/{issueKey}/source/refs/` xem đã có file `*-{pageId}.pdf` chưa (kể cả từ lần chạy `ba-refine` trước — cả hai skill dùng chung thư mục này).
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại trong dự án chưa.
 
 5. **Trình bảng Danh sách cho User duyệt:**
@@ -171,15 +171,15 @@ danh sách                                 loại task          theo profile
    ```markdown
    📋 **Danh sách tài liệu liên quan đến {issueKey}:**
 
-   | # | Loại | Tên | Trạng thái | Đường dẫn / Hành động |
-   |---|------|-----|------------|----------------------|
-   | 1 | 📄 Jira PDF | {issueKey} - {Tiêu đề Task} | 🆕 Chưa tải | → Sẽ tải mới |
-   | 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345) | ✅ Đã có | `workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf` |
-   | 3 | 📝 Confluence | API Specification v2 (ID: 67890) | 🆕 Chưa tải | → `api-specification-v2-67890.pdf` |
-   | 4 | 📄 Jira PDF | {relatedIssueKey} - {Tiêu đề Task liên quan} | 🆕 Chưa tải | → Sẽ tải mới |
-   | 5 | 📎 File | wireframe-v3.pdf (2.1MB) | 🆕 Chưa tải | → Sẽ tải mới |
-   | 6 | 🖼️ Ảnh | flowchart-order-flow.png (800KB) | 🆕 Chưa tải | → Sẽ tải mới |
-   | 7 | 🎬 Video | demo-flow.mp4 (50MB) | ⏭️ Bỏ qua | Định dạng không hỗ trợ |
+| # | Loại          | Tên                                          | Trạng thái   | Đường dẫn / Hành động                                       |
+|---|---------------|----------------------------------------------|--------------|-------------------------------------------------------------|
+| 1 | 📄 Jira PDF   | {issueKey} - {Tiêu đề Task}                  | 🆕 Chưa tải  | → Sẽ tải mới                                                |
+| 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345)        | ✅ Đã có     | `/project-root/workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf` |
+| 3 | 📝 Confluence | API Specification v2 (ID: 67890)             | 🆕 Chưa tải  | → `api-specification-v2-67890.pdf`                          |
+| 4 | 📄 Jira PDF   | {relatedIssueKey} - {Tiêu đề Task liên quan} | 🆕 Chưa tải  | → Sẽ tải mới                                                |
+| 5 | 📎 File       | wireframe-v3.pdf (2.1MB)                     | 🆕 Chưa tải  | → Sẽ tải mới                                                |
+| 6 | 🖼️ Ảnh        | flowchart-order-flow.png (800KB)             | 🆕 Chưa tải  | → Sẽ tải mới                                                |
+| 7 | 🎬 Video      | demo-flow.mp4 (50MB)                         | ⏭️ Bỏ qua     | Định dạng không hỗ trợ                                      |
 
    **Tổng cộng:** 5 file cần tải mới, 1 file đã có sẵn, 1 file bỏ qua.
 
@@ -238,7 +238,7 @@ Sau khi User đồng ý:
    }
    ```
 
-5. **Lưu tất cả vào:** `workspace/{issueKey}/source/` (PDF gốc + `metadata.json`) và `workspace/{issueKey}/source/refs/` (Confluence + attachment).
+5. **Lưu tất cả vào:** `/project-root/workspace/{issueKey}/source/` (PDF gốc + `metadata.json`) và `/project-root/workspace/{issueKey}/source/refs/` (Confluence + attachment).
 
 ---
 
@@ -246,12 +246,12 @@ Sau khi User đồng ý:
 
 Đọc trường `summary` (tên task) từ JSON metadata, tìm tag prefix:
 
-| Tag trong tên task | Loại task | Profile áp dụng |
-|-------------------|-----------|--------------------|
-| `[APP]` | 📱 Mobile App | `references/profile-app.md` |
-| `[WEB]` | 🌐 Web Application | `references/profile-web.md` |
+| Tag trong tên task                            | Loại task                    | Profile áp dụng             |
+|-----------------------------------------------|------------------------------|-----------------------------|
+| `[APP]`                                       | 📱 Mobile App                | `references/profile-app.md` |
+| `[WEB]`                                       | 🌐 Web Application           | `references/profile-web.md` |
 | `[OpenAPI]` / `[BE]` / `[WS]` / `[WebSocket]` | 🔌 Backend / API / WebSocket | `references/profile-api.md` |
-| Không có tag / Nhiều tag | 🔀 Hybrid | Kết hợp tất cả profiles |
+| Không có tag / Nhiều tag                      | 🔀 Hybrid                    | Kết hợp tất cả profiles     |
 
 ### Logic phát hiện
 ```
@@ -311,11 +311,11 @@ Dựa trên việc đọc **TOÀN BỘ** các Jira task, Confluence page và fil
 
 ### Gaps riêng theo loại task
 
-| Loại | Gaps đặc thù |
-|------|-------------|
+| Loại   | Gaps đặc thù                                                                                                                              |
+|--------|-------------------------------------------------------------------------------------------------------------------------------------------|
 | 📱 APP | Behavior khi app background/foreground? Offline mode? Permission denied? Biometric fallback? Deep link format? Push notification payload? |
-| 🌐 WEB | Responsive breakpoint cụ thể? Browser support? SEO impact? URL state khi back/refresh? Real-time hay polling? Export format? |
-| 🔌 API | Idempotency key? Rate limit rule? Error code mapping? Pagination strategy? Webhook vs polling? Schema versioning? |
+| 🌐 WEB | Responsive breakpoint cụ thể? Browser support? SEO impact? URL state khi back/refresh? Real-time hay polling? Export format?              |
+| 🔌 API | Idempotency key? Rate limit rule? Error code mapping? Pagination strategy? Webhook vs polling? Schema versioning?                         |
 
 ### Output Phase 3
 Danh sách câu hỏi cần làm rõ, sắp xếp theo mức độ:
@@ -343,12 +343,15 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 ### Phase 5: Tổng hợp bản Markdown chi tiết
 
 ### File output
-📄 `workspace/{issueKey}/spec/final.md`
-*(Hoặc `workspace/{keyword}/spec/final.md` đối với luồng Confluence)*
+📄 `/project-root/workspace/{issueKey}/spec/final.md`
+*(Hoặc `/project-root/workspace/{keyword}/spec/final.md` đối với luồng Confluence)*
+
+⚠️ **LƯU Ý QUAN TRỌNG VỀ ĐƯỜNG DẪN:**
+Luôn tạo file output tại ĐÚNG đường dẫn cấu trúc `/project-root/workspace/{issueKey}/spec/final.md` (tương đối từ thư mục gốc của dự án `${CLAUDE_PROJECT_DIR}`). TUYỆT ĐỐI KHÔNG lưu file với tên `{issueKey}-final.md` ngay tại thư mục gốc của dự án.
 
 ### Bước kiểm tra trước khi ghi đè (Overwrite check):
-Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem file `{issueKey}-final.md` (hoặc `{keyword}-final.md`) đã tồn tại trong dự án chưa.
-- Nếu đã tồn tại, Agent **BẮT BUỘC** hỏi người dùng: "File `{issueKey}-final.md` đã tồn tại. Bạn có muốn ghi đè lên file cũ bằng bản tổng hợp mới không? (Yes/No)".
+Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem file `/project-root/workspace/{issueKey}/spec/final.md` (hoặc đối với Confluence là `/project-root/workspace/{keyword}/spec/final.md`) đã tồn tại trong dự án chưa.
+- Nếu đã tồn tại, Agent **BẮT BUỘC** hỏi người dùng: "File `/project-root/workspace/{issueKey}/spec/final.md` đã tồn tại. Bạn có muốn ghi đè lên file cũ bằng bản tổng hợp mới không? (Yes/No)".
 - Nếu User chọn "No", Agent không ghi đè, giữ nguyên file cũ, và **bắt buộc tiếp tục tự động** sang bước tiếp theo của luồng (vd: chuyển sang kỹ năng `/qa-test-design` hoặc `/tech-spec`).
 - Nếu User chọn "Yes" (hoặc file chưa tồn tại), Agent tiến hành tạo/ghi đè file output theo template dưới đây.
 
@@ -368,15 +371,15 @@ Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem f
 
 ### Sections 2–8 thay đổi theo loại task
 
-| Section | 📱 APP | 🌐 WEB | 🔌 API |
-|---------|--------|--------|--------|
-| 2 | Màn hình & Navigation | Page & Layout & URL Routing | Endpoints Overview |
-| 3 | UI Components & Platform | UI Components & Responsive | Request Schema |
-| 4 | Form & Input | Form & Input | Response Schema & Error Codes |
-| 5 | User Flow & Gesture | User Flow & Redirect | Security (Key, Signature, Auth) |
-| 6 | Authentication (PIN/OTP/Bio) | Authentication (Session/SSO) | Validation Rules |
-| 7 | Offline & Push Notification | Data Display & Real-time | Dependencies & Data Flow |
-| 8 | Business Rules & Edge Cases | Business Rules & Edge Cases | Business Rules & Edge Cases |
+| Section   | 📱 APP                       | 🌐 WEB                       | 🔌 API                          |
+|-----------|------------------------------|------------------------------|---------------------------------|
+| 2         | Màn hình & Navigation        | Page & Layout & URL Routing  | Endpoints Overview              |
+| 3         | UI Components & Platform     | UI Components & Responsive   | Request Schema                  |
+| 4         | Form & Input                 | Form & Input                 | Response Schema & Error Codes   |
+| 5         | User Flow & Gesture          | User Flow & Redirect         | Security (Key, Signature, Auth) |
+| 6         | Authentication (PIN/OTP/Bio) | Authentication (Session/SSO) | Validation Rules                |
+| 7         | Offline & Push Notification  | Data Display & Real-time     | Dependencies & Data Flow        |
+| 8         | Business Rules & Edge Cases  | Business Rules & Edge Cases  | Business Rules & Edge Cases     |
 
 ### Sections cố định (9–13)
 - **9. Acceptance Criteria (Reframed)**
@@ -386,7 +389,7 @@ Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem f
 - **13. Traceability Matrix** — Ánh xạ giữa yêu cầu nghiệp vụ ↔ tài liệu nguồn
 
 ### Quy tắc quan trọng
-> File `*-final.md` là **single source of truth** sau khi import.
+> File `/project-root/workspace/{issueKey}/spec/final.md` là **single source of truth** sau khi import.
 > Tất cả các bước tiếp theo (`/tech-spec`, `/plan`, `/qa-test-design`) đều đọc từ file này.
 
 ---
@@ -404,11 +407,11 @@ Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem f
    ```markdown
    📋 **Kết quả tìm kiếm Confluence cho "{keyword}":**
 
-   | # | Tiêu đề | Space | Tác giả | Cập nhật |
-   |---|---------|-------|---------|----------|
-   | 1 | Thiết kế luồng thanh toán VNPay | DEV | Nguyen A | 2024-01-10 |
-   | 2 | API Specification - Payment | API | Tran B | 2024-01-08 |
-   | 3 | Checklist UAT thanh toán | QA | Le C | 2023-12-20 |
+| # | Tiêu đề                         | Space   | Tác giả   | Cập nhật   |
+|---|---------------------------------|---------|-----------|------------|
+| 1 | Thiết kế luồng thanh toán VNPay | DEV     | Nguyen A  | 2024-01-10 |
+| 2 | API Specification - Payment     | API     | Tran B    | 2024-01-08 |
+| 3 | Checklist UAT thanh toán        | QA      | Le C      | 2023-12-20 |
 
    Bạn muốn tải tài liệu nào? (Gõ số thứ tự, VD: **1** hoặc **1,2**)
    ```
@@ -432,12 +435,12 @@ Sau khi User đồng ý:
 2. Tải các Confluence con (nếu có): `{tên-slug-con}-{childPageId}.pdf`
 3. Tải các file đính kèm (giữ nguyên tên gốc).
 4. Tạo `metadata.json` với danh sách references.
-5. Lưu vào `workspace/{keyword}/source/` (PDF trang gốc + `metadata.json`) và `workspace/{keyword}/source/refs/` (trang con + attachment).
+5. Lưu vào `/project-root/workspace/{keyword}/source/` (PDF trang gốc + `metadata.json`) và `/project-root/workspace/{keyword}/source/refs/` (trang con + attachment).
 
 ### Phase 2 → Phase 5: Phân tích & Tổng hợp
 
 Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
-- Đọc trang gốc + tất cả references → Trích xuất → Phân tích gaps → Interview-me → Tổng hợp `{keyword}-final.md`.
+- Đọc trang gốc + tất cả references → Trích xuất → Phân tích gaps → Interview-me → Tổng hợp vào `/project-root/workspace/{keyword}/spec/final.md`.
 
 ---
 
@@ -447,7 +450,7 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 |-----------|-------|
 | **Depth = 1** | Chỉ scan link ở tầng trực tiếp. KHÔNG đào sâu thêm. |
 | **API-first** | Ưu tiên dùng REST API (`issuelinks`, `remotelink`, `attachment`, CQL search) thay vì để AI đọc text tìm link. Nhanh hơn 10x. |
-| **Cache Check** | Trước khi tải, luôn kiểm tra file đã có trong dự án (`workspace/{issueKey}/source/refs/`). Tiết kiệm thời gian và bandwidth. |
+| **Cache Check** | Trước khi tải, luôn kiểm tra file đã có trong dự án (`/project-root/workspace/{issueKey}/source/refs/`). Tiết kiệm thời gian và bandwidth. |
 | **Smart Filter** | Chỉ tải file trong bộ lọc cho phép (xem bảng ở trên). Bỏ qua video, file nén. |
 | **Approval Gate** | Luôn trình danh sách cho User duyệt trước khi tải. User có quyền loại bỏ file không cần thiết. |
 
@@ -461,13 +464,13 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 | "Ảnh wireframe/flowchart không đọc được, bỏ qua" | Wireframe và flowchart là nơi luồng người dùng được định nghĩa rõ nhất. Tải về và đọc — chúng nằm trong bộ lọc cho phép vì lý do đó. |
 | "Có 3 chỗ mơ hồ nhưng tôi đoán được, viết luôn cho nhanh" | Đoán sai ở tầng spec sẽ nhân lên thành checklist sai, Gherkin sai, và test sai. Đây chính là lý do Phase 4 tồn tại. |
 | "Confidence mới 78%, cứ ghi vào rồi chạy tiếp" | Đúng — chạy tiếp là hành vi đúng. Nhưng phải ghi gap vào mục *Giả định & Rủi ro*, không được im lặng lấp đầy chỗ trống. |
-| "File `-final.md` đã tồn tại, hỏi user có ghi đè không" | Ghi đè. Bản cũ đã nằm trong git history. Đây là câu hỏi thừa theo `autonomy-contract.md`. |
+| "File `final.md` đã tồn tại, hỏi user có ghi đè không" | Ghi đè. Bản cũ đã nằm trong git history. Đây là câu hỏi thừa theo `autonomy-contract.md`. |
 | "Task này đơn giản, không cần đủ 13 section" | Section không áp dụng thì ghi rõ "Không áp dụng" kèm lý do. Bỏ trống khiến người đọc sau không phân biệt được *không cần* với *quên mất*. |
-| "Copy nguyên mô tả Jira vào final.md cho nhanh" | `*-final.md` là kết quả phân tích, không phải bản sao. Chép nguyên nghĩa là chưa làm gì cả. |
+| "Copy nguyên mô tả Jira vào final.md cho nhanh" | `final.md` là kết quả phân tích, không phải bản sao. Chép nguyên nghĩa là chưa làm gì cả. |
 
 ## Dấu hiệu Cảnh báo (Red Flags)
 
-- `*-final.md` không có mục Acceptance Criteria, hoặc AC viết dạng mô tả thay vì checklist rule
+- File `final.md` không có mục Acceptance Criteria, hoặc AC viết dạng mô tả thay vì checklist rule
 - Mục Open Questions rỗng ở một task không tầm thường — chưa phân tích đủ sâu, không phải đã rõ hết
 - Business Rule viết bằng tính từ mơ hồ: "hợp lệ", "nhanh", "phù hợp" — QA không chuyển được thành test data
 - Danh sách đóng (loại lệnh, trạng thái tài khoản, loại thị trường) chỉ liệt kê ví dụ thay vì liệt kê đủ
@@ -479,9 +482,9 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 
 ## Xác minh
 
-Trước khi bàn giao `*-final.md` cho QA hoặc DEV:
+Trước khi bàn giao spec cho QA hoặc DEV:
 
-- [ ] File tồn tại tại `workspace/{issueKey}/spec/final.md` và không rỗng
+- [ ] File tồn tại tại `/project-root/workspace/{issueKey}/spec/final.md` và không rỗng
 - [ ] Header khai báo rõ loại task (📱 APP / 🌐 WEB / 🔌 API)
 - [ ] Đủ 13 section — section không áp dụng phải ghi "Không áp dụng" kèm lý do, không để trống
 - [ ] Mỗi tài liệu đã tải trong `source/` và `source/refs/` được trích dẫn ít nhất một lần

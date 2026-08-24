@@ -438,7 +438,7 @@ echo "✅ Đã push thành công lên Squash TM"
 echo "- Project ID: ${SQUASH_PROJECT_ID}"
 echo "- Thư mục: ${TARGET_SPRINT_NAME}"
 echo "- Test Case: ${TEST_CASE_NAME}"
-echo "- Link: ${SQUASH_BASE_URL}/test-case-workspace/test-case/${TC_ID}"
+echo "- Link: ${SQUASH_BASE_URL}/test-case-/project-root/workspace/test-case/${TC_ID}"
 echo "- Campaign Workspace: ${ASSIGN_STATUS}"
 echo "--------------------------------------------------"
 exit 0

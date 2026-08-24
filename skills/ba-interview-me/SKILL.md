@@ -187,16 +187,16 @@ Chỉ sau hai câu hỏi, agent đã phát hiện ra yêu cầu thực sự khô
 
 ## Những lời Biện minh Thường gặp (Rationalizations)
 
-| Lời biện minh | Thực tế |
-|---|---|
-| "Yêu cầu đã đủ rõ ràng rồi" | Nếu ngay lúc này bạn không thể viết ra kết quả mong muốn của người dùng trong MỘT câu duy nhất, thì yêu cầu đó KHÔNG rõ ràng. Hãy chạy Bước 1 trước khi quyết định. |
-| "Hỏi quá nhiều câu hỏi sẽ làm lãng phí thời gian của họ" | Thời gian lãng phí cho 4–6 câu hỏi có mục tiêu là rất nhỏ. Thời gian lãng phí do xây dựng sai sản phẩm là khổng lồ, và người dùng chính là người phải gánh chịu chi phí đó. |
-| "Tôi sẽ tự hình dung ra trong lúc code" | Chi phí thay đổi sau khi code đã tồn tại cao gấp 10 lần so với lúc này. Khám phá yêu cầu trong lúc triển khai chính là sự làm lại (rework). |
-| "Họ nói 'tùy bạn', vì vậy tôi cứ tự quyết định thôi" | "Tùy bạn" là sự ủy quyền, không phải là một quyết định. Hãy hỏi lại với hai lựa chọn cụ thể như một câu hỏi trắc nghiệm. |
-| "Tôi nên đưa cho họ một vài lựa chọn để họ chọn" | Cung cấp lựa chọn chỉ hiệu quả khi người dùng biết họ muốn gì và đang chọn giữa các sự đánh đổi (trade-offs). Lúc này họ vẫn chưa biết mình muốn gì. Đưa ra lựa chọn sẽ mở rộng phạm vi tìm kiếm; đặt câu hỏi sẽ thu hẹp nó lại. |
-| "Nếu tôi đính kèm phỏng đoán của mình, tôi đang mớm lời cho họ" | Mớm lời (Leading) chính là mục đích. Phản ứng (Reacting) thì nhanh hơn là phải tạo ra (Generating) từ đầu. Rủi ro là sự xu nịnh, chứ không phải là việc mớm lời; hãy giảm thiểu nó bằng cách thể hiện rõ sự sẵn sàng sai. |
-| "Chúng ta đã nói chuyện đủ rồi, tôi hiểu rồi" | Hãy thử test xem: bạn có thể dự đoán phản ứng của họ với 3 câu hỏi tiếp theo không? Nếu không, bạn vẫn chưa hiểu đâu. |
-| "Người dùng nói yes, chúng ta xong rồi" | Nếu chữ "yes" đó đi sau một câu tóm tắt mơ hồ hoặc một câu "nghe có vẻ ổn" mở, thì chữ "yes" đó là sáo rỗng. Hãy tóm tắt lại một cách cụ thể và xác nhận lại. |
+| Lời biện minh                                                   | Thực tế                                                                                                                                                                                                                          |
+|-----------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| "Yêu cầu đã đủ rõ ràng rồi"                                     | Nếu ngay lúc này bạn không thể viết ra kết quả mong muốn của người dùng trong MỘT câu duy nhất, thì yêu cầu đó KHÔNG rõ ràng. Hãy chạy Bước 1 trước khi quyết định.                                                              |
+| "Hỏi quá nhiều câu hỏi sẽ làm lãng phí thời gian của họ"        | Thời gian lãng phí cho 4–6 câu hỏi có mục tiêu là rất nhỏ. Thời gian lãng phí do xây dựng sai sản phẩm là khổng lồ, và người dùng chính là người phải gánh chịu chi phí đó.                                                      |
+| "Tôi sẽ tự hình dung ra trong lúc code"                         | Chi phí thay đổi sau khi code đã tồn tại cao gấp 10 lần so với lúc này. Khám phá yêu cầu trong lúc triển khai chính là sự làm lại (rework).                                                                                      |
+| "Họ nói 'tùy bạn', vì vậy tôi cứ tự quyết định thôi"            | "Tùy bạn" là sự ủy quyền, không phải là một quyết định. Hãy hỏi lại với hai lựa chọn cụ thể như một câu hỏi trắc nghiệm.                                                                                                         |
+| "Tôi nên đưa cho họ một vài lựa chọn để họ chọn"                | Cung cấp lựa chọn chỉ hiệu quả khi người dùng biết họ muốn gì và đang chọn giữa các sự đánh đổi (trade-offs). Lúc này họ vẫn chưa biết mình muốn gì. Đưa ra lựa chọn sẽ mở rộng phạm vi tìm kiếm; đặt câu hỏi sẽ thu hẹp nó lại. |
+| "Nếu tôi đính kèm phỏng đoán của mình, tôi đang mớm lời cho họ" | Mớm lời (Leading) chính là mục đích. Phản ứng (Reacting) thì nhanh hơn là phải tạo ra (Generating) từ đầu. Rủi ro là sự xu nịnh, chứ không phải là việc mớm lời; hãy giảm thiểu nó bằng cách thể hiện rõ sự sẵn sàng sai.        |
+| "Chúng ta đã nói chuyện đủ rồi, tôi hiểu rồi"                   | Hãy thử test xem: bạn có thể dự đoán phản ứng của họ với 3 câu hỏi tiếp theo không? Nếu không, bạn vẫn chưa hiểu đâu.                                                                                                            |
+| "Người dùng nói yes, chúng ta xong rồi"                         | Nếu chữ "yes" đó đi sau một câu tóm tắt mơ hồ hoặc một câu "nghe có vẻ ổn" mở, thì chữ "yes" đó là sáo rỗng. Hãy tóm tắt lại một cách cụ thể và xác nhận lại.                                                                    |
 
 ## Các Dấu hiệu Cảnh báo (Red Flags)
 

@@ -1,4 +1,4 @@
-# Workspace Paths — Mọi output của skill phải nằm trong `workspace/{issueKey}/`
+# Workspace Paths — Mọi output của skill phải nằm trong `/project-root/workspace/{issueKey}/`
 
 ## Nguyên tắc
 
@@ -6,7 +6,7 @@
 một module khi reverse-engineering). Tất cả BẮT BUỘC nằm dưới đúng một thư mục gốc:
 
 ```
-workspace/{issueKey}/
+/project-root/workspace/{issueKey}/
 ```
 
 Không có ngoại lệ. Không skill nào được ghi ra gốc repo (`docs/`, `specs/`, `reports/`,
@@ -14,7 +14,7 @@ Không có ngoại lệ. Không skill nào được ghi ra gốc repo (`docs/`, 
 `output/`, `{project_root}/{issueKey}/`).
 
 Lý do: pipeline BA → QA → DEV bàn giao artifact **bằng đường dẫn**. BA ghi
-`workspace/{issueKey}/spec/...`, QA đọc đúng đường dẫn đó. Một skill ghi lệch gốc là
+`/project-root/workspace/{issueKey}/spec/...`, QA đọc đúng đường dẫn đó. Một skill ghi lệch gốc là
 handoff đứt — im lặng, không có lỗi nào được ném ra.
 
 ---
@@ -25,7 +25,7 @@ Mọi skill, ở bước đầu tiên có tạo file, BẮT BUỘC chạy đúng
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-mkdir -p workspace/{issueKey}/<thư-mục-con-của-skill>
+mkdir -p /project-root/workspace/{issueKey}/<thư-mục-con-của-skill>
 ```
 
 **Vì sao phải `cd` về root repo:** cwd của agent thay đổi giữa các lần chạy và giữa các
@@ -42,12 +42,12 @@ là cách duy nhất đảm bảo đích ghi tồn tại.
 ## Cây thư mục chuẩn
 
 Phẳng theo **persona / loại artifact**, không theo tên skill. Tối đa 3 tầng dưới
-`workspace/{issueKey}/`. `{issueKey}` đã là thư mục cha nên **không lặp lại** ở bất kỳ
+`/project-root/workspace/{issueKey}/`. `{issueKey}` đã là thư mục cha nên **không lặp lại** ở bất kỳ
 thư mục con hay tên file nào — ngoại lệ duy nhất là `{issueKey}.feature` (Squash TM ghi đè
 test case theo tên file).
 
 ```
-workspace/{issueKey}/
+/project-root/workspace/{issueKey}/
 ├── .pipeline-state.json
 │
 ├── source/                     # Nguyên liệu tải về — INPUT, không phải agent sinh ra
@@ -106,8 +106,8 @@ vai trò issueKey** — không bao giờ được rơi về gốc repo:
 
 | Skill | Đơn vị công việc | Đường dẫn |
 |---|---|---|
-| `qa-code2spec` | Tên file/module | `workspace/{tên_file}/spec/final.md` |
-| `ba-stakeholder-interview` | Tên project/feature dạng slug | `workspace/{project-slug}/spec/stakeholders.md` |
+| `qa-code2spec` | Tên file/module | `/project-root/workspace/{tên_file}/spec/final.md` |
+| `ba-stakeholder-interview` | Tên project/feature dạng slug | `/project-root/workspace/{project-slug}/spec/stakeholders.md` |
 
 **Slug hoá:** viết thường, bỏ dấu tiếng Việt, thay khoảng trắng bằng `-`
 (VD: `"Mobile Trading App"` → `mobile-trading-app`).
@@ -118,7 +118,7 @@ vai trò issueKey** — không bao giờ được rơi về gốc repo:
 
 `npm run validate:paths` soi mọi SKILL.md, command, và agent file: bất kỳ nhắc đến một
 artifact root per-issue nào (`source/`, `spec/`, `tech/`, `test/`, `trace/`) mà thiếu tiền
-tố `workspace/{issueKey}/` đều làm CI đỏ. Validator cũng chặn mọi tên thư mục của layout cũ
+tố `/project-root/workspace/{issueKey}/` đều làm CI đỏ. Validator cũng chặn mọi tên thư mục của layout cũ
 (`specs/imports`, `specs/refine`, `tests/qa-test-design`, `docs/user-stories`…) để không ai
 vô tình quay lại cấu trúc phân tầng.
 

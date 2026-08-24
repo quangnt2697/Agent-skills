@@ -53,7 +53,7 @@
 1. Tạo `skills/qa-run-test/SKILL.md`
 2. Tạo `skills/dev-spec-driven-development/SKILL.md`
 3. Fix gate logic trong `/qa-pipeline` vs `qa-test-design`
-4. Standardize output path → `workspace/{issueKey}/`
+4. Standardize output path → `/project-root/workspace/{issueKey}/`
 
 **Tuần 3-4: Thêm Skills Mới**
 5. Tạo `skills/meta-cross-validation/SKILL.md`

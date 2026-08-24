@@ -25,12 +25,12 @@ Viết Tech-Spec (Technical Specification) chi tiết dựa trên Business-Spec 
 ## Input & Output
 
 **Input (bắt buộc):**
-- Business-Spec: `workspace/{issueKey}/spec/final.md` (từ `/ba-spec`)
+- Business-Spec: `/project-root/workspace/{issueKey}/spec/final.md` (từ `/ba-spec`)
 - Hoặc: `SPEC.md`, `docs/SPEC.md`, `spec/*.md`
 
 **Output:**
-- Tech-Spec: `workspace/{issueKey}/tech/tech-spec.md`
-- Architecture diagrams (optional): `workspace/{issueKey}/tech/diagrams/`
+- Tech-Spec: `/project-root/workspace/{issueKey}/tech/tech-spec.md`
+- Architecture diagrams (optional): `/project-root/workspace/{issueKey}/tech/diagrams/`
 
 ## Quy trình 6 Phase
 
@@ -40,8 +40,8 @@ Trước khi viết bất kỳ dòng Tech-Spec nào, đọc kỹ Business-Spec:
 
 ```bash
 # Tìm Business-Spec theo thứ tự ưu tiên
-1. workspace/{issueKey}/spec/final.md  # Từ /ba-spec (Jira)
-2. workspace/{issueKey}/spec/final.md     # New structure
+1. /project-root/workspace/{issueKey}/spec/final.md  # Từ /ba-spec (Jira)
+2. /project-root/workspace/{issueKey}/spec/final.md     # New structure
 3. SPEC.md                                             # Root level
 4. docs/SPEC.md                                        # Docs folder
 5. spec/*.md                                           # Spec folder

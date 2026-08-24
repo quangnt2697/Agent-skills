@@ -3,7 +3,7 @@ description = "Triển khai các task một cách tăng dần — viết test, c
 prompt = """
 Kích hoạt kỹ năng incremental-implementation (triển khai tăng dần).
 
-Lấy task chưa hoàn thành tiếp theo từ kế hoạch hiện tại (ví dụ: workspace/{issueKey}/tech/plan.md). Sau đó:
+Lấy task chưa hoàn thành tiếp theo từ kế hoạch hiện tại (ví dụ: /project-root/workspace/{issueKey}/tech/plan.md). Sau đó:
 
 1. Đọc các tiêu chí nghiệm thu của task
 2. Tải bối cảnh liên quan (code hiện có, pattern, type)

@@ -7,7 +7,7 @@ description: [BA/PO] Phỏng vấn user/stakeholder làm rõ yêu cầu, kèm hy
 Kích hoạt skill ba-interview-me với BA/PO persona. Đọc `skills/ba-interview-me/SKILL.md` để thực hiện đúng workflow.
 
 $ARGUMENTS có thể chứa:
-- Jira issue key (VD: G3PTP-16584) → Đọc từ `workspace/{issueKey}/spec/final.md` Section 10 (Gap Analysis)
+- Jira issue key (VD: G3PTP-16584) → Đọc từ `/project-root/workspace/{issueKey}/spec/final.md` Section 10 (Gap Analysis)
 - Hoặc danh sách câu hỏi trực tiếp từ user
 
 **Workflow:**

@@ -57,7 +57,7 @@ RAW_KEY="$1"
 OUTPUT_BASE="${2:-./workspace}"
 
 # Bóc issue key khỏi URL nếu user dán nguyên link trình duyệt. Không bóc thì cả
-# URL bị dùng làm tên thư mục dưới workspace/ và handoff BA → QA/DEV đứt.
+# URL bị dùng làm tên thư mục dưới /project-root/workspace/ và handoff BA → QA/DEV đứt.
 ISSUE_KEY="$(printf '%s' "$RAW_KEY" | grep -oiE '[A-Z][A-Z0-9]*-[0-9]+' | head -1 | tr '[:lower:]' '[:upper:]' || true)"
 
 if [[ -z "$ISSUE_KEY" ]]; then

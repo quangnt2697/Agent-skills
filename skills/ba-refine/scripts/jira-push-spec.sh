@@ -8,11 +8,11 @@
 # Sử dụng: bash jira-push-spec.sh <JIRA_ISSUE_KEY|URL> <FILE_MD>
 #
 # Ví dụ:
-#   bash jira-push-spec.sh G3PTP-16584 workspace/G3PTP-16584/spec/refined.md
-#   bash jira-push-spec.sh https://x.atlassian.net/browse/G3PTP-16584 workspace/G3PTP-16584/spec/refined.md
+#   bash jira-push-spec.sh G3PTP-16584 /project-root/workspace/G3PTP-16584/spec/refined.md
+#   bash jira-push-spec.sh https://x.atlassian.net/browse/G3PTP-16584 /project-root/workspace/G3PTP-16584/spec/refined.md
 #
 # Xem trước ADF mà không gọi Jira:
-#   DRY_RUN=1 bash jira-push-spec.sh G3PTP-16584 workspace/G3PTP-16584/spec/refined.md
+#   DRY_RUN=1 bash jira-push-spec.sh G3PTP-16584 /project-root/workspace/G3PTP-16584/spec/refined.md
 #
 # Credentials đọc từ .env (ưu tiên ATLASSIAN_*, fallback JIRA_*):
 #   ATLASSIAN_BASE_URL / ATLASSIAN_EMAIL / ATLASSIAN_API_TOKEN
@@ -35,7 +35,7 @@ log_info()  { echo -e "${BLUE}ℹ️  $1${NC}"; }
 if [[ $# -lt 2 ]]; then
     echo "Sử dụng: bash jira-push-spec.sh <JIRA_ISSUE_KEY|URL> <FILE_MD>"
     echo ""
-    echo "Ví dụ: bash jira-push-spec.sh G3PTP-16584 workspace/G3PTP-16584/spec/refined.md"
+    echo "Ví dụ: bash jira-push-spec.sh G3PTP-16584 /project-root/workspace/G3PTP-16584/spec/refined.md"
     exit 1
 fi
 

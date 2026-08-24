@@ -199,8 +199,8 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
    # Neo về root repo và tạo sẵn thư mục report (xem .claude/rules/workspace-paths.md)
    cd "$(git rev-parse --show-toplevel)"
    ISSUE_KEY="{issueKey}"
-   TEST_DIR="workspace/${ISSUE_KEY}/test/steps"
-   REPORT_DIR="workspace/${ISSUE_KEY}/test/result"
+   TEST_DIR="/project-root/workspace/${ISSUE_KEY}/test/steps"
+   REPORT_DIR="/project-root/workspace/${ISSUE_KEY}/test/result"
    mkdir -p "$REPORT_DIR"
 
    # Chạy test và sinh báo cáo HTML
@@ -270,9 +270,9 @@ Sau khi test chạy xong, Agent **BẮT BUỘC** xuất báo cáo kết quả d�
 ```
 
 **Đường dẫn output báo cáo:**
-- File báo cáo Markdown: `workspace/{issueKey}/test/result/report.md`
-- File báo cáo HTML (nếu dùng pytest-html): `workspace/{issueKey}/test/result/report.html`
-- Screenshot lỗi (nếu UI test): `workspace/{issueKey}/test/result/screenshots/`
+- File báo cáo Markdown: `/project-root/workspace/{issueKey}/test/result/report.md`
+- File báo cáo HTML (nếu dùng pytest-html): `/project-root/workspace/{issueKey}/test/result/report.html`
+- Screenshot lỗi (nếu UI test): `/project-root/workspace/{issueKey}/test/result/screenshots/`
 
 ---
 
@@ -351,10 +351,10 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 | Giai đoạn | Skill | Input | Output |
 |-----------|-------|-------|--------|
-| 1 | `ba-spec` | Jira Issue Key | `workspace/{issueKey}/spec/final.md` |
-| 2 | `qa-test-design` | File `*-final.md` | `workspace/{issueKey}/test/checklist.md` + `{issueKey}.feature` |
-| 3 | `qa-auto-design` | File `.feature` + code có sẵn | `workspace/{issueKey}/test/steps/test_*.py` |
-| 4 | `qa-auto-design` (Bước 7) | Test scripts | `workspace/{issueKey}/test/result/report.md` |
+| 1 | `ba-spec` | Jira Issue Key | `/project-root/workspace/{issueKey}/spec/final.md` |
+| 2 | `qa-test-design` | File `*-final.md` | `/project-root/workspace/{issueKey}/test/checklist.md` + `{issueKey}.feature` |
+| 3 | `qa-auto-design` | File `.feature` + code có sẵn | `/project-root/workspace/{issueKey}/test/steps/test_*.py` |
+| 4 | `qa-auto-design` (Bước 7) | Test scripts | `/project-root/workspace/{issueKey}/test/result/report.md` |
 
 ## Xem thêm
 

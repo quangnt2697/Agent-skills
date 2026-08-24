@@ -21,11 +21,11 @@ description: Tối ưu hóa hiệu năng ứng dụng bao gồm frontend, backen
 
 ## Mục tiêu Core Web Vitals
 
-| Chỉ số | Tốt (Good) | Cần Cải thiện | Kém (Poor) |
-|--------|------|-------------------|------|
-| **LCP** (Largest Contentful Paint) | ≤ 2.5s | ≤ 4.0s | > 4.0s |
-| **INP** (Interaction to Next Paint) | ≤ 200ms | ≤ 500ms | > 500ms |
-| **CLS** (Cumulative Layout Shift) | ≤ 0.1 | ≤ 0.25 | > 0.25 |
+| Chỉ số                              | Tốt (Good)   | Cần Cải thiện   | Kém (Poor)   |
+|-------------------------------------|--------------|-----------------|--------------|
+| **LCP** (Largest Contentful Paint)  | ≤ 2.5s       | ≤ 4.0s          | > 4.0s       |
+| **INP** (Interaction to Next Paint) | ≤ 200ms      | ≤ 500ms         | > 500ms      |
+| **CLS** (Cumulative Layout Shift)   | ≤ 0.1        | ≤ 0.25          | > 0.25       |
 
 ## Quy trình Tối ưu hóa
 
@@ -102,21 +102,21 @@ Các điểm nghẽn phổ biến theo danh mục:
 
 **Frontend:**
 
-| Triệu chứng | Nguyên nhân có thể | Cách Điều tra |
-|---------|-------------|---------------|
-| LCP Chậm | Ảnh quá lớn, tài nguyên chặn hiển thị, server chậm | Kiểm tra network waterfall, dung lượng ảnh |
-| CLS Cao | Ảnh không set kích thước, nội dung tải trễ (late-loading), font bị đổi | Kiểm tra Layout shift attribution |
-| INP Kém | JavaScript quá nặng trên main thread, cập nhật DOM quá lớn | Kiểm tra Long tasks trong Performance trace |
-| Tải lần đầu chậm | Bundle lớn, quá nhiều request mạng | Kiểm tra bundle size, code splitting |
+| Triệu chứng      | Nguyên nhân có thể                                                     | Cách Điều tra                               |
+|------------------|------------------------------------------------------------------------|---------------------------------------------|
+| LCP Chậm         | Ảnh quá lớn, tài nguyên chặn hiển thị, server chậm                     | Kiểm tra network waterfall, dung lượng ảnh  |
+| CLS Cao          | Ảnh không set kích thước, nội dung tải trễ (late-loading), font bị đổi | Kiểm tra Layout shift attribution           |
+| INP Kém          | JavaScript quá nặng trên main thread, cập nhật DOM quá lớn             | Kiểm tra Long tasks trong Performance trace |
+| Tải lần đầu chậm | Bundle lớn, quá nhiều request mạng                                     | Kiểm tra bundle size, code splitting        |
 
 **Backend:**
 
-| Triệu chứng | Nguyên nhân có thể | Cách Điều tra |
-|---------|-------------|---------------|
-| Phản hồi API chậm | N+1 queries, thiếu index, query không tối ưu | Kiểm tra database query log |
-| Ngốn RAM (Memory growth)| Reference bị leak, cache không có bộ đếm (unbounded), payload trả về quá lớn | Phân tích Heap snapshot |
-| CPU spikes | Xử lý tính toán đồng bộ quá nặng, regex backtracking | Profile CPU |
-| Độ trễ cao (High latency)| Thiếu caching, tính toán dư thừa, truyền qua lại qua mạng nhiều vòng | Truy vết (Trace) request xuyên suốt stack |
+| Triệu chứng               | Nguyên nhân có thể                                                           | Cách Điều tra                             |
+|---------------------------|------------------------------------------------------------------------------|-------------------------------------------|
+| Phản hồi API chậm         | N+1 queries, thiếu index, query không tối ưu                                 | Kiểm tra database query log               |
+| Ngốn RAM (Memory growth)  | Reference bị leak, cache không có bộ đếm (unbounded), payload trả về quá lớn | Phân tích Heap snapshot                   |
+| CPU spikes                | Xử lý tính toán đồng bộ quá nặng, regex backtracking                         | Profile CPU                               |
+| Độ trễ cao (High latency) | Thiếu caching, tính toán dư thừa, truyền qua lại qua mạng nhiều vòng         | Truy vết (Trace) request xuyên suốt stack |
 
 ### Bước 3: Sửa các Anti-Pattern phổ biến
 
@@ -301,12 +301,12 @@ Mỗi bản sửa lỗi đều chỉ là một **giả thuyết** cho đến khi
 
 Sau đó hãy quyết định, một cách thật khắt khe:
 
-| Kết quả vs. baseline | Hành động |
-|---|---|
-| Vượt qua ngưỡng, các test đều xanh (green) | **Giữ lại (Keep).** Commit cùng với các thông số trước/sau trong commit message. |
-| Nằm trong khoảng nhiễu (không có sự thay đổi đo được) | **Hoàn tác (Revert).** |
-| Tệ hơn | **Hoàn tác (Revert).** |
-| Đã cải thiện, nhưng có bài test đỏ (red) | **Hoàn tác (Revert).** Đây là một sự thụt lùi (regression) nhưng lại đội lốt "chiến thắng". |
+| Kết quả vs. baseline                                  | Hành động                                                                                   |
+|-------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| Vượt qua ngưỡng, các test đều xanh (green)            | **Giữ lại (Keep).** Commit cùng với các thông số trước/sau trong commit message.            |
+| Nằm trong khoảng nhiễu (không có sự thay đổi đo được) | **Hoàn tác (Revert).**                                                                      |
+| Tệ hơn                                                | **Hoàn tác (Revert).**                                                                      |
+| Đã cải thiện, nhưng có bài test đỏ (red)              | **Hoàn tác (Revert).** Đây là một sự thụt lùi (regression) nhưng lại đội lốt "chiến thắng". |
 
 **"Không đổi" (Neutral) nghĩa là revert, không phải là giữ lại.** Đây là bước mà nhiều team bỏ qua: code đã viết xong, vứt đi thì thấy tiếc, nên cứ đẩy vào mà chả thèm đo, và rồi codebase cứ dần tích tụ những mớ hỗn độn chả mang lại lợi ích gì. Code bạn giữ lại, bạn sẽ phải bảo trì nó vĩnh viễn. Đừng giữ những thứ không mang lại giá trị thực tế.
 
@@ -316,11 +316,11 @@ Sau đó hãy quyết định, một cách thật khắt khe:
 
 Các công việc bị revert sẽ chẳng để lại dấu vết gì trên git history, đó chính là lý do vì sao một ý tưởng chết yểu lại hay bị lôi ra thử lại vào quý sau. Hãy giữ một sổ tay nhỏ để ý tưởng nào vứt đi thì hãy cho nó yên nghỉ:
 
-| Ý tưởng | Baseline → Kết quả | Phán quyết | Tại sao |
-|---|---|---|---|
-| Memoize component hàng (row) | INP 240ms → 235ms | reverted | Nằm trong khoảng nhiễu (±15ms). Component này không phải điểm nghẽn. |
-| Virtualize (ảo hóa) danh sách | INP 240ms → 90ms | kept | Hết long tasks trong trace. |
-| Preconnect tới API origin | LCP 2.8s → 2.8s | reverted | Do đã là same-origin rồi. |
+| Ý tưởng                       | Baseline → Kết quả  | Phán quyết   | Tại sao                                                              |
+|-------------------------------|---------------------|--------------|----------------------------------------------------------------------|
+| Memoize component hàng (row)  | INP 240ms → 235ms   | reverted     | Nằm trong khoảng nhiễu (±15ms). Component này không phải điểm nghẽn. |
+| Virtualize (ảo hóa) danh sách | INP 240ms → 90ms    | kept         | Hết long tasks trong trace.                                          |
+| Preconnect tới API origin     | LCP 2.8s → 2.8s     | reverted     | Do đã là same-origin rồi.                                            |
 
 Viết 1 mục trong phần mô tả của PR hoặc tạo 1 file `PERF.md` ở trong repo đều được. Điều quan trọng là để người tiếp theo (hoặc agent tiếp theo) đọc nó trước khi đề xuất làm lại thí nghiệm, và không phải cắm đầu làm lại cái đã thất bại.
 
@@ -353,16 +353,16 @@ npx lhci autorun
 
 ## Các Biện hộ Thường gặp
 
-| Biện hộ | Thực tế |
-|---|---|
-| "Chúng ta sẽ tối ưu sau" | Nợ hiệu năng (Performance debt) sinh lãi kép. Hãy sửa những anti-pattern rành rành ra ngay bây giờ, chỉ hoãn lại các micro-optimization (tối ưu tiểu tiết). |
-| "Nó chạy nhanh trên máy tôi" | Máy của bạn không phải máy người dùng. Hãy chạy profile trên phần cứng và tốc độ mạng thực tế của số đông. |
-| "Tối ưu hóa này dễ hiểu mà" | Nếu bạn không đo lường, bạn không thể biết. Phải Profile trước. |
-| "Người dùng không nhận ra 100ms đâu" | Nghiên cứu chỉ ra 100ms delay ảnh hưởng mạnh tới tỉ lệ chuyển đổi (conversion rates). Người dùng nhạy cảm hơn bạn tưởng. |
-| "Framework nó tự lo performance rồi" | Framework ngăn chặn vài vấn đề nhưng không thể sửa N+1 queries hay các bundle to chà bá. |
-| "Nó không giúp nhiều lắm, nhưng chẳng hại gì" | Thay đổi không mang lại kết quả tích cực là phải revert. Bạn sẽ phải tốn công bảo trì chúng vĩnh viễn mà không thu lại được gì. |
-| "Viết xong cả rồi, giữ lại luôn đi" | Chi phí chìm (Sunk cost). Phép đo lường không quan tâm bạn tốn bao lâu để viết ra đoạn code đó. |
-| "Sự cải thiện là quá rõ ràng, khỏi cần đo lại" | Nếu thế thì việc đo lại sẽ rất nhanh và càng củng cố thêm. Nhắm mắt nhận bừa là cách mà độ phức tạp thừa thãi chui vào codebase. |
+| Biện hộ                                        | Thực tế                                                                                                                                                     |
+|------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| "Chúng ta sẽ tối ưu sau"                       | Nợ hiệu năng (Performance debt) sinh lãi kép. Hãy sửa những anti-pattern rành rành ra ngay bây giờ, chỉ hoãn lại các micro-optimization (tối ưu tiểu tiết). |
+| "Nó chạy nhanh trên máy tôi"                   | Máy của bạn không phải máy người dùng. Hãy chạy profile trên phần cứng và tốc độ mạng thực tế của số đông.                                                  |
+| "Tối ưu hóa này dễ hiểu mà"                    | Nếu bạn không đo lường, bạn không thể biết. Phải Profile trước.                                                                                             |
+| "Người dùng không nhận ra 100ms đâu"           | Nghiên cứu chỉ ra 100ms delay ảnh hưởng mạnh tới tỉ lệ chuyển đổi (conversion rates). Người dùng nhạy cảm hơn bạn tưởng.                                    |
+| "Framework nó tự lo performance rồi"           | Framework ngăn chặn vài vấn đề nhưng không thể sửa N+1 queries hay các bundle to chà bá.                                                                    |
+| "Nó không giúp nhiều lắm, nhưng chẳng hại gì"  | Thay đổi không mang lại kết quả tích cực là phải revert. Bạn sẽ phải tốn công bảo trì chúng vĩnh viễn mà không thu lại được gì.                             |
+| "Viết xong cả rồi, giữ lại luôn đi"            | Chi phí chìm (Sunk cost). Phép đo lường không quan tâm bạn tốn bao lâu để viết ra đoạn code đó.                                                             |
+| "Sự cải thiện là quá rõ ràng, khỏi cần đo lại" | Nếu thế thì việc đo lại sẽ rất nhanh và càng củng cố thêm. Nhắm mắt nhận bừa là cách mà độ phức tạp thừa thãi chui vào codebase.                            |
 
 ## Dấu hiệu Cảnh báo (Red Flags)
 

@@ -40,7 +40,7 @@ Kích hoạt skill này khi:
 **Input A: File `*-final.md`**
 ```bash
 # Đọc file Business-Spec từ ba-spec
-workspace/{issueKey}/spec/final.md
+/project-root/workspace/{issueKey}/spec/final.md
 ```
 
 Trích xuất:
@@ -164,14 +164,14 @@ So that [value]
 
 ### INVEST Validation
 
-| Tiêu chí | ✅/❌ | Giải thích |
-|----------|-------|-----------|
-| **I**ndependent | ✅ | Story không phụ thuộc vào story khác, có thể implement độc lập |
-| **N**egotiable | ✅ | Mô tả goal, không prescribe giải pháp kỹ thuật chi tiết |
-| **V**aluable | ✅ | Rõ ràng value: "bắt được giá tốt khi thị trường biến động" |
-| **E**stimable | ✅ | Team có thể ước lượng: ~2-3 ngày (giảm từ 5 bước xuống 3 bước) |
-| **S**mall | ✅ | Đủ nhỏ để làm xong trong 1 sprint |
-| **T**estable | ✅ | Test được: Verify số bước giảm từ 5 → 3, thời gian < 30s |
+| Tiêu chí        | ✅/❌   | Giải thích                                                     |
+|-----------------|---------|----------------------------------------------------------------|
+| **I**ndependent | ✅      | Story không phụ thuộc vào story khác, có thể implement độc lập |
+| **N**egotiable  | ✅      | Mô tả goal, không prescribe giải pháp kỹ thuật chi tiết        |
+| **V**aluable    | ✅      | Rõ ràng value: "bắt được giá tốt khi thị trường biến động"     |
+| **E**stimable   | ✅      | Team có thể ước lượng: ~2-3 ngày (giảm từ 5 bước xuống 3 bước) |
+| **S**mall       | ✅      | Đủ nhỏ để làm xong trong 1 sprint                              |
+| **T**estable    | ✅      | Test được: Verify số bước giảm từ 5 → 3, thời gian < 30s       |
 
 ### Acceptance Criteria (Optional — nếu cần chi tiết hơn)
 
@@ -208,7 +208,7 @@ Nếu có nhiều User Stories:
 ```markdown
 # User Stories: [Feature Name]
 
-**Source:** `workspace/{issueKey}/spec/final.md`  
+**Source:** `/project-root/workspace/{issueKey}/spec/final.md`  
 **Created:** 2026-08-13  
 **Author:** BA/PO Agent
 
@@ -255,14 +255,14 @@ So that **không phải nhập lại thông tin giống nhau mỗi lần đặt 
 - And khách hàng chỉ cần nhập giá và xác nhận
 ```
 
-**Lưu vào:** `workspace/{issueKey}/spec/user-stories.md`
+**Lưu vào:** `/project-root/workspace/{issueKey}/spec/user-stories.md`
 
 Trước khi ghi file, BẮT BUỘC neo về root repo và tạo thư mục đích — `Write` không tự tạo
 thư mục cha, và cwd của agent có thể đang lệch (xem `.claude/rules/workspace-paths.md`):
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-mkdir -p workspace/{issueKey}/spec
+mkdir -p /project-root/workspace/{issueKey}/spec
 ```
 
 ### Format 2: Jira-ready (nếu user muốn push lên Jira)
@@ -352,7 +352,7 @@ Sau khi chạy skill này:
 - [ ] Tất cả User Stories đã pass INVEST validation (6/6 tiêu chí ✅)
 - [ ] Nếu có tiêu chí ❌ → Đã đề xuất cách sửa và viết lại
 - [ ] User Stories đã được group (Epic/Feature) và prioritize (MoSCoW/Story Points)
-- [ ] Output file đã lưu vào `workspace/{issueKey}/spec/user-stories.md`
+- [ ] Output file đã lưu vào `/project-root/workspace/{issueKey}/spec/user-stories.md`
 - [ ] User đã review và approve trước khi handoff to QA/DEV
 
 ## Ví dụ

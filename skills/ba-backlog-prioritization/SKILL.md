@@ -65,7 +65,7 @@ Kích hoạt skill này khi:
 
 **Input A: User Stories file**
 ```bash
-workspace/{issueKey}/spec/user-stories.md
+/project-root/workspace/{issueKey}/spec/user-stories.md
 ```
 
 Trích xuất:
@@ -75,7 +75,7 @@ Trích xuất:
 
 **Input B: Gap Analysis**
 ```bash
-workspace/{issueKey}/spec/gap-analysis.md
+/project-root/workspace/{issueKey}/spec/gap-analysis.md
 ```
 
 Trích xuất:
@@ -206,13 +206,13 @@ Sau khi categorize, present cho stakeholders:
 ```markdown
 ### MoSCoW Summary
 
-| Category | Count | % of Total | Cumulative Effort |
-|----------|-------|-----------|-------------------|
-| Must     | 8     | 40%       | 55 Story Points (65%) |
-| Should   | 6     | 30%       | 20 Story Points (23%) |
-| Could    | 4     | 20%       | 8 Story Points (10%) |
-| Won't    | 2     | 10%       | 2 Story Points (2%) |
-| **Total** | **20** | **100%** | **85 Story Points** |
+| Category   | Count   | % of Total  | Cumulative Effort     |
+|------------|---------|-------------|-----------------------|
+| Must       | 8       | 40%         | 55 Story Points (65%) |
+| Should     | 6       | 30%         | 20 Story Points (23%) |
+| Could      | 4       | 20%         | 8 Story Points (10%)  |
+| Won't      | 2       | 10%         | 2 Story Points (2%)   |
+| **Total**  | **20**  | **100%**    | **85 Story Points**   |
 
 **MVP Scope (Must + Should):** 14 stories, 75 Story Points → 5 sprints (assuming 15 SP/sprint)
 
@@ -235,40 +235,40 @@ Với mỗi User Story, score 4 dimensions:
 ```markdown
 ### WSJF Scoring: Story 1 — Đặt lệnh mua LO
 
-| Dimension | Score (1-10) | Justification |
-|-----------|--------------|---------------|
-| **Business Value** | 10 | Core feature, không có → app vô dụng. 100% users cần. |
-| **Time Criticality** | 9 | Competitor VPS đã có app 6 tháng trước, đang mất market share. Q4 là mùa cao điểm giao dịch → cần launch trước Q4. |
-| **Risk Reduction** | 8 | High technical risk (FIX integration chưa test), làm sớm để có thời gian fix bugs. |
-| **Cost of Delay** | **27** | (10 + 9 + 8) |
-| **Job Duration** | 8 SP | (~2 sprints) |
-| **WSJF** | **3.38** | (27 / 8) |
+| Dimension            | Score (1-10)  | Justification                                                                                                      |
+|----------------------|---------------|--------------------------------------------------------------------------------------------------------------------|
+| **Business Value**   | 10            | Core feature, không có → app vô dụng. 100% users cần.                                                              |
+| **Time Criticality** | 9             | Competitor VPS đã có app 6 tháng trước, đang mất market share. Q4 là mùa cao điểm giao dịch → cần launch trước Q4. |
+| **Risk Reduction**   | 8             | High technical risk (FIX integration chưa test), làm sớm để có thời gian fix bugs.                                 |
+| **Cost of Delay**    | **27**        | (10 + 9 + 8)                                                                                                       |
+| **Job Duration**     | 8 SP          | (~2 sprints)                                                                                                       |
+| **WSJF**             | **3.38**      | (27 / 8)                                                                                                           |
 
 ---
 
 ### WSJF Scoring: Story 2 — Lưu template lệnh
 
-| Dimension | Score (1-10) | Justification |
-|-----------|--------------|---------------|
-| **Business Value** | 6 | Nice-to-have, 40% users sẽ dùng (theo survey). Tăng speed 20%. |
-| **Time Criticality** | 4 | Không khẩn cấp, có thể defer. Competitor có nhưng không phải deal-breaker. |
-| **Risk Reduction** | 2 | Low technical risk (CRUD đơn giản, không phụ thuộc external system). |
-| **Cost of Delay** | **12** | (6 + 4 + 2) |
-| **Job Duration** | 3 SP | (~1 sprint) |
-| **WSJF** | **4.00** | (12 / 3) |
+| Dimension            | Score (1-10)  | Justification                                                              |
+|----------------------|---------------|----------------------------------------------------------------------------|
+| **Business Value**   | 6             | Nice-to-have, 40% users sẽ dùng (theo survey). Tăng speed 20%.             |
+| **Time Criticality** | 4             | Không khẩn cấp, có thể defer. Competitor có nhưng không phải deal-breaker. |
+| **Risk Reduction**   | 2             | Low technical risk (CRUD đơn giản, không phụ thuộc external system).       |
+| **Cost of Delay**    | **12**        | (6 + 4 + 2)                                                                |
+| **Job Duration**     | 3 SP          | (~1 sprint)                                                                |
+| **WSJF**             | **4.00**      | (12 / 3)                                                                   |
 
 ---
 
 ### WSJF Scoring: Story 6 — Dark mode UI
 
-| Dimension | Score (1-10) | Justification |
-|-----------|--------------|---------------|
-| **Business Value** | 2 | Nice-to-have, 10% users yêu cầu. Không tăng revenue. |
-| **Time Criticality** | 1 | Không khẩn cấp, không có competitor pressure. |
-| **Risk Reduction** | 1 | Zero technical risk (CSS only). |
-| **Cost of Delay** | **4** | (2 + 1 + 1) |
-| **Job Duration** | 2 SP | (~3 days) |
-| **WSJF** | **2.00** | (4 / 2) |
+| Dimension            | Score (1-10)  | Justification                                        |
+|----------------------|---------------|------------------------------------------------------|
+| **Business Value**   | 2             | Nice-to-have, 10% users yêu cầu. Không tăng revenue. |
+| **Time Criticality** | 1             | Không khẩn cấp, không có competitor pressure.        |
+| **Risk Reduction**   | 1             | Zero technical risk (CSS only).                      |
+| **Cost of Delay**    | **4**         | (2 + 1 + 1)                                          |
+| **Job Duration**     | 2 SP          | (~3 days)                                            |
+| **WSJF**             | **2.00**      | (4 / 2)                                              |
 ```
 
 **4B.2. Rank theo WSJF Score (Cao → Thấp)**
@@ -276,18 +276,18 @@ Với mỗi User Story, score 4 dimensions:
 ```markdown
 ### WSJF Ranking (Top 10)
 
-| Rank | Story | WSJF | Business Value | Time Criticality | Risk Reduction | Job Duration | Priority |
-|------|-------|------|---------------|-----------------|----------------|--------------|----------|
-| 1 | Story 5: Margin checking | 5.40 | 9 | 10 | 8 | 5 SP | Must |
-| 2 | Story 2: Lưu template | 4.00 | 6 | 4 | 2 | 3 SP | Should |
-| 3 | Story 4: FIX Gateway | 3.75 | 8 | 9 | 10 | 8 SP | Must |
-| 4 | Story 1: Đặt lệnh LO | 3.38 | 10 | 9 | 8 | 8 SP | Must |
-| 5 | Story 3: Real-time notification | 3.00 | 7 | 5 | 3 | 5 SP | Should |
-| 6 | Story 8: Order history view | 2.50 | 5 | 3 | 2 | 4 SP | Should |
-| 7 | Story 6: Dark mode | 2.00 | 2 | 1 | 1 | 2 SP | Could |
-| 8 | Story 7: Export to Excel | 1.67 | 3 | 2 | 0 | 3 SP | Could |
-| 9 | Story 9: Multi-language | 1.20 | 3 | 2 | 1 | 5 SP | Won't |
-| 10 | Story 10: AI recommendation | 0.50 | 5 | 0 | 0 | 10 SP | Won't |
+| Rank  | Story                           | WSJF   | Business Value   | Time Criticality  | Risk Reduction  | Job Duration  | Priority   |
+|-------|---------------------------------|--------|------------------|-------------------|-----------------|---------------|------------|
+| 1     | Story 5: Margin checking        | 5.40   | 9                | 10                | 8               | 5 SP          | Must       |
+| 2     | Story 2: Lưu template           | 4.00   | 6                | 4                 | 2               | 3 SP          | Should     |
+| 3     | Story 4: FIX Gateway            | 3.75   | 8                | 9                 | 10              | 8 SP          | Must       |
+| 4     | Story 1: Đặt lệnh LO            | 3.38   | 10               | 9                 | 8               | 8 SP          | Must       |
+| 5     | Story 3: Real-time notification | 3.00   | 7                | 5                 | 3               | 5 SP          | Should     |
+| 6     | Story 8: Order history view     | 2.50   | 5                | 3                 | 2               | 4 SP          | Should     |
+| 7     | Story 6: Dark mode              | 2.00   | 2                | 1                 | 1               | 2 SP          | Could      |
+| 8     | Story 7: Export to Excel        | 1.67   | 3                | 2                 | 0               | 3 SP          | Could      |
+| 9     | Story 9: Multi-language         | 1.20   | 3                | 2                 | 1               | 5 SP          | Won't      |
+| 10    | Story 10: AI recommendation     | 0.50   | 5                | 0                 | 0               | 10 SP         | Won't      |
 
 **Insight:**
 - Top 4 stories (WSJF > 3.0) → Must have, làm trước
@@ -393,12 +393,12 @@ Sprint 1:          Sprint 2:              Sprint 3:
 
 ### MoSCoW Summary
 
-| Category | Count | % | Effort (SP) | % of Total |
-|----------|-------|---|-------------|-----------|
-| Must     | 8     | 40% | 55         | 65%       |
-| Should   | 6     | 30% | 20         | 23%       |
-| Could    | 4     | 20% | 8          | 10%       |
-| Won't    | 2     | 10% | 2          | 2%        |
+| Category  | Count | %   | Effort (SP)   | % of Total   |
+|-----------|-------|-----|---------------|--------------|
+| Must      | 8     | 40% | 55            | 65%          |
+| Should    | 6     | 30% | 20            | 23%          |
+| Could     | 4     | 20% | 8             | 10%          |
+| Won't     | 2     | 10% | 2             | 2%           |
 
 ### WSJF Top 10
 
@@ -426,21 +426,21 @@ Sprint 1:          Sprint 2:              Sprint 3:
 
 ## Risk & Mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Velocity overestimated (team slower than 15 SP/sprint) | High | Monitor Sprint 1 velocity, adjust Sprint 2+ scope |
-| Story 4 (FIX Gateway) blocked by sàn sandbox delay | High | Start early communication with HNX/HSX (now) |
-| Team burnout (tight timeline) | Medium | Add buffer sprint (Sprint 4 for polish/testing) |
+| Risk                                                   | Impact   | Mitigation                                        |
+|--------------------------------------------------------|----------|---------------------------------------------------|
+| Velocity overestimated (team slower than 15 SP/sprint) | High     | Monitor Sprint 1 velocity, adjust Sprint 2+ scope |
+| Story 4 (FIX Gateway) blocked by sàn sandbox delay     | High     | Start early communication with HNX/HSX (now)      |
+| Team burnout (tight timeline)                          | Medium   | Add buffer sprint (Sprint 4 for polish/testing)   |
 
 ---
 
 ## Action Items
 
-| Action | Owner | Deadline | Status |
-|--------|-------|----------|--------|
-| Finalize Sprint 1 scope | PO | 2026-08-20 | Pending |
-| Kickoff Sprint 1 | Scrum Master | 2026-08-22 | Pending |
-| Schedule stakeholder review (Sprint 3) | PO | 2026-10-15 | Pending |
+| Action                                 | Owner        | Deadline   | Status   |
+|----------------------------------------|--------------|------------|----------|
+| Finalize Sprint 1 scope                | PO           | 2026-08-20 | Pending  |
+| Kickoff Sprint 1                       | Scrum Master | 2026-08-22 | Pending  |
+| Schedule stakeholder review (Sprint 3) | PO           | 2026-10-15 | Pending  |
 
 ---
 
@@ -459,20 +459,20 @@ Sprint 1:          Sprint 2:              Sprint 3:
 
 ### Change Log
 
-| Date | Change | Reason |
-|------|--------|--------|
-| 2026-08-13 | Initial prioritization | Kickoff |
+| Date       | Change                    | Reason                        |
+|------------|---------------------------|-------------------------------|
+| 2026-08-13 | Initial prioritization    | Kickoff                       |
 | 2026-08-20 | Moved Story 2 to Sprint 3 | Story 1 dependency discovered |
 ```
 
-**Lưu vào:** `workspace/{issueKey}/spec/backlog.md`
+**Lưu vào:** `/project-root/workspace/{issueKey}/spec/backlog.md`
 
 Trước khi ghi file, BẮT BUỘC neo về root repo và tạo thư mục đích — `Write` không tự tạo
 thư mục cha, và cwd của agent có thể đang lệch (xem `.claude/rules/workspace-paths.md`):
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-mkdir -p workspace/{issueKey}/spec
+mkdir -p /project-root/workspace/{issueKey}/spec
 ```
 
 ## Tương tác với các Skills khác
@@ -533,7 +533,7 @@ Sau khi chạy skill này:
 - [ ] Sprint plan đã tạo với realistic velocity
 - [ ] Stakeholders đã review và approve priority
 - [ ] Risk identified với mitigation plans
-- [ ] Output file đã lưu: `workspace/{issueKey}/spec/backlog.md`
+- [ ] Output file đã lưu: `/project-root/workspace/{issueKey}/spec/backlog.md`
 - [ ] Team (DEV + QA) đã review Sprint 1 scope và commit
 
 ## Ví dụ

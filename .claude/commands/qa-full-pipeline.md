@@ -47,7 +47,7 @@ và làm theo, không tự diễn giải lại ở đây.
 
 ## Đầu vào bắt buộc
 
-`workspace/{issueKey}/spec/final.md`
+`/project-root/workspace/{issueKey}/spec/final.md`
 
 Thiếu file này → dừng theo trường hợp 1 của `.claude/rules/autonomy-contract.md`,
 hướng dẫn user chạy `/ba-spec {issueKey}` trước. Nếu muốn chạy cả bước import
@@ -56,7 +56,7 @@ Jira trong cùng một lệnh, dùng `/qa-pipeline {issueKey}`.
 ## Đầu ra
 
 ```
-workspace/{issueKey}/test/
+/project-root/workspace/{issueKey}/test/
 ├── checklist.md
 ├── {issueKey}.feature
 ├── steps/test_*.py

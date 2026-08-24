@@ -175,16 +175,16 @@ class OrderService:
 
 Chọn kỹ thuật phù hợp:
 
-| Code Smell | Refactoring Technique | Ví dụ |
-|------------|----------------------|-------|
-| Duplication | Extract Function | Extract validation logic |
-| Long Function | Extract Method | Split 80-line function → 4 functions |
-| Bad Names | Rename | `f()` → `calculate_total_with_tax()` |
-| Magic Numbers | Extract Constant | `1.07` → `TAX_RATE = 1.07` |
-| Long Parameter List | Introduce Parameter Object | 5 params → 1 object |
-| God Object | Extract Class | OrderService → OrderValidator, OrderNotifier |
-| Feature Envy | Move Method | Method uses data from another class → move it |
-| Data Clumps | Extract Class | 3 fields always together → 1 object |
+| Code Smell          | Refactoring Technique      | Ví dụ                                         |
+|---------------------|----------------------------|-----------------------------------------------|
+| Duplication         | Extract Function           | Extract validation logic                      |
+| Long Function       | Extract Method             | Split 80-line function → 4 functions          |
+| Bad Names           | Rename                     | `f()` → `calculate_total_with_tax()`          |
+| Magic Numbers       | Extract Constant           | `1.07` → `TAX_RATE = 1.07`                    |
+| Long Parameter List | Introduce Parameter Object | 5 params → 1 object                           |
+| God Object          | Extract Class              | OrderService → OrderValidator, OrderNotifier  |
+| Feature Envy        | Move Method                | Method uses data from another class → move it |
+| Data Clumps         | Extract Class              | 3 fields always together → 1 object           |
 
 ### Bước 3: Apply Refactoring (với IDE hoặc thủ công)
 

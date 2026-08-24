@@ -29,14 +29,14 @@ Phát hiện **gaps** (thiếu sót) và **redundancies** (trùng lặp) để �
 ## Input & Output
 
 **Input (bắt buộc):**
-1. Business-Spec: `workspace/{issueKey}/spec/final.md` hoặc `workspace/{issueKey}/spec/`
-2. Tech-Spec: `workspace/{issueKey}/tech/tech-spec.md`
-3. Test Checklist: `workspace/{issueKey}/test/checklist.md`
-4. Test Feature: `workspace/{issueKey}/test/{issueKey}.feature`
+1. Business-Spec: `/project-root/workspace/{issueKey}/spec/final.md` hoặc `/project-root/workspace/{issueKey}/spec/`
+2. Tech-Spec: `/project-root/workspace/{issueKey}/tech/tech-spec.md`
+3. Test Checklist: `/project-root/workspace/{issueKey}/test/checklist.md`
+4. Test Feature: `/project-root/workspace/{issueKey}/test/{issueKey}.feature`
 
 **Output:**
-- Traceability Matrix: `workspace/{issueKey}/trace/matrix.md`
-- Gap Analysis Report: `workspace/{issueKey}/trace/gaps.md`
+- Traceability Matrix: `/project-root/workspace/{issueKey}/trace/matrix.md`
+- Gap Analysis Report: `/project-root/workspace/{issueKey}/trace/gaps.md`
 
 ## Quy trình 4 Phase
 

@@ -66,8 +66,8 @@ Phase 4: Push to Jira
 
 ## Output
 
-- **Local file:** `workspace/{issueKey}/spec/refined.md`
-- **Local references:** `workspace/{issueKey}/source/refs/` (Confluence + attachments)
+- **Local file:** `/project-root/workspace/{issueKey}/spec/refined.md`
+- **Local references:** `/project-root/workspace/{issueKey}/source/refs/` (Confluence + attachments)
 - **Jira:** Updated description (KHÔNG comment, KHÔNG label)
 - **Confidence level:** ≥90% required for handoff
 

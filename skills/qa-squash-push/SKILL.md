@@ -15,10 +15,10 @@ Tự động đẩy tài liệu Test Case (định dạng Gherkin) đã thiết 
 
 Skill gồm 2 phase:
 
-| Phase | Workspace | API | Auth | Fail thì sao? |
-|-------|-----------|-----|------|---------------|
-| **A** — Đẩy Gherkin | Test Case Workspace | `/api/rest/latest/...` (REST công khai) | `Bearer SQUASH_API_TOKEN` | Dừng, exit ≠ 0 |
-| **B** — Gán vào test plan | Campaign Workspace | `/backend/...` (API nội bộ của UI) | Session `JSESSIONID` + `X-XSRF-TOKEN` | Cảnh báo, vẫn exit 0 |
+| Phase                     | Workspace           | API                                     | Auth                                  | Fail thì sao?        |
+|---------------------------|---------------------|-----------------------------------------|---------------------------------------|----------------------|
+| **A** — Đẩy Gherkin       | Test Case Workspace | `/api/rest/latest/...` (REST công khai) | `Bearer SQUASH_API_TOKEN`             | Dừng, exit ≠ 0       |
+| **B** — Gán vào test plan | Campaign Workspace  | `/backend/...` (API nội bộ của UI)      | Session `JSESSIONID` + `X-XSRF-TOKEN` | Cảnh báo, vẫn exit 0 |
 
 Phase A tự động quét **Requirement Workspace** để tìm "EnTrade Sprint xxx" mới nhất, đồng bộ thư mục sang **Test Case Workspace** rồi đẩy script (overwrite).
 
@@ -56,7 +56,7 @@ Agent **BẮT BUỘC TỰ ĐỘNG** đọc và source file `.env` tại workspac
 - `SQUASH_PASSWORD` — mật khẩu tương ứng
 
 **Khác:**
-- File Gherkin phải tồn tại tại: `workspace/{issueKey}/test/{issueKey}.feature`
+- File Gherkin phải tồn tại tại: `/project-root/workspace/{issueKey}/test/{issueKey}.feature`
 - (Tuỳ chọn) File `*-final.md` để lấy tiêu đề Jira task (`namejira`).
 - (Debug) Đặt `SQUASH_DEBUG=1` để in raw response của các API nội bộ khi cần soi cấu trúc.
 
@@ -71,8 +71,8 @@ Lưu ý đặc biệt: Phải chạy luồng này một cách liền mạch, g�
 
 ### Bước 1: Thu thập Tham số
 - Lấy `issueKey` từ `$ARGUMENTS`.
-- Lấy `namejira` (Tiêu đề task Jira) bằng cách quét file `workspace/{issueKey}/spec/final.md`. Nếu không có, dùng chung tên là `{issueKey}`.
-- Lấy đường dẫn file Gherkin: `workspace/{issueKey}/test/{issueKey}.feature`
+- Lấy `namejira` (Tiêu đề task Jira) bằng cách quét file `/project-root/workspace/{issueKey}/spec/final.md`. Nếu không có, dùng chung tên là `{issueKey}`.
+- Lấy đường dẫn file Gherkin: `/project-root/workspace/{issueKey}/test/{issueKey}.feature`
 
 ### Bước 2: Gọi Bash Script Tự Động
 - Execute file script: `skills/qa-squash-push/scripts/squash-push.sh`
@@ -128,25 +128,25 @@ Nếu script thất bại (Thiếu env, không tìm thấy file, lỗi API Phase
 
 ## Xử lý sự cố (Phase B)
 
-| Cảnh báo | Nguyên nhân thường gặp | Cách xử lý |
-|----------|------------------------|------------|
-| `Chưa cấu hình SQUASH_USERNAME / SQUASH_PASSWORD` | Thiếu biến trong `.env` | Bổ sung 2 biến, kiểm tra `.env` đã gitignore |
-| `Đăng nhập thất bại (HTTP 401/403)` | Sai mật khẩu, hoặc tài khoản bị khoá | Đăng nhập thủ công trên UI để xác nhận |
-| `Không tìm thấy node Sprint nào trong campaign-tree` | Cấu trúc cây khác dự đoán, hoặc user không có quyền xem Campaign Workspace | Chạy lại với `SQUASH_DEBUG=1` để xem raw response |
-| `Không khớp được node Sprint` | Tên sprint bên Campaign khác bên Requirement (vd `Sprint 46` vs `EnTrade Sprint 046`) | Kiểm tra và đồng bộ lại quy ước đặt tên |
-| `Không tìm thấy requirement nào có reference '{issueKey}'` | Requirement chưa được thêm vào Sprint, hoặc field Reference bỏ trống | Vào Campaign Workspace điền Reference = issueKey |
-| `Gán test case thất bại (HTTP 4xx)` | Endpoint `/backend` đã đổi ở version Squash mới | Capture lại request từ DevTools và cập nhật script |
+| Cảnh báo                                                   | Nguyên nhân thường gặp                                                                | Cách xử lý                                         |
+|------------------------------------------------------------|---------------------------------------------------------------------------------------|----------------------------------------------------|
+| `Chưa cấu hình SQUASH_USERNAME / SQUASH_PASSWORD`          | Thiếu biến trong `.env`                                                               | Bổ sung 2 biến, kiểm tra `.env` đã gitignore       |
+| `Đăng nhập thất bại (HTTP 401/403)`                        | Sai mật khẩu, hoặc tài khoản bị khoá                                                  | Đăng nhập thủ công trên UI để xác nhận             |
+| `Không tìm thấy node Sprint nào trong campaign-tree`       | Cấu trúc cây khác dự đoán, hoặc user không có quyền xem Campaign Workspace            | Chạy lại với `SQUASH_DEBUG=1` để xem raw response  |
+| `Không khớp được node Sprint`                              | Tên sprint bên Campaign khác bên Requirement (vd `Sprint 46` vs `EnTrade Sprint 046`) | Kiểm tra và đồng bộ lại quy ước đặt tên            |
+| `Không tìm thấy requirement nào có reference '{issueKey}'` | Requirement chưa được thêm vào Sprint, hoặc field Reference bỏ trống                  | Vào Campaign Workspace điền Reference = issueKey   |
+| `Gán test case thất bại (HTTP 4xx)`                        | Endpoint `/backend` đã đổi ở version Squash mới                                       | Capture lại request từ DevTools và cập nhật script |
 
 ---
 
 ## Các Biện hộ Thường gặp
 
-| Lý do biện hộ | Thực tế |
-|---|---|
-| "Exit code 0 rồi, coi như xong" | Exit 0 chỉ xác nhận Phase A. Phase B là best-effort — phải đọc dòng `- Campaign Workspace:` mới biết test case đã gán vào requirement hay chưa. |
-| "Đẩy trước, validate Gherkin sau cũng được" | Squash ghi đè theo tên file. Đẩy bản sai lên rồi thì bản sai là thứ QA thủ công nhìn thấy, và phải dọn tay trên UI. |
-| "Chạy từng lệnh curl một cho dễ debug" | Mỗi lệnh bash là một lần xin quyền. Skill được thiết kế chạy một lệnh script duy nhất — xem mục Workflow. |
-| "Hardcode token vào lệnh cho nhanh, lát xoá" | Token vào shell history và có thể lọt vào transcript. Luôn đọc từ `.env`. |
+| Lý do biện hộ                                      | Thực tế                                                                                                                                                    |
+|----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| "Exit code 0 rồi, coi như xong"                    | Exit 0 chỉ xác nhận Phase A. Phase B là best-effort — phải đọc dòng `- Campaign Workspace:` mới biết test case đã gán vào requirement hay chưa.            |
+| "Đẩy trước, validate Gherkin sau cũng được"        | Squash ghi đè theo tên file. Đẩy bản sai lên rồi thì bản sai là thứ QA thủ công nhìn thấy, và phải dọn tay trên UI.                                        |
+| "Chạy từng lệnh curl một cho dễ debug"             | Mỗi lệnh bash là một lần xin quyền. Skill được thiết kế chạy một lệnh script duy nhất — xem mục Workflow.                                                  |
+| "Hardcode token vào lệnh cho nhanh, lát xoá"       | Token vào shell history và có thể lọt vào transcript. Luôn đọc từ `.env`.                                                                                  |
 | "Phase B hỏng chắc do script sai, sửa script luôn" | Nhóm `/backend` là API nội bộ không có cam kết ổn định. Kiểm tra bảng Xử lý sự cố trước — phần lớn là do cấu hình hoặc quy ước đặt tên, không phải script. |
 
 ## Dấu hiệu Cảnh báo (Red Flags)

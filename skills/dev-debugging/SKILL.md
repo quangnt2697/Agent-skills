@@ -261,12 +261,12 @@ Chỉ thêm log khi nó thực sự giúp ích. Xóa nó đi khi đã làm xong.
 
 ## Các Biện hộ Thường gặp
 
-| Biện hộ | Thực tế |
-|---|---|
-| "Tôi biết con bug nằm ở đâu, để tôi vào sửa luôn" | Bạn có thể đúng 70%. Nhưng 30% còn lại sẽ tiêu tốn của bạn hàng giờ đồng hồ. Hãy tái hiện lỗi (reproduce) trước. |
-| "Cái bài test đang bị fail đó chắc viết sai rồi" | Hãy chứng minh giả định đó. Nếu bài test sai, hãy sửa bài test. Đừng có ngó lơ (skip) nó. |
-| "Nó vẫn chạy tốt trên máy của tôi" | Các môi trường có sự khác biệt. Hãy kiểm tra CI, kiểm tra config, kiểm tra dependencies. |
-| "Tôi sẽ sửa nó ở cái commit tiếp theo" | Hãy sửa nó NGAY BÂY GIỜ. Commit tiếp theo sẽ chỉ sinh ra thêm những con bug mới đè lên con bug cũ này. |
+| Biện hộ                                           | Thực tế                                                                                                                                   |
+|---------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| "Tôi biết con bug nằm ở đâu, để tôi vào sửa luôn" | Bạn có thể đúng 70%. Nhưng 30% còn lại sẽ tiêu tốn của bạn hàng giờ đồng hồ. Hãy tái hiện lỗi (reproduce) trước.                          |
+| "Cái bài test đang bị fail đó chắc viết sai rồi"  | Hãy chứng minh giả định đó. Nếu bài test sai, hãy sửa bài test. Đừng có ngó lơ (skip) nó.                                                 |
+| "Nó vẫn chạy tốt trên máy của tôi"                | Các môi trường có sự khác biệt. Hãy kiểm tra CI, kiểm tra config, kiểm tra dependencies.                                                  |
+| "Tôi sẽ sửa nó ở cái commit tiếp theo"            | Hãy sửa nó NGAY BÂY GIỜ. Commit tiếp theo sẽ chỉ sinh ra thêm những con bug mới đè lên con bug cũ này.                                    |
 | "Đây là bài test flaky (chập chờn), cứ bỏ qua đi" | Bài test chập chờn sẽ che giấu những con bug thật sự. Hãy sửa sự chập chờn đó hoặc tìm hiểu nguyên nhân tại sao nó bị lúc được lúc không. |
 
 ## Coi Output Báo Lỗi là Dữ liệu Không đáng tin (Untrusted Data)

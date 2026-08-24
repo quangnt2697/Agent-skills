@@ -41,7 +41,7 @@ Kích hoạt skill này khi:
 
 **Input A: File `*-final.md`**
 ```bash
-workspace/{issueKey}/spec/final.md
+/project-root/workspace/{issueKey}/spec/final.md
 ```
 
 Trích xuất:
@@ -145,15 +145,15 @@ Quan trọng: Phải có baseline metrics để so sánh sau này:
 ```markdown
 ### AS-IS: Metrics (Baseline)
 
-| Metric | Current Value | Source |
-|--------|---------------|--------|
-| Avg time to place order | 10-15 phút | Call center logs (Q1 2026) |
-| Error rate | 2-3% | Complaint tickets (Jira) |
-| Broker capacity | 20 orders/hour | Time-motion study |
-| Customer satisfaction | 3.2/5.0 | NPS survey (Q4 2025) |
-| Peak hour wait time | 5-8 phút | Call center queue data |
-| Mobile usage | 0% (không có app) | N/A |
-| Cost per order | ~15,000 VND (broker salary/orders) | Finance report |
+| Metric                  | Current Value                      | Source                     |
+|-------------------------|------------------------------------|----------------------------|
+| Avg time to place order | 10-15 phút                         | Call center logs (Q1 2026) |
+| Error rate              | 2-3%                               | Complaint tickets (Jira)   |
+| Broker capacity         | 20 orders/hour                     | Time-motion study          |
+| Customer satisfaction   | 3.2/5.0                            | NPS survey (Q4 2025)       |
+| Peak hour wait time     | 5-8 phút                           | Call center queue data     |
+| Mobile usage            | 0% (không có app)                  | N/A                        |
+| Cost per order          | ~15,000 VND (broker salary/orders) | Finance report             |
 ```
 
 ### Bước 3: Define TO-BE (Target State)
@@ -210,14 +210,14 @@ Phải **measurable** và **time-bound**:
 ```markdown
 ### TO-BE: Success Criteria
 
-| Metric | Target Value | Measurement Method | Timeline |
-|--------|--------------|-------------------|----------|
-| Avg time to place order | < 30 giây | App analytics (Firebase) | 3 tháng sau launch |
-| Error rate | < 0.5% | Error logs + customer complaints | 6 tháng sau launch |
-| Mobile adoption | ≥ 60% orders via app | App vs broker ratio | 12 tháng sau launch |
-| Customer satisfaction | ≥ 4.2/5.0 | NPS survey | 6 tháng sau launch |
-| Peak hour performance | < 2s response time | APM tool (Datadog) | Ngay sau launch |
-| Cost per order | < 5,000 VND | Finance report | 12 tháng sau launch |
+| Metric                  | Target Value         | Measurement Method               | Timeline            |
+|-------------------------|----------------------|----------------------------------|---------------------|
+| Avg time to place order | < 30 giây            | App analytics (Firebase)         | 3 tháng sau launch  |
+| Error rate              | < 0.5%               | Error logs + customer complaints | 6 tháng sau launch  |
+| Mobile adoption         | ≥ 60% orders via app | App vs broker ratio              | 12 tháng sau launch |
+| Customer satisfaction   | ≥ 4.2/5.0            | NPS survey                       | 6 tháng sau launch  |
+| Peak hour performance   | < 2s response time   | APM tool (Datadog)               | Ngay sau launch     |
+| Cost per order          | < 5,000 VND          | Finance report                   | 12 tháng sau launch |
 ```
 
 ### Bước 4: Identify Gaps (Phát hiện khoảng cách)
@@ -226,13 +226,13 @@ Với mỗi aspect (Process, Features, Data, Infrastructure, Skills), identify g
 
 **Gap Categories:**
 
-| Category | AS-IS | TO-BE | Gap |
-|----------|-------|-------|-----|
-| **Process** | 6 steps, manual | 3 steps, automated | Automation + workflow redesign |
-| **Features** | LO only | LO + MP + ATO + ATC | 3 new order types |
-| **Data** | No real-time | Real-time via WebSocket | WebSocket integration |
-| **Infrastructure** | Desktop, Oracle 10g | Mobile app, Cloud, microservices | Full migration |
-| **Skills** | Broker-centric | Self-service + DevOps | Training + hiring |
+| Category           | AS-IS               | TO-BE                            | Gap                            |
+|--------------------|---------------------|----------------------------------|--------------------------------|
+| **Process**        | 6 steps, manual     | 3 steps, automated               | Automation + workflow redesign |
+| **Features**       | LO only             | LO + MP + ATO + ATC              | 3 new order types              |
+| **Data**           | No real-time        | Real-time via WebSocket          | WebSocket integration          |
+| **Infrastructure** | Desktop, Oracle 10g | Mobile app, Cloud, microservices | Full migration                 |
+| **Skills**         | Broker-centric      | Self-service + DevOps            | Training + hiring              |
 
 **Detailed Gap Analysis:**
 
@@ -375,15 +375,15 @@ Dùng **Value vs Effort** matrix:
 ```markdown
 ### Gap Prioritization
 
-| Gap # | Gap Name | Business Value | Effort | Risk | Priority | Phase |
-|-------|----------|---------------|--------|------|----------|-------|
-| 7 | Skills & Team | High | Medium | High | 🔴 Critical | 0 (Pre-work) |
-| 5 | DB Migration | High | High | High | 🔴 Critical | 1 |
-| 3 | OMS API | High | High | High | 🔴 Critical | 1 |
-| 4 | FIX Integration | High | Medium | Medium | 🔴 Critical | 1 |
-| 1 | Mobile App | High | High | Medium | 🔴 Critical | 2 |
-| 2 | Real-time Notification | Medium | Low | Medium | 🟡 Important | 2 |
-| 6 | New Order Types | Low | Low | Low | 🟢 Nice-to-have | 3 |
+| Gap #   | Gap Name               | Business Value   | Effort   | Risk   | Priority        | Phase        |
+|---------|------------------------|------------------|----------|--------|-----------------|--------------|
+| 7       | Skills & Team          | High             | Medium   | High   | 🔴 Critical     | 0 (Pre-work) |
+| 5       | DB Migration           | High             | High     | High   | 🔴 Critical     | 1            |
+| 3       | OMS API                | High             | High     | High   | 🔴 Critical     | 1            |
+| 4       | FIX Integration        | High             | Medium   | Medium | 🔴 Critical     | 1            |
+| 1       | Mobile App             | High             | High     | Medium | 🔴 Critical     | 2            |
+| 2       | Real-time Notification | Medium           | Low      | Medium | 🟡 Important    | 2            |
+| 6       | New Order Types        | Low              | Low      | Low    | 🟢 Nice-to-have | 3            |
 ```
 
 **5.2. Phased Roadmap**
@@ -433,14 +433,14 @@ Dùng **Value vs Effort** matrix:
 ```markdown
 ### Risks & Mitigation
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| Fail to hire mobile devs | High | High | Outsource to agency (backup plan) |
-| DB migration data loss | Medium | Critical | Full backup + pilot migration + rollback plan |
-| OMS performance issues | Medium | High | Load testing in staging (10,000 TPS) |
-| FIX integration bugs | Medium | High | 3-month UAT with sàn sandbox |
-| Users don't adopt app | Medium | High | Incentive program (fee discount for app users) |
-| Tight timeline (18 months) | High | High | MVP-first approach, defer Phase 3 if needed |
+| Risk                       | Likelihood   | Impact   | Mitigation                                     |
+|----------------------------|--------------|----------|------------------------------------------------|
+| Fail to hire mobile devs   | High         | High     | Outsource to agency (backup plan)              |
+| DB migration data loss     | Medium       | Critical | Full backup + pilot migration + rollback plan  |
+| OMS performance issues     | Medium       | High     | Load testing in staging (10,000 TPS)           |
+| FIX integration bugs       | Medium       | High     | 3-month UAT with sàn sandbox                   |
+| Users don't adopt app      | Medium       | High     | Incentive program (fee discount for app users) |
+| Tight timeline (18 months) | High         | High     | MVP-first approach, defer Phase 3 if needed    |
 ```
 
 ## Đầu ra (Output)
@@ -519,12 +519,12 @@ Dùng **Value vs Effort** matrix:
 
 ## 5. Action Items
 
-| Action | Owner | Deadline | Status |
-|--------|-------|----------|--------|
-| Approve budget (~3 tỷ VND) | CFO | 2026-09-01 | Pending |
-| Hire 2 mobile devs | HR | 2026-10-01 | Pending |
-| Kickoff DB migration | DBA | 2026-11-01 | Pending |
-| Sign OMS vendor contract | CTO | 2026-10-15 | Pending |
+| Action                     | Owner   | Deadline   | Status   |
+|----------------------------|---------|------------|----------|
+| Approve budget (~3 tỷ VND) | CFO     | 2026-09-01 | Pending  |
+| Hire 2 mobile devs         | HR      | 2026-10-01 | Pending  |
+| Kickoff DB migration       | DBA     | 2026-11-01 | Pending  |
+| Sign OMS vendor contract   | CTO     | 2026-10-15 | Pending  |
 
 ---
 
@@ -545,14 +545,14 @@ Dùng **Value vs Effort** matrix:
 - [Market Research: Mobile Trading Trends](...)
 ```
 
-**Lưu vào:** `workspace/{issueKey}/spec/gap-analysis.md`
+**Lưu vào:** `/project-root/workspace/{issueKey}/spec/gap-analysis.md`
 
 Trước khi ghi file, BẮT BUỘC neo về root repo và tạo thư mục đích — `Write` không tự tạo
 thư mục cha, và cwd của agent có thể đang lệch (xem `.claude/rules/workspace-paths.md`):
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-mkdir -p workspace/{issueKey}/spec
+mkdir -p /project-root/workspace/{issueKey}/spec
 ```
 
 ## Tương tác với các Skills khác
@@ -618,7 +618,7 @@ Sau khi chạy skill này:
 - [ ] Roadmap có phased approach với timeline rõ ràng
 - [ ] Risks identified với mitigation plans
 - [ ] Action items assigned với owner + deadline
-- [ ] Output file đã lưu: `workspace/{issueKey}/spec/gap-analysis.md`
+- [ ] Output file đã lưu: `/project-root/workspace/{issueKey}/spec/gap-analysis.md`
 - [ ] Stakeholders đã review và approve budget + timeline
 
 ## Ví dụ

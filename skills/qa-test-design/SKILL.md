@@ -54,7 +54,7 @@ Giai đoạn 2 ngay khi cổng kiểm chứng được sau đây pass:
 
 - [ ] File checklist tồn tại và không rỗng
 - [ ] Có ít nhất 1 item P0
-- [ ] Mọi Business Rule trong `*-final.md` đều ánh xạ được tới ≥1 checklist item
+- [ ] Mọi Business Rule trong `final.md` đều ánh xạ được tới ≥1 checklist item
 - [ ] Không có item nào gắn nhãn `[Blocked]`
 
 Nếu pass → trình bày checklist cho user **để họ nắm thông tin** (không phải để xin phép),
@@ -69,7 +69,7 @@ dừng sau Giai đoạn 1, trình bày checklist và hỏi user duyệt trước
 Đây là chế độ phải được yêu cầu rõ ràng — không phải mặc định.
 
 **Trường hợp buộc dừng:** chỉ khi rơi vào danh sách đóng của `autonomy-contract.md` —
-điển hình là thiếu `*-final.md` (trường hợp 1) hoặc có câu hỏi 🔴 Critical chưa được trả
+điển hình là thiếu `final.md` (trường hợp 1) hoặc có câu hỏi 🔴 Critical chưa được trả
 lời (trường hợp 3).
 
 ---
@@ -82,13 +82,13 @@ Có thể khởi tạo thư mục output trước khi bắt đầu:
 bash skills/qa-test-design/scripts/qa-init.sh [output-dir]
 ```
 
-Lệnh này tạo thư mục `steps/` và `result/` trong đường dẫn chỉ định (mặc định: `workspace/{issueKey}/test/`).
+Lệnh này tạo thư mục `steps/` và `result/` trong đường dẫn chỉ định (mặc định: `/project-root/workspace/{issueKey}/test/`).
 
 ### Đường dẫn output
 
 Khi đầu vào từ ba-spec, output sẽ lưu tại chung một thư mục theo cấu trúc:
 ```
-workspace/{issueKey}/test/
+/project-root/workspace/{issueKey}/test/
 ├── checklist.md
 ├── {issueKey}.feature
 ├── steps/                          # ← qa-auto-design sinh code vào đây
@@ -101,23 +101,23 @@ workspace/{issueKey}/test/
 
 Trước khi viết bất kỳ item checklist nào, thu thập đầu vào:
 
-#### Nguồn đầu vào chính: `workspace/{issueKey}/spec/final.md`
+#### Nguồn đầu vào chính: `/project-root/workspace/{issueKey}/spec/final.md`
 
 Nếu file này tồn tại, đây là **single source of truth** đã qua phân tích và interview.
 Agent đọc file này và ánh xạ các sections sang các nhóm kiểm thử:
 
-| Section trong final.md | → Nhóm kiểm thử |
-|------------------------|------------------|
-| Authentication / Security | Bảo mật & Phân quyền (P0) |
-| Endpoints / URL Routing / Màn hình & Navigation | Đường dẫn & HTTP / Routing (P1) |
-| Form & Input / Request Schema / Validation Rules | Dữ liệu đầu vào & Validation (P1) |
-| Business Rules | Quy tắc nghiệp vụ (P0) |
-| Edge Cases & Error Handling | Ngoại lệ & Hiệu năng (P2) |
-| User Flow / Redirect / Gesture | Luồng thành công & Nhất quán dữ liệu (P0) |
-| Response Schema & Error Codes | Validation Response (P1) |
-| Data Display / Real-time / WebSocket | Hiển thị dữ liệu & Real-time (P1) |
-| Acceptance Criteria | Nguồn chính cho Happy Path scenarios |
-| Open Questions | Ghi nhận dạng `[Blocked]` items trong checklist |
+| Section trong final.md                           | → Nhóm kiểm thử                                 |
+|--------------------------------------------------|-------------------------------------------------|
+| Authentication / Security                        | Bảo mật & Phân quyền (P0)                       |
+| Endpoints / URL Routing / Màn hình & Navigation  | Đường dẫn & HTTP / Routing (P1)                 |
+| Form & Input / Request Schema / Validation Rules | Dữ liệu đầu vào & Validation (P1)               |
+| Business Rules                                   | Quy tắc nghiệp vụ (P0)                          |
+| Edge Cases & Error Handling                      | Ngoại lệ & Hiệu năng (P2)                       |
+| User Flow / Redirect / Gesture                   | Luồng thành công & Nhất quán dữ liệu (P0)       |
+| Response Schema & Error Codes                    | Validation Response (P1)                        |
+| Data Display / Real-time / WebSocket             | Hiển thị dữ liệu & Real-time (P1)               |
+| Acceptance Criteria                              | Nguồn chính cho Happy Path scenarios            |
+| Open Questions                                   | Ghi nhận dạng `[Blocked]` items trong checklist |
 
 > **Loại task** được nhận diện từ header `**Loại task:**` trong final.md (📱 APP / 🌐 WEB / 🔌 API).
 > Chiều kiểm thử được điều chỉnh tương ứng (VD: APP thêm Gesture/Offline, WEB thêm Responsive/SEO, API thêm Idempotency/Rate Limit).
@@ -141,14 +141,14 @@ Nếu `spec-driven-development` đã tạo spec, dùng nó làm nguồn chính. 
 
 Tổ chức các item checklist thành các nhóm logic dựa trên chiều kiểm thử. Thứ tự này phản ánh mức độ rủi ro — vấn đề bảo mật phát hiện muộn tốn kém hơn vấn đề validation:
 
-| Nhóm | Ưu tiên | Bao gồm |
-|------|---------|--------|
-| **Bảo mật & Phân quyền** | P0 | API key, signature, tokens, authorization, permission, ràng buộc truy cập path/tài khoản |
-| **Đường dẫn & HTTP** | P1 | HTTP methods, endpoints, URL validation, định tuyến theo loại thị trường, query string và path parameters |
-| **Dữ liệu đầu vào & Validation Schema** | P1 | Trường bắt buộc, kiểu dữ liệu, validation định dạng, biến thể schema theo giá trị input. BẮT BUỘC validate cả Request (Input) và Response (Output) schemas. Đặc biệt với API/WebSocket, BẮT BUỘC validate rõ ràng Event Payload Schema dựa trên ví dụ trong Jira/Spec. |
-| **Quy tắc nghiệp vụ** | P0 | Giới hạn giá, quy tắc khối lượng, kiểm tra số dư, hạn chế thời gian |
-| **Ngoại lệ & Hiệu năng** | P2 | Đồng thời (Race conditions), Idempotency, Tràn số, Rate limiting (Throttling), xung đột tài sản chéo |
-| **Luồng thành công & Nhất quán dữ liệu** | P0 | Luồng thành công, schema response đầy đủ, xác minh dữ liệu end-to-end |
+| Nhóm                                     | Ưu tiên   | Bao gồm                                                                                                                                                                                                                                                                |
+|------------------------------------------|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Bảo mật & Phân quyền**                 | P0        | API key, signature, tokens, authorization, permission, ràng buộc truy cập path/tài khoản                                                                                                                                                                               |
+| **Đường dẫn & HTTP**                     | P1        | HTTP methods, endpoints, URL validation, định tuyến theo loại thị trường, query string và path parameters                                                                                                                                                              |
+| **Dữ liệu đầu vào & Validation Schema**  | P1        | Trường bắt buộc, kiểu dữ liệu, validation định dạng, biến thể schema theo giá trị input. BẮT BUỘC validate cả Request (Input) và Response (Output) schemas. Đặc biệt với API/WebSocket, BẮT BUỘC validate rõ ràng Event Payload Schema dựa trên ví dụ trong Jira/Spec. |
+| **Quy tắc nghiệp vụ**                    | P0        | Giới hạn giá, quy tắc khối lượng, kiểm tra số dư, hạn chế thời gian                                                                                                                                                                                                    |
+| **Ngoại lệ & Hiệu năng**                 | P2        | Đồng thời (Race conditions), Idempotency, Tràn số, Rate limiting (Throttling), xung đột tài sản chéo                                                                                                                                                                   |
+| **Luồng thành công & Nhất quán dữ liệu** | P0        | Luồng thành công, schema response đầy đủ, xác minh dữ liệu end-to-end                                                                                                                                                                                                  |
 
 ### Bước 3: Viết từng item
 
@@ -156,12 +156,12 @@ Mỗi item checklist phải tuân thủ các quy tắc sau:
 
 **Bắt đầu bằng động từ hành động** — mỗi item là một lệnh, không phải mô tả:
 
-| ❌ Sai | ✅ Đúng |
-|---|---|
-| Màn hình lỗi | Xác nhận hệ thống hiển thị màn hình lỗi khi token hết hạn |
-| Nút đăng nhập | Nhấn nút "Đăng nhập", xác nhận hệ thống chuyển đến trang Dashboard |
-| Check form đăng ký | Nhập email thiếu "@", xác nhận hệ thống báo lỗi viền đỏ |
-| Test khi rớt mạng | Tắt Wi-Fi/4G khi đang load, xác nhận app hiện pop-up "Mất kết nối" |
+| ❌ Sai             | ✅ Đúng                                                            |
+|--------------------|--------------------------------------------------------------------|
+| Màn hình lỗi       | Xác nhận hệ thống hiển thị màn hình lỗi khi token hết hạn          |
+| Nút đăng nhập      | Nhấn nút "Đăng nhập", xác nhận hệ thống chuyển đến trang Dashboard |
+| Check form đăng ký | Nhập email thiếu "@", xác nhận hệ thống báo lỗi viền đỏ            |
+| Test khi rớt mạng  | Tắt Wi-Fi/4G khi đang load, xác nhận app hiện pop-up "Mất kết nối" |
 
 **Một item, một hành động** — mỗi dòng là một cổng Pass/Fail duy nhất. Không bao giờ kết hợp nhiều hành động:
 
@@ -176,11 +176,11 @@ Mỗi item checklist phải tuân thủ các quy tắc sau:
 
 **Lượng hoá và cụ thể hoá** — tránh tính từ chủ quan:
 
-| ❌ Mơ hồ | ✅ Đã lượng hoá |
-|---|---|
-| Load nhanh | Load dưới 2 giây |
-| Giá hợp lệ | Xác nhận giá đặt nằm trong khoảng Giá Sàn (90,000) đến Giá Trần (110,000) |
-| Nút bấm hiển thị bình thường | Xác nhận nút "Đồng ý" hiển thị bo góc, kích thước 44px |
+| ❌ Mơ hồ                     | ✅ Đã lượng hoá                                                           |
+|------------------------------|---------------------------------------------------------------------------|
+| Load nhanh                   | Load dưới 2 giây                                                          |
+| Giá hợp lệ                   | Xác nhận giá đặt nằm trong khoảng Giá Sàn (90,000) đến Giá Trần (110,000) |
+| Nút bấm hiển thị bình thường | Xác nhận nút "Đồng ý" hiển thị bo góc, kích thước 44px                    |
 
 **Truy vết nghiêm ngặt đến Quy tắc nghiệp vụ** — Đảm bảo mỗi Business Rule chi tiết trong spec được ánh xạ 1-1 với ít nhất một checklist item. Không để bất kỳ quy tắc nghiệp vụ nào từ spec không được kiểm chứng.
 
@@ -188,12 +188,12 @@ Mỗi item checklist phải tuân thủ các quy tắc sau:
 
 Mỗi checklist phải bao gồm các cột sau:
 
-| Cột | Bắt buộc | Mô tả |
-|------|----------|------|
-| **Hạng mục kiểm tra** | ✅ | Item kiểm thử với động từ hành động |
-| **Mức độ ưu tiên** | ✅ | P0 (bắt buộc pass trước release), P1 (nên pass), P2 (tốt nếu có) |
-| **Trạng thái** | ✅ | Pass / Fail / Blocked / N/A |
-| **Ghi chú / Mã Bug** | ✅ | Bug ID hoặc ghi chú quan sát |
+| Cột                   | Bắt buộc   | Mô tả                                                            |
+|-----------------------|------------|------------------------------------------------------------------|
+| **Hạng mục kiểm tra** | ✅         | Item kiểm thử với động từ hành động                              |
+| **Mức độ ưu tiên**    | ✅         | P0 (bắt buộc pass trước release), P1 (nên pass), P2 (tốt nếu có) |
+| **Trạng thái**        | ✅         | Pass / Fail / Blocked / N/A                                      |
+| **Ghi chú / Mã Bug**  | ✅         | Bug ID hoặc ghi chú quan sát                                     |
 
 **Metadata header** — mỗi checklist phải khai báo ở đầu:
 
@@ -343,7 +343,7 @@ Feature: <Short title reflecting the behavior area>
   Scenario Outline: Mở form đặt lệnh khi nhấn <loại_lệnh>
     When người dùng nhấn nút "<loại_lệnh>"
     Examples:
-      | loại_lệnh |
+      | loại_lệnh  |
       | MUA        |
       | BÁN        |
   ```
@@ -379,11 +379,11 @@ And nhấn nút "Đăng nhập"
 
 Coi `Given / When / Then` như `Sắp xếp / Thực hiện / Xác minh`:
 
-| Từ khóa | Mục đích | Tương đương |
-|---------|---------|----------|
-| `Given` | Thiết lập điều kiện tiên quyết / ngữ cảnh | Sắp xếp (Arrange) |
-| `When` | Thực hiện hành động kích hoạt | Thực hiện (Act) |
-| `Then` | Xác minh kết quả quan sát được | Xác minh (Assert) |
+| Từ khóa   | Mục đích                                  | Tương đương       |
+|-----------|-------------------------------------------|-------------------|
+| `Given`   | Thiết lập điều kiện tiên quyết / ngữ cảnh | Sắp xếp (Arrange) |
+| `When`    | Thực hiện hành động kích hoạt             | Thực hiện (Act)   |
+| `Then`    | Xác minh kết quả quan sát được            | Xác minh (Assert) |
 
 **Ví dụ steps cho API:**
 - `Given hệ thống thiết lập giới hạn rate limit là "100" request/giây`
@@ -417,38 +417,38 @@ Scenario Outline: Hệ thống từ chối lệnh khi dữ liệu không hợp l
   And trả về thông báo lỗi "<error_message>"
 
   Examples:
-    | field    | invalid_value  | error_message              |
-    | price    | chuỗi_chữ_abc | Định dạng không hợp lệ     |
-    | quantity | -100           | Giá trị phải lớn hơn 0     |
+    | field    | invalid_value  | error_message                |
+    | price    | chuỗi_chữ_abc  | Định dạng không hợp lệ       |
+    | quantity | -100           | Giá trị phải lớn hơn 0       |
     | quantity | 10.5           | Khối lượng phải là số nguyên |
 ```
 
 **Chiến lược gắn Tag:**
 
-| Tag | Mục đích |
-|-----|--------|
-| `@smoke` | Luồng quan trọng — chạy mỗi bản build |
-| `@regression` | Bộ regression đầy đủ |
-| `@happy-path` | Kịch bản luồng thành công |
-| `@negative` | Kịch bản lỗi và từ chối |
-| `@edge-case` | Điều kiện biên và bất thường |
-| `@api` | Test cấp độ API |
-| `@security` | Kịch bản liên quan bảo mật |
-| `@JIRA-XXXX` | Liên kết với mã ticket |
-| `@domain-securities` | Tag domain chứng khoán |
+| Tag                  | Mục đích                              |
+|----------------------|---------------------------------------|
+| `@smoke`             | Luồng quan trọng — chạy mỗi bản build |
+| `@regression`        | Bộ regression đầy đủ                  |
+| `@happy-path`        | Kịch bản luồng thành công             |
+| `@negative`          | Kịch bản lỗi và từ chối               |
+| `@edge-case`         | Điều kiện biên và bất thường          |
+| `@api`               | Test cấp độ API                       |
+| `@security`          | Kịch bản liên quan bảo mật            |
+| `@JIRA-XXXX`         | Liên kết với mã ticket                |
+| `@domain-securities` | Tag domain chứng khoán                |
 
 ### Các Anti-Pattern cần tránh
 
-| Anti-Pattern | Tại sao thất bại |
-|---|---|
-| Bỏ qua Giai đoạn 1 (checklist) nhảy thẳng vào Gherkin | Scenarios bỏ sót edge cases và thiếu truy vết |
-| Nhiều hành vi trong 1 scenario | Không cô lập được lỗi; vi phạm nguyên tắc 1-scenario-1-hành-vi |
-| Để lộ UI DOM, selectors, hoặc chi tiết database trong steps | Hỏng khi implementation thay đổi; gắn chặt tests với nội bộ |
-| Điều hướng UI quá chi tiết thay vì thiết lập trạng thái | Scenarios giòn và khó đọc |
-| Assertion Then mơ hồ không có tín hiệu quan sát được | "Hoạt động" không chứng minh gì — cần chỉ rõ cái gì thay đổi |
-| Lạm dụng Scenario Outline với dòng trùng lặp | Tăng thời gian chạy không tăng giá trị bao phủ |
-| Chỉ test 1 trigger khi có nhiều trigger đối xứng | Bỏ sót nút BÁN, tab thứ hai, phương thức input khác — cùng hành vi, khác điểm vào, bug riêng |
-| Item checklist không có động từ hành động | Mô tả thay vì lệnh — không gán được Pass/Fail |
+| Anti-Pattern                                                | Tại sao thất bại                                                                             |
+|-------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| Bỏ qua Giai đoạn 1 (checklist) nhảy thẳng vào Gherkin       | Scenarios bỏ sót edge cases và thiếu truy vết                                                |
+| Nhiều hành vi trong 1 scenario                              | Không cô lập được lỗi; vi phạm nguyên tắc 1-scenario-1-hành-vi                               |
+| Để lộ UI DOM, selectors, hoặc chi tiết database trong steps | Hỏng khi implementation thay đổi; gắn chặt tests với nội bộ                                  |
+| Điều hướng UI quá chi tiết thay vì thiết lập trạng thái     | Scenarios giòn và khó đọc                                                                    |
+| Assertion Then mơ hồ không có tín hiệu quan sát được        | "Hoạt động" không chứng minh gì — cần chỉ rõ cái gì thay đổi                                 |
+| Lạm dụng Scenario Outline với dòng trùng lặp                | Tăng thời gian chạy không tăng giá trị bao phủ                                               |
+| Chỉ test 1 trigger khi có nhiều trigger đối xứng            | Bỏ sót nút BÁN, tab thứ hai, phương thức input khác — cùng hành vi, khác điểm vào, bug riêng |
+| Item checklist không có động từ hành động                   | Mô tả thay vì lệnh — không gán được Pass/Fail                                                |
 
 ### Template Gherkin
 
@@ -478,24 +478,24 @@ Feature: <Tên khu vực hành vi hoặc Tính năng>
     And hiển thị thông báo lỗi chi tiết là "<error_message>"
 
     Examples:
-      | input_type    | value | error_message                     |
-      | để rỗng       |       | Trường này bắt buộc phải nhập     |
+      | input_type    | value | error_message                    |
+      | để rỗng       |       | Trường này bắt buộc phải nhập    |
       | biên âm       | -1    | Giá trị phải lớn hơn hoặc bằng 0 |
-      | sai định dạng | #@!   | Định dạng nhập vào không hợp lệ   |
+      | sai định dạng | #@!   | Định dạng nhập vào không hợp lệ  |
 ```
 
 ---
 
 ## Các lý do biện minh thường gặp
 
-| Lý do biện minh | Thực tế |
-|---|---|
-| "Cái này quá đơn giản cho checklist" | Tính năng đơn giản vẫn cần cổng chất lượng được ghi nhận. Checklist 5 item mất 2 phút và bắt được edge case bạn quên. |
-| "Tôi sẽ viết scenarios trước không cần checklist" | Gherkin không có checklist sẽ bỏ sót edge cases. Checklist là artifact brainstorming — Gherkin là artifact tự động hoá. |
-| "Gherkin làm chậm chúng tôi" | Phiên checklist + thiết kế scenario 15 phút ngăn chặn hàng giờ làm lại vì hiểu sai yêu cầu. |
-| "Developer đã viết unit tests rồi" | Unit tests xác minh implementation. Checklists và BDD xác minh hành vi từ góc nhìn người dùng. Khác mức, khác mối quan tâm. |
-| "Tôi có thể mô tả mọi thứ trong 1 scenario" | Scenario nhiều hành vi không test được, không bảo trì được, không merge được. 1 scenario, 1 hành vi. |
-| "Spreadsheet là đủ cho checklist" | Spreadsheet thiếu nhóm chuẩn hoá, mức ưu tiên, và template tái sử dụng. Checklist có cấu trúc đảm bảo nhất quán toàn team. |
+| Lý do biện minh                                   | Thực tế                                                                                                                     |
+|---------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| "Cái này quá đơn giản cho checklist"              | Tính năng đơn giản vẫn cần cổng chất lượng được ghi nhận. Checklist 5 item mất 2 phút và bắt được edge case bạn quên.       |
+| "Tôi sẽ viết scenarios trước không cần checklist" | Gherkin không có checklist sẽ bỏ sót edge cases. Checklist là artifact brainstorming — Gherkin là artifact tự động hoá.     |
+| "Gherkin làm chậm chúng tôi"                      | Phiên checklist + thiết kế scenario 15 phút ngăn chặn hàng giờ làm lại vì hiểu sai yêu cầu.                                 |
+| "Developer đã viết unit tests rồi"                | Unit tests xác minh implementation. Checklists và BDD xác minh hành vi từ góc nhìn người dùng. Khác mức, khác mối quan tâm. |
+| "Tôi có thể mô tả mọi thứ trong 1 scenario"       | Scenario nhiều hành vi không test được, không bảo trì được, không merge được. 1 scenario, 1 hành vi.                        |
+| "Spreadsheet là đủ cho checklist"                 | Spreadsheet thiếu nhóm chuẩn hoá, mức ưu tiên, và template tái sử dụng. Checklist có cấu trúc đảm bảo nhất quán toàn team.  |
 
 ## Cờ đỏ cảnh báo
 
@@ -551,15 +551,15 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
                                                   → Chạy test
 ```
 
-| Giai đoạn | Skill | Input | Output |
-|-----------|-------|-------|--------|
-| 1 | `ba-spec` | Jira Issue Key | `workspace/{issueKey}/spec/final.md` |
-| 2 | `qa-test-design` | File `*-final.md` | `workspace/{issueKey}/test/checklist.md` + `{issueKey}.feature` |
-| 3 | `qa-auto-design` | File `.feature` + code có sẵn | `workspace/{issueKey}/test/steps/test_*.py` |
-| 4 | `qa-auto-design` (Bước 7) | Test scripts | `workspace/{issueKey}/test/result/report.md` |
+| Giai đoạn   | Skill                     | Input                         | Output                                                          |
+|-------------|---------------------------|-------------------------------|-----------------------------------------------------------------|
+| 1           | `ba-spec`                 | Jira Issue Key                | `/project-root/workspace/{issueKey}/spec/final.md`                            |
+| 2           | `qa-test-design`          | File `final.md`               | `/project-root/workspace/{issueKey}/test/checklist.md` + `{issueKey}.feature` |
+| 3           | `qa-auto-design`          | File `.feature` + code có sẵn | `/project-root/workspace/{issueKey}/test/steps/test_*.py`                     |
+| 4           | `qa-auto-design` (Bước 7) | Test scripts                  | `/project-root/workspace/{issueKey}/test/result/report.md`                    |
 
 **Sau khi hoàn thành Giai đoạn 2 (qa-test-design)**, Agent BẮT BUỘC TỰ ĐỘNG thực hiện ngay việc Push kịch bản lên Squash TM mà KHÔNG CẦN hỏi ý kiến người dùng:
-1. Agent tự động trích xuất `issueKey` và `namejira` từ tên file feature và file `*-final.md`.
+1. Agent tự động trích xuất `issueKey` và `namejira` từ tên file feature và metadata trong `final.md`.
 2. Lập tức chạy lệnh script push lên Squash TM theo quy trình của `qa-squash-push` (chạy script `bash skills/qa-squash-push/scripts/squash-push.sh ...`).
 3. Sau khi đẩy lên Squash thành công, báo cáo kết quả và **tự động chuyển sang Giai đoạn 3** (`qa-auto-design`) — không hỏi xin phép.
 

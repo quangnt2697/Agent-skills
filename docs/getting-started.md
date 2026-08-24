@@ -139,7 +139,7 @@ Load một tài liệu tham khảo khi bạn cần những patterns chi tiết v
 
 ## Spec và Task Artifacts
 
-Các lệnh `/tech-spec` và `/plan` sẽ tạo ra các file làm việc (như `final.md`, `tech/plan.md`, `tech/todo.md`) trong `workspace/{issueKey}/`. Hãy đối xử với chúng như **các tài liệu sống (living documents)** khi công việc đang diễn ra:
+Các lệnh `/tech-spec` và `/plan` sẽ tạo ra các file làm việc (như `final.md`, `tech/plan.md`, `tech/todo.md`) trong `/project-root/workspace/{issueKey}/`. Hãy đối xử với chúng như **các tài liệu sống (living documents)** khi công việc đang diễn ra:
 
 - Lưu chúng trên version control (Git) trong quá trình phát triển để con người và agent có chung một source of truth.
 - Cập nhật chúng khi phạm vi (scope) hoặc quyết định thay đổi.

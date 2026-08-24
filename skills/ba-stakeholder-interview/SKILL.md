@@ -576,18 +576,18 @@ A: CEO, responsible for company strategy và revenue growth...
 [... raw notes từ interviews, không structured ...]
 ```
 
-**Lưu vào:** `workspace/{issueKey}/spec/stakeholders.md`
+**Lưu vào:** `/project-root/workspace/{issueKey}/spec/stakeholders.md`
 
 Trước khi ghi file, BẮT BUỘC neo về root repo và tạo thư mục đích — `Write` không tự tạo
 thư mục cha, và cwd của agent có thể đang lệch (xem `.claude/rules/workspace-paths.md`):
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-mkdir -p workspace/{issueKey}/spec
+mkdir -p /project-root/workspace/{issueKey}/spec
 ```
 
 Nếu phiên phỏng vấn không gắn với Jira issue nào, dùng slug của tên project làm khoá
-thay cho `{issueKey}` (VD `workspace/mobile-trading-app/`) — không bao giờ ghi ra gốc repo.
+thay cho `{issueKey}` (VD `/project-root/workspace/mobile-trading-app/`) — không bao giờ ghi ra gốc repo.
 
 ## Tương tác với các Skills khác
 
@@ -653,7 +653,7 @@ Sau khi chạy skill này:
 - [ ] Đã identify và resolve conflicts (document resolutions)
 - [ ] Đã validate với stakeholders (sign-off meeting)
 - [ ] Đã escalate open questions với deadlines
-- [ ] Output file đã lưu: `workspace/{issueKey}/spec/stakeholders.md`
+- [ ] Output file đã lưu: `/project-root/workspace/{issueKey}/spec/stakeholders.md`
 - [ ] Stakeholders approve consolidated requirements (email confirmation)
 
 ## Ví dụ

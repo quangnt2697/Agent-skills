@@ -50,7 +50,7 @@ ATLASSIAN_API_TOKEN=your-api-token
 ## Cấu trúc Thư mục
 
 ```
-workspace/{issueKey}/
+/project-root/workspace/{issueKey}/
 ├── source/
 │   ├── {issueKey}-original.pdf
 │   ├── metadata.json
@@ -105,7 +105,7 @@ workspace/{issueKey}/
 
    User thường dán nguyên URL từ thanh địa chỉ trình duyệt. Nếu dùng thẳng chuỗi
    đó làm `{issueKey}`, cả URL sẽ trở thành tên thư mục
-   (`workspace/https:/entrade.atlassian.net%2Fbrowse%2F.../spec/refined.md`) và
+   (`/project-root/workspace/https:/entrade.atlassian.net%2Fbrowse%2F.../spec/refined.md`) và
    mọi handoff phía sau đứt.
 
    ```bash
@@ -140,22 +140,23 @@ workspace/{issueKey}/
    - Từ `attachment`: Lấy danh sách file đính kèm (tên, dung lượng, định dạng)
 
 5. **Kiểm tra Cache — file đã tải trước đó:**
-   - Với mỗi Confluence pageId → Quét `workspace/{issueKey}/source/refs/` xem đã có `*-{pageId}.pdf` chưa (kể cả từ lần chạy `ba-spec` trước — cả hai skill dùng chung thư mục này)
+   - Với mỗi Confluence pageId → Quét `/project-root/workspace/{issueKey}/source/refs/` xem đã có `*-{pageId}.pdf` chưa (kể cả từ lần chạy `ba-spec` trước — cả hai skill dùng chung thư mục này)
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại chưa
 
 6. **Trình bảng Danh sách cho User duyệt:**
 
    ```markdown
-   📋 **Danh sách tài liệu liên quan đến {issueKey}:**
+   
+📋 **Danh sách tài liệu liên quan đến {issueKey}:**
 
-   | # | Loại            | Tên                                      | Trạng thái         | Đường dẫn / Hành động                                        |
-   |---|------------------------------------------------------------|--------------------|--------------------------------------------------------------|
-   | 1 | 📄 Jira PDF     | {issueKey} - {Tiêu đề Task}              | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
-   | 2 | 📝 Confluence   | Thiết kế luồng thanh toán (ID: 12345)    | ✅ Đã có           | `workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf`  |
-   | 3 | 📝 Confluence   | API Spec v2 (ID: 67890)                  | 🆕 Chưa tải        | → `api-spec-v2-67890.pdf`                                    |
-   | 4 | 📎 File         | wireframe-v3.pdf (2.1MB)                 | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
-   | 5 | 🖼️ Ảnh          | flowchart.png (800KB)                    | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
-   | 6 | 🎬 Video        | demo.mp4 (50MB)                          | ⏭️ Bỏ qua          | Định dạng không hỗ trợ                                       |
+| # | Loại            | Tên                                      | Trạng thái         | Đường dẫn / Hành động                                        |
+|---|------------------------------------------------------------|--------------------|--------------------------------------------------------------|
+| 1 | 📄 Jira PDF     | {issueKey} - {Tiêu đề Task}              | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
+| 2 | 📝 Confluence   | Thiết kế luồng thanh toán (ID: 12345)    | ✅ Đã có           | `/project-root/workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf`  |
+| 3 | 📝 Confluence   | API Spec v2 (ID: 67890)                  | 🆕 Chưa tải        | → `api-spec-v2-67890.pdf`                                    |
+| 4 | 📎 File         | wireframe-v3.pdf (2.1MB)                 | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
+| 5 | 🖼️ Ảnh          | flowchart.png (800KB)                    | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
+| 6 | 🎬 Video        | demo.mp4 (50MB)                          | ⏭️ Bỏ qua          | Định dạng không hỗ trợ                                       |
 
    **Tổng cộng:** 4 file cần tải mới, 1 file đã có sẵn, 1 file bỏ qua.
 
@@ -166,15 +167,15 @@ workspace/{issueKey}/
 
 8. **Sau khi User đồng ý → Tạo thư mục làm việc TRƯỚC (BẮT BUỘC, không được bỏ qua):**
 
-   Luôn neo (anchor) vào root của repo git rồi `cd` vào đó trước khi chạy bất kỳ lệnh tải file nào — KHÔNG dùng đường dẫn tương đối theo cwd hiện tại của agent, vì cwd có thể đang ở một thư mục con khác nhau giữa các lần chạy. Đây là nguyên nhân gây ra lệch đường dẫn (VD: tạo nhầm `project/{issueKey}/...` thay vì `workspace/{issueKey}/...`).
+   Luôn neo (anchor) vào root của repo git rồi `cd` vào đó trước khi chạy bất kỳ lệnh tải file nào — KHÔNG dùng đường dẫn tương đối theo cwd hiện tại của agent, vì cwd có thể đang ở một thư mục con khác nhau giữa các lần chạy. Đây là nguyên nhân gây ra lệch đường dẫn (VD: tạo nhầm `project/{issueKey}/...` thay vì `/project-root/workspace/{issueKey}/...`).
 
    ```bash
    cd "$(git rev-parse --show-toplevel)"
-   mkdir -p "workspace/{issueKey}/source/refs"
+   mkdir -p "/project-root/workspace/{issueKey}/source/refs"
    ```
 
-   Tài liệu tải về ghi vào `workspace/{issueKey}/source/`, spec mài giũa ghi vào
-   `workspace/{issueKey}/spec/` — tính từ root repo. Không tự ý đổi tên thư mục gốc
+   Tài liệu tải về ghi vào `/project-root/workspace/{issueKey}/source/`, spec mài giũa ghi vào
+   `/project-root/workspace/{issueKey}/spec/` — tính từ root repo. Không tự ý đổi tên thư mục gốc
    (`project/`, `data/`, `output/`...) và không tạo thêm gốc thứ 6.
 
 9. **Tải file thiếu vào thư mục vừa tạo:**
@@ -188,21 +189,21 @@ workspace/{issueKey}/
      ```bash
      curl -s -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
        "${ATLASSIAN_BASE_URL}/wiki/spaces/flyingpdf/pdfpageexport.action?pageId={pageId}" \
-       -o "workspace/{issueKey}/source/refs/{tên-slug}-{pageId}.pdf"
+       -o "/project-root/workspace/{issueKey}/source/refs/{tên-slug}-{pageId}.pdf"
      ```
 
    - **Tải attachments chưa có:** Giữ nguyên tên gốc, lưu vào cùng thư mục `source/refs/`
      ```bash
      curl -s -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
        "{attachment_content_url}" \
-       -o "workspace/{issueKey}/source/refs/{tên-file-gốc}"
+       -o "/project-root/workspace/{issueKey}/source/refs/{tên-file-gốc}"
      ```
 
    - ⚠️ **LƯU Ý:** File tạm phải tạo trong `/tmp/` hoặc system scratch, KHÔNG tạo `scratch/` trong dự án user
 
 10. **Kết quả cấu trúc thư mục sau Bước 8-9:**
    ```
-   workspace/{issueKey}/
+   /project-root/workspace/{issueKey}/
    ├── source/
    │   ├── {issueKey}-original.pdf
    │   ├── metadata.json
@@ -375,7 +376,7 @@ Sau khi user chọn hướng đi cuối cùng, thực hiện **3 bước tuần 
 
 #### Bước 3.1: Tạo bản nháp (Draft)
 
-Tạo file nháp tại: `workspace/{issueKey}/spec/refined-draft.md`
+Tạo file nháp tại: `/project-root/workspace/{issueKey}/spec/refined-draft.md`
 
 📄 **Template chuẩn:** `skills/ba-refine/templates/jira-description-template.md`
 
@@ -422,31 +423,31 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
 1. **Trình bày TOÀN BỘ nội dung bản nháp** cho user xem trực tiếp trong chat. Không được chỉ nói "file đã tạo" hoặc "spec đã sẵn sàng" mà phải **in ra nội dung đầy đủ** theo format sau:
 
    ```markdown
-   📝 **BẢN NHÁP SPEC — Vui lòng review kỹ trước khi chốt:**
+📝 **BẢN NHÁP SPEC — Vui lòng review kỹ trước khi chốt:**
 
-   📄 **File:** `workspace/{issueKey}/spec/refined-draft.md`
+📄 **File:** `/project-root/workspace/{issueKey}/spec/refined-draft.md`
 
-   ────────────────────────────────────────────
-   [TOÀN BỘ NỘI DUNG CỦA FILE refined-draft.md ĐƯỢC IN RA ĐÂY]
-   ────────────────────────────────────────────
+────────────────────────────────────────────
+[TOÀN BỘ NỘI DUNG CỦA FILE refined-draft.md ĐƯỢC IN RA ĐÂY]
+────────────────────────────────────────────
 
-   📊 **Đánh giá Chất lượng Nội bộ:**
-   - Độ đầy đủ User Story: X%
-   - Tính testable của AC: X%
-   - Giả định được vạch ra: X%
-   - Kết quả stress-test: X%
-   - **Confidence tổng: X%**
+📊 **Đánh giá Chất lượng Nội bộ:**
+- Độ đầy đủ User Story: X%
+- Tính testable của AC: X%
+- Giả định được vạch ra: X%
+- Kết quả stress-test: X%
+- **Confidence tổng: X%**
 
-   🔍 **Checklist nhanh:**
-   - ✅/❌ User Story có đầy đủ Role + Goal + Value?
-   - ✅/❌ AC đều testable (Given-When-Then)?
-   - ✅/❌ Success Metrics có baseline + target?
-   - ✅/❌ Không còn placeholder chưa thay?
+🔍 **Checklist nhanh:**
+- ✅/❌ User Story có đầy đủ Role + Goal + Value?
+- ✅/❌ AC đều testable (Given-When-Then)?
+- ✅/❌ Success Metrics có baseline + target?
+- ✅/❌ Không còn placeholder chưa thay?
 
-   ⏳ **Bạn hãy review và phản hồi:**
-   - ✅ **"OK"** hoặc **"Đồng ý"** → Tôi chốt thành bản cuối và hỏi push Jira
-   - ✏️ **Góp ý cụ thể** → Tôi sửa bản nháp và trình lại
-   - 🔄 **"Làm lại"** → Tôi viết lại từ đầu
+⏳ **Bạn hãy review và phản hồi:**
+- ✅ **"OK"** hoặc **"Đồng ý"** → Tôi chốt thành bản cuối và hỏi push Jira
+- ✏️ **Góp ý cụ thể** → Tôi sửa bản nháp và trình lại
+- 🔄 **"Làm lại"** → Tôi viết lại từ đầu
    ```
 
 2. **DỪNG LẠI VÀ CHỜ USER PHẢN HỒI.** Tuyệt đối KHÔNG được:
@@ -487,11 +488,11 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
 
 3. Thông báo cho user:
    ```markdown
-   ✅ **Bản cuối cùng đã chốt!**
-   📄 File: `workspace/{issueKey}/spec/refined.md`
-   📊 Confidence: X%
+✅ **Bản cuối cùng đã chốt!**
+📄 File: `/project-root/workspace/{issueKey}/spec/refined.md`
+📊 Confidence: X%
 
-   Bạn có muốn push lên Jira không? (Gõ **OK** hoặc **Không**)
+Bạn có muốn push lên Jira không? (Gõ **OK** hoặc **Không**)
    ```
 
 4. **DỪNG LẠI VÀ CHỜ USER trả lời có push Jira hay không** trước khi chuyển sang Giai đoạn 4.
@@ -509,18 +510,18 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
 
 1. **Kiểm tra nội dung file trước khi push**
 
-   `workspace/{issueKey}/spec/refined.md` phải là file **đúng bằng** nội dung sẽ lên Jira — không cắt gọt gì thêm ở bước này. Nếu file còn chứa phần nội bộ (Giả định & Rủi ro, Ngoài Phạm vi, Đánh giá Độ tin cậy, stress-test score, Các Bước Tiếp theo) thì **quay lại Giai đoạn 3 sửa file**, chứ không lọc ngầm lúc push — lọc ngầm khiến file local và Jira lệch nhau.
+   `/project-root/workspace/{issueKey}/spec/refined.md` phải là file **đúng bằng** nội dung sẽ lên Jira — không cắt gọt gì thêm ở bước này. Nếu file còn chứa phần nội bộ (Giả định & Rủi ro, Ngoài Phạm vi, Đánh giá Độ tin cậy, stress-test score, Các Bước Tiếp theo) thì **quay lại Giai đoạn 3 sửa file**, chứ không lọc ngầm lúc push — lọc ngầm khiến file local và Jira lệch nhau.
 
    ```bash
    cd "$(git rev-parse --show-toplevel)"
 
    # Không được còn dấu vết của template / phần nội bộ
    grep -nE 'Jira Description Template|Format [12]:|\(Required\)|\(Optional\)|Generated by:|Giả định & Rủi ro|Ngoài Phạm vi|Đánh giá Độ tin cậy' \
-     "workspace/{issueKey}/spec/refined.md" && echo "❌ Còn dòng thừa — quay lại Giai đoạn 3"
+     "/project-root/workspace/{issueKey}/spec/refined.md" && echo "❌ Còn dòng thừa — quay lại Giai đoạn 3"
 
    # Không được còn placeholder chưa thay
    grep -nE '\[(role/persona|goal/action|business value|KPI [0-9]|baseline|goal|Step [0-9]|Event name)' \
-     "workspace/{issueKey}/spec/refined.md" && echo "❌ Còn placeholder chưa thay"
+     "/project-root/workspace/{issueKey}/spec/refined.md" && echo "❌ Còn placeholder chưa thay"
    ```
 
    Cả hai lệnh không in ra gì → sạch, đi tiếp.
@@ -529,7 +530,7 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
 
    ```bash
    DRY_RUN=1 bash skills/ba-refine/scripts/jira-push-spec.sh {issueKey} \
-     "workspace/{issueKey}/spec/refined.md" | head -40
+     "/project-root/workspace/{issueKey}/spec/refined.md" | head -40
    ```
 
    Kiểm tra dòng tóm tắt `→ N block, trong đó M bảng`: `M` phải khớp số bảng markdown trong file (Success Metrics + Tracking = 2). Nếu `M = 0` mà file có bảng → cú pháp bảng sai (thiếu hàng `|---|` hoặc lệch số cột).
@@ -540,7 +541,7 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
 
    ```bash
    bash skills/ba-refine/scripts/jira-push-spec.sh {issueKey} \
-     "workspace/{issueKey}/spec/refined.md"
+     "/project-root/workspace/{issueKey}/spec/refined.md"
    ```
 
    Script nhận cả issue key trần lẫn URL Jira đầy đủ, và đọc credentials
@@ -553,7 +554,7 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
      "issueKey": "PROJ-123",
      "pushDate": "2026-08-14T10:30:00Z",
      "confidence": 0.95,
-     "localFile": "workspace/PROJ-123/spec/refined.md",
+     "localFile": "/project-root/workspace/PROJ-123/spec/refined.md",
      "jiraUrl": "https://domain.atlassian.net/browse/PROJ-123",
      "sectionsIncluded": [
        "User Story",
@@ -653,7 +654,7 @@ Agent:
 [Phase 0] Downloading PROJ-123...
 ✅ Task downloaded: "Add export button to report page"
 📋 Type: Story | Reporter: john@company.com
-📁 Files: workspace/PROJ-123/spec/
+📁 Files: /project-root/workspace/PROJ-123/spec/
 
 [Phase 1] Understanding the problem...
 
@@ -711,11 +712,11 @@ Assumptions:
 [Phase 3] Sharpening Direction A...
 
 [Bước 3.1] Creating draft spec at:
-workspace/PROJ-123/spec/refined-draft.md
+/project-root/workspace/PROJ-123/spec/refined-draft.md
 
 [Bước 3.2] 📝 BẢN NHÁP SPEC — Vui lòng review kỹ trước khi chốt:
 
-📄 File: workspace/PROJ-123/spec/refined-draft.md
+📄 File: /project-root/workspace/PROJ-123/spec/refined-draft.md
 ────────────────────────────────────────────
 ## 🧩 User Story
 As a **khách hàng giao dịch cổ phiếu**, I want to **export báo cáo giao dịch
@@ -753,7 +754,7 @@ Bản sửa đã đúng ý bạn chưa?
 [User: "OK, chốt"]
 
 [Bước 3.3] ✅ Bản cuối cùng đã chốt!
-📄 File: workspace/PROJ-123/spec/refined.md
+📄 File: /project-root/workspace/PROJ-123/spec/refined.md
 📊 Confidence: 95%
 
 Bạn có muốn push lên Jira không?
@@ -1072,9 +1073,9 @@ Bạn nghĩ sao?"
 
 Đo lường chất lượng của ba-refine:
 
-| Metric | Target | Cách đo |
-|--------|--------|---------|
-| Average Confidence | ≥90% | Từ confidence assessment trong specs |
-| Jira Bounce Rate | <10% | % specs bị reject và phải refine lại |
-| Downstream Rework | <20% | % specs cần sửa đổi lớn trong dev phase |
-| Time to Refine | <2 hours | Từ invoke skill đến push to Jira |
+| Metric             | Target   | Cách đo                                 |
+|--------------------|----------|-----------------------------------------|
+| Average Confidence | ≥90%     | Từ confidence assessment trong specs    |
+| Jira Bounce Rate   | <10%     | % specs bị reject và phải refine lại    |
+| Downstream Rework  | <20%     | % specs cần sửa đổi lớn trong dev phase |
+| Time to Refine     | <2 hours | Từ invoke skill đến push to Jira        |

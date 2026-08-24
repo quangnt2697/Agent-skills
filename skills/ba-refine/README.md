@@ -61,11 +61,11 @@ Refine jira task PROJ-456
 ## Output
 
 **Local:**
-- `workspace/{issueKey}/spec/refined-draft.md` - Bản nháp (user review trước khi chốt)
-- `workspace/{issueKey}/spec/refined.md` - Spec đã chốt (bản cuối cùng)
-- `workspace/{issueKey}/source/` - Jira task gốc (PDF + metadata)
-- `workspace/{issueKey}/source/refs/` - Confluence pages + attachments
-- `workspace/{issueKey}/spec/push-log.json` - Lịch sử push
+- `/project-root/workspace/{issueKey}/spec/refined-draft.md` - Bản nháp (user review trước khi chốt)
+- `/project-root/workspace/{issueKey}/spec/refined.md` - Spec đã chốt (bản cuối cùng)
+- `/project-root/workspace/{issueKey}/source/` - Jira task gốc (PDF + metadata)
+- `/project-root/workspace/{issueKey}/source/refs/` - Confluence pages + attachments
+- `/project-root/workspace/{issueKey}/spec/push-log.json` - Lịch sử push
 
 **Jira:**
 - Description updated với structured spec
