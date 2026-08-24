@@ -9,13 +9,13 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành 
 
 ## Ranh giới: ba-spec vs ba-refine
 
-| Khía cạnh | ba-spec | ba-refine |
-|-----------|---------|-----------|
-| **Đầu vào** | Jira task có requirements rõ ràng | Jira task có ý tưởng thô/mơ hồ |
-| **Tập trung** | Tính đầy đủ (đủ 13 sections) | Tính rõ ràng & Chi tiết (làm rõ ý tưởng) |
-| **Quy trình** | Import → Phân tích → Phát hiện gaps | Download → Phân kỳ → Hội tụ → Mài sắc |
-| **Đầu ra** | File `*-final.md` (để handoff) | Cập nhật Jira description (có cấu trúc) |
-| **Use case** | Requirements đã có, cần phân tích | Requirements thiếu, cần brainstorm |
+| Khía cạnh     | ba-spec                             | ba-refine                                |
+|---------------|-------------------------------------|------------------------------------------|
+| **Đầu vào**   | Jira task có requirements rõ ràng   | Jira task có ý tưởng thô/mơ hồ           |
+| **Tập trung** | Tính đầy đủ (đủ 13 sections)        | Tính rõ ràng & Chi tiết (làm rõ ý tưởng) |
+| **Quy trình** | Import → Phân tích → Phát hiện gaps | Download → Phân kỳ → Hội tụ → Mài sắc    |
+| **Đầu ra**    | File `*-final.md` (để handoff)      | Cập nhật Jira description (có cấu trúc)  |
+| **Use case**  | Requirements đã có, cần phân tích   | Requirements thiếu, cần brainstorm       |
 
 ## Workflow Tổng quan
 
@@ -27,8 +27,12 @@ Giai đoạn 1: Thấu hiểu & Mở rộng (Phân kỳ)
 Giai đoạn 2: Đánh giá & Hội tụ
     ↓
 Giai đoạn 3: Mài sắc & Cấu trúc
+    ├── 3.1: Tạo bản nháp (refined-draft.md)
+    ├── 3.2: Show toàn bộ draft → User review → ⛔ APPROVAL GATE
+    │         ↺ (vòng lặp sửa/trình lại cho đến khi user "OK")
+    └── 3.3: Chốt bản cuối (refined.md) → Hỏi push Jira
     ↓
-Giai đoạn 4: Đẩy lên Jira
+Giai đoạn 4: Đẩy lên Jira (chỉ khi user đồng ý)
 ```
 
 ## Điều kiện Tiên quyết (Authentication)
@@ -72,15 +76,15 @@ workspace/{issueKey}/
 
 ## Bộ lọc Định dạng File
 
-| Nhóm | Định dạng | Hành động |
-|------|-----------|-----------|
-| 📄 Văn bản | `.pdf, .doc, .docx, .txt, .md, .rtf` | ✅ Tải + Đọc nội dung |
-| 📊 Bảng tính | `.xls, .xlsx, .csv` | ✅ Tải + Trích xuất data |
-| 🖼️ Hình ảnh | `.png, .jpg, .jpeg, .gif, .svg, .webp` | ✅ Tải (wireframe, mockup, flowchart, ERD) |
-| 📐 Sơ đồ | `.drawio, .vsdx, .figma` | ✅ Tải (giữ nguyên format) |
-| 💻 Code/Config | `.json, .yaml, .xml, .sql` | ✅ Tải + Đọc nội dung |
-| 🎬 Video | `.mp4, .mov, .avi` | ❌ Bỏ qua (quá nặng) |
-| 📦 Nén | `.zip, .rar, .7z, .tar.gz` | ❌ Bỏ qua (không đọc trực tiếp được) |
+| Nhóm           | Định dạng                              | Hành động                                  |
+|----------------|----------------------------------------|--------------------------------------------|
+| 📄 Văn bản     | `.pdf, .doc, .docx, .txt, .md, .rtf`   | ✅ Tải + Đọc nội dung                      |
+| 📊 Bảng tính   | `.xls, .xlsx, .csv`                    | ✅ Tải + Trích xuất data                   |
+| 🖼️ Hình ảnh    | `.png, .jpg, .jpeg, .gif, .svg, .webp` | ✅ Tải (wireframe, mockup, flowchart, ERD) |
+| 📐 Sơ đồ       | `.drawio, .vsdx, .figma`               | ✅ Tải (giữ nguyên format)                 |
+| 💻 Code/Config | `.json, .yaml, .xml, .sql`             | ✅ Tải + Đọc nội dung                      |
+| 🎬 Video       | `.mp4, .mov, .avi`                     | ❌ Bỏ qua (quá nặng)                       |
+| 📦 Nén         | `.zip, .rar, .7z, .tar.gz`             | ❌ Bỏ qua (không đọc trực tiếp được)       |
 
 ---
 
@@ -367,17 +371,15 @@ workspace/{issueKey}/
 
 **Mục tiêu:** Chốt hướng đi và cấu trúc thành spec rõ ràng
 
-Sau khi user chọn hướng đi cuối cùng, tạo file markdown:
+Sau khi user chọn hướng đi cuối cùng, thực hiện **3 bước tuần tự** — KHÔNG được nhảy cóc:
 
-**Đường dẫn file:** `workspace/{issueKey}/spec/refined.md`
+#### Bước 3.1: Tạo bản nháp (Draft)
 
-**Cấu trúc (tuân thủ nghiêm ngặt):**
+Tạo file nháp tại: `workspace/{issueKey}/spec/refined-draft.md`
 
 📄 **Template chuẩn:** `skills/ba-refine/templates/jira-description-template.md`
 
-File template là **skeleton thuần** — mọi dòng trong đó đều là nội dung sẽ lên
-Jira. Agent copy skeleton, thay các placeholder `[...]` bằng nội dung thật, và
-**không thêm bất cứ dòng nào của riêng mình** vào đầu/cuối file.
+File template là **skeleton thuần** — mọi dòng trong đó đều là nội dung sẽ lên Jira. Agent copy skeleton, thay các placeholder `[...]` bằng nội dung thật, và **không thêm bất cứ dòng nào của riêng mình** vào đầu/cuối file.
 
 | Section                        | Bắt buộc?                       | Bỏ nội dung section khi              |
 |--------------------------------|---------------------------------|--------------------------------------|
@@ -388,50 +390,111 @@ Jira. Agent copy skeleton, thay các placeholder `[...]` bằng nội dung thậ
 | ☀️ Success Criteria & Tracking | Có                              | —                                    |
 | 🧱 Technical Notes             | Không                           | Không có thông tin kỹ thuật đáng ghi |
 
-Trong 🧱 Technical Notes, xoá luôn các sub-heading không có nội dung — đừng để
-lại heading rỗng hay `[placeholder]` chưa thay.
+Trong 🧱 Technical Notes, xoá luôn các sub-heading không có nội dung — đừng để lại heading rỗng hay `[placeholder]` chưa thay.
 
-**❌ TUYỆT ĐỐI KHÔNG được xuất hiện trong `refined.md`** (đây chính là nguyên
-nhân description bị "thừa chữ" ở các lần chạy trước):
+**❌ TUYỆT ĐỐI KHÔNG được xuất hiện trong draft/refined.md**:
 
 - Tiêu đề/mô tả của bản thân file template ("Jira Description Template for ba-refine"...)
 - Câu hướng dẫn dành cho agent ("Viết dưới góc nhìn nghiệp vụ...", "Đính kèm User Flow...", "Thông tin kỹ thuật tham khảo...")
 - Nhãn chọn format ("Format 1: BDD Style", "Format 2: AC List")
-- Hậu tố `(Required)` / `(Optional)` trong heading
 - Footer chữ ký ("Generated by: ba-refine skill", "Local file: ...")
 - Placeholder `[...]` còn sót chưa thay
 - Đường kẻ ngang `---` giữa các section (heading đã đủ phân tách; `---` render thành gạch ngang thừa trên Jira)
 
-**Acceptance Criteria dùng đúng MỘT format:** Gherkin trong code block ```` ```gherkin ````.
-Nếu AC không mang tính hành vi (VD: ràng buộc dữ liệu, chính sách), viết bullet
-list `- [ ]` — **không** dùng bảng, vì bảng AC lồng Given/When/Then rất khó đọc
-trên Jira.
+**Acceptance Criteria dùng đúng MỘT format:** 
 
-**Bảng markdown:** chỉ dùng ở Success Metrics và Tracking. Script push dựng
-bảng ADF thật, nên phải viết đúng cú pháp GFM (có hàng phân cách `|---|`) và
-mọi hàng phải cùng số cột.
+- Gherkin trong code block ```` ```gherkin ````.
+- Nếu AC không mang tính hành vi (VD: ràng buộc dữ liệu, chính sách), viết bullet list `- [ ]` — **không** dùng bảng, vì bảng AC lồng Given/When/Then rất khó đọc trên Jira.
+
+**Bảng markdown:** chỉ dùng ở Success Metrics và Tracking. Script push dựng bảng ADF thật, nên phải viết đúng cú pháp GFM (có hàng phân cách `|---|`) và mọi hàng phải cùng số cột.
 
 **LƯU Ý QUAN TRỌNG:**
 - ❌ KHÔNG bao gồm: "Giả định & Rủi ro", "Ngoài Phạm vi", "Đánh giá Độ tin cậy"
 - ✅ Các phần trên CHỈ dùng nội bộ trong quá trình refine, KHÔNG push lên Jira
 - ✅ Spec push lên Jira phải ngắn gọn, tập trung vào User Story + AC + Success Metrics
 
-**Chi tiết Tính toán:**
-- Độ đầy đủ User Story: X%
-- Tính testable của AC: X%
-- Giả định được vạch ra: X%
-- Kết quả stress-test: X%
+#### Bước 3.2: Trình bày bản nháp cho User duyệt (APPROVAL GATE — BẮT BUỘC)
 
-**Công thức:**
-```
-confidence = (user_story * 0.30) + (ac_complete * 0.30) + 
-             (assumptions_surfaced * 0.20) + (stress_test * 0.20)
-```
+**⚠️ ĐÂY LÀ CỔNG DUYỆT BẮT BUỘC — KHÔNG ĐƯỢC BỎ QUA.**
 
-**Blockers:** [Không có / Liệt kê blockers]
-```
+Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
 
-**Lưu file và hỏi user:** "Spec đã sẵn sàng. Bạn có muốn push lên Jira không?"
+1. **Trình bày TOÀN BỘ nội dung bản nháp** cho user xem trực tiếp trong chat. Không được chỉ nói "file đã tạo" hoặc "spec đã sẵn sàng" mà phải **in ra nội dung đầy đủ** theo format sau:
+
+   ```markdown
+   📝 **BẢN NHÁP SPEC — Vui lòng review kỹ trước khi chốt:**
+
+   📄 **File:** `workspace/{issueKey}/spec/refined-draft.md`
+
+   ────────────────────────────────────────────
+   [TOÀN BỘ NỘI DUNG CỦA FILE refined-draft.md ĐƯỢC IN RA ĐÂY]
+   ────────────────────────────────────────────
+
+   📊 **Đánh giá Chất lượng Nội bộ:**
+   - Độ đầy đủ User Story: X%
+   - Tính testable của AC: X%
+   - Giả định được vạch ra: X%
+   - Kết quả stress-test: X%
+   - **Confidence tổng: X%**
+
+   🔍 **Checklist nhanh:**
+   - ✅/❌ User Story có đầy đủ Role + Goal + Value?
+   - ✅/❌ AC đều testable (Given-When-Then)?
+   - ✅/❌ Success Metrics có baseline + target?
+   - ✅/❌ Không còn placeholder chưa thay?
+
+   ⏳ **Bạn hãy review và phản hồi:**
+   - ✅ **"OK"** hoặc **"Đồng ý"** → Tôi chốt thành bản cuối và hỏi push Jira
+   - ✏️ **Góp ý cụ thể** → Tôi sửa bản nháp và trình lại
+   - 🔄 **"Làm lại"** → Tôi viết lại từ đầu
+   ```
+
+2. **DỪNG LẠI VÀ CHỜ USER PHẢN HỒI.** Tuyệt đối KHÔNG được:
+   - ❌ Tự ý chuyển sang Bước 3.3 hoặc Giai đoạn 4
+   - ❌ Tự ý lưu file cuối cùng `refined.md`
+   - ❌ Hỏi "push lên Jira không?" khi user chưa duyệt nội dung
+   - ❌ Coi câu trả lời của Phase 2 (chọn hướng đi) là approval cho Phase 3
+
+3. **Vòng lặp chỉnh sửa (Revision Loop):**
+
+   Nếu user **chưa đồng ý** (góp ý sửa, yêu cầu thêm/bớt nội dung):
+
+   a. Ghi nhận feedback cụ thể của user
+   b. Sửa file `refined-draft.md` theo feedback
+   c. **In lại TOÀN BỘ nội dung đã sửa** (không chỉ in phần diff)
+   d. Hỏi lại: "Bản sửa đã đúng ý bạn chưa?"
+   e. Lặp lại cho đến khi user nói **"OK"**, **"Đồng ý"**, **"Chốt"**, hoặc tương đương rõ ràng
+
+   **Số vòng lặp tối đa: 5.** Nếu sau 5 vòng vẫn chưa đạt, thông báo:
+   ```
+   "Đã qua 5 vòng chỉnh sửa. Bạn có muốn:
+   1. Tiếp tục chỉnh sửa thêm
+   2. Chốt bản hiện tại dù chưa hoàn hảo
+   3. Hoãn lại — tôi lưu draft, bạn quay lại sau"
+   ```
+
+#### Bước 3.3: Chốt bản cuối cùng
+
+**Chỉ thực hiện khi user đã nói "OK" / "Đồng ý" / "Chốt" ở Bước 3.2.**
+
+1. Copy `refined-draft.md` → `refined.md` (bản cuối cùng)
+2. Tính confidence score:
+
+   **Công thức:**
+   ```
+   confidence = (user_story * 0.30) + (ac_complete * 0.30) + (assumptions_surfaced * 0.20) + (stress_test * 0.20)
+   ```
+
+3. Thông báo cho user:
+   ```markdown
+   ✅ **Bản cuối cùng đã chốt!**
+   📄 File: `workspace/{issueKey}/spec/refined.md`
+   📊 Confidence: X%
+
+   Bạn có muốn push lên Jira không? (Gõ **OK** hoặc **Không**)
+   ```
+
+4. **DỪNG LẠI VÀ CHỜ USER trả lời có push Jira hay không** trước khi chuyển sang Giai đoạn 4.
 
 ---
 
@@ -446,11 +509,7 @@ confidence = (user_story * 0.30) + (ac_complete * 0.30) +
 
 1. **Kiểm tra nội dung file trước khi push**
 
-   `workspace/{issueKey}/spec/refined.md` phải là file **đúng bằng** nội dung sẽ
-   lên Jira — không cắt gọt gì thêm ở bước này. Nếu file còn chứa phần nội bộ
-   (Giả định & Rủi ro, Ngoài Phạm vi, Đánh giá Độ tin cậy, stress-test score,
-   Các Bước Tiếp theo) thì **quay lại Giai đoạn 3 sửa file**, chứ không lọc
-   ngầm lúc push — lọc ngầm khiến file local và Jira lệch nhau.
+   `workspace/{issueKey}/spec/refined.md` phải là file **đúng bằng** nội dung sẽ lên Jira — không cắt gọt gì thêm ở bước này. Nếu file còn chứa phần nội bộ (Giả định & Rủi ro, Ngoài Phạm vi, Đánh giá Độ tin cậy, stress-test score, Các Bước Tiếp theo) thì **quay lại Giai đoạn 3 sửa file**, chứ không lọc ngầm lúc push — lọc ngầm khiến file local và Jira lệch nhau.
 
    ```bash
    cd "$(git rev-parse --show-toplevel)"
@@ -473,15 +532,11 @@ confidence = (user_story * 0.30) + (ac_complete * 0.30) +
      "workspace/{issueKey}/spec/refined.md" | head -40
    ```
 
-   Kiểm tra dòng tóm tắt `→ N block, trong đó M bảng`: `M` phải khớp số bảng
-   markdown trong file (Success Metrics + Tracking = 2). Nếu `M = 0` mà file có
-   bảng → cú pháp bảng sai (thiếu hàng `|---|` hoặc lệch số cột).
+   Kiểm tra dòng tóm tắt `→ N block, trong đó M bảng`: `M` phải khớp số bảng markdown trong file (Success Metrics + Tracking = 2). Nếu `M = 0` mà file có bảng → cú pháp bảng sai (thiếu hàng `|---|` hoặc lệch số cột).
 
 3. **Cập nhật Jira description**
 
-   Dùng đúng script này — **không** tự dựng ADF bằng `curl` thủ công. Script đã
-   xử lý bảng, ngắt dòng mềm và chuẩn hoá issue key; ADF tự chế mỗi lần một kiểu
-   chính là nguyên nhân description bị lệch style.
+   Dùng đúng script này — **không** tự dựng ADF bằng `curl` thủ công. Script đã xử lý bảng, ngắt dòng mềm và chuẩn hoá issue key; ADF tự chế mỗi lần một kiểu chính là nguyên nhân description bị lệch style.
 
    ```bash
    bash skills/ba-refine/scripts/jira-push-spec.sh {issueKey} \
@@ -567,6 +622,9 @@ confidence = (user_story * 0.30) + (ac_complete * 0.30) +
 - Spec thiếu User Flow, Success Metrics, hoặc Acceptance Criteria
 - Ignore constraints của codebase hiện tại
 - Nhảy cóc sang Phase 4 mà không chạy Phase 1-3
+- **Không show nội dung draft cho user trước khi chốt (Bước 3.2 bị bỏ qua)**
+- **Chuyển sang Phase 4 khi user chưa nói "OK/Đồng ý" ở Bước 3.2**
+- **Lưu refined.md mà không qua vòng review draft với user**
 
 ## Verification Checklist
 
@@ -575,10 +633,12 @@ Sau khi chạy xong ba-refine session:
 - [ ] **Phase 0:** Jira task downloaded, metadata parsed
 - [ ] **Phase 1:** HMW statement rõ ràng, core components clarified (≥90%), 5-8 variations có rationale
 - [ ] **Phase 2:** 2-3 hướng đi khác biệt, stress-test đầy đủ, assumptions documented
-- [ ] **Phase 3:** Spec file created với đủ sections (User Story, AC, Success Metrics)
+- [ ] **Phase 3 — Bước 3.1:** Draft file (`refined-draft.md`) created với đủ sections
+- [ ] **Phase 3 — Bước 3.2:** Toàn bộ nội dung draft đã show cho user, user đã review và nói "OK/Đồng ý"
+- [ ] **Phase 3 — Bước 3.3:** Draft đã chốt thành `refined.md`, user đã đồng ý push Jira
 - [ ] **Phase 4:** Jira description updated (KHÔNG comment, KHÔNG label), push log created
 - [ ] **Confidence:** ≥90% để đủ điều kiện handoff to QA/DEV
-- [ ] **User approval:** User đã gật đầu chốt hướng đi và approve push to Jira
+- [ ] **User approval:** User đã duyệt nội dung spec (Phase 3) VÀ approve push to Jira (trước Phase 4)
 
 ## Next Steps After Refinement
 
@@ -650,16 +710,55 @@ Assumptions:
 
 [Phase 3] Sharpening Direction A...
 
-Creating refined spec at:
-workspace/PROJ-123/spec/refined.md
+[Bước 3.1] Creating draft spec at:
+workspace/PROJ-123/spec/refined-draft.md
 
-[Spec content generated with full structure...]
+[Bước 3.2] 📝 BẢN NHÁP SPEC — Vui lòng review kỹ trước khi chốt:
 
-📊 Confidence Level: 🟢 High (95%)
+📄 File: workspace/PROJ-123/spec/refined-draft.md
+────────────────────────────────────────────
+## 🧩 User Story
+As a **khách hàng giao dịch cổ phiếu**, I want to **export báo cáo giao dịch
+thành PDF** so that **lưu trữ cho mục đích đối soát cá nhân**.
 
-✅ Spec ready. Push to Jira? (Yes/No)
+## 💼 Business Context
+...(full content shown)...
 
-[User: Yes]
+## ✅ Acceptance Criteria
+```gherkin
+Scenario: Export thành công
+  Given user ở trang Báo cáo giao dịch
+  When user nhấn nút "Export PDF"
+  Then hệ thống tải file PDF chứa đầy đủ dữ liệu
+```
+...(full content shown)...
+────────────────────────────────────────────
+
+📊 Đánh giá: User Story 100% | AC 95% | Assumptions 90% | Stress-test 95%
+📊 Confidence tổng: 🟢 95%
+
+⏳ Bạn hãy review và phản hồi:
+- ✅ "OK" → Chốt bản cuối
+- ✏️ Góp ý → Sửa và trình lại
+
+[User: "AC thiếu case export khi không có dữ liệu, bổ sung thêm"]
+
+[Bước 3.2 — Vòng 2] Đã sửa, trình lại toàn bộ:
+────────────────────────────────────────────
+...(full revised content shown with new AC added)...
+────────────────────────────────────────────
+
+Bản sửa đã đúng ý bạn chưa?
+
+[User: "OK, chốt"]
+
+[Bước 3.3] ✅ Bản cuối cùng đã chốt!
+📄 File: workspace/PROJ-123/spec/refined.md
+📊 Confidence: 95%
+
+Bạn có muốn push lên Jira không?
+
+[User: "OK"]
 
 [Phase 4] Pushing to Jira...
 

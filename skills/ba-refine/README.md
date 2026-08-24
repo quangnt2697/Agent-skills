@@ -36,13 +36,13 @@ Giai đoạn 2: Đánh giá & Hội tụ
     - Vạch trần giả định ẩn
     ↓
 Giai đoạn 3: Mài sắc & Cấu trúc
-    - User chọn hướng
-    - Tạo spec có cấu trúc
-    - Tính confidence
+    ├── 3.1: User chọn hướng → Tạo bản nháp (refined-draft.md)
+    ├── 3.2: Show TOÀN BỘ draft cho user → ⛔ APPROVAL GATE
+    │         ↺ (vòng lặp sửa/trình lại cho đến khi user "OK")
+    └── 3.3: Chốt bản cuối (refined.md) → Hỏi push Jira
     ↓
-Giai đoạn 4: Đẩy lên Jira
-    - Cập nhật description
-    - Thêm comment + label
+Giai đoạn 4: Đẩy lên Jira (chỉ khi user đồng ý)
+    - Cập nhật description (KHÔNG comment, KHÔNG label)
     - Ghi log push history
 ```
 
@@ -61,15 +61,16 @@ Refine jira task PROJ-456
 ## Output
 
 **Local:**
-- `workspace/{issueKey}/spec/refined.md` - Spec đã refine
+- `workspace/{issueKey}/spec/refined-draft.md` - Bản nháp (user review trước khi chốt)
+- `workspace/{issueKey}/spec/refined.md` - Spec đã chốt (bản cuối cùng)
 - `workspace/{issueKey}/source/` - Jira task gốc (PDF + metadata)
 - `workspace/{issueKey}/source/refs/` - Confluence pages + attachments
 - `workspace/{issueKey}/spec/push-log.json` - Lịch sử push
 
 **Jira:**
 - Description updated với structured spec
-- Comment ghi nhận refinement
-- Label `refined-by-agent` được thêm
+- ❌ KHÔNG thêm comment (keep Jira clean)
+- ❌ KHÔNG thêm label (avoid clutter)
 
 ## Example
 

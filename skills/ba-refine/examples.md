@@ -1,12 +1,12 @@
-# ba-refine — Example Sessions
+# ba-refine — Phiên Refine Mẫu
 
 Ví dụ về một phiên refine ý tưởng chất lượng cao.
 
 ---
 
-## Example 1: Export Feature Refinement
+## Ví dụ 1: Refine Tính năng Export Báo cáo
 
-### Original Jira Task
+### Jira Task Gốc
 
 **Issue Key:** PROJ-456  
 **Summary:** "Add export button to reports"  
@@ -14,653 +14,637 @@ Ví dụ về một phiên refine ý tưởng chất lượng cao.
 
 ---
 
-### Phase 0: Download & Understand
+### Giai đoạn 0: Tải về & Tìm hiểu
 
 ```
-Agent: Downloading PROJ-456...
+Agent: Đang tải PROJ-456...
 
-✅ Task downloaded successfully
+✅ Tải thành công
 
 **Metadata:**
-- Type: Story
-- Reporter: john@company.com
-- Assignee: None
-- Priority: Medium
+- Loại: Story
+- Người tạo: john@company.com
+- Người nhận: Chưa có
+- Độ ưu tiên: Medium
 - Labels: [feature-request, reports]
 
-**Original Description:**
+**Mô tả gốc:**
 "Users want to export their trading reports"
 
-📊 Initial Assessment: This is quite vague. We need to clarify:
-- Which users? (Retail traders, institutional, admins?)
-- Which reports? (Daily P&L, transaction history, all?)
-- Export to what format? (PDF, Excel, CSV?)
-- Export for what purpose? (Audit, analysis, sharing?)
+📊 Đánh giá ban đầu: Mô tả khá mơ hồ. Cần làm rõ:
+- Users nào? (Nhà đầu tư cá nhân, tổ chức, admin?)
+- Báo cáo nào? (P&L hàng ngày, lịch sử giao dịch, tất cả?)
+- Export ra định dạng gì? (PDF, Excel, CSV?)
+- Export để làm gì? (Kiểm toán, phân tích, chia sẻ?)
 
-Moving to Phase 1...
+Chuyển sang Giai đoạn 1...
 ```
 
 ---
 
-### Phase 1: Understand & Expand (Divergent)
+### Giai đoạn 1: Thấu hiểu & Mở rộng (Phân kỳ)
 
-#### HMW Statement
-
-```
-Agent: Let me reframe this problem:
-
-**How Might We** help traders preserve and utilize their trading data 
-outside the platform in a way that serves their specific workflows?
-
-This shifts focus from "add a button" to "solve the underlying need".
-```
-
-#### Core Components Clarification
+#### Câu hỏi HMW
 
 ```
-Agent: Before generating variations, I need to clarify core components.
+Agent: Tái trình bày vấn đề:
 
-Let me ask you a few questions:
+**Làm sao để** traders có thể lưu trữ và sử dụng dữ liệu giao dịch ngoài nền tảng theo cách phục vụ đúng workflow cụ thể của họ?
+
+Câu hỏi này chuyển trọng tâm từ "thêm nút bấm" sang "giải quyết nhu cầu thực sự".
 ```
 
-**[AskUserQuestion triggered]**
+#### Làm rõ Thành phần Cốt lõi
 
 ```
-Question 1: Who exactly needs this export feature?
-Options:
-- Retail day traders (active trading, need daily summaries)
-- Long-term investors (quarterly portfolio review)
-- Professional traders (compliance/audit requirements)
-- Account managers (client reporting)
+Agent: Trước khi sinh ra các biến thể, tôi cần làm rõ các thành phần cốt lõi.
 
-User Answer: "Retail day traders and professional traders"
+Cho phép tôi hỏi bạn vài câu:
 ```
 
-```
-Question 2: What's the business context? Why now?
-Options:
-- Competitor launched similar feature (parity)
-- Compliance requirement (regulatory)
-- Top user request (demand-driven)
-- Strategic initiative (product vision)
+**[AskUserQuestion được kích hoạt]**
 
-User Answer: "Top user request - 87 support tickets in Q3"
+```
+Câu 1: Ai thực sự cần tính năng export này?
+Tùy chọn:
+- Nhà đầu tư lướt sóng (giao dịch thường xuyên, cần tổng hợp hàng ngày)
+- Nhà đầu tư dài hạn (review danh mục theo quý)
+- Trader chuyên nghiệp (yêu cầu tuân thủ/kiểm toán)
+- Quản lý tài khoản (báo cáo cho khách hàng)
+
+User: "Nhà đầu tư lướt sóng và trader chuyên nghiệp"
 ```
 
 ```
-Question 3: What's the primary use case for exported data?
-Options:
-- Tax preparation (end of year)
-- Personal record keeping (backup)
-- Share with financial advisor (collaboration)
-- Offline analysis in Excel/Python (power users)
+Câu 2: Bối cảnh kinh doanh là gì? Tại sao bây giờ?
+Tùy chọn:
+- Đối thủ ra tính năng tương tự (theo kịp thị trường)
+- Yêu cầu tuân thủ (quy định pháp lý)
+- Yêu cầu hàng đầu từ người dùng (nhu cầu thực tế)
+- Sáng kiến chiến lược (tầm nhìn sản phẩm)
 
-User Answer: "Mix of tax prep and offline analysis"
+User: "Yêu cầu hàng đầu - 87 ticket hỗ trợ trong Q3"
 ```
 
 ```
-Question 4: Any technical constraints?
-User Answer: "Reports can be large (10K+ transactions), need to handle performance"
+Câu 3: Mục đích chính khi export dữ liệu là gì?
+Tùy chọn:
+- Khai thuế (cuối năm)
+- Lưu trữ cá nhân (backup)
+- Chia sẻ với tư vấn tài chính (cộng tác)
+- Phân tích offline bằng Excel/Python (power users)
+
+User: "Kết hợp khai thuế và phân tích offline"
 ```
 
-#### Confidence Check
-
 ```
-Agent: Based on your answers:
-
-✅ User Story: Clear (retail + pro traders, tax prep + analysis)
-✅ Business Context: Clear (high demand, 87 tickets)
-✅ Use Cases: Clear (tax + analysis)
-⚠️  Acceptance Criteria: Need to define
-⚠️  Success Metrics: Need to define
-
-Confidence: 75% - Let me clarify a bit more...
+Câu 4: Có ràng buộc kỹ thuật nào không?
+User: "Báo cáo có thể rất lớn (10K+ giao dịch), cần xử lý hiệu năng"
 ```
 
-**[More questions via AskUserQuestion]**
+#### Kiểm tra Độ tin cậy
 
 ```
-Agent: Two more quick questions:
+Agent: Dựa trên câu trả lời:
 
-Q5: How do we measure success?
-User: "Reduction in support tickets + adoption rate"
+✅ User Story: Rõ ràng (trader lướt sóng + chuyên nghiệp, khai thuế + phân tích)
+✅ Bối cảnh: Rõ ràng (nhu cầu cao, 87 tickets)
+✅ Use Cases: Rõ ràng (thuế + phân tích)
+⚠️  Acceptance Criteria: Cần xác định thêm
+⚠️  Success Metrics: Cần xác định thêm
 
-Q6: Any compliance/security requirements?
-User: "Yes, need audit trail of who exported what"
-
-✅ Confidence now: 92% - Ready to generate variations!
+Confidence: 75% — Cần làm rõ thêm một chút...
 ```
 
-#### Generated Variations (5-8)
+**[Hỏi thêm qua AskUserQuestion]**
 
 ```
-Agent: Based on what I learned, here are 6 variations from different angles:
+Agent: Thêm 2 câu nhanh:
+
+C5: Đo lường thành công bằng gì?
+User: "Giảm ticket hỗ trợ + tỷ lệ sử dụng tính năng"
+
+C6: Có yêu cầu tuân thủ/bảo mật không?
+User: "Có, cần audit trail ghi nhận ai export gì"
+
+✅ Confidence hiện tại: 92% — Sẵn sàng sinh biến thể!
+```
+
+#### Các Biến thể Ý tưởng (5-8)
+
+```
+Agent: Dựa trên thông tin thu thập, đây là 6 biến thể từ các góc nhìn khác nhau:
 
 ---
 
-**A. Quick Win: Simple PDF Export**
+**A. Quick Win: Export PDF Đơn giản**
 
-*Lens: Extreme Simplification*
+*Lăng kính: Đơn giản hóa cực đoan*
 
-One-click button → Download current view as PDF
+Nút bấm 1 lần → Tải view hiện tại thành PDF
 
-**Pros:**
-- Fastest to ship (2-3 days)
-- Low risk
-- Solves immediate pain
+**Ưu điểm:**
+- Triển khai nhanh nhất (2-3 ngày)
+- Rủi ro thấp
+- Giải quyết ngay nỗi đau trước mắt
 
-**Cons:**
-- Not great for large datasets
-- Limited customization
-- Everyone has this (no differentiation)
+**Nhược điểm:**
+- Không tốt cho dữ liệu lớn
+- Hạn chế tùy chỉnh
+- Ai cũng có (không khác biệt)
 
-**Assumptions:**
-- Users want PDF specifically
-- Current view has all needed data
-
----
-
-**B. Power User: Multi-Format Export**
-
-*Lens: Audience Shift (to power users)*
-
-Export wizard with format options (PDF, Excel, CSV, JSON) + date range + columns selection
-
-**Pros:**
-- Serves both casual and power users
-- Strong differentiation (most competitors only do PDF)
-- Enables advanced analysis workflows
-
-**Cons:**
-- Higher development cost (1-2 weeks)
-- More UI complexity
-
-**Assumptions:**
-- Users know what format they need
-- Extra options = better (might be wrong!)
+**Giả định:**
+- Users muốn PDF cụ thể
+- View hiện tại có đủ dữ liệu cần thiết
 
 ---
 
-**C. Compliance First: Audit Trail Export**
+**B. Power User: Export Đa định dạng**
 
-*Lens: Expert (Compliance) + Security-First*
+*Lăng kính: Đổi Target User (power users)*
 
-Export with:
-- Tamper-proof audit trail (who, when, what)
-- PDF/A format (archival standard)
-- Digital signature + watermark
-- Encrypted download link
+Wizard export với tùy chọn định dạng (PDF, Excel, CSV, JSON) + chọn khoảng thời gian + chọn cột
 
-**Pros:**
-- Solves compliance pain (huge for pro traders)
-- Strong moat (hard to copy well)
-- Actually reduces legal risk
+**Ưu điểm:**
+- Phục vụ cả casual và power users
+- Khác biệt mạnh (hầu hết đối thủ chỉ làm PDF)
+- Hỗ trợ workflow phân tích nâng cao
 
-**Cons:**
-- Higher cost (2 weeks)
-- Needs infrastructure (audit DB, signing service)
+**Nhược điểm:**
+- Chi phí phát triển cao hơn (1-2 tuần)
+- UI phức tạp hơn
 
-**Assumptions:**
-- Compliance is a big enough pain
-- We can implement PDF signing properly
+**Giả định:**
+- Users biết mình cần định dạng nào
+- Nhiều tùy chọn = tốt hơn (có thể sai!)
 
 ---
 
-**D. Inversion: No Export, Live Sharing**
+**C. Tuân thủ Trước tiên: Export với Audit Trail**
 
-*Lens: Inversion + First Principles*
+*Lăng kính: Chuyên gia (Compliance) + Bảo mật*
 
-Instead of export → Generate shareable encrypted link with:
-- Live auto-refresh
-- Expiration (24h, 7d, 30d)
-- Read-only access
+Export bao gồm:
+- Audit trail chống giả mạo (ai, khi nào, cái gì)
+- Định dạng PDF/A (chuẩn lưu trữ)
+- Chữ ký số + watermark
+- Link tải mã hóa
 
-**Pros:**
-- Truly differentiated (nobody does this)
-- Always up-to-date (no stale exports)
-- Easier for collaboration
+**Ưu điểm:**
+- Giải quyết nỗi đau compliance (rất lớn với trader chuyên nghiệp)
+- Hào phòng thủ mạnh (khó copy tốt)
+- Thực sự giảm rủi ro pháp lý
 
-**Cons:**
-- Doesn't solve "offline analysis" use case
-- Requires internet access
+**Nhược điểm:**
+- Chi phí cao hơn (2 tuần)
+- Cần hạ tầng (audit DB, dịch vụ ký số)
 
-**Assumptions:**
-- Users have reliable internet
-- "Export" isn't strictly required
-
----
-
-**E. Platform Play: Report Library**
-
-*Lens: Combination (Export + Storage + Sharing)*
-
-Not just export, but:
-- Automated daily/weekly snapshots
-- Personal report library (history)
-- Share with advisor/accountant
-- Collaborative annotations
-
-**Pros:**
-- Strategic (builds platform stickiness)
-- Network effects (advisors join platform)
-- Upsell opportunity (pro tier)
-
-**Cons:**
-- Large scope (1-2 months)
-- Needs storage infrastructure
-- Out of scope for quick win
-
-**Assumptions:**
-- Users want report history
-- Advisors would use our platform
+**Giả định:**
+- Compliance là nỗi đau đủ lớn
+- Có thể triển khai PDF signing đúng cách
 
 ---
 
-**F. 10x Scale: Async Export Queue**
+**D. Đảo ngược: Không Export, Chia sẻ Trực tiếp**
 
-*Lens: 10x Scale + Performance-First*
+*Lăng kính: Đảo ngược + First Principles*
 
-For large exports:
-- Background job queue
-- Email notification when ready
-- Pre-generated snapshots (cached)
-- Streaming for huge datasets
+Thay vì export → Tạo link chia sẻ mã hóa với:
+- Tự động cập nhật (live)
+- Hết hạn (24h, 7d, 30d)
+- Chỉ đọc (read-only)
 
-**Pros:**
-- Handles 10K+ transactions smoothly
-- Better UX (no browser timeout)
-- Scalable architecture
+**Ưu điểm:**
+- Thực sự khác biệt (không ai làm)
+- Luôn cập nhật (không bị stale)
+- Dễ cộng tác hơn
 
-**Cons:**
-- Complex implementation (2-3 weeks)
-- Needs queue infrastructure (Redis/Celery)
+**Nhược điểm:**
+- Không giải quyết use case "phân tích offline"
+- Cần internet
 
-**Assumptions:**
-- Large exports are common enough
-- Users OK with async (not instant)
-
----
-
-**Summary Table:**
-
-| Variation | Time | User Value | Differentiation | Risk | Total |
-|-----------|------|------------|-----------------|------|-------|
-| A. Simple PDF | 3d | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | 12/20 |
-| B. Multi-Format | 1w | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | 14/20 |
-| C. Compliance | 2w | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 18/20 |
-| D. Live Sharing | 1.5w | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | 14/20 |
-| E. Library | 2mo | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | 16/20 |
-| F. Async Queue | 2w | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 15/20 |
-
-Which directions sound interesting to you? Or do you see angles I missed?
-```
+**Giả định:**
+- Users có internet ổn định
+- "Export" không bắt buộc phải có
 
 ---
 
-### Phase 2: Evaluate & Converge
+**E. Nền tảng: Thư viện Báo cáo**
 
-```
-User: "C and B sound good. C seems strategic but is B overkill?"
+*Lăng kính: Lai tạp (Export + Lưu trữ + Chia sẻ)*
 
-Agent: Good question. Let me cluster and stress-test:
+Không chỉ export, mà còn:
+- Snapshot tự động hàng ngày/tuần
+- Thư viện báo cáo cá nhân (lịch sử)
+- Chia sẻ với tư vấn/kế toán
+- Ghi chú cộng tác
 
-**Direction Group 1: Compliance-First (C)**
-**Direction Group 2: Feature-Rich (B + F combined)**
+**Ưu điểm:**
+- Chiến lược (tăng stickiness cho nền tảng)
+- Network effects (tư vấn tham gia nền tảng)
+- Cơ hội upsell (gói pro)
 
-Let me stress-test both...
+**Nhược điểm:**
+- Phạm vi lớn (1-2 tháng)
+- Cần hạ tầng lưu trữ
+- Ngoài phạm vi quick win
 
----
-
-## Direction 1: Compliance-First Export
-
-### Stress Test
-
-**User Value: ⭐⭐⭐⭐ (4/5)**
-- Pro traders NEED audit trails (painkiller)
-- Retail traders benefit (peace of mind)
-- Quantified: Solves 60% of support tickets (compliance-related)
-
-**Feasibility: ⭐⭐⭐ (3/5)**
-- Medium cost: 2 weeks
-- Hard part: PDF signing service integration
-- Dependencies: Need audit DB schema
-
-**Differentiation: ⭐⭐⭐⭐⭐ (5/5)**
-- Competitors don't have this
-- Hard to copy well (deep compliance knowledge)
-- Strong moat
-
-**Risk: ⭐⭐⭐⭐⭐ (5/5)**
-- Actually REDUCES risk
-- Audit trail = transparency
-- Legal loves this
-
-**Total: 17/20 (Strong)**
-
-### Hidden Assumptions
-
-**Betting on (unverified):**
-- Compliance is pain enough to justify 2 weeks
-- We can implement PDF signing correctly
-- Audit storage won't balloon costs
-
-**Could kill this:**
-- Legal/compliance team doesn't approve approach
-- PDF signing service is too expensive
-- Performance impact of audit logging
-
-**Explicitly ignoring:**
-- Advanced features (scheduled exports, templates)
-- Reason: Focus on compliance value first, iterate later
+**Giả định:**
+- Users muốn lịch sử báo cáo
+- Tư vấn sẽ dùng nền tảng của ta
 
 ---
 
-## Direction 2: Feature-Rich (Multi-Format + Async)
+**F. Quy mô 10x: Hàng đợi Export Bất đồng bộ**
 
-### Stress Test
+*Lăng kính: Quy mô 10x + Hiệu năng*
 
-**User Value: ⭐⭐⭐⭐ (4/5)**
-- Serves power users well
-- Handles large datasets
-- But not "must-have" for most
+Cho export lớn:
+- Hàng đợi background job
+- Thông báo email khi xong
+- Snapshot tạo sẵn (cached)
+- Streaming cho dataset khổng lồ
 
-**Feasibility: ⭐⭐⭐ (3/5)**
-- Combined cost: 2-3 weeks
-- Two sub-systems (format conversion + queue)
-- More complexity = more bugs
+**Ưu điểm:**
+- Xử lý mượt 10K+ giao dịch
+- UX tốt hơn (không timeout trình duyệt)
+- Kiến trúc mở rộng được
 
-**Differentiation: ⭐⭐⭐⭐ (4/5)**
-- Better than competitors
-- But not unique angle
+**Nhược điểm:**
+- Triển khai phức tạp (2-3 tuần)
+- Cần hạ tầng queue (Redis/Bull)
 
-**Risk: ⭐⭐⭐ (3/5)**
-- Medium risk (complexity)
-- Queue could fail silently
-- More surface area for bugs
-
-**Total: 14/20 (Moderate)**
-
-### Hidden Assumptions
-
-**Betting on (unverified):**
-- Users need multiple formats (maybe just PDF is fine?)
-- Large exports are common (need data to confirm)
-- Async UX is acceptable (instant might be better)
-
-**Could kill this:**
-- Users confused by too many options
-- Queue infrastructure becomes operational burden
-- Most exports are small anyway (overkill)
+**Giả định:**
+- Export lớn xảy ra đủ thường xuyên
+- Users chấp nhận async (không tức thì)
 
 ---
 
-## Recommendation
+**Bảng Tổng hợp:**
 
-Go with **Direction 1: Compliance-First** for v1.
+| Biến thể | Thời gian | Giá trị User | Khác biệt | Rủi ro | Tổng |
+|----------|-----------|-------------|-----------|--------|------|
+| A. PDF Đơn giản | 3 ngày | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | 12/20 |
+| B. Đa định dạng | 1 tuần | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | 14/20 |
+| C. Tuân thủ | 2 tuần | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 18/20 |
+| D. Chia sẻ trực tiếp | 1.5 tuần | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | 14/20 |
+| E. Thư viện | 2 tháng | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | 16/20 |
+| F. Hàng đợi Async | 2 tuần | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 15/20 |
 
-**Why:**
-- Higher total score (17 vs 14)
-- Clear differentiation (strategic moat)
-- Solves specific pain (compliance)
-- Reduces risk (legal loves it)
-
-**Then iterate:**
-- Phase 2: Add multi-format if data shows demand
-- Phase 3: Add async queue if performance becomes issue
-
-**Don't over-engineer v1.** Start with strong core value (compliance), 
-expand based on real usage data.
-
-Sound good, or do you see it differently?
-```
-
-```
-User: "Makes sense. Let's go with C."
-
-Agent: Perfect. Moving to Phase 3 to sharpen the spec...
+Bạn thấy hướng nào hay? Hay có góc nhìn nào tôi bỏ sót?
 ```
 
 ---
 
-### Phase 3: Sharpen & Structure
+### Giai đoạn 2: Đánh giá & Hội tụ
 
 ```
-Agent: Creating refined spec...
+User: "C và B nghe hay. C có vẻ chiến lược nhưng B có quá mức không?"
 
-📁 File: workspace/PROJ-456/spec/refined.md
+Agent: Câu hỏi tốt. Để tôi gom nhóm và thử lửa:
+
+**Nhóm Hướng đi 1: Tuân thủ Trước tiên (C)**
+**Nhóm Hướng đi 2: Nhiều tính năng (B + F kết hợp)**
+
+Để tôi thử lửa cả hai...
+
+---
+
+## Hướng đi 1: Export Ưu tiên Tuân thủ
+
+### Thử lửa
+
+**Giá trị Người dùng: ⭐⭐⭐⭐ (4/5)**
+- Trader chuyên nghiệp CẦN audit trail (painkiller)
+- Nhà đầu tư cá nhân cũng hưởng lợi (yên tâm)
+- Lượng hóa: Giải quyết 60% ticket hỗ trợ (liên quan compliance)
+
+**Tính Khả thi: ⭐⭐⭐ (3/5)**
+- Chi phí trung bình: 2 tuần
+- Phần khó nhất: Tích hợp dịch vụ ký số PDF
+- Phụ thuộc: Cần schema DB audit
+
+**Sự Khác biệt: ⭐⭐⭐⭐⭐ (5/5)**
+- Đối thủ không có
+- Khó copy tốt (cần hiểu sâu compliance)
+- Hào phòng thủ mạnh
+
+**Rủi ro: ⭐⭐⭐⭐⭐ (5/5)**
+- Thực sự GIẢM rủi ro
+- Audit trail = minh bạch
+- Pháp chế rất thích
+
+**Tổng: 17/20 (Mạnh)**
+
+### Giả định Ẩn
+
+**Đang đặt cược (chưa xác minh):**
+- Compliance là nỗi đau đủ lớn để đầu tư 2 tuần
+- Có thể triển khai PDF signing đúng cách
+- Chi phí lưu trữ audit không phình quá
+
+**Có thể giết chết ý tưởng:**
+- Bộ phận pháp chế/compliance không duyệt cách tiếp cận
+- Dịch vụ ký PDF quá đắt
+- Ảnh hưởng hiệu năng do audit logging
+
+**Quyết định ngó lơ:**
+- Tính năng nâng cao (export theo lịch, template)
+- Lý do: Tập trung vào giá trị compliance trước, mở rộng sau
+
+---
+
+## Hướng đi 2: Nhiều Tính năng (Đa định dạng + Async)
+
+### Thử lửa
+
+**Giá trị Người dùng: ⭐⭐⭐⭐ (4/5)**
+- Phục vụ power users tốt
+- Xử lý dataset lớn
+- Nhưng không "phải có" với đa số
+
+**Tính Khả thi: ⭐⭐⭐ (3/5)**
+- Chi phí kết hợp: 2-3 tuần
+- Hai hệ thống con (chuyển đổi định dạng + hàng đợi)
+- Phức tạp hơn = nhiều bug hơn
+
+**Sự Khác biệt: ⭐⭐⭐⭐ (4/5)**
+- Tốt hơn đối thủ
+- Nhưng không phải góc nhìn độc đáo
+
+**Rủi ro: ⭐⭐⭐ (3/5)**
+- Rủi ro trung bình (độ phức tạp)
+- Hàng đợi có thể fail âm thầm
+- Bề mặt tấn công lớn hơn
+
+**Tổng: 14/20 (Trung bình)**
+
+### Giả định Ẩn
+
+**Đang đặt cược (chưa xác minh):**
+- Users cần nhiều định dạng (có khi chỉ PDF là đủ?)
+- Export lớn xảy ra thường xuyên (cần dữ liệu xác nhận)
+- UX async là chấp nhận được (tức thì có thể tốt hơn)
+
+**Có thể giết chết ý tưởng:**
+- Users bối rối vì quá nhiều tùy chọn
+- Hạ tầng queue trở thành gánh nặng vận hành
+- Đa số export nhỏ thôi (overkill)
+
+---
+
+## Khuyến nghị
+
+Chọn **Hướng đi 1: Tuân thủ Trước tiên** cho v1.
+
+**Lý do:**
+- Điểm tổng cao hơn (17 vs 14)
+- Khác biệt rõ ràng (hào phòng thủ chiến lược)
+- Giải quyết nỗi đau cụ thể (compliance)
+- Giảm rủi ro (pháp chế rất ủng hộ)
+
+**Sau đó mở rộng dần:**
+- Giai đoạn 2: Thêm đa định dạng nếu dữ liệu cho thấy nhu cầu
+- Giai đoạn 3: Thêm hàng đợi async nếu hiệu năng là vấn đề
+
+**Đừng over-engineer v1.** Bắt đầu với giá trị cốt lõi mạnh (compliance),
+mở rộng dựa trên dữ liệu sử dụng thực tế.
+
+Nghe ổn không, hay bạn thấy khác?
 ```
 
-**[File content generated with full structure from SKILL.md template]**
+```
+User: "Hợp lý. Chọn C."
+
+Agent: Tuyệt. Chuyển sang Giai đoạn 3 để mài sắc spec...
+```
+
+---
+
+### Giai đoạn 3: Mài sắc & Cấu trúc
+
+```
+Agent: Bắt đầu Giai đoạn 3...
+
+[Bước 3.1] Tạo bản nháp spec...
+📁 File: workspace/PROJ-456/spec/refined-draft.md
+```
+
+```
+[Bước 3.2] 📝 BẢN NHÁP SPEC — Vui lòng review kỹ trước khi chốt:
+
+📄 File: workspace/PROJ-456/spec/refined-draft.md
+────────────────────────────────────────────
+```
 
 ```markdown
-# [PROJ-456] Compliance-First Report Export
-
 ## 🧩 User Story
 
-As a **professional trader subject to regulatory audit requirements**
-I want to export my trading reports with tamper-proof audit trail
-So that I can provide compliant documentation to auditors and reduce legal risk
+As a **trader chuyên nghiệp chịu yêu cầu kiểm toán pháp quy**
+I want **export báo cáo giao dịch kèm audit trail chống giả mạo**
+So that **cung cấp tài liệu tuân thủ cho kiểm toán viên và giảm rủi ro pháp lý**
 
 ## 💼 Business Context
 
-87 support tickets in Q3 requesting export feature. 60% are compliance-related 
-(need to prove trading history to auditors, tax authorities).
+### Tình trạng Hiện tại / Nỗi đau
 
-Current workaround: Manual screenshots (error-prone, not auditable).
+87 ticket hỗ trợ trong Q3 yêu cầu tính năng export. 60% liên quan compliance (cần chứng minh lịch sử giao dịch cho kiểm toán viên, cơ quan thuế).
 
-**Why Now:** 
-- Q4 tax season approaching (high demand)
-- Competitive parity (3 major competitors launched export)
-- Risk mitigation (legal team flagged lack of audit trail)
+Giải pháp tạm: Chụp màn hình thủ công (dễ sai, không kiểm toán được).
+
+### Cơ hội / Tác động
+
+Giải quyết nỗi đau compliance cho trader chuyên nghiệp, giảm ~60% tải hỗ trợ.
+
+### Tại sao Bây giờ
+
+- Mùa thuế Q4 đang tới (nhu cầu cao)
+- Theo kịp đối thủ (3 đối thủ lớn đã ra tính năng export)
+- Giảm thiểu rủi ro (đội pháp chế cảnh báo thiếu audit trail)
 
 ## ✅ Acceptance Criteria
 
-**Feature:** Compliance-First Report Export
+```gherkin
+Feature: Export Báo cáo Ưu tiên Tuân thủ
 
-**Scenario 1: Successful export with audit trail**
-- **Given** I am a logged-in user on the Reports page
-- **When** I click "Export Report" button
-- **Then** System generates PDF/A format report
-- **And** System logs audit entry (user_id, timestamp, report_type, transaction_count)
-- **And** PDF includes digital signature + watermark with user_id
-- **And** Download link is encrypted and expires in 24 hours
+Scenario: Export thành công với audit trail
+  Given tôi là user đã đăng nhập tại trang Báo cáo
+  When tôi nhấn nút "Export Báo cáo"
+  Then hệ thống tạo báo cáo định dạng PDF/A
+  And hệ thống ghi audit entry (user_id, timestamp, report_type, transaction_count)
+  And PDF bao gồm chữ ký số + watermark với user_id
+  And link tải được mã hóa và hết hạn sau 24 giờ
 
-**Scenario 2: Large report handling**
-- **Given** Report has >10,000 transactions
-- **When** I request export
-- **Then** System queues export as background job
-- **And** System sends email notification when ready
-- **And** Export completes within 5 minutes
+Scenario: Xử lý báo cáo lớn
+  Given báo cáo có >10.000 giao dịch
+  When tôi yêu cầu export
+  Then hệ thống đưa export vào hàng đợi background
+  And hệ thống gửi email thông báo khi hoàn tất
+  And export hoàn thành trong vòng 5 phút
 
-**Scenario 3: Audit trail query**
-- **Given** I am an admin user
-- **When** I access Audit Log dashboard
-- **Then** I can see all export events (who, when, what)
-- **And** I can filter by user, date range, report type
+Scenario: Truy vấn audit trail
+  Given tôi là admin user
+  When tôi truy cập trang Audit Log
+  Then tôi có thể xem tất cả sự kiện export (ai, khi nào, cái gì)
+  And tôi có thể lọc theo user, khoảng thời gian, loại báo cáo
+```
 
 ## 🎨 User Flow / Design
 
 ### User Flow
 
-1. User navigates to Reports page
-2. Selects report type (Daily P&L, Transaction History, Portfolio Summary)
-3. Clicks "Export Report" button
-4. System shows progress indicator
-5. If small report (<1000 rows): Instant download
-6. If large report (>1000 rows): "We'll email you when ready" message
-7. User receives encrypted download link
-8. User clicks link → PDF downloads
-9. PDF includes:
-   - Report data
-   - Watermark: "Exported by {user_name} on {timestamp}"
-   - Digital signature footer
+1. User truy cập trang Báo cáo
+2. Chọn loại báo cáo (P&L Hàng ngày, Lịch sử Giao dịch, Tổng hợp Danh mục)
+3. Nhấn nút "Export Báo cáo"
+4. Hệ thống hiển thị indicator tiến trình
+5. Nếu báo cáo nhỏ (<1000 dòng): Tải ngay
+6. Nếu báo cáo lớn (>1000 dòng): Thông báo "Chúng tôi sẽ email khi xong"
+7. User nhận link tải mã hóa
+8. User nhấn link → PDF được tải về
 
-### Design Notes
+### Ghi chú Thiết kế
 
-- Export button: Secondary action (not primary CTA)
-- Progress indicator: Indeterminate spinner for <5s, determinate for longer
-- Email template: Professional, includes expiration notice
+- Nút export: Hành động phụ (không phải CTA chính)
+- Indicator tiến trình: Spinner vô hạn nếu <5s, thanh tiến trình nếu lâu hơn
 
 ## ☀️ Success Criteria & Tracking
 
-### Success Metrics
-| Metric | Current | Target | Measurement Method |
-|--------|---------|--------|--------------------|
-| Support tickets (export-related) | 87/quarter | <30/quarter | Zendesk tag analysis |
-| Export adoption rate | 0% | >40% active users | Analytics dashboard |
-| Audit compliance queries | Manual (slow) | <1 hour response | Audit log query time |
+### Chỉ số Thành công
 
-### Event Tracking
-| Event Name | Trigger | Dashboard |
-|------------|---------|-----------|
-| `export_report_initiated` | User clicks Export button | Growth dashboard |
-| `export_report_completed` | PDF generated successfully | Growth dashboard |
-| `export_report_downloaded` | User downloads PDF | Growth dashboard |
-| `export_report_failed` | Export job fails | Ops alert (PagerDuty) |
+| Chỉ số                           | Hiện tại        | Mục tiêu          | Cách đo                      |
+|----------------------------------|-----------------|-------------------|------------------------------|
+| Ticket hỗ trợ (liên quan export) | 87/quý          | <30/quý           | Phân tích tag Zendesk        |
+| Tỷ lệ sử dụng export             | 0%              | >40% active users | Dashboard phân tích          |
+| Truy vấn kiểm toán               | Thủ công (chậm) | <1 giờ phản hồi   | Thời gian truy vấn audit log |
+
+### Theo dõi Sự kiện
+
+| Sự kiện                 | Dashboard / Báo cáo      | Chủ sở hữu   |
+|-------------------------|--------------------------|--------------|
+| export_report_initiated | Dashboard tăng trưởng    | Product      |
+| export_report_completed | Dashboard tăng trưởng    | Product      |
+| export_report_failed    | Cảnh báo Ops (PagerDuty) | SRE          |
 
 ## 🧱 Technical Notes
 
-**API / Service:**
-- `POST /api/v1/reports/{report_id}/export` - Queue export job
-- `GET /api/v1/exports/{export_id}` - Check status
-- `GET /api/v1/exports/{export_id}/download` - Get encrypted link
-- Authentication: JWT token required
-- Rate limit: 10 exports/hour per user
+### API / Service
 
-**Database:**
-- New table: `export_audit_log` (user_id, report_id, timestamp, status)
-- Index on (user_id, timestamp) for audit queries
-- Retention: 7 years (compliance requirement)
+- POST /api/v1/reports/{report_id}/export - Đưa export vào hàng đợi
+- GET /api/v1/exports/{export_id} - Kiểm tra trạng thái
+- GET /api/v1/exports/{export_id}/download - Lấy link tải mã hóa
+- Rate limit: 10 export/giờ mỗi user
 
-**Dependencies:**
-- PDF signing service: DocuSign or Adobe Sign API
-- Storage: S3 bucket for temporary PDFs (24h TTL)
-- Queue: Celery + Redis (reuse existing infrastructure)
-- Email: SendGrid (reuse existing)
+### Database
 
-**Security & Compliance:**
-- PDF/A-3 format (archival standard)
-- SHA-256 digital signature
-- Watermark with user_id + timestamp (forensic)
-- Encrypted download links (AES-256)
-- Audit log immutable (append-only)
-- GDPR: Export data includes user's own data only
+- Bảng mới: export_audit_log (user_id, report_id, timestamp, status)
+- Index trên (user_id, timestamp) cho truy vấn audit
+- Retention: 7 năm (yêu cầu compliance)
 
-**Performance:**
-- Target: <3s for small reports (<1000 rows)
-- Target: <5min for large reports (>10K rows)
-- Queue priority: Pro users > Free users
-- Caching: Pre-generate daily snapshots at 2am
+### Dependency
 
-## 🎯 Assumptions & Risks
-
-### Assumptions
-- Users want PDF specifically (not Excel/CSV) → Verify in beta
-- PDF signing service costs <$0.10/export → Check pricing
-- 40% adoption rate is realistic → Based on competitor data
-
-### Risks
-- PDF signing service downtime → Mitigation: Graceful fallback (unsigned PDF + warning)
-- Audit log storage costs → Mitigation: Archive to cold storage after 1 year
-- Users confused by async UX → Mitigation: Clear messaging + progress updates
-
-### Out of Scope (for v1)
-- Scheduled/recurring exports (Phase 2)
-- Custom PDF templates (Phase 2)
-- Export to Excel/CSV (Phase 2 if demand)
-- Bulk export API (Phase 3 for institutional clients)
-
-## 📊 Confidence Assessment
-
-**Confidence Level:** 🟢 High (94%)
-
-**Calculation Breakdown:**
-- User Story completeness: 95% (clear role, goal, value)
-- Acceptance Criteria testability: 95% (Given-When-Then, measurable)
-- Assumptions surfaced: 90% (3 key assumptions documented)
-- Stress-test passed: 95% (17/20 score, clear rationale)
-
-**Formula:**
-```
-confidence = (0.95 * 0.30) + (0.95 * 0.30) + (0.90 * 0.20) + (0.95 * 0.20)
-           = 0.285 + 0.285 + 0.18 + 0.19 = 0.94
-```
-
-**Blockers:** None
+- Ký PDF: DocuSign hoặc Adobe Sign API
+- Lưu trữ: S3 bucket cho PDF tạm (TTL 24h)
+- Hàng đợi: Hạ tầng Bull queue có sẵn
+- Email: Tích hợp SendGrid có sẵn
 ```
 
 ```
-Agent: Spec ready! 
+────────────────────────────────────────────
 
-✅ User Story: Clear (pro traders, compliance value)
-✅ Acceptance Criteria: 3 testable scenarios
-✅ Success Metrics: Quantified targets
-✅ Technical Notes: Complete (API, DB, dependencies)
-✅ Confidence: 94% (High)
+📊 Đánh giá Chất lượng Nội bộ:
+- Độ đầy đủ User Story: 95%
+- Tính testable của AC: 95%
+- Giả định được vạch ra: 90%
+- Kết quả stress-test: 95%
+- **Confidence tổng: 🟢 94%**
 
-Ready to push to Jira? (Yes/No)
+🔍 Checklist nhanh:
+- ✅ User Story có đầy đủ Role + Goal + Value
+- ✅ AC đều testable (Given-When-Then)
+- ✅ Success Metrics có baseline + target
+- ✅ Không còn placeholder chưa thay
+
+⏳ Bạn hãy review và phản hồi:
+- ✅ "OK" → Chốt bản cuối và hỏi push Jira
+- ✏️ Góp ý cụ thể → Sửa và trình lại
+- 🔄 "Làm lại" → Viết lại từ đầu
+```
+
+```
+User: "AC thiếu case khi user export nhưng không có dữ liệu giao dịch.
+       Và phần Technical Notes nên bỏ Celery, dùng Bull queue có sẵn."
+```
+
+```
+[Bước 3.2 — Vòng 2] Đã sửa theo góp ý, trình lại toàn bộ:
+
+────────────────────────────────────────────
+[...đã sửa 2 điểm:
+  1. Thêm Scenario "Export khi không có dữ liệu" vào AC
+  2. Sửa dependency từ Celery+Redis thành Bull queue có sẵn
+...toàn bộ nội dung được in lại đầy đủ...]
+────────────────────────────────────────────
+
+Bản sửa đã đúng ý bạn chưa?
+```
+
+```
+User: "OK, chốt"
+```
+
+```
+[Bước 3.3] ✅ Bản cuối cùng đã chốt!
+📄 File: workspace/PROJ-456/spec/refined.md
+📊 Confidence: 94%
+
+Bạn có muốn push lên Jira không? (Gõ OK hoặc Không)
 ```
 
 ---
 
-### Phase 4: Push to Jira
+### Giai đoạn 4: Đẩy lên Jira
 
 ```
-User: "Yes"
+User: "OK"
 
-Agent: Pushing to Jira...
+Agent: Đang push lên Jira...
 
-📝 Converting markdown to Jira Wiki Markup...
-🔄 Updating PROJ-456 description...
-✅ Description updated
+📝 Chuyển đổi markdown sang ADF...
+🔄 Cập nhật description PROJ-456...
+✅ Description đã cập nhật
 
-💬 Adding comment...
-✅ Comment added: "Spec refined by ba-refine skill on 2026-08-14"
-
-🏷️  Adding label...
-✅ Label added: "refined-by-agent"
-
-📋 Creating push log...
+📋 Tạo push log...
 ✅ Push log: workspace/PROJ-456/spec/push-log.json
 
-🔗 View updated task: https://your-domain.atlassian.net/browse/PROJ-456
+🔗 Xem task đã cập nhật: https://your-domain.atlassian.net/browse/PROJ-456
 
----
-
-## Next Steps
-
-Your refined spec is now in Jira. Suggested next actions:
-
-1. **Design tests:** `/qa-test-design PROJ-456`
-   - Generate checklist + Gherkin scenarios from AC
-
-2. **Write tech spec:** `/tech-spec PROJ-456`
-   - Transform into API contract + data model
-
-3. **Full pipeline:** `/e2e-delivery PROJ-456`
-   - Run complete BA → DEV → QA workflow
-
-Which would you like to do next?
+Các bước tiếp theo:
+- /qa-test-design PROJ-456 (thiết kế test)
+- /tech-spec PROJ-456 (viết tech spec)
+- /e2e-delivery PROJ-456 (pipeline toàn trình)
 ```
 
 ---
 
-## Key Takeaways from This Example
+## Rút ra từ Ví dụ này
 
-✅ **Phase 0:** Quick download, immediate assessment of clarity
-✅ **Phase 1:** Interactive clarification via AskUserQuestion, 6 diverse variations with rationale
-✅ **Phase 2:** Honest stress-test, surfaced hidden assumptions, clear recommendation
-✅ **Phase 3:** Structured spec with all required sections, 94% confidence
-✅ **Phase 4:** Clean push to Jira with audit trail
+✅ **Giai đoạn 0:** Tải nhanh, đánh giá ngay mức độ rõ ràng
+✅ **Giai đoạn 1:** Làm rõ tương tác qua AskUserQuestion, 6 biến thể đa dạng có lý do rõ ràng
+✅ **Giai đoạn 2:** Thử lửa trung thực, vạch trần giả định ẩn, khuyến nghị rõ ràng
+✅ **Giai đoạn 3 — 3.1:** Bản nháp spec được tạo với đầy đủ sections
+✅ **Giai đoạn 3 — 3.2:** Toàn bộ draft được trình cho user, user góp ý (AC thiếu case, sửa dependency), agent sửa và trình lại
+✅ **Giai đoạn 3 — 3.3:** User nói "OK, chốt" → chốt bản cuối, hỏi push Jira
+✅ **Giai đoạn 4:** Push sạch lên Jira (KHÔNG comment, KHÔNG label)
 
-**What made this session good:**
-- Not rushed (took time to clarify)
-- Diverse variations (not 20 shallow ideas)
-- Honest evaluation (pointed out flaws in Direction 2)
-- Grounded (referenced support ticket data, competitor analysis)
-- Actionable (clear next steps)
+**Điều khiến phiên này tốt:**
+- Không vội vàng (dành thời gian làm rõ)
+- Biến thể đa dạng (không phải 20 ý tưởng nông cạn)
+- Đánh giá trung thực (chỉ ra điểm yếu của Hướng đi 2)
+- Có căn cứ (tham chiếu dữ liệu ticket hỗ trợ, phân tích đối thủ)
+- **User review toàn bộ nội dung draft trước khi chốt** (vòng góp ý → sửa → chốt)
+- Khả thi (các bước tiếp theo rõ ràng)
 
-**Tone:**
-- Direct, thoughtful
-- Pushed user to think deeper ("is B overkill?")
-- Not a yes-machine (called out over-engineering)
+**Giọng điệu:**
+- Trực tiếp, có chiều sâu
+- Đẩy user suy nghĩ sâu hơn ("B có quá mức không?")
+- Không phải yes-machine (chỉ ra over-engineering)
