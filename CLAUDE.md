@@ -101,7 +101,7 @@ Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
 ---
 
 ### Skills dùng chung (cả 3 personas):
-`planning-and-task-breakdown`, `incremental-implementation`, `source-driven-development`, `meta-context`, `meta-using-agent-skills`, `meta-cross-validation`
+`planning-and-task-breakdown`, `incremental-implementation`, `source-driven-development`, `meta-context`, `meta-using-agent-skills`, `meta-cross-validation`, `meta-continuous-learning`, `meta-session-checkpoint`
 
 ---
 
@@ -199,6 +199,7 @@ BA/PO creates *-final.md
 **Xác minh (Verify — DEV):** `dev-browser-testing-with-devtools`, `dev-debugging`
 **Đánh giá (Review — DEV+QA):** `review-code-and-quality`, `code-simplification`, `dev-security`, `dev-performance`, `dev-audit-and-fix`
 **Kiểm thử (Test — QA):** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-code2spec`
+**Quản lý Phiên (Session Management - ALL):** `meta-continuous-learning`, `meta-session-checkpoint`
 
 ## Quy ước
 

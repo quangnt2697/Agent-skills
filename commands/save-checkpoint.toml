@@ -1,0 +1,10 @@
+description = "Kích hoạt kỹ năng meta-session-checkpoint ở chế độ LƯU. Đọc toàn bộ ngữ cảnh, nén các sự kiện, tiến độ và bước tiếp theo vào file workspace_state.md."
+
+prompt = """
+Kích hoạt kỹ năng meta-session-checkpoint ở chế độ LƯU.
+
+1. Quét toàn bộ ngữ cảnh hiện tại và lịch sử chat.
+2. Tổng hợp 3 nhóm thông tin chính: Sự thật (Facts), Tiến độ (Progress) và Bước tiếp theo (Next Steps).
+3. Ghi đè file `/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/workspace_state.md` với định dạng Markdown.
+4. Báo cáo xác nhận đã lưu checkpoint.
+"""

@@ -107,7 +107,7 @@ agent-skills/
 │   ├── ba-*/            → 8 BA/PO skills
 │   ├── qa-*/            → 5 QA/SDET skills  
 │   ├── dev-*/           → 15+ DEV skills
-│   └── meta-*/          → Meta-skills (planning, cross-validation)
+│   └── meta-*/          → Meta-skills (planning, cross-validation, continuous-learning, session-checkpoint)
 ├── .claude/
 │   ├── commands/        → Slash commands (*.md)
 │   └── rules/           → Quy tắc dự án (git workflow, confidence level)
@@ -160,6 +160,14 @@ agent-skills/
 | Command | Chức năng |
 |---------|-----------|
 | `/e2e-delivery {issueKey}` | **Full SDLC pipeline** (BA → DEV → QA → Review) |
+
+### Meta / Session Commands
+
+| Command | Chức năng |
+|---------|-----------|
+| `/learn` hoặc `/save-session` | Tự động đúc kết bài học từ phiên làm việc và lưu thành Rule mới |
+| `/save-checkpoint` | Nén toàn bộ ngữ cảnh hiện tại thành file trạng thái nhỏ gọn |
+| `/load-checkpoint` | Khôi phục trạng thái từ file nén và tự động tiếp tục công việc |
 
 ---
 
@@ -301,8 +309,8 @@ Xem chi tiết: [CONTRIBUTING.md](CONTRIBUTING.md)
 ## 📊 Stats
 
 - **3 Personas** (BA/PO, QA, DEV)
-- **28+ Skills** (8 BA + 5 QA + 15+ DEV)
-- **25+ Slash Commands**
+- **30+ Skills** (8 BA + 5 QA + 15+ DEV + Meta)
+- **29+ Slash Commands**
 - **40+ Reference Documents**
 - **Production-Ready** — Dùng trong real projects (Finance/Trading domain)
 
