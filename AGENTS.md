@@ -38,3 +38,14 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 - Không được hỏi "có tiếp không", "đã đủ chưa", "có apply không" — mọi trường hợp đó đều tự quyết và chạy tiếp.
 - Nếu phát hiện Spec có lỗ hổng logic, chủ động dùng `ba-interview-me` để chất vấn user.
 - Nếu gặp lỗi (Test fail, Build fail), chủ động tự sửa code (Self-fix) và chạy lại — tối đa 3 vòng rồi mới báo cáo.
+
+## 7. Quy Tắc Thiết Kế Sơ Đồ (Mermaid Rules)
+Khi tạo bất kỳ sơ đồ Mermaid nào (flowchart, v.v.), bắt buộc tuân thủ các quy tắc thiết kế sau:
+1. **Hướng luồng ngang (Horizontal Flow):** Bắt buộc sử dụng hướng đi từ trái sang phải (`flowchart LR` thay vì `TD`) để tiết kiệm không gian dọc và phù hợp với cách đọc tự nhiên.
+2. **Node bắt đầu (Start Node):** Luôn luôn phải định nghĩa rõ ràng node khởi đầu ở vị trí đầu tiên nhất của sơ đồ (ví dụ: `Start([Bắt đầu])`). **TUYỆT ĐỐI KHÔNG** được phép để bất kỳ node hay step nào nằm ở phía bên trái của node khởi đầu này. Node khởi đầu phải là thành phần nằm ngoài cùng bên trái của toàn bộ sơ đồ.
+3. **Tô màu làm nổi bật:** Bắt buộc phải thêm style để tô màu nổi bật cho node bắt đầu (ví dụ: `style Start fill:#f9f,stroke:#333,stroke-width:4px`), giúp người dùng nhận diện ngay lập tức điểm bắt đầu của luồng.
+4. **Luồng quay lại (Loop/Backward edges):** Khi có quy trình lặp lại, tuyệt đối không được tạo ra step mới (không duplicate node) mà BẮT BUỘC dùng mũi tên đứt đoạn (`-.->`) trỏ về step trước đó. Để tránh việc thuật toán layout đảo lộn thứ tự các step (làm step bị kéo sang trái), luôn định nghĩa các mũi tên quay lại này **ở dưới cùng của file** mã nguồn (sau khi đã định nghĩa toàn bộ luồng chính).
+5. **Tránh Step "Bouncing Back":** Tuyệt đối không được thiết kế luồng mà một step ngay sau step khởi tạo (Start) lại là một mũi tên quay ngược lại step Start (ví dụ: `Start --> Decision` và sau đó có `Decision -.-> Start`). Điều này tạo ra vòng lặp không cần thiết ngay lập tức, làm sai lệch logic và thẩm mỹ của sơ đồ.
+6. **Sử dụng công cụ hiện đại:** Mặc định, ưu tiên sử dụng thư viện `beautiful-mermaid` để render sơ đồ, vì nó cung cấp thuật toán layout tốt hơn, thẩm mỹ cao hơn và hỗ trợ nhiều tùy chỉnh hơn so với cách render Mermaid gốc.
+    - Khi sử dụng, luôn bọc mã Mermaid trong khối `mermaid-viz`. 
+    

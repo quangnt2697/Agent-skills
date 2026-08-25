@@ -101,7 +101,7 @@ Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
 ---
 
 ### Skills dùng chung (cả 3 personas):
-`planning-and-task-breakdown`, `incremental-implementation`, `source-driven-development`, `meta-context`, `meta-using-agent-skills`, `meta-cross-validation`, `meta-continuous-learning`, `meta-session-checkpoint`
+`planning-and-task-breakdown`, `incremental-implementation`, `source-driven-development`, `meta-context`, `meta-using-agent-skills`, `meta-cross-validation`, `meta-continuous-learning`, `meta-session-checkpoint`, `ba-design-flowchart`
 
 ---
 

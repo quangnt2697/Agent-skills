@@ -545,6 +545,12 @@ cd "$(git rev-parse --show-toplevel)"
 mkdir -p /project-root/workspace/{issueKey}/spec
 ```
 
+**Quan trọng**: Sau khi sinh ra code Mermaid, BẮT BUỘC gọi lệnh `/flowchart` (đối với Claude) hoặc chạy trực tiếp script:
+```bash
+node skills/ba-design-flowchart/scripts/render.mjs --input <file_mmd_tạm> --output <file_png_kết_quả> --format png --theme tokyo-night
+```
+Nếu script báo lỗi cú pháp, tự động đọc lỗi và sửa lại mã Mermaid cho đến khi thành công.
+
 ## Tương tác với các Skills khác
 
 - **Upstream (Before):**
@@ -606,10 +612,11 @@ Sau khi chạy skill này:
 - [ ] Đã identify tất cả decision points (branches)
 - [ ] Diagram type phù hợp (Flowchart/Swim Lane/BPMN)
 - [ ] AS-IS diagram có pain points highlighted
-- [ ] TO-BE diagram có improvements highlighted
-- [ ] Có comparison table (AS-IS vs TO-BE metrics)
-- [ ] Mermaid syntax valid (test render trước khi save)
-- [ ] Output files đã lưu: `/project-root/workspace/{issueKey}/spec/process-{as-is|to-be}.md`
+- [ ] Actors được list rõ ràng
+- [ ] Activities có duration/owner
+- [ ] Diagram không quá 20 nodes (nếu > 20 → chia nhỏ)
+- [ ] Mermaid syntax valid (đã chạy qua lệnh `/flowchart` hoặc script render mà không có lỗi)
+- [ ] Đã lưu file thành công: `/project-root/workspace/{issueKey}/spec/process-{as-is|to-be}.md`
 - [ ] Stakeholders đã review và approve diagrams
 
 ## Ví dụ
