@@ -39,7 +39,16 @@ Sử dụng công cụ sửa file để cập nhật file `/Users/qa-quangnt/Des
 - Nếu file đã tồn tại, hãy **Append** (Thêm vào cuối) bằng cách đọc file, tìm dòng cuối và ghi đè nội dung mới bao gồm cả nội dung cũ.
 - Khuyến nghị dùng thẻ định dạng markdown rõ ràng (ví dụ: `### Bài học ngày YYYY-MM-DD: [Chủ đề]`).
 
+### Bước 4: Tự tiến hóa Kỹ năng (Self-Improving Agent Skills)
+1. Kỹ năng phải tự đánh giá: *"Lỗi này là do user cung cấp thiếu thông tin, hay do các bước hướng dẫn trong file `SKILL.md` của kỹ năng đang sử dụng bị lủng/kém hiệu quả?"*
+2. Nếu lỗi do quy trình của kỹ năng (ví dụ: file `SKILL.md` bảo tạo file nhưng thiếu bước import thư viện), Agent BẮT BUỘC thực hiện luồng Tự Tiến Hóa (Semi-Auto):
+   - Đọc nội dung file `SKILL.md` gốc đang bị lỗi quy trình.
+   - Thiết kế lại bước đó cho hợp lý hơn để tránh lỗi lặp lại.
+   - Sinh ra một file đề xuất sửa đổi tạm thời (ví dụ: `proposed-change.md` hoặc in trực tiếp ra artifact dạng diff).
+   - DỪNG lại và yêu cầu người dùng "Approve" bản đề xuất sửa lỗi `SKILL.md`.
+   - NẾU người dùng Approve, dùng công cụ trực tiếp ghi đè thay đổi vào file `SKILL.md` đó.
+
 ## Báo cáo Khách hàng
-- In ra một thông báo ngắn gọn xác nhận bài học đã được ghi nhớ thành công vào `lessons-learned.md`.
-- Trích dẫn (quote) lại nội dung bài học để người dùng review.
-- Chuyển trạng thái sang hoàn thành mà không cần hỏi thêm.
+- Nếu chỉ là bài học chung: In ra thông báo đã lưu vào `lessons-learned.md` và trích dẫn nội dung bài học.
+- Nếu là lỗi quy trình: Trình bày đề xuất sửa file `SKILL.md` cụ thể và chờ người dùng duyệt (Approve) trước khi apply.
+- Chuyển trạng thái sang hoàn thành sau khi lưu thành công hoặc sau khi người dùng duyệt sửa skill.
