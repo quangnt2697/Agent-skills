@@ -1,6 +1,6 @@
 ---
 name: ba-process-modeling
-description: Vẽ Business Process diagram (BPMN, flowchart, swim lane) để visualize quy trình nghiệp vụ. Identify actors, activities, decision points, start/end states. Generate Mermaid diagram hoặc BPMN XML. Sử dụng khi cần visualize complex process, khi user yêu cầu "vẽ quy trình", "process diagram", hoặc khi stakeholders cần shared understanding về workflow.
+description: Kỹ năng bổ trợ (Sub-process) được gọi bởi ba-refine hoặc ba-spec. Có thể hoạt động độc lập nếu user yêu cầu. Vẽ Business Process diagram (BPMN, flowchart, swim lane) để visualize quy trình nghiệp vụ. Identify actors, activities, decision points, start/end states. Generate Mermaid diagram hoặc BPMN XML. Sử dụng khi cần visualize complex process, khi user yêu cầu "vẽ quy trình", "process diagram", hoặc khi stakeholders cần shared understanding về workflow.
 ---
 
 # Skill: ba-process-modeling

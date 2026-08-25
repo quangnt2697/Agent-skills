@@ -1,6 +1,6 @@
 ---
 name: ba-gap-analysis
-description: Phân tích khoảng cách giữa trạng thái hiện tại (AS-IS) và trạng thái mục tiêu (TO-BE). Identify missing features, process changes, data migration needs, và dependencies. Propose action items để close gaps với priority và timeline. Sử dụng khi có Business-Spec hoặc requirements cần phân tích AS-IS vs TO-BE, khi user yêu cầu "phân tích gap", "so sánh current vs target state", hoặc khi cần roadmap chi tiết.
+description: Kỹ năng bổ trợ (Sub-process) được gọi bởi ba-refine hoặc ba-spec. Có thể hoạt động độc lập nếu user yêu cầu. Phân tích khoảng cách giữa trạng thái hiện tại (AS-IS) và trạng thái mục tiêu (TO-BE). Identify missing features, process changes, data migration needs, và dependencies. Propose action items để close gaps với priority và timeline. Sử dụng khi có Business-Spec hoặc requirements cần phân tích AS-IS vs TO-BE, khi user yêu cầu "phân tích gap", "so sánh current vs target state", hoặc khi cần roadmap chi tiết.
 ---
 
 # Skill: ba-gap-analysis

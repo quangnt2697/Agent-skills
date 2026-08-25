@@ -1,6 +1,6 @@
 ---
 name: ba-stakeholder-interview
-description: Phỏng vấn nhiều stakeholders (CEO, Product Manager, End Users, Support Team, etc.) để thu thập requirements từ đa nguồn. Ghi nhận needs, constraints, assumptions của từng stakeholder và tổng hợp thành stakeholder matrix. Sử dụng khi cần khai thác requirements từ nhiều nguồn, khi user yêu cầu "phỏng vấn stakeholders", "thu thập requirements từ team", hoặc khi có conflict giữa stakeholders về priority/scope.
+description: Kỹ năng bổ trợ (Sub-process) được gọi bởi ba-refine hoặc ba-spec. Có thể hoạt động độc lập nếu user yêu cầu. Phỏng vấn nhiều stakeholders (CEO, Product Manager, End Users, Support Team, etc.) để thu thập requirements từ đa nguồn. Ghi nhận needs, constraints, assumptions của từng stakeholder và tổng hợp thành stakeholder matrix. Sử dụng khi cần khai thác requirements từ nhiều nguồn, khi user yêu cầu "phỏng vấn stakeholders", "thu thập requirements từ team", hoặc khi có conflict giữa stakeholders về priority/scope.
 ---
 
 # Skill: ba-stakeholder-interview

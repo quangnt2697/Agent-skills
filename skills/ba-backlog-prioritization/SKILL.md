@@ -1,6 +1,6 @@
 ---
 name: ba-backlog-prioritization
-description: Ưu tiên backlog theo framework MoSCoW (Must/Should/Could/Won't) hoặc WSJF (Weighted Shortest Job First). Đánh giá business value, urgency, risk, dependencies để sắp xếp User Stories/Features theo priority. Sử dụng khi có danh sách User Stories cần prioritize, khi user yêu cầu "ưu tiên backlog", "sắp xếp theo priority", hoặc khi cần roadmap release planning.
+description: Kỹ năng bổ trợ (Sub-process) được gọi bởi ba-refine hoặc ba-spec. Có thể hoạt động độc lập nếu user yêu cầu. Ưu tiên backlog theo framework MoSCoW (Must/Should/Could/Won't) hoặc WSJF (Weighted Shortest Job First). Đánh giá business value, urgency, risk, dependencies để sắp xếp User Stories/Features theo priority. Sử dụng khi có danh sách User Stories cần prioritize, khi user yêu cầu "ưu tiên backlog", "sắp xếp theo priority", hoặc khi cần roadmap release planning.
 ---
 
 # Skill: ba-backlog-prioritization

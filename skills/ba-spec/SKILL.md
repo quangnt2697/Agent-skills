@@ -171,15 +171,15 @@ danh sách                                 loại task          theo profile
    ```markdown
    📋 **Danh sách tài liệu liên quan đến {issueKey}:**
 
-| # | Loại          | Tên                                          | Trạng thái   | Đường dẫn / Hành động                                       |
-|---|---------------|----------------------------------------------|--------------|-------------------------------------------------------------|
-| 1 | 📄 Jira PDF   | {issueKey} - {Tiêu đề Task}                  | 🆕 Chưa tải  | → Sẽ tải mới                                                |
-| 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345)        | ✅ Đã có     | `/project-root/workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf` |
-| 3 | 📝 Confluence | API Specification v2 (ID: 67890)             | 🆕 Chưa tải  | → `api-specification-v2-67890.pdf`                          |
-| 4 | 📄 Jira PDF   | {relatedIssueKey} - {Tiêu đề Task liên quan} | 🆕 Chưa tải  | → Sẽ tải mới                                                |
-| 5 | 📎 File       | wireframe-v3.pdf (2.1MB)                     | 🆕 Chưa tải  | → Sẽ tải mới                                                |
-| 6 | 🖼️ Ảnh        | flowchart-order-flow.png (800KB)             | 🆕 Chưa tải  | → Sẽ tải mới                                                |
-| 7 | 🎬 Video      | demo-flow.mp4 (50MB)                         | ⏭️ Bỏ qua     | Định dạng không hỗ trợ                                      |
+| # | Loại          | Tên                                          | Trạng thái    | Đường dẫn / Hành động                                                     |
+|---|---------------|----------------------------------------------|---------------|---------------------------------------------------------------------------|
+| 1 | 📄 Jira PDF   | {issueKey} - {Tiêu đề Task}                  | 🆕 Chưa tải   | → Sẽ tải mới                                                              |
+| 2 | 📝 Confluence | Thiết kế luồng thanh toán (ID: 12345)        | ✅ Đã có      | `/project-root/workspace/{issueKey}/source/refs/thiet-ke-luong-12345.pdf` |
+| 3 | 📝 Confluence | API Specification v2 (ID: 67890)             | 🆕 Chưa tải   | → `api-specification-v2-67890.pdf`                                        |
+| 4 | 📄 Jira PDF   | {relatedIssueKey} - {Tiêu đề Task liên quan} | 🆕 Chưa tải   | → Sẽ tải mới                                                              |
+| 5 | 📎 File       | wireframe-v3.pdf (2.1MB)                     | 🆕 Chưa tải   | → Sẽ tải mới                                                              |
+| 6 | 🖼️ Ảnh        | flowchart-order-flow.png (800KB)             | 🆕 Chưa tải   | → Sẽ tải mới                                                              |
+| 7 | 🎬 Video      | demo-flow.mp4 (50MB)                         | ⏭️ Bỏ qua      | Định dạng không hỗ trợ                                                    |
 
    **Tổng cộng:** 5 file cần tải mới, 1 file đã có sẵn, 1 file bỏ qua.
 
@@ -371,15 +371,15 @@ Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem f
 
 ### Sections 2–8 thay đổi theo loại task
 
-| Section   | 📱 APP                       | 🌐 WEB                       | 🔌 API                          |
-|-----------|------------------------------|------------------------------|---------------------------------|
-| 2         | Màn hình & Navigation        | Page & Layout & URL Routing  | Endpoints Overview              |
-| 3         | UI Components & Platform     | UI Components & Responsive   | Request Schema                  |
-| 4         | Form & Input                 | Form & Input                 | Response Schema & Error Codes   |
-| 5         | User Flow & Gesture          | User Flow & Redirect         | Security (Key, Signature, Auth) |
-| 6         | Authentication (PIN/OTP/Bio) | Authentication (Session/SSO) | Validation Rules                |
-| 7         | Offline & Push Notification  | Data Display & Real-time     | Dependencies & Data Flow        |
-| 8         | Business Rules & Edge Cases  | Business Rules & Edge Cases  | Business Rules & Edge Cases     |
+| Section   | 📱 APP                       | 🌐 WEB                        | 🔌 API                             |
+|-----------|------------------------------|-------------------------------|------------------------------------|
+| 2         | Màn hình & Navigation        | Page & Layout & URL Routing   | Endpoints Overview                 |
+| 3         | UI Components & Platform     | UI Components & Responsive    | Request Schema                     |
+| 4         | Form & Input                 | Form & Input                  | Response Schema & Validation Rules |
+| 5         | User Flow / Sequence Diagram | User Flow / Sequence Diagram  | User Flow / Sequence Diagram       |
+| 6         | Authentication & Security    | Authentication & Security     | Authentication & Security          |
+| 7         | Offline & Push Notification  | Data Display & Real-time      | Dependencies & Data Flow           |
+| 8         | Business Rules & Edge Cases  | Business Rules & Edge Cases   | Business Rules & Edge Cases        |
 
 ### Sections cố định (9–13)
 - **9. Acceptance Criteria (Reframed)**
@@ -391,6 +391,11 @@ Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem f
 ### Quy tắc quan trọng
 > File `/project-root/workspace/{issueKey}/spec/final.md` là **single source of truth** sau khi import.
 > Tất cả các bước tiếp theo (`/tech-spec`, `/plan`, `/qa-test-design`) đều đọc từ file này.
+
+**Tích hợp các Kỹ năng Bổ trợ (Sub-processes):**
+- Để xây dựng nội dung cho **Section 5 (User Flow)**, hãy gọi kỹ năng `/ba-process-modeling` để phân tích và tạo luồng (áp dụng cho toàn bộ task APP/WEB/WebSocket/API/BackEnd).
+- Để xây dựng nội dung cho **Section 9 (Acceptance Criteria / User Stories)**, hãy gọi kỹ năng `/ba-user-story-writing` để phân tách và chuẩn hóa User Stories.
+- Mọi kết quả sinh ra từ các kỹ năng bổ trợ phải được tổng hợp vào cùng một file `final.md` duy nhất.
 
 ---
 

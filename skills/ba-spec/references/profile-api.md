@@ -72,7 +72,35 @@ từ PDF và attachments. Profile này bao phủ cả **REST API**, **OpenAPI sp
 - Empty list trả `[]` hay `null`? Status 200 hay 204?
 - Có trả traceId trong error response không?
 
-### 4. 🔐 Security & Authentication
+### 4. ✅ Validation Rules
+**Cần trích xuất:**
+- Validation từng trường: format, length, range, regex, allowed chars
+- Cross-field validation (VD: endDate > startDate, confirmPassword == password)
+- Business validation (VD: số dư >= số tiền giao dịch, KL >= KL tối thiểu)
+- Conditional validation (VD: trường X bắt buộc khi type = "margin")
+- Validation error response format & error codes
+- Validation layer: controller, service, domain
+
+**Câu hỏi cần làm rõ nếu thiếu:**
+- Validation xảy ra ở layer nào (controller vs service vs domain)?
+- Cross-field validation rules cụ thể?
+- Validation có khác nhau theo loại tài khoản / loại sản phẩm?
+- Conditional validation: khi nào thì trường nào bắt buộc?
+
+### 5. 🌊 User Flow / Sequence Diagram
+**Cần trích xuất:**
+- Sequence diagram hoặc flowchart thể hiện luồng giao tiếp giữa client, API gateway, backend service, và external systems
+- Luồng xử lý bất đồng bộ (async flow) nếu có (VD: nhận webhook, xử lý queue)
+- Fallback/Error flow (VD: khi external service sập thì API trả về gì)
+- Trạng thái hệ thống trước và sau khi gọi API
+- Event trigger (ai hoặc sự kiện gì trigger luồng này)
+
+**Câu hỏi cần làm rõ nếu thiếu:**
+- Luồng giao tiếp hệ thống diễn ra như thế nào? (Gọi service nào trước/sau)
+- Khi external service lỗi thì hệ thống xử lý fallback ra sao?
+- Có luồng xử lý bất đồng bộ nào sau khi trả response 200/202 không?
+
+### 6. 🔐 Security & Authentication
 **Cần trích xuất:**
 - Authentication method: API Key, Bearer Token, OAuth 2.0, JWT, mTLS
 - Signature mechanism: HMAC-SHA256, RSA-SHA256, ED25519
@@ -93,22 +121,7 @@ từ PDF và attachments. Profile này bao phủ cả **REST API**, **OpenAPI sp
 - Token hết hạn sau bao lâu? Refresh như thế nào?
 - Có mã hóa dữ liệu nhạy cảm (số tài khoản, CMND/CCCD) không?
 
-### 5. ✅ Validation Rules
-**Cần trích xuất:**
-- Validation từng trường: format, length, range, regex, allowed chars
-- Cross-field validation (VD: endDate > startDate, confirmPassword == password)
-- Business validation (VD: số dư >= số tiền giao dịch, KL >= KL tối thiểu)
-- Conditional validation (VD: trường X bắt buộc khi type = "margin")
-- Validation error response format & error codes
-- Validation layer: controller, service, domain
-
-**Câu hỏi cần làm rõ nếu thiếu:**
-- Validation xảy ra ở layer nào (controller vs service vs domain)?
-- Cross-field validation rules cụ thể?
-- Validation có khác nhau theo loại tài khoản / loại sản phẩm?
-- Conditional validation: khi nào thì trường nào bắt buộc?
-
-### 6. 💼 Business Rules
+### 7. 💼 Business Rules
 **Cần trích xuất:**
 - Giới hạn giá / khối lượng / số tiền (min, max, bước giá)
 - Giờ giao dịch (trading hours): giờ mở cửa, đóng cửa, nghỉ trưa
@@ -127,7 +140,7 @@ từ PDF và attachments. Profile này bao phủ cả **REST API**, **OpenAPI sp
 - Trạng thái lifecycle đầy đủ là gì? Transition conditions?
 - Settlement cycle là gì (T+0, T+1, T+2)?
 
-### 7. 🔗 Dependencies & Data Flow
+### 8. 🔗 Dependencies & Data Flow
 **Cần trích xuất:**
 - Upstream services (API này gọi service nào, timeout từng service)
 - Downstream services (service nào gọi API này)
@@ -137,7 +150,6 @@ từ PDF và attachments. Profile này bao phủ cả **REST API**, **OpenAPI sp
 - Cache layer: Redis/Memcached, cache key pattern, TTL, invalidation strategy
 - External gateway: payment gateway, exchange gateway, KYC service
 - Service mesh / API gateway routing
-- Sequence diagram (nếu có trong tài liệu)
 
 **Câu hỏi cần làm rõ nếu thiếu:**
 - Có gọi external service nào không? Timeout bao nhiêu ms?

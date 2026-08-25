@@ -269,35 +269,18 @@ ATLASSIAN_API_TOKEN=your-api-token
    báo cáo giao dịch của họ một cách dễ dàng và bảo mật?"
    ```
 
-2. **Làm rõ các thành phần cốt lõi bằng AskUserQuestion**
+2. **Làm rõ các thành phần cốt lõi (Sử dụng các Kỹ năng Bổ trợ)**
    
-   Sử dụng tool `AskUserQuestion` để thu thập:
-   
-   - **User Story:**
-     - Role cụ thể là gì? (VD: KH giao dịch cổ phiếu có dùng Margin)
-     - Mục tiêu muốn đạt được?
-     - Giá trị kinh doanh/người dùng mang lại?
-   
-   - **Bối cảnh Nghiệp vụ:**
-     - Nhu cầu kinh doanh cốt lõi?
-     - Tại sao bây giờ? (Tính cấp thiết)
-   
-   - **Tiêu chí Nghiệm thu:**
-     - Tiêu chí nghiệm thu dưới góc nhìn nghiệp vụ?
-     - Các điều kiện thành công đo được?
-   
-   - **User Flow & UI:**
-     - Có thay đổi UI không?
-     - Flow thao tác như thế nào?
-   
-   - **Tiêu chí Thành công:**
-     - Thế nào gọi là thành công?
-     - Metrics đo lường?
-   
-   - **Ghi chú Kỹ thuật:**
-     - Ràng buộc kỹ thuật, API, Database?
-     - Tuân thủ pháp lý/bảo mật?
-     - Yêu cầu về hiệu năng?
+   - Mặc định, gọi kỹ năng `/ba-interview-me` (hoặc dùng `AskUserQuestion`) để chất vấn user, thu thập:
+     - User Story: Role cụ thể là gì? Mục tiêu muốn đạt được? Giá trị mang lại?
+     - Bối cảnh Nghiệp vụ: Nhu cầu kinh doanh cốt lõi? Tính cấp thiết?
+     - Tiêu chí Nghiệm thu: Góc nhìn nghiệp vụ? Điều kiện thành công đo được?
+     - User Flow & UI: Có thay đổi UI không? Flow thao tác như thế nào?
+     - Tiêu chí Thành công: Thế nào gọi là thành công? Metrics đo lường?
+     - Ghi chú Kỹ thuật: Ràng buộc API, Database? Pháp lý/bảo mật? Hiệu năng?
+   - Nếu phát hiện có sự chênh lệch lớn giữa hiện trạng (AS-IS) và mục tiêu (TO-BE), hãy gọi kỹ năng `/ba-gap-analysis`.
+   - Nếu task đụng đến nhiều bộ phận/vai trò khác nhau, hãy gọi kỹ năng `/ba-stakeholder-interview`.
+
 
    **TUYỆT ĐỐI KHÔNG BƯỚC TIẾP cho tới khi đạt ≥90% confidence về hiểu biết.**
 
@@ -382,14 +365,14 @@ Tạo file nháp tại: `/project-root/workspace/{issueKey}/spec/refined-draft.m
 
 File template là **skeleton thuần** — mọi dòng trong đó đều là nội dung sẽ lên Jira. Agent copy skeleton, thay các placeholder `[...]` bằng nội dung thật, và **không thêm bất cứ dòng nào của riêng mình** vào đầu/cuối file.
 
-| Section                        | Bắt buộc?                       | Bỏ nội dung section khi              |
-|--------------------------------|---------------------------------|--------------------------------------|
-| 🧩 User Story                  | Có                              | —                                    |
-| 💼 Business Context            | Có                              | —                                    |
-| ✅ Acceptance Criteria         | Có                              | —                                    |
-| 🎨 User Flow / Design          | Có (nếu đổi UI, cần link figma) | Task không đụng tới UI               |
-| ☀️ Success Criteria & Tracking | Có                              | —                                    |
-| 🧱 Technical Notes             | Không                           | Không có thông tin kỹ thuật đáng ghi |
+| Section                        | Bắt buộc?                         | Bỏ nội dung section khi              |
+|--------------------------------|-----------------------------------|--------------------------------------|
+| 🧩 User Story                  | Có                                | —                                    |
+| 💼 Business Context            | Có                                | —                                    |
+| ✅ Acceptance Criteria         | Có                                | —                                    |
+| 🎨 User Flow / Design          | Có (nếu đổi UI, cần link figma)   | Task không đụng tới UI               |
+| ☀️ Success Criteria & Tracking | Có                                | —                                    |
+| 🧱 Technical Notes             | Không                             | Không có thông tin kỹ thuật đáng ghi |
 
 Trong 🧱 Technical Notes, xoá luôn các sub-heading không có nội dung — đừng để lại heading rỗng hay `[placeholder]` chưa thay.
 
@@ -402,10 +385,8 @@ Trong 🧱 Technical Notes, xoá luôn các sub-heading không có nội dung �
 - Placeholder `[...]` còn sót chưa thay
 - Đường kẻ ngang `---` giữa các section (heading đã đủ phân tách; `---` render thành gạch ngang thừa trên Jira)
 
-**Acceptance Criteria dùng đúng MỘT format:** 
-
-- Gherkin trong code block ```` ```gherkin ````.
-- Nếu AC không mang tính hành vi (VD: ràng buộc dữ liệu, chính sách), viết bullet list `- [ ]` — **không** dùng bảng, vì bảng AC lồng Given/When/Then rất khó đọc trên Jira.
+**User Story & Acceptance Criteria:**
+- Giao toàn bộ việc sinh và định dạng User Story cùng Acceptance Criteria cho kỹ năng bổ trợ `/ba-user-story-writing`. Kỹ năng này sẽ đảm bảo tiêu chuẩn INVEST và định dạng phù hợp trước khi điền vào template.
 
 **Bảng markdown:** chỉ dùng ở Success Metrics và Tracking. Script push dựng bảng ADF thật, nên phải viết đúng cú pháp GFM (có hàng phân cách `|---|`) và mọi hàng phải cùng số cột.
 
@@ -474,12 +455,15 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
    3. Hoãn lại — tôi lưu draft, bạn quay lại sau"
    ```
 
-#### Bước 3.3: Chốt bản cuối cùng
+#### Bước 3.3: Chốt bản cuối cùng và Làm giàu Spec (Enrichment)
 
 **Chỉ thực hiện khi user đã nói "OK" / "Đồng ý" / "Chốt" ở Bước 3.2.**
 
 1. Copy `refined-draft.md` → `refined.md` (bản cuối cùng)
-2. Tính confidence score:
+2. **Làm giàu nội dung Spec bằng các Kỹ năng Bổ trợ (Sub-processes):**
+   - Gọi kỹ năng `/ba-process-modeling` để thiết kế flowchart cho ý tưởng trong `refined.md`.
+   - Gọi kỹ năng `/ba-user-story-writing` để thiết kế, tinh chỉnh lại nội dung user story trong `refined.md` cho chuẩn quy tắc trước khi push lên Jira.
+3. Tính confidence score:
 
    **Công thức:**
    ```

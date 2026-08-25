@@ -177,31 +177,58 @@ function markdownTableToAdf(tableLines) {
 }
 
 // Thay sentinel trong các text node bằng node hardBreak, giữ nguyên marks của
-// đoạn text bao quanh.
-function applyHardBreaks(node) {
+// đoạn text bao quanh. Jira ADF cấm hardBreak bên trong codeBlock.
+function applyHardBreaks(node, inCodeBlock = false) {
     if (!node || typeof node !== 'object') return node;
+
+    const isCodeBlock = inCodeBlock || node.type === 'codeBlock';
 
     if (Array.isArray(node.content)) {
         const rebuilt = [];
 
         for (const child of node.content) {
             if (child.type === 'text' && child.text.includes(HARD_BREAK_TOKEN)) {
-                const parts = child.text.split(HARD_BREAK_TOKEN);
-                parts.forEach((part, index) => {
-                    if (index > 0) rebuilt.push({ type: 'hardBreak' });
-                    // Khoảng trắng thừa ở đầu dòng mới là do md-to-adf nối dòng,
-                    // không phải nội dung thật.
-                    const text = index > 0 ? part.replace(/^\s+/, '') : part;
-                    if (text) rebuilt.push({ ...child, text });
-                });
+                if (isCodeBlock) {
+                    child.text = child.text.split(HARD_BREAK_TOKEN).join('');
+                    rebuilt.push(child);
+                } else {
+                    const parts = child.text.split(HARD_BREAK_TOKEN);
+                    parts.forEach((part, index) => {
+                        if (index > 0) rebuilt.push({ type: 'hardBreak' });
+                        // Khoảng trắng thừa ở đầu dòng mới là do md-to-adf nối dòng,
+                        // không phải nội dung thật.
+                        const text = index > 0 ? part.replace(/^\s+/, '') : part;
+                        if (text) rebuilt.push({ ...child, text });
+                    });
+                }
             } else {
-                rebuilt.push(applyHardBreaks(child));
+                rebuilt.push(applyHardBreaks(child, isCodeBlock));
             }
         }
 
         node.content = rebuilt;
     }
 
+    return node;
+}
+
+const ALLOWED_LANGUAGES = new Set(['abap', 'actionscript', 'ada', 'arduino', 'autoit', 'c', 'c++', 'clojure', 'coffeescript', 'csharp', 'css', 'cuda', 'd', 'dart', 'delphi', 'elixir', 'erlang', 'fortran', 'foxpro', 'go', 'graphql', 'groovy', 'haskell', 'haxe', 'html', 'java', 'javascript', 'json', 'julia', 'kotlin', 'latex', 'lisp', 'lua', 'mathematica', 'matlab', 'objective-c', 'ocaml', 'pascal', 'perl', 'php', 'powershell', 'prolog', 'puppet', 'python', 'qml', 'r', 'racket', 'restructuredtext', 'ruby', 'rust', 'sass', 'scala', 'scheme', 'shell', 'sql', 'standardml', 'swift', 'tcl', 'tex', 'typescript', 'vala', 'vbnet', 'verilog', 'vhdl', 'xml', 'xquery']);
+
+function sanitizeCodeBlocks(node) {
+    if (!node || typeof node !== 'object') return node;
+    
+    if (node.type === 'codeBlock' && node.attrs && node.attrs.language) {
+        if (!ALLOWED_LANGUAGES.has(node.attrs.language)) {
+            delete node.attrs.language;
+        }
+    }
+    
+    if (Array.isArray(node.content)) {
+        for (const child of node.content) {
+            sanitizeCodeBlocks(child);
+        }
+    }
+    
     return node;
 }
 
@@ -221,6 +248,7 @@ function markdownToAdf(markdown) {
         if (!text.trim()) continue;
 
         const doc = applyHardBreaks(toPlainAdf(text));
+        sanitizeCodeBlocks(doc);
         content.push(...(doc.content || []));
     }
 

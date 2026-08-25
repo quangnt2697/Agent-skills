@@ -1,6 +1,6 @@
 ---
 name: ba-user-story-writing
-description: Viết User Story chuẩn INVEST (Independent, Negotiable, Valuable, Estimable, Small, Testable) từ Business-Spec hoặc requirements thô. Transform business requirements thành User Stories có cấu trúc "As a [role], I want [goal], so that [value]" với validation chặt chẽ. Sử dụng khi có Business-Spec hoặc requirements cần chuyển thành User Stories, khi cần validate existing User Stories, hoặc khi user yêu cầu "viết user story", "tạo user stories từ spec".
+description: Kỹ năng bổ trợ (Sub-process) được gọi bởi ba-refine hoặc ba-spec. Có thể hoạt động độc lập nếu user yêu cầu. Viết User Story chuẩn INVEST (Independent, Negotiable, Valuable, Estimable, Small, Testable) từ Business-Spec hoặc requirements thô. Transform business requirements thành User Stories có cấu trúc "As a [role], I want [goal], so that [value]" với validation chặt chẽ. Sử dụng khi có Business-Spec hoặc requirements cần chuyển thành User Stories, khi cần validate existing User Stories, hoặc khi user yêu cầu "viết user story", "tạo user stories từ spec".
 ---
 
 # Skill: ba-user-story-writing

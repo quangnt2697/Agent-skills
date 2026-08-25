@@ -1,6 +1,6 @@
 ---
 name: ba-interview-me
-description: Khai thác những gì người dùng THỰC SỰ cần thay vì những gì họ nghĩ là họ cần. Thực hiện thông qua việc phỏng vấn từng-câu-hỏi-một cho đến khi đạt độ tự tin ~95% về mục tiêu cốt lõi. Sử dụng khi yêu cầu bị thiếu thông tin ("xây dựng cho tôi X" mà không nói "cho ai" hoặc "tại sao lại làm bây giờ"), hoặc khi người dùng chủ động gọi lệnh ("interview me", "hỏi tôi đi", "chắc chưa?", "stress-test suy nghĩ của tôi"), hoặc khi bạn nhận thấy mình đang tự động điền các giả định (assumptions) vào yêu cầu trước khi có bất kỳ kế hoạch, spec hay code nào.
+description: Kỹ năng bổ trợ (Sub-process) được gọi bởi ba-refine hoặc ba-spec. Có thể hoạt động độc lập nếu user yêu cầu. Khai thác những gì người dùng THỰC SỰ cần thay vì những gì họ nghĩ là họ cần. Thực hiện thông qua việc phỏng vấn từng-câu-hỏi-một cho đến khi đạt độ tự tin ~95% về mục tiêu cốt lõi. Sử dụng khi yêu cầu bị thiếu thông tin ("xây dựng cho tôi X" mà không nói "cho ai" hoặc "tại sao lại làm bây giờ"), hoặc khi người dùng chủ động gọi lệnh ("interview me", "hỏi tôi đi", "chắc chưa?", "stress-test suy nghĩ của tôi"), hoặc khi bạn nhận thấy mình đang tự động điền các giả định (assumptions) vào yêu cầu trước khi có bất kỳ kế hoạch, spec hay code nào.
 ---
 
 # Kỹ năng: Interview Me (Phỏng vấn làm rõ yêu cầu)

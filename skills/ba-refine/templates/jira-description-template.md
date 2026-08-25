@@ -39,16 +39,7 @@ Scenario: [Business Scenario 2]
 
 ### User Flow
 
-```
-Current Flow:
-1. [Step 1]
-2. [Step 2]
-
-Proposed Flow:
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
-```
+[Mermaid Flowchart được sinh tự động bởi ba-process-modeling]
 
 ### Design
 
@@ -59,16 +50,16 @@ Proposed Flow:
 
 ### Success Metrics
 
-| Metric | Current | Target | Measurement |
-|--------|---------|--------|-------------|
-| [KPI 1] | [baseline] | [goal] | [how to measure] |
-| [KPI 2] | [baseline] | [goal] | [how to measure] |
+| Metric   | Current    | Target   | Measurement      |
+|----------|------------|----------|------------------|
+| [KPI 1]  | [baseline] | [goal]   | [how to measure] |
+| [KPI 2]  | [baseline] | [goal]   | [how to measure] |
 
 ### Tracking
 
-| Event | Dashboard / Report | Owner |
-|-------|--------------------|-------|
-| [Event name] | [Link to dashboard] | [Team/Person] |
+| Event        | Dashboard / Report   | Owner         |
+|--------------|----------------------|---------------|
+| [Event name] | [Link to dashboard]  | [Team/Person] |
 
 ## 🧱 Technical Notes
 
