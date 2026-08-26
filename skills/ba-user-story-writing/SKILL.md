@@ -173,12 +173,37 @@ So that [value]
 | **S**mall       | ✅      | Đủ nhỏ để làm xong trong 1 sprint                              |
 | **T**estable    | ✅      | Test được: Verify số bước giảm từ 5 → 3, thời gian < 30s       |
 
-### Acceptance Criteria (Optional — nếu cần chi tiết hơn)
+### Acceptance Criteria (BẮT BUỘC — Gherkin codeblock)
 
-- Given khách hàng đã đăng nhập
-- When thực hiện luồng đặt lệnh mua
-- Then hoàn tất trong 3 bước (nhập mã CK → nhập số lượng/giá → xác nhận)
-- And thời gian hoàn tất < 30 giây
+**Mỗi User Story BẮT BUỘC phải có AC viết trong codeblock ```gherkin``` với cấu trúc:**
+- `Feature:` — Tên chức năng nghiệp vụ
+- ≥1 `Scenario:` **Happy Case** — Luồng thành công chính
+- ≥1 `Scenario:` **Edge Case** — Trường hợp biên/ngoại lệ
+- ≥1 `Scenario:` **Validation Case** — Kiểm tra dữ liệu đầu vào
+- Mỗi Scenario có đầy đủ `Given` + `When` + `Then` (+ `And` nếu cần)
+- Keywords `Given/When/Then/And` giữ nguyên tiếng Anh, nội dung viết Tiếng Việt
+
+```gherkin
+Feature: Đặt lệnh mua cổ phiếu nhanh
+
+  Scenario: Happy - Đặt lệnh thành công trong 3 bước
+    Given khách hàng đã đăng nhập và có tài khoản Margin
+    When thực hiện luồng đặt lệnh mua
+    Then hoàn tất trong 3 bước: nhập mã CK, nhập số lượng và giá, xác nhận
+    And thời gian hoàn tất < 30 giây
+
+  Scenario: Edge - Đặt lệnh khi thị trường đóng cửa
+    Given khách hàng đã đăng nhập
+    And thời gian hiện tại ngoài giờ giao dịch
+    When nhấn nút đặt lệnh mua
+    Then hệ thống hiển thị thông báo "Ngoài giờ giao dịch"
+    And lệnh không được gửi lên sàn
+
+  Scenario: Validation - Đặt lệnh với số lượng không hợp lệ
+    Given khách hàng đã đăng nhập và đang ở form đặt lệnh
+    When nhập số lượng cổ phiếu là 0 hoặc số âm
+    Then hệ thống hiển thị lỗi "Số lượng phải lớn hơn 0"
+    And nút xác nhận bị vô hiệu hóa
 ```
 
 **Nếu có tiêu chí ❌ (FAIL):**
@@ -229,10 +254,28 @@ So that **tôi có thể bắt được mức giá tốt khi thị trường bi�
 **INVEST Validation:** ✅ All passed
 
 **Acceptance Criteria:**
-- Given khách hàng đã đăng nhập
-- When thực hiện luồng đặt lệnh mua
-- Then hoàn tất trong 3 bước (nhập mã CK → nhập số lượng/giá → xác nhận)
-- And thời gian hoàn tất < 30 giây
+
+```gherkin
+Feature: Đặt lệnh mua cổ phiếu nhanh
+
+  Scenario: Happy - Đặt lệnh mua thành công trong 3 bước
+    Given khách hàng đã đăng nhập và có tài khoản Margin
+    When thực hiện luồng đặt lệnh mua
+    Then hoàn tất trong 3 bước: nhập mã CK, nhập số lượng và giá, xác nhận
+    And thời gian hoàn tất < 30 giây
+
+  Scenario: Edge - Đặt lệnh khi không đủ margin
+    Given khách hàng đã đăng nhập
+    And số dư margin không đủ cho lệnh
+    When xác nhận đặt lệnh mua
+    Then hệ thống hiển thị cảnh báo "Không đủ margin"
+    And lệnh không được gửi
+
+  Scenario: Validation - Nhập mã chứng khoán không tồn tại
+    Given khách hàng đang ở form đặt lệnh
+    When nhập mã CK không tồn tại trong hệ thống
+    Then hiển thị lỗi "Mã chứng khoán không hợp lệ"
+```
 
 ---
 
@@ -249,10 +292,26 @@ So that **không phải nhập lại thông tin giống nhau mỗi lần đặt 
 **INVEST Validation:** ✅ All passed
 
 **Acceptance Criteria:**
-- Given khách hàng đã có template lệnh đã lưu
-- When chọn template từ danh sách
-- Then form đặt lệnh tự động điền mã CK và số lượng
-- And khách hàng chỉ cần nhập giá và xác nhận
+
+```gherkin
+Feature: Lưu template lệnh thường dùng
+
+  Scenario: Happy - Chọn template để tự động điền form
+    Given khách hàng đã có template lệnh đã lưu
+    When chọn template từ danh sách
+    Then form đặt lệnh tự động điền mã CK và số lượng
+    And khách hàng chỉ cần nhập giá và xác nhận
+
+  Scenario: Edge - Xóa template đang được sử dụng
+    Given khách hàng đã chọn template vào form
+    When xóa template đó khỏi danh sách
+    Then form đặt lệnh giữ nguyên dữ liệu đã điền
+    And template bị xóa khỏi danh sách
+
+  Scenario: Validation - Lưu template với dữ liệu thiếu
+    Given khách hàng đang tạo template mới
+    When không nhập mã CK hoặc số lượng
+    Then hiển thị lỗi "Vui lòng nhập đầy đủ mã CK và số lượng"
 ```
 
 **Lưu vào:** `/project-root/workspace/{issueKey}/spec/user-stories.md`
@@ -278,10 +337,27 @@ I want đặt lệnh mua/bán trong 3 bước (thay vì 5 bước hiện tại)
 So that tôi có thể bắt được mức giá tốt khi thị trường biến động nhanh
 
 **Acceptance Criteria:**
-- Given khách hàng đã đăng nhập
-- When thực hiện luồng đặt lệnh mua
-- Then hoàn tất trong 3 bước (nhập mã CK → nhập số lượng/giá → xác nhận)
-- And thời gian hoàn tất < 30 giây
+
+```gherkin
+Feature: Đặt lệnh mua cổ phiếu nhanh
+
+  Scenario: Happy - Đặt lệnh mua thành công
+    Given khách hàng đã đăng nhập
+    When thực hiện luồng đặt lệnh mua cổ phiếu
+    Then hoàn tất trong 3 bước: nhập mã CK, nhập số lượng và giá, xác nhận
+    And thời gian hoàn tất < 30 giây
+
+  Scenario: Edge - Không đủ margin
+    Given khách hàng đã đăng nhập
+    And số dư margin không đủ
+    When xác nhận đặt lệnh mua
+    Then hiển thị thông báo "Không đủ margin"
+
+  Scenario: Validation - Số lượng không hợp lệ
+    Given khách hàng đang ở form đặt lệnh
+    When nhập số lượng là 0 hoặc số âm
+    Then hiển thị lỗi "Số lượng phải lớn hơn 0"
+```
 
 **Story Points:** 3  
 **Priority:** Highest  

@@ -161,33 +161,28 @@ Dựa trên complexity, chọn diagram type:
 
 ### Bước 4: Create Diagram (Mermaid Syntax)
 
+> **⚠️ TUÂN THỦ RULE 7 (AGENTS.md):** Tất cả sơ đồ Mermaid phải:
+> - Dùng `flowchart LR` (KHÔNG dùng TD)
+> - Bắt đầu bằng Bước 1 trực tiếp (KHÔNG có node "Start")
+> - KHÔNG hardcode `style fill:#...` — render bằng `--bg '#ffffff' --fg '#000000'`
+> - Mũi tên quay lại (`-.->`) khai báo **ở cuối file** mã nguồn
+
 #### Option 1: Flowchart (Simple)
 
 ```mermaid
-flowchart TD
-    Start([Khách hàng muốn đặt lệnh])
-    A[Gọi điện cho broker]
-    B[Broker ghi lệnh vào sổ tay]
-    C[Broker nhập vào HO]
-    D{Đủ margin?}
-    E[HO gửi lệnh lên sàn]
-    F[Broker gọi lại KH - Reject]
-    End1([Lệnh lên sàn - Success])
-    End2([Lệnh reject - Failure])
-    
-    Start --> A
+flowchart LR
+    A["Bước 1: KH gọi điện cho broker"]
+    B["Bước 2: Broker ghi lệnh vào sổ tay"]
+    C["Bước 3: Broker nhập vào HO"]
+    D{"Đủ margin?"}
+    E["Bước 4: HO gửi lệnh lên sàn"]
+    F["Bước 4b: Broker gọi lại KH - Reject"]
+
     A --> B
     B --> C
     C --> D
     D -->|Yes| E
     D -->|No| F
-    E --> End1
-    F --> End2
-    
-    style Start fill:#90EE90
-    style End1 fill:#90EE90
-    style End2 fill:#FFB6C1
-    style D fill:#FFD700
 ```
 
 **Pros:** Đơn giản, dễ hiểu  
@@ -198,33 +193,33 @@ flowchart TD
 #### Option 2: Swim Lane Diagram (Multi-Actor)
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph KH["🧑 Khách hàng"]
-        Start([Muốn đặt lệnh])
-        A1[Gọi điện cho broker]
-        F1[Nhận reject call]
+        A1["Bước 1: Gọi điện cho broker"]
+        F1["Nhận reject call"]
     end
     
     subgraph Broker["👨‍💼 Broker"]
-        B1[Nghe điện thoại]
-        B2[Ghi lệnh vào sổ tay]
-        B3[Nhập vào HO<br/>5 steps, 3-5 phút]
-        B4[Gọi lại KH - Reject]
+        B1["Bước 2: Nghe điện thoại"]
+        B2["Bước 3: Ghi lệnh vào sổ tay"]
+        B3["Bước 4: Nhập vào HO"]
+        B4["Gọi lại KH - Reject"]
     end
     
     subgraph HO["🖥️ Hệ thống HO"]
-        C1[Nhận lệnh từ broker]
-        C2{Kiểm tra margin<br/>balance >= value * 1.5?}
-        C3[Gửi FIX message lên sàn]
-        C4[Log reject reason]
+        C1["Bước 5: Nhận lệnh từ broker"]
+        C2{"Kiểm tra margin"}
+        C3["Bước 6: Gửi FIX message lên sàn"]
+        C4["Log reject reason"]
     end
     
     subgraph San["🏛️ Sàn HNX/HSX"]
-        D1[Nhận lệnh qua FIX]
-        D2[Match order]
+        D1["Bước 7: Nhận lệnh qua FIX"]
+        D2["Bước 8: Match order"]
+        D3["Lệnh lên sàn"]
+        D4["Lệnh reject"]
     end
     
-    Start --> A1
     A1 -.->|Phone call| B1
     B1 --> B2
     B2 --> B3
@@ -234,29 +229,20 @@ flowchart TD
     C2 -->|No| C4
     C3 -.->|FIX protocol| D1
     D1 --> D2
+    D2 --> D3
     C4 -.-> B4
     B4 -.->|Phone call| F1
-    
-    D2 --> End1([✅ Lệnh lên sàn])
-    F1 --> End2([❌ Lệnh reject])
-    
-    style Start fill:#90EE90
-    style End1 fill:#90EE90
-    style End2 fill:#FFB6C1
-    style C2 fill:#FFD700
-    style B3 fill:#FFE4B5
-    style C3 fill:#ADD8E6
+    F1 --> D4
 ```
 
 **Pros:** Thấy rõ actor nào làm gì, handoffs giữa actors  
 **Cons:** Phức tạp hơn flowchart
 
 **Legend:**
-- `-->` Solid arrow: Sequential flow (same actor)
-- `-.->` Dotted arrow: Handoff to another actor (communication)
-- `{}` Diamond: Decision point
+- `-->` Solid arrow: Luồng tuần tự (cùng actor)
+- `-.->` Dotted arrow: Handoff sang actor khác (giao tiếp)
+- `{}` Diamond: Điểm quyết định
 - `[]` Rectangle: Task/Activity
-- `([])` Rounded rectangle: Start/End event
 - `subgraph` Box: Swim lane (actor/role)
 
 ---
@@ -265,111 +251,87 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Start([Start Event:<br/>KH muốn đặt lệnh])
-    T1[Task:<br/>Gọi broker]
-    T2[Task:<br/>Ghi sổ tay]
-    T3[Task:<br/>Nhập HO]
-    G1{Gateway:<br/>Đủ margin?}
-    T4[Task:<br/>Gửi FIX]
-    T5[Task:<br/>Match order]
-    T6[Task:<br/>Reject + Call]
-    End1([End Event:<br/>Success])
-    End2([End Event:<br/>Failure])
-    
-    Start --> T1
+    T1["Bước 1: Gọi broker"]
+    T2["Bước 2: Ghi sổ tay"]
+    T3["Bước 3: Nhập HO"]
+    G1{"Gateway: Đủ margin?"}
+    T4["Bước 4a: Gửi FIX"]
+    T5["Bước 5: Match order"]
+    T6["Bước 4b: Reject + Call"]
+
     T1 --> T2
     T2 --> T3
     T3 --> G1
     G1 -->|Yes| T4
-    G1 -->|No| T6
     T4 --> T5
-    T5 --> End1
-    T6 --> End2
-    
-    style Start fill:#90EE90,stroke:#2E8B57,stroke-width:3px
-    style End1 fill:#90EE90,stroke:#2E8B57,stroke-width:3px
-    style End2 fill:#FFB6C1,stroke:#DC143C,stroke-width:3px
-    style G1 fill:#FFD700,stroke:#FF8C00,stroke-width:2px
+    G1 -->|No| T6
 ```
 
 **BPMN Elements:**
-- **Start Event** (circle): Trigger của process
 - **Task** (rectangle): Activity (manual hoặc automated)
-- **Gateway** (diamond): Decision point (XOR, AND, OR)
-- **End Event** (circle, bold): Kết thúc process
+- **Gateway** (diamond): Điểm quyết định (XOR, AND, OR)
 - **Sequence Flow** (arrow): Thứ tự thực hiện
 
-**Pros:** Standard notation, formal, compliance-ready  
+**Pros:** Ký hiệu chuẩn, chính thức, phù hợp compliance  
 **Cons:** Learning curve cao hơn
 
 ### Bước 5: Annotate Pain Points (Optional)
 
-Nếu đây là AS-IS diagram, highlight pain points:
+Nếu đây là AS-IS diagram, dùng emoji/text để ghi chú pain points trực tiếp trong nhãn node:
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph KH["🧑 Khách hàng"]
-        Start([Muốn đặt lệnh])
-        A1[Gọi điện<br/>⏱️ Chờ 2 phút]
+        A1["Bước 1: Gọi điện — ⏱️ Chờ 2 phút"]
     end
-    
+
     subgraph Broker["👨‍💼 Broker"]
-        B1[Nghe điện thoại]
-        B2[Ghi sổ tay<br/>⚠️ Lỗi nhập liệu 2-3%]
-        B3["Nhập HO (5 steps)<br/>🐢 3-5 phút<br/>⚠️ Bottleneck"]
+        B1["Bước 2: Nghe điện thoại"]
+        B2["Bước 3: Ghi sổ tay — ⚠️ Lỗi 2-3%"]
+        B3["Bước 4: Nhập HO — 🐢 3-5 phút — ⚠️ Bottleneck"]
     end
-    
+
     subgraph HO["🖥️ Hệ thống HO"]
-        C1[Nhận lệnh]
-        C2{Kiểm tra margin}
-        C3[Gửi FIX]
+        C1["Bước 5: Nhận lệnh"]
+        C2{"Kiểm tra margin"}
+        C3["Bước 6: Gửi FIX — ⏱️ Total: 10-15 phút"]
     end
-    
-    Start --> A1
+
     A1 -.-> B1
     B1 --> B2
     B2 --> B3
     B3 -.-> C1
     C1 --> C2
     C2 -->|Yes| C3
-    C3 --> End([✅ Lệnh lên sàn<br/>⏱️ Total: 10-15 phút])
-    
-    style B3 fill:#FFB6C1,stroke:#DC143C,stroke-width:3px
-    style B2 fill:#FFE4B5,stroke:#FFA500,stroke-width:2px
-    style A1 fill:#FFE4B5,stroke:#FFA500,stroke-width:2px
 ```
 
 **Pain Point Legend:**
 - 🐢 = Slow (bottleneck)
 - ⚠️ = High error rate
 - ⏱️ = Time metric
-- Red border = Critical pain point
-- Orange border = Medium pain point
 
 ### Bước 6: Create TO-BE Diagram (Improved)
 
-Vẽ TO-BE diagram với improvements:
+Vẽ TO-BE diagram với improvements (dùng emoji trong nhãn để highlight):
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph KH["📱 Khách hàng (Mobile App)"]
-        Start([Muốn đặt lệnh])
-        A1["Nhập mã CK + SL + Giá<br/>✅ 1 màn hình<br/>⏱️ 10 giây"]
-        A2["Xác nhận<br/>⏱️ 5 giây"]
-        A3[Nhận notification real-time]
+        A1["Bước 1: Nhập mã CK + SL + Giá — ✅ 1 màn hình — ⏱️ 10 giây"]
+        A2["Bước 2: Xác nhận — ⏱️ 5 giây"]
+        A3["Nhận notification real-time"]
     end
-    
+
     subgraph OMS["☁️ OMS (Cloud)"]
-        C1["Validate real-time<br/>✅ < 1 giây"]
-        C2{Kiểm tra margin}
-        C3["Gửi FIX<br/>✅ Automated"]
+        C1["Bước 3: Validate real-time — ✅ < 1 giây"]
+        C2{"Kiểm tra margin"}
+        C3["Bước 4: Gửi FIX — ✅ Automated"]
     end
-    
+
     subgraph San["🏛️ Sàn HNX/HSX"]
-        D1[Match order]
+        D1["Bước 5: Match order — ⏱️ Total < 30 giây — 🎯 Giảm 95%"]
     end
-    
-    Start --> A1
+
     A1 --> A2
     A2 -.->|HTTPS API| C1
     C1 --> C2
@@ -377,16 +339,10 @@ flowchart TD
     C2 -.->|No| A3
     C3 -.->|FIX| D1
     D1 -.->|WebSocket| A3
-    A3 --> End([✅ Lệnh lên sàn<br/>⏱️ Total: < 30 giây<br/>🎯 Giảm 95%])
-    
-    style A1 fill:#90EE90,stroke:#2E8B57,stroke-width:2px
-    style C1 fill:#ADD8E6,stroke:#4682B4,stroke-width:2px
-    style C3 fill:#ADD8E6,stroke:#4682B4,stroke-width:2px
-    style End fill:#90EE90,stroke:#2E8B57,stroke-width:3px
 ```
 
 **Improvements Highlighted:**
-- ✅ Green = Improvement
+- ✅ = Improvement (ghi trực tiếp trong nhãn node)
 - ☁️ Cloud = New technology
 - 📱 Mobile = New channel
 - ⏱️ Time savings = KPI achieved
@@ -547,9 +503,11 @@ mkdir -p /project-root/workspace/{issueKey}/spec
 
 **Quan trọng**: Sau khi sinh ra code Mermaid, BẮT BUỘC gọi lệnh `/flowchart` (đối với Claude) hoặc chạy trực tiếp script:
 ```bash
-node skills/ba-design-flowchart/scripts/render.mjs --input <file_mmd_tạm> --output <file_png_kết_quả> --format png --theme tokyo-night
+node skills/ba-design-flowchart/scripts/render.mjs --input <file_mmd_tạm> --output <file_png_kết_quả> --format png --bg '#ffffff' --fg '#000000'
 ```
 Nếu script báo lỗi cú pháp, tự động đọc lỗi và sửa lại mã Mermaid cho đến khi thành công.
+
+> **⚠️ LƯU Ý:** Luôn render bằng `--bg '#ffffff' --fg '#000000'` (nền trắng, chữ đen) theo Rule 7 trong `AGENTS.md`. KHÔNG dùng theme có màu phức tạp cho sơ đồ nghiệp vụ.
 
 ## Tương tác với các Skills khác
 

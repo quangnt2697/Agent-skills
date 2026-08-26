@@ -461,16 +461,42 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
 
 1. Copy `refined-draft.md` → `refined.md` (bản cuối cùng)
 2. **Làm giàu nội dung Spec bằng các Kỹ năng Bổ trợ (Sub-processes):**
-   - Gọi kỹ năng `/ba-process-modeling` để thiết kế flowchart cho ý tưởng trong `refined.md`.
-   - Gọi kỹ năng `/ba-user-story-writing` để thiết kế, tinh chỉnh lại nội dung user story trong `refined.md` cho chuẩn quy tắc trước khi push lên Jira.
-3. Tính confidence score:
+   - Gọi kỹ năng `/ba-user-story-writing` để tinh chỉnh User Story + AC trong `refined.md`. **AC BẮT BUỘC** phải viết trong codeblock ` ```gherkin ``` ` với đầy đủ:
+     - ≥1 Scenario **Happy Case** (luồng thành công)
+     - ≥1 Scenario **Edge Case** (trường hợp biên/ngoại lệ)
+     - ≥1 Scenario **Validation Case** (kiểm tra dữ liệu đầu vào)
+   - Gọi kỹ năng `/ba-process-modeling` để thiết kế flowchart. **Flowchart BẮT BUỘC tuân thủ Rule 7** (xem `AGENTS.md`):
+     - Dùng `flowchart LR`, KHÔNG dùng node "Start"
+     - Bắt đầu bằng "Bước 1", KHÔNG hardcode `style fill:#...`
+     - Mũi tên quay lại (`-.->`) khai báo ở cuối file mã nguồn
+3. **Render sơ đồ Mermaid thành ảnh PNG:**
+   ```bash
+   cd "$(git rev-parse --show-toplevel)"
+   mkdir -p /project-root/workspace/{issueKey}/spec/diagrams
+
+   # Lưu mã Mermaid từ refined.md thành file .mmd
+   # (Agent tự trích xuất khối ```mermaid``` từ refined.md)
+
+   # Render thành PNG (nền trắng, chữ đen theo Rule 7)
+   node skills/ba-design-flowchart/scripts/render.mjs \
+     --input /project-root/workspace/{issueKey}/spec/diagrams/process-flow.mmd \
+     --output /project-root/workspace/{issueKey}/spec/diagrams/process-flow.png \
+     --format png \
+     --bg '#ffffff' --fg '#000000'
+   ```
+   Nếu render lỗi (exit code > 0), đọc log lỗi → sửa lại mã Mermaid → render lại (tối đa 3 vòng).
+4. **Thay khối mermaid code trong `refined.md`** bằng placeholder ảnh:
+   ```markdown
+   ![Sơ đồ quy trình](diagrams/process-flow.png)
+   ```
+5. Tính confidence score:
 
    **Công thức:**
    ```
    confidence = (user_story * 0.30) + (ac_complete * 0.30) + (assumptions_surfaced * 0.20) + (stress_test * 0.20)
    ```
 
-3. Thông báo cho user:
+6. Thông báo cho user:
    ```markdown
 ✅ **Bản cuối cùng đã chốt!**
 📄 File: `/project-root/workspace/{issueKey}/spec/refined.md`
@@ -479,7 +505,7 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
 Bạn có muốn push lên Jira không? (Gõ **OK** hoặc **Không**)
    ```
 
-4. **DỪNG LẠI VÀ CHỜ USER trả lời có push Jira hay không** trước khi chuyển sang Giai đoạn 4.
+7. **DỪNG LẠI VÀ CHỜ USER trả lời có push Jira hay không** trước khi chuyển sang Giai đoạn 4.
 
 ---
 
@@ -508,7 +534,24 @@ Bạn có muốn push lên Jira không? (Gõ **OK** hoặc **Không**)
      "/project-root/workspace/{issueKey}/spec/refined.md" && echo "❌ Còn placeholder chưa thay"
    ```
 
-   Cả hai lệnh không in ra gì → sạch, đi tiếp.
+   Cả hai lệnh không in ra gì → sạch.
+
+   **Kiểm tra AC phải có Gherkin syntax thực tế:**
+   ```bash
+   # AC phải có ≥3 Scenario (happy + edge + validation)
+   SCENARIO_COUNT=$(grep -c 'Scenario:' "/project-root/workspace/{issueKey}/spec/refined.md" || true)
+   if [ "$SCENARIO_COUNT" -lt 3 ]; then
+     echo "❌ AC chỉ có ${SCENARIO_COUNT} Scenario — cần ≥3 (Happy + Edge + Validation). Quay lại Giai đoạn 3."
+   fi
+
+   # Phải có đủ Given/When/Then
+   GWT_COUNT=$(grep -cE '^\s+(Given|When|Then)' "/project-root/workspace/{issueKey}/spec/refined.md" || true)
+   if [ "$GWT_COUNT" -lt 6 ]; then
+     echo "❌ Chỉ có ${GWT_COUNT} dòng Given/When/Then — cần ≥6. Quay lại Giai đoạn 3."
+   fi
+   ```
+
+   Tất cả checks pass → đi tiếp.
 
 2. **Xem trước ADF (khuyến nghị, không gọi Jira)**
 
@@ -519,7 +562,26 @@ Bạn có muốn push lên Jira không? (Gõ **OK** hoặc **Không**)
 
    Kiểm tra dòng tóm tắt `→ N block, trong đó M bảng`: `M` phải khớp số bảng markdown trong file (Success Metrics + Tracking = 2). Nếu `M = 0` mà file có bảng → cú pháp bảng sai (thiếu hàng `|---|` hoặc lệch số cột).
 
-3. **Cập nhật Jira description**
+3. **Đính kèm ảnh sơ đồ lên Jira (nếu có)**
+
+   Nếu Bước 3.3 đã render ảnh PNG vào `/project-root/workspace/{issueKey}/spec/diagrams/`, upload lên Jira dạng attachment:
+
+   ```bash
+   # Upload từng file PNG trong thư mục diagrams
+   for PNG_FILE in /project-root/workspace/{issueKey}/spec/diagrams/*.png; do
+     [ -f "$PNG_FILE" ] || continue
+     curl -s -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
+       -X POST \
+       -H "X-Atlassian-Token: no-check" \
+       -F "file=@${PNG_FILE}" \
+       "${ATLASSIAN_BASE_URL}/rest/api/3/issue/{issueKey}/attachments"
+     echo "✅ Đã upload $(basename $PNG_FILE) lên Jira"
+   done
+   ```
+
+   Ảnh PNG sẽ hiển thị trong tab **Attachment** của Jira ticket. Trong description, section "User Flow" sẽ chứa ghi chú tham chiếu đến ảnh attachment.
+
+4. **Cập nhật Jira description**
 
    Dùng đúng script này — **không** tự dựng ADF bằng `curl` thủ công. Script đã xử lý bảng, ngắt dòng mềm và chuẩn hoá issue key; ADF tự chế mỗi lần một kiểu chính là nguyên nhân description bị lệch style.
 
@@ -531,7 +593,7 @@ Bạn có muốn push lên Jira không? (Gõ **OK** hoặc **Không**)
    Script nhận cả issue key trần lẫn URL Jira đầy đủ, và đọc credentials
    `ATLASSIAN_BASE_URL` / `ATLASSIAN_EMAIL` / `ATLASSIAN_API_TOKEN` từ `.env`.
 
-4. **Ghi log push history**
+5. **Ghi log push history**
    
    ```json
    {
