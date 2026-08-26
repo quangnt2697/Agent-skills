@@ -3,8 +3,9 @@
 import { execSync } from 'child_process';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { DEFAULT_PNG_WIDTH, parsePngWidth, renderSvgToPng } from './png.mjs';
+import { renderWithMmdc, selectEngine, warnIgnoredFlags } from './mmdc-engine.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const skillRoot = join(__dirname, '..');
@@ -58,29 +59,33 @@ async function loadBeautifulMermaid() {
   }
 }
 
+const PARSE_DEFAULTS = {
+  input: null,
+  output: null,
+  format: 'svg',
+  engine: 'mmdc',
+  engineExplicit: false,
+  theme: null,
+  bg: null,
+  fg: null,
+  font: 'Inter',
+  transparent: false,
+  useAscii: false,
+  paddingX: 5,
+  paddingY: 5,
+  boxBorderPadding: 1,
+  colorMode: 'auto',
+  padding: 40,
+  nodeSpacing: 24,
+  layerSpacing: 40,
+  componentSpacing: 24,
+  interactive: false,
+  width: DEFAULT_PNG_WIDTH,
+};
+
 function parseArgs() {
   const args = process.argv.slice(2);
-  const opts = {
-    input: null,
-    output: null,
-    format: 'svg',
-    theme: null,
-    bg: null,
-    fg: null,
-    font: 'Inter',
-    transparent: false,
-    useAscii: false,
-    paddingX: 5,
-    paddingY: 5,
-    boxBorderPadding: 1,
-    colorMode: 'auto',
-    padding: 40,
-    nodeSpacing: 24,
-    layerSpacing: 40,
-    componentSpacing: 24,
-    interactive: false,
-    width: DEFAULT_PNG_WIDTH,
-  };
+  const opts = { ...PARSE_DEFAULTS };
 
   for (let i = 0; i < args.length; i++) {
     const key = args[i];
@@ -90,6 +95,7 @@ function parseArgs() {
       case '--input': case '-i': opts.input = val; i++; break;
       case '--output': case '-o': opts.output = val; i++; break;
       case '--format': case '-f': opts.format = val; i++; break;
+      case '--engine': case '-e': opts.engine = val; opts.engineExplicit = true; i++; break;
       case '--theme': case '-t': opts.theme = val; i++; break;
       case '--bg': opts.bg = val; i++; break;
       case '--fg': opts.fg = val; i++; break;
@@ -120,6 +126,10 @@ Options:
   -i, --input <file>       Input Mermaid file (.mmd) [required]
   -o, --output <file>      Output file (default: stdout; input.png for PNG)
   -f, --format <fmt>       Output format: svg | png | ascii (default: svg)
+  -e, --engine <name>      Layout engine: mmdc | beautiful (default: mmdc)
+                           mmdc      = Mermaid chuẩn, cần Chrome, bố cục đúng Rule 7
+                           beautiful = beautiful-mermaid, không cần trình duyệt,
+                                       hỗ trợ ascii + 15 theme
   -t, --theme <name>       Theme name (e.g. tokyo-night, dracula)
       --bg <hex>           Background color
       --fg <hex>           Foreground color
@@ -160,6 +170,11 @@ Options:
     process.exit(1);
   }
 
+  if (!['mmdc', 'beautiful'].includes(opts.engine)) {
+    console.error(`Error: Unsupported engine: ${opts.engine}. Use mmdc or beautiful.`);
+    process.exit(1);
+  }
+
   if (opts.format === 'png') {
     opts.width = parsePngWidth(opts.width);
   }
@@ -167,8 +182,43 @@ Options:
   return opts;
 }
 
+function outputPathFor(opts, ext) {
+  const path = opts.output ?? (
+    /\.mmd$/i.test(opts.input) ? opts.input.replace(/\.mmd$/i, ext) : `${opts.input}${ext}`
+  );
+  // batch.mjs đã tự tạo thư mục đích; render.mjs làm tương tự để mmdc không báo
+  // "Output directory doesn't exist" và beautiful không ném ENOENT.
+  mkdirSync(dirname(path), { recursive: true });
+  return path;
+}
+
 async function main() {
   const opts = parseArgs();
+  const { engine, chrome } = selectEngine({
+    requested: opts.engine,
+    format: opts.format,
+    explicit: opts.engineExplicit,
+  });
+
+  if (engine === 'mmdc') {
+    warnIgnoredFlags(opts, PARSE_DEFAULTS);
+    const output = outputPathFor(opts, opts.format === 'png' ? '.png' : '.svg');
+    renderWithMmdc({
+      input: opts.input,
+      output,
+      format: opts.format,
+      width: opts.width,
+      bg: opts.bg,
+      fg: opts.fg,
+      transparent: opts.transparent,
+      theme: opts.theme,
+      font: opts.font,
+      chrome,
+    });
+    console.log(`${opts.format.toUpperCase()} diagram saved to ${output}`);
+    return;
+  }
+
   const { renderMermaidSVG, renderMermaidASCII, THEMES } = await loadBeautifulMermaid();
   const input = readFileSync(opts.input, 'utf8');
 
@@ -223,13 +273,11 @@ async function main() {
     });
 
     if (opts.format === 'png') {
-      const outputPath = opts.output || (
-        /\.mmd$/i.test(opts.input) ? opts.input.replace(/\.mmd$/i, '.png') : `${opts.input}.png`
-      );
+      const outputPath = outputPathFor(opts, '.png');
       writeFileSync(outputPath, renderSvgToPng(svg, opts.width));
       console.log(`PNG diagram saved to ${outputPath}`);
     } else if (opts.output) {
-      writeFileSync(opts.output, svg);
+      writeFileSync(outputPathFor(opts, '.svg'), svg);
       console.log(`SVG diagram saved to ${opts.output}`);
     } else {
       console.log(svg);

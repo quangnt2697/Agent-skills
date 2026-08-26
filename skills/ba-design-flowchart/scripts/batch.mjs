@@ -5,6 +5,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import { DEFAULT_PNG_WIDTH, parsePngWidth, renderSvgToPng } from './png.mjs';
+import { renderWithMmdc, selectEngine, warnIgnoredFlags } from './mmdc-engine.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const skillRoot = join(__dirname, '..');
@@ -58,35 +59,39 @@ async function loadBeautifulMermaid() {
   }
 }
 
+const PARSE_DEFAULTS = {
+  inputDir: null,
+  outputDir: null,
+  format: 'svg',
+  engine: 'mmdc',
+  engineExplicit: false,
+  theme: null,
+  bg: null,
+  fg: null,
+  line: null,
+  accent: null,
+  muted: null,
+  surface: null,
+  border: null,
+  font: 'Inter',
+  transparent: false,
+  useAscii: false,
+  paddingX: 5,
+  paddingY: 5,
+  boxBorderPadding: 1,
+  colorMode: 'auto',
+  padding: 40,
+  nodeSpacing: 24,
+  layerSpacing: 40,
+  componentSpacing: 24,
+  interactive: false,
+  workers: 4,
+  width: DEFAULT_PNG_WIDTH,
+};
+
 function parseArgs() {
   const args = process.argv.slice(2);
-  const opts = {
-    inputDir: null,
-    outputDir: null,
-    format: 'svg',
-    theme: null,
-    bg: null,
-    fg: null,
-    line: null,
-    accent: null,
-    muted: null,
-    surface: null,
-    border: null,
-    font: 'Inter',
-    transparent: false,
-    useAscii: false,
-    paddingX: 5,
-    paddingY: 5,
-    boxBorderPadding: 1,
-    colorMode: 'auto',
-    padding: 40,
-    nodeSpacing: 24,
-    layerSpacing: 40,
-    componentSpacing: 24,
-    interactive: false,
-    workers: 4,
-    width: DEFAULT_PNG_WIDTH,
-  };
+  const opts = { ...PARSE_DEFAULTS };
 
   for (let i = 0; i < args.length; i++) {
     const key = args[i];
@@ -96,6 +101,7 @@ function parseArgs() {
       case '--input-dir': case '-i': opts.inputDir = val; i++; break;
       case '--output-dir': case '-o': opts.outputDir = val; i++; break;
       case '--format': case '-f': opts.format = val; i++; break;
+      case '--engine': case '-e': opts.engine = val; opts.engineExplicit = true; i++; break;
       case '--theme': case '-t': opts.theme = val; i++; break;
       case '--bg': opts.bg = val; i++; break;
       case '--fg': opts.fg = val; i++; break;
@@ -127,6 +133,10 @@ Options:
   -i, --input-dir <dir>    Input directory containing .mmd files [required]
   -o, --output-dir <dir>   Output directory for rendered files [required]
   -f, --format <fmt>       Output format: svg | png | ascii (default: svg)
+  -e, --engine <name>      Layout engine: mmdc | beautiful (default: mmdc)
+                           mmdc      = Mermaid chuẩn, cần Chrome, bố cục đúng Rule 7
+                           beautiful = beautiful-mermaid, không cần trình duyệt,
+                                       hỗ trợ ascii + 15 theme
   -t, --theme <name>       Theme name (e.g. tokyo-night, dracula)
       --bg <hex>           Background color
       --fg <hex>           Foreground color
@@ -148,7 +158,8 @@ Options:
       --layer-spacing <n>  SVG vertical layer spacing (default: 40)
       --component-spacing <n>  SVG disconnected component spacing (default: 24)
       --interactive        Enable XY chart hover tooltips (SVG only)
-  -w, --workers <n>        Parallel workers (default: 4)`);
+  -w, --workers <n>        Parallel workers (default: 4; engine beautiful only —
+                           engine mmdc render tuần tự)`);
         process.exit(0);
     }
   }
@@ -171,6 +182,11 @@ Options:
     process.exit(1);
   }
 
+  if (!['mmdc', 'beautiful'].includes(opts.engine)) {
+    console.error(`Error: Unsupported engine: ${opts.engine}. Use mmdc or beautiful.`);
+    process.exit(1);
+  }
+
   if (opts.format === 'png') {
     opts.width = parsePngWidth(opts.width);
   }
@@ -178,11 +194,28 @@ Options:
   return opts;
 }
 
-async function renderFile(file, inputDir, outputDir, opts, lib) {
-  const { renderMermaidSVG, renderMermaidASCII, THEMES } = lib;
+async function renderFile(file, inputDir, outputDir, opts, engine, lib, chrome) {
   const inputPath = join(inputDir, file);
   const ext = opts.format === 'svg' ? '.svg' : opts.format === 'png' ? '.png' : '.txt';
   const outputPath = join(outputDir, file.replace(/\.mmd$/, ext));
+
+  if (engine === 'mmdc') {
+    renderWithMmdc({
+      input: inputPath,
+      output: outputPath,
+      format: opts.format,
+      width: opts.width,
+      bg: opts.bg,
+      fg: opts.fg,
+      transparent: opts.transparent,
+      theme: opts.theme,
+      font: opts.font,
+      chrome,
+    });
+    return;
+  }
+
+  const { renderMermaidSVG, renderMermaidASCII, THEMES } = lib;
   const input = readFileSync(inputPath, 'utf8');
   const theme = opts.theme ? THEMES[opts.theme] : undefined;
   const customColors = {
@@ -231,10 +264,20 @@ async function renderFile(file, inputDir, outputDir, opts, lib) {
 
 async function main() {
   const opts = parseArgs();
-  const lib = await loadBeautifulMermaid();
+  const { engine, chrome } = selectEngine({
+    requested: opts.engine,
+    format: opts.format,
+    explicit: opts.engineExplicit,
+  });
 
-  if (opts.theme && !Object.prototype.hasOwnProperty.call(lib.THEMES, opts.theme)) {
-    throw new Error(`Unknown theme: ${opts.theme}. Run node scripts/themes.mjs to list themes.`);
+  let lib = null;
+  if (engine === 'mmdc') {
+    warnIgnoredFlags(opts, PARSE_DEFAULTS);
+  } else {
+    lib = await loadBeautifulMermaid();
+    if (opts.theme && !Object.prototype.hasOwnProperty.call(lib.THEMES, opts.theme)) {
+      throw new Error(`Unknown theme: ${opts.theme}. Run node scripts/themes.mjs to list themes.`);
+    }
   }
 
   mkdirSync(opts.outputDir, { recursive: true });
@@ -254,7 +297,7 @@ async function main() {
   for (let i = 0; i < files.length; i += opts.workers) {
     const batch = files.slice(i, i + opts.workers);
     const results = await Promise.allSettled(
-      batch.map(file => renderFile(file, opts.inputDir, opts.outputDir, opts, lib))
+      batch.map(file => renderFile(file, opts.inputDir, opts.outputDir, opts, engine, lib, chrome))
     );
 
     results.forEach((result, idx) => {

@@ -10,3 +10,4 @@ __pycache__/
 
 # Artifact sinh ra bởi skill — chạy lại được, không commit
 workspace/
+.agents/workspace_state.md  

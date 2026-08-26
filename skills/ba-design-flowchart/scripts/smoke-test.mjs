@@ -2,7 +2,7 @@
 
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +12,7 @@ import {
   THEMES,
 } from 'beautiful-mermaid';
 import { parsePngWidth, prepareSvgForPng, renderSvgForPng, renderSvgToPng } from './png.mjs';
+import { resolveChrome, resolveMermaidTheme } from './mmdc-engine.mjs';
 
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
 const examplesDir = join(scriptsDir, '..', 'assets', 'example_diagrams');
@@ -88,6 +89,16 @@ function assertRenderedPixel(svg, expectedRgba) {
   assert.deepEqual([...rendered.pixels.subarray(0, 4)], expectedRgba);
 }
 
+for (const themeName of inheritedThemeNames) {
+  assert.equal(
+    resolveMermaidTheme(themeName).theme,
+    'base',
+    `resolveMermaidTheme leaked inherited property for: ${themeName}`,
+  );
+}
+assert.equal(resolveMermaidTheme('dracula').theme, 'dark');
+assert.equal(resolveMermaidTheme(null).theme, 'base');
+
 const cliTestDir = mkdtempSync(join(tmpdir(), 'pretty-mermaid-smoke-'));
 const flowchartPath = join(examplesDir, 'flowchart.mmd');
 const xychartPath = join(examplesDir, 'xychart.mmd');
@@ -106,9 +117,12 @@ const customColorCodes = [
 ];
 
 try {
+  // Các assertion dưới đây mô tả hành vi của engine `beautiful` (theme, --interactive,
+  // màu ASCII), nên phải ghim engine tường minh — mặc định của CLI giờ là mmdc.
   for (const themeName of inheritedThemeNames) {
     const renderResult = spawnSync(process.execPath, [
       join(scriptsDir, 'render.mjs'),
+      '--engine', 'beautiful',
       '--input', flowchartPath,
       '--theme', themeName,
     ], { encoding: 'utf8' });
@@ -117,6 +131,7 @@ try {
 
     const batchResult = spawnSync(process.execPath, [
       join(scriptsDir, 'batch.mjs'),
+      '--engine', 'beautiful',
       '--input-dir', examplesDir,
       '--output-dir', join(cliTestDir, themeName),
       '--theme', themeName,
@@ -128,6 +143,7 @@ try {
   const interactiveSvgPath = join(cliTestDir, 'interactive.svg');
   const renderInteractiveResult = spawnSync(process.execPath, [
     join(scriptsDir, 'render.mjs'),
+    '--engine', 'beautiful',
     '--input', xychartPath,
     '--output', interactiveSvgPath,
     '--interactive',
@@ -138,6 +154,7 @@ try {
   const batchInteractiveDir = join(cliTestDir, 'batch-interactive');
   const batchInteractiveResult = spawnSync(process.execPath, [
     join(scriptsDir, 'batch.mjs'),
+    '--engine', 'beautiful',
     '--input-dir', examplesDir,
     '--output-dir', batchInteractiveDir,
     '--interactive',
@@ -149,6 +166,7 @@ try {
   const pngPath = join(cliTestDir, 'flowchart.png');
   const renderPngResult = spawnSync(process.execPath, [
     join(scriptsDir, 'render.mjs'),
+    '--engine', 'beautiful',
     '--input', flowchartPath,
     '--output', pngPath,
     '--format', 'png',
@@ -163,6 +181,7 @@ try {
   const batchPngDir = join(cliTestDir, 'batch-png');
   const batchPngResult = spawnSync(process.execPath, [
     join(scriptsDir, 'batch.mjs'),
+    '--engine', 'beautiful',
     '--input-dir', examplesDir,
     '--output-dir', batchPngDir,
     '--format', 'png',
@@ -229,6 +248,59 @@ try {
   const batchCustomAscii = readFileSync(join(batchCustomAsciiDir, 'flowchart.txt'), 'utf8');
   for (const colorCode of customColorCodes) {
     assert.ok(batchCustomAscii.includes(colorCode), `batch.mjs omitted custom ASCII color ${colorCode}`);
+  }
+  // Engine mmdc (mặc định) — kiểm tra hồi quy Rule 7: flowchart LR có subgraph và cạnh
+  // quay lại phải giữ node đầu tiên ở ngoài cùng bên trái. Đây chính là ca mà engine
+  // beautiful render sai (node A bị đẩy sang phải), lý do mmdc thành mặc định.
+  const chrome = resolveChrome();
+  if (!chrome) {
+    console.log('SKIP: không tìm thấy Chrome — bỏ qua kiểm thử engine mmdc. Chạy `npm run doctor`.');
+  } else {
+    const loopPath = join(cliTestDir, 'loop.mmd');
+    writeFileSync(loopPath, [
+      'flowchart LR',
+      '    A["Bước 1"]',
+      '    B{"Quyết định"}',
+      '    subgraph S["Nhóm"]',
+      '        C["Bước 2"]',
+      '        D["Bước 3"]',
+      '    end',
+      '    A --> B',
+      '    B --> C',
+      '    C --> D',
+      '    D -.-> A',
+      '',
+    ].join('\n'));
+
+    const loopSvgPath = join(cliTestDir, 'loop.svg');
+    const mmdcResult = spawnSync(process.execPath, [
+      join(scriptsDir, 'render.mjs'),
+      '--input', loopPath,
+      '--output', loopSvgPath,
+      '--bg', '#ffffff',
+      '--fg', '#000000',
+    ], { encoding: 'utf8' });
+    assert.equal(mmdcResult.status, 0, mmdcResult.stderr);
+
+    const loopSvg = readFileSync(loopSvgPath, 'utf8');
+    assert.ok(loopSvg.startsWith('<svg'), 'mmdc did not render valid SVG');
+
+    const nodes = [...loopSvg.matchAll(/id="[^"]*flowchart-([A-Za-z0-9_]+)-\d+"[^>]*transform="translate\(([\d.]+),/g)]
+      .map(([, id, x]) => ({ id, x: Number(x) }));
+    assert.ok(nodes.length >= 4, `expected >=4 positioned nodes, got ${nodes.length}`);
+    const leftmost = nodes.reduce((min, n) => (n.x < min.x ? n : min));
+    assert.equal(leftmost.id, 'A', `Rule 7: node "Bước 1" phải ở ngoài cùng bên trái, nhưng leftmost là ${leftmost.id}`);
+
+    const mmdcPngPath = join(cliTestDir, 'loop.png');
+    const mmdcPngResult = spawnSync(process.execPath, [
+      join(scriptsDir, 'render.mjs'),
+      '--input', loopPath,
+      '--output', mmdcPngPath,
+      '--format', 'png',
+      '--width', '900',
+    ], { encoding: 'utf8' });
+    assert.equal(mmdcPngResult.status, 0, mmdcPngResult.stderr);
+    assert.ok(readFileSync(mmdcPngPath).subarray(0, 8).equals(pngSignature), 'mmdc did not render valid PNG');
   }
 } finally {
   rmSync(cliTestDir, { recursive: true, force: true });

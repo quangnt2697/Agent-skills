@@ -4,7 +4,7 @@
 
 **Sơ đồ Mermaid đẹp mắt dành cho AI agents**
 
-Biến mã nguồn Mermaid thành ảnh SVG trau chuốt, ảnh PNG dễ chia sẻ và mã ASCII tương thích với terminal—hoàn toàn chạy cục bộ, không cần trình duyệt.
+Biến mã nguồn Mermaid thành ảnh SVG trau chuốt, ảnh PNG dễ chia sẻ và mã ASCII tương thích với terminal.
 
 ![ba-design-flowchart chuyển đổi mã Mermaid thành SVG, PNG, và ASCII terminal có theme](assets/social-preview.png)
 
@@ -20,11 +20,48 @@ Biến mã nguồn Mermaid thành ảnh SVG trau chuốt, ảnh PNG dễ chia s�
 
 Skill này đã được tích hợp sẵn vào dự án `agent-skills`. Bạn không cần phải cài đặt qua NPM/Skills.sh nữa.
 
+```bash
+cd skills/ba-design-flowchart
+npm install
+npm run doctor    # chạy đầu tiên sau khi clone repo về máy mới
+```
+
+### Hai engine render
+
+| Engine                          | Mặc định   | Cần Chrome   | Bố cục flowchart LR có cạnh quay lại   | Định dạng       |
+|---------------------------------|------------|--------------|----------------------------------------|-----------------|
+| `mmdc` (Mermaid chuẩn)          | ✅         | Có           | Đúng                                   | svg, png        |
+| `beautiful` (beautiful-mermaid) | —          | Không        | Sai — node đầu bị đẩy sang phải        | svg, png, ascii |
+
+Chọn bằng `--engine mmdc|beautiful`.
+
+### Chrome cho engine `mmdc`
+
+Tự dò theo thứ tự, dùng cái đầu tiên tìm thấy, **không tự tải thêm**:
+
+1. `PUPPETEER_EXECUTABLE_PATH`
+2. `~/.cache/puppeteer/chrome/`
+3. Chrome hệ thống (macOS `/Applications/Google Chrome.app`, Linux `/usr/bin/google-chrome`
+   hoặc `/usr/bin/chromium`, Windows `%ProgramFiles%\Google\Chrome\Application\chrome.exe`)
+4. Cache Playwright (`ms-playwright/chromium-*`)
+
+Không tìm thấy Chrome thì lệnh **vẫn chạy** — tự lùi về engine `beautiful` kèm cảnh báo. Khắc phục:
+
+```bash
+# Cài Google Chrome, hoặc:
+npx puppeteer browsers install chrome
+# hoặc trỏ tới Chrome sẵn có:
+export PUPPETEER_EXECUTABLE_PATH="/duong/dan/toi/chrome"
+```
+
+Một số cấu hình npm chặn `postinstall` của `puppeteer`, khi đó Chromium riêng của puppeteer
+không được tải lúc `npm install` — đây là lý do engine tự dò Chrome sẵn có.
+
 ## Tại sao chọn ba-design-flowchart?
 
 - **Thiết kế cho AI agents**: hoạt động tốt với Claude Code, Cursor, Codex, Gemini CLI, Antigravity và nhiều hơn thế
 - **Một mã nguồn, ba định dạng đầu ra**: SVG trau chuốt cho tài liệu, PNG để chia sẻ, và ASCII/Unicode cho terminal
-- **Không cần trình duyệt**: render cục bộ hoàn toàn không cần Chromium, Puppeteer hay DOM
+- **Hai engine**: `mmdc` (Mermaid chuẩn, bố cục đúng, cần Chrome) và `beautiful` (không cần trình duyệt, hỗ trợ ASCII + 15 theme)
 - **Linh hoạt mặc định**: 15 themes, hỗ trợ màu tùy chỉnh, 6 loại sơ đồ và khả năng render hàng loạt (batch)
 
 ## ✨ Tính năng

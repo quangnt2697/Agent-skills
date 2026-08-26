@@ -1,9 +1,20 @@
 ---
 name: meta-continuous-learning
-description: "Kỹ năng Siêu cấp giúp Agent tự động đúc kết bài học, sai lầm, và cách giải quyết từ một phiên làm việc dài để tạo thành Rule lưu trữ cho tương lai."
+description: "Kỹ năng Siêu cấp giúp Agent tự động đúc kết bài học, sai lầm, và cách giải quyết từ một phiên làm việc dài để tạo thành Rule lưu trữ cho tương lai. Sử dụng khi vừa hoàn thành một task khó, vừa sửa xong một bug tốn nhiều vòng thử-sai, hoặc khi người dùng gọi `/learn` / `/save-session`."
 ---
 
 # Kỹ năng Tự Học & Đúc Kết Kinh Nghiệm (Continuous Learning)
+
+## Tổng quan
+
+Mỗi phiên làm việc dài đều sinh ra tri thức: một cấu hình phải set đúng cách, một API cư xử
+khác tài liệu, một quy trình trong `SKILL.md` bị lủng. Tri thức đó chết cùng phiên chat nếu
+không ai ghi lại — và phiên sau sẽ trả giá lại đúng số vòng thử-sai đó.
+
+Kỹ năng này biến những gì vừa học được thành **Chỉ thị (Directive)** lưu vào
+`.agents/rules/lessons-learned.md` — thư mục nạp tự động, nên bài học trở thành Luật cho mọi
+phiên sau mà không cần lệnh `load`. Nó cũng phân biệt được hai loại lỗi: lỗi do thiếu thông tin
+(→ ghi bài học) và lỗi do quy trình của chính skill (→ đề xuất sửa `SKILL.md`).
 
 ## Khi nào sử dụng kỹ năng này?
 - Người dùng sử dụng lệnh `/learn` hoặc `/save-session`.
@@ -52,3 +63,39 @@ Sử dụng công cụ sửa file để cập nhật file `/Users/qa-quangnt/Des
 - Nếu chỉ là bài học chung: In ra thông báo đã lưu vào `lessons-learned.md` và trích dẫn nội dung bài học.
 - Nếu là lỗi quy trình: Trình bày đề xuất sửa file `SKILL.md` cụ thể và chờ người dùng duyệt (Approve) trước khi apply.
 - Chuyển trạng thái sang hoàn thành sau khi lưu thành công hoặc sau khi người dùng duyệt sửa skill.
+
+## Những lời Biện hộ Thường gặp (Common Rationalizations)
+
+| Lời biện hộ | Thực tế |
+|---|---|
+| "Bug này quá đặc thù, lần sau không gặp lại đâu." | Bug đặc thù thường là triệu chứng của một ràng buộc môi trường sẽ còn gặp lại. Ghi ràng buộc đó, không ghi bug. |
+| "Tôi nhớ được mà, không cần ghi." | Phiên sau là một context khác, không có trí nhớ của phiên này. Đây chính là lý do kỹ năng tồn tại. |
+| "Để cuối dự án ghi một thể cho gọn." | Đến cuối dự án thì nguyên nhân gốc rễ đã mờ, chỉ còn nhớ triệu chứng — bài học mất giá trị. |
+| "Chỉ cần copy đoạn log lỗi vào là đủ." | Log là bằng chứng, không phải chỉ thị. Bài học phải trả lời "lần sau phải làm gì", không phải "lần trước hỏng thế nào". |
+| "Lỗi là do user mô tả thiếu, không phải do skill." | Phải kiểm chứng Bước 4 trước khi kết luận. Đổ cho input là cách bỏ qua lỗi quy trình dễ nhất. |
+| "Ghi bài học chung chung cho an toàn." | "Cần cẩn thận với config" không ngăn được lỗi nào. Chỉ thị phải nêu đúng tham số, đúng giá trị. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+❌ **Bài học viết dưới dạng kể chuyện** ("Hôm nay tôi đã thử A rồi B rồi C…") — không phải chỉ thị, phiên sau đọc xong vẫn không biết phải làm gì.
+
+❌ **Không có mục Ngữ cảnh** — một chỉ thị không nói rõ khi nào áp dụng sẽ bị áp dụng sai chỗ, gây hại hơn là không có.
+
+❌ **Ghi đè `lessons-learned.md` thay vì append** — xóa mất toàn bộ bài học cũ. Bước 3 bắt buộc đọc file rồi mới ghi.
+
+❌ **Tự sửa `SKILL.md` mà không chờ Approve** — Bước 4 là luồng bán tự động; sửa quy trình của một skill ảnh hưởng mọi phiên sau nên phải có người duyệt.
+
+❌ **Bài học không có Reference** — thiếu command/code snippet đúng thì phiên sau vẫn phải tự dò lại.
+
+❌ **Lưu bài học vào `.agents/workspace_state.md`** — file đó bị ghi đè mỗi lần checkpoint. Đó là việc của [meta-session-checkpoint](../meta-session-checkpoint/SKILL.md).
+
+## Xác minh (Verification)
+
+Chưa hoàn thành cho đến khi tất cả các mục sau đúng:
+
+1. File `.agents/rules/lessons-learned.md` tồn tại và **dài hơn** trước khi chạy — đọc lại file để xác nhận nội dung cũ còn nguyên (không bị ghi đè).
+2. Bài học mới có đủ 3 thành phần: **Ngữ cảnh**, **Chỉ thị** (chứa từ khoá mạnh LUÔN LUÔN / TUYỆT ĐỐI KHÔNG), và **Reference** (command hoặc code snippet chạy được).
+3. Chỉ thị nêu tên cụ thể — tham số, file, lệnh — chứ không phải lời khuyên chung.
+4. Đã trả lời tường minh câu hỏi Bước 4 ("lỗi do input hay do quy trình skill?") và ghi kết luận vào báo cáo.
+5. Nếu kết luận là lỗi quy trình: có bản đề xuất diff cho `SKILL.md` và **đã dừng chờ Approve**, chưa ghi đè.
+6. Không có file code ứng dụng nào bị thay đổi — kiểm tra bằng `git status`.

@@ -42,10 +42,24 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 ## 7. Quy Tắc Thiết Kế Sơ Đồ (Mermaid Rules)
 Khi tạo bất kỳ sơ đồ Mermaid nào (flowchart, v.v.), bắt buộc tuân thủ các quy tắc thiết kế sau:
 1. **Hướng luồng ngang (Horizontal Flow):** Bắt buộc sử dụng hướng đi từ trái sang phải (`flowchart LR` thay vì `TD`) để tiết kiệm không gian dọc và phù hợp với cách đọc tự nhiên.
-2. **Node bắt đầu (Start Node):** Luôn luôn phải định nghĩa rõ ràng node khởi đầu ở vị trí đầu tiên nhất của sơ đồ (ví dụ: `Start([Bắt đầu])`). **TUYỆT ĐỐI KHÔNG** được phép để bất kỳ node hay step nào nằm ở phía bên trái của node khởi đầu này. Node khởi đầu phải là thành phần nằm ngoài cùng bên trái của toàn bộ sơ đồ.
-3. **Tô màu làm nổi bật:** Bắt buộc phải thêm style để tô màu nổi bật cho node bắt đầu (ví dụ: `style Start fill:#f9f,stroke:#333,stroke-width:4px`), giúp người dùng nhận diện ngay lập tức điểm bắt đầu của luồng.
-4. **Luồng quay lại (Loop/Backward edges):** Khi có quy trình lặp lại, tuyệt đối không được tạo ra step mới (không duplicate node) mà BẮT BUỘC dùng mũi tên đứt đoạn (`-.->`) trỏ về step trước đó. Để tránh việc thuật toán layout đảo lộn thứ tự các step (làm step bị kéo sang trái), luôn định nghĩa các mũi tên quay lại này **ở dưới cùng của file** mã nguồn (sau khi đã định nghĩa toàn bộ luồng chính).
-5. **Tránh Step "Bouncing Back":** Tuyệt đối không được thiết kế luồng mà một step ngay sau step khởi tạo (Start) lại là một mũi tên quay ngược lại step Start (ví dụ: `Start --> Decision` và sau đó có `Decision -.-> Start`). Điều này tạo ra vòng lặp không cần thiết ngay lập tức, làm sai lệch logic và thẩm mỹ của sơ đồ.
-6. **Sử dụng công cụ hiện đại:** Mặc định, ưu tiên sử dụng thư viện `beautiful-mermaid` để render sơ đồ, vì nó cung cấp thuật toán layout tốt hơn, thẩm mỹ cao hơn và hỗ trợ nhiều tùy chỉnh hơn so với cách render Mermaid gốc.
-    - Khi sử dụng, luôn bọc mã Mermaid trong khối `mermaid-viz`. 
-    
+2. **Node bắt đầu là Bước 1:** KHÔNG sử dụng node "Start" hoặc "Bắt đầu" riêng biệt. Sơ đồ phải bắt đầu trực tiếp bằng "Bước 1" (Step 1). Khi render ra file ảnh (PNG, SVG,...), **TUYỆT ĐỐI KHÔNG** được có bất kỳ node nào nằm ở phía bên trái của node 1. Nó phải là thành phần nằm ngoài cùng bên trái.
+3. **Màu sắc cơ bản:** Chỉ sử dụng màu sắc cơ bản khi render (nền trắng, chữ đen). Tuyệt đối không thêm code màu sắc (như `style fill:#f9f...`) vào trong mã Mermaid. Ưu tiên render bằng cờ màu cơ bản: `--bg '#ffffff' --fg '#000000'` (engine `mmdc` mặc định đã là nền trắng chữ đen).
+4. **Luồng quay lại (Loop/Backward edges):** Khi có quy trình lặp lại/thử lại ở node trước, bắt buộc tạo đường mũi tên nét đứt (`-.->`) quay lại node đó. Không được tạo step mới (duplicate node), và **TUYỆT ĐỐI KHÔNG** được để việc mũi tên quay lại làm đổi vị trí của node sau lên phía bên trái của node trước. Để thuật toán layout không làm hỏng bố cục, phải khai báo tất cả mũi tên quay lại này **ở dưới cùng của file** mã nguồn (sau khi đã định nghĩa toàn bộ luồng chính).
+5. **Tránh Step "Bouncing Back":** Tuyệt đối không được thiết kế luồng mà một bước ngay sau bước 1 lại quay ngược lại bước 1 lập tức, tạo ra vòng lặp vô nghĩa và làm hỏng luồng LR.
+6. **Neo vị trí bằng liên kết vô hình (tùy chọn):** Có thể dùng chuỗi `A ~~~ B ~~~ C` để ép thứ tự các node từ trái sang phải. Nếu dùng thì **bắt buộc phủ TOÀN BỘ node** — neo một phần vẫn để layout tự do sắp xếp phần còn lại và vẫn có thể vi phạm mục 2. Cú pháp này chỉ có tác dụng ở engine `mmdc`.
+7. **Sử dụng công cụ hiện đại:** Mặc định, dùng skill `ba-design-flowchart` với engine **`mmdc` (Mermaid chuẩn)** — đây là engine mặc định của skill, không cần cờ gì thêm:
+    ```bash
+    node skills/ba-design-flowchart/scripts/render.mjs \
+      --input flow.mmd --output flow.png --format png \
+      --bg '#ffffff' --fg '#000000'
+    ```
+    - Chạy `npm run doctor` trong `skills/ba-design-flowchart` nếu render bị lùi về engine dự phòng.
+    - Khối `mermaid-viz` là quy ước riêng của engine `beautiful` — chỉ dùng khi render bằng engine đó.
+
+### 7.1. Giới hạn của engine dự phòng `beautiful`
+
+Engine `beautiful` (`beautiful-mermaid`) chỉ dùng khi cần `--format ascii`, cần đúng một trong 15 theme trang trí, hoặc máy không có Chrome. Nó **không** render đúng flowchart LR có cạnh quay lại. Nếu buộc phải dùng:
+
+- Cạnh quay lại phải viết **đảo chiều khai báo** (`A <-.-|"Thử lại"| E` thay vì `E -.-> A`) — chỉ để cuối file là không đủ, thuật toán phá vòng lặp vẫn đảo nhầm cạnh chính và đẩy node đầu tiên sang phải.
+- **Không dùng `subgraph`** — cluster đẩy node ngoài nhóm ra tận mép phải.
+- **Không dùng `~~~`** — engine này không hỗ trợ, dòng bị bỏ qua im lặng, không báo lỗi.
