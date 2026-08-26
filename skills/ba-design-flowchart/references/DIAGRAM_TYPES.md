@@ -14,6 +14,7 @@
 
 ### Cú pháp cơ bản
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart LR
     A[Node] --> B[Another Node]
     B --> C{Decision}
@@ -40,9 +41,12 @@ flowchart LR
 - `==>` - Mũi tên đậm (Thick arrow)
 - `--text-->` - Mũi tên kèm chữ
 - `-->|text|` - Mũi tên kèm chữ (cú pháp thay thế)
+- `A --> B --> C` - Khai báo chuỗi liên tiếp (Chaining links)
+- `A ~~~ B ~~~ C` - Chuỗi liên kết vô hình (Invisible anchors)
 
 ### Tùy chỉnh đường nối (Edge Styling)
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart LR
     A --> B
     B --> C
@@ -52,12 +56,14 @@ flowchart LR
 `linkStyle` hoạt động trong Flowchart và State Diagram. Chọn một đường nối bằng thứ tự khai báo bắt đầu từ 0, hoặc dùng `linkStyle default` cho tất cả các đường nối.
 
 ### Hướng (Direction)
-- `LR` - Trái sang Phải (Left to Right)
+- `LR` - Trái sang Phải (Left to Right) - **Bắt buộc** theo chuẩn AGENTS.md
 - `RL` - Phải sang Trái (Right to Left)
-- `TB` / `TD` - Trên xuống Dưới (Top to Bottom / Top Down)
+- `TB` / `TD` - Trên xuống Dưới (Top to Bottom / Top Down) - **Cấm sử dụng**
 - `BT` - Dưới lên Trên (Bottom to Top)
 
 ### Thực hành tốt nhất
+- **Luôn dùng ELK:** Khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%` đầu file.
+- **Neo Bước 1:** Nếu có mũi tên quay ngược (`-.->`), dùng liên kết vô hình `Bước1 ~~~ NodeX` để ghim Bước 1 không bị đẩy vào giữa đồ thị.
 - Dùng hướng `LR` cho màn hình rộng.
 - Giữ các node quyết định dễ phân biệt bằng hình dạng `{}`.
 - Dùng hình `([])` cho điểm bắt đầu / kết thúc.

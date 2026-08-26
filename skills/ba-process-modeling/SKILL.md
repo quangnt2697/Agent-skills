@@ -162,14 +162,17 @@ Dựa trên complexity, chọn diagram type:
 ### Bước 4: Create Diagram (Mermaid Syntax)
 
 > **⚠️ TUÂN THỦ RULE 7 (AGENTS.md):** Tất cả sơ đồ Mermaid phải:
-> - Dùng `flowchart LR` (KHÔNG dùng TD)
+> - Khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%` ở đầu file.
+> - Dùng `flowchart LR` (KHÔNG dùng TD) và hạn chế dùng `subgraph` nếu muốn các bước thẳng một hàng.
 > - Bắt đầu bằng Bước 1 trực tiếp (KHÔNG có node "Start")
+> - Dùng neo tàng hình (`Bước1 ~~~ NodeX`) ở ngay dưới khai báo flowchart để ghim Bước 1 vào lề trái nếu có vòng lặp.
 > - KHÔNG hardcode `style fill:#...` — render bằng `--bg '#ffffff' --fg '#000000'`
-> - Mũi tên quay lại (`-.->`) khai báo **ở cuối file** mã nguồn
+> - Mũi tên quay lại (`-.->`) bắt buộc dùng nét đứt và khai báo **ở cuối file** mã nguồn
 
 #### Option 1: Flowchart (Simple)
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart LR
     A["Bước 1: KH gọi điện cho broker"]
     B["Bước 2: Broker ghi lệnh vào sổ tay"]
@@ -178,9 +181,7 @@ flowchart LR
     E["Bước 4: HO gửi lệnh lên sàn"]
     F["Bước 4b: Broker gọi lại KH - Reject"]
 
-    A --> B
-    B --> C
-    C --> D
+    A --> B --> C --> D
     D -->|Yes| E
     D -->|No| F
 ```
@@ -193,6 +194,7 @@ flowchart LR
 #### Option 2: Swim Lane Diagram (Multi-Actor)
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart LR
     subgraph KH["🧑 Khách hàng"]
         A1["Bước 1: Gọi điện cho broker"]
@@ -250,6 +252,7 @@ flowchart LR
 #### Option 3: BPMN-style (Formal)
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart LR
     T1["Bước 1: Gọi broker"]
     T2["Bước 2: Ghi sổ tay"]
@@ -280,6 +283,7 @@ flowchart LR
 Nếu đây là AS-IS diagram, dùng emoji/text để ghi chú pain points trực tiếp trong nhãn node:
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart LR
     subgraph KH["🧑 Khách hàng"]
         A1["Bước 1: Gọi điện — ⏱️ Chờ 2 phút"]
@@ -315,6 +319,7 @@ flowchart LR
 Vẽ TO-BE diagram với improvements (dùng emoji trong nhãn để highlight):
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart LR
     subgraph KH["📱 Khách hàng (Mobile App)"]
         A1["Bước 1: Nhập mã CK + SL + Giá — ✅ 1 màn hình — ⏱️ 10 giây"]
@@ -417,6 +422,7 @@ flowchart LR
 ### AS-IS (Current State)
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 [... Swim Lane diagram với pain points highlighted ...]
 ```
 
@@ -435,6 +441,7 @@ flowchart LR
 ### TO-BE (Target State)
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 [... Swim Lane diagram với improvements highlighted ...]
 ```
 
@@ -469,6 +476,7 @@ flowchart LR
 ### Appendix A: Mermaid Source Code
 
 ```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 [... full source code để edit/regenerate ...]
 ```
 

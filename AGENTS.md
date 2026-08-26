@@ -41,13 +41,13 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 
 ## 7. Quy Tắc Thiết Kế Sơ Đồ (Mermaid Rules)
 Khi tạo bất kỳ sơ đồ Mermaid nào (flowchart, v.v.), bắt buộc tuân thủ các quy tắc thiết kế sau:
-1. **Hướng luồng ngang (Horizontal Flow):** Bắt buộc sử dụng hướng đi từ trái sang phải (`flowchart LR` thay vì `TD`) để tiết kiệm không gian dọc và phù hợp với cách đọc tự nhiên.
-2. **Node bắt đầu là Bước 1:** KHÔNG sử dụng node "Start" hoặc "Bắt đầu" riêng biệt. Sơ đồ phải bắt đầu trực tiếp bằng "Bước 1" (Step 1). Khi render ra file ảnh (PNG, SVG,...), **TUYỆT ĐỐI KHÔNG** được có bất kỳ node nào nằm ở phía bên trái của node 1. Nó phải là thành phần nằm ngoài cùng bên trái.
-3. **Màu sắc cơ bản:** Chỉ sử dụng màu sắc cơ bản khi render (nền trắng, chữ đen). Tuyệt đối không thêm code màu sắc (như `style fill:#f9f...`) vào trong mã Mermaid. Ưu tiên render bằng cờ màu cơ bản: `--bg '#ffffff' --fg '#000000'` (engine `mmdc` mặc định đã là nền trắng chữ đen).
-4. **Luồng quay lại (Loop/Backward edges):** Khi có quy trình lặp lại/thử lại ở node trước, bắt buộc tạo đường mũi tên nét đứt (`-.->`) quay lại node đó. Không được tạo step mới (duplicate node), và **TUYỆT ĐỐI KHÔNG** được để việc mũi tên quay lại làm đổi vị trí của node sau lên phía bên trái của node trước. Để thuật toán layout không làm hỏng bố cục, phải khai báo tất cả mũi tên quay lại này **ở dưới cùng của file** mã nguồn (sau khi đã định nghĩa toàn bộ luồng chính).
-5. **Tránh Step "Bouncing Back":** Tuyệt đối không được thiết kế luồng mà một bước ngay sau bước 1 lại quay ngược lại bước 1 lập tức, tạo ra vòng lặp vô nghĩa và làm hỏng luồng LR.
-6. **Neo vị trí bằng liên kết vô hình (tùy chọn):** Có thể dùng chuỗi `A ~~~ B ~~~ C` để ép thứ tự các node từ trái sang phải. Nếu dùng thì **bắt buộc phủ TOÀN BỘ node** — neo một phần vẫn để layout tự do sắp xếp phần còn lại và vẫn có thể vi phạm mục 2. Cú pháp này chỉ có tác dụng ở engine `mmdc`.
-7. **Sử dụng công cụ hiện đại:** Mặc định, dùng skill `ba-design-flowchart` với engine **`mmdc` (Mermaid chuẩn)** — đây là engine mặc định của skill, không cần cờ gì thêm:
+1. **Engine ELK (Bắt buộc):** Luôn khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%` ở dòng đầu tiên của file để ép các đường nối vuông góc 90 độ, các node xếp thành hàng ngang thẳng tắp và mũi tên chĩa đúng vào tâm hộp.
+2. **Hướng luồng ngang (Horizontal Flow):** Bắt buộc sử dụng hướng đi từ trái sang phải (`flowchart LR` thay vì `TD`) để tiết kiệm không gian dọc. **Hạn chế tối đa dùng `subgraph`** vì ELK có xu hướng tách subgraph xuống dòng làm mất cấu trúc thẳng hàng ngang.
+3. **Node bắt đầu là Bước 1:** KHÔNG sử dụng node "Start" hoặc "Bắt đầu" riêng biệt. Sơ đồ phải bắt đầu trực tiếp bằng "Bước 1" (Step 1). Khi render, **TUYỆT ĐỐI KHÔNG** được có bất kỳ node nào nằm ở phía bên trái của node 1.
+4. **Màu sắc cơ bản:** Chỉ sử dụng màu sắc cơ bản khi render (nền trắng, chữ đen). Tuyệt đối không thêm code màu sắc (như `style fill:#f9f...`) vào trong mã Mermaid.
+5. **Luồng quay lại (Loop/Backward edges):** Khi có quy trình lặp lại/thử lại ở node trước, bắt buộc tạo đường mũi tên nét đứt (`-.->`) quay lại node đó (không được đảo chiều cú pháp thành `<-.-` để tránh lỗi mất đầu mũi tên). Phải khai báo tất cả mũi tên quay lại này **ở dưới cùng của file** mã nguồn.
+6. **Neo vị trí bằng liên kết vô hình (Anchor):** Để thuật toán ELK không kéo "Bước 1" rời khỏi mép trái khi có mũi tên nét đứt quay ngược lại nó, **bắt buộc** dùng liên kết vô hình `~~~` để neo Bước 1 với các node có luồng quay lại. Cú pháp: `Bước1 ~~~ Node_Có_Mũi_Tên_Quay_Lại`. Khai báo các neo này ngay dưới thẻ `flowchart LR`.
+7. **Sử dụng công cụ hiện đại:** Mặc định, dùng skill `ba-design-flowchart` với engine **`mmdc` (Mermaid chuẩn)** — đây là engine mặc định của skill:
     ```bash
     node skills/ba-design-flowchart/scripts/render.mjs \
       --input flow.mmd --output flow.png --format png \

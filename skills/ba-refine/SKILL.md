@@ -466,9 +466,11 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
      - ≥1 Scenario **Edge Case** (trường hợp biên/ngoại lệ)
      - ≥1 Scenario **Validation Case** (kiểm tra dữ liệu đầu vào)
    - Gọi kỹ năng `/ba-process-modeling` để thiết kế flowchart. **Flowchart BẮT BUỘC tuân thủ Rule 7** (xem `AGENTS.md`):
-     - Dùng `flowchart LR`, KHÔNG dùng node "Start"
+     - Bắt buộc khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%`
+     - Dùng `flowchart LR` (KHÔNG dùng TD), hạn chế `subgraph`.
+     - Dùng neo vị trí (`~~~`) để ghim Bước 1 vào lề trái.
      - Bắt đầu bằng "Bước 1", KHÔNG hardcode `style fill:#...`
-     - Mũi tên quay lại (`-.->`) khai báo ở cuối file mã nguồn
+     - Mũi tên quay lại (`-.->`) dùng nét đứt và khai báo ở cuối file mã nguồn
 3. **Render sơ đồ Mermaid thành ảnh PNG:**
    ```bash
    cd "$(git rev-parse --show-toplevel)"
