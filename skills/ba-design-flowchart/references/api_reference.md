@@ -52,3 +52,33 @@ Các alias cũ như `renderMermaid` và `renderMermaidAscii` vẫn tồn tại t
 Công cụ render tự động nhận diện flowcharts (sơ đồ quy trình), sequence diagrams (sơ đồ tuần tự), state diagrams (sơ đồ trạng thái), class diagrams (sơ đồ lớp), ER diagrams (sơ đồ thực thể kết hợp), và `xychart-beta`. Phiên bản 1.1 cũng hỗ trợ `linkStyle`, tên trạng thái CJK (tiếng Trung/Nhật/Hàn), nhãn nhiều dòng, component không kết nối, và ghi đè hướng cho từng subgraph riêng biệt.
 
 Để biết chính xác hành vi gốc, hãy tham khảo [README của beautiful-mermaid](https://github.com/lukilabs/beautiful-mermaid#readme) và [các bản phát hành v1.x](https://github.com/lukilabs/beautiful-mermaid/releases).
+
+## API của `scripts/mmdc-engine.mjs` (engine mmdc)
+
+Module này bọc `@mermaid-js/mermaid-cli`. Dùng khi mở rộng script CLI để hỗ trợ engine Mermaid chuẩn.
+
+```js
+import {
+  resolveChrome,
+  selectEngine,
+  renderWithMmdc,
+  resolveMermaidTheme,
+  warnIgnoredFlags,
+  mmdcBinary,
+  CHROME_HELP,
+  skillRoot,
+} from './mmdc-engine.mjs';
+```
+
+- `resolveChrome()` — trả về `{path, source}` của Chrome đầu tiên tìm thấy, hoặc `null`.
+  Thứ tự dò: `PUPPETEER_EXECUTABLE_PATH` → cache puppeteer → Chrome hệ thống → cache Playwright.
+- `selectEngine({requested, format, explicit})` — trả về `{engine, chrome}`. Không bao giờ ném lỗi:
+  thiếu Chrome hoặc thiếu `mmdc` thì trả về `{engine: 'beautiful', chrome: null}` kèm cảnh báo ra
+  stderr. Định dạng `ascii` luôn trả về engine `beautiful`.
+- `renderWithMmdc({input, output, format, width, bg, fg, transparent, theme, font, chrome})` —
+  spawn `mmdc` với file config tạm (nền trắng chữ đen theo Rule 7). Ném `Error` nếu `mmdc` thất bại.
+- `resolveMermaidTheme(name)` — ánh xạ tên theme của `beautiful` sang theme Mermaid, trả về
+  `{theme, dark}`. Tên không hợp lệ (kể cả `__proto__`, `constructor`) trả về `base` kèm cảnh báo.
+- `warnIgnoredFlags(opts, defaults)` — cảnh báo các cờ chỉ engine `beautiful` mới hiểu.
+- `mmdcBinary()` — đường dẫn tới binary `mmdc` cục bộ, hoặc `null` nếu chưa cài.
+- `CHROME_HELP` — chuỗi hướng dẫn khắc phục khi thiếu Chrome.

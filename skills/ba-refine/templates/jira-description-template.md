@@ -21,18 +21,23 @@
 ## ✅ Acceptance Criteria
 
 ```gherkin
-Feature: [Business Feature Name]
+Feature: [Tên chức năng nghiệp vụ]
 
-Scenario: [Business Scenario 1]
-  Given [precondition]
-  When [action/trigger]
-  Then [expected outcome]
-  And [additional outcome]
+  Scenario: Happy - [Luồng thành công chính]
+    Given [precondition]
+    When [action/trigger]
+    Then [expected outcome]
+    And [additional outcome]
 
-Scenario: [Business Scenario 2]
-  Given [precondition]
-  When [action/trigger]
-  Then [expected outcome]
+  Scenario: Edge - [Trường hợp biên/ngoại lệ]
+    Given [precondition]
+    When [edge case action]
+    Then [expected handling]
+
+  Scenario: Validation - [Kiểm tra dữ liệu đầu vào]
+    Given [precondition]
+    When [invalid input]
+    Then [validation error message]
 ```
 
 ## 🎨 User Flow / Design

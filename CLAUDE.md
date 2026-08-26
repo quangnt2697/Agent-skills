@@ -243,6 +243,14 @@ Chạy riêng từng validator khi cần khoanh vùng lỗi:
 | `npm run validate:links` | Link tới `references/` trong skill giải được đúng đường dẫn |
 | `npm run validate:paths` | Đường dẫn artifact trong tài liệu theo đúng quy ước |
 
+Riêng skill `ba-design-flowchart` có môi trường Node độc lập:
+
+| Lệnh (chạy trong `skills/ba-design-flowchart`) | Tác dụng |
+|---|---|
+| `npm install` | Cài `@mermaid-js/mermaid-cli` + `beautiful-mermaid` |
+| `npm run doctor` | Chẩn đoán engine render + vị trí Chrome — chạy đầu tiên khi clone repo về máy mới |
+| `npm test` | Smoke test cả hai engine |
+
 ## Ranh giới
 
 - Luôn: Chạy kiểm tra sơ bộ CONTRIBUTING.md trước khi tạo thư mục kỹ năng mới

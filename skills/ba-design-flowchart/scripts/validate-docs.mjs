@@ -56,7 +56,7 @@ const skillPath = join(skillRoot, 'SKILL.md');
 const skill = readFileSync(skillPath, 'utf8');
 const skillLines = skill.split('\n').length;
 
-assert.match(skill, /^---\nname: pretty-mermaid\ndescription: \|\n/);
+assert.match(skill, /^---\nname: ba-design-flowchart\ndescription: \|\n/);
 assert.ok(skillLines < 500, `SKILL.md must stay below 500 lines; found ${skillLines}`);
 
 const markdownFiles = collectMarkdownFiles(skillRoot);
@@ -79,7 +79,8 @@ const galleryThemes = readdirSync(galleryDir)
 assert.deepEqual(galleryThemes, expectedThemes, 'Theme gallery must match built-in themes');
 assert.equal(expectedThemes.length, 15, 'Expected 15 built-in themes');
 
-for (const name of ['README.md', 'README_CN.md', 'README_JA.md']) {
+// Bản dịch README_CN/README_JA của upstream không được giữ lại trong repo này.
+for (const name of ['README.md']) {
   assert.ok(existsSync(join(skillRoot, name)), `Missing ${name}`);
 }
 

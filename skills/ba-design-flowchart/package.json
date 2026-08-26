@@ -6,17 +6,20 @@
   "bin": {
     "render-mermaid": "./scripts/render.mjs",
     "batch-mermaid": "./scripts/batch.mjs",
-    "list-mermaid-themes": "./scripts/themes.mjs"
+    "list-mermaid-themes": "./scripts/themes.mjs",
+    "mermaid-doctor": "./scripts/doctor.mjs"
   },
   "engines": {
     "node": ">=16"
   },
   "scripts": {
+    "doctor": "node scripts/doctor.mjs",
     "gallery": "node scripts/generate-theme-gallery.mjs",
     "test": "node scripts/smoke-test.mjs",
     "validate": "node scripts/validate-docs.mjs"
   },
   "dependencies": {
+    "@mermaid-js/mermaid-cli": "^11.16.0",
     "@resvg/resvg-js": "^2.6.2",
     "beautiful-mermaid": "^1.1.3"
   }
