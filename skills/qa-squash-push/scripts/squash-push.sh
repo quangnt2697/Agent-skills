@@ -408,6 +408,42 @@ assign_test_case_to_sprint() {
 
     log_ok "Tìm thấy Sprint Requirement Version (ID: $SPRINT_REQ_VERSION_ID)"
 
+    # --- 7.5. Xoá test case cũ ---
+    log_info "7.5. Xoá các test plan items cũ trong requirement..."
+
+    OLD_ITEMS_JSON=$(call_backend "GET" "/backend/sprint-req-version/${SPRINT_REQ_VERSION_ID}/test-plan-items")
+    log_debug "old test-plan-items: $OLD_ITEMS_JSON"
+    
+    OLD_ITEM_IDS=$(echo "$OLD_ITEMS_JSON" | jq -r '
+      if type == "array" then
+        .[].id?
+      elif type == "object" then
+        (.content[]?.id? // ._embedded[][]?.id? // .items[]?.id?)
+      else
+        empty
+      end | select(. != null)
+    ' 2>/dev/null | sort -u || true)
+
+    if [[ -n "$OLD_ITEM_IDS" ]]; then
+        for OLD_ITEM_ID in $OLD_ITEM_IDS; do
+            log_debug "Xoá test plan item cũ (ID: $OLD_ITEM_ID)..."
+            DEL_RES=$(curl -s -w '\n%{http_code}' -X DELETE \
+                "${SQUASH_BASE_URL}/backend/sprint-req-version/${SPRINT_REQ_VERSION_ID}/test-plan-items/${OLD_ITEM_ID}" \
+                -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
+                -H "Accept: application/json, text/plain, */*" \
+                -H "X-XSRF-TOKEN: ${XSRF_TOKEN}")
+            
+            DEL_CODE=$(echo "$DEL_RES" | tail -n 1)
+            if [[ "$DEL_CODE" == "200" || "$DEL_CODE" == "204" || "$DEL_CODE" == "202" ]]; then
+                log_ok "Đã xoá test plan item cũ: $OLD_ITEM_ID"
+            else
+                log_warn "Xoá test plan item $OLD_ITEM_ID thất bại (HTTP $DEL_CODE)"
+            fi
+        done
+    else
+        log_info "Không có test plan items cũ nào cần xoá."
+    fi
+
     # --- 8. Gán test case vào test plan ---
     log_info "8. Gán Test Case #${TC_ID} vào test plan của requirement..."
 
