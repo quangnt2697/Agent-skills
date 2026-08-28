@@ -71,10 +71,16 @@ if [[ "$ISSUE_KEY" != "$RAW_KEY" ]]; then
 fi
 
 # --- Đọc .env ---
-ENV_FILE="${ENV_FILE:-.env}"
-if [[ -f "$ENV_FILE" ]]; then
+PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+PROJECT_ROOT="${PWD}"
+
+if [[ -f "${PLUGIN_DIR}/.env" ]]; then
     # shellcheck disable=SC1090
-    source "$ENV_FILE"
+    source "${PLUGIN_DIR}/.env"
+fi
+if [[ -f "${PROJECT_ROOT}/.env" ]]; then
+    # shellcheck disable=SC1090
+    source "${PROJECT_ROOT}/.env"
 fi
 
 # --- Kiểm tra biến môi trường ---

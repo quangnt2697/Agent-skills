@@ -30,15 +30,19 @@ log_ok()    { echo -e "${GREEN}✅ $1${NC}"; }
 log_warn()  { echo -e "${YELLOW}⚠️  $1${NC}"; }
 log_error() { echo -e "${RED}❌ $1${NC}"; }
 
-# --- Đọc .env nếu tồn tại ---
-ENV_FILE="${ENV_FILE:-.env}"
-if [[ -f "$ENV_FILE" ]]; then
-    echo "📂 Đọc cấu hình từ: $ENV_FILE"
+# --- Đọc .env ---
+PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+PROJECT_ROOT="${PWD}"
+
+if [[ -f "${PLUGIN_DIR}/.env" ]]; then
+    echo "📂 Đọc cấu hình từ: ${PLUGIN_DIR}/.env (PLUGIN_DIR)"
     # shellcheck disable=SC1090
-    source "$ENV_FILE"
-else
-    log_warn "Không tìm thấy file .env tại: $ENV_FILE"
-    echo "   Kiểm tra biến môi trường hiện tại..."
+    source "${PLUGIN_DIR}/.env"
+fi
+if [[ -f "${PROJECT_ROOT}/.env" ]]; then
+    echo "📂 Ghi đè cấu hình từ: ${PROJECT_ROOT}/.env (PROJECT_ROOT)"
+    # shellcheck disable=SC1090
+    source "${PROJECT_ROOT}/.env"
 fi
 
 # --- Kiểm tra biến môi trường ---

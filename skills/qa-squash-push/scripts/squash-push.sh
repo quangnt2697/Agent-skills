@@ -71,9 +71,14 @@ load_env_file() {
     done < "$file"
 }
 
-ENV_FILE="${ENV_FILE:-.env}"
-if [[ -f "$ENV_FILE" ]]; then
-    load_env_file "$ENV_FILE"
+PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+PROJECT_ROOT="${PWD}"
+
+if [[ -f "${PLUGIN_DIR}/.env" ]]; then
+    load_env_file "${PLUGIN_DIR}/.env"
+fi
+if [[ -f "${PROJECT_ROOT}/.env" ]]; then
+    load_env_file "${PROJECT_ROOT}/.env"
 fi
 
 if [[ -z "${SQUASH_BASE_URL:-}" || -z "${SQUASH_API_TOKEN:-}" ]]; then

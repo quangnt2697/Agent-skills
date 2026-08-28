@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "atlassian": {
+      "command": "node",
+      "args": ["./.agents/atlassian-mcp-proxy.js"]
+    }
+  }
+}

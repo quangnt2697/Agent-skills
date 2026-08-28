@@ -1,0 +1,25 @@
+sprint_settings:
+  anchor_start_date: "2026-08-27" # Ngày bắt đầu của một Sprint bất kỳ làm mốc (YYYY-MM-DD)
+  duration_days: 14               # Độ dài mỗi Sprint (vd: 14 ngày = 2 tuần)
+
+jira_board:
+  id: 61
+  name: "G3.1 - Partners & Open API"
+
+team:
+  - name: "Phan Hữu Thắng"
+    role: "Developer APP"
+  - name: "Lương Tuấn Linh"
+    role: "Developer WEB"
+  - name: "Trịnh Quốc Đạt"
+    role: "Developer Backend"
+  - name: "Nguyễn Thành Sơn"
+    role: "Developer Backend"
+  - name: "Trịnh Thu Hà"
+    role: "BA"
+  - name: "Phạm Thị Thảo Linh"
+    role: "BA"
+  - name: "Nguyễn Thanh Quang"
+    role: "QA"
+  - name: "Nguyễn Trung Hiếu"
+    role: "PO"

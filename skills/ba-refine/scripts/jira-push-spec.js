@@ -21,34 +21,35 @@ const md2adf = require('md-to-adf');
 const HARD_BREAK_TOKEN = '⁣HARDBREAK⁣';
 
 // --- Hỗ trợ parse .env thủ công (vì không cài dotenv) ---
-function loadEnv() {
-    let dir = process.cwd();
-
-    while (true) {
-        const envPath = path.join(dir, '.env');
-        if (fs.existsSync(envPath)) {
-            const envConfig = fs.readFileSync(envPath, 'utf8');
-            envConfig.split('\n').forEach(line => {
-                const match = line.match(/^([^#\s][^=]+)=(.*)$/);
-                if (match) {
-                    const key = match[1].trim();
-                    let value = match[2].trim();
-                    if (value.startsWith('"') && value.endsWith('"')) {
-                        value = value.slice(1, -1);
-                    } else if (value.startsWith("'") && value.endsWith("'")) {
-                        value = value.slice(1, -1);
-                    }
-                    // Biến đã export sẵn trong shell được ưu tiên hơn .env
-                    if (process.env[key] === undefined) process.env[key] = value;
-                }
-            });
-            return;
+function parseEnvFile(envPath) {
+    if (!fs.existsSync(envPath)) return;
+    const envConfig = fs.readFileSync(envPath, 'utf8');
+    envConfig.split('\n').forEach(line => {
+        const match = line.match(/^([^#\s][^=]+)=(.*)$/);
+        if (match) {
+            const key = match[1].trim();
+            let value = match[2].trim();
+            if (value.startsWith('"') && value.endsWith('"')) {
+                value = value.slice(1, -1);
+            } else if (value.startsWith("'") && value.endsWith("'")) {
+                value = value.slice(1, -1);
+            }
+            // Biến đã export sẵn trong shell được ưu tiên hơn .env
+            if (process.env[key] === undefined) process.env[key] = value;
         }
+    });
+}
 
-        const parent = path.dirname(dir);
-        if (parent === dir) return;
-        dir = parent;
-    }
+function loadEnv() {
+    // PLUGIN_DIR là thư mục gốc của agent-skills (cách script này 3 cấp: skills/ba-refine/scripts)
+    const pluginDir = path.resolve(__dirname, '../../..');
+    const projectRoot = process.cwd();
+
+    // 1. Nguồn chính: đọc từ plugin dir
+    parseEnvFile(path.join(pluginDir, '.env'));
+
+    // 2. Override: đọc từ project root
+    parseEnvFile(path.join(projectRoot, '.env'));
 }
 
 // Chấp nhận cả key trần lẫn URL Jira đầy đủ. User hay dán nguyên URL từ thanh
