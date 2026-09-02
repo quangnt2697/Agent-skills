@@ -16,11 +16,11 @@ Mỗi skill output có **Confidence Level** (mức độ tin cậy) để agent/
 
 ### Level Definitions
 
-| Level | Range | Meaning | Action |
-|-------|-------|---------|--------|
-| 🟢 **High** | 90-100% | Output hoàn chỉnh, đã verify đầy đủ | Chạy tiếp |
-| 🟡 **Medium** | 70-89% | Output đầy đủ nhưng có gaps nhỏ | Chạy tiếp — ghi gap vào mục *Giả định & Rủi ro* |
-| 🔴 **Low** | <70% | Output thiếu sót hoặc uncertain | Chạy tiếp — ghi cảnh báo rõ ở đầu output, đề xuất user review |
+| Level         | Range   | Meaning                             | Action                                                        |
+|---------------|---------|-------------------------------------|---------------------------------------------------------------|
+| 🟢 **High**   | 90-100% | Output hoàn chỉnh, đã verify đầy đủ | Chạy tiếp                                                     |
+| 🟡 **Medium** | 70-89%  | Output đầy đủ nhưng có gaps nhỏ     | Chạy tiếp — ghi gap vào mục *Giả định & Rủi ro*               |
+| 🔴 **Low**    | <70%    | Output thiếu sót hoặc uncertain     | Chạy tiếp — ghi cảnh báo rõ ở đầu output, đề xuất user review |
 
 > Không mức nào trong bảng này tự nó chặn pipeline. Chỉ 5 trường hợp trong
 > `autonomy-contract.md` mới được dừng luồng.

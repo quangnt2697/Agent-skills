@@ -1,0 +1,19 @@
+---
+description: "Kiểm toán, đánh giá toàn diện mã nguồn và tự động sửa chữa từ đầu đến cuối (Dev Auto-Fix Pipeline)."
+---
+
+Kích hoạt kỹ năng dev-audit-and-fix.
+
+Mục tiêu: Đánh giá một chức năng (techstack, kiến trúc), tìm bug, lập kế hoạch tối ưu, và chạy tự động toàn bộ quy trình sửa lỗi sau khi người dùng đồng ý.
+
+Hãy tuân thủ NGHIÊM NGẶT 4 bước trong quy trình của dev-audit-and-fix:
+1. Review & Audit: Quét và phân tích chi tiết.
+2. Thiết kế Kế hoạch: Viết ra `/project-root/workspace/{issueKey}/tech/plan.md`.
+3. Approval Gate: DỪNG LẠI và hỏi ý kiến người dùng. Bạn bắt buộc phải đợi phản hồi "OK" hoặc "Đồng ý" từ người dùng trước khi tiến hành bước tiếp theo. 
+4. Auto-Fix: Tự động chạy tuần tự mọi công việc trong plan mà không dừng lại, cho đến khi hoàn tất. **BẮT BUỘC sử dụng công cụ hệ thống (Tool Call) để trực tiếp sửa file. TUYỆT ĐỐI KHÔNG in ra Markdown Diff bắt người dùng copy.**
+
+Nhiệm vụ đầu tiên: Hãy yêu cầu người dùng cung cấp đường dẫn hoặc tên file/thư mục cần đánh giá (nếu họ chưa cung cấp) và bắt đầu Bước 1.
+
+<critical_instruction>
+HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+</critical_instruction>

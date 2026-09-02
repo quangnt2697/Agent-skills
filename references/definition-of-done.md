@@ -4,12 +4,12 @@ A standing, project-wide bar that every change must clear before it counts as do
 
 ## Definition of Done vs. Acceptance Criteria
 
-| | Acceptance Criteria | Definition of Done |
-|---|---|---|
-| Scope | Specific to one task or spec | Applies to every increment |
-| Changes | Different for each item | Fixed and reused |
-| Answers | "Did we build *this thing*?" | "Is it *ready*?" |
-| Owner | Defined when planning the task | Defined once for the project |
+|         | Acceptance Criteria                      | Definition of Done                         |
+|---------|------------------------------------------|--------------------------------------------|
+| Scope   | Specific to one task or spec             | Applies to every increment                 |
+| Changes | Different for each item                  | Fixed and reused                           |
+| Answers | "Did we build *this thing*?"             | "Is it *ready*?"                           |
+| Owner   | Defined when planning the task           | Defined once for the project               |
 | Example | "User can reset password via email link" | "Tests pass, no regressions, docs updated" |
 
 The two are complementary. A task is done only when **its** acceptance criteria are met **and** the standing Definition of Done is satisfied. Skipping either leaves work that looks finished but is not.

@@ -17,25 +17,25 @@ Checklist items must be actionable, atomic, and quantified.
 
 ### Checklist Item Writing
 
-| Criteria | ❌ Wrong | ✅ Right |
-|---|---|---|
-| **Validate Form** | Check form đăng ký | Nhập email thiếu "@", xác nhận hệ thống báo lỗi viền đỏ |
-| **Giao Diện** | Nút bấm hiển thị bình thường | Xác nhận nút "Đồng ý" hiển thị bo góc, kích thước 44px |
-| **Tương Tác Máy** | Test trên máy thật | Thao tác vuốt từ mép trái sang phải trên iPhone 15 để quay lại |
-| **Mạng Lưới** | Test khi rớt mạng | Tắt Wi-Fi/4G khi đang load, xác nhận app hiện pop-up "Mất kết nối" |
-| **Nghiệp vụ Tài chính** | Kiểm tra sức mua | Xác nhận lệnh MUA bị từ chối khi khối lượng × giá vượt sức mua khả dụng (qmax) |
-| **Performance** | Load nhanh | Load dưới 2 giây trên kết nối 4G |
-| **Giá** | Giá hợp lệ | Xác nhận giá đặt nằm trong khoảng Giá Sàn (90,000) đến Giá Trần (110,000) |
+| Criteria                | ❌ Wrong                     | ✅ Right                                                                       |
+|-------------------------|------------------------------|--------------------------------------------------------------------------------|
+| **Validate Form**       | Check form đăng ký           | Nhập email thiếu "@", xác nhận hệ thống báo lỗi viền đỏ                        |
+| **Giao Diện**           | Nút bấm hiển thị bình thường | Xác nhận nút "Đồng ý" hiển thị bo góc, kích thước 44px                         |
+| **Tương Tác Máy**       | Test trên máy thật           | Thao tác vuốt từ mép trái sang phải trên iPhone 15 để quay lại                 |
+| **Mạng Lưới**           | Test khi rớt mạng            | Tắt Wi-Fi/4G khi đang load, xác nhận app hiện pop-up "Mất kết nối"             |
+| **Nghiệp vụ Tài chính** | Kiểm tra sức mua             | Xác nhận lệnh MUA bị từ chối khi khối lượng × giá vượt sức mua khả dụng (qmax) |
+| **Performance**         | Load nhanh                   | Load dưới 2 giây trên kết nối 4G                                               |
+| **Giá**                 | Giá hợp lệ                   | Xác nhận giá đặt nằm trong khoảng Giá Sàn (90,000) đến Giá Trần (110,000)      |
 
 ### Gherkin Step Writing
 
-| Criteria | ❌ Wrong | ✅ Right |
-|---|---|---|
-| **Declarative** | `Given người dùng nhấn nút đăng nhập, nhập user, nhập pass` | `Given người dùng đã đăng nhập với quyền "Broker"` |
-| **Observable** | `Then hệ thống xử lý thành công` | `Then hệ thống trả về mã HTTP 200 và orderId hợp lệ` |
-| **Concrete data** | `When nhập giá trị "test"` | `When nhập mã chứng khoán "VNM"` |
-| **Single action** | `When đặt lệnh mua và kiểm tra sức mua` | `When đặt lệnh mua 500 cổ phiếu "SSI" tại giá 25,000` |
-| **No DOM** | `When click vào #btn-submit` | `When nhấn nút "Đặt lệnh"` |
+| Criteria          | ❌ Wrong                                                    | ✅ Right                                              |
+|-------------------|-------------------------------------------------------------|-------------------------------------------------------|
+| **Declarative**   | `Given người dùng nhấn nút đăng nhập, nhập user, nhập pass` | `Given người dùng đã đăng nhập với quyền "Broker"`    |
+| **Observable**    | `Then hệ thống xử lý thành công`                            | `Then hệ thống trả về mã HTTP 200 và orderId hợp lệ`  |
+| **Concrete data** | `When nhập giá trị "test"`                                  | `When nhập mã chứng khoán "VNM"`                      |
+| **Single action** | `When đặt lệnh mua và kiểm tra sức mua`                     | `When đặt lệnh mua 500 cổ phiếu "SSI" tại giá 25,000` |
+| **No DOM**        | `When click vào #btn-submit`                                | `When nhấn nút "Đặt lệnh"`                            |
 
 ## Boundary Value Analysis Tables
 
@@ -43,44 +43,44 @@ Checklist items must be actionable, atomic, and quantified.
 
 For any numeric input with a valid range `[min, max]`:
 
-| Test case | Value | Expected |
-|-----------|-------|----------|
-| Below minimum | min - 1 | Reject |
-| At minimum | min | Accept |
-| Above minimum | min + 1 | Accept |
-| Nominal | (min + max) / 2 | Accept |
-| Below maximum | max - 1 | Accept |
-| At maximum | max | Accept |
-| Above maximum | max + 1 | Reject |
+| Test case        | Value             | Expected                         |
+|------------------|-------------------|----------------------------------|
+| Below minimum    | min - 1           | Reject                           |
+| At minimum       | min               | Accept                           |
+| Above minimum    | min + 1           | Accept                           |
+| Nominal          | (min + max) / 2   | Accept                           |
+| Below maximum    | max - 1           | Accept                           |
+| At maximum       | max               | Accept                           |
+| Above maximum    | max + 1           | Reject                           |
 | Numeric Overflow | INT_MAX, LONG_MAX | Reject / Handle without crashing |
-| Zero | 0 | Depends on domain |
-| Negative | -1 | Reject (usually) |
-| Empty / null | (empty) | Reject |
+| Zero             | 0                 | Depends on domain                |
+| Negative         | -1                | Reject (usually)                 |
+| Empty / null     | (empty)           | Reject                           |
 
 ### String Fields
 
-| Test case | Value | Expected |
-|-----------|-------|----------|
-| Empty string | `""` | Reject (if required) |
-| Whitespace only | `"   "` | Reject |
-| At min length | `"a"` (minLength chars) | Accept |
-| At max length | `"a" × maxLength` | Accept |
-| Exceeds max length | `"a" × (maxLength + 1)` | Reject |
-| Special characters | `"<script>alert(1)</script>"` | Reject / sanitize |
-| Unicode | `"Nguyễn Văn A"` | Accept |
-| SQL injection | `"'; DROP TABLE--"` | Reject / sanitize |
+| Test case          | Value                         | Expected             |
+|--------------------|-------------------------------|----------------------|
+| Empty string       | `""`                          | Reject (if required) |
+| Whitespace only    | `"   "`                       | Reject               |
+| At min length      | `"a"` (minLength chars)       | Accept               |
+| At max length      | `"a" × maxLength`             | Accept               |
+| Exceeds max length | `"a" × (maxLength + 1)`       | Reject               |
+| Special characters | `"<script>alert(1)</script>"` | Reject / sanitize    |
+| Unicode            | `"Nguyễn Văn A"`              | Accept               |
+| SQL injection      | `"'; DROP TABLE--"`           | Reject / sanitize    |
 
 ### Date/Time Fields
 
-| Test case | Value | Expected |
-|-----------|-------|----------|
-| Past date | Yesterday | Depends on rules |
-| Current date | Today | Accept |
-| Future date | Tomorrow | Depends on rules |
-| Invalid calendar date | 30/02, 31/04 | Reject |
-| Leap year validation | 29/02/2024 vs 29/02/2023 | Accept / Reject |
-| Format mismatch | `DD-MM-YYYY` when expecting ISO 8601 | Reject |
-| Timezone handling | With vs without `Z` or `+07:00` offset | Parse correctly |
+| Test case             | Value                                  | Expected         |
+|-----------------------|----------------------------------------|------------------|
+| Past date             | Yesterday                              | Depends on rules |
+| Current date          | Today                                  | Accept           |
+| Future date           | Tomorrow                               | Depends on rules |
+| Invalid calendar date | 30/02, 31/04                           | Reject           |
+| Leap year validation  | 29/02/2024 vs 29/02/2023               | Accept / Reject  |
+| Format mismatch       | `DD-MM-YYYY` when expecting ISO 8601   | Reject           |
+| Timezone handling     | With vs without `Z` or `+07:00` offset | Parse correctly  |
 
 ## Equivalence Partitioning Reference
 
@@ -88,100 +88,100 @@ Group inputs into classes where all values in the same class produce the same be
 
 ### Securities Order Quantity Example
 
-| Class | Range | Representative | Expected |
-|-------|-------|----------------|----------|
-| Invalid (negative) | < 0 | -100 | Reject |
-| Invalid (zero) | 0 | 0 | Reject |
-| Invalid (not lot size) | 1-99 (not multiple of 100) | 50 | Reject |
-| Valid (standard lot) | 100-999,900 (multiple of 100) | 500 | Accept |
-| Invalid (exceeds max) | > 999,900 | 1,000,000 | Reject |
-| Invalid (decimal) | Fractional | 100.5 | Reject |
+| Class                  | Range                         | Representative  | Expected   |
+|------------------------|-------------------------------|-----------------|------------|
+| Invalid (negative)     | < 0                           | -100            | Reject     |
+| Invalid (zero)         | 0                             | 0               | Reject     |
+| Invalid (not lot size) | 1-99 (not multiple of 100)    | 50              | Reject     |
+| Valid (standard lot)   | 100-999,900 (multiple of 100) | 500             | Accept     |
+| Invalid (exceeds max)  | > 999,900                     | 1,000,000       | Reject     |
+| Invalid (decimal)      | Fractional                    | 100.5           | Reject     |
 
 ### Securities Price Example (for a stock with ref price 100,000)
 
-| Class | Range | Representative | Expected |
-|-------|-------|----------------|----------|
-| Below floor (< -7%) | < 93,000 | 92,000 | Reject |
-| At floor (-7%) | 93,000 | 93,000 | Accept |
-| Valid range | 93,000 - 107,000 | 100,000 | Accept |
-| At ceiling (+7%) | 107,000 | 107,000 | Accept |
-| Above ceiling (> +7%) | > 107,000 | 108,000 | Reject |
-| Invalid tick (not step) | Not on tick grid | 93,050 | Reject (HOSE tick = 100) |
+| Class                   | Range            | Representative  | Expected                 |
+|-------------------------|------------------|-----------------|--------------------------|
+| Below floor (< -7%)     | < 93,000         | 92,000          | Reject                   |
+| At floor (-7%)          | 93,000           | 93,000          | Accept                   |
+| Valid range             | 93,000 - 107,000 | 100,000         | Accept                   |
+| At ceiling (+7%)        | 107,000          | 107,000         | Accept                   |
+| Above ceiling (> +7%)   | > 107,000        | 108,000         | Reject                   |
+| Invalid tick (not step) | Not on tick grid | 93,050          | Reject (HOSE tick = 100) |
 
 ## Financial Domain Validation Patterns
 
 ### Securities Trading
 
-| Validation | Rule | Test cases |
-|---|---|---|
-| **Trading hours** | Orders only during market hours (09:00-11:30, 13:00-14:45 for HOSE) | Before open, during session, during break, after close, on holiday |
-| **Price limits** | Floor/ceiling ±7% of reference price (HOSE) | At floor, below floor, at ceiling, above ceiling, at reference |
-| **Tick size** | Price must be on tick grid (100đ for 10K-50K, 500đ for ≥50K at HOSE) | On tick, between ticks, at tick boundary |
-| **Lot size** | Quantity must be multiple of 100 (standard lot) | 100, 200, 50, 99, 101, 0 |
-| **Buying power** | quantity × price ≤ available balance (qmax) | Under limit, at limit, over limit |
-| **Account ownership** | Order account must match API key owner | Own account, other's account |
-| **Duplicate order** | Prevent duplicate orders within time window | Same order twice, rapid fire |
+| Validation            | Rule                                                                 | Test cases                                                         |
+|-----------------------|----------------------------------------------------------------------|--------------------------------------------------------------------|
+| **Trading hours**     | Orders only during market hours (09:00-11:30, 13:00-14:45 for HOSE)  | Before open, during session, during break, after close, on holiday |
+| **Price limits**      | Floor/ceiling ±7% of reference price (HOSE)                          | At floor, below floor, at ceiling, above ceiling, at reference     |
+| **Tick size**         | Price must be on tick grid (100đ for 10K-50K, 500đ for ≥50K at HOSE) | On tick, between ticks, at tick boundary                           |
+| **Lot size**          | Quantity must be multiple of 100 (standard lot)                      | 100, 200, 50, 99, 101, 0                                           |
+| **Buying power**      | quantity × price ≤ available balance (qmax)                          | Under limit, at limit, over limit                                  |
+| **Account ownership** | Order account must match API key owner                               | Own account, other's account                                       |
+| **Duplicate order**   | Prevent duplicate orders within time window                          | Same order twice, rapid fire                                       |
 
 ### Banking & Fintech
 
-| Validation | Rule | Test cases |
-|---|---|---|
-| **Transfer limits** | Daily/per-transaction limits by tier | Under limit, at limit, over limit, cumulative |
-| **Account status** | Account must be active, not frozen/closed | Active, frozen, closed, pending |
-| **Currency precision** | VND: 0 decimals, USD: 2 decimals | Exact, extra decimals, negative |
-| **Beneficiary validation** | Recipient account must exist and be active | Valid, non-existent, closed, blocked |
-| **OTP/2FA** | Required for transactions above threshold | With valid OTP, expired OTP, wrong OTP, no OTP |
-| **Idempotency** | Same request ID must not process twice | New ID, duplicate ID, empty ID |
+| Validation                 | Rule                                       | Test cases                                     |
+|----------------------------|--------------------------------------------|------------------------------------------------|
+| **Transfer limits**        | Daily/per-transaction limits by tier       | Under limit, at limit, over limit, cumulative  |
+| **Account status**         | Account must be active, not frozen/closed  | Active, frozen, closed, pending                |
+| **Currency precision**     | VND: 0 decimals, USD: 2 decimals           | Exact, extra decimals, negative                |
+| **Beneficiary validation** | Recipient account must exist and be active | Valid, non-existent, closed, blocked           |
+| **OTP/2FA**                | Required for transactions above threshold  | With valid OTP, expired OTP, wrong OTP, no OTP |
+| **Idempotency**            | Same request ID must not process twice     | New ID, duplicate ID, empty ID                 |
 
 ## Common API Testing Patterns
 
 ### Authentication & Authorization Matrix
 
-| Test | Request | Expected |
-|---|---|---|
-| No API key | Remove `x-api-key` header | 401 Unauthorized |
-| Invalid API key | `x-api-key: invalid_key_123` | 401 Unauthorized |
-| Expired API key | Use revoked/expired key | 401 Unauthorized |
-| Missing signature | Remove `signature` header | 401 Unauthorized |
-| Tampered signature | Modify payload after signing | 401 Unauthorized |
-| Wrong account | Use accountNo not owned by API key | 403 Forbidden |
-| Valid credentials | All headers correct | 200 OK |
+| Test               | Request                            | Expected         |
+|--------------------|------------------------------------|------------------|
+| No API key         | Remove `x-api-key` header          | 401 Unauthorized |
+| Invalid API key    | `x-api-key: invalid_key_123`       | 401 Unauthorized |
+| Expired API key    | Use revoked/expired key            | 401 Unauthorized |
+| Missing signature  | Remove `signature` header          | 401 Unauthorized |
+| Tampered signature | Modify payload after signing       | 401 Unauthorized |
+| Wrong account      | Use accountNo not owned by API key | 403 Forbidden    |
+| Valid credentials  | All headers correct                | 200 OK           |
 
 ### HTTP Method Validation
 
-| Test | Request | Expected |
-|---|---|---|
-| Wrong method | `GET` on a `POST` endpoint | 405 Method Not Allowed |
-| Invalid URL | `POST /api/v1/nonexistent` | 404 Not Found |
-| Correct method | `POST /api/v1/orders` | 200 OK |
+| Test           | Request                    | Expected               |
+|----------------|----------------------------|------------------------|
+| Wrong method   | `GET` on a `POST` endpoint | 405 Method Not Allowed |
+| Invalid URL    | `POST /api/v1/nonexistent` | 404 Not Found          |
+| Correct method | `POST /api/v1/orders`      | 200 OK                 |
 
 ### Payload Validation
 
-| Test | Request body | Expected |
-|---|---|---|
-| Empty body | `{}` | 400 Bad Request |
-| Missing required field | Omit one required field | 400 + field name in error |
-| Wrong data type | String where number expected | 400 + type mismatch error |
-| Extra unknown field | Add `"unknown_field": "value"` | Ignored or 400 (depends on strictness) |
-| Null required field | `"price": null` | 400 Bad Request |
+| Test                   | Request body                   | Expected                               |
+|------------------------|--------------------------------|----------------------------------------|
+| Empty body             | `{}`                           | 400 Bad Request                        |
+| Missing required field | Omit one required field        | 400 + field name in error              |
+| Wrong data type        | String where number expected   | 400 + type mismatch error              |
+| Extra unknown field    | Add `"unknown_field": "value"` | Ignored or 400 (depends on strictness) |
+| Null required field    | `"price": null`                | 400 Bad Request                        |
 
 ### Query & Path Parameter Validation
 
-| Test | Request | Expected |
-|---|---|---|
-| Path variable missing | `GET /users//orders` | 404 Not Found or 400 Bad Request |
-| Wrong path variable type | `GET /users/abc/orders` (when ID is int) | 400 Bad Request |
-| Query pagination overflow | `GET /orders?page=999999&limit=50` | Empty list or 400 Bad Request |
-| Invalid filter/sort | `GET /orders?sort=-nonexistent_field` | 400 Bad Request |
+| Test                      | Request                                  | Expected                         |
+|---------------------------|------------------------------------------|----------------------------------|
+| Path variable missing     | `GET /users//orders`                     | 404 Not Found or 400 Bad Request |
+| Wrong path variable type  | `GET /users/abc/orders` (when ID is int) | 400 Bad Request                  |
+| Query pagination overflow | `GET /orders?page=999999&limit=50`       | Empty list or 400 Bad Request    |
+| Invalid filter/sort       | `GET /orders?sort=-nonexistent_field`    | 400 Bad Request                  |
 
 ### Concurrency, Rate Limiting & Idempotency
 
-| Test | Action | Expected |
-|---|---|---|
-| Rate Limiting (Throttling) | Send requests exceeding limit (e.g. 100 req/s) | 429 Too Many Requests |
-| Race Condition | Send N requests modifying same resource simultaneously | Process 1, others rejected or handled safely |
-| Idempotency | Send 2 requests with the same `idempotency-key` | Process 1st, return same cached response for 2nd |
-| Payload Too Large | Send a massive JSON payload | 413 Payload Too Large |
+| Test                       | Action                                                 | Expected                                         |
+|----------------------------|--------------------------------------------------------|--------------------------------------------------|
+| Rate Limiting (Throttling) | Send requests exceeding limit (e.g. 100 req/s)         | 429 Too Many Requests                            |
+| Race Condition             | Send N requests modifying same resource simultaneously | Process 1, others rejected or handled safely     |
+| Idempotency                | Send 2 requests with the same `idempotency-key`        | Process 1st, return same cached response for 2nd |
+| Payload Too Large          | Send a massive JSON payload                            | 413 Payload Too Large                            |
 
 ## Gherkin Step Vocabulary
 
@@ -227,14 +227,14 @@ Khi spec đề cập nhiều phần tử UI hoặc giá trị nghiệp vụ có 
 
 ### Cách phát hiện nhóm đối xứng
 
-| Dấu hiệu trong spec | Nhóm đối xứng | Ví dụ |
-|---|---|---|
-| Nhiều button cùng trigger một form/action | Buttons group | Nút MUA / Nút BÁN cùng mở form đặt lệnh |
-| Nhiều tab cùng layout | Tabs group | Tab "Lệnh thường" / Tab "Lệnh điều kiện" |
-| Nhiều loại lệnh/tài khoản | Values group | Lệnh ATO / ATC / MOK / MAK |
-| Nhiều trạng thái cùng hiển thị thông báo | States group | Chưa hoàn thiện / Chờ duyệt / Bị từ chối |
-| Thao tác trên nhiều sàn/thị trường | Context group | Sàn HOSE / HNX / UPCOM |
-| Nhiều input method cùng kết quả | Input group | Nhấn nút +/- / Gõ phím số cùng chuyển về lệnh LO |
+| Dấu hiệu trong spec                       | Nhóm đối xứng   | Ví dụ                                            |
+|-------------------------------------------|-----------------|--------------------------------------------------|
+| Nhiều button cùng trigger một form/action | Buttons group   | Nút MUA / Nút BÁN cùng mở form đặt lệnh          |
+| Nhiều tab cùng layout                     | Tabs group      | Tab "Lệnh thường" / Tab "Lệnh điều kiện"         |
+| Nhiều loại lệnh/tài khoản                 | Values group    | Lệnh ATO / ATC / MOK / MAK                       |
+| Nhiều trạng thái cùng hiển thị thông báo  | States group    | Chưa hoàn thiện / Chờ duyệt / Bị từ chối         |
+| Thao tác trên nhiều sàn/thị trường        | Context group   | Sàn HOSE / HNX / UPCOM                           |
+| Nhiều input method cùng kết quả           | Input group     | Nhấn nút +/- / Gõ phím số cùng chuyển về lệnh LO |
 
 ### Áp dụng trong Checklist (Phase 1)
 
@@ -267,68 +267,68 @@ WebSocket là giao thức real-time hai chiều (bidirectional) giữa client v�
 
 #### 1. Connection & Handshake
 
-| Test Case | Action | Expected Result | Priority |
-|-----------|--------|-----------------|----------|
-| **Connect Success** | Client connect tới ws://server/channel | Connection OPEN, nhận welcome message | P0 |
-| **Connect with Auth** | Connect với valid token trong header | Connection OPEN với user context | P0 |
-| **Connect Invalid URL** | Connect tới ws://invalid | Connection CLOSED với error | P1 |
-| **Connect No Auth** | Connect không có token (nếu require auth) | Connection REJECTED, status 401 | P0 |
-| **Connect Expired Token** | Connect với expired token | Connection REJECTED, status 403 | P1 |
+| Test Case                 | Action                                    | Expected Result                       | Priority   |
+|---------------------------|-------------------------------------------|---------------------------------------|------------|
+| **Connect Success**       | Client connect tới ws://server/channel    | Connection OPEN, nhận welcome message | P0         |
+| **Connect with Auth**     | Connect với valid token trong header      | Connection OPEN với user context      | P0         |
+| **Connect Invalid URL**   | Connect tới ws://invalid                  | Connection CLOSED với error           | P1         |
+| **Connect No Auth**       | Connect không có token (nếu require auth) | Connection REJECTED, status 401       | P0         |
+| **Connect Expired Token** | Connect với expired token                 | Connection REJECTED, status 403       | P1         |
 
 #### 2. Subscribe & Unsubscribe
 
-| Test Case | Action | Expected Result | Priority |
-|-----------|--------|-----------------|----------|
-| **Subscribe Channel** | Send `{"action":"subscribe","channel":"VNINDEX"}` | Receive `{"status":"subscribed","channel":"VNINDEX"}` | P0 |
-| **Subscribe Multiple** | Subscribe "VNM", "SSI", "VCB" | Nhận data từ cả 3 channels | P0 |
-| **Unsubscribe Channel** | Send `{"action":"unsubscribe","channel":"VNINDEX"}` | Stop nhận events từ channel đó | P0 |
-| **Subscribe Invalid Channel** | Subscribe channel không tồn tại | Receive error `{"error":"INVALID_CHANNEL"}` | P1 |
-| **Subscribe Duplicate** | Subscribe cùng channel 2 lần | Chỉ subscribe 1 lần (idempotent) | P2 |
+| Test Case                     | Action                                              | Expected Result                                       | Priority  |
+|-------------------------------|-----------------------------------------------------|-------------------------------------------------------|-----------|
+| **Subscribe Channel**         | Send `{"action":"subscribe","channel":"VNINDEX"}`   | Receive `{"status":"subscribed","channel":"VNINDEX"}` | P0        |
+| **Subscribe Multiple**        | Subscribe "VNM", "SSI", "VCB"                       | Nhận data từ cả 3 channels                            | P0        |
+| **Unsubscribe Channel**       | Send `{"action":"unsubscribe","channel":"VNINDEX"}` | Stop nhận events từ channel đó                        | P0        |
+| **Subscribe Invalid Channel** | Subscribe channel không tồn tại                     | Receive error `{"error":"INVALID_CHANNEL"}`           | P1        |
+| **Subscribe Duplicate**       | Subscribe cùng channel 2 lần                        | Chỉ subscribe 1 lần (idempotent)                      | P2        |
 
 #### 3. Receive Real-time Data
 
-| Test Case | Action | Expected Result | Priority |
-|-----------|--------|-----------------|----------|
-| **Receive Market Data** | Subscribe "VNM" | Nhận price updates theo định dạng đúng | P0 |
-| **Message Format** | Parse message JSON | Có đủ fields: `symbol`, `price`, `volume`, `timestamp` | P0 |
-| **Message Order** | Nhận 100 messages liên tiếp | Messages đúng thứ tự (timestamp tăng dần) | P1 |
-| **High Frequency** | Server gửi 1000 msg/sec | Client xử lý không bị drop message | P1 |
-| **Large Message** | Nhận message 10MB | Client parse thành công | P2 |
+| Test Case               | Action                      | Expected Result                                        | Priority   |
+|-------------------------|-----------------------------|--------------------------------------------------------|------------|
+| **Receive Market Data** | Subscribe "VNM"             | Nhận price updates theo định dạng đúng                 | P0         |
+| **Message Format**      | Parse message JSON          | Có đủ fields: `symbol`, `price`, `volume`, `timestamp` | P0         |
+| **Message Order**       | Nhận 100 messages liên tiếp | Messages đúng thứ tự (timestamp tăng dần)              | P1         |
+| **High Frequency**      | Server gửi 1000 msg/sec     | Client xử lý không bị drop message                     | P1         |
+| **Large Message**       | Nhận message 10MB           | Client parse thành công                                | P2         |
 
 #### 4. Reconnection & Resilience
 
-| Test Case | Action | Expected Result | Priority |
-|-----------|--------|-----------------|----------|
-| **Auto Reconnect** | Server close connection | Client tự động reconnect sau 2-5s | P0 |
-| **Resubscribe After Reconnect** | Reconnect thành công | Client tự động resubscribe channels cũ | P0 |
-| **Reconnect with Backoff** | Server reject 3 lần liên tiếp | Client retry với exponential backoff (2s, 4s, 8s) | P1 |
-| **Max Reconnect Attempts** | Server down 10 phút | Client stop retry sau N attempts, show error | P1 |
-| **Network Switch** | Switch từ WiFi sang 4G | Connection drop → auto reconnect | P1 |
+| Test Case                       | Action                        | Expected Result                                   | Priority   |
+|---------------------------------|-------------------------------|---------------------------------------------------|------------|
+| **Auto Reconnect**              | Server close connection       | Client tự động reconnect sau 2-5s                 | P0         |
+| **Resubscribe After Reconnect** | Reconnect thành công          | Client tự động resubscribe channels cũ            | P0         |
+| **Reconnect with Backoff**      | Server reject 3 lần liên tiếp | Client retry với exponential backoff (2s, 4s, 8s) | P1         |
+| **Max Reconnect Attempts**      | Server down 10 phút           | Client stop retry sau N attempts, show error      | P1         |
+| **Network Switch**              | Switch từ WiFi sang 4G        | Connection drop → auto reconnect                  | P1         |
 
 #### 5. Error Handling
 
-| Test Case | Action | Expected Result | Priority |
-|-----------|--------|-----------------|----------|
-| **Server Error** | Server gửi `{"error":"INTERNAL_ERROR"}` | Client hiện notification, log error | P0 |
-| **Malformed Message** | Server gửi JSON invalid | Client log warning, bỏ qua message đó | P1 |
-| **Timeout** | Server không respond trong 30s | Client close connection, show timeout error | P1 |
-| **Rate Limit** | Client gửi > 100 msg/sec | Server từ chối với `{"error":"RATE_LIMIT"}` | P2 |
+| Test Case             | Action                                  | Expected Result                             | Priority   |
+|-----------------------|-----------------------------------------|---------------------------------------------|------------|
+| **Server Error**      | Server gửi `{"error":"INTERNAL_ERROR"}` | Client hiện notification, log error         | P0         |
+| **Malformed Message** | Server gửi JSON invalid                 | Client log warning, bỏ qua message đó       | P1         |
+| **Timeout**           | Server không respond trong 30s          | Client close connection, show timeout error | P1         |
+| **Rate Limit**        | Client gửi > 100 msg/sec                | Server từ chối với `{"error":"RATE_LIMIT"}` | P2         |
 
 #### 6. Cross-Channel Isolation
 
-| Test Case | Action | Expected Result | Priority |
-|-----------|--------|-----------------|----------|
-| **Channel Isolation** | Subscribe "VNM" và "SSI" | VNM events không xuất hiện trong SSI channel | P0 |
-| **Unsubscribe One** | Unsubscribe "VNM", giữ "SSI" | Chỉ stop nhận VNM, vẫn nhận SSI | P0 |
-| **Error in One Channel** | Error xảy ra ở channel A | Channel B vẫn hoạt động bình thường | P1 |
+| Test Case                | Action                       | Expected Result                              | Priority   |
+|--------------------------|------------------------------|----------------------------------------------|------------|
+| **Channel Isolation**    | Subscribe "VNM" và "SSI"     | VNM events không xuất hiện trong SSI channel | P0         |
+| **Unsubscribe One**      | Unsubscribe "VNM", giữ "SSI" | Chỉ stop nhận VNM, vẫn nhận SSI              | P0         |
+| **Error in One Channel** | Error xảy ra ở channel A     | Channel B vẫn hoạt động bình thường          | P1         |
 
 #### 7. Ping/Pong Heartbeat
 
-| Test Case | Action | Expected Result | Priority |
-|-----------|--------|-----------------|----------|
-| **Heartbeat** | Client gửi ping frame | Server respond pong frame trong 5s | P1 |
-| **Detect Stale Connection** | Server không respond pong 3 lần liên tiếp | Client close connection, reconnect | P1 |
-| **Client Idle** | Client không gửi message 5 phút | Server không close connection (server-initiated ping) | P2 |
+| Test Case                   | Action                                    | Expected Result                                       | Priority   |
+|-----------------------------|-------------------------------------------|-------------------------------------------------------|------------|
+| **Heartbeat**               | Client gửi ping frame                     | Server respond pong frame trong 5s                    | P1         |
+| **Detect Stale Connection** | Server không respond pong 3 lần liên tiếp | Client close connection, reconnect                    | P1         |
+| **Client Idle**             | Client không gửi message 5 phút           | Server không close connection (server-initiated ping) | P2         |
 
 ### Gherkin Examples for WebSocket
 
@@ -504,13 +504,13 @@ def test_invalid_channel_error(ws_connection):
 
 ### Common WebSocket Issues
 
-| Issue | Symptom | Root Cause | Fix |
-|-------|---------|------------|-----|
-| **Message Loss** | Client miss events | Network congestion | Add buffer, batch messages |
-| **Duplicate Subscribe** | Receive duplicate data | Client không track subscription state | Idempotent subscribe |
-| **Reconnect Loop** | Connect/disconnect liên tục | Server reject, client retry ngay | Exponential backoff |
-| **Memory Leak** | Client memory tăng dần | Event listeners không cleanup | Unsubscribe on unmount |
-| **Stale Connection** | No data received | Connection idle too long | Ping/pong heartbeat |
+| Issue                   | Symptom                     | Root Cause                            | Fix                        |
+|-------------------------|-----------------------------|---------------------------------------|----------------------------|
+| **Message Loss**        | Client miss events          | Network congestion                    | Add buffer, batch messages |
+| **Duplicate Subscribe** | Receive duplicate data      | Client không track subscription state | Idempotent subscribe       |
+| **Reconnect Loop**      | Connect/disconnect liên tục | Server reject, client retry ngay      | Exponential backoff        |
+| **Memory Leak**         | Client memory tăng dần      | Event listeners không cleanup         | Unsubscribe on unmount     |
+| **Stale Connection**    | No data received            | Connection idle too long              | Ping/pong heartbeat        |
 
 ### Áp dụng trong Gherkin (Phase 2)
 
@@ -535,16 +535,16 @@ Scenario Outline: Hệ thống mở rộng form đặt lệnh khi nhấn nút <l
   And tự động điền và bôi đen "giá hiện tại" trong ô nhập giá
 
   Examples:
-    | loại_lệnh |
+    | loại_lệnh  |
     | MUA        |
     | BÁN        |
 ```
 
 ### Quy tắc quyết định
 
-| Câu hỏi | Nếu CÓ |
-|---|---|
-| Spec đề cập > 1 button/tab/giá trị có cùng hành vi? | → Tạo nhóm đối xứng, dùng Scenario Outline |
-| Các phần tử đối xứng có khác nhau về kết quả (Then)? | → Thêm cột kết quả vào Examples table |
-| Các phần tử đối xứng hoàn toàn giống nhau về flow? | → Chỉ cần thêm row vào Examples, không cần scenario riêng |
-| Chỉ có 1 phần tử duy nhất, không có đối xứng? | → Dùng Scenario bình thường, không cần Outline |
+| Câu hỏi                                              | Nếu CÓ                                                    |
+|------------------------------------------------------|-----------------------------------------------------------|
+| Spec đề cập > 1 button/tab/giá trị có cùng hành vi?  | → Tạo nhóm đối xứng, dùng Scenario Outline                |
+| Các phần tử đối xứng có khác nhau về kết quả (Then)? | → Thêm cột kết quả vào Examples table                     |
+| Các phần tử đối xứng hoàn toàn giống nhau về flow?   | → Chỉ cần thêm row vào Examples, không cần scenario riêng |
+| Chỉ có 1 phần tử duy nhất, không có đối xứng?        | → Dùng Scenario bình thường, không cần Outline            |

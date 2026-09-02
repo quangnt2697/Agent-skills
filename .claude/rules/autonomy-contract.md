@@ -32,13 +32,13 @@ Nếu có điều kiện sai → xem mục 2 để biết đó có phải lý do
 
 Agent chỉ được dừng luồng để hỏi khi rơi vào đúng một trong 5 trường hợp sau:
 
-| # | Trường hợp | Ví dụ |
-|---|-----------|-------|
-| 1 | **Thiếu file input bắt buộc** mà agent không thể tự tạo | `{issueKey}-final.md` không tồn tại → hướng dẫn chạy `/ba-spec` trước |
-| 2 | **Thiếu credential / secret** không thể tự lấy | `.env` không tồn tại, hoặc thiếu `ATLASSIAN_API_TOKEN` |
-| 3 | **Có ≥1 câu hỏi 🔴 Critical** trong gap analysis — câu trả lời làm thay đổi bản chất output | Spec không nói rõ lệnh LO hay MP → toàn bộ business rule khác nhau |
-| 4 | **Sắp commit hoặc merge vào `main`** | Theo `git-workflow.md` — đây là cổng người duy nhất của luồng code |
-| 5 | **Hành động không thể hoàn tác bằng `git revert`** | Xoá data, deploy, thanh toán, đổi quyền/auth, `git push --force`, xoá file source |
+| # | Trường hợp                                                                                  | Ví dụ                                                                             |
+|---|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 1 | **Thiếu file input bắt buộc** mà agent không thể tự tạo                                     | `{issueKey}-final.md` không tồn tại → hướng dẫn chạy `/ba-spec` trước             |
+| 2 | **Thiếu credential / secret** không thể tự lấy                                              | `.env` không tồn tại, hoặc thiếu `ATLASSIAN_API_TOKEN`                            |
+| 3 | **Có ≥1 câu hỏi 🔴 Critical** trong gap analysis — câu trả lời làm thay đổi bản chất output | Spec không nói rõ lệnh LO hay MP → toàn bộ business rule khác nhau                |
+| 4 | **Sắp commit hoặc merge vào `main`**                                                        | Theo `git-workflow.md` — đây là cổng người duy nhất của luồng code                |
+| 5 | **Hành động không thể hoàn tác bằng `git revert`**                                          | Xoá data, deploy, thanh toán, đổi quyền/auth, `git push --force`, xoá file source |
 
 **Mọi trường hợp khác: TỰ QUYẾT.** Ghi giả định vào output rồi chạy tiếp.
 
@@ -48,16 +48,16 @@ Agent chỉ được dừng luồng để hỏi khi rơi vào đúng một trong
 
 Đây là các lý do agent hay tự bịa ra để hỏi. Tất cả đều **không hợp lệ**:
 
-| ❌ Lý do không hợp lệ | ✅ Việc phải làm thay thế |
-|---|---|
-| "Confidence chỉ 78%, có nên tiếp không?" | Chạy tiếp. Ghi gap vào mục *Giả định & Rủi ro* của output |
-| "Checklist đã đầy đủ chưa? Có cần sửa gì không?" | Tự kiểm tra bằng cổng ở mục 1, rồi chạy tiếp |
-| "Bạn có muốn tôi sinh code automation không?" | Có. Đó là phase tiếp theo trong pipeline — cứ chạy |
-| "Bạn có muốn tôi apply fix này không?" | Apply luôn bằng Edit tool. Không bao giờ in code block bảo user tự dán |
-| "File đã tồn tại, có ghi đè không?" | Ghi đè. File cũ đã nằm trong git history |
-| "Có 2 cách làm, bạn chọn cách nào?" | Chọn cách đơn giản hơn, ghi lý do vào output. Chỉ hỏi nếu rơi vào mục 2.3 |
-| "Tôi đã xong phase 2, có tiếp phase 3 không?" | Tiếp. Pipeline nghĩa là chạy hết |
-| "Test fail 3/28, có tiếp không?" | Tự debug và sửa test. Chỉ báo cáo khi đã hết cách |
+| ❌ Lý do không hợp lệ                            | ✅ Việc phải làm thay thế                                                 |
+|--------------------------------------------------|---------------------------------------------------------------------------|
+| "Confidence chỉ 78%, có nên tiếp không?"         | Chạy tiếp. Ghi gap vào mục *Giả định & Rủi ro* của output                 |
+| "Checklist đã đầy đủ chưa? Có cần sửa gì không?" | Tự kiểm tra bằng cổng ở mục 1, rồi chạy tiếp                              |
+| "Bạn có muốn tôi sinh code automation không?"    | Có. Đó là phase tiếp theo trong pipeline — cứ chạy                        |
+| "Bạn có muốn tôi apply fix này không?"           | Apply luôn bằng Edit tool. Không bao giờ in code block bảo user tự dán    |
+| "File đã tồn tại, có ghi đè không?"              | Ghi đè. File cũ đã nằm trong git history                                  |
+| "Có 2 cách làm, bạn chọn cách nào?"              | Chọn cách đơn giản hơn, ghi lý do vào output. Chỉ hỏi nếu rơi vào mục 2.3 |
+| "Tôi đã xong phase 2, có tiếp phase 3 không?"    | Tiếp. Pipeline nghĩa là chạy hết                                          |
+| "Test fail 3/28, có tiếp không?"                 | Tự debug và sửa test. Chỉ báo cáo khi đã hết cách                         |
 
 ---
 

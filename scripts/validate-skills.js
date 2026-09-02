@@ -18,27 +18,41 @@ const path = require('path');
 
 const { lintSkill } = require('./lib/skill-lint');
 
-const SKILLS_DIR = path.resolve(__dirname, '..', 'skills');
+const PLUGINS_DIR = path.resolve(__dirname, '..', 'plugins');
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 function main() {
-  if (!fs.existsSync(SKILLS_DIR)) {
-    console.error(`ERROR: skills directory not found at ${SKILLS_DIR}`);
+  if (!fs.existsSync(PLUGINS_DIR)) {
+    console.error(`ERROR: plugins directory not found at ${PLUGINS_DIR}`);
     process.exit(1);
   }
 
-  const skillDirs = fs.readdirSync(SKILLS_DIR)
-    .filter(d => fs.statSync(path.join(SKILLS_DIR, d)).isDirectory())
-    .sort();
+  const plugins = fs.readdirSync(PLUGINS_DIR).filter(d => fs.statSync(path.join(PLUGINS_DIR, d)).isDirectory());
+  
+  let allSkillDirs = [];
+  let skillToPathMap = new Map();
+  
+  for (const plugin of plugins) {
+    const skillsDir = path.join(PLUGINS_DIR, plugin, 'skills');
+    if (fs.existsSync(skillsDir)) {
+      const skillsInPlugin = fs.readdirSync(skillsDir).filter(d => fs.statSync(path.join(skillsDir, d)).isDirectory());
+      for (const skill of skillsInPlugin) {
+        allSkillDirs.push(skill);
+        skillToPathMap.set(skill, skillsDir);
+      }
+    }
+  }
 
-  const knownSkills = new Set(skillDirs);
+  allSkillDirs.sort();
+  const knownSkills = new Set(allSkillDirs);
 
   let totalErrors   = 0;
   let totalWarnings = 0;
 
-  for (const dirName of skillDirs) {
-    const { errors, warnings, exempt } = lintSkill(dirName, SKILLS_DIR, knownSkills);
+  for (const dirName of allSkillDirs) {
+    const skillsDir = skillToPathMap.get(dirName);
+    const { errors, warnings, exempt } = lintSkill(dirName, skillsDir, knownSkills);
     totalErrors   += errors.length;
     totalWarnings += warnings.length;
 
@@ -54,7 +68,7 @@ function main() {
   }
 
   const status = totalErrors > 0 ? 'FAILED' : totalWarnings > 0 ? 'PASSED WITH WARNINGS' : 'PASSED';
-  console.log(`\n${skillDirs.length} skills checked — ${totalErrors} error(s), ${totalWarnings} warning(s) — ${status}`);
+  console.log(`\n${allSkillDirs.length} skills checked — ${totalErrors} error(s), ${totalWarnings} warning(s) — ${status}`);
 
   if (totalErrors > 0) process.exit(1);
 }

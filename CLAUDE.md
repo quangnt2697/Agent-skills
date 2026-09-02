@@ -7,21 +7,21 @@
 ## Cấu trúc Dự án
 
 ```
-skills/          → Kỹ năng cốt lõi (SKILL.md cho mỗi thư mục, tổ chức theo persona)
-  ba-*           → Kỹ năng Phân tích Nghiệp vụ (BA)
-  qa-*           → Kỹ năng Kiểm thử & Tự động hóa (QA/SDET)
-  dev-*          → Kỹ năng Phát triển phần mềm (DEV)
-  meta-*         → Kỹ năng siêu cấp (Meta-skills)
-agents/          → Các persona agent tái sử dụng (qa, dev, code-reviewer, security-auditor, web-performance-auditor)
-hooks/           → Hook vòng đời phiên làm việc
-.claude/commands/→ Slash commands cho Claude (/ba-spec, /qa-test-design, /build, /ship...)
-commands/        → Slash commands cho Gemini (format .toml)
-references/      → Checklist bổ trợ (testing, performance, security, accessibility, observability)
-evals/           → Trường hợp đánh giá skill + framework (xem evals/README.md)
-docs/            → Hướng dẫn cài đặt cho các công cụ
+plugins/                          → Chứa các plugin chuyên biệt
+  ├── ba-po/                      → BA/PO persona & skills
+  ├── qa/                         → QA persona & skills
+  ├── dev/                        → DEV persona & skills
+  ├── scrum-master/               → Scrum Master persona & skills
+  ├── code-reviewer/              → Code Reviewer persona & skills
+  ├── security-auditor/           → Security Auditor persona & skills
+  ├── web-performance-auditor/    → Web Performance Auditor persona & skills
+  └── core/                       → Meta-skills, shared commands (e2e-delivery, learn, checkpoint)
+references/                       → Checklist bổ trợ (testing, performance, security, v.v.)
+evals/                            → Trường hợp đánh giá skill + framework
+docs/                             → Hướng dẫn cài đặt và thiết kế kiến trúc
 ```
 
-## 3 Personas & Pipelines
+## 7 Personas & Pipelines
 
 ### Persona 1: BA/PO — Business Analyst / Product Owner
 
@@ -51,7 +51,7 @@ Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
 - Không overlap: BA viết high-level rules, QA viết low-level test scenarios
 - Chi tiết: `docs/ba-ac-vs-qa-gherkin-overlap-analysis.md`
 
-**Skills:** `ba-spec`, `ba-refine`, `ba-interview-me`, `ba-gap-analysis`, `ba-user-story-writing`, `ba-backlog-prioritization`, `ba-stakeholder-interview`, `ba-process-modeling`
+**Skills:** `ba-spec`, `ba-refine`, `ba-interview-me`, `ba-gap-analysis`, `ba-user-story-writing`, `ba-backlog-prioritization`, `ba-stakeholder-interview`, `ba-process-modeling`, `ba-design-flowchart`
 
 ---
 
@@ -74,7 +74,7 @@ Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
 **Input từ BA/PO:** `*-final.md` (Acceptance Criteria, User Flow, Edge Cases)  
 **Output:** Checklist + Gherkin + Test Automation Code
 
-**Skills:** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-code2spec`, `qa-squash-push`, `review-code-and-quality`, `code-simplification`
+**Skills:** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-code2spec`, `qa-squash-push`, `qa-full-pipeline`
 
 ---
 
@@ -96,12 +96,124 @@ Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
 **Input từ BA/PO:** `*-final.md` (Business Rules, Data Requirements, Dependencies)  
 **Output:** Tech-Spec + App Code + Unit Tests
 
-**Skills:** `dev-spec-driven-development`, `dev-api-design`, `dev-test-driven-development`, `dev-doubt-driven-development`, `dev-frontend-engineering`, `dev-browser-testing-with-devtools`, `dev-debugging`, `dev-performance`, `dev-security`, `dev-refactoring`
+**Skills:** `dev-spec-driven-development`, `dev-api-design`, `dev-test-driven-development`, `dev-doubt-driven-development`, `dev-frontend-engineering`, `dev-browser-testing-with-devtools`, `dev-debugging`, `dev-performance`, `dev-security`, `dev-refactoring`, `dev-audit-and-fix`, `dev-incremental-implementation`, `dev-planning-and-task-breakdown`, `dev-source-driven-development`
 
 ---
 
-### Skills dùng chung (cả 3 personas):
-`planning-and-task-breakdown`, `incremental-implementation`, `source-driven-development`, `meta-context`, `meta-using-agent-skills`, `meta-cross-validation`, `meta-continuous-learning`, `meta-session-checkpoint`, `ba-design-flowchart`
+### Persona 4: Scrum Master
+
+**Vai trò:** Bảo vệ quy trình làm việc Agile, phát hiện các chướng ngại vật (impediments), cân bằng tải khối lượng công việc cho DEV, và hỗ trợ các vai trò khác (BA, QA, DEV) hoàn thành tốt Sprint.
+
+**Pipeline Scrum Master:**
+```
+Lập kế hoạch: /sm-sprint-planning → Tính toán velocity & pull backlog
+Theo dõi: /sm-daily-standup → Thống kê tiến độ & tải DEV
+Xử lý sự cố: /sm-impediment-triage → Gỡ rối ticket kẹt
+Tổng kết: /sm-sprint-retrospective → Rút kinh nghiệm
+```
+
+**Ranh giới:**
+- CHỈ đọc dữ liệu cấu hình từ `sm-config.yaml` và hệ thống Jira/Confluence.
+- KHÔNG can thiệp vào code, test hay business spec.
+- Mọi artifacts được phân bổ vào các thư mục `trace/` (báo cáo) và `tech/` (kế hoạch) bên dưới `workspace/sprint/`.
+
+**Skills:** `sm-sprint-planning`, `sm-daily-standup`, `sm-impediment-triage`, `sm-sprint-retrospective`
+
+---
+
+### Persona 5: Code Reviewer
+**Vai trò:** Đánh giá mã nguồn, đơn giản hóa và đảm bảo chất lượng code.
+**Skills:** `cr-review-code-and-quality`, `cr-code-simplification`
+
+---
+
+### Persona 6: Security Auditor
+**Vai trò:** Đánh giá bảo mật, phát hiện lỗ hổng theo chuẩn OWASP.
+**Skills:** `security-code-audit`
+**Commands:** `/security-audit`
+
+---
+
+### Persona 7: Web Performance Auditor
+**Vai trò:** Đánh giá hiệu năng web, Core Web Vitals, v.v.
+**Skills:** `webperf-core-vitals`
+**Commands:** `/webperf-audit`
+
+---
+
+### Skills dùng chung (Meta - `plugins/core`):
+`meta-context`, `meta-using-agent-skills`, `meta-cross-validation`, `meta-continuous-learning`, `meta-session-checkpoint`
+
+---
+
+## Git Workflow & Branch-based Development
+
+**Nguyên tắc vàng:** ❌ KHÔNG BAO GIỜ commit trực tiếp vào `main`/`master`
+
+### Workflow chuẩn
+```
+1. Tạo feature branch    git checkout -b feature/{issueKey}
+2. Code & verify         [Write code → Run tests → Build]
+3. Trình bày cho user    [Show changes → Wait approval]
+4. Commit & merge        [git add → commit → merge to main]
+```
+
+**Commit CHỈ SAU KHI user approve.** Một task = một commit duy nhất khi hoàn thành.
+
+### Branch naming
+- `feature/{issueKey}` — Tính năng mới
+- `fix/{issueKey}` — Sửa bug
+- `refactor/{description}` — Refactor code
+
+### Commit message format
+```
+[{issueKey}] Short description
+
+- Chi tiết thay đổi 1
+- Chi tiết thay đổi 2
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+```
+
+**📖 Chi tiết đầy đủ:** `.claude/rules/git-workflow.md`
+
+---
+
+## Confidence Level System
+
+Mỗi skill output có **Confidence Level** để đánh giá chất lượng:
+
+### Levels
+| Level         | Range   | Meaning                  | Action                      |
+|---------------|---------|--------------------------|-----------------------------|
+| 🟢 **High**   | 90-100% | Đầy đủ, đã verify        | Chạy tiếp                   |
+| 🟡 **Medium** | 70-89%  | Đầy đủ nhưng có gaps nhỏ | Ghi gap, chạy tiếp          |
+| 🔴 **Low**    | <70%    | Thiếu sót hoặc uncertain | Cảnh báo rõ, đề xuất review |
+
+### Calculation
+```python
+confidence = (completeness * 0.6) + (certainty * 0.4)
+
+# completeness: % công việc hoàn thành
+# certainty: % chắc chắn output đúng
+```
+
+### Output format trong mọi artifacts
+```markdown
+## 📊 Confidence Assessment
+
+**Confidence Level:** 🟢 High (95%)
+
+**Factors:**
+- ✅ Factor 1: Description (weight: 30%)
+- ⚠️ Factor 2: Minor issue (weight: 20%)
+
+**Blockers:** None
+```
+
+**QUAN TRỌNG:** Confidence Level CHỈ dùng để **báo cáo chất lượng**, KHÔNG dùng làm cổng chặn luồng. Việc dừng hay chạy tiếp do `.claude/rules/autonomy-contract.md` quyết định.
+
+**📖 Chi tiết đầy đủ:** `.claude/rules/confidence-level.md`
 
 ---
 
@@ -110,48 +222,48 @@ Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
 BA/PO sở hữu `*-final.md`; QA sở hữu test artifacts; DEV sở hữu app code + Tech-Spec.
 Hai skill BA chính:
 
-| | `ba-spec` | `ba-refine` |
-|---|---|---|
-| **Input** | Jira có requirements rõ ràng | Jira có ý tưởng thô/mơ hồ |
-| **Focus** | Completeness (13 sections) | Clarity & Detail (brainstorm) |
-| **Output** | `*-final.md` để bàn giao | Jira description đã cập nhật + file local |
+|            | `ba-spec`                    | `ba-refine`                               |
+|------------|------------------------------|-------------------------------------------|
+| **Input**  | Jira có requirements rõ ràng | Jira có ý tưởng thô/mơ hồ                 |
+| **Focus**  | Completeness (13 sections)   | Clarity & Detail (brainstorm)             |
+| **Output** | `*-final.md` để bàn giao     | Jira description đã cập nhật + file local |
 
-📖 Chi tiết trách nhiệm, quy trình và handoff: [docs/ba-workflow-detail.md](docs/ba-workflow-detail.md)
+📖 Chi tiết trách nhiệm, quy trình và handoff: [docs/architecture/ba-workflow-detail.md](docs/architecture/ba-workflow-detail.md)
 
 ---
 
 ### Ai viết loại test nào
 
-| Loại test | Chủ sở hữu | Đặt ở đâu |
-|---|---|---|
-| Unit | DEV | `tests/unit/` hoặc `src/__tests__/` |
-| Integration | DEV thiết kế, QA mở rộng | `tests/integration/` |
-| E2E | QA | `/project-root/workspace/{issueKey}/test/steps/` |
-| Performance | QA thiết kế, DEV tối ưu | — |
-| Security | Security-Auditor / QA test, DEV fix | — |
+| Loại test   | Chủ sở hữu                          | Đặt ở đâu                                        |
+|-------------|-------------------------------------|--------------------------------------------------|
+| Unit        | DEV                                 | `tests/unit/` hoặc `src/__tests__/`              |
+| Integration | DEV thiết kế, QA mở rộng            | `tests/integration/`                             |
+| E2E         | QA                                  | `/project-root/workspace/{issueKey}/test/steps/` |
+| Performance | QA thiết kế, DEV tối ưu             | —                                                |
+| Security    | Security-Auditor / QA test, DEV fix | —                                                |
 
 Code review: DEV tự review trước khi trình kết quả; QA review thêm ở góc độ testability
 cho feature critical (tiền/auth/bảo mật), feature nhiều edge case, và bug fix.
 
-📖 Chi tiết kèm ví dụ code từng loại: [docs/test-ownership.md](docs/test-ownership.md)
+📖 Chi tiết kèm ví dụ code từng loại: [docs/architecture/test-ownership.md](docs/architecture/test-ownership.md)
 
 ## Tổng kết Ranh giới
 
-| Hoạt động | BA/PO | QA | DEV | Collaboration |
-|-----------|-------|----|----|--------------|
-| **Import & Analyze Requirements** | ✅ Owner | ❌ | ❌ | — |
-| **Gap Analysis & Clarification** | ✅ Owner | ❌ | ❌ | — |
-| **Business-Spec Writing** | ✅ Owner | ❌ | ❌ | — |
-| **Unit Test** | ❌ | ❌ | ✅ Owner | — |
-| **Integration Test** | ❌ | ✅ Owner | ✅ Support | 50/50 |
-| **E2E Test** | ❌ | ✅ Owner | ❌ | — |
-| **Performance Test** | ❌ | ✅ Owner | 🔧 Support | QA design, DEV optimize |
-| **Security Test** | ❌ | ✅ Test | 🔧 Fix | QA test, DEV fix |
-| **Code Review (app code)** | ❌ | ✅ Optional QA review | ✅ Self-review | DEV first, QA second |
-| **Code Review (test code)** | ❌ | ✅ Self-review | ❌ | — |
-| **Refactoring** | ❌ | ❌ | ✅ Owner | — |
-| **Bug Fix** | ❌ | ✅ Verify fix + regression | ✅ Fix code | DEV fix, QA verify |
-| **Tech-Spec Writing** | ❌ | ❌ | ✅ Owner | — |
+| Hoạt động                         | BA/PO    | QA                         | DEV            | Collaboration           |
+|-----------------------------------|----------|----------------------------|----------------|-------------------------|
+| **Import & Analyze Requirements** | ✅ Owner | ❌                         | ❌             | —                       |
+| **Gap Analysis & Clarification**  | ✅ Owner | ❌                         | ❌             | —                       |
+| **Business-Spec Writing**         | ✅ Owner | ❌                         | ❌             | —                       |
+| **Unit Test**                     | ❌       | ❌                         | ✅ Owner       | —                       |
+| **Integration Test**              | ❌       | ✅ Owner                   | ✅ Support     | 50/50                   |
+| **E2E Test**                      | ❌       | ✅ Owner                   | ❌             | —                       |
+| **Performance Test**              | ❌       | ✅ Owner                   | 🔧 Support     | QA design, DEV optimize |
+| **Security Test**                 | ❌       | ✅ Test                    | 🔧 Fix         | QA test, DEV fix        |
+| **Code Review (app code)**        | ❌       | ✅ Optional QA review      | ✅ Self-review | DEV first, QA second    |
+| **Code Review (test code)**       | ❌       | ✅ Self-review             | ❌             | —                       |
+| **Refactoring**                   | ❌       | ❌                         | ✅ Owner       | —                       |
+| **Bug Fix**                       | ❌       | ✅ Verify fix + regression | ✅ Fix code    | DEV fix, QA verify      |
+| **Tech-Spec Writing**             | ❌       | ❌                         | ✅ Owner       | —                       |
 
 **Legend:**
 - ✅ Owner — responsible cho hoạt động này
@@ -189,25 +301,25 @@ BA/PO creates *-final.md
     Gherkin           Data Model      DEV: Code + Unit tests
 ```
 
-**Chi tiết:** Xem `.claude/commands/e2e-delivery.md`
+**Chi tiết:** Xem `plugins/core/.claude/commands/e2e-delivery.md`
 
 ## Kỹ năng theo Giai đoạn
 
-**Xác định (Define — BA/PO):** `ba-spec`, `ba-interview-me`, `ba-refine`, `ba-gap-analysis`
-**Lên kế hoạch (Plan — ALL):** `planning-and-task-breakdown`
-**Xây dựng (Build — DEV):** `incremental-implementation`, `dev-spec-driven-development`, `dev-test-driven-development`, `meta-context`, `source-driven-development`, `dev-doubt-driven-development`, `dev-frontend-engineering`, `dev-api-design`
+**Xác định (Define — BA/PO):** `ba-spec`, `ba-interview-me`, `ba-refine`, `ba-gap-analysis`, `ba-process-modeling`, `ba-user-story-writing`, `ba-backlog-prioritization`, `ba-design-flowchart`
+**Lên kế hoạch (Plan — ALL):** `dev-planning-and-task-breakdown`
+**Xây dựng (Build — DEV):** `dev-incremental-implementation`, `dev-spec-driven-development`, `dev-test-driven-development`, `dev-source-driven-development`, `dev-doubt-driven-development`, `dev-frontend-engineering`, `dev-api-design`
 **Xác minh (Verify — DEV):** `dev-browser-testing-with-devtools`, `dev-debugging`
-**Đánh giá (Review — DEV+QA):** `review-code-and-quality`, `code-simplification`, `dev-security`, `dev-performance`, `dev-audit-and-fix`
-**Kiểm thử (Test — QA):** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-code2spec`
-**Quản lý Phiên (Session Management - ALL):** `meta-continuous-learning`, `meta-session-checkpoint`
+**Đánh giá (Review — DEV+QA+CR):** `cr-review-code-and-quality`, `cr-code-simplification`, `dev-security`, `dev-performance`, `dev-audit-and-fix`
+**Kiểm thử (Test — QA):** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-code2spec`, `qa-squash-push`, `qa-full-pipeline`
+**Quản lý Phiên (Session Management - ALL):** `meta-continuous-learning`, `meta-session-checkpoint`, `meta-cross-validation`, `meta-context`, `meta-using-agent-skills`
 
 ## Quy ước
 
-- Mỗi kỹ năng nằm trong `skills/<tên>/SKILL.md`
+- Mỗi kỹ năng nằm trong `plugins/<plugin-name>/skills/<tên>/SKILL.md`
 - YAML frontmatter có trường `name` và `description`
 - Description bắt đầu bằng mô tả kỹ năng (ngôi thứ ba), theo sau là điều kiện kích hoạt ("Sử dụng khi...")
 - Mỗi kỹ năng có: Tổng quan, Khi nào sử dụng, Quy trình, Các biện hộ thường gặp, Dấu hiệu cảnh báo, Xác minh
-- Tài liệu tham khảo dùng chung nằm trong thư mục gốc `references/`; kỹ năng độc lập giữ tham khảo trong `skills/<tên>/references/`
+- Tài liệu tham khảo dùng chung nằm trong thư mục gốc `references/`; kỹ năng độc lập giữ tham khảo trong `plugins/<plugin-name>/skills/<tên>/references/`
 - File bổ trợ chỉ tạo khi nội dung vượt quá 100 dòng
 
 ## Chuẩn mực Đầu ra
@@ -224,7 +336,7 @@ BA/PO creates *-final.md
 
 ## Đóng góp
 
-Trước khi thêm kỹ năng mới hoặc chỉnh sửa lớn một kỹ năng hiện có, chạy kiểm tra sơ bộ trong [CONTRIBUTING.md](CONTRIBUTING.md#before-proposing-a-new-skill): tìm trong catalog, kiểm tra PR đang mở, xác nhận ý tưởng phù hợp [docs/skill-anatomy.md](docs/skill-anatomy.md), và giải trình khoảng trống. Ưu tiên mở rộng kỹ năng hiện có thay vì thêm bản gần trùng lặp.
+Trước khi thêm kỹ năng mới hoặc chỉnh sửa lớn một kỹ năng hiện có, chạy kiểm tra sơ bộ trong [CONTRIBUTING.md](CONTRIBUTING.md#before-proposing-a-new-skill): tìm trong catalog, kiểm tra PR đang mở, xác nhận ý tưởng phù hợp [docs/guides/skill-anatomy.md](docs/guides/skill-anatomy.md), và giải trình khoảng trống. Ưu tiên mở rộng kỹ năng hiện có thay vì thêm bản gần trùng lặp.
 
 ## Lệnh
 
@@ -235,26 +347,26 @@ Trước khi thêm kỹ năng mới hoặc chỉnh sửa lớn một kỹ năng 
 
 Chạy riêng từng validator khi cần khoanh vùng lỗi:
 
-| Lệnh | Kiểm tra |
-|---|---|
-| `npm run validate:skills` | SKILL.md có frontmatter hợp lệ, `name` khớp thư mục, đủ 5 section bắt buộc |
-| `npm run validate:commands` | `.claude/commands` và `commands/` khớp nhau về tên lệnh và description |
-| `npm run validate:versions` | Các plugin manifest khai báo cùng một version |
-| `npm run validate:links` | Link tới `references/` trong skill giải được đúng đường dẫn |
-| `npm run validate:paths` | Đường dẫn artifact trong tài liệu theo đúng quy ước |
+| Lệnh                        | Kiểm tra                                                                                    |
+|-----------------------------|---------------------------------------------------------------------------------------------|
+| `npm run validate:skills`   | SKILL.md có frontmatter hợp lệ, `name` khớp thư mục, đủ 5 section bắt buộc                  |
+| `npm run validate:commands` | `.claude/commands` và `commands/` bên trong các plugin khớp nhau về tên lệnh và description |
+| `npm run validate:versions` | Các plugin manifest khai báo cùng một version                                               |
+| `npm run validate:links`    | Link tới `references/` trong skill giải được đúng đường dẫn                                 |
+| `npm run validate:paths`    | Đường dẫn artifact trong tài liệu theo đúng quy ước                                         |
 
 Riêng skill `ba-design-flowchart` có môi trường Node độc lập:
 
-| Lệnh (chạy trong `skills/ba-design-flowchart`) | Tác dụng |
-|---|---|
-| `npm install` | Cài `@mermaid-js/mermaid-cli` + `beautiful-mermaid` |
-| `npm run doctor` | Chẩn đoán engine render + vị trí Chrome — chạy đầu tiên khi clone repo về máy mới |
-| `npm test` | Smoke test cả hai engine |
+| Lệnh (chạy trong `plugins/ba-po/skills/ba-design-flowchart`)   | Tác dụng                                                                          |
+|----------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `npm install`                                                  | Cài `@mermaid-js/mermaid-cli` + `beautiful-mermaid`                               |
+| `npm run doctor`                                               | Chẩn đoán engine render + vị trí Chrome — chạy đầu tiên khi clone repo về máy mới |
+| `npm test`                                                     | Smoke test cả hai engine                                                          |
 
 ## Ranh giới
 
 - Luôn: Chạy kiểm tra sơ bộ CONTRIBUTING.md trước khi tạo thư mục kỹ năng mới
-- Luôn: Tuân theo format skill-anatomy.md cho kỹ năng mới
+- Luôn: Tuân theo format docs/guides/skill-anatomy.md cho kỹ năng mới
 - Luôn: Kiểm tra PR và issue đang mở trên repo upstream trước khi mở PR mới
 - Không bao giờ: Thêm kỹ năng chỉ là lời khuyên chung thay vì quy trình hành động cụ thể
 - Không bao giờ: Duplicate nội dung giữa các kỹ năng — tham chiếu chéo thay vì copy

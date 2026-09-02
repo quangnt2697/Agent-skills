@@ -6,26 +6,67 @@ Bộ sưu tập kỹ năng (skills) cấp sản xuất cho AI coding agents, t�
 
 ## 🎯 Tổng quan
 
-**agent-skills** cung cấp 3 personas chuyên biệt với bộ kỹ năng đầy đủ để tự động hóa toàn bộ vòng đời phát triển phần mềm (SDLC):
+**agent-skills** cung cấp 7 personas chuyên biệt với bộ kỹ năng đầy đủ để tự động hóa toàn bộ vòng đời phát triển phần mềm (SDLC). Hệ thống được module hóa thành các **plugins**, cho phép bạn chỉ cài đặt những gì mình cần:
 
-### 1. BA/PO — Business Analyst / Product Owner
+### 1. BA/PO — Business Analyst / Product Owner (`plugins/ba-po`)
 Chuyên gia phân tích nghiệp vụ, làm rõ yêu cầu, viết đặc tả, và ưu tiên backlog.
 
-**8 skills:** Import Jira/Confluence, phỏng vấng stakeholders, viết User Stories, phân tích gaps, ưu tiên backlog, mô hình hóa quy trình.
+**9 skills:** Import Jira/Confluence, phỏng vấn stakeholders, viết User Stories, phân tích gaps, ưu tiên backlog, tinh chỉnh backlog, mô hình hóa quy trình, v.v.
 
-### 2. QA/SDET — Quality Assurance / Test Engineer
+### 2. QA/SDET — Quality Assurance / Test Engineer (`plugins/qa`)
 Chuyên gia kiểm thử, thiết kế test cases, automation testing, và đảm bảo chất lượng.
 
-**5 skills:** Test design (Checklist + Gherkin), automation code generation, test execution, reverse engineering, Squash TM integration.
+**6 skills:** Test design (Checklist + Gherkin), automation code generation, test execution, reverse engineering, Squash TM integration.
 
-### 3. DEV — Software Developer
+### 3. DEV — Software Developer (`plugins/dev`)
 Kỹ sư phần mềm, thiết kế kiến trúc, viết code, unit testing, và review.
 
-**15+ skills:** Spec-driven development, TDD, API design, frontend engineering, debugging, performance, security, refactoring.
+**14 skills:** Spec-driven development, TDD, API design, frontend engineering, debugging, performance, security, refactoring.
+
+### 4. Scrum Master (`plugins/scrum-master`)
+Kỹ sư Quản lý Quy trình & Điều phối (Scrum Master). Quản lý Sprint, theo dõi Kanban board, phát hiện rủi ro (blockers), và điều hành các nghi thức Agile.
+
+**4 skills:** Sprint planning, daily standup, impediment triage, sprint retrospective.
+
+### 5. Code Reviewer (`plugins/code-reviewer`)
+Kỹ sư chuyên trách đánh giá chất lượng mã nguồn.
+
+**2 skills:** Code simplification, code and quality review.
+
+### 6. Security Auditor (`plugins/security-auditor`)
+Kỹ sư chuyên trách phát hiện lỗ hổng và audit bảo mật mã nguồn theo chuẩn OWASP Top 10.
+
+**1 skill:** Security code audit
+
+### 7. Web Performance Auditor (`plugins/web-performance-auditor`)
+Kỹ sư chuyên trách đánh giá hiệu năng web, Core Web Vitals (LCP, FID, CLS).
+
+**1 skill:** Core Web Vitals audit
+
+*(Ngoài ra còn có `plugins/core` chứa các kỹ năng meta và lệnh dùng chung).*
 
 ---
 
 ## ⚡ Quick Start
+
+### Cài đặt với Antigravity CLI (Khuyên dùng)
+
+Bạn có thể cài đặt từng plugin riêng lẻ theo nhu cầu:
+
+```bash
+# Cài đặt một plugin cụ thể từ remote repository (ví dụ: BA/PO)
+agy plugin install https://github.com/addyosmani/agent-skills.git --path plugins/ba-po
+
+# Hoặc cài đặt từ local clone
+git clone https://github.com/addyosmani/agent-skills.git
+cd agent-skills
+npm install
+
+# Cài đặt các plugins bạn cần
+agy plugin install ./plugins/core
+agy plugin install ./plugins/dev
+agy plugin install ./plugins/qa
+```
 
 ### Cài đặt với Claude Code
 
@@ -33,41 +74,15 @@ Kỹ sư phần mềm, thiết kế kiến trúc, viết code, unit testing, và
 # Clone repository
 git clone https://github.com/addyosmani/agent-skills.git
 cd agent-skills
+npm install
 
-# Skills sẽ tự động load khi Claude Code chạy trong thư mục này
-# Kiểm tra skills đã load:
+# Mở thư mục gốc để tải toàn bộ plugin, hoặc cd vào từng plugin
 # Gõ `/` trong Claude Code để xem danh sách slash commands
 ```
 
-### Cài đặt với Gemini CLI
-
-```bash
-# Clone repository
-git clone https://github.com/addyosmani/agent-skills.git
-cd agent-skills
-
-# Install skills vào Gemini
-gemini skills install ./skills --path skills
-
-# Hoặc cài đặt trực tiếp từ repo
-gemini skills install https://github.com/addyosmani/agent-skills.git --path skills
-```
-
-### Cài đặt với Antigravity CLI
-
-```bash
-# Install từ remote repository
-agy plugin install https://github.com/addyosmani/agent-skills.git
-
-# Hoặc từ local clone
-git clone https://github.com/addyosmani/agent-skills.git
-cd agent-skills
-agy plugin install .
-```
-
 **Xem chi tiết:** 
-- [docs/gemini-cli-setup.md](docs/gemini-cli-setup.md) — Gemini CLI
-- [docs/antigravity-setup.md](docs/antigravity-setup.md) — Antigravity CLI
+- [docs/guides/antigravity-setup.md](docs/guides/antigravity-setup.md) — Antigravity CLI
+- [docs/guides/gemini-cli-setup.md](docs/guides/gemini-cli-setup.md) — Gemini CLI
 
 ### Workflow cơ bản
 
@@ -100,74 +115,114 @@ agy plugin install .
 
 ## 📚 Cấu trúc Dự án
 
+Dự án được cấu trúc như một monorepo chứa nhiều plugin độc lập:
+
 ```
 agent-skills/
-├── agents/              → Định nghĩa 3 personas (BA/PO, QA, DEV)
-├── skills/              → 28+ kỹ năng chuyên môn (SKILL.md cho mỗi thư mục)
-│   ├── ba-*/            → 8 BA/PO skills
-│   ├── qa-*/            → 5 QA/SDET skills  
-│   ├── dev-*/           → 15+ DEV skills
-│   └── meta-*/          → Meta-skills (planning, cross-validation, continuous-learning, session-checkpoint)
-├── .claude/
-│   ├── commands/        → Slash commands (*.md)
-│   └── rules/           → Quy tắc dự án (git workflow, confidence level)
-├── references/          → Checklists & templates dùng chung
-├── docs/                → Documentation
-│   ├── getting-started.md
-│   ├── skill-anatomy.md
-│   └── agents.md
-└── CLAUDE.md            → Hướng dẫn cho Claude agent
+├── plugins/                    → Chứa các plugin chuyên biệt
+│   ├── core/                   → Meta-skills, shared commands
+│   ├── ba-po/                  → BA/PO persona & skills
+│   ├── qa/                     → QA persona & skills
+│   ├── dev/                    → DEV persona & skills
+│   ├── code-reviewer/          → Code Reviewer persona & skills
+│   ├── scrum-master/           → Scrum Master persona & skills
+│   ├── security-auditor/       → Security Auditor persona & skills
+│   └── web-performance-auditor/ → Web Performance Auditor persona & skills
+├── references/                  → Checklists & templates dùng chung
+├── docs/                        → Documentation
+│   ├── guides/                  → Hướng dẫn (setup, skills, agents)
+│   └── architecture/            → Thiết kế kiến trúc (test-ownership, workflow)
+└── CLAUDE.md                    → Hướng dẫn cho Claude agent
+```
+
+Mỗi plugin (ví dụ `plugins/dev/`) đều tuân theo chuẩn Antigravity plugin:
+```
+plugins/dev/
+├── plugin.json          → Metadata của plugin
+├── agents/              → Định nghĩa persona (ví dụ: dev.md)
+├── skills/              → Các kỹ năng (ví dụ: dev-api-design/)
+└── .claude/commands/    → Hoặc commands/ cho các slash commands liên quan
 ```
 
 ---
 
 ## 🚀 Slash Commands Chính
 
-### BA/PO Commands
+*(Các commands này khả dụng khi bạn cài đặt plugin tương ứng)*
 
-| Command | Chức năng |
-|---------|-----------|
-| `/ba-spec {issueKey}` | Import & phân tích Jira/Confluence → Business-Spec |
-| `/ba-interview {issueKey}` | Phỏng vấn clarify gaps với hypothesis |
-| `/ba-user-stories {issueKey}` | Viết User Stories chuẩn INVEST |
-| `/ba-gap-analysis {issueKey}` | Phân tích AS-IS vs TO-BE, lập roadmap |
-| `/ba-prioritize {issueKey}` | Ưu tiên backlog theo MoSCoW/WSJF |
-| `/ba-stakeholder` | Phỏng vấn multi-stakeholders |
-| `/ba-process {issueKey}` | Vẽ process diagram (BPMN/Swim Lane) |
+### BA/PO Commands (`plugins/ba-po`)
 
-### QA Commands
+| Command                       | Chức năng                                          |
+|-------------------------------|----------------------------------------------------|
+| `/ba-spec {issueKey}`         | Import & phân tích Jira/Confluence → Business-Spec |
+| `/ba-interview {issueKey}`    | Phỏng vấn clarify gaps với hypothesis              |
+| `/ba-user-stories {issueKey}` | Viết User Stories chuẩn INVEST                     |
+| `/ba-gap-analysis {issueKey}` | Phân tích AS-IS vs TO-BE, lập roadmap              |
+| `/ba-prioritize {issueKey}`   | Ưu tiên backlog theo MoSCoW/WSJF                   |
+| `/ba-stakeholder`             | Phỏng vấn multi-stakeholders                       |
+| `/ba-process {issueKey}`      | Vẽ process diagram (BPMN/Swim Lane)                |
+| `/ba-refine {issueKey}`       | Refine user stories, bổ sung acceptance criteria   |
 
-| Command | Chức năng |
-|---------|-----------|
+### QA Commands (`plugins/qa`)
+
+| Command                                 | Chức năng                                              |
+|-----------------------------------------|--------------------------------------------------------|
 | `/qa-full-pipeline {issueKey} [--auto]` | **Full QA workflow** (design → automation → execution) |
-| `/qa-test-design {issueKey}` | Thiết kế Checklist + Gherkin scenarios |
-| `/qa-auto-design {issueKey}` | Sinh automation test code (Playwright/Pytest) |
-| `/qa-run-test {issueKey}` | Chạy tests + xuất báo cáo |
-| `/qa-code2spec {path}` | Reverse engineer code → spec |
+| `/qa-test-design {issueKey}`            | Thiết kế Checklist + Gherkin scenarios                 |
+| `/qa-auto-design {issueKey}`            | Sinh automation test code (Playwright/Pytest)          |
+| `/qa-run-test {issueKey}`               | Chạy tests + xuất báo cáo                              |
+| `/qa-code2spec {path}`                  | Reverse engineer code → spec                           |
+| `/qa-squash-push`                       | Push kết quả test lên Squash TM                        |
+| `/qa-pipeline`                          | Alias để chạy pipeline cơ bản                          |
 
-### DEV Commands
+### DEV Commands (`plugins/dev`)
 
-| Command | Chức năng |
-|---------|-----------|
-| `/tech-spec {issueKey}` | Viết tech-spec từ business-spec |
-| `/plan {issueKey}` | Chia tasks + dependencies |
-| `/build {issueKey} [auto]` | TDD implementation (Red → Green → Refactor) |
-| `/review` | Code review đa chiều (correctness, security, performance) |
-| `/unit-test` | Viết unit tests trước khi code |
+| Command                        | Chức năng                                    |
+|--------------------------------|----------------------------------------------|
+| `/dev-tech-spec {issueKey}`    | Viết tech-spec từ business-spec              |
+| `/dev-plan {issueKey}`         | Chia tasks + dependencies                    |
+| `/dev-build {issueKey} [auto]` | TDD implementation (Red → Green → Refactor)  |
+| `/dev-audit`                   | Kiểm toán, quét lỗi, và tự sửa lỗi toàn diện |
+| `/dev-unit-test`               | Viết unit tests trước khi code               |
 
-### E2E Pipeline
+### Code Reviewer Commands (`plugins/code-reviewer`)
 
-| Command | Chức năng |
-|---------|-----------|
+| Command             | Chức năng                                                 |
+|---------------------|-----------------------------------------------------------|
+| `/cr-review`        | Code review đa chiều (correctness, security, performance) |
+| `/cr-code-simplify` | Phân tích và đơn giản hóa code phức tạp                   |
+
+### Scrum Master Commands (`plugins/scrum-master`)
+
+| Command                    | Chức năng                                              |
+|----------------------------|--------------------------------------------------------|
+| `/sm-sprint-planning`      | Lập kế hoạch Sprint, tính velocity, kéo backlog        |
+| `/sm-daily-standup`        | Báo cáo tiến độ hằng ngày, phân tích tải công việc DEV |
+| `/sm-impediment-triage`    | Phát hiện và xử lý ticket bị kẹt/treo                  |
+| `/sm-sprint-retrospective` | Tổng kết Sprint, rút kinh nghiệm và đề xuất cải tiến   |
+
+### Security & Performance Commands
+
+| Command                  | Plugin                    | Chức năng                                     |
+|--------------------------|---------------------------|-----------------------------------------------|
+| `/security-audit [path]` | `security-auditor`        | Audit bảo mật, phát hiện lỗ hổng OWASP Top 10 |
+| `/webperf-audit [url]`   | `web-performance-auditor` | Audit hiệu năng web, đánh giá Core Web Vitals |
+
+### E2E Pipeline (`plugins/core`)
+
+| Command                    | Chức năng                                       |
+|----------------------------|-------------------------------------------------|
 | `/e2e-delivery {issueKey}` | **Full SDLC pipeline** (BA → DEV → QA → Review) |
 
-### Meta / Session Commands
+### Meta / Session Commands (`plugins/core`)
 
-| Command | Chức năng |
-|---------|-----------|
+| Command                       | Chức năng                                                       |
+|-------------------------------|-----------------------------------------------------------------|
 | `/learn` hoặc `/save-session` | Tự động đúc kết bài học từ phiên làm việc và lưu thành Rule mới |
-| `/save-checkpoint` | Nén toàn bộ ngữ cảnh hiện tại thành file trạng thái nhỏ gọn |
-| `/load-checkpoint` | Khôi phục trạng thái từ file nén và tự động tiếp tục công việc |
+| `/save-checkpoint`            | Nén toàn bộ ngữ cảnh hiện tại thành file trạng thái nhỏ gọn     |
+| `/load-checkpoint`            | Khôi phục trạng thái từ file nén và tự động tiếp tục công việc  |
+| `/flowchart`                  | Render nội dung Mermaid sang ảnh                                |
+| `/webperf`                    | Audit web performance (Core Web Vitals)                         |
 
 ---
 
@@ -175,9 +230,10 @@ agent-skills/
 
 ### 1. Đọc Documentation
 
-- **[Getting Started](docs/getting-started.md)** — Hướng dẫn cài đặt chi tiết
-- **[Skill Anatomy](docs/skill-anatomy.md)** — Cấu trúc một skill
-- **[Agents Guide](docs/agents.md)** — Hiểu rõ 3 personas
+- **[Getting Started](docs/guides/getting-started.md)** — Hướng dẫn cài đặt chi tiết
+- **[Skill Anatomy](docs/guides/skill-anatomy.md)** — Cấu trúc một skill
+- **[Agents Guide](docs/guides/agents.md)** — Hiểu rõ 7 personas
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — Hướng dẫn tạo skill và plugin mới
 
 ### 2. Workflow Examples
 
@@ -217,8 +273,9 @@ agent-skills/
 
 ### Thêm Skill mới
 
-1. Tạo thư mục: `skills/your-skill-name/`
-2. Viết `SKILL.md` với YAML frontmatter:
+1. Xác định plugin phù hợp (hoặc tạo plugin mới)
+2. Tạo thư mục: `plugins/<plugin-name>/skills/your-skill-name/`
+3. Viết `SKILL.md` với YAML frontmatter:
 ```markdown
 ---
 name: your-skill-name
@@ -234,13 +291,13 @@ description: Short description (third-person), followed by trigger condition ("U
 ...
 ```
 
-3. (Optional) Tạo slash command: `.claude/commands/your-command.md`
+4. Tạo command config file `plugins/<plugin-name>/commands/your-command.toml` để tự động sinh slash command.
 
-**Xem:** [Skill Anatomy](docs/skill-anatomy.md) và [CONTRIBUTING.md](CONTRIBUTING.md)
+**Xem chi tiết:** [Skill Anatomy](docs/guides/skill-anatomy.md) và [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ### Tùy chỉnh Agents
 
-Sửa file `agents/{persona}.md` để thay đổi:
+Sửa file `plugins/<plugin-name>/agents/{persona}.md` để thay đổi:
 - Tools available
 - Ranh giới trách nhiệm
 - Skills được sử dụng
@@ -249,21 +306,20 @@ Sửa file `agents/{persona}.md` để thay đổi:
 
 ## 📖 Documentation
 
-| Doc | Nội dung |
-|-----|----------|
-| [CLAUDE.md](CLAUDE.md) | Project instructions cho Claude agent |
-| [Getting Started](docs/getting-started.md) | Hướng dẫn cài đặt & sử dụng |
-| [Skill Anatomy](docs/skill-anatomy.md) | Cấu trúc một skill, best practices |
-| [Agents Guide](docs/agents.md) | Chi tiết 3 personas và ranh giới |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Hướng dẫn đóng góp |
+| Doc                                               | Nội dung                              |
+|---------------------------------------------------|---------------------------------------|
+| [CLAUDE.md](CLAUDE.md)                            | Project instructions cho Claude agent |
+| [Getting Started](docs/guides/getting-started.md) | Hướng dẫn cài đặt & sử dụng           |
+| [Skill Anatomy](docs/guides/skill-anatomy.md)     | Cấu trúc một skill, best practices    |
+| [Agents Guide](docs/guides/agents.md)             | Chi tiết 7 personas và ranh giới      |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                | Hướng dẫn đóng góp                    |
 
-### Analysis & Review Docs
+### Architecture & Workflows
 
-| Doc | Nội dung |
-|-----|----------|
-| [BA/PO Separation Proposal](docs/ba-po-separation-proposal.md) | Tại sao tách BA/PO khỏi QA |
-| [BA AC vs QA Checklist](docs/ba-ac-vs-qa-checklist-comparison.md) | So sánh AC vs Test Checklist |
-| [QA Skills Review](docs/qa-skills-comprehensive-review.md) | Review toàn diện 5 QA skills |
+| Doc                                                           | Nội dung                       |
+|---------------------------------------------------------------|--------------------------------|
+| [BA Workflow Detail](docs/architecture/ba-workflow-detail.md) | Chi tiết luồng làm việc của BA |
+| [Test Ownership](docs/architecture/test-ownership.md)         | Ranh giới trách nhiệm kiểm thử |
 
 ---
 
@@ -308,9 +364,10 @@ Xem chi tiết: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## 📊 Stats
 
-- **3 Personas** (BA/PO, QA, DEV)
-- **30+ Skills** (8 BA + 5 QA + 15+ DEV + Meta)
-- **29+ Slash Commands**
+- **8 Plugins** (core, ba-po, qa, dev, scrum-master, code-reviewer, security-auditor, web-performance-auditor)
+- **7 Personas** (BA/PO, QA, DEV, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor)
+- **42 Skills** (9 BA + 6 QA + 14 DEV + 4 SM + 2 CR + 1 Security + 1 WebPerf + 5 Meta)
+- **35 Slash Commands**
 - **40+ Reference Documents**
 - **Production-Ready** — Dùng trong real projects (Finance/Trading domain)
 

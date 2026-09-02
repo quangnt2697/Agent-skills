@@ -126,13 +126,13 @@ Plugin subagents go in `agents/` at the plugin root. This repo is a plugin (`.cl
 
 Claude Code has two parallelism primitives. Pattern 3 (parallel fan-out with merge) maps to **subagents**. If you need teammates that talk to each other, use **Agent Teams** instead.
 
-| | Subagents | Agent Teams |
-|--|-----------|-------------|
-| Coordination | Main agent fans out, sub-agents only report back | Teammates message each other, share a task list |
-| Context | Own context window per subagent | Own context window per teammate |
-| When to use | Independent tasks producing reports | Collaborative work needing discussion |
-| Status | Stable | Experimental — requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
-| Cost | Lower | Higher — each teammate is a separate Claude instance |
+|              | Subagents                                        | Agent Teams                                                      |
+|--------------|--------------------------------------------------|------------------------------------------------------------------|
+| Coordination | Main agent fans out, sub-agents only report back | Teammates message each other, share a task list                  |
+| Context      | Own context window per subagent                  | Own context window per teammate                                  |
+| When to use  | Independent tasks producing reports              | Collaborative work needing discussion                            |
+| Status       | Stable                                           | Experimental — requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
+| Cost         | Lower                                            | Higher — each teammate is a separate Claude instance             |
 
 **The personas in this repo work in both modes.** When spawned as subagents (e.g. by `/dev-audit`), they report findings to the main session. When spawned as teammates (`Spawn a teammate using the security-auditor agent type…`), they can challenge each other's findings directly. The persona definition is the same; only the spawning context changes.
 
@@ -151,11 +151,11 @@ This means you can adopt the patterns in this catalog without worrying about con
 
 Before defining a custom subagent, check whether one of these covers the role:
 
-| Built-in | Purpose |
-|----------|---------|
-| `Explore` | Read-only codebase search and analysis. Use this for Pattern 5 (research isolation). |
-| `Plan` | Read-only research during plan mode. |
-| `general-purpose` | Multi-step tasks needing both exploration and modification. |
+| Built-in          | Purpose                                                                              |
+|-------------------|--------------------------------------------------------------------------------------|
+| `Explore`         | Read-only codebase search and analysis. Use this for Pattern 5 (research isolation). |
+| `Plan`            | Read-only research during plan mode.                                                 |
+| `general-purpose` | Multi-step tasks needing both exploration and modification.                          |
 
 Don't redefine these. Layer your specialist personas (code-reviewer, security-auditor, qa) on top of them.
 
@@ -192,11 +192,11 @@ This is exactly the case the Agent Teams docs describe: *"With multiple independ
 
 ### Why this is *not* a `/dev-audit` job
 
-| | `/dev-audit` (subagents) | Agent Teams |
-|--|--------------------|-------------|
-| Sub-agents see | The same diff, different lenses | A shared task list, each other's messages |
-| Output | Three independent reports → one merge | Adversarial debate → consensus root cause |
-| Right when | You want a verdict on a known artifact | You want to *find* the artifact among hypotheses |
+|                | `/dev-audit` (subagents)               | Agent Teams                                      |
+|----------------|----------------------------------------|--------------------------------------------------|
+| Sub-agents see | The same diff, different lenses        | A shared task list, each other's messages        |
+| Output         | Three independent reports → one merge  | Adversarial debate → consensus root cause        |
+| Right when     | You want a verdict on a known artifact | You want to *find* the artifact among hypotheses |
 
 `/dev-audit` is a verdict; Agent Teams is an investigation.
 

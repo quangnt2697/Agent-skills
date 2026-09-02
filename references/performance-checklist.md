@@ -13,11 +13,11 @@ Quick reference checklist for web application performance. Use alongside the `pe
 
 ## Core Web Vitals Targets
 
-| Metric | Good | Needs Work | Poor |
-|--------|------|------------|------|
-| LCP (Largest Contentful Paint) | ≤ 2.5s | ≤ 4.0s | > 4.0s |
-| INP (Interaction to Next Paint) | ≤ 200ms | ≤ 500ms | > 500ms |
-| CLS (Cumulative Layout Shift) | ≤ 0.1 | ≤ 0.25 | > 0.25 |
+| Metric                          | Good    | Needs Work   | Poor    |
+|---------------------------------|---------|--------------|---------|
+| LCP (Largest Contentful Paint)  | ≤ 2.5s  | ≤ 4.0s       | > 4.0s  |
+| INP (Interaction to Next Paint) | ≤ 200ms | ≤ 500ms      | > 500ms |
+| CLS (Cumulative Layout Shift)   | ≤ 0.1   | ≤ 0.25       | > 0.25  |
 
 ## TTFB Diagnosis
 
@@ -141,13 +141,13 @@ onINP(({ value, attribution }) => {
 
 ## Common Anti-Patterns
 
-| Anti-Pattern | Impact | Fix |
-|---|---|---|
-| N+1 queries | Linear DB load growth | Use joins, includes, or batch loading |
-| Unbounded queries | Memory exhaustion, timeouts | Always paginate, add LIMIT |
-| Missing indexes | Slow reads as data grows | Add indexes for filtered/sorted columns |
-| Layout thrashing | Jank, dropped frames | Batch DOM reads, then batch writes |
-| Unoptimized images | Slow LCP, wasted bandwidth | Use WebP, responsive sizes, lazy load |
-| Large bundles | Slow Time to Interactive | Code split, tree shake, audit deps |
-| Blocking main thread | Poor INP, unresponsive UI | Chunk long tasks with `scheduler.yield()` / `yieldToMain`, offload to Web Workers |
-| Memory leaks | Growing memory, eventual crash | Clean up listeners, intervals, refs |
+| Anti-Pattern         | Impact                         | Fix                                                                               |
+|----------------------|--------------------------------|-----------------------------------------------------------------------------------|
+| N+1 queries          | Linear DB load growth          | Use joins, includes, or batch loading                                             |
+| Unbounded queries    | Memory exhaustion, timeouts    | Always paginate, add LIMIT                                                        |
+| Missing indexes      | Slow reads as data grows       | Add indexes for filtered/sorted columns                                           |
+| Layout thrashing     | Jank, dropped frames           | Batch DOM reads, then batch writes                                                |
+| Unoptimized images   | Slow LCP, wasted bandwidth     | Use WebP, responsive sizes, lazy load                                             |
+| Large bundles        | Slow Time to Interactive       | Code split, tree shake, audit deps                                                |
+| Blocking main thread | Poor INP, unresponsive UI      | Chunk long tasks with `scheduler.yield()` / `yieldToMain`, offload to Web Workers |
+| Memory leaks         | Growing memory, eventual crash | Clean up listeners, intervals, refs                                               |

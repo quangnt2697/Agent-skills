@@ -34,7 +34,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const SKILLS_DIR = path.join(ROOT, 'skills');
+const PLUGINS_DIR = path.join(ROOT, 'plugins');
 
 // Matches a link to a references/ markdown file, with any number of leading
 // `../` segments: `references/x.md`, `../../references/x.md`. Anchored on a
@@ -60,31 +60,38 @@ function findViolations(skillDir, skillFile) {
 function main() {
   console.log('Checking references/ links in skills...\n');
 
-  if (!fs.existsSync(SKILLS_DIR)) {
-    console.log('No skills/ directory — nothing to check.');
+  if (!fs.existsSync(PLUGINS_DIR)) {
+    console.log('No plugins/ directory — nothing to check.');
     return;
   }
 
   let checked = 0;
   let errors = 0;
 
-  const skillNames = fs.readdirSync(SKILLS_DIR).sort();
-  for (const name of skillNames) {
-    const skillDir = path.join(SKILLS_DIR, name);
-    const skillFile = path.join(skillDir, 'SKILL.md');
-    if (!fs.statSync(skillDir).isDirectory() || !fs.existsSync(skillFile)) continue;
+  const plugins = fs.readdirSync(PLUGINS_DIR).filter(d => fs.statSync(path.join(PLUGINS_DIR, d)).isDirectory());
+  
+  for (const plugin of plugins) {
+    const skillsDir = path.join(PLUGINS_DIR, plugin, 'skills');
+    if (!fs.existsSync(skillsDir)) continue;
+    
+    const skillNames = fs.readdirSync(skillsDir).sort();
+    for (const name of skillNames) {
+      const skillDir = path.join(skillsDir, name);
+      const skillFile = path.join(skillDir, 'SKILL.md');
+      if (!fs.statSync(skillDir).isDirectory() || !fs.existsSync(skillFile)) continue;
 
-    checked++;
-    const violations = findViolations(skillDir, skillFile);
+      checked++;
+      const violations = findViolations(skillDir, skillFile);
 
-    if (violations.length === 0) {
-      console.log(`  ✓  skills/${name}/SKILL.md`);
-    } else {
-      console.log(`  ✗  skills/${name}/SKILL.md`);
-      for (const { line, link } of violations) {
-        const resolved = path.relative(ROOT, path.resolve(skillDir, link));
-        console.log(`       L${line}: ${link} — resolves to ${resolved}, which does not exist`);
-        errors++;
+      if (violations.length === 0) {
+        console.log(`  ✓  plugins/${plugin}/skills/${name}/SKILL.md`);
+      } else {
+        console.log(`  ✗  plugins/${plugin}/skills/${name}/SKILL.md`);
+        for (const { line, link } of violations) {
+          const resolved = path.relative(ROOT, path.resolve(skillDir, link));
+          console.log(`       L${line}: ${link} — resolves to ${resolved}, which does not exist`);
+          errors++;
+        }
       }
     }
   }
@@ -94,8 +101,8 @@ function main() {
 
   if (errors > 0) {
     console.log('\nLinks to references/ are resolved from the skill\'s own directory.');
-    console.log('Shared checklists live in the repo-root references/, two levels up:');
-    console.log('use `../../references/<file>.md`, not `references/<file>.md`.');
+    console.log('Shared checklists live in the repo-root references/, four levels up:');
+    console.log('use `../../../../references/<file>.md`, not `references/<file>.md`.');
     process.exit(1);
   }
 }

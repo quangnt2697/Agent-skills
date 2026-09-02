@@ -5,6 +5,7 @@
   "description": "Bộ sưu tập kỹ năng cấp sản xuất cho AI coding agents — BA/QA/DEV.",
   "license": "MIT",
   "scripts": {
+    "build": "node scripts/build-commands.js",
     "test": "npm run validate && npm run test:unit",
     "validate": "npm run validate:skills && npm run validate:commands && npm run validate:versions && npm run validate:links && npm run validate:paths",
     "validate:skills": "node scripts/validate-skills.js",
@@ -17,5 +18,10 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "dotenv": "^17.4.2",
+    "node-fetch": "^2.7.0"
   }
 }

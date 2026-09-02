@@ -1,0 +1,104 @@
+---
+description: "[BA/PO] Phỏng vấn nhiều stakeholders (CEO, PM, Users, Support, CTO, Compliance) để thu thập requirements từ đa nguồn. Resolve conflicts và tổng hợp thành stakeholder matrix."
+---
+
+**Persona:** BA/PO (Business Analyst / Product Owner)
+
+Kích hoạt skill ba-stakeholder-interview với BA/PO persona. Đọc `skills/ba-stakeholder-interview/SKILL.md` để thực hiện đúng workflow.
+
+$ARGUMENTS có thể chứa:
+- Project name hoặc feature name (VD: "Mobile Trading App")
+- Hoặc không có arguments → Agent sẽ hỏi project context
+
+**Workflow:**
+
+1. **Identify Stakeholders (WHO)**:
+   - Liệt kê tất cả stakeholders liên quan
+   - 7 categories: Executive, Product, Business, End Users, Operations, Technical, Compliance
+   - Prioritize: 🔴 High (must interview) → 🟡 Medium → 🟢 Low
+
+2. **Prepare Interview Questions**:
+   - Generic questions (cho tất cả): Context, Current State, Future State, Constraints
+   - Role-specific questions:
+     - **CEO:** Strategic alignment, budget, competitive landscape, trade-offs
+     - **Product Manager:** User personas, feature priority, roadmap, metrics
+     - **End User:** Current workflow, pain points, ideal solution, edge cases
+     - **Support Team:** Top issues, workarounds, feature requests, training needs
+     - **CTO:** Tech stack, scalability, security, integration
+     - **Compliance Officer:** Regulatory requirements, audit trails, risk management
+
+3. **Conduct Interviews** (45 phút per stakeholder):
+   - Section 1: Context (5 phút)
+   - Section 2: Current State (10 phút)
+   - Section 3: Future State (15 phút)
+   - Section 4: Constraints & Priorities (10 phút)
+   - Section 5: Wrap-up (5 phút)
+   - Record với consent, take notes về insights
+
+4. **Synthesize Findings**:
+   - Stakeholder Matrix: Key Needs, Constraints, Priorities, Concerns
+   - Consolidated Requirements: Group theo functional/non-functional
+   - Conflict Resolution: Identify và resolve conflicts (Timeline, Scope, Platform)
+
+5. **Validate & Follow-up**:
+   - All-hands meeting với tất cả stakeholders
+   - Present consolidated requirements → Vote on priority
+   - Sign-off (email confirmation)
+   - Open questions → Escalate với deadlines
+
+6. **Output**: Lưu vào `/project-root/workspace/{issueKey}/spec/stakeholders.md`
+   (không có issueKey → dùng slug của project name làm khoá, VD `/project-root/workspace/mobile-trading-app/`)
+
+**Interview Template:**
+
+```markdown
+### Interview: [Name] — [Role]
+
+**Date:** 2026-08-13  
+**Duration:** 45 phút
+
+#### Context (5 phút)
+Q: Vai trò của bạn trong tổ chức là gì?
+A: [Response]
+
+#### Current State (10 phút)
+Q: Pain points lớn nhất của quy trình hiện tại?
+A: [Response with specifics]
+
+#### Future State (15 phút)
+Q: Success criteria từ góc nhìn của bạn?
+A: [Response with measurable metrics]
+
+#### Constraints (10 phút)
+Q: Nếu chỉ làm được 50% scope, 50% nào bạn ưu tiên?
+A: [Must-have: X, Y, Z]
+```
+
+**Conflict Resolution Example:**
+
+```markdown
+### Conflict: Timeline (CEO vs CTO)
+
+**CEO:** Launch Q4 2026 (4 months)
+**CTO:** Realistic 9-12 months (technical complexity)
+
+**Resolution:**
+- MVP approach: Phase 1 (core features) Q4 2026
+- Phase 2 (enhancement) Q1 2027
+- CEO agrees sau khi thấy technical breakdown
+```
+
+**Ranh giới BA/PO:**
+- ✅ Interview stakeholders để collect requirements, needs, constraints
+- ✅ Synthesize findings thành consolidated requirements
+- ✅ Facilitate conflict resolution giữa stakeholders
+- ❌ KHÔNG quyết định thay stakeholders (BA/PO là facilitator, không phải decision maker)
+- ❌ KHÔNG skip stakeholders vì "không quan trọng" (mọi stakeholder đều có perspective)
+
+**Handoff**: Sau khi hoàn thành Stakeholder Interviews:
+- **BA/PO:** `/ba-spec` → Tổng hợp stakeholder input thành Business-Spec
+- **BA/PO:** `/ba-user-stories` → Transform stakeholder needs thành User Stories
+- **Planning:** `/ba-prioritize` → Prioritize dựa trên stakeholder votes
+- **Review:** Share report với stakeholders để final sign-off
+
+LƯU Ý: Tất cả interviews và output phải bằng TIẾNG VIỆT.

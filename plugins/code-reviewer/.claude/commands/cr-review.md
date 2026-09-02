@@ -1,0 +1,28 @@
+---
+description: "Thực hiện đánh giá code đa chiều dựa trên Persona (Dev hoặc QA). Bao phủ tính chính xác, khả năng đọc, kiến trúc, bảo mật, hiệu năng và độ bao phủ test."
+---
+
+Kích hoạt kỹ năng review-code-and-quality.
+
+Hãy thực hiện code review dựa trên vai trò (persona) hiện tại của bạn:
+
+1. NẾU LÀ QA PERSONA:
+Tập trung vào:
+- **Độ bao phủ Test (Coverage):** Có miss test case / edge cases nào không?
+- **Tính chính xác:** Code có đúng với Acceptance Criteria / Tech-Spec không?
+- **Chất lượng Test Code:** Nếu có automation test, dọn dẹp data (teardown) có sạch không? Test có độc lập không?
+- **Rủi ro hồi quy:** Có cần bổ sung E2E / Integration test không?
+
+2. NẾU LÀ DEV PERSONA:
+Tập trung vào:
+- **Kiến trúc & Clean Code:** Code mới có lặp lại (DRY), vi phạm SOLID không? Ranh giới module có bị phá vỡ không?
+- **Hiệu năng:** Có bị N+1 query không? Các luồng dữ liệu đã tối ưu chưa? Có rò rỉ bộ nhớ không?
+- **Bảo mật:** Dữ liệu đầu vào có được validate/sanitize chưa?
+- **Dọn dẹp:** Xác định các "xác chết" (dead code) hoặc "magic numbers".
+
+Mọi đánh giá phải được phân loại (Nghiêm trọng, Bắt buộc, Đề xuất).
+Xuất kết quả dưới định dạng có cấu trúc bao gồm vị trí (file:line) và khuyến nghị sửa chữa cụ thể.
+
+<critical_instruction>
+HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+</critical_instruction>

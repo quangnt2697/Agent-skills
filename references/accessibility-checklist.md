@@ -139,22 +139,22 @@ npx pa11y             # CLI accessibility checker
 
 ## Quick Reference: ARIA Live Regions
 
-| Value | Behavior | Use For |
-|-------|----------|---------|
-| `aria-live="polite"` | Announced at next pause | Status updates, saved confirmations |
-| `aria-live="assertive"` | Announced immediately | Errors, time-sensitive alerts |
-| `role="status"` | Same as `polite` | Status messages |
-| `role="alert"` | Same as `assertive` | Error messages |
+| Value                   | Behavior                | Use For                             |
+|-------------------------|-------------------------|-------------------------------------|
+| `aria-live="polite"`    | Announced at next pause | Status updates, saved confirmations |
+| `aria-live="assertive"` | Announced immediately   | Errors, time-sensitive alerts       |
+| `role="status"`         | Same as `polite`        | Status messages                     |
+| `role="alert"`          | Same as `assertive`     | Error messages                      |
 
 ## Common Anti-Patterns
 
-| Anti-Pattern | Problem | Fix |
-|---|---|---|
-| `div` as button | Not focusable, no keyboard support | Use `<button>` |
-| Missing `alt` text | Images invisible to screen readers | Add descriptive `alt` |
-| Color-only states | Invisible to color-blind users | Add icons, text, or patterns |
-| Autoplaying media | Disorienting, can't be stopped | Add controls, don't autoplay |
-| Custom dropdown with no ARIA | Unusable by keyboard/screen reader | Use native `<select>` or proper ARIA listbox |
-| Removing focus outlines | Users can't see where they are | Style outlines, don't remove them |
-| Empty links/buttons | "Link" announced with no description | Add text or `aria-label` |
-| `tabindex > 0` | Breaks natural tab order | Use `tabindex="0"` or `-1` only |
+| Anti-Pattern                 | Problem                              | Fix                                          |
+|------------------------------|--------------------------------------|----------------------------------------------|
+| `div` as button              | Not focusable, no keyboard support   | Use `<button>`                               |
+| Missing `alt` text           | Images invisible to screen readers   | Add descriptive `alt`                        |
+| Color-only states            | Invisible to color-blind users       | Add icons, text, or patterns                 |
+| Autoplaying media            | Disorienting, can't be stopped       | Add controls, don't autoplay                 |
+| Custom dropdown with no ARIA | Unusable by keyboard/screen reader   | Use native `<select>` or proper ARIA listbox |
+| Removing focus outlines      | Users can't see where they are       | Style outlines, don't remove them            |
+| Empty links/buttons          | "Link" announced with no description | Add text or `aria-label`                     |
+| `tabindex > 0`               | Breaks natural tab order             | Use `tabindex="0"` or `-1` only              |

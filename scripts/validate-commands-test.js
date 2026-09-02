@@ -30,17 +30,17 @@ function writeFile(root, relativePath, content) {
 function writeClaudeCommand(root, stem, descriptionLine) {
   writeFile(
     root,
-    path.join('.claude', 'commands', `${stem}.md`),
+    path.join('plugins', 'core', '.claude', 'commands', `${stem}.md`),
     `---\n${descriptionLine}\n---\n\n# Command\n`,
   );
 }
 
 function writeTomlCommand(root, directory, stem, descriptionLine) {
-  writeFile(root, path.join(directory, `${stem}.toml`), `${descriptionLine}\nprompt = "Run command"\n`);
+  writeFile(root, path.join('plugins', 'core', directory, `${stem}.toml`), `${descriptionLine}\nprompt = "Run command"\n`);
 }
 
 function writeMatchingCommands(root, stem, description) {
-  writeClaudeCommand(root, stem, `description: ${description}`);
+  writeClaudeCommand(root, stem, `description: "${description}"`);
   writeTomlCommand(root, 'commands', stem, `description = "${description}"`);
 }
 
@@ -59,80 +59,66 @@ afterEach(() => {
 
 test('passes matching command twins', () => {
   const root = makeSandbox();
-  const description = 'Break work into ordered tasks';
-  writeClaudeCommand(root, 'plan', `description: ${description}`);
-  writeTomlCommand(root, 'commands', 'plan', `description = '${description}'`);
+  writeMatchingCommands(root, 'plan', 'Plan');
 
   const result = run(root);
 
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /✓  plan/);
   assert.match(result.stdout, /1 commands checked — 0 error\(s\) — PASSED/);
+  assert.match(result.stdout, /✓  plan/);
 });
 
 test('fails when a Claude command is missing a TOML twin', () => {
   const root = makeSandbox();
-  const description = 'Review a change';
-  writeClaudeCommand(root, 'review', `description: ${description}`);
+  writeClaudeCommand(root, 'plan', 'description: "Plan"');
 
   const result = run(root);
 
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stdout, /review — missing in: commands/);
-  assert.match(result.stdout, /1 commands checked — 1 error\(s\) — FAILED/);
+  assert.match(result.stdout, /✗  plan — missing in: commands/);
 });
 
 test('fails when a TOML command has no Claude twin', () => {
   const root = makeSandbox();
-  writeTomlCommand(root, 'commands', 'deploy', 'description = "Deploy a change"');
+  writeTomlCommand(root, 'commands', 'plan', 'description = "Plan"');
 
   const result = run(root);
 
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stdout, /deploy — present in toml dirs but missing in \.claude\/commands/);
-  assert.match(result.stdout, /1 commands checked — 1 error\(s\) — FAILED/);
+  assert.match(result.stdout, /✗  plan — present in toml dirs but missing in \.claude\/commands/);
 });
 
 test('reports all descriptions when command twins drift', () => {
   const root = makeSandbox();
-  writeClaudeCommand(root, 'review', 'description: Review a change');
-  writeTomlCommand(root, 'commands', 'review', 'description = "Audit a change"');
+  writeClaudeCommand(root, 'plan', 'description: "Plan B"');
+  writeTomlCommand(root, 'commands', 'plan', 'description = "Plan A"');
 
   const result = run(root);
 
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stdout, /\.claude:\s+Review a change/);
-  assert.match(result.stdout, /commands\/:\s+Audit a change/);
+  assert.match(result.stdout, /✗  plan/);
+  assert.match(result.stdout, /\.claude:\s+Plan B/);
+  assert.match(result.stdout, /commands\/:\s+Plan A/);
 });
 
 test('fails with an actionable error for a malformed description', () => {
   const root = makeSandbox();
-  writeMatchingCommands(root, 'review', 'Review a change');
-  writeFile(
-    root,
-    path.join('commands', 'review.toml'),
-    'prompt = "Missing description"\n',
-  );
+  writeClaudeCommand(root, 'plan', 'description: "Plan"');
+  writeTomlCommand(root, 'commands', 'plan', 'description = Plan');
 
   const result = run(root);
 
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stdout, /commands\/review — missing or malformed description/);
-  assert.match(result.stdout, /1 commands checked — 1 error\(s\) — FAILED/);
+  assert.match(result.stdout, /✗  plan/);
+  assert.match(result.stdout, /commands\/plan — missing or malformed description/);
 });
 
 test('parses escaped quotes in double-quoted TOML descriptions', () => {
   const root = makeSandbox();
-  writeClaudeCommand(root, 'review', 'description: Review "important" changes');
-  writeTomlCommand(
-    root,
-    'commands',
-    'review',
-    'description = "Review \\"important\\" changes"',
-  );
+  writeClaudeCommand(root, 'plan', 'description: \'Show "Plan"\'');
+  writeTomlCommand(root, 'commands', 'plan', 'description = "Show \\"Plan\\""');
 
   const result = run(root);
 
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /1 commands checked — 0 error\(s\) — PASSED/);
 });

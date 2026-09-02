@@ -1,0 +1,5 @@
+name = "webperf-audit"
+description = "Audit hiệu năng web, đánh giá Core Web Vitals và đề xuất tối ưu hóa"
+
+[context]
+# Optional: Define context needed for this command

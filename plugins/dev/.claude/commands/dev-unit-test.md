@@ -1,0 +1,20 @@
+---
+description: "Thực thi quy trình TDD (Test-Driven Development) — viết unit test trước khi tiến hành code"
+---
+
+Kích hoạt kỹ năng dev-test-driven-development.
+
+Quy trình TDD (Test-Driven Development) bắt buộc: Đỏ, Xanh, Refactor. Đừng bỏ qua các bước.
+
+1. Đỏ: Viết MỘT test case bị thất bại cho hành vi tiếp theo cần triển khai.
+2. Chạy (những) test đó để chứng minh nó thất bại vì lý do đã dự tính.
+3. Xanh: Viết một lượng code tối thiểu vừa đủ để test đó vượt qua (pass).
+4. Chạy lại test.
+5. Refactor: Dọn dẹp code, loại bỏ trùng lặp, cải thiện tên biến, đồng thời giữ cho test luôn pass.
+
+Lặp lại quy trình này cho đến khi toàn bộ logic hoặc tính năng được hoàn thành.
+Bao gồm một script đơn giản để chạy các test đó ngay lúc này (ví dụ: `npm test`, `pytest`, v.v.).
+
+<critical_instruction>
+HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+</critical_instruction>

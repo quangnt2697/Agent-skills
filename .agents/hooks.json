@@ -1,0 +1,37 @@
+{
+  "session-start": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "bash ./hooks/antigravity/session-start.sh",
+        "timeout": 10
+      }
+    ]
+  },
+  "sdd-cache": {
+    "PreToolUse": [
+      {
+        "matcher": "read_url_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ./hooks/antigravity/sdd-cache-pre.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "read_url_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ./hooks/antigravity/sdd-cache-post.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

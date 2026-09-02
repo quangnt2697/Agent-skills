@@ -45,8 +45,8 @@ test('passes when a skill reaches the shared checklist two levels up', () => {
   writeFile(root, 'references/definition-of-done.md', '# Definition of Done\n');
   writeFile(
     root,
-    'skills/using-agent-skills/SKILL.md',
-    'See `../../references/definition-of-done.md`.\n'
+    'plugins/core/skills/using-agent-skills/SKILL.md',
+    'See `../../../../references/definition-of-done.md`.\n'
   );
 
   const result = run(root);
@@ -57,12 +57,12 @@ test('passes when a skill reaches the shared checklist two levels up', () => {
 
 test('fails when a skill links the shared checklist as if it were colocated', () => {
   // The regression: references/ lives at the repo root, but the link is
-  // resolved from skills/<name>/, so it points two levels too deep.
+  // resolved from plugins/core/skills/<name>/, so it points two levels too deep.
   const root = makeSandbox();
   writeFile(root, 'references/definition-of-done.md', '# Definition of Done\n');
   writeFile(
     root,
-    'skills/using-agent-skills/SKILL.md',
+    'plugins/core/skills/using-agent-skills/SKILL.md',
     'See `references/definition-of-done.md`.\n'
   );
 
@@ -72,15 +72,15 @@ test('fails when a skill links the shared checklist as if it were colocated', ()
   assert.match(result.stdout, /1 skills checked — 1 error\(s\) — FAILED/);
   assert.match(
     result.stdout,
-    /L1: references\/definition-of-done\.md — resolves to skills\/using-agent-skills\/references\/definition-of-done\.md/
+    /L1: references\/definition-of-done\.md — resolves to plugins\/core\/skills\/using-agent-skills\/references\/definition-of-done\.md/
   );
-  assert.match(result.stdout, /use `\.\.\/\.\.\/references\/<file>\.md`/);
+  assert.match(result.stdout, /use `\.\.\/\.\.\/\.\.\/\.\.\/references\/<file>\.md`/);
 });
 
 test('checks markdown link syntax, not just backtick mentions', () => {
   const root = makeSandbox();
   writeFile(root, 'references/definition-of-done.md', '# Definition of Done\n');
-  writeFile(root, 'skills/using-agent-skills/SKILL.md', 'See [DoD](references/definition-of-done.md).\n');
+  writeFile(root, 'plugins/core/skills/using-agent-skills/SKILL.md', 'See [DoD](references/definition-of-done.md).\n');
 
   const result = run(root);
 
@@ -90,10 +90,10 @@ test('checks markdown link syntax, not just backtick mentions', () => {
 
 test('passes when a skill colocates its own references directory', () => {
   // CLAUDE.md allows self-contained skills to keep references under
-  // skills/<name>/references/. Those links are correct as written.
+  // plugins/core/skills/<name>/references/. Those links are correct as written.
   const root = makeSandbox();
-  writeFile(root, 'skills/dataviz/references/palette.md', '# Palette\n');
-  writeFile(root, 'skills/dataviz/SKILL.md', 'See `references/palette.md`.\n');
+  writeFile(root, 'plugins/core/skills/dataviz/references/palette.md', '# Palette\n');
+  writeFile(root, 'plugins/core/skills/dataviz/SKILL.md', 'See `references/palette.md`.\n');
 
   const result = run(root);
 
@@ -104,12 +104,12 @@ test('passes when a skill colocates its own references directory', () => {
 test('fails when a link points at a checklist that no longer exists', () => {
   const root = makeSandbox();
   writeFile(root, 'references/definition-of-done.md', '# Definition of Done\n');
-  writeFile(root, 'skills/shipping-and-launch/SKILL.md', 'See `../../references/renamed.md`.\n');
+  writeFile(root, 'plugins/core/skills/shipping-and-launch/SKILL.md', 'See `../../../../references/renamed.md`.\n');
 
   const result = run(root);
 
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.match(result.stdout, /L1: \.\.\/\.\.\/references\/renamed\.md/);
+  assert.match(result.stdout, /L1: \.\.\/\.\.\/\.\.\/\.\.\/references\/renamed\.md/);
   assert.match(result.stdout, /1 skills checked — 1 error\(s\) — FAILED/);
 });
 
@@ -120,12 +120,12 @@ test('ignores paths that are not references/ links', () => {
   writeFile(root, 'references/definition-of-done.md', '# Definition of Done\n');
   writeFile(
     root,
-    'skills/planning-and-task-breakdown/SKILL.md',
+    'plugins/core/skills/planning-and-task-breakdown/SKILL.md',
     [
       'Save the task list to `tasks/todo.md` and the plan to `tasks/plan.md`.',
       'Record findings in `PERF.md` or `docs/ideas/[idea-name].md`.',
-      'Related: `skills/incremental-implementation/SKILL.md`.',
-      'See `../../references/definition-of-done.md`.',
+      'Related: `plugins/core/skills/incremental-implementation/SKILL.md`.',
+      'See `../../../../references/definition-of-done.md`.',
       '',
     ].join('\n')
   );
@@ -142,7 +142,7 @@ test('reports every unresolvable link, not just the first per skill', () => {
   writeFile(root, 'references/performance-checklist.md', '# Performance\n');
   writeFile(
     root,
-    'skills/code-review-and-quality/SKILL.md',
+    'plugins/core/skills/code-review-and-quality/SKILL.md',
     ['See `references/security-checklist.md`.', 'And `references/performance-checklist.md`.', ''].join('\n')
   );
 

@@ -1,0 +1,170 @@
+---
+name: security-code-audit
+description: Quét mã nguồn để phát hiện lỗ hổng bảo mật theo chuẩn OWASP Top 10 và các best practices. Sử dụng khi cần audit bảo mật trước khi deploy production hoặc sau khi thêm tính năng liên quan đến auth, payment, hoặc xử lý dữ liệu nhạy cảm.
+---
+
+# Kỹ năng: Security Code Audit
+
+## Tổng quan
+
+Quét toàn bộ mã nguồn để phát hiện các lỗ hổng bảo mật theo OWASP Top 10 và các best practices về bảo mật. Skill này tập trung vào static code analysis để tìm ra các vấn đề tiềm ẩn trước khi chúng trở thành lỗ hổng thực sự.
+
+## Khi nào sử dụng
+
+- Trước khi deploy lên production environment
+- Sau khi implement tính năng liên quan đến:
+  - Authentication / Authorization
+  - Payment processing
+  - Data encryption
+  - File upload / download
+  - API endpoints xử lý dữ liệu nhạy cảm
+- Khi review code của developer mới
+- Định kỳ hàng tuần/tháng để đảm bảo không có lỗ hổng mới xuất hiện
+
+## Quy trình
+
+### 1. Scan OWASP Top 10
+
+Kiểm tra các lỗ hổng phổ biến nhất:
+
+**A01: Broken Access Control**
+- Missing authorization checks
+- Insecure Direct Object References (IDOR)
+- Path traversal vulnerabilities
+
+**A02: Cryptographic Failures**
+- Hardcoded secrets/passwords
+- Weak encryption algorithms
+- Missing encryption cho sensitive data
+
+**A03: Injection**
+- SQL Injection
+- NoSQL Injection
+- Command Injection
+- LDAP Injection
+
+**A04: Insecure Design**
+- Missing rate limiting
+- Lack of security boundaries
+- Missing security requirements
+
+**A05: Security Misconfiguration**
+- Default credentials
+- Unnecessary features enabled
+- Missing security headers
+
+**A06: Vulnerable Components**
+- Outdated dependencies with known CVEs
+- Unmaintained packages
+
+**A07: Authentication Failures**
+- Weak password policies
+- Missing MFA
+- Session fixation vulnerabilities
+
+**A08: Software and Data Integrity Failures**
+- Unsigned updates
+- Missing integrity checks
+- Insecure deserialization
+
+**A09: Security Logging and Monitoring Failures**
+- Missing audit logs
+- Sensitive data in logs
+- No alerting for suspicious activities
+
+**A10: Server-Side Request Forgery (SSRF)**
+- Unvalidated URL inputs
+- Missing allowlist/blocklist
+
+### 2. Check Best Practices
+
+- Input validation và sanitization
+- Output encoding
+- Secure session management
+- CSRF protection
+- CORS configuration
+- Content Security Policy (CSP)
+- X-Frame-Options, X-Content-Type-Options headers
+
+### 3. Report Findings
+
+Phân loại theo mức độ nghiêm trọng:
+- 🔴 **Critical**: Có thể bị exploit ngay, dẫn đến data breach
+- 🟠 **High**: Lỗ hổng nghiêm trọng nhưng cần điều kiện cụ thể
+- 🟡 **Medium**: Vấn đề bảo mật cần fix nhưng không nguy hiểm ngay
+- 🟢 **Low**: Best practice nên tuân thủ
+
+## Output Format
+
+```markdown
+# Security Audit Report
+
+**Date:** YYYY-MM-DD
+**Scope:** [Thư mục/file được scan]
+**Total Issues:** X (Critical: Y, High: Z, Medium: A, Low: B)
+
+---
+
+## 🔴 Critical Issues (Must Fix Immediately)
+
+### 1. SQL Injection in Login Endpoint
+**File:** `src/auth/login.ts:45`
+**OWASP:** A03 - Injection
+**Description:** Direct string concatenation in SQL query allows SQL injection
+**Code:**
+\`\`\`typescript
+const query = `SELECT * FROM users WHERE email='${email}' AND password='${password}'`;
+\`\`\`
+**Impact:** Attacker có thể bypass authentication và truy cập toàn bộ database
+**Fix:**
+\`\`\`typescript
+const query = 'SELECT * FROM users WHERE email=$1 AND password=$2';
+const result = await db.query(query, [email, hashedPassword]);
+\`\`\`
+
+---
+
+## 🟠 High Issues
+
+[...]
+
+## ✅ Security Score: 6.5/10
+
+**Recommendations:**
+1. Fix tất cả Critical issues trước khi deploy
+2. Implement rate limiting cho API endpoints
+3. Add security headers (CSP, X-Frame-Options)
+4. Upgrade vulnerable dependencies
+```
+
+## Các biện hộ thường gặp
+
+> "Code này chỉ chạy internal, không public"
+
+**Phản bác:** Internal systems vẫn có thể bị tấn công qua phishing, insider threats, hoặc lateral movement sau khi attacker breach được một service khác.
+
+> "Chúng ta chưa từng bị hack"
+
+**Phản bác:** Việc chưa phát hiện breach không có nghĩa là chưa bị hack. Nhiều breach chỉ được phát hiện sau hàng tháng/năm.
+
+> "Fix sau, deploy trước đã"
+
+**Phản bác:** Critical security issues PHẢI được fix trước khi deploy. Việc deploy lỗ hổng bảo mật có thể dẫn đến data breach, loss of customer trust, và legal consequences.
+
+## Dấu hiệu cảnh báo
+
+- Developer bỏ qua security warnings từ linter
+- Hardcoded credentials trong code
+- Disable CORS check hoặc set `Access-Control-Allow-Origin: *`
+- SQL queries sử dụng string concatenation
+- Missing input validation ở API endpoints
+- Sensitive data trong logs
+
+## Xác minh
+
+Sau khi report findings:
+- [ ] Tất cả Critical issues đã được acknowledged
+- [ ] Developer có plan fix rõ ràng (timeline + approach)
+- [ ] Đã tạo tickets để track từng issue
+- [ ] Đã set priority cho từng issue
+- [ ] Nếu không thể fix ngay: Đã có compensating controls (WAF rules, monitoring alerts)

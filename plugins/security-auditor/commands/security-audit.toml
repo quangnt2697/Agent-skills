@@ -1,0 +1,5 @@
+name = "security-audit"
+description = "Audit bảo mật mã nguồn, phát hiện lỗ hổng OWASP và các vấn đề bảo mật khác"
+
+[context]
+# Optional: Define context needed for this command

@@ -8,7 +8,7 @@
       "Bash(bash skills/ba-spec/scripts/jira-auth-check.sh:*)",
       "Bash(bash skills/ba-spec/scripts/jira-fetch-pdf.sh:*)",
       "Bash(bash skills/ba-refine/scripts/jira-push-spec.sh:*)",
-      "Bash(bash hooks/session-start.sh)",
+      "Bash(bash hooks/claude/session-start.sh)",
 
       "Bash(pytest:*)",
       "Bash(python3 -m pytest:*)",
@@ -61,7 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR}/hooks/session-start.sh\""
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/hooks/claude/session-start.sh\""
           }
         ]
       }

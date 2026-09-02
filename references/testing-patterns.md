@@ -255,10 +255,10 @@ def test_kyc_third_party_timeout():
 
 ## Anti-Patterns cần tránh
 
-| Anti-Pattern | Vấn đề | Cách khắc phục |
-|---|---|---|
-| **Hard Sleep** (`time.sleep(5)`) | Làm chậm test, gây flaky test. | Dùng `expect(locator).to_be_visible()` hoặc `wait_for_condition`. |
-| **Chia sẻ state giữa các test** | Test A fail làm Test B fail theo (Cascading failure). | Dùng Pytest Fixtures để setup/teardown data cho MỖI test case độc lập. |
-| **Dùng `float` cho tiền tệ** | `0.1 + 0.2 = 0.30000000000000004` (Lỗi Assertion). | LUÔN dùng `from decimal import Decimal`. |
-| **Lấy Locator theo Class ngẫu nhiên** | `.button-xyz-123` thay đổi mỗi lần build. | Dùng text, role (`get_by_role`), hoặc data-testid. |
-| **Bỏ qua Assert Response Body** | Chỉ check status code 200 là không đủ an toàn. | Assert cả status code LẪN cấu trúc JSON trả về. |
+| Anti-Pattern                          | Vấn đề                                                | Cách khắc phục                                                         |
+|---------------------------------------|-------------------------------------------------------|------------------------------------------------------------------------|
+| **Hard Sleep** (`time.sleep(5)`)      | Làm chậm test, gây flaky test.                        | Dùng `expect(locator).to_be_visible()` hoặc `wait_for_condition`.      |
+| **Chia sẻ state giữa các test**       | Test A fail làm Test B fail theo (Cascading failure). | Dùng Pytest Fixtures để setup/teardown data cho MỖI test case độc lập. |
+| **Dùng `float` cho tiền tệ**          | `0.1 + 0.2 = 0.30000000000000004` (Lỗi Assertion).    | LUÔN dùng `from decimal import Decimal`.                               |
+| **Lấy Locator theo Class ngẫu nhiên** | `.button-xyz-123` thay đổi mỗi lần build.             | Dùng text, role (`get_by_role`), hoặc data-testid.                     |
+| **Bỏ qua Assert Response Body**       | Chỉ check status code 200 là không đủ an toàn.        | Assert cả status code LẪN cấu trúc JSON trả về.                        |

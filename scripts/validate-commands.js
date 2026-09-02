@@ -31,8 +31,8 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 
 const DIRS = {
-  claude:     { dir: path.join(ROOT, '.claude', 'commands'), ext: '.md'   },
-  antigravity:{ dir: path.join(ROOT, 'commands'),            ext: '.toml' },
+  claude:     { isClaude: true, ext: '.md'   },
+  antigravity:{ isClaude: false, ext: '.toml' },
 };
 
 // Commands where the file stem differs between Claude and the TOML dirs.
@@ -54,7 +54,13 @@ function descriptionFromMd(filePath) {
     const colonIdx = line.indexOf(':');
     if (colonIdx === -1) continue;
     if (line.slice(0, colonIdx).trim() === 'description') {
-      return line.slice(colonIdx + 1).trim().replace(/^['"]|['"]$/g, '');
+      let val = line.slice(colonIdx + 1).trim();
+      const isDoubleQuoted = val.startsWith('"') && val.endsWith('"');
+      val = val.replace(/^['"]|['"]$/g, '');
+      if (isDoubleQuoted) {
+        val = val.replace(/\\"/g, '"');
+      }
+      return val;
     }
   }
   return null;
@@ -70,23 +76,34 @@ function descriptionFromToml(filePath) {
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
-function loadCommands({ dir, ext }) {
-  if (!fs.existsSync(dir)) return {};
-  return Object.fromEntries(
-    fs.readdirSync(dir)
-      .filter(f => f.endsWith(ext))
-      .map(f => {
-        const stem = path.basename(f, ext);
-        const full = path.join(dir, f);
-        try {
-          const desc = ext === '.md' ? descriptionFromMd(full) : descriptionFromToml(full);
-          return [stem, desc];
-        } catch (e) {
-          console.log(`  ✗  ${stem} — cannot read file: ${e.message}`);
-          return [stem, null];
-        }
-      })
-  );
+function loadCommands({ ext, isClaude }) {
+  const PLUGINS_DIR = path.join(ROOT, 'plugins');
+  if (!fs.existsSync(PLUGINS_DIR)) return {};
+  
+  const plugins = fs.readdirSync(PLUGINS_DIR).filter(d => fs.statSync(path.join(PLUGINS_DIR, d)).isDirectory());
+  
+  let result = {};
+  for (const plugin of plugins) {
+    const dir = isClaude 
+      ? path.join(PLUGINS_DIR, plugin, '.claude', 'commands')
+      : path.join(PLUGINS_DIR, plugin, 'commands');
+      
+    if (!fs.existsSync(dir)) continue;
+    
+    const files = fs.readdirSync(dir).filter(f => f.endsWith(ext));
+    for (const f of files) {
+      const stem = path.basename(f, ext);
+      const full = path.join(dir, f);
+      try {
+        const desc = ext === '.md' ? descriptionFromMd(full) : descriptionFromToml(full);
+        result[stem] = desc;
+      } catch (e) {
+        console.log(`  ✗  ${stem} — cannot read file: ${e.message}`);
+        result[stem] = null;
+      }
+    }
+  }
+  return result;
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────

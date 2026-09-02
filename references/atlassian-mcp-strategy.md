@@ -16,35 +16,35 @@ Lớp xử lý (phân tích, render, convert) **giữ nguyên** bất kể ngu�
 
 ### Jira
 
-| MCP Tool | Mục đích | Thay thế REST API |
-|:---------|:---------|:------------------|
-| `getAccessibleAtlassianResources` | Lấy `cloudId` (BẮT BUỘC gọi đầu tiên) | — |
-| `getJiraIssue` | Lấy chi tiết issue theo key | `GET /rest/api/3/issue/{key}` |
-| `searchJiraIssuesUsingJql` | Tìm kiếm bằng JQL | `GET /rest/api/3/search?jql=...` + `GET /rest/agile/1.0/sprint/{id}/issue` + `GET /rest/agile/1.0/board/{id}/backlog` |
-| `editJiraIssue` | Sửa fields (description, summary, ...) | `PUT /rest/api/3/issue/{key}` |
-| `transitionJiraIssue` | Chuyển trạng thái issue | `POST /rest/api/3/issue/{key}/transitions` |
-| `getTransitionsForJiraIssue` | Liệt kê transitions khả dụng | `GET /rest/api/3/issue/{key}/transitions` |
-| `addCommentToJiraIssue` | Thêm comment | `POST /rest/api/3/issue/{key}/comment` |
-| `createJiraIssue` | Tạo issue mới | `POST /rest/api/3/issue` |
+| MCP Tool                          | Mục đích                               | Thay thế REST API                                                                                                     |
+|:----------------------------------|:---------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
+| `getAccessibleAtlassianResources` | Lấy `cloudId` (BẮT BUỘC gọi đầu tiên)  | —                                                                                                                     |
+| `getJiraIssue`                    | Lấy chi tiết issue theo key            | `GET /rest/api/3/issue/{key}`                                                                                         |
+| `searchJiraIssuesUsingJql`        | Tìm kiếm bằng JQL                      | `GET /rest/api/3/search?jql=...` + `GET /rest/agile/1.0/sprint/{id}/issue` + `GET /rest/agile/1.0/board/{id}/backlog` |
+| `editJiraIssue`                   | Sửa fields (description, summary, ...) | `PUT /rest/api/3/issue/{key}`                                                                                         |
+| `transitionJiraIssue`             | Chuyển trạng thái issue                | `POST /rest/api/3/issue/{key}/transitions`                                                                            |
+| `getTransitionsForJiraIssue`      | Liệt kê transitions khả dụng           | `GET /rest/api/3/issue/{key}/transitions`                                                                             |
+| `addCommentToJiraIssue`           | Thêm comment                           | `POST /rest/api/3/issue/{key}/comment`                                                                                |
+| `createJiraIssue`                 | Tạo issue mới                          | `POST /rest/api/3/issue`                                                                                              |
 
 ### Confluence
 
-| MCP Tool | Mục đích | Thay thế REST API |
-|:---------|:---------|:------------------|
-| `searchConfluenceUsingCql` | Tìm kiếm bằng CQL | `GET /wiki/rest/api/search?cql=...` |
-| `getConfluencePage` | Lấy nội dung trang (Markdown) | `GET /wiki/rest/api/content/{pageId}` |
-| `getConfluenceSpaces` | Liệt kê spaces | `GET /wiki/rest/api/space` |
-| `createConfluencePage` | Tạo trang mới | `POST /wiki/rest/api/content` |
+| MCP Tool                   | Mục đích                      | Thay thế REST API                     |
+|:---------------------------|:------------------------------|:--------------------------------------|
+| `searchConfluenceUsingCql` | Tìm kiếm bằng CQL             | `GET /wiki/rest/api/search?cql=...`   |
+| `getConfluencePage`        | Lấy nội dung trang (Markdown) | `GET /wiki/rest/api/content/{pageId}` |
+| `getConfluenceSpaces`      | Liệt kê spaces                | `GET /wiki/rest/api/space`            |
+| `createConfluencePage`     | Tạo trang mới                 | `POST /wiki/rest/api/content`         |
 
 ### Không hỗ trợ qua MCP (Giữ script/curl)
 
-| Hành động | Lý do | Giải pháp |
-|:----------|:------|:----------|
-| PDF export (Jira HTML→PDF) | MCP không hỗ trợ binary export | Giữ `jira-fetch-pdf.sh` |
-| PDF export (Confluence flyingpdf) | MCP không hỗ trợ PDF export | Giữ `curl flyingpdf` |
-| Download binary attachment | MCP trả metadata, không stream file | Giữ `curl` download |
-| Upload attachment lên Jira | `addAttachment` không có trong Rovo MCP | Giữ `curl POST /attachments` |
-| Markdown→ADF conversion + push | Logic xử lý phức tạp đặc thù | Giữ `jira-push-spec.sh/js` |
+| Hành động                             | Lý do                                           | Giải pháp                                                          |
+|:--------------------------------------|:------------------------------------------------|:-------------------------------------------------------------------|
+| PDF export (Jira HTML→PDF)            | MCP không hỗ trợ binary export                  | Giữ `jira-fetch-pdf.sh`                                            |
+| PDF export (Confluence flyingpdf)     | MCP không hỗ trợ PDF export                     | Giữ `curl flyingpdf`                                               |
+| Download binary attachment            | MCP trả metadata, không stream file             | Giữ `curl` download                                                |
+| Upload attachment lên Jira            | `addAttachment` không có trong Rovo MCP         | Giữ `curl POST /attachments`                                       |
+| Markdown→ADF conversion + push        | Logic xử lý phức tạp đặc thù                    | Giữ `jira-push-spec.sh/js`                                         |
 | Agile Board API (getSprint, getBoard) | Rovo MCP không expose Agile endpoints trực tiếp | Dùng `searchJiraIssuesUsingJql` với JQL: `sprint in openSprints()` |
 
 ---
@@ -68,13 +68,13 @@ Khi skill cần truy cập Jira/Confluence, agent thực hiện theo thứ tự:
 
 Rovo MCP **không có** Agile Board/Sprint endpoints. Thay thế bằng JQL:
 
-| Cần lấy | Agile API (cũ) | JQL qua MCP (mới) |
-|:--------|:---------------|:-------------------|
-| Issues trong sprint hiện tại | `GET /rest/agile/1.0/sprint/{id}/issue` | `searchJiraIssuesUsingJql(jql="sprint in openSprints() AND project = {project}")` |
-| Sprint active | `GET /rest/agile/1.0/board/{id}/sprint?state=active` | `searchJiraIssuesUsingJql(jql="sprint in openSprints()")` → trích sprint name từ issue fields |
-| Backlog | `GET /rest/agile/1.0/board/{id}/backlog` | `searchJiraIssuesUsingJql(jql="sprint is EMPTY AND project = {project} AND statusCategory != Done")` |
-| Issues stuck | Custom logic | `searchJiraIssuesUsingJql(jql="sprint in openSprints() AND statusCategory != Done AND updated <= -3d")` |
-| Velocity (done in sprint) | Custom logic | `searchJiraIssuesUsingJql(jql="sprint in openSprints() AND statusCategory = Done")` |
+| Cần lấy                      | Agile API (cũ)                                       | JQL qua MCP (mới)                                                                                       |
+|:-----------------------------|:-----------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| Issues trong sprint hiện tại | `GET /rest/agile/1.0/sprint/{id}/issue`              | `searchJiraIssuesUsingJql(jql="sprint in openSprints() AND project = {project}")`                       |
+| Sprint active                | `GET /rest/agile/1.0/board/{id}/sprint?state=active` | `searchJiraIssuesUsingJql(jql="sprint in openSprints()")` → trích sprint name từ issue fields           |
+| Backlog                      | `GET /rest/agile/1.0/board/{id}/backlog`             | `searchJiraIssuesUsingJql(jql="sprint is EMPTY AND project = {project} AND statusCategory != Done")`    |
+| Issues stuck                 | Custom logic                                         | `searchJiraIssuesUsingJql(jql="sprint in openSprints() AND statusCategory != Done AND updated <= -3d")` |
+| Velocity (done in sprint)    | Custom logic                                         | `searchJiraIssuesUsingJql(jql="sprint in openSprints() AND statusCategory = Done")`                     |
 
 ### Credentials Fallback (.env)
 

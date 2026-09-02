@@ -1,0 +1,31 @@
+---
+description: "Chạy kiểm toán hiệu năng web qua persona web-performance-auditor"
+---
+
+/webperf nhắm mục tiêu cụ thể vào ứng dụng web. Không dùng cho thư viện, CLI, hoặc server-only code.
+
+## Xác định chế độ chạy
+
+**Chế độ Sâu (Deep mode)** — kích hoạt khi có:
+- File báo cáo JSON của Lighthouse
+- Phản hồi JSON của PageSpeed Insights
+- Phản hồi CrUX API
+- File trace hiệu năng DevTools
+- Hoặc tự động tạo báo cáo thông qua Chrome DevTools MCP CLI (`npx -p chrome-devtools-mcp chrome-devtools lighthouse_audit --output-format=json`)
+
+**Chế độ Nhanh (Quick mode)** — mặc định khi không có sẵn dữ liệu trên. Agent sẽ quét source code tìm các anti-pattern và gắn cờ `potential impact` cho mọi phát hiện.
+
+## Chạy kiểm toán
+
+Kích hoạt vai trò web-performance-auditor. Cung cấp rõ ràng:
+- Các file, component cần kiểm tra
+- Bất kỳ file JSON báo cáo nào
+- Một ghi chú nói rõ bạn muốn chạy chế độ Nhanh hay Sâu
+
+Trả về một bảng điểm (chỉ chứa các giá trị có nguồn tham chiếu), danh sách các vấn đề được sắp xếp theo ưu tiên, các điểm tốt, và các đề xuất hành động.
+
+Trình bày toàn bộ báo cáo cho người dùng. Không cần tổng hợp hay gộp.
+
+<critical_instruction>
+HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+</critical_instruction>
