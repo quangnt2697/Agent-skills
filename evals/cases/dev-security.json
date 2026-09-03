@@ -1,28 +1,28 @@
 {
-  "skill_name": "security-and-hardening",
+  "skill_name": "dev-security",
   "trigger": {
     "positive": [
       {
-        "prompt": "Audit this file upload handler for vulnerabilities",
+        "prompt": "Gia cố code hardening chống lại các lỗ hổng bảo mật",
+        "top_k": 1
+      },
+      {
+        "prompt": "Xử lý đầu vào người dùng xác thực authentication lưu trữ dữ liệu an toàn",
         "top_k": 3
       },
       {
-        "prompt": "Is this login flow safe against the OWASP top ten?",
-        "top_k": 3
-      },
-      {
-        "prompt": "Harden the webhook endpoint that fetches user-supplied URLs",
+        "prompt": "Hardening tính năng nhận untrusted data và quản lý user sessions",
         "top_k": 3
       }
     ],
     "negative": [
       {
-        "prompt": "Rename these variables for clarity",
-        "owner": "code-simplification"
+        "prompt": "Đơn giản hóa code cho dễ đọc",
+        "owner": "cr-code-simplification"
       },
       {
-        "prompt": "Set up the release tagging workflow",
-        "owner": "git-workflow-and-versioning"
+        "prompt": "Refactor cấu trúc code an toàn",
+        "owner": "dev-refactoring"
       }
     ]
   },

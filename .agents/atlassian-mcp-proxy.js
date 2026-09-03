@@ -73,6 +73,7 @@ const sseReq = https.get(sseUrl, {
                     // MCP Spec: event 'endpoint' chứa URL để gửi tin nhắn POST
                     postUrl = data.startsWith('http') ? data : new URL(data, sseUrl).toString();
                     currentEvent = 'message'; // reset
+                    flushQueue();
                 } else {
                     // Ghi thẳng JSON-RPC message ra stdout (cho IDE đọc)
                     process.stdout.write(data + '\n');
@@ -84,6 +85,9 @@ const sseReq = https.get(sseUrl, {
             }
         }
     });
+
+    res.on('close', cleanup);
+    res.on('end', cleanup);
 });
 
 sseReq.on('error', (err) => {
@@ -94,7 +98,7 @@ sseReq.on('error', (err) => {
 // 3. Đọc từ Stdin (tin nhắn từ IDE) và đẩy qua POST
 const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout, // Chỉ dùng để interface, ta ghi đè process.stdout ở trên
+    output: process.stdout,
     terminal: false
 });
 
@@ -108,13 +112,6 @@ function flushQueue() {
         sendPostRequest(msg);
     }
 }
-
-// Lắng nghe liên tục để xử lý hàng đợi (hoặc chờ IDE đợi Server Init)
-const checkInterval = setInterval(() => {
-    if (postUrl && messageQueue.length > 0) {
-        flushQueue();
-    }
-}, 50);
 
 function sendPostRequest(postData) {
     const urlObj = new URL(postUrl);
@@ -148,3 +145,17 @@ rl.on('line', (line) => {
         sendPostRequest(trimmed);
     }
 });
+
+function cleanup() {
+    try {
+        if (sseReq && !sseReq.destroyed) {
+            sseReq.destroy();
+        }
+    } catch (_) {}
+    process.exit(0);
+}
+
+process.on('SIGINT', cleanup);
+process.on('SIGTERM', cleanup);
+rl.on('close', cleanup);
+process.stdin.on('close', cleanup);

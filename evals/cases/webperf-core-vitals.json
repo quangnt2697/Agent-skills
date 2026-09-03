@@ -1,0 +1,41 @@
+{
+  "skill_name": "webperf-core-vitals",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Đo lường và phân tích Core Web Vitals LCP FID CLS cùng các metrics hiệu năng",
+        "top_k": 1
+      },
+      {
+        "prompt": "Đánh giá performance của web app và Core Web Vitals trước khi deploy",
+        "top_k": 3
+      },
+      {
+        "prompt": "Phân tích điểm số Core Web Vitals LCP CLS sau khi thay đổi UI UX",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Phân tích gap AS-IS vs TO-BE",
+        "owner": "ba-gap-analysis"
+      },
+      {
+        "prompt": "Viết unit test cho hàm xử lý thanh toán",
+        "owner": "dev-test-driven-development"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Đánh giá và tối ưu Core Web Vitals cho trang chủ thương mại điện tử bị chỉ số LCP cao (4.5s).",
+      "expected_output": "Phân tích nguyên nhân làm tăng LCP và đề xuất giải pháp tối ưu tài nguyên.",
+      "expectations": [
+        "Xác định nguyên nhân (hero image không tối ưu, render-blocking resources)",
+        "Đưa ra các kỹ thuật tối ưu cụ thể (fetchpriority, preloading, webp)"
+      ]
+    }
+  ]
+}

@@ -1,28 +1,28 @@
 {
-  "skill_name": "incremental-implementation",
+  "skill_name": "dev-incremental-implementation",
   "trigger": {
     "positive": [
       {
-        "prompt": "Implement the next task from the plan as a small verifiable slice",
+        "prompt": "Triển khai các thay đổi theo từng bước tăng dần incremental implementation",
+        "top_k": 1
+      },
+      {
+        "prompt": "Thay đổi đụng tới nhiều hơn một file hãy chia nhỏ thành từng lát cắt mỏng",
         "top_k": 3
       },
       {
-        "prompt": "Build this feature step by step, committing after each working increment",
-        "top_k": 3
-      },
-      {
-        "prompt": "Ship this change behind a feature flag in thin slices",
+        "prompt": "Task quá lớn để làm trong một nhịp hãy implement theo từng bước tăng dần",
         "top_k": 3
       }
     ],
     "negative": [
       {
-        "prompt": "What alerts should we page on for the new service?",
-        "owner": "observability-and-instrumentation"
+        "prompt": "Debug lỗi ứng dụng bị crash",
+        "owner": "dev-debugging"
       },
       {
-        "prompt": "Interview me to figure out the real requirements",
-        "owner": "interview-me"
+        "prompt": "Tối ưu tốc độ tải trang Core Web Vitals",
+        "owner": "webperf-core-vitals"
       }
     ]
   },

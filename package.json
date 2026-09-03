@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "build": "node scripts/build-commands.js",
-    "test": "npm run validate && npm run test:unit",
+    "lint": "npm run validate",
+    "test": "npm run validate && npm run test:unit && npm run evals",
     "validate": "npm run validate:skills && npm run validate:commands && npm run validate:versions && npm run validate:links && npm run validate:paths",
     "validate:skills": "node scripts/validate-skills.js",
     "validate:commands": "node scripts/validate-commands.js",

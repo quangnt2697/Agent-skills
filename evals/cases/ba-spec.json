@@ -2,27 +2,40 @@
   "skill_name": "ba-spec",
   "trigger": {
     "positive": [
-      { "prompt": "Import Jira issue và phân tích yêu cầu", "top_k": 1 },
-      { "prompt": "Tải PDF từ Jira và trích xuất thông tin", "top_k": 1 },
-      { "prompt": "Phân tích Business Spec từ Jira issue", "top_k": 3 },
-      { "prompt": "Extract requirements from Jira PDF", "top_k": 3 },
-      { "prompt": "Tạo Business-Spec từ Jira", "top_k": 3 }
+      {
+        "prompt": "Import tài liệu từ Jira Confluence và phân tích thành Business-Spec final.md",
+        "top_k": 1
+      },
+      {
+        "prompt": "Tự động scan tài liệu tham chiếu từ Jira issue bàn giao cho QA và DEV",
+        "top_k": 3
+      },
+      {
+        "prompt": "Trích xuất phân tích đa nguồn từ Confluence và Jira issue thành spec",
+        "top_k": 3
+      }
     ],
     "negative": [
-      { "prompt": "Viết Tech-Spec", "owner": "dev-spec-driven-development" },
-      { "prompt": "Thiết kế test cases", "owner": "qa-test-design" },
-      { "prompt": "Interview user về requirements", "owner": "ba-interview-me" }
+      {
+        "prompt": "Viết Tech-Spec",
+        "owner": "dev-spec-driven-development"
+      },
+      {
+        "prompt": "Thiết kế test cases",
+        "owner": "qa-test-design"
+      },
+      {
+        "prompt": "Interview user về requirements",
+        "owner": "ba-interview-me"
+      }
     ]
   },
   "evals": [
     {
       "id": 1,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Import Jira issue JIRA-123 và phân tích yêu cầu thành Business-Spec đầy đủ",
       "expected_output": "Business-Spec file với task type detection, extracted sections, và gap analysis",
-      "files": [
-        "ba-spec"
-      ],
       "expectations": [
         "PDF downloaded from Jira successfully",
         "Task type detected ([APP]/[WEB]/[API])",
@@ -34,12 +47,9 @@
     },
     {
       "id": 2,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Phân tích Jira issue với nhiều Business Rules phức tạp (validation, pricing, authorization)",
       "expected_output": "Business-Spec với tất cả Business Rules được extract và categorize đúng",
-      "files": [
-        "ba-spec"
-      ],
       "expectations": [
         "All Business Rules identified and numbered (BR-1, BR-2, ...)",
         "Rules categorized by type (Validation, Business Logic, Security, Performance)",

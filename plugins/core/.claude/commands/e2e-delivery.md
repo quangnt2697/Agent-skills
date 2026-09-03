@@ -53,10 +53,10 @@ Phase 8:  review                     [DEV+QA] Final review before merge
 /e2e-delivery {issueKey} --step
 ```
 
-| Cờ           | Ý nghĩa                                   |
-|--------------|-------------------------------------------|
+| Cờ | Ý nghĩa |
+|---|---|
 | _(không cờ)_ | Chạy tự động xuyên suốt — đây là mặc định |
-| `--step`     | Dừng sau mỗi phase chờ user review        |
+| `--step` | Dừng sau mỗi phase chờ user review |
 
 Bộ cờ giống hệt `/qa-full-pipeline` và `/qa-pipeline`. Cú pháp
 `--mode semi-auto|full-auto|manual` cũ **không còn dùng**.
@@ -235,16 +235,16 @@ Sau khi hoàn thành 8 phases thành công:
 
 ## 📊 Phase Summary
 
-| #   | Phase            | Persona   | Status   | Confidence   | Duration   |
-|-----|------------------|-----------|----------|--------------|------------|
-| 1   | ba-spec          | BA/PO     | ✅ Pass  | 92%          | 2m 15s     |
-| 2   | tech-spec        | DEV       | ✅ Pass  | 95%          | 4m 30s     |
-| 3   | cross-validation | Meta      | ✅ Pass  | 100%         | 1m 10s     |
-| 4   | plan             | DEV       | ✅ Pass  | 90%          | 2m 05s     |
-| 5   | build            | DEV       | ✅ Pass  | 93%          | 6m 20s     |
-| 6   | unit-test        | DEV       | ✅ Pass  | 88%          | 3m 15s     |
-| 7   | qa-full-pipeline | QA        | ✅ Pass  | 96%          | 6m 20s     |
-| 8   | review           | DEV+QA    | ✅ Pass  | 92%          | 45s        |
+| # | Phase | Persona | Status | Confidence | Duration |
+|---|-------|---------|--------|------------|----------|
+| 1 | ba-spec | BA/PO | ✅ Pass | 92% | 2m 15s |
+| 2 | tech-spec | DEV | ✅ Pass | 95% | 4m 30s |
+| 3 | cross-validation | Meta | ✅ Pass | 100% | 1m 10s |
+| 4 | plan | DEV | ✅ Pass | 90% | 2m 05s |
+| 5 | build | DEV | ✅ Pass | 93% | 6m 20s |
+| 6 | unit-test | DEV | ✅ Pass | 88% | 3m 15s |
+| 7 | qa-full-pipeline | QA | ✅ Pass | 96% | 6m 20s |
+| 8 | review | DEV+QA | ✅ Pass | 92% | 45s |
 
 ---
 
@@ -417,15 +417,15 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 
 ## Comparison: /e2e-delivery vs Separate Commands
 
-| Aspect             | /e2e-delivery                           | Separate Commands           |
-|--------------------|-----------------------------------------|-----------------------------|
-| **Phases**         | 8 phases tự động                        | Manual invoke từng command  |
-| **Coordination**   | Auto-coordinate BA/PO + QA + DEV        | User coordinate manually    |
-| **Duration**       | ~22-26 phút                             | ~6-8 giờ (with manual wait) |
-| **Consistency**    | Consistent workflow                     | Có thể skip steps           |
-| **Traceability**   | Built-in (Phase 3, embedded in Phase 7) | Manual verify               |
-| **Error Recovery** | Auto-detect + rollback                  | Manual troubleshoot         |
-| **Best for**       | Standard features                       | Custom/complex flows        |
+| Aspect | /e2e-delivery | Separate Commands |
+|--------|---------------|-------------------|
+| **Phases** | 8 phases tự động | Manual invoke từng command |
+| **Coordination** | Auto-coordinate BA/PO + QA + DEV | User coordinate manually |
+| **Duration** | ~22-26 phút | ~6-8 giờ (with manual wait) |
+| **Consistency** | Consistent workflow | Có thể skip steps |
+| **Traceability** | Built-in (Phase 3, embedded in Phase 7) | Manual verify |
+| **Error Recovery** | Auto-detect + rollback | Manual troubleshoot |
+| **Best for** | Standard features | Custom/complex flows |
 
 ---
 

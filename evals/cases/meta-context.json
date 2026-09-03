@@ -1,5 +1,5 @@
 {
-  "skill_name": "context-engineering",
+  "skill_name": "meta-context",
   "trigger": {
     "positive": [
       {
@@ -18,11 +18,11 @@
     "negative": [
       {
         "prompt": "Write unit tests for the date parser",
-        "owner": "test-driven-development"
+        "owner": "dev-test-driven-development"
       },
       {
         "prompt": "Harden this endpoint against SQL injection",
-        "owner": "security-and-hardening"
+        "owner": "dev-security"
       }
     ]
   },

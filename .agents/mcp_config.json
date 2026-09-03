@@ -2,15 +2,15 @@
   "mcpServers": {
     "atlassian": {
       "command": "node",
-      "args": ["/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/atlassian-mcp-proxy.js"]
+      "args": ["./.agents/atlassian-mcp-proxy.js"]
     },
     "squash-tm": {
       "command": "node",
-      "args": ["/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/squash-tm-mcp.js"]
+      "args": ["./.agents/squash-tm-mcp.js"]
     },
     "gitlab": {
       "command": "node",
-      "args": ["/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/gitlab-mcp-launcher.js"]
+      "args": ["./.agents/gitlab-mcp-launcher.js"]
     }
   }
 }

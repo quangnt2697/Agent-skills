@@ -12,8 +12,8 @@ Mọi kỹ năng của bạn đều được thiết kế để đọc thông ti
 ## Quy tắc Đường dẫn (BẮT BUỘC)
 
 > **THUẬT NGỮ QUAN TRỌNG – KHÔNG ĐƯỢC NHẦM LẪN:**
-> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa file `sm-config.yaml`, thư mục `skills/`, `agents/`. Đường dẫn cố định: `/Users/qa-quangnt/.gemini/config/plugins/agent-skills`.
-> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án). Ví dụ: `/Users/qa-quangnt/Desktop/Project/Test/agent-skills` hoặc bất kỳ project nào khác.
+> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/` (mặc định: `~/.gemini/config/plugins/agent-skills` hoặc thư mục cài đặt plugin).
+> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án, xác định động qua `git rev-parse --show-toplevel` hoặc thư mục workspace đang mở).
 > - **`workspace/sprint/`** = Một **thư mục con** nằm bên trong `PROJECT_ROOT`. Đây là **tên thư mục theo nghĩa đen (literal)**, KHÔNG phải "workspace root".
 
 ### Vị trí file Config (Đọc)
@@ -28,7 +28,7 @@ Toàn bộ file output của bộ skill SM **PHẢI** được ghi vào:
 ```
 {PROJECT_ROOT}/workspace/sprint/<tên-file>
 ```
-**Ví dụ:** Nếu user đang mở project `/Users/qa-quangnt/Desktop/Project/MyApp`, thì output sẽ ghi vào `/Users/qa-quangnt/Desktop/Project/MyApp/workspace/sprint/trace/daily-standup-report.md`.
+**Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output sẽ ghi vào `/path/to/project/workspace/sprint/trace/daily-standup-report.md`.
 
 **Quy tắc tạo thư mục:** Nếu thư mục `workspace/sprint/` chưa tồn tại bên trong `PROJECT_ROOT`, chạy `mkdir -p` trước khi ghi file.
 

@@ -88,7 +88,7 @@ Khi tạo bất kỳ sơ đồ Mermaid nào (flowchart, v.v.), bắt buộc tuâ
 6. **Neo vị trí bằng liên kết vô hình (Anchor):** Để thuật toán ELK không kéo "Bước 1" rời khỏi mép trái khi có mũi tên nét đứt quay ngược lại nó, **bắt buộc** dùng liên kết vô hình `~~~` để neo Bước 1 với các node có luồng quay lại. Cú pháp: `Bước1 ~~~ Node_Có_Mũi_Tên_Quay_Lại`. Khai báo các neo này ngay dưới thẻ `flowchart LR`.
 7. **Sử dụng công cụ hiện đại:** Mặc định, dùng skill `ba-design-flowchart` với engine **`mmdc` (Mermaid chuẩn)** — đây là engine mặc định của skill:
     ```bash
-    node skills/ba-design-flowchart/scripts/render.mjs \
+    node plugins/ba-po/skills/ba-design-flowchart/scripts/render.mjs \
       --input flow.mmd --output flow.png --format png \
       --bg '#ffffff' --fg '#000000'
     ```

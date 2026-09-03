@@ -1,0 +1,41 @@
+{
+  "skill_name": "qa-test-design",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Thiết kế test checklist và viết kịch bản BDD Gherkin cho tính năng",
+        "top_k": 3
+      },
+      {
+        "prompt": "Create test plan checklist and Gherkin feature files for financial domain",
+        "top_k": 3
+      },
+      {
+        "prompt": "Thiết kế kiểm thử phân tích giá trị biên và tương đương cho chức năng đặt lệnh",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Viết mã nguồn backend API cho đơn hàng",
+        "owner": "dev-api-design"
+      },
+      {
+        "prompt": "Lưu session checkpoint để giải phóng bộ nhớ",
+        "owner": "meta-session-checkpoint"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Thiết kế checklist kiểm thử và kịch bản Gherkin cho chức năng Rút tiền từ tài khoản chứng khoán.",
+      "expected_output": "Checklist kiểm thử phân loại BVA/EP và kịch bản Gherkin chuẩn Scenario Outline.",
+      "expectations": [
+        "Phân tích đầy đủ ca kiểm thử biên và lớp tương đương",
+        "Kịch bản BDD rõ ràng Given/When/Then có test data thực tế"
+      ]
+    }
+  ]
+}

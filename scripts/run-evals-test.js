@@ -234,3 +234,18 @@ test('materializes a git baseline and applies a working-tree patch', () => {
     fs.rmSync(workspace, { recursive: true, force: true });
   }
 });
+
+test('loads skills laid out in plugins/*/skills/ layout', () => {
+  const root = makeSandbox();
+  const pluginSkillDir = path.join(root, 'plugins', 'my-plugin', 'skills', 'alpha');
+  fs.mkdirSync(pluginSkillDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(pluginSkillDir, 'SKILL.md'),
+    '---\nname: alpha\ndescription: Use this when you need alpha work done\n---\n\n# alpha\n'
+  );
+  writeJson(path.join(root, 'evals', 'cases', 'alpha.json'), completeCase('alpha', 'do alpha work'));
+
+  const result = run(root);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /across 1 skills, 1 case files/);
+});

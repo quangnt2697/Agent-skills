@@ -1,0 +1,41 @@
+{
+  "skill_name": "sm-daily-standup",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Điều hành daily standup báo cáo tiến độ và phân tích cân bằng tải cho DEV",
+        "top_k": 3
+      },
+      {
+        "prompt": "Tạo báo cáo daily standup hằng ngày tính thời gian tồn tại của ticket",
+        "top_k": 3
+      },
+      {
+        "prompt": "Generate daily standup report and workload balance for development team",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Viết kịch bản kiểm thử BDD cucumber",
+        "owner": "qa-test-design"
+      },
+      {
+        "prompt": "Kiểm tra bảo mật OWASP SQL Injection",
+        "owner": "security-code-audit"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Tạo báo cáo Daily Standup hôm nay cho board G3.1 từ dữ liệu Jira.",
+      "expected_output": "Báo cáo standup có thống kê tiến độ, ticket tồn đọng và phân bổ tải DEV.",
+      "expectations": [
+        "Thống kê rõ ràng trạng thái các ticket theo người thực hiện",
+        "Đưa ra cảnh báo nếu có thành viên bị quá tải"
+      ]
+    }
+  ]
+}

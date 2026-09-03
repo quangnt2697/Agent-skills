@@ -1,5 +1,5 @@
 {
-  "skill_name": "api-and-interface-design",
+  "skill_name": "dev-api-design",
   "trigger": {
     "positive": [
       {
@@ -18,11 +18,11 @@
     "negative": [
       {
         "prompt": "My unit test is failing with a null pointer exception",
-        "owner": "debugging-and-error-recovery"
+        "owner": "dev-debugging"
       },
       {
         "prompt": "Make this landing page responsive on mobile",
-        "owner": "frontend-ui-engineering"
+        "owner": "dev-frontend-engineering"
       }
     ]
   },

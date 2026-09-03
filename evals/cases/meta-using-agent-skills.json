@@ -1,24 +1,24 @@
 {
-  "skill_name": "using-agent-skills",
+  "skill_name": "meta-using-agent-skills",
   "trigger": {
     "positive": [
       {
-        "prompt": "Which skill should I use for this task?",
+        "prompt": "Khám phá và gọi các kỹ năng skills của agent khi bắt đầu phiên làm việc",
+        "top_k": 1
+      },
+      {
+        "prompt": "Kỹ năng siêu cấp meta-skill chi phối cách phát hiện và sử dụng skills",
         "top_k": 3
       },
       {
-        "prompt": "How do I decide which workflow applies to this piece of work?",
-        "top_k": 3
-      },
-      {
-        "prompt": "Route this request to the right skill in the pack",
+        "prompt": "Tìm xem kỹ năng nào áp dụng cho task hiện tại bằng meta-using-agent-skills",
         "top_k": 3
       }
     ],
     "negative": [
       {
         "prompt": "Debug the null pointer crash in checkout",
-        "owner": "debugging-and-error-recovery"
+        "owner": "dev-debugging"
       },
       {
         "prompt": "Make the modal accessible for keyboard users"

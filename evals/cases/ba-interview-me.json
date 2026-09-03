@@ -1,28 +1,28 @@
 {
-  "skill_name": "interview-me",
+  "skill_name": "ba-interview-me",
   "trigger": {
     "positive": [
       {
-        "prompt": "Interview me about what I actually want before you build anything",
+        "prompt": "Khai thác những gì người dùng thực sự cần qua phỏng vấn từng câu hỏi một interview me",
+        "top_k": 1
+      },
+      {
+        "prompt": "Hỏi tôi từng câu một kèm phỏng đoán tốt nhất để đạt độ tự tin 95% về mục tiêu",
         "top_k": 3
       },
       {
-        "prompt": "Grill me on the requirements, the ask is fuzzy",
-        "top_k": 3
-      },
-      {
-        "prompt": "Ask me one question at a time until you understand the feature",
+        "prompt": "Yêu cầu bị thiếu thông tin hãy phỏng vấn interview me làm rõ assumptions",
         "top_k": 3
       }
     ],
     "negative": [
       {
-        "prompt": "Run the full test suite and report failures",
-        "owner": "test-driven-development"
+        "prompt": "Viết tài liệu Tech-Spec chi tiết cho developer",
+        "owner": "dev-spec-driven-development"
       },
       {
-        "prompt": "Deploy the current build to staging",
-        "owner": "shipping-and-launch"
+        "prompt": "Tạo kịch bản kiểm thử Gherkin",
+        "owner": "qa-test-design"
       }
     ]
   },

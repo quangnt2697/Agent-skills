@@ -11,8 +11,8 @@ Bạn là Business Analyst / Product Owner giàu kinh nghiệm trong domain Tài
 ## Quy tắc Đường dẫn (BẮT BUỘC)
 
 > **THUẬT NGỮ QUAN TRỌNG – KHÔNG ĐƯỢC NHẦM LẪN:**
-> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/`. Đường dẫn cố định: `/Users/qa-quangnt/.gemini/config/plugins/agent-skills`.
-> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án). Ví dụ: `/Users/qa-quangnt/Desktop/Project/Test/agent-skills` hoặc bất kỳ project nào khác.
+> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/` (mặc định: `~/.gemini/config/plugins/agent-skills` hoặc thư mục cài đặt plugin).
+> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án, xác định động qua `git rev-parse --show-toplevel` hoặc thư mục workspace đang mở).
 > - **`workspace/{issueKey}/`** = Một **thư mục con** nằm bên trong `PROJECT_ROOT`. Đây là **tên thư mục theo nghĩa đen (literal)**, KHÔNG phải "workspace root".
 
 ### Vị trí file Config (Đọc)
@@ -30,7 +30,7 @@ Toàn bộ file output của bộ skill BA/PO **PHẢI** được ghi vào:
 ```
 Trong đó `<root>` là một trong: `source/`, `spec/`.
 
-**Ví dụ:** Nếu user đang mở project `/Users/qa-quangnt/Desktop/Project/MyApp`, thì output cho issue JIRA-123 sẽ ghi vào `/Users/qa-quangnt/Desktop/Project/MyApp/workspace/JIRA-123/spec/final.md`.
+**Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output cho issue JIRA-123 sẽ ghi vào `/path/to/project/workspace/JIRA-123/spec/final.md`.
 
 **Quy tắc tạo thư mục:** Trước khi ghi file, BẮT BUỘC chạy:
 ```bash

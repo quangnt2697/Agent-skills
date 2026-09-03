@@ -1,17 +1,17 @@
 {
-  "skill_name": "code-simplification",
+  "skill_name": "cr-code-simplification",
   "trigger": {
     "positive": [
       {
-        "prompt": "This function works but it is way too clever, simplify it without changing behavior",
+        "prompt": "Đơn giản hóa code cho rõ ràng giảm bớt sự phức tạp thừa thãi mà không đổi hành vi",
+        "top_k": 1
+      },
+      {
+        "prompt": "Code hiện tại đang chạy tốt nhưng quá khó đọc khó bảo trì hãy simplify code",
         "top_k": 3
       },
       {
-        "prompt": "Reduce the complexity of this module so juniors can maintain it",
-        "top_k": 3
-      },
-      {
-        "prompt": "Clean up this working code, it has grown hard to follow",
+        "prompt": "Tối ưu hóa app code và test mock để code dễ đọc dễ hiểu hơn",
         "top_k": 3
       }
     ],
@@ -21,7 +21,7 @@
       },
       {
         "prompt": "Diagnose why the build broke overnight",
-        "owner": "debugging-and-error-recovery"
+        "owner": "dev-debugging"
       }
     ]
   },

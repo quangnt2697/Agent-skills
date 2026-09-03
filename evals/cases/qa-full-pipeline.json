@@ -1,0 +1,41 @@
+{
+  "skill_name": "qa-full-pipeline",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Chạy full QA pipeline từ test design đến test execution tự động",
+        "top_k": 3
+      },
+      {
+        "prompt": "Run end to end automated QA workflow test design to execution",
+        "top_k": 3
+      },
+      {
+        "prompt": "Thực hiện toàn trình QA pipeline tự động cho ticket Jira này",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Đo lường thời gian tải trang Largest Contentful Paint",
+        "owner": "webperf-core-vitals"
+      },
+      {
+        "prompt": "Ưu tiên backlog theo MoSCoW",
+        "owner": "ba-backlog-prioritization"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Hãy chạy toàn trình QA pipeline cho tính năng đặt lệnh chứng khoán từ test design đến execution report.",
+      "expected_output": "Kế hoạch điều phối toàn trình qua các bước qa-test-design, qa-auto-design, qa-run-test.",
+      "expectations": [
+        "Xác định rõ luồng di chuyển dữ liệu giữa các phase",
+        "Có cơ chế dừng hoặc tiếp tục theo autonomy contract"
+      ]
+    }
+  ]
+}

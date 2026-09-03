@@ -1,0 +1,41 @@
+{
+  "skill_name": "sm-sprint-planning",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Lập kế hoạch sprint planning tính chu kỳ và pull backlog từ Jira",
+        "top_k": 3
+      },
+      {
+        "prompt": "Sprint planning calculate sprint dates pull backlog items and allocate capacity",
+        "top_k": 3
+      },
+      {
+        "prompt": "Lên kế hoạch phân bổ công việc cho sprint mới dựa trên velocity",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Đơn giản hóa mã nguồn giảm cyclomatic complexity",
+        "owner": "cr-code-simplification"
+      },
+      {
+        "prompt": "Đẩy test case lên Squash TM",
+        "owner": "qa-squash-push"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Lập kế hoạch cho Sprint 12 bắt đầu vào thứ Năm tới với velocity dự kiến 40 story points.",
+      "expected_output": "Kế hoạch Sprint chi tiết với danh sách ticket được kéo vào theo capacity.",
+      "expectations": [
+        "Tính toán đúng chu kỳ ngày bắt đầu và kết thúc",
+        "Phân bổ backlog phù hợp với năng lực team"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "skill_name": "meta-continuous-learning",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Đúc kết bài học kinh nghiệm và sai lầm từ phiên làm việc vừa rồi để lưu thành rule",
+        "top_k": 3
+      },
+      {
+        "prompt": "Save session learnings and patterns to rules lessons learned",
+        "top_k": 3
+      },
+      {
+        "prompt": "Tự động trích xuất lessons learned từ task khó vừa hoàn thành",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Thiết kế API RESTful có phân trang và filter",
+        "owner": "dev-api-design"
+      },
+      {
+        "prompt": "Tạo checklist kiểm thử cho giao dịch nạp tiền",
+        "owner": "qa-test-design"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Chúng ta vừa gặp lỗi CORS và xử lý xong bằng việc cấu hình lại origin whitelist. Hãy đúc kết bài học kinh nghiệm này.",
+      "expected_output": "Quy tắc Lesson Learned có cấu trúc Ngữ cảnh, Sai lầm, Giải pháp chuẩn.",
+      "expectations": [
+        "Định dạng bài học rõ ràng súc tích",
+        "Chỉ dẫn cụ thể cách phòng tránh cho tương lai"
+      ]
+    }
+  ]
+}

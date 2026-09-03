@@ -6,5 +6,5 @@ Kích hoạt kỹ năng meta-session-checkpoint ở chế độ LƯU.
 
 1. Quét toàn bộ ngữ cảnh hiện tại và lịch sử chat.
 2. Tổng hợp 3 nhóm thông tin chính: Sự thật (Facts), Tiến độ (Progress) và Bước tiếp theo (Next Steps).
-3. Ghi đè file `/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/workspace_state.md` với định dạng Markdown.
+3. Ghi đè file `{PROJECT_ROOT}/.agents/workspace_state.md` (với `{PROJECT_ROOT}` là thư mục gốc của dự án hiện tại) với định dạng Markdown.
 4. Báo cáo xác nhận đã lưu checkpoint.

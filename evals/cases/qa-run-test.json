@@ -2,16 +2,36 @@
   "skill_name": "qa-run-test",
   "trigger": {
     "positive": [
-      { "prompt": "Chạy test automation hiện có và xuất báo cáo", "top_k": 1 },
-      { "prompt": "Run regression test suite", "top_k": 3 },
-      { "prompt": "Chạy lại test sau khi fix bug", "top_k": 3 },
-      { "prompt": "Kiểm tra xem test suite có pass không", "top_k": 3 },
-      { "prompt": "Generate test report từ pytest", "top_k": 3 }
+      {
+        "prompt": "Chạy test automation hiện có và xuất báo cáo",
+        "top_k": 1
+      },
+      {
+        "prompt": "Run regression test suite",
+        "top_k": 3
+      },
+      {
+        "prompt": "Chạy lại test sau khi fix bug",
+        "top_k": 3
+      },
+      {
+        "prompt": "Kiểm tra xem test suite có pass không",
+        "top_k": 3
+      },
+      {
+        "prompt": "Generate test report từ pytest",
+        "top_k": 3
+      }
     ],
     "negative": [
-      { "prompt": "Viết test case mới cho login feature", "owner": "qa-test-design" },
-      { "prompt": "Sinh automation test code từ Gherkin file", "owner": "qa-auto-design" },
-      { "prompt": "Import Jira issue và phân tích yêu cầu", "owner": "ba-spec" }
+      {
+        "prompt": "Thiết kế checklist kiểm thử mới cho login",
+        "owner": "qa-test-design"
+      },
+      {
+        "prompt": "Import Jira issue thành Business-Spec",
+        "owner": "ba-spec"
+      }
     ]
   },
   "evals": [

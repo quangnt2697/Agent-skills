@@ -69,7 +69,7 @@ Chỉ báo lỗi khi không tìm thấy `.env` ở cả plugin dir lẫn project
 
 Skill này tương tác với Jira/Confluence qua **2 phương thức** (theo thứ tự ưu tiên):
 
-1. **Shell Script / curl** (ưu tiên): Do tool `getJiraIssue` của Rovo MCP sử dụng AI agent có thể làm sai lệch nội dung thô (ví dụ như trường `summary`), agent SẼ dùng REST API qua `curl` hoặc chạy `skills/ba-spec/scripts/jira-fetch-pdf.sh` để đảm bảo độ chuẩn xác 100%. Đọc credentials từ `.env`.
+1. **Shell Script / curl** (ưu tiên): Do tool `getJiraIssue` của Rovo MCP sử dụng AI agent có thể làm sai lệch nội dung thô (ví dụ như trường `summary`), agent SẼ dùng REST API qua `curl` hoặc chạy `plugins/ba-po/skills/ba-spec/scripts/jira-fetch-pdf.sh` để đảm bảo độ chuẩn xác 100%. Đọc credentials từ `.env`.
 2. **MCP Tool** (fallback/phụ trợ): Nếu cần các tác vụ tìm kiếm tự do, agent sử dụng các MCP tool (`searchJiraIssuesUsingJql`, `searchConfluenceUsingCql`). Hạn chế dùng `getJiraIssue`.
 
 **Lưu ý:** Lớp xử lý (Phase 2–5: phân tích, interview, tổng hợp) hoạt động **giống nhau** bất kể nguồn dữ liệu là MCP hay REST API.
@@ -165,7 +165,7 @@ danh sách                                 loại task          theo profile
 **Các bước:**
 
 1. **Lấy metadata Jira issue** (chưa tải PDF):
-   - **Ưu tiên (REST API):** Chạy `curl` `GET /rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels,sprint` hoặc sử dụng `skills/ba-spec/scripts/jira-fetch-pdf.sh` để lấy chuỗi raw của trường `summary` (chống nhiễu từ LLM).
+   - **Ưu tiên (REST API):** Chạy `curl` `GET /rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels,sprint` hoặc sử dụng `plugins/ba-po/skills/ba-spec/scripts/jira-fetch-pdf.sh` để lấy chuỗi raw của trường `summary` (chống nhiễu từ LLM).
    - **Lưu ý:** KHÔNG dùng MCP tool `getJiraIssue(issueKey)` để lấy metadata do Atlassian Rovo MCP có thể tóm tắt lại tên task làm mất độ chính xác.
 
 2. **Trích xuất danh sách liên kết tham chiếu:**

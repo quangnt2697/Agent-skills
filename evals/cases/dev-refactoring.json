@@ -2,27 +2,36 @@
   "skill_name": "dev-refactoring",
   "trigger": {
     "positive": [
-      { "prompt": "Refactor code để giảm duplication", "top_k": 1 },
-      { "prompt": "Extract common logic to reusable function", "top_k": 1 },
-      { "prompt": "Clean up code smell", "top_k": 3 },
-      { "prompt": "Rename variables for clarity", "top_k": 3 },
-      { "prompt": "Split long function into smaller ones", "top_k": 3 }
+      {
+        "prompt": "Thực hiện refactoring an toàn với checklist TDD Red-Green-Refactor",
+        "top_k": 1
+      },
+      {
+        "prompt": "Code cần cleanup reduce duplication improve structure mà không đổi behavior",
+        "top_k": 3
+      },
+      {
+        "prompt": "Extract function class rename move file module giữ tests pass",
+        "top_k": 3
+      }
     ],
     "negative": [
-      { "prompt": "Add new feature to existing code", "owner": "incremental-implementation" },
-      { "prompt": "Fix bug in function", "owner": "dev-debugging" },
-      { "prompt": "Write unit tests", "owner": "dev-test-driven-development" }
+      {
+        "prompt": "Gỡ lỗi debug test fail tìm nguyên nhân gốc",
+        "owner": "dev-debugging"
+      },
+      {
+        "prompt": "Viết test case mới cho chức năng đăng ký",
+        "owner": "qa-test-design"
+      }
     ]
   },
   "evals": [
     {
       "id": 1,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Refactor duplicated validation logic across create_order() and update_order() functions",
       "expected_output": "Extracted validation function with tests passing before and after refactoring",
-      "files": [
-        "dev-refactoring"
-      ],
       "expectations": [
         "Tests run and pass BEFORE refactoring",
         "Common logic extracted to new function",
@@ -34,12 +43,9 @@
     },
     {
       "id": 2,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Rename function f() to calculate_total_with_tax() and update all call sites",
       "expected_output": "Function renamed with all references updated, tests passing",
-      "files": [
-        "dev-refactoring"
-      ],
       "expectations": [
         "Function renamed correctly",
         "All call sites updated (no broken references)",

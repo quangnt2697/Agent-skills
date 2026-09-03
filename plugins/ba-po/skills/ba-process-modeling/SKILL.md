@@ -514,7 +514,7 @@ mkdir -p /project-root/workspace/{issueKey}/spec
 
 **Quan trọng**: Sau khi sinh ra code Mermaid, BẮT BUỘC gọi lệnh `/flowchart` (đối với Claude) hoặc chạy trực tiếp script:
 ```bash
-node skills/ba-design-flowchart/scripts/render.mjs --input <file_mmd_tạm> --output <file_png_kết_quả> --format png --bg '#ffffff' --fg '#000000'
+node plugins/ba-po/skills/ba-design-flowchart/scripts/render.mjs --input <file_mmd_tạm> --output <file_png_kết_quả> --format png --bg '#ffffff' --fg '#000000'
 ```
 Nếu script báo lỗi cú pháp, tự động đọc lỗi và sửa lại mã Mermaid cho đến khi thành công.
 

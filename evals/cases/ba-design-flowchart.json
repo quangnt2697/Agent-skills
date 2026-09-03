@@ -1,0 +1,41 @@
+{
+  "skill_name": "ba-design-flowchart",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Vẽ flowchart sơ đồ kiến trúc Mermaid bằng engine mmdc",
+        "top_k": 3
+      },
+      {
+        "prompt": "Render mermaid sequence diagram to PNG with dark theme",
+        "top_k": 3
+      },
+      {
+        "prompt": "Tạo sơ đồ luồng dữ liệu kiến trúc bằng Mermaid",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Viết unit test cho hàm tính toán giá cổ phiếu",
+        "owner": "dev-test-driven-development"
+      },
+      {
+        "prompt": "Lập kế hoạch sprint planning",
+        "owner": "sm-sprint-planning"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Vẽ sơ đồ Mermaid thể hiện quy trình xác thực người dùng qua OTP SMS.",
+      "expected_output": "Mã Mermaid flowchart LR hoặc sequence diagram chuẩn.",
+      "expectations": [
+        "Sinh mã Mermaid hợp lệ với các bước xác thực tuần tự",
+        "Sử dụng đúng cú pháp và hướng dẫn quy chuẩn"
+      ]
+    }
+  ]
+}

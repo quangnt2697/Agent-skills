@@ -2,27 +2,36 @@
   "skill_name": "meta-cross-validation",
   "trigger": {
     "positive": [
-      { "prompt": "Kiểm tra traceability giữa Business Rules và Tech-Spec", "top_k": 1 },
-      { "prompt": "Verify coverage từ Spec đến Test", "top_k": 1 },
-      { "prompt": "Tạo traceability matrix", "top_k": 3 },
-      { "prompt": "Check if all Business Rules are implemented", "top_k": 3 },
-      { "prompt": "Gap analysis giữa requirements và tests", "top_k": 3 }
+      {
+        "prompt": "Xác thực truy vết traceability giữa Business-Spec Tech-Spec và Test Cases",
+        "top_k": 1
+      },
+      {
+        "prompt": "Tạo ma trận ánh xạ Business Rule sang Spec Section sang Test Case phát hiện gaps",
+        "top_k": 3
+      },
+      {
+        "prompt": "Kiểm tra độ bao phủ coverage của test cases so với yêu cầu nghiệp vụ",
+        "top_k": 3
+      }
     ],
     "negative": [
-      { "prompt": "Viết Tech-Spec từ Business-Spec", "owner": "dev-spec-driven-development" },
-      { "prompt": "Thiết kế test cases", "owner": "qa-test-design" },
-      { "prompt": "Import Jira issue", "owner": "ba-spec" }
+      {
+        "prompt": "Thiết kế checklist kiểm thử và kịch bản Gherkin",
+        "owner": "qa-test-design"
+      },
+      {
+        "prompt": "Import tài liệu từ Jira issue",
+        "owner": "ba-spec"
+      }
     ]
   },
   "evals": [
     {
       "id": 1,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Tạo traceability matrix giữa Business Rules, Tech-Spec và Test Cases cho Order Management feature",
       "expected_output": "Traceability matrix showing BR → Tech-Spec → Test mapping with coverage percentages and gap report",
-      "files": [
-        "meta-cross-validation"
-      ],
       "expectations": [
         "Matrix has 3 columns: Business Rule, Tech-Spec Section, Test Case",
         "Coverage percentage calculated for Tech-Spec and Test",
@@ -33,12 +42,9 @@
     },
     {
       "id": 2,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Verify if all Business Rules from Spec are covered in Test Cases",
       "expected_output": "Gap report showing missing test coverage with recommendations",
-      "files": [
-        "meta-cross-validation"
-      ],
       "expectations": [
         "All Business Rules extracted from Spec",
         "Test Cases mapped to Business Rules",

@@ -79,7 +79,7 @@ lời (trường hợp 3).
 Có thể khởi tạo thư mục output trước khi bắt đầu:
 
 ```bash
-bash skills/qa-test-design/scripts/qa-init.sh [output-dir]
+bash plugins/qa/skills/qa-test-design/scripts/qa-init.sh [output-dir]
 ```
 
 Lệnh này tạo thư mục `steps/` và `result/` trong đường dẫn chỉ định (mặc định: `/project-root/workspace/{issueKey}/test/`).
@@ -537,7 +537,7 @@ Sau khi hoàn thành cả hai giai đoạn:
 - [ ] Tất cả nội dung output viết bằng tiếng Việt với thuật ngữ domain
 - [ ] Mỗi scenario `.feature` truy vết được về 1 item checklist
 - [ ] Không có cơ chế tự động hoá (selectors, xpaths, SQL) trong text step
-- [ ] Chạy `bash skills/qa-test-design/scripts/qa-validate.sh <features-dir>` và xác nhận tất cả kiểm tra pass
+- [ ] Chạy `bash plugins/qa/skills/qa-test-design/scripts/qa-validate.sh <features-dir>` và xác nhận tất cả kiểm tra pass
 
 ## Quy trình QA tổng thể
 

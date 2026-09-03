@@ -1,0 +1,41 @@
+{
+  "skill_name": "meta-session-checkpoint",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Lưu checkpoint ngữ cảnh phiên làm việc để khôi phục sau",
+        "top_k": 3
+      },
+      {
+        "prompt": "Save workspace state checkpoint because chat context is getting too long",
+        "top_k": 3
+      },
+      {
+        "prompt": "Khôi phục trạng thái làm việc từ checkpoint đã lưu",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Viết báo cáo hồi tưởng sprint retrospective",
+        "owner": "sm-sprint-retrospective"
+      },
+      {
+        "prompt": "Kiểm toán bảo mật mã nguồn injection",
+        "owner": "security-code-audit"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Đoạn hội thoại đã dài, hãy lưu lại checkpoint trạng thái công việc hiện tại vào workspace state.",
+      "expected_output": "Bản tóm tắt checkpoint với trạng thái hiện tại, việc đã làm và bước tiếp theo.",
+      "expectations": [
+        "Ghi nhận đầy đủ các task đã hoàn thành và còn dở dang",
+        "Cung cấp định hướng rõ ràng cho phiên kế tiếp"
+      ]
+    }
+  ]
+}

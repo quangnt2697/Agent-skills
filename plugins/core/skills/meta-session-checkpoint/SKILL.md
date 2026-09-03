@@ -23,7 +23,7 @@ về [meta-continuous-learning](../meta-continuous-learning/SKILL.md).
 
 ## Ranh giới & Quyền hạn
 - **Không thay đổi Codebase:** Kỹ năng này chỉ tạo ra tài liệu quản lý trạng thái, TUYỆT ĐỐI không sửa đổi code ứng dụng hoặc xóa các file code.
-- **Nơi lưu trữ Checkpoint:** Mọi checkpoint BẮT BUỘC phải được lưu vào file `/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/workspace_state.md`.
+- **Nơi lưu trữ Checkpoint:** Mọi checkpoint BẮT BUỘC phải được lưu vào file `{PROJECT_ROOT}/.agents/workspace_state.md`. (Trong đó `{PROJECT_ROOT}` là thư mục gốc của dự án đang mở, xác định qua `git rev-parse --show-toplevel`).
 
 ## Quy trình Thực thi (The Checkpoint Pipeline)
 
@@ -35,11 +35,11 @@ Kỹ năng này có hai chế độ: LƯU (Save) và TẢI (Load). Agent dựa v
    - **Sự thật (Facts):** Các file nào đã được sửa/tạo? Môi trường, cấu hình nào đang được thiết lập? Quyết định kiến trúc nào đã được chốt? (Rất quan trọng).
    - **Tiến độ (Progress):** Chúng ta đang ở bước nào trong bản kế hoạch (task.md) hoặc đặc tả (final.md)? Cái gì đã làm xong? Cái gì đang bị lỗi? (Phải trích dẫn mã lỗi nếu có).
    - **Bước tiếp theo (Next Steps):** Ngay khi mở lại chat, Agent phải làm chính xác hành động gì tiếp theo? (Ví dụ: "Chạy file test X", "Sửa bug Y trong file Z").
-3. **Lưu file:** Ghi đè (hoặc tạo mới) file `/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/workspace_state.md` với định dạng Markdown thật rõ ràng và ngắn gọn.
+3. **Lưu file:** Ghi đè (hoặc tạo mới) file `{PROJECT_ROOT}/.agents/workspace_state.md` với định dạng Markdown thật rõ ràng và ngắn gọn.
 4. **Báo cáo:** Nhắc người dùng: "Checkpoint đã được lưu. Bạn có thể xóa lịch sử chat, mở phiên chat mới và gọi lệnh `/load-checkpoint` để tiếp tục."
 
 ### Chế độ TẢI (Trigger: `/load-checkpoint`)
-1. **Đọc Checkpoint:** Dùng công cụ đọc file để nạp nội dung từ `/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/workspace_state.md`.
+1. **Đọc Checkpoint:** Dùng công cụ đọc file để nạp nội dung từ `{PROJECT_ROOT}/.agents/workspace_state.md`.
 2. **Phục hồi Ngữ cảnh:** Tự động thiết lập lại suy nghĩ của chính bạn sao cho khớp với các Facts và Progress ghi trong đó.
 3. **Hành động ngay lập tức:** Đọc mục "Next Steps" và TỰ ĐỘNG THỰC THI bước tiếp theo mà KHÔNG CẦN CHỜ NGƯỜI DÙNG XÁC NHẬN (Action Over Chat).
 

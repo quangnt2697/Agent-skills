@@ -1,5 +1,18 @@
-name = "webperf-audit"
 description = "Audit hiệu năng web, đánh giá Core Web Vitals và đề xuất tối ưu hóa"
 
-[context]
-# Optional: Define context needed for this command
+prompt = """
+Kích hoạt kỹ năng webperf-core-vitals.
+
+Sử dụng persona Web Performance Auditor để đánh giá hiệu năng web, Core Web Vitals (LCP, FID, CLS), và đề xuất các cải tiến về performance.
+
+Cách sử dụng:
+/webperf-audit [url]
+
+Tham số:
+- url (optional): URL của trang web cần audit. Mặc định là localhost:3000 hoặc dev server đang chạy.
+
+Quy trình thực hiện:
+1. Đo lường các chỉ số Core Web Vitals (LCP, FID, CLS, FCP, TBT).
+2. Phân tích điểm số và phát hiện các bottleneck gây suy giảm hiệu năng.
+3. Xuất báo cáo hiệu năng chi tiết kèm khuyến nghị tối ưu hóa cụ thể.
+"""

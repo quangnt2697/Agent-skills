@@ -33,7 +33,43 @@ const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
+function parseFrontmatter(content) {
+  const match = content.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/);
+  if (!match) return null;
+
+  const result = {};
+  const lines = match[1].split(/\r?\n/);
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) continue;
+    if (/^\s/.test(line)) continue;
+
+    const key = line.slice(0, colonIdx).trim();
+    if (!key) continue;
+    const rawValue = line.slice(colonIdx + 1).trim();
+
+    if (/^[>|][-+]?\d*$/.test(rawValue)) {
+      const parts = [];
+      let j = i + 1;
+      for (; j < lines.length; j++) {
+        if (lines[j].trim() === '') { parts.push(''); continue; }
+        if (!/^\s/.test(lines[j])) break;
+        parts.push(lines[j].trim());
+      }
+      i = j - 1;
+      const joined = rawValue.startsWith('|') ? parts.join('\n') : parts.join(' ');
+      result[key] = joined.replace(/\s+/g, ' ').trim();
+    } else {
+      result[key] = rawValue.replace(/^['"]|['"]$/g, '');
+    }
+  }
+  return result;
+}
+
 const ROOT = path.join(__dirname, '..');
+const PLUGINS_DIR = path.join(ROOT, 'plugins');
 const SKILLS_DIR = path.join(ROOT, 'skills');
 const CASES_DIR = path.join(ROOT, 'evals', 'cases');
 const FIXTURES_DIR = path.join(ROOT, 'evals', 'fixtures');
@@ -64,34 +100,37 @@ const STOP = new Set([
   'from', 'in', 'into', 'is', 'it', 'its', 'my', 'need', 'needs', 'of', 'on',
   'or', 'our', 'so', 'that', 'the', 'them', 'this', 'to', 'use', 'want',
   'we', 'when', 'with', 'you', 'your', 'help', 'me', 'i',
+  'và', 'hoặc', 'cho', 'của', 'với', 'trong', 'để', 'khi', 'các', 'những',
+  'một', 'này', 'được', 'từ', 'vào', 'ra', 'thì', 'là', 'có'
 ]);
 
 function stem(t) {
-  // Light suffix stripping so "conflicts"/"conflict", "branching"/"branch",
-  // "architectural"/"architecture" cluster together. Not a real stemmer.
-  for (const suf of ['ally', 'ing', 'ed', 'es', 'al']) {
-    if (t.length > suf.length + 3 && t.endsWith(suf)) {
-      t = t.slice(0, -suf.length);
-      break;
+  // Only apply English suffix stripping if token is purely ASCII
+  if (/^[a-z]+$/.test(t)) {
+    for (const suf of ['ally', 'ing', 'ed', 'es', 'al']) {
+      if (t.length > suf.length + 3 && t.endsWith(suf)) {
+        t = t.slice(0, -suf.length);
+        break;
+      }
     }
+    if (t.length > 3 && t.endsWith('s') && !t.endsWith('ss')) t = t.slice(0, -1);
+    if (t.length > 4 && t.endsWith('e')) t = t.slice(0, -1);
+    // Collapse doubled trailing consonant left by -ing/-ed ("committ" -> "commit").
+    if (t.length > 4 && t[t.length - 1] === t[t.length - 2] && !'aeiou'.includes(t[t.length - 1])) {
+      t = t.slice(0, -1);
+    }
+    // Normalize trailing y so "simplify" and "simplifies"/"simplified" cluster.
+    if (t.length > 3 && t.endsWith('y')) t = t.slice(0, -1) + 'i';
   }
-  if (t.length > 3 && t.endsWith('s') && !t.endsWith('ss')) t = t.slice(0, -1);
-  if (t.length > 4 && t.endsWith('e')) t = t.slice(0, -1);
-  // Collapse doubled trailing consonant left by -ing/-ed ("committ" -> "commit").
-  if (t.length > 4 && t[t.length - 1] === t[t.length - 2] && !'aeiou'.includes(t[t.length - 1])) {
-    t = t.slice(0, -1);
-  }
-  // Normalize trailing y so "simplify" and "simplifies"/"simplified" cluster.
-  if (t.length > 3 && t.endsWith('y')) t = t.slice(0, -1) + 'i';
   return t;
 }
 
 function tokenize(text) {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, ' ')
+    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
     .split(/[\s-]+/)
-    .filter((t) => t.length > 2 && !STOP.has(t))
+    .filter((t) => t.length >= 2 && !STOP.has(t))
     .map(stem);
 }
 
@@ -152,17 +191,68 @@ function rankSkills(prompt, corpus) {
 
 function loadSkills() {
   const skills = [];
-  for (const dir of fs.readdirSync(SKILLS_DIR)) {
-    const file = path.join(SKILLS_DIR, dir, 'SKILL.md');
-    if (!fs.existsSync(file)) continue;
-    const src = fs.readFileSync(file, 'utf8');
-    const m = src.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/);
-    if (!m) continue;
-    const name = (m[1].match(/^name:\s*(.+)$/m) || [])[1];
-    const description = (m[1].match(/^description:\s*(.+)$/m) || [])[1];
-    if (name && description) skills.push({ name: name.trim(), description: description.trim(), dir });
+  const seen = new Set();
+
+  // Load skills from plugins/*/skills/
+  if (fs.existsSync(PLUGINS_DIR)) {
+    const plugins = fs.readdirSync(PLUGINS_DIR).filter((d) => {
+      try {
+        return fs.statSync(path.join(PLUGINS_DIR, d)).isDirectory();
+      } catch {
+        return false;
+      }
+    });
+    for (const plugin of plugins) {
+      const pSkillsDir = path.join(PLUGINS_DIR, plugin, 'skills');
+      if (!fs.existsSync(pSkillsDir)) continue;
+      const dirs = fs.readdirSync(pSkillsDir).filter((d) => {
+        try {
+          return fs.statSync(path.join(pSkillsDir, d)).isDirectory();
+        } catch {
+          return false;
+        }
+      });
+      for (const dir of dirs) {
+        const file = path.join(pSkillsDir, dir, 'SKILL.md');
+        if (!fs.existsSync(file)) continue;
+        const src = fs.readFileSync(file, 'utf8');
+        const fm = parseFrontmatter(src);
+        if (!fm || !fm.name || !fm.description) continue;
+        const name = fm.name.trim();
+        const description = fm.description.trim();
+        if (!seen.has(name)) {
+          seen.add(name);
+          skills.push({ name, description, dir, file, plugin });
+        }
+      }
+    }
   }
+
+  // Fallback to root skills/ (for legacy setups and unit test sandboxes)
+  if (fs.existsSync(SKILLS_DIR)) {
+    for (const dir of fs.readdirSync(SKILLS_DIR)) {
+      const file = path.join(SKILLS_DIR, dir, 'SKILL.md');
+      if (!fs.existsSync(file)) continue;
+      const src = fs.readFileSync(file, 'utf8');
+      const fm = parseFrontmatter(src);
+      if (!fm || !fm.name || !fm.description) continue;
+      const name = fm.name.trim();
+      const description = fm.description.trim();
+      if (!seen.has(name)) {
+        seen.add(name);
+        skills.push({ name, description, dir, file });
+      }
+    }
+  }
+
   return skills;
+}
+
+function resolveSkillFile(skillName) {
+  const skills = loadSkills();
+  const s = skills.find((item) => item.name === skillName);
+  if (s && s.file) return s.file;
+  return path.join(SKILLS_DIR, skillName, 'SKILL.md');
 }
 
 function loadCases() {
@@ -458,7 +548,7 @@ function runBehavioral(skillName, dryRun) {
     console.error(`No eval case file for "${skillName}"`);
     process.exit(1);
   }
-  const skillFile = path.join(SKILLS_DIR, skillName, 'SKILL.md');
+  const skillFile = resolveSkillFile(skillName);
   const d = JSON.parse(fs.readFileSync(caseFile, 'utf8'));
   if (!d.evals?.length) {
     console.error(`"${skillName}" has no behavioral evals`);

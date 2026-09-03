@@ -1,28 +1,28 @@
 {
-  "skill_name": "debugging-and-error-recovery",
+  "skill_name": "dev-debugging",
   "trigger": {
     "positive": [
       {
-        "prompt": "The app crashes with a TypeError when I click save, help me find the root cause",
+        "prompt": "Hướng dẫn debug gỡ lỗi tìm nguyên nhân gốc rễ một cách có hệ thống",
+        "top_k": 1
+      },
+      {
+        "prompt": "Test fail và build hỏng hãy debug tìm và sửa nguyên nhân gốc thay vì đoán mò",
         "top_k": 3
       },
       {
-        "prompt": "The API is throwing intermittent 500 errors in production, help me find the root cause",
-        "top_k": 3
-      },
-      {
-        "prompt": "This test passed yesterday and fails today, figure out what broke",
+        "prompt": "Ứng dụng gặp lỗi bất ngờ gỡ lỗi có hệ thống theo checklist phân loại triage",
         "top_k": 3
       }
     ],
     "negative": [
       {
-        "prompt": "Write the API documentation for the orders service",
-        "owner": "documentation-and-adrs"
+        "prompt": "Đơn giản hóa code khó đọc này",
+        "owner": "cr-code-simplification"
       },
       {
-        "prompt": "Simplify this working function for readability",
-        "owner": "code-simplification"
+        "prompt": "Refactor cấu trúc module an toàn",
+        "owner": "dev-refactoring"
       }
     ]
   },

@@ -2,27 +2,40 @@
   "skill_name": "qa-code2spec",
   "trigger": {
     "positive": [
-      { "prompt": "Dịch ngược code thành spec", "top_k": 1 },
-      { "prompt": "Reverse engineering từ implementation sang documentation", "top_k": 1 },
-      { "prompt": "Generate specification từ existing code", "top_k": 3 },
-      { "prompt": "Extract requirements từ source code", "top_k": 3 },
-      { "prompt": "Document existing system từ code", "top_k": 3 }
+      {
+        "prompt": "Dịch ngược mã nguồn Code thành Tài liệu Đặc tả Spec thông qua Deep Trace",
+        "top_k": 1
+      },
+      {
+        "prompt": "Dựng lại tài liệu đặc tả từ codebase đã có mà không còn spec gốc qa-code2spec",
+        "top_k": 3
+      },
+      {
+        "prompt": "Đối chiếu code thực tế với spec và đọc hiểu mã nguồn developer",
+        "top_k": 3
+      }
     ],
     "negative": [
-      { "prompt": "Viết spec từ Jira", "owner": "ba-spec" },
-      { "prompt": "Viết Tech-Spec từ Business-Spec", "owner": "dev-spec-driven-development" },
-      { "prompt": "Thiết kế test cases", "owner": "qa-test-design" }
+      {
+        "prompt": "Viết spec từ Jira",
+        "owner": "ba-spec"
+      },
+      {
+        "prompt": "Viết Tech-Spec từ Business-Spec",
+        "owner": "dev-spec-driven-development"
+      },
+      {
+        "prompt": "Thiết kế test cases",
+        "owner": "qa-test-design"
+      }
     ]
   },
   "evals": [
     {
       "id": 1,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Reverse engineering API endpoint code thành API specification document",
       "expected_output": "API spec với endpoints, request/response schemas, business rules extracted from code",
-      "files": [
-        "qa-code2spec"
-      ],
       "expectations": [
         "All API endpoints documented (method, path, purpose)",
         "Request schemas extracted (parameters, body, headers)",
@@ -36,12 +49,9 @@
     },
     {
       "id": 2,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Extract Business Rules từ complex business logic code (pricing, validation, state machine)",
       "expected_output": "Business Rules document với all rules numbered and explained",
-      "files": [
-        "qa-code2spec"
-      ],
       "expectations": [
         "Business Rules identified from code logic",
         "Rules numbered (BR-1, BR-2, ...) and categorized",

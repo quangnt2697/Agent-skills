@@ -1,5 +1,20 @@
-name = "security-audit"
 description = "Audit bảo mật mã nguồn, phát hiện lỗ hổng OWASP và các vấn đề bảo mật khác"
 
-[context]
-# Optional: Define context needed for this command
+prompt = """
+Kích hoạt kỹ năng security-code-audit.
+
+Sử dụng persona Security Auditor để quét mã nguồn, phát hiện các lỗ hổng bảo mật theo chuẩn OWASP Top 10 và các best practices về bảo mật.
+
+Cách sử dụng:
+/security-audit [path]
+
+Tham số:
+- path (optional): Đường dẫn đến thư mục hoặc file cần audit. Mặc định là thư mục hiện tại.
+
+Quy trình thực hiện:
+1. Quét mã nguồn để phát hiện lỗ hổng và kiểm tra theo OWASP Top 10.
+2. Xuất báo cáo bảo mật chi tiết:
+   - Danh sách lỗ hổng (Critical, High, Medium, Low)
+   - Giải thích từng lỗ hổng và code snippet minh họa
+   - Khuyến nghị và hướng dẫn fix cụ thể.
+"""

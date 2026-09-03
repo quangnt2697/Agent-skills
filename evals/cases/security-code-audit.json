@@ -1,0 +1,41 @@
+{
+  "skill_name": "security-code-audit",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Quét mã nguồn phát hiện lỗ hổng bảo mật theo chuẩn OWASP Top 10",
+        "top_k": 3
+      },
+      {
+        "prompt": "Audit security vulnerabilities XSS SQL injection auth sensitive data",
+        "top_k": 3
+      },
+      {
+        "prompt": "Kiểm toán an toàn thông tin và bảo mật mã nguồn trước khi deploy",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Báo cáo tiến độ daily standup hôm nay",
+        "owner": "sm-daily-standup"
+      },
+      {
+        "prompt": "Vẽ sơ đồ luồng flowchart mermaid",
+        "owner": "ba-design-flowchart"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Thực hiện audit bảo mật endpoint nhận thanh toán sau xem có dính lỗi SQL injection hay mass assignment không.",
+      "expected_output": "Báo cáo audit bảo mật phân loại mức độ nghiêm trọng (Critical/High/Medium) và cách vá lỗi.",
+      "expectations": [
+        "Chỉ ra các điểm vi phạm bảo mật theo chuẩn OWASP",
+        "Cung cấp đoạn mã sửa lỗi an toàn"
+      ]
+    }
+  ]
+}

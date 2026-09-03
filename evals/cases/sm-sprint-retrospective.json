@@ -1,0 +1,41 @@
+{
+  "skill_name": "sm-sprint-retrospective",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Tổng kết sprint retrospective phân tích velocity và bài học cải tiến",
+        "top_k": 3
+      },
+      {
+        "prompt": "Sprint retrospective analyze team velocity what went well what to improve",
+        "top_k": 3
+      },
+      {
+        "prompt": "Rút kinh nghiệm cuối sprint đánh giá năng suất và cải tiến quy trình",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Viết test-driven development red green refactor",
+        "owner": "dev-test-driven-development"
+      },
+      {
+        "prompt": "Viết user story INVEST",
+        "owner": "ba-user-story-writing"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Thực hiện buổi tổng kết Retrospective cho Sprint vừa qua: 8/10 ticket hoàn thành, 2 ticket chuyển giao sang sprint sau.",
+      "expected_output": "Báo cáo Retrospective phân tích What went well, What could be improved, Action items.",
+      "expectations": [
+        "Đánh giá khách quan tỷ lệ hoàn thành cam kết",
+        "Đưa ra action items có người phụ trách rõ ràng cho sprint tới"
+      ]
+    }
+  ]
+}

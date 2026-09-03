@@ -1,0 +1,41 @@
+{
+  "skill_name": "ba-gap-analysis",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Phân tích khoảng cách giữa trạng thái hiện tại AS-IS và trạng thái mục tiêu TO-BE",
+        "top_k": 3
+      },
+      {
+        "prompt": "Identify missing features and gaps between current and target state",
+        "top_k": 3
+      },
+      {
+        "prompt": "So sánh current vs target state cho quy trình chuyển tiền",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Quét lỗ hổng bảo mật mã nguồn theo OWASP",
+        "owner": "security-code-audit"
+      },
+      {
+        "prompt": "Đo lường chỉ số Core Web Vitals",
+        "owner": "webperf-core-vitals"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Phân tích Gap giữa hệ thống đăng ký tài khoản cũ (chụp CMT thủ công) và hệ thống mới (eKYC AI).",
+      "expected_output": "Bảng Gap Analysis AS-IS vs TO-BE với danh sách action items.",
+      "expectations": [
+        "Chỉ ra các khoảng trống công nghệ và quy trình",
+        "Đề xuất giải pháp và mức độ ưu tiên xử lý"
+      ]
+    }
+  ]
+}

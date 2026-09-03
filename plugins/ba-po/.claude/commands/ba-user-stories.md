@@ -45,14 +45,14 @@ $ARGUMENTS có thể chứa:
 ```markdown
 ### INVEST Validation
 
-| Tiêu chí        | ✅/❌   | Giải thích                                            |
-|-----------------|---------|-------------------------------------------------------|
-| **I**ndependent | ✅      | Story không phụ thuộc vào story khác                  |
-| **N**egotiable  | ✅      | Mô tả goal, không prescribe giải pháp chi tiết        |
-| **V**aluable    | ✅      | Rõ value: "bắt được giá tốt khi thị trường biến động" |
-| **E**stimable   | ✅      | Team ước lượng: ~2-3 ngày                             |
-| **S**mall       | ✅      | Đủ nhỏ cho 1 sprint                                   |
-| **T**estable    | ✅      | Test được: verify số bước giảm từ 5 → 3, < 30s        |
+| Tiêu chí | ✅/❌ | Giải thích |
+|----------|-------|-----------|
+| **I**ndependent | ✅ | Story không phụ thuộc vào story khác |
+| **N**egotiable | ✅ | Mô tả goal, không prescribe giải pháp chi tiết |
+| **V**aluable | ✅ | Rõ value: "bắt được giá tốt khi thị trường biến động" |
+| **E**stimable | ✅ | Team ước lượng: ~2-3 ngày |
+| **S**mall | ✅ | Đủ nhỏ cho 1 sprint |
+| **T**estable | ✅ | Test được: verify số bước giảm từ 5 → 3, < 30s |
 ```
 
 **Ranh giới BA/PO:**

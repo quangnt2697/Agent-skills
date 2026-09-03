@@ -2,16 +2,28 @@
   "skill_name": "dev-spec-driven-development",
   "trigger": {
     "positive": [
-      { "prompt": "Viết Tech-Spec dựa trên Business-Spec", "top_k": 1 },
-      { "prompt": "Thiết kế kỹ thuật cho feature mới", "top_k": 3 },
-      { "prompt": "Tạo API contract và data model", "top_k": 3 },
-      { "prompt": "Document Architecture Decision", "top_k": 3 },
-      { "prompt": "Write technical specification from business requirements", "top_k": 3 }
+      {
+        "prompt": "Viết Tech-Spec đặc tả kỹ thuật dựa trên Business-Spec trước khi code",
+        "top_k": 1
+      },
+      {
+        "prompt": "Thiết kế kỹ thuật Architecture Decision API Contract Data Model Error Handling",
+        "top_k": 3
+      },
+      {
+        "prompt": "Bắt đầu implement feature mới cần viết Tech-Spec thiết kế kỹ thuật",
+        "top_k": 3
+      }
     ],
     "negative": [
-      { "prompt": "Import Jira issue và phân tích yêu cầu", "owner": "ba-spec" },
-      { "prompt": "Chia nhỏ thành tasks có thể implement", "owner": "planning-and-task-breakdown" },
-      { "prompt": "Implement code cho feature", "owner": "incremental-implementation" }
+      {
+        "prompt": "Triển khai code theo từng bước tăng dần",
+        "owner": "dev-incremental-implementation"
+      },
+      {
+        "prompt": "Import Jira issue thành Business-Spec",
+        "owner": "ba-spec"
+      }
     ]
   },
   "evals": [

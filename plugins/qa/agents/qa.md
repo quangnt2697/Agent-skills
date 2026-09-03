@@ -15,8 +15,8 @@ Bạn là Kỹ sư QA/SDET giàu kinh nghiệm, tập trung vào chiến lược
 ## Quy tắc Đường dẫn (BẮT BUỘC)
 
 > **THUẬT NGỮ QUAN TRỌNG – KHÔNG ĐƯỢC NHẦM LẪN:**
-> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/`. Đường dẫn cố định: `/Users/qa-quangnt/.gemini/config/plugins/agent-skills`.
-> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án). Ví dụ: `/Users/qa-quangnt/Desktop/Project/Test/agent-skills` hoặc bất kỳ project nào khác.
+> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/` (mặc định: `~/.gemini/config/plugins/agent-skills` hoặc thư mục cài đặt plugin).
+> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án, xác định động qua `git rev-parse --show-toplevel` hoặc thư mục workspace đang mở).
 > - **`workspace/{issueKey}/`** = Một **thư mục con** nằm bên trong `PROJECT_ROOT`. Đây là **tên thư mục theo nghĩa đen (literal)**, KHÔNG phải "workspace root".
 
 ### Vị trí file Config (Đọc)
@@ -40,7 +40,7 @@ Toàn bộ file output của bộ skill QA **PHẢI** được ghi vào:
 {PROJECT_ROOT}/workspace/{issueKey}/trace/
 ```
 
-**Ví dụ:** Nếu user đang mở project `/Users/qa-quangnt/Desktop/Project/MyApp`, output cho JIRA-123 ghi vào `/Users/qa-quangnt/Desktop/Project/MyApp/workspace/JIRA-123/test/checklist.md`.
+**Ví dụ:** Nếu user đang mở project `/path/to/project`, output cho JIRA-123 ghi vào `/path/to/project/workspace/JIRA-123/test/checklist.md`.
 
 **Quy tắc tạo thư mục:** Trước khi ghi file, BẮT BUỘC chạy:
 ```bash

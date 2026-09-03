@@ -206,7 +206,7 @@ Skill này tương tác với Jira/Confluence qua **2 phương thức** (theo th
 
    - **Tải Jira task PDF:** Dùng script từ ba-spec (script tự `mkdir -p` bên trong `OUTPUT_DIR`, nhưng vẫn phải chạy từ root repo — đã `cd` ở Bước 8 — để path tương đối không lệch)
      ```bash
-     bash skills/ba-spec/scripts/jira-fetch-pdf.sh {issueKey} workspace
+     bash plugins/ba-po/skills/ba-spec/scripts/jira-fetch-pdf.sh {issueKey} workspace
      ```
 
    - **Tải Confluence pages chưa có:**
@@ -526,7 +526,7 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
        # (Agent tự trích xuất khối ```mermaid``` từ refined.md)
 
        # Render thành PNG (nền trắng, chữ đen theo Rule 7)
-       node skills/ba-design-flowchart/scripts/render.mjs \
+       node plugins/ba-po/skills/ba-design-flowchart/scripts/render.mjs \
          --input /project-root/workspace/{issueKey}/spec/diagrams/process-flow.mmd \
          --output /project-root/workspace/{issueKey}/spec/diagrams/process-flow.png \
          --format png \
@@ -620,7 +620,7 @@ Bạn có muốn push lên Jira không? (Gõ **OK** hoặc **Không**)
 2. **Xem trước ADF (khuyến nghị, không gọi Jira)**
 
    ```bash
-   DRY_RUN=1 bash skills/ba-refine/scripts/jira-push-spec.sh {issueKey} \
+   DRY_RUN=1 bash plugins/ba-po/skills/ba-refine/scripts/jira-push-spec.sh {issueKey} \
      "/project-root/workspace/{issueKey}/spec/refined.md" | head -40
    ```
 
@@ -650,7 +650,7 @@ Bạn có muốn push lên Jira không? (Gõ **OK** hoặc **Không**)
    Dùng đúng script này — **không** tự dựng ADF bằng `curl` thủ công. Script đã xử lý bảng, ngắt dòng mềm và chuẩn hoá issue key; ADF tự chế mỗi lần một kiểu chính là nguyên nhân description bị lệch style.
 
    ```bash
-   bash skills/ba-refine/scripts/jira-push-spec.sh {issueKey} \
+   bash plugins/ba-po/skills/ba-refine/scripts/jira-push-spec.sh {issueKey} \
      "/project-root/workspace/{issueKey}/spec/refined.md"
    ```
 

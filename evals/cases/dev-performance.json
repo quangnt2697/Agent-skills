@@ -1,5 +1,5 @@
 {
-  "skill_name": "performance-optimization",
+  "skill_name": "dev-performance",
   "trigger": {
     "positive": [
       {
@@ -25,12 +25,12 @@
     ],
     "negative": [
       {
-        "prompt": "Draft the deprecation notice for the v1 API",
-        "owner": "deprecation-and-migration"
+        "prompt": "Refactor code để giảm trùng lặp",
+        "owner": "dev-refactoring"
       },
       {
-        "prompt": "Design the public interface for the billing module",
-        "owner": "api-and-interface-design"
+        "prompt": "Kiểm toán bảo mật theo chuẩn OWASP",
+        "owner": "security-code-audit"
       }
     ]
   },

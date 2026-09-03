@@ -4,6 +4,6 @@ description: "Kích hoạt kỹ năng meta-session-checkpoint ở chế độ T�
 
 Kích hoạt kỹ năng meta-session-checkpoint ở chế độ TẢI.
 
-1. Đọc nội dung file `/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/workspace_state.md`.
+1. Đọc nội dung file `{PROJECT_ROOT}/.agents/workspace_state.md` (với `{PROJECT_ROOT}` là thư mục gốc của dự án hiện tại).
 2. Phục hồi ngữ cảnh và tự thiết lập lại suy nghĩ cho khớp với nội dung Facts và Progress.
 3. Đọc mục "Next Steps" và TỰ ĐỘNG THỰC THI bước tiếp theo mà không cần chờ người dùng xác nhận.

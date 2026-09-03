@@ -270,4 +270,14 @@ async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
 }
+
+process.on('SIGINT', async () => {
+    try { await server.close(); } catch {}
+    process.exit(0);
+});
+process.on('SIGTERM', async () => {
+    try { await server.close(); } catch {}
+    process.exit(0);
+});
+
 main();

@@ -66,3 +66,12 @@ child.on('error', (err) => {
     console.error('Lỗi khởi động gitlab-mcp:', err);
     process.exit(1);
 });
+
+const forwardSignal = (sig) => {
+    if (child && !child.killed) {
+        child.kill(sig);
+    }
+};
+process.on('SIGINT', () => forwardSignal('SIGINT'));
+process.on('SIGTERM', () => forwardSignal('SIGTERM'));
+

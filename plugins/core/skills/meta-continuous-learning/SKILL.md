@@ -23,7 +23,7 @@ phiên sau mà không cần lệnh `load`. Nó cũng phân biệt được hai l
 
 ## Ranh giới & Quyền hạn
 - **Không thay đổi Codebase:** Kỹ năng này chỉ tạo ra tài liệu tri thức, TUYỆT ĐỐI không sửa đổi code ứng dụng.
-- **Nơi lưu trữ bài học:** Mọi bài học BẮT BUỘC phải được lưu vào file `/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/rules/lessons-learned.md`. (Nếu file chưa có, bạn phải dùng tool tạo mới file này).
+- **Nơi lưu trữ bài học:** Mọi bài học BẮT BUỘC phải được lưu vào file `{PROJECT_ROOT}/.agents/rules/lessons-learned.md`. (Trong đó `{PROJECT_ROOT}` là thư mục gốc của dự án đang mở, xác định qua `git rev-parse --show-toplevel`. Nếu file chưa có, bạn phải dùng tool tạo mới file này).
 - Do `.agents/rules/` là thư mục nạp tự động (Global Customizations Root / Workspace Customizations Root), bất kỳ nội dung markdown nào lưu trong đây sẽ nghiễm nhiên trở thành Luật (Rule) cho mọi Agent trong những phiên làm việc tiếp theo mà không cần phải có lệnh `load`.
 
 ## Quy trình Thực thi (The Learning Pipeline)
@@ -46,7 +46,7 @@ Mỗi bài học (Lesson) phải bao gồm:
 *Ví dụ:* "Khi thiết lập Firebase Firestore trên môi trường X, LUÔN LUÔN phải set tham số Y = true. TUYỆT ĐỐI KHÔNG dùng Z."
 
 ### Bước 3: Ghi nhận (Commit to Memory)
-Sử dụng công cụ sửa file để cập nhật file `/Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/rules/lessons-learned.md`.
+Sử dụng công cụ sửa file để cập nhật file `{PROJECT_ROOT}/.agents/rules/lessons-learned.md`.
 - Nếu file đã tồn tại, hãy **Append** (Thêm vào cuối) bằng cách đọc file, tìm dòng cuối và ghi đè nội dung mới bao gồm cả nội dung cũ.
 - Khuyến nghị dùng thẻ định dạng markdown rõ ràng (ví dụ: `### Bài học ngày YYYY-MM-DD: [Chủ đề]`).
 

@@ -1,0 +1,41 @@
+{
+  "skill_name": "ba-stakeholder-interview",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Phỏng vấn stakeholders để thu thập requirements từ nhiều bên liên quan",
+        "top_k": 3
+      },
+      {
+        "prompt": "Thu thập requirements từ PO, CEO và End Users",
+        "top_k": 3
+      },
+      {
+        "prompt": "Interview stakeholders to resolve requirements conflict and extract needs",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Tự động đẩy file Gherkin test case lên Squash TM",
+        "owner": "qa-squash-push"
+      },
+      {
+        "prompt": "Refactor class này để giảm bớt độ phức tạp",
+        "owner": "cr-code-simplification"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Tôi cần chuẩn bị câu hỏi phỏng vấn Giám đốc Vận hành và Đội ngũ CSKH cho tính năng khiếu nại giao dịch.",
+      "expected_output": "Bộ câu hỏi phỏng vấn có cấu trúc theo vai trò stakeholder.",
+      "expectations": [
+        "Tách biệt câu hỏi theo từng nhóm đối tượng",
+        "Làm rõ các pain points và kỳ vọng nghiệp vụ"
+      ]
+    }
+  ]
+}

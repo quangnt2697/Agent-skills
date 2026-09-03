@@ -1,0 +1,41 @@
+{
+  "skill_name": "ba-process-modeling",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Vẽ sơ đồ quy trình nghiệp vụ Business Process diagram BPMN",
+        "top_k": 3
+      },
+      {
+        "prompt": "Visualize quy trình nghiệp vụ với swimlane và decision points",
+        "top_k": 3
+      },
+      {
+        "prompt": "Model the order processing workflow with BPMN",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Debug lỗi null pointer exception trong code",
+        "owner": "dev-debugging"
+      },
+      {
+        "prompt": "Kiểm tra daily standup của team",
+        "owner": "sm-daily-standup"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Hãy mô hình hóa quy trình duyệt hồ sơ vay tín dụng gồm các bên: Khách hàng, Chuyên viên tín dụng, Trưởng phòng.",
+      "expected_output": "Quy trình nghiệp vụ chi tiết dạng Swimlane hoặc BPMN.",
+      "expectations": [
+        "Xác định rõ các actors, activities, decision points",
+        "Đảm bảo có điểm bắt đầu và kết thúc quy trình rõ ràng"
+      ]
+    }
+  ]
+}

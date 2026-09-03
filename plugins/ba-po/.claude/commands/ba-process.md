@@ -90,12 +90,12 @@ flowchart TD
 
 **AS-IS vs TO-BE Comparison:**
 
-| Aspect       | AS-IS              | TO-BE       | Improvement        |
-|--------------|--------------------|-------------|--------------------|
-| Total Time   | 10-15 phút         | < 30 giây   | 🎯 Giảm 95%        |
-| Manual Steps | 6 steps            | 0 steps     | ✅ Full automation |
-| Error Rate   | 2-3%               | < 0.5%      | 🎯 Giảm 80%        |
-| Actors       | 3 (KH, Broker, HO) | 2 (KH, OMS) | Loại bỏ bottleneck |
+| Aspect | AS-IS | TO-BE | Improvement |
+|--------|-------|-------|-------------|
+| Total Time | 10-15 phút | < 30 giây | 🎯 Giảm 95% |
+| Manual Steps | 6 steps | 0 steps | ✅ Full automation |
+| Error Rate | 2-3% | < 0.5% | 🎯 Giảm 80% |
+| Actors | 3 (KH, Broker, HO) | 2 (KH, OMS) | Loại bỏ bottleneck |
 
 **Ranh giới BA/PO:**
 - ✅ Vẽ process diagram từ góc nhìn business/user (WHO does WHAT)

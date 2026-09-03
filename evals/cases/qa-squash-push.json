@@ -1,0 +1,41 @@
+{
+  "skill_name": "qa-squash-push",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Đẩy file Gherkin test case feature lên hệ thống Squash TM qua REST API",
+        "top_k": 3
+      },
+      {
+        "prompt": "Push gherkin test cases to Squash TM and assign to sprint requirement campaign",
+        "top_k": 3
+      },
+      {
+        "prompt": "Đồng bộ test case vào Campaign Workspace của Squash TM",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Thiết kế giao diện component React CSS",
+        "owner": "dev-frontend-engineering"
+      },
+      {
+        "prompt": "Rà soát ticket bị kẹt impediment triage",
+        "owner": "sm-impediment-triage"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Đồng bộ kịch bản Gherkin của ticket G3PTP-15771 lên dự án Squash TM và gán vào Sprint hiện tại.",
+      "expected_output": "Xác nhận quy trình đẩy test case lên REST API và Campaign Workspace.",
+      "expectations": [
+        "Trình bày các bước tạo thư mục, cập nhật kịch bản Gherkin",
+        "Đưa ra log chi tiết kết quả đồng bộ"
+      ]
+    }
+  ]
+}

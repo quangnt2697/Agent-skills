@@ -1,28 +1,28 @@
 {
-  "skill_name": "test-driven-development",
+  "skill_name": "dev-test-driven-development",
   "trigger": {
     "positive": [
       {
-        "prompt": "Write a failing test for this bug before fixing it",
+        "prompt": "Hướng dẫn phát triển dựa trên kiểm thử test-driven-development TDD red green refactor",
+        "top_k": 1
+      },
+      {
+        "prompt": "Chứng minh code hoạt động đúng bằng cách viết test trước khi sửa lỗi",
         "top_k": 3
       },
       {
-        "prompt": "Implement the streak calculator using red-green-refactor",
-        "top_k": 3
-      },
-      {
-        "prompt": "What tests should cover this new parsing logic before I write it?",
+        "prompt": "Áp dụng chu trình red-green-refactor kiểm thử trước khi triển khai logic",
         "top_k": 3
       }
     ],
     "negative": [
       {
-        "prompt": "Update the architecture diagram in the docs",
-        "owner": "documentation-and-adrs"
+        "prompt": "Tham chiếu tài liệu chính thức official documentation",
+        "owner": "dev-source-driven-development"
       },
       {
-        "prompt": "Which skill should handle this request?",
-        "owner": "using-agent-skills"
+        "prompt": "Viết Tech-Spec đặc tả kỹ thuật",
+        "owner": "dev-spec-driven-development"
       }
     ]
   },

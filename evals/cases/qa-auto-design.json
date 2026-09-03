@@ -2,27 +2,44 @@
   "skill_name": "qa-auto-design",
   "trigger": {
     "positive": [
-      { "prompt": "Sinh test automation code từ Gherkin", "top_k": 1 },
-      { "prompt": "Generate automation test từ feature files", "top_k": 1 },
-      { "prompt": "Viết test code cho scenarios đã có", "top_k": 3 },
-      { "prompt": "Convert Gherkin to pytest code", "top_k": 3 },
-      { "prompt": "Tạo automation test từ test design", "top_k": 3 }
+      {
+        "prompt": "Sinh test automation code từ Gherkin",
+        "top_k": 1
+      },
+      {
+        "prompt": "Generate automation test từ feature files",
+        "top_k": 1
+      },
+      {
+        "prompt": "Viết test code cho scenarios đã có",
+        "top_k": 3
+      },
+      {
+        "prompt": "Convert Gherkin to pytest code",
+        "top_k": 3
+      },
+      {
+        "prompt": "Tạo automation test từ test design",
+        "top_k": 3
+      }
     ],
     "negative": [
-      { "prompt": "Thiết kế test cases", "owner": "qa-test-design" },
-      { "prompt": "Chạy test automation", "owner": "qa-run-test" },
-      { "prompt": "Import Jira issue", "owner": "ba-spec" }
+      {
+        "prompt": "Import tài liệu từ Jira Confluence",
+        "owner": "ba-spec"
+      },
+      {
+        "prompt": "Thiết kế checklist kiểm thử và kịch bản BDD",
+        "owner": "qa-test-design"
+      }
     ]
   },
   "evals": [
     {
       "id": 1,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Generate automation test code từ Gherkin feature file với 10 scenarios",
       "expected_output": "Complete pytest test files với step definitions, reusable functions, và proper structure",
-      "files": [
-        "qa-auto-design"
-      ],
       "expectations": [
         "All Gherkin scenarios have corresponding test code",
         "Step definitions implemented (@given, @when, @then)",
@@ -36,12 +53,9 @@
     },
     {
       "id": 2,
-      "kind": "execution",
+      "kind": "dialogue",
       "prompt": "Generate API automation tests với authentication, validation, và error handling",
       "expected_output": "API test code covering happy path + edge cases + error scenarios",
-      "files": [
-        "qa-auto-design"
-      ],
       "expectations": [
         "Authentication handled properly (JWT/Bearer token)",
         "Request validation tests (invalid params, missing fields)",

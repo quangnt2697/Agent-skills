@@ -1,5 +1,5 @@
 {
-  "skill_name": "frontend-ui-engineering",
+  "skill_name": "dev-frontend-engineering",
   "trigger": {
     "positive": [
       {
@@ -25,11 +25,12 @@
     ],
     "negative": [
       {
-        "prompt": "Optimize the slow database indexes",
-        "owner": "performance-optimization"
+        "prompt": "Tối ưu hóa hiệu năng cơ sở dữ liệu và query chậm",
+        "owner": "dev-performance"
       },
       {
-        "prompt": "Tag and publish the release"
+        "prompt": "Viết mã nguồn backend API",
+        "owner": "dev-api-design"
       }
     ]
   },

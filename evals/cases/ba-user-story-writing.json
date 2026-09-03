@@ -1,0 +1,41 @@
+{
+  "skill_name": "ba-user-story-writing",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Viết User Story chuẩn INVEST từ business requirements",
+        "top_k": 3
+      },
+      {
+        "prompt": "Transform business spec into user stories with As a role I want goal so that value",
+        "top_k": 3
+      },
+      {
+        "prompt": "Tạo user stories có cấu trúc chuẩn INVEST và acceptance criteria checklist",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Đánh giá hiệu năng và chỉ số LCP của trang web",
+        "owner": "webperf-core-vitals"
+      },
+      {
+        "prompt": "Xử lý ticket bị treo trong sprint",
+        "owner": "sm-impediment-triage"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Chuyển đổi yêu cầu sau thành User Story chuẩn INVEST: Khách hàng cần xem lịch sử giao dịch chuyển tiền trong 30 ngày.",
+      "expected_output": "User Story có định dạng As a / I want / So that kèm Acceptance Criteria.",
+      "expectations": [
+        "Đúng định dạng User Story chuẩn",
+        "Bao gồm Acceptance Criteria dạng checklist có thể kiểm thử được"
+      ]
+    }
+  ]
+}

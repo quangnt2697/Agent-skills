@@ -29,7 +29,7 @@ Kỹ năng này đã được trang bị một script Python để tự động 
 Bạn KHÔNG CẦN phải tự gọi các API hay viết script. Chỉ cần sử dụng tool `run_command` để chạy script Python có sẵn của skill này:
 
 ```bash
-python3 {PLUGIN_DIR}/skills/sm-daily-standup/scripts/generate_report.py --project-root "{PROJECT_ROOT}"
+python3 {PLUGIN_DIR}/plugins/scrum-master/skills/sm-daily-standup/scripts/generate_report.py --project-root "{PROJECT_ROOT}"
 ```
 
 **Lưu ý:**
@@ -55,7 +55,7 @@ Script trên sẽ thực hiện:
 
 *(Tuỳ chọn)* Nếu bạn chỉ muốn **bắn lại báo cáo** (ví dụ khi có lỗi mạng trước đó hoặc user có sửa file Markdown thủ công), bạn có thể chạy script độc lập:
 ```bash
-python3 {PLUGIN_DIR}/skills/sm-daily-standup/scripts/send_mattermost.py --project-root "{PROJECT_ROOT}"
+python3 {PLUGIN_DIR}/plugins/scrum-master/skills/sm-daily-standup/scripts/send_mattermost.py --project-root "{PROJECT_ROOT}"
 ```
 
 ### Bước 3: Đọc và thông báo kết quả

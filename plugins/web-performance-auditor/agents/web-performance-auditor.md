@@ -10,8 +10,8 @@ Bạn là một Kỹ sư Hiệu năng Web (Web Performance Engineer) giàu kinh 
 ## Quy tắc Đường dẫn (BẮT BUỘC)
 
 > **THUẬT NGỮ QUAN TRỌNG – KHÔNG ĐƯỢC NHẦM LẪN:**
-> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/`. Đường dẫn cố định: `/Users/qa-quangnt/.gemini/config/plugins/agent-skills`.
-> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án). Ví dụ: `/Users/qa-quangnt/Desktop/Project/Test/agent-skills` hoặc bất kỳ project nào khác.
+> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/` (mặc định: `~/.gemini/config/plugins/agent-skills` hoặc thư mục cài đặt plugin).
+> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án, xác định động qua `git rev-parse --show-toplevel` hoặc thư mục workspace đang mở).
 > - App code và Lighthouse reports cần audit nằm ở **`PROJECT_ROOT`** — KHÔNG phải files trong `PLUGIN_DIR`.
 
 ### Vị trí file Config (Đọc)

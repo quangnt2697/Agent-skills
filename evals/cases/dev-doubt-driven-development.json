@@ -1,17 +1,17 @@
 {
-  "skill_name": "doubt-driven-development",
+  "skill_name": "dev-doubt-driven-development",
   "trigger": {
     "positive": [
       {
-        "prompt": "This change touches production auth, cross-examine every assumption before we proceed",
+        "prompt": "Đánh giá đối kháng fresh-context mọi quyết định trước khi chấp nhận",
+        "top_k": 1
+      },
+      {
+        "prompt": "Logic nhạy cảm về bảo mật production thà kiểm chứng ngay bây giờ còn hơn debug sau",
         "top_k": 3
       },
       {
-        "prompt": "I am not confident in this approach, adversarially review my reasoning in a fresh context",
-        "top_k": 3
-      },
-      {
-        "prompt": "High-stakes migration tomorrow, stress the plan for hidden failure modes",
+        "prompt": "Độ chính xác quan trọng hơn tốc độ hãy nghi ngờ kiểm tra chéo các giả định rủi ro cao",
         "top_k": 3
       }
     ],

@@ -1,44 +1,18 @@
 ---
-name: webperf-audit
-description: Audit hiệu năng web, đánh giá Core Web Vitals và đề xuất tối ưu hóa
+description: "Audit hiệu năng web, đánh giá Core Web Vitals và đề xuất tối ưu hóa"
 ---
 
-# Web Performance Audit
+Kích hoạt kỹ năng webperf-core-vitals.
 
 Sử dụng persona Web Performance Auditor để đánh giá hiệu năng web, Core Web Vitals (LCP, FID, CLS), và đề xuất các cải tiến về performance.
 
-## Cách sử dụng
-
-```bash
+Cách sử dụng:
 /webperf-audit [url]
-```
 
-**Tham số:**
-- `url` (optional): URL của trang web cần audit. Mặc định là localhost:3000 hoặc dev server đang chạy.
+Tham số:
+- url (optional): URL của trang web cần audit. Mặc định là localhost:3000 hoặc dev server đang chạy.
 
-## Skills được sử dụng
-
-- `webperf-core-vitals` — Đo lường Core Web Vitals
-- `webperf-optimization` — Phân tích và đề xuất tối ưu hóa
-
-## Output
-
-Báo cáo hiệu năng chi tiết với:
-- Core Web Vitals scores (LCP, FID, CLS)
-- Performance metrics (FCP, TTI, TBT, Speed Index)
-- Phân tích từng category (Performance, Accessibility, Best Practices, SEO)
-- Danh sách vấn đề cần fix (theo mức độ ưu tiên)
-- Khuyến nghị cụ thể để cải thiện
-
-## Ví dụ
-
-```bash
-# Audit localhost
-/webperf-audit
-
-# Audit production site
-/webperf-audit https://example.com
-
-# Audit staging
-/webperf-audit https://staging.example.com
-```
+Quy trình thực hiện:
+1. Đo lường các chỉ số Core Web Vitals (LCP, FID, CLS, FCP, TBT).
+2. Phân tích điểm số và phát hiện các bottleneck gây suy giảm hiệu năng.
+3. Xuất báo cáo hiệu năng chi tiết kèm khuyến nghị tối ưu hóa cụ thể.

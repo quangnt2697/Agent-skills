@@ -1,5 +1,5 @@
 {
-  "skill_name": "code-review-and-quality",
+  "skill_name": "cr-review-code-and-quality",
   "trigger": {
     "positive": [
       {
@@ -17,12 +17,12 @@
     ],
     "negative": [
       {
-        "prompt": "Deploy this to production now",
-        "owner": "shipping-and-launch"
+        "prompt": "Đơn giản hóa hàm phức tạp này cho dễ đọc",
+        "owner": "cr-code-simplification"
       },
       {
-        "prompt": "Write a failing test for the bug before fixing it",
-        "owner": "test-driven-development"
+        "prompt": "Viết unit test cho logic thanh toán",
+        "owner": "dev-test-driven-development"
       }
     ]
   },

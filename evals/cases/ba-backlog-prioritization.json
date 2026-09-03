@@ -1,0 +1,41 @@
+{
+  "skill_name": "ba-backlog-prioritization",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Ưu tiên backlog theo framework MoSCoW cho sprint tới",
+        "top_k": 3
+      },
+      {
+        "prompt": "Giúp tôi sắp xếp User Stories theo priority WSJF",
+        "top_k": 3
+      },
+      {
+        "prompt": "Prioritize this list of features based on business value and urgency",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Vẽ sơ đồ quy trình nghiệp vụ BPMN",
+        "owner": "ba-process-modeling"
+      },
+      {
+        "prompt": "Viết test cases Gherkin cho tính năng đăng ký",
+        "owner": "qa-test-design"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Tôi có danh sách 10 tính năng sau cần ưu tiên cho MVP, hãy dùng framework MoSCoW để phân loại.",
+      "expected_output": "Bảng phân loại MoSCoW rõ ràng kèm lý do và ma trận ưu tiên.",
+      "expectations": [
+        "Áp dụng đúng tiêu chí Must, Should, Could, Wont",
+        "Giải thích rõ tiêu chí ưu tiên dựa trên giá trị nghiệp vụ"
+      ]
+    }
+  ]
+}

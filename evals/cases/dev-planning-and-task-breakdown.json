@@ -1,5 +1,5 @@
 {
-  "skill_name": "planning-and-task-breakdown",
+  "skill_name": "dev-planning-and-task-breakdown",
   "trigger": {
     "positive": [
       {
@@ -18,7 +18,7 @@
     "negative": [
       {
         "prompt": "Debug the crash on startup",
-        "owner": "debugging-and-error-recovery"
+        "owner": "dev-debugging"
       },
       {
         "prompt": "Encode the output so it is safe against XSS"

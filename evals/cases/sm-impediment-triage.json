@@ -1,0 +1,41 @@
+{
+  "skill_name": "sm-impediment-triage",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Xử lý sự cố lấy danh sách ticket bị treo quá lâu trên Kanban board",
+        "top_k": 3
+      },
+      {
+        "prompt": "Triage impediments and blocked tickets in sprint to propose solutions",
+        "top_k": 3
+      },
+      {
+        "prompt": "Phát hiện ticket bị kẹt và khơi thông luồng công việc sprint",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Đo lường tốc độ rendering và Core Web Vitals",
+        "owner": "webperf-core-vitals"
+      },
+      {
+        "prompt": "Thiết kế sơ đồ quy trình nghiệp vụ BPMN",
+        "owner": "ba-process-modeling"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Phát hiện và đề xuất hướng xử lý cho các ticket đang bị kẹt quá 3 ngày ở trạng thái In Progress.",
+      "expected_output": "Danh sách impediments kèm phân tích nguyên nhân và hành động tháo gỡ.",
+      "expectations": [
+        "Nhận diện chính xác các ticket vượt ngưỡng thời gian quy định",
+        "Đề xuất giải pháp hành động cụ thể cho từng blocker"
+      ]
+    }
+  ]
+}
