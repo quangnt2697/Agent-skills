@@ -9,7 +9,7 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 ### 1.1. Tách biệt Logic (Mô hình POM / API Object)
 - Logic tương tác (UI click, nhập liệu) hoặc Network (gửi API, Connect WebSocket) bắt buộc để ở tầng `pages/` hoặc `services/`.
 - Logic xác minh (Assertions) bắt buộc để ở tầng `tests/`. **KHÔNG assert trong Page/Service class.**
-- Tầng **Model / DTO Layer** (`models/`): Định nghĩa các lớp Request/Response/Event schema dưới dạng Pydantic models hoặc Python Dataclasses. Dùng để validate schema tự động.
+- Tầng **Model / DTO Layer** (`models/`): Định nghĩa các lớp Request/Response/Event schema chuẩn **Pydantic v2** (`BaseModel`, `Field`, `@field_validator(..., mode="after")` + `@classmethod`). Dùng `model_validate()` và `model_dump()`. **TUYỆT ĐỐI KHÔNG dùng cú pháp Pydantic v1** (`@validator` đã bị deprecated).
 
 ### 1.2. Tái sử dụng Code có sẵn (API/WebSocket)
 - **Ưu tiên tái sử dụng:** Khi project đã có sẵn code gọi API hoặc kết nối WebSocket do developer tạo ra, Agent BẮT BUỘC phải tìm và import lại các file đó thay vì viết mới từ đầu.
@@ -29,9 +29,10 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - Sử dụng `@pytest.mark.parametrize` cho các scenario phải kiểm tra nhiều giá trị đầu vào/ra (phản ánh `Scenario Outline` trong Gherkin).
 - KHÔNG viết vòng lặp `for` hoặc tạo hàng chục hàm test giống hệt nhau.
 
-### 1.5. Dọn dẹp dữ liệu (Teardown)
+### 1.5. Dọn dẹp dữ liệu (Teardown An Toàn)
 - Phải xoá data rác đã tạo ra trong quá trình test thông qua pytest fixture (`yield` pattern).
-- Ví dụ: Test tạo user → fixture phải gọi API DELETE user ở cuối.
+- **BẮT BUỘC dùng khối `try...finally`:** Toàn bộ logic teardown sau `yield` phải nằm trong khối `finally` hoặc bọc `try/except` từng phần tử để đảm bảo dữ liệu luôn được dọn dẹp kể cả khi test case raise exception hoặc assertion thất bại.
+- Ví dụ: Test tạo order/user → fixture phải gọi API DELETE/Cancel ở khối teardown.
 
 ### 1.6. Authentication & Bảo mật
 - **KHÔNG hardcode** passwords, secret keys, API tokens trực tiếp trong source code hoặc file test data.
@@ -47,13 +48,13 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - Kiểm tra cấu trúc thư mục hiện có trước khi tạo file mới — tránh duplicate.
 - Đặt file đúng thư mục theo kiến trúc project.
 
-### 1.8. Chất lượng Code (Clean Code)
+### 1.8. Chất lượng Code (Clean Code & Web-First Assertions)
 - Không logic trùng lặp — tạo helper methods cho các hành động lặp đi lặp lại.
 - Trước khi deliver code:
   - Xóa toàn bộ `print()`, `console.log()` sinh ra khi debug.
   - Xóa code bị comment (`#`, `"""..."""`).
   - Xóa locator / biến không sử dụng (unused code).
-- Sử dụng `expect(locator).to_be_visible()` (Auto-retrying assertions) của Playwright. Hạn chế tối đa `page.wait_for_timeout()` (hard sleep).
+- **TUYỆT ĐỐI CẤM HARD SLEEP:** Không sử dụng `time.sleep()` hoặc `page.wait_for_timeout()`. BẮT BUỘC sử dụng Web-First Auto-Retrying Assertions của Playwright (`expect(locator).to_be_visible()`, `expect(locator).to_have_text()`, v.v.) với polling retry tự động.
 
 ### 1.9. Self-fix Loop
 - Self-fix Loop chỉ dùng để sửa **lỗi kỹ thuật của script** (ImportError, SyntaxError, fixture thiếu, timeout config sai, connection refused...).
@@ -63,24 +64,46 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - Khi test API/WS, test script phải được thiết kế hoặc sử dụng log/interceptor để **bắt được toàn bộ thông tin Request đã gửi và Response thực tế trả về**.
 - Các thông tin này bắt buộc phải được đưa vào báo cáo (`report.md`) theo template để QA/BA và Dev có thể debug trực tiếp từ báo cáo mà không cần chạy lại test.
 
+### 1.11. Liên kết Kịch bản Gherkin Chặt chẽ (Gherkin Traceability Binding)
+- Mỗi test function trong file `test_*.py` **BẮT BUỘC** phải có:
+  1. Decorator `@pytest.mark.scenario("<Tên scenario chính xác trong .feature>")`
+  2. Decorator `@pytest.mark.jira("{issueKey}")`
+  3. Docstring trích dẫn nguyên văn kịch bản BDD tương ứng (Given / When / Then) để bảo đảm ma trận truy vết 1-1 giữa code automation và tài liệu Gherkin.
+
 ---
 
-## 2. Quy Tắc Chuyên Biệt Cho UI Testing (Web/App)
+## 2. Quy Tắc Chuyên Biệt Cho Web UI Testing (Desktop & Webview)
 
-### 2.1. Cấu hình Browser & Viewport
-- BẮT BUỘC resize thành `1920x1080` khi debug/thiết lập script.
-- Khi sử dụng Playwright MCP để debug UI, **LUÔN LUÔN** gọi `browser_resize(width=1920, height=1080)` ngay sau khi mở browser.
-- Không sử dụng Headless mode khi đang viết mới hoặc debug script. Chỉ bật khi code đã chạy pass 100%.
+### 2.1. Cấu hình Browser & Viewport Chuẩn
+- Toàn bộ phiên kiểm thử Web UI qua Playwright MCP tự động áp dụng độ phân giải chuẩn Full HD: **`1920x1080`**.
+- Không sử dụng Headless mode khi đang viết mới hoặc debug script nếu muốn trực quan hóa hành vi.
 
-### 2.2. Semantic Locators (Thứ tự ưu tiên)
-Ưu tiên theo thứ tự từ trên xuống:
-1. `page.get_by_role()` — Tốt nhất cho semantic elements (button, link, heading)
-2. `page.get_by_label()` — Tốt nhất cho form fields có label
-3. `page.get_by_placeholder()` — Tốt nhất cho input không có label
-4. `page.get_by_test_id()` — Khi frontend đã gắn sẵn `data-testid`
-5. CSS Selector / XPath — **Chỉ dùng khi thực sự hết cách**
+### 2.2. Quy Trình Thao Tác Bắt Buộc Với Playwright MCP
+Khi làm việc với các task kiểm thử Web UI, Agent **BẮT BUỘC** thao tác theo quy trình 5 bước:
+1. **Mở trang & Tự động Đăng nhập (`playwright_navigate` / `playwright_login_*`):**
+   - Đọc URL và thông tin đăng nhập từ file `.env` (ví dụ: `DASHBOARD_URL`, `WEB_BASE_URL`).
+   - Sử dụng tool `playwright_login_dashboard` hoặc `playwright_login_trading` để tự động vượt qua màn hình đăng nhập.
+2. **Quan sát trực quan (`playwright_screenshot`):**
+   - Chụp ảnh màn hình (`playwright_screenshot(name="ui_overview")`) để xác định chính xác layout, menu, và trạng thái hiển thị.
+3. **Soi DOM thật (`playwright_get_dom` & `playwright_inspect_element`):**
+   - Lấy mã HTML thực tế từ DOM bằng `playwright_get_dom`.
+   - Dùng `playwright_inspect_element(selector=...)` để soi thuộc tính `role`, `name`, `placeholder`, `aria-label`, `isVisible`, `isEnabled`.
+4. **Thử nghiệm tương tác (`playwright_click` & `playwright_fill`):**
+   - Thực hiện bấm thử và điền thử giá trị qua MCP trước khi sinh mã code, bảo đảm selector hoạt động trơn tru.
+5. **Chốt Semantic Locators:**
+   - Ưu tiên 1: `page.get_by_role()` (button, link, heading, tab, dialog).
+   - Ưu tiên 2: `page.get_by_label()` (form fields).
+   - Ưu tiên 3: `page.get_by_placeholder()` (search/input).
+   - Ưu tiên 4: `page.get_by_test_id()` (`data-testid`).
+   - **NGHIÊM CẤM:** Tự suy đoán locator hoặc dùng XPath tuyệt đối dài dòng (`/html/body/div[1]/...`).
 
-**KHÔNG SUY ĐOÁN Locator.** Agent phải dùng MCP snapshot hoặc dựa vào DOM HTML thực tế để trích xuất locator chính xác.
+### 2.3. Smart Waits & Auto-retrying Assertions
+- Tuyệt đối KHÔNG sử dụng hard sleep (`time.sleep()` hoặc `page.wait_for_timeout()`).
+- Luôn sử dụng auto-retrying assertions của Playwright:
+  - `expect(locator).to_be_visible()`
+  - `expect(locator).to_have_text(...)`
+  - `expect(locator).to_be_enabled()`
+
 
 ---
 
@@ -105,9 +128,38 @@ Mỗi Test Case API **BẮT BUỘC** thực hiện đủ **7 bước assertions:
 ## 4. Quy Tắc Chuyên Biệt Cho WebSocket Testing (Event-driven)
 
 1. **Connection State:** Kiểm tra kết nối thành công với Auth chuẩn. Có báo lỗi (401/403) khi Auth sai. Xử lý kịch bản disconnect/reconnect.
-2. **Event Payload Schema:** BẮT BUỘC validate JSON Schema của Event message được push về (đối chiếu với tài liệu Jira). Dùng Pydantic model hoặc `jsonschema.validate()` — KHÔNG chỉ kiểm tra 1-2 field đơn lẻ.
+2. **Event Payload Schema:** BẮT BUỘC validate JSON Schema của Event message được push về (đối chiếu với tài liệu Jira). Dùng Pydantic v2 model (`EventModel.model_validate(raw)`) hoặc `jsonschema.validate()` — KHÔNG chỉ kiểm tra 1-2 field đơn lẻ.
 3. **Luồng & Thứ tự sự kiện (Event Sequence & Timestamp):**
    - BẮT BUỘC kiểm tra các sự kiện được đẩy về phải tuân thủ nghiêm ngặt tính tuần tự về thời gian: Event phát sinh sau phải có timestamp lớn hơn event trước đó và được Client nhận về sau.
    - Các luồng chuyển trạng thái phụ thuộc vào từng nghiệp vụ cụ thể, nhưng **tính hợp lệ về thời gian (Time-series validation)** là tiêu chuẩn kỹ thuật bắt buộc cho mọi message stream.
 4. **Data Isolation (Tính cô lập):** User A chỉ nhận event của User A, tuyệt đối không nhận data của User B.
 5. **Trạng thái gián đoạn (Disruption):** Test luồng ngắt kết nối (mất mạng) và xác nhận hành vi hệ thống (có hoặc không replay event đã mất).
+6. **Async Testing & Fail-fast:** BẮT BUỘC dùng `@pytest.mark.asyncio` và bọc `await asyncio.wait_for(ws.receive_event(), timeout=5.0)` để fail-fast nếu không có event sau 5s. TUYỆT ĐỐI CẤM dùng `asyncio.sleep()` hay `time.sleep()` để chờ thụ động.
+
+---
+
+## 5. Quy Tắc Chuyên Biệt Cho Mobile App Testing (Task Type: 📱 APP)
+
+Áp dụng cho các dự án ứng dụng di động (Android / iOS):
+
+1. **Mô hình Screen Object Model (SOM):**
+   - Tương tự POM nhưng thiết kế theo từng Screen/Drawer/Modal của ứng dụng di động.
+   - Chỉ chứa selectors và gestures/actions, không đặt assertions trong Screen class.
+2. **Lựa chọn Framework phù hợp:**
+   - **Playwright Mobile Emulation:** Dành cho Mobile Web, PWA hoặc Webview tích hợp. Sử dụng context giả lập thiết bị (`devices["Pixel 7"]`, `devices["iPhone 14"]`) kèm thao tác `tap()`.
+   - **Appium Python Client:** Dành cho Native App (.apk, .aab, .ipa).
+3. **Thứ tự ưu tiên Mobile Locators (Appium):**
+   1. `AppiumBy.ACCESSIBILITY_ID` (hoặc `content-desc` trên Android, `accessibilityIdentifier` trên iOS) — **Ưu tiên số 1, ổn định nhất**.
+   2. `AppiumBy.ANDROID_UIAUTOMATOR` hoặc `AppiumBy.IOS_PREDICATE`.
+   3. `AppiumBy.ID` (Resource-ID).
+   4. `AppiumBy.XPATH` — **Hạn chế tối đa**, chỉ dùng khi phần tử không có định danh riêng.
+4. **Thao tác Cảm ứng & Cử chỉ (Mobile Gestures):**
+   - Không click bằng chuột giả lập; sử dụng đúng hành vi mobile: `tap()`, `swipe()`, `scroll_to_element()`, `long_press()`.
+   - BẮT BUỘC dùng Smart Waits (ví dụ `WebDriverWait` kết hợp `expected_conditions`) thay vì hard sleep khi chờ màn hình cuộn xong.
+5. **Xử lý các tình huống đặc thù Mobile:**
+   - **Mất mạng (Offline mode):** Kiểm tra phản hồi ứng dụng khi mất kết nối mạng đột ngột (Airplane mode on) và khi mạng phục hồi.
+   - **Quyền hệ thống (System Permissions):** Bật `autoGrantPermissions: True` trong capabilities hoặc viết helper tự động bấm "Cho phép" các dialog xin quyền (Location, Camera, Notification).
+   - **Vòng đời ứng dụng (App Lifecycle):** Test trường hợp app chuyển vào Background (nhận cuộc gọi/chuyển app) rồi quay lại Foreground (đảm bảo không bị văng phiên đăng nhập).
+   - **Bảo mật Biometrics/PIN:** Mock hoặc test các bước nhập mã PIN xác thực giao dịch tài chính.
+6. **Tự động chụp ảnh lỗi (Screenshot on Failure):**
+   - Khi chạy trên Mobile, bắt buộc có fixture/hook lưu ảnh chụp màn hình thiết bị khi test fail để đối chiếu layout và thông báo lỗi.

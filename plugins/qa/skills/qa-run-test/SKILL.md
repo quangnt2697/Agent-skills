@@ -1,533 +1,434 @@
 ---
 name: qa-run-test
-description: Chạy automation test đã có sẵn và xuất báo cáo kết quả. KHÔNG sinh code test mới. Sử dụng khi cần chạy regression test, verify sau khi fix bug, hoặc kiểm tra test suite hiện tại.
+description: Chạy automation test đã có sẵn trong thư mục steps và xuất báo cáo kết quả. KHÔNG sinh code test mới. Sử dụng khi cần chạy regression test, verify sau khi fix bug, hoặc kiểm tra test suite hiện tại.
 ---
 
 # Chạy Automation Test (QA Run Test)
 
 ## Tổng quan
 
-Chạy automation test đã có sẵn trong project và xuất báo cáo kết quả chi tiết. Skill này **KHÔNG sinh code test mới** — chỉ chạy test hiện có và phân tích kết quả. Phù hợp cho regression testing, verification sau fix, hoặc kiểm tra health của test suite.
+Chạy automation test đã có sẵn trong project và xuất báo cáo kết quả chi tiết. Skill này **KHÔNG sinh code test mới** — chỉ tìm kiếm test hiện có, phân tích ngữ cảnh, chạy test và báo cáo kết quả.
+
+### Điểm Cốt lõi của Skill:
+1. **Tự động Định vị Thư mục `steps`:** Quét tìm ngay thư mục `steps/` trong workspace hoặc project mà không bắt buộc user phải truyền chính xác đường dẫn.
+2. **Đọc Ngữ cảnh & File Liên quan Trước khi Chạy:** Đọc `conftest.py`, `.env`, kịch bản BDD `*.feature`, Business-Spec `*-final.md`, checklist, Page Objects (POM), Service Clients để hiểu đầy đủ ngữ cảnh test trước khi thực thi.
+3. **Thực thi Đầy đủ Quy chuẩn File Test:** Tự động tìm và chạy tất cả các file test theo cả hai quy chuẩn đặt tên chuẩn của pytest: `test_*.py` và `*_test.py`.
+4. **Tự động Sửa Lỗi Kỹ thuật Script (Self-fix Loop):** Tự sửa lỗi import, syntax, fixture thiếu tối đa 3 vòng lặp. Tuyệt đối KHÔNG sửa code/assertion để ép test case FAIL thành PASS nếu fail do bug ứng dụng.
+5. **Báo cáo Truy vết Toàn trình (End-to-End Traceability):** Ánh xạ từ Business Rule → Checklist → Gherkin Scenario → Test Method → Kết quả thực thi.
 
 ## Khi nào sử dụng
 
-- Chạy regression test suite sau khi merge code mới
-- Verify sau khi fix bug (đảm bảo fix không làm vỡ test khác)
-- Kiểm tra test suite hiện tại có pass không
+- Có sẵn thư mục `steps` và cần chạy ngay các file test automation (`test_*.py`, `*_test.py`)
+- Chạy regression test suite sau khi merge code mới hoặc DEV bàn giao bản vá
+- Verify sau khi fix bug (đảm bảo fix đúng và không làm vỡ chức năng khác)
+- Kiểm tra health của test suite hiện tại
 - Chạy test cho một module/feature cụ thể
-- Generate test report để gửi cho team/stakeholders
+- Generate test report chi tiết kèm Request/Response và Traceability Matrix cho team/stakeholders
 - Phân tích flaky tests hoặc test failures
 
 **Khi KHÔNG sử dụng:**
-- Cần viết test case mới → dùng `qa-test-design`
+- Cần viết test case mới / thiết kế checklist / kịch bản Gherkin → dùng `qa-test-design`
 - Cần sinh automation test code từ Gherkin → dùng `qa-auto-design`
-- Cần full pipeline từ Jira → dùng `qa-pipeline`
+- Cần chạy full pipeline từ Jira (BA → Test Design → Auto Design → Run Test) → dùng `qa-full-pipeline`
 
-## Quy trình 5 Bước
+## Quy trình Thực hiện Chi tiết
 
-### Bước 0: Xác định Scope
-
-Trước khi chạy test, xác định:
-
-1. **Neo đường dẫn (BẮT BUỘC — chạy trước mọi lệnh khác):**
-
-   Test code và báo cáo đều là artifact của một issue, nên phải nằm trong
-   `/project-root/workspace/{issueKey}/`. Neo về root repo trước để đường dẫn tương đối không lệch theo
-   cwd hiện tại của agent (xem `.claude/rules/workspace-paths.md`):
-
-   ```bash
-   cd "$(git rev-parse --show-toplevel)"
-   export ISSUE_KEY="{issueKey}"
-   export TEST_DIR="/project-root/workspace/${ISSUE_KEY}/test/steps"
-   export REPORT_DIR="/project-root/workspace/${ISSUE_KEY}/test/result"
-   mkdir -p "$REPORT_DIR"
-   ```
-
-   `export` là cần thiết vì bước phân tích kết quả (Bước 3) đọc `REPORT_DIR` từ tiến trình
-   Python con.
-
-   `mkdir -p` là bắt buộc: `pytest --junitxml`, `tee`, và `--cov-report` **không** tự tạo
-   thư mục cha — thiếu bước này report sẽ ghi hụt hoặc lệch chỗ.
-
-   Nếu user chỉ định một test suite có sẵn ngoài workspace (VD regression suite của repo
-   sản phẩm), giữ nguyên `TEST_DIR` do user chỉ định nhưng **`REPORT_DIR` vẫn ghi vào
-   `/project-root/workspace/{issueKey}/`** — báo cáo luôn thuộc về issue đang chạy.
-
-2. **Test framework:** Dự án đang dùng framework gì?
-   ```bash
-   # Detect test framework
-   if [ -f "pytest.ini" ] || grep -q "pytest" requirements.txt; then
-       FRAMEWORK="pytest"
-   elif [ -f "package.json" ] && grep -q "jest" package.json; then
-       FRAMEWORK="jest"
-   elif [ -f "package.json" ] && grep -q "mocha" package.json; then
-       FRAMEWORK="mocha"
-   elif [ -f "pom.xml" ] && grep -q "junit" pom.xml; then
-       FRAMEWORK="junit"
-   else
-       # Hỏi user
-       echo "Không detect được test framework. Bạn đang dùng framework gì?"
-   fi
-   ```
-
-3. **Test pattern:** Chạy tất cả hay chỉ một phần?
-   - Tất cả: `pytest "$TEST_DIR"`
-   - Theo tag: `pytest "$TEST_DIR" -m smoke`
-   - Theo file: `pytest "$TEST_DIR/test_login.py"`
-   - Theo pattern: `pytest "$TEST_DIR"/test_order*.py`
-
-### Bước 1: Kiểm tra Môi trường (Pre-flight Check)
-
-Trước khi chạy test, verify dependencies:
-
-```bash
-# 1. Check test framework installed
-pytest --version || echo "pytest not installed"
-
-# 2. Check test files exist
-ls -la "$TEST_DIR" || echo "Không thấy thư mục test: $TEST_DIR"
-
-# 3. Check environment variables (nếu test cần)
-# VD: API_BASE_URL, DB_CONNECTION_STRING
-[ -f .env ] && echo ".env found" || echo ".env missing"
-
-# 4. Check test dependencies
-# Python: pip list | grep selenium
-# Node: npm list --depth=0
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Bước 0: Tự động Định vị Thư mục steps & Nhận diện test_*.py, *_test.py │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Bước 1: Đọc Ngữ cảnh & Các File Liên quan Trước khi Chạy (Recon)        │
+│ (conftest.py, .env, *.feature, *-final.md, Checklist, Services/POM)    │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Bước 2: Kiểm tra Môi trường (Pre-flight Check)                         │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Bước 3: Thực thi Test Suite & Self-fix Loop (Lỗi kỹ thuật script)       │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Bước 4: Phân tích Kết quả (Phân loại Bug App vs Lỗi Script/Env)         │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Bước 5: Sinh Báo cáo (Markdown Artifact + Traceability Matrix)          │
+└────────────────────────────────────┬────────────────────────────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Bước 6: Đề xuất Hành động Cụ thể (Action Items P0/P1/P2)                │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Nếu thiếu dependencies:**
-```markdown
-⚠️ **Pre-flight Check Failed**
+---
 
-Thiếu dependencies:
-- `pytest` not installed → Run: `pip install pytest`
-- `.env` file missing → Cần tạo với: API_BASE_URL, DB_HOST, ...
+### Bước 0: Tự động Định vị Thư mục `steps` & Nhận diện Test Files
 
-Bạn muốn tôi:
-1. Install missing dependencies?
-2. Tạo .env template?
-3. Skip và chạy anyway? (không khuyến khích)
+Trước khi chạy test, Agent tự động định vị thư mục `steps` và xác định phạm vi chạy:
+
+#### 0.1. Thuật toán Tìm kiếm Thư mục `steps`:
+1. **Nếu có `{issueKey}` (truyền vào từ slash command hoặc context):**
+   - Kiểm tra đường dẫn tiêu chuẩn: `/project-root/workspace/${ISSUE_KEY}/test/steps/`
+   - Nếu tồn tại → Chọn ngay làm `TEST_DIR`.
+2. **Nếu không có `{issueKey}` hoặc đường dẫn trên chưa có:**
+   - Quét tự động toàn bộ workspace/project tìm thư mục có tên `steps` (loại trừ `node_modules`, `.git`, `.venv`, `venv`):
+     ```bash
+     cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+     
+     # Tìm tất cả thư mục tên 'steps'
+     STEPS_DIRS=$(find . -maxdepth 5 -type d -name "steps" \
+       ! -path "*/node_modules/*" ! -path "*/.git/*" ! -path "*/.venv/*" ! -path "*/venv/*" 2>/dev/null)
+     ```
+   - **Quy tắc chọn thư mục khi có nhiều kết quả:**
+     - Nếu có `{issueKey}`: Chọn thư mục `steps` có đường dẫn chứa `{issueKey}`.
+     - Nếu chỉ có 1 thư mục `steps`: Tự động chọn thư mục đó làm `TEST_DIR`.
+     - Nếu có nhiều thư mục `steps` và không có `{issueKey}`: Ưu tiên thư mục nằm trong `test/steps` hoặc `tests/steps`, hoặc thư mục có file test được chỉnh sửa gần nhất; thông báo rõ đường dẫn được chọn.
+3. **Nếu hoàn toàn không tìm thấy thư mục `steps`:**
+   - Kiểm tra xem dự án có thư mục `test/` hoặc `tests/` chứa file test không.
+   - Nếu không có test script nào tồn tại → Thông báo user dự án chưa có test scripts, hướng dẫn chạy `/qa-auto-design {issueKey}` để sinh code test trước.
+
+#### 0.2. Nhận diện các File Test `test_*.py` hoặc `*_test.py`:
+Trong thư mục `steps` đã tìm thấy, Agent tự động quét tất cả các file test theo cả hai quy chuẩn:
+- Tiền tố: `test_*.py` (VD: `test_login.py`, `test_place_order.py`)
+- Hậu tố: `*_test.py` (VD: `login_test.py`, `place_order_test.py`)
+
+```bash
+# Quét và đếm số lượng file test hợp lệ
+TEST_FILES=$(find "$TEST_DIR" -maxdepth 3 -type f \( -name "test_*.py" -o -name "*_test.py" \))
+echo "Đã tìm thấy các file test trong $TEST_DIR:"
+echo "$TEST_FILES"
 ```
 
-### Bước 2: Chạy Test Suite
-
-Chạy test với options phù hợp cho framework:
-
-#### **Pytest (Python)**
+#### 0.3. Khởi tạo Thư mục Báo cáo (`REPORT_DIR`):
+Luôn đảm bảo thư mục lưu báo cáo được tạo sẵn:
 ```bash
-# Basic run
-pytest "$TEST_DIR" -v
+if [ -n "$ISSUE_KEY" ]; then
+    export REPORT_DIR="/project-root/workspace/${ISSUE_KEY}/test/result"
+else
+    # Fallback nếu không gắn với issueKey cụ thể
+    export REPORT_DIR="$(dirname "$TEST_DIR")/result"
+fi
+mkdir -p "$REPORT_DIR"
+```
 
-# With coverage
-pytest "$TEST_DIR" --cov=src --cov-report=html:"$REPORT_DIR/coverage" --cov-report=term
+---
 
-# With markers (tags)
-pytest "$TEST_DIR" -m "smoke or regression" -v
+### Bước 1: Đọc Ngữ cảnh & Các File Liên quan Trước khi Chạy
 
-# With output format
-pytest "$TEST_DIR" --junitxml="$REPORT_DIR/junit.xml" --html="$REPORT_DIR/report.html"
+> [!IMPORTANT]
+> **ĐÂY LÀ BƯỚC BẮT BUỘC TRƯỚC KHI CHẠY TEST.**
+> Không chạy test một cách "mù quáng". Việc đọc trước các file liên quan giúp Agent hiểu rõ luồng nghiệp vụ, kiểm tra sớm các điều kiện môi trường, phân biệt chính xác Bug Ứng dụng với Lỗi Script, và phục vụ lập Ma trận Truy vết.
 
-# Parallel execution
-pytest "$TEST_DIR" -n auto  # requires pytest-xdist
+Trước khi gõ lệnh chạy test, Agent chủ động đọc và phân tích 3 nhóm file liên quan:
 
-# Stop on first failure
-pytest "$TEST_DIR" -x
+#### 1.1. File Cấu hình & Môi trường:
+- **`conftest.py` (trong `steps/` hoặc thư mục cha):**
+  - Đọc các fixtures có sẵn (fixtures khởi tạo browser, API client, headers, token authentication, database clean).
+  - Kiểm tra scope của fixture (`session`, `module`, `function`) và các hook teardown (`yield`).
+- **`pytest.ini` / `setup.cfg` / `pyproject.toml`:**
+  - Đọc các cấu hình pytest: cấu hình `python_files = test_*.py *_test.py`, markers tùy chỉnh (`@pytest.mark.smoke`, `@pytest.mark.asyncio`), timeout, addopts.
+- **`.env` / `.env.example` / file config:**
+  - Kiểm tra các biến môi trường bắt buộc (VD: `API_BASE_URL`, `AUTH_TOKEN`, `DB_HOST`, `WS_URL`).
+  - Nếu phát hiện thiếu file `.env` hoặc thiếu biến cấu hình cốt lõi, cảnh báo ngay trước khi test bị crash hàng loạt.
 
-# Full command (recommended)
+#### 1.2. File Kịch bản BDD & Đặc tả Nghiệp vụ:
+- **File `.feature` (trong `../features/`, `features/` hoặc cùng cấp):**
+  - Đọc các scenario Given/When/Then, tags (`@smoke`, `@regression`, `@negative`), Examples table.
+  - Nắm rõ mục tiêu kiểm thử của từng kịch bản để khi có lỗi xảy ra, đối chiếu ngay với kỳ vọng trong file `.feature`.
+- **Business-Spec (`*-final.md` trong `workspace/{issueKey}/spec/` hoặc `spec/`):**
+  - Đọc các Business Rules, Acceptance Criteria, mã lỗi API hoặc ràng buộc dữ liệu.
+- **Checklist Kiểm thử (`*checklist*.md` trong `test/`):**
+  - Đọc danh sách Checklist IDs (CHK-001, CHK-002...) để ánh xạ 1-1 với test method trong báo cáo cuối cùng.
+
+#### 1.3. Module Bổ trợ Tầng Service / POM / Helpers / Data:
+- Mở và quét các dòng `import` trong các file `test_*.py` và `*_test.py` để tìm các module phụ trợ:
+  - **Page Object Models (`pages/`):** Đọc locators, methods tương tác UI.
+  - **Service/API/WebSocket Clients (`services/`, `client/`):** Đọc endpoints, headers, payload formats, cách thức xử lý response.
+  - **Helpers & Utils (`utils/`, `helpers/`):** Đọc assertions helper, wait functions, hàm sinh dữ liệu test ngẫu nhiên.
+  - **Test Data (`data/`, `fixtures/`, `payloads/`):** Đọc mẫu payload JSON, tài khoản test, mock data.
+
+#### Tác dụng cốt lõi:
+- **Chủ động phòng ngừa:** Phát hiện thiếu biến môi trường hoặc thư viện trước khi test fail.
+- **Phân biệt đúng nguyên nhân thất bại:** Khi test fail, xác định được ngay là do **Ứng dụng bị bug** (trả về sai khác so với `.feature`/`*-final.md`) hay do **Script sai** (sai selector, thiếu header, import sai).
+- **Lập Traceability Matrix:** Đủ thông tin để kết nối Business Rule → Checklist → Scenario → Test Method → Kết quả.
+
+---
+
+### Bước 2: Kiểm tra Môi trường (Pre-flight Check)
+
+Xác minh môi trường thực thi và các thư viện phụ thuộc:
+
+```bash
+# 1. Kiểm tra pytest
+pytest --version || echo "pytest chưa được cài đặt"
+
+# 2. Kiểm tra các plugin phổ biến
+python -c "import pytest_html" 2>/dev/null && echo "pytest-html: OK" || echo "pytest-html: MISSING"
+python -c "import pytest_asyncio" 2>/dev/null && echo "pytest-asyncio: OK" || echo "pytest-asyncio: N/A"
+
+# 3. Kiểm tra file test tồn tại
+ls -la "$TEST_DIR"
+
+# 4. Kiểm tra file .env
+if [ -f .env ]; then
+    echo ".env: Đã tìm thấy"
+else
+    echo "⚠️ .env: Không tìm thấy file .env"
+fi
+```
+
+**Nếu thiếu dependencies hoặc file cấu hình:**
+- Thông báo rõ ràng cho user những package hoặc biến môi trường bị thiếu.
+- Tự động cài đặt dependencies nếu môi trường cho phép (`pip install -r requirements.txt` hoặc `pip install pytest pytest-html`).
+
+---
+
+### Bước 3: Thực thi Test Suite & Self-fix Loop
+
+#### 3.1. Lệnh Chạy Test Chuẩn
+Chạy tất cả các file `test_*.py` và `*_test.py` trong thư mục `steps`:
+
+```bash
+# Chạy toàn bộ test trong thư mục steps hỗ trợ cả test_*.py và *_test.py
 pytest "$TEST_DIR" \
+  -o python_files="test_*.py *_test.py" \
   -v \
   --tb=short \
   --junitxml="$REPORT_DIR/junit.xml" \
   --html="$REPORT_DIR/report.html" \
-  --self-contained-html \
-  --cov=src \
-  --cov-report=html:"$REPORT_DIR/coverage"
+  --self-contained-html 2>&1 | tee "$REPORT_DIR/test-output.log"
 ```
 
-#### **Jest (JavaScript/TypeScript)**
-```bash
-# Basic run
-npm test
+**Các biến thể linh hoạt theo nhu cầu:**
+- **Chạy theo marker (tag):**
+  ```bash
+  pytest "$TEST_DIR" -o python_files="test_*.py *_test.py" -m "smoke" -v
+  ```
+- **Chạy file cụ thể do user chỉ định:**
+  ```bash
+  pytest "$TEST_DIR/test_order_api.py" -v
+  ```
+- **Chạy lại các test vừa bị fail:**
+  ```bash
+  pytest "$TEST_DIR" -o python_files="test_*.py *_test.py" --lf -v
+  ```
 
-# With coverage
-npm test -- --coverage
-
-# Specific file
-npm test -- "$TEST_DIR/login.test.js"
-
-# Watch mode
-npm test -- --watch
-
-# With reporters
-npm test -- --reporters=default --reporters=jest-junit
-
-# Full command
-npm test -- \
-  --coverage \
-  --coverageDirectory="$REPORT_DIR/coverage" \
-  --testResultsProcessor=jest-junit \
-  --verbose
-```
-
-#### **JUnit (Java)**
-```bash
-# Maven
-mvn test
-
-# Gradle
-./gradlew test
-
-# With reports
-mvn test -Dsurefire.reports.directory="$REPORT_DIR/junit"
-```
-
-**Lưu output vào file:**
-```bash
-# Capture stdout + stderr
-pytest "$TEST_DIR" -v 2>&1 | tee "$REPORT_DIR/test-output.log"
-```
-
-### Bước 3: Phân tích Kết quả
-
-Sau khi test chạy xong, phân tích kết quả:
-
-#### **3.1. Tổng hợp Metrics**
-
-```python
-# Parse pytest output
-import os
-import re
-
-output = open(os.environ["REPORT_DIR"] + "/test-output.log").read()
-
-# Extract metrics
-total = re.search(r'(\d+) passed', output)
-failed = re.search(r'(\d+) failed', output)
-skipped = re.search(r'(\d+) skipped', output)
-errors = re.search(r'(\d+) errors', output)
-duration = re.search(r'in ([\d.]+)s', output)
-
-metrics = {
-    'total': int(total.group(1)) if total else 0,
-    'passed': int(total.group(1)) if total else 0,
-    'failed': int(failed.group(1)) if failed else 0,
-    'skipped': int(skipped.group(1)) if skipped else 0,
-    'errors': int(errors.group(1)) if errors else 0,
-    'duration': float(duration.group(1)) if duration else 0,
-    'pass_rate': (passed / total * 100) if total > 0 else 0
-}
-```
-
-#### **3.2. Phân loại Failures**
-
-```markdown
-## Test Failures Breakdown
-
-### Critical Failures (Blocking)
-- `test_user_login` — AssertionError: Expected 200, got 401
-  - Root cause: API endpoint changed
-  - File: tests/test_auth.py:45
-  
-### Flaky Failures (Intermittent)
-- `test_websocket_reconnect` — TimeoutError (failed 2/3 runs)
-  - Root cause: Hard-coded wait 1s, cần tăng lên 3s
-  - File: tests/test_websocket.py:89
-
-### Environment Issues
-- `test_db_connection` — ConnectionError: Cannot connect to DB
-  - Root cause: Missing DB_HOST in .env
-  - File: tests/test_database.py:12
-```
-
-#### **3.3. Trace Error Details**
-
-Với mỗi failed test, lấy chi tiết:
-- Assertion message
-- Stack trace
-- Request/Response (nếu test API)
-- Screenshot (nếu test UI)
-- Log output
-
-**Ví dụ chi tiết 1 failed test:**
-```markdown
-### ❌ test_order_creation_with_invalid_quantity
-
-**File:** `tests/test_order.py:67`
-
-**Error:**
-```
-AssertionError: Expected API to reject order with quantity=0
-  Expected status: 400
-  Actual status: 200
-```
-
-**Request:**
-```json
-POST /api/orders
-{
-  "symbol": "VNM",
-  "quantity": 0,
-  "price": 50000
-}
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "orderId": "ORD-12345"
-}
-```
-
-**Root Cause:** API validation rule thiếu check `quantity > 0`
-
-**Recommended Fix:**
-1. Thêm validation trong `src/api/orders.py:validate_order()`
-2. Test case này ĐÚNG, cần fix app code (không fix test)
-```
-
-### Bước 4: Sinh Báo cáo (Generate Report)
-
-Xuất báo cáo dạng Markdown với cấu trúc chuẩn:
-
-#### **Template Báo cáo**
-
-```markdown
-# Báo cáo Kết quả Kiểm thử Automation
-
-**Ngày chạy:** 2024-01-15 10:30:00
-**Test Suite:** `/project-root/workspace/{issueKey}/test/steps/`
-**Framework:** pytest 7.4.0
-**Environment:** UAT
-**Triggered by:** Manual / CI/CD / Regression
+#### 3.2. Quy tắc Tự Sửa Lỗi Kỹ Thuật (Self-fix Loop — Tối đa 3 vòng lặp)
+Khi lệnh `pytest` không thể hoàn tất hoặc crash do **lỗi kỹ thuật của script**:
+1. **Lỗi kỹ thuật script ĐƯỢC PHÉP tự sửa:**
+   - `ImportError` / `ModuleNotFoundError`: Thiếu import hoặc sai đường dẫn tương đối.
+   - `SyntaxError`: Lỗi cú pháp Python trong file test.
+   - `fixture 'xyz' not found`: Chưa import fixture từ `conftest.py` hoặc sai tên fixture.
+   - `TypeError` / `AttributeError` trong helper/client do truyền sai kiểu dữ liệu.
+   - Timeout kết nối WebSocket / API do cấu hình wait quá ngắn (tăng từ 1s lên 3s - 5s).
+   - Cơ chế teardown (`yield`) bị crash gây ảnh hưởng test tiếp theo.
+2. **Hành động:**
+   - Đọc kỹ traceback từ `$REPORT_DIR/test-output.log`.
+   - Dùng tool call sửa trực tiếp code trong `steps/` hoặc `conftest.py`.
+   - Chạy lại test. Lặp lại tối đa 3 lần.
+3. **NGHIÊM CẤM (Anti-cheating Rules):**
+   - ❌ **TUYỆT ĐỐI KHÔNG** sửa assertion kỳ vọng (VD: đổi `assert status == 200` thành `assert status == 500`) chỉ để test chuyển sang PASS.
+   - ❌ **TUYỆT ĐỐI KHÔNG** xóa test case, comment test case hoặc gắn `@pytest.mark.skip` để che giấu lỗi.
+   - ❌ **TUYỆT ĐỐI KHÔNG** mock đè dữ liệu sai lệch để qua mặt bài test khi API thực tế trả về lỗi.
 
 ---
 
-## 📊 Tổng quan (Summary)
+### Bước 4: Phân tích Kết quả
 
-|      Metric     |    Value    |
-|-----------------|-------------|
-| **Total Tests** | 45          |
-| **Passed**      | 40 (88.9%)  |
-| **Failed**      | 3 (6.7%)    |
-| **Skipped**     | 2 (4.4%)    |
-| **Duration**    | 2m 34s      |
-| **Pass Rate**   | 88.9%       |
+Sau khi test chạy xong, Agent bóc tách log và phân loại kết quả:
 
-**Status:** ⚠️ **FAILED** (3 critical failures)
+#### 4.1. Tổng hợp Metrics:
+- Tổng số test case (Total)
+- Số lượng Passed, Failed, Skipped, Error
+- Tổng thời gian thực thi (Duration)
+- Tỷ lệ thành công (Pass Rate %)
+
+#### 4.2. Phân loại Thất bại (Failure Categorization):
+Phải phân loại chính xác từng lỗi theo 4 nhóm sau:
+1. **🔴 Lỗi Ứng dụng (Application Bug - P0/P1):**
+   - Kết quả thực tế từ API/UI vi phạm Business-Spec (`*-final.md`) hoặc kịch bản `.feature`.
+   - Ví dụ: API trả về HTTP 200 khi gửi payload không hợp lệ (kỳ vọng 400), response schema thiếu trường bắt buộc, tính toán sai số tiền.
+   - *Hành động:* Ghi nhận chi tiết Request/Response để DEV sửa app code. KHÔNG sửa test code.
+2. **🟡 Lỗi Kỹ thuật Script (Test Script Issue - P2):**
+   - Selector UI đã thay đổi, locator không tìm thấy element sau khi UI cập nhật.
+   - Assertion viết sai format dữ liệu (VD: so sánh string với int).
+   - *Hành động:* Sửa test code/POM.
+3. **🟠 Lỗi Flaky Test (Chập chờn - P1/P2):**
+   - Test chạy pass khi chạy đơn lẻ nhưng fail khi chạy cả suite, hoặc fail do nghẽn mạng tạm thời, race condition.
+   - *Hành động:* Thêm retry hoặc smart wait.
+4. **🔵 Lỗi Môi trường (Environment Issue - P2):**
+   - Server mock chưa bật, database hết kết nối, token hết hạn, `.env` trỏ sai host.
+   - *Hành động:* Cập nhật cấu hình môi trường và chạy lại.
+
+#### 4.3. Bóc tách Chi tiết Request/Response (BẮT BUỘC cho API/WebSocket):
+Mỗi test case failed liên quan đến API hoặc WebSocket BẮT BUỘC phải trích xuất:
+- HTTP Method & URL Endpoint / WS URL
+- Request Headers & Request Body (Payload)
+- Response Status Code & Response Body
+- Error Message & Stack trace dòng code gây lỗi
 
 ---
 
-## ✅ Passed Tests (40)
+### Bước 5: Sinh Báo cáo (Generate Report Artifact)
+
+Xuất báo cáo dưới dạng Markdown artifact lưu tại:
+`/project-root/workspace/{issueKey}/test/result/{issueKey}-test-report.md` (hoặc `test/result/report.md`).
+
+#### Template Báo cáo Chuẩn:
+
+```markdown
+# Báo cáo Kết quả Automation Test — [Tên tính năng / Issue Key]
+
+**Ngày chạy:** 2024-01-15 10:30:00  
+**Thư mục Test:** `/project-root/workspace/{issueKey}/test/steps/`  
+**Framework:** Pytest (Playwright / Requests)  
+**Môi trường:** UAT / Staging / Sandbox  
+**Người thực hiện:** QA Automation Agent  
+
+---
+
+## 📊 1. Tổng quan Kết quả (Execution Summary)
+
+| Chỉ số (Metric)   | Giá trị (Value) | Tỷ lệ (%) |
+|-------------------|-----------------|-----------|
+| **Tổng số Tests** | 30              | 100%      |
+| **✅ Passed**     | 27              | 90.0%     |
+| **❌ Failed**     | 2               | 6.7%      |
+| **⏭️ Skipped**    | 1               | 3.3%      |
+| **⏱️ Thời gian**   | 1m 45s          | —         |
+| **Pass Rate**     | **90.0%**       | —         |
+
+**Đánh giá trạng thái chung:** ⚠️ **FAILED** (Có 2 lỗi cần xử lý)
+
+---
+
+## 🔍 2. Ma trận Truy vết Toàn trình (End-to-End Traceability Matrix)
+
+Ánh xạ từ Business Rule (`*-final.md`) → Checklist ID → Gherkin Scenario (`*.feature`) → Test File/Method → Kết quả:
+
+| Business Rule | Checklist ID | Kịch bản Gherkin (.feature) | Test Script (Method) | Kết quả | Ghi chú |
+|---|---|---|---|---|---|
+| Khối lượng > 0 | CHK-001 | Scenario: Từ chối lệnh có volume = 0 | `test_order.py::test_order_invalid_qty` | ❌ FAILED | Bug API validation |
+| Biên độ giá Sàn-Trần | CHK-002 | Scenario: Đặt lệnh trong biên độ trần sàn | `test_order.py::test_order_valid_price` | ✅ PASSED | |
+| Xác thực Token | CHK-003 | Scenario: Từ chối truy cập khi token hết hạn | `auth_test.py::test_expired_token` | ✅ PASSED | |
+| Tự động Reconnect WS | CHK-004 | Scenario: Reconnect sau khi rớt mạng | `test_ws.py::test_ws_reconnect` | ❌ FAILED | Flaky do timeout |
+
+---
+
+## ❌ 3. Chi tiết các Test Case Thất bại (Failed Tests Breakdown)
+
+### 3.1. `test_order.py::test_order_invalid_qty` — 🔴 APPLICATION BUG (P0)
+
+- **File:** `/project-root/workspace/{issueKey}/test/steps/test_order.py:45`
+- **Phân loại:** Application Bug (Lỗi nghiệp vụ phía Backend)
+- **Thông báo lỗi:**
+  ```text
+  AssertionError: Expected status code 400 but got 200. Order ORD-9988 was created unexpectedly.
+  ```
+- **Chi tiết Request:**
+  ```json
+  POST /api/v1/orders
+  Headers: {"Authorization": "Bearer eyJhbGci...", "Content-Type": "application/json"}
+  Payload:
+  {
+    "symbol": "TCB",
+    "quantity": 0,
+    "price": 25500,
+    "side": "BUY"
+  }
+  ```
+- **Chi tiết Response:**
+  ```json
+  HTTP 200 OK
+  {
+    "orderId": "ORD-9988",
+    "status": "PENDING",
+    "message": "Order placed successfully"
+  }
+  ```
+- **Nguyên nhân gốc rễ (Root Cause):** Backend thiếu validation rule kiểm tra `quantity > 0` tại tầng controller/service.
+- **Hành động khắc phục:** DEV cần thêm validate `quantity > 0` và trả về `HTTP 400 Bad Request`.
+
+---
+
+### 3.2. `test_ws.py::test_ws_reconnect` — 🟠 FLAKY TEST (P1)
+
+- **File:** `/project-root/workspace/{issueKey}/test/steps/test_ws.py:82`
+- **Phân loại:** Flaky Test (Timeout chờ sự kiện kết nối lại)
+- **Thông báo lỗi:**
+  ```text
+  asyncio.exceptions.TimeoutError: Timeout waiting for WebSocket reconnect event after 2.0s
+  ```
+- **Nguyên nhân gốc rễ:** Mạng test UAT có độ trễ kết nối lại dao động từ 2.5s - 3.2s, test script hard-code timeout 2.0s.
+- **Hành động khắc phục:** Tăng timeout lên 5.0s kèm cơ chế smart poll trong test script.
+
+---
+
+## ✅ 4. Danh sách các Test Case Thành công (Passed Tests)
 
 <details>
-<summary>Xem chi tiết 40 tests passed</summary>
+<summary>Xem chi tiết 27 test cases passed</summary>
 
-- `test_user_login_with_valid_credentials` ✅ (0.5s)
-- `test_order_creation_with_valid_data` ✅ (1.2s)
-- `test_portfolio_balance_calculation` ✅ (0.8s)
+1. `test_order.py::test_order_valid_price` (0.45s)
+2. `test_order.py::test_order_buy_limit` (0.62s)
+3. `auth_test.py::test_expired_token` (0.28s)
 ...
 </details>
 
 ---
 
-## ❌ Failed Tests (3)
+## 🎯 5. Khuyến nghị & Đề xuất Hành động (Action Items)
 
-### 1. test_order_creation_with_invalid_quantity — CRITICAL
+### Cho Developer (DEV):
+- [ ] **P0:** Bổ sung validation `quantity > 0` trong `src/services/order_service.py` trước khi lưu DB.
+- [ ] **P0:** Deploy bản vá lên môi trường test để QA re-verify.
 
-**File:** `tests/test_order.py:67`
-**Duration:** 0.3s
-**Error Type:** AssertionError
+### Cho QA / SDET:
+- [ ] **P1:** Tăng timeout reconnect trong `test_ws.py` lên 5s và re-run test.
+- [ ] **P0:** Chạy lại `qa-run-test` sau khi DEV xác nhận đã deploy bản vá.
 
-**Chi tiết:**
-```
-Expected API to reject order with quantity=0
-  Expected status: 400
-  Actual status: 200
-```
-
-**Request:**
-```json
-POST /api/orders
-{
-  "symbol": "VNM",
-  "quantity": 0,
-  "price": 50000
-}
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "orderId": "ORD-12345"
-}
-```
-
-**Root Cause:** API validation thiếu check `quantity > 0`
-
-**Action Required:**
-- [ ] Fix validation rule trong `src/api/orders.py`
-- [ ] Re-run test sau khi fix
-
-**Priority:** P0 (Blocking Release)
+### Cho DevOps:
+- [ ] Kiểm tra độ ổn định đường truyền mạng tới WebSocket server UAT.
 
 ---
 
-### 2. test_websocket_reconnect — FLAKY
+## 📁 6. Danh mục File Artifacts
 
-**File:** `tests/test_websocket.py:89`
-**Duration:** 5.1s
-**Error Type:** TimeoutError
-
-**Chi tiết:**
-```
-Timeout waiting for reconnect event after 1s
+- **Báo cáo Markdown:** `/project-root/workspace/{issueKey}/test/result/{issueKey}-test-report.md`
+- **Báo cáo HTML:** `/project-root/workspace/{issueKey}/test/result/report.html`
+- **JUnit XML:** `/project-root/workspace/{issueKey}/test/result/junit.xml`
+- **Log Runner:** `/project-root/workspace/{issueKey}/test/result/test-output.log`
 ```
 
-**Root Cause:** Hard-coded wait 1s không đủ, WebSocket reconnect mất ~2-3s
-
-**Action Required:**
-- [ ] Tăng timeout từ 1s lên 5s trong test
-- [ ] Hoặc dùng smart wait với retry
-
-**Priority:** P1 (Test flaky, cần fix)
-
 ---
 
-### 3. test_db_connection — ENVIRONMENT
+### Bước 6: Đề xuất Hành động Cụ thể (Action Items)
 
-**File:** `tests/test_database.py:12`
-**Duration:** 0.1s
-**Error Type:** ConnectionError
-
-**Chi tiết:**
-```
-Cannot connect to database: Missing DB_HOST
-```
-
-**Root Cause:** File `.env` thiếu biến `DB_HOST`
-
-**Action Required:**
-- [ ] Thêm `DB_HOST=localhost` vào `.env`
-- [ ] Re-run test
-
-**Priority:** P2 (Environment config)
+Trình bày ngắn gọn bảng tổng kết cho người dùng:
+1. Tỷ lệ Pass/Fail.
+2. Danh sách các lỗi P0/P1 cần fix ngay.
+3. Phân biệt rõ: Có bao nhiêu lỗi là do App Bug, bao nhiêu do Script/Môi trường.
+4. Đường dẫn trực tiếp đến file báo cáo artifact.
 
 ---
-
-## ⏭️ Skipped Tests (2)
-
-- `test_payment_integration` — Skipped: Payment gateway not available in UAT
-- `test_sms_notification` — Skipped: SMS service mocked in test env
-
----
-
-## 📈 Test Coverage
-
-**Overall Coverage:** 78%
-
-| Module                    | Coverage   | Missing Lines   |
-|---------------------------|------------|-----------------|
-| `src/api/orders.py`       | 92%        | Lines 45-48     |
-| `src/api/auth.py`         | 85%        | Lines 67-70, 89 |
-| `src/utils/validation.py` | 65%        | Lines 12-25     |
-
-**Recommendation:** Tăng coverage cho `validation.py` (hiện chỉ 65%)
-
----
-
-## 🔍 Traceability Matrix (End-to-End)
-
-Ánh xạ từ Business Spec → Checklist → Gherkin → Test → Result:
-
-| Business Rule       | Checklist ID   | Gherkin Scenario                      | Test Case                                 | Result    |
-|---------------------|----------------|---------------------------------------|-------------------------------------------|-----------|
-| Khối lượng phải > 0 | CHK-001        | Scenario: Từ chối lệnh với quantity=0 | test_order_creation_with_invalid_quantity | ❌ FAILED |
-| Giá trong Sàn-Trần  | CHK-002        | Scenario: Từ chối lệnh giá vượt trần  | test_order_price_ceiling_validation       | ✅ PASSED |
-| User đã login       | CHK-003        | Scenario: API yêu cầu token hợp lệ    | test_auth_required_for_orders             | ✅ PASSED |
-
----
-
-## 🎯 Khuyến nghị (Recommendations)
-
-### Cần Fix Ngay (P0)
-1. **API validation thiếu** — `test_order_creation_with_invalid_quantity` failed
-   - Fix: Thêm rule `quantity > 0` vào `src/api/orders.py:validate_order()`
-   - ETA: 15 phút
-
-### Cần Fix Sớm (P1)
-2. **Flaky test** — `test_websocket_reconnect` failed intermittently
-   - Fix: Tăng timeout hoặc dùng smart wait
-   - ETA: 30 phút
-
-### Cần Fix Khi Có Thời gian (P2)
-3. **Environment config** — `.env` thiếu `DB_HOST`
-   - Fix: Update `.env.example` và docs
-   - ETA: 10 phút
-
-4. **Test coverage thấp** — `validation.py` chỉ 65%
-   - Fix: Thêm unit tests cho validation logic
-   - ETA: 1 giờ
-
----
-
-## 📁 Artifacts
-
-Tất cả nằm trong `/project-root/workspace/{issueKey}/test/result/`:
-
-- **JUnit XML:** `junit.xml`
-- **HTML Report:** `report.html`
-- **Coverage Report:** `coverage/index.html`
-- **Log Output:** `test-output.log`
-
----
-
-## 🚀 Next Steps
-
-1. Fix 3 failed tests theo priority (P0 → P1 → P2)
-2. Re-run full test suite: `pytest "$TEST_DIR" -v`
-3. Nếu pass 100% → Approve để merge vào main
-4. Nếu còn fail → Debug và repeat
-```
-
-### Bước 5: Đề xuất Hành động (Action Items)
-
-Dựa trên kết quả, đề xuất hành động cụ thể:
-
-```markdown
-## 🎯 Action Items
-
-### Cho Developer
-- [ ] Fix validation rule `quantity > 0` trong `src/api/orders.py`
-- [ ] Deploy fix lên UAT
-- [ ] Notify QA để re-run test
-
-### Cho QA
-- [ ] Fix flaky test `test_websocket_reconnect` (tăng timeout)
-- [ ] Update `.env` với `DB_HOST=localhost`
-- [ ] Re-run test suite sau khi DEV fix
-
-### Cho DevOps
-- [ ] Đảm bảo CI/CD chạy full test suite trước mỗi deploy
-- [ ] Setup alert khi pass rate < 90%
-```
 
 ## Output Files
 
-Skill này tạo các output files sau — **luôn nằm dưới `/project-root/workspace/{issueKey}/`**, không bao
-giờ ghi ra gốc repo (xem `.claude/rules/workspace-paths.md`):
+Mọi file output của skill **BẮT BUỘC** nằm dưới `/project-root/workspace/{issueKey}/test/result/`:
 
 ```
 /project-root/workspace/{issueKey}/test/result/
-├── test-output.log              # Raw output từ test runner
-├── junit.xml                    # JUnit format (cho CI/CD)
-├── report.html                  # HTML report (human-readable)
-├── coverage/                    # Code coverage report
-│   └── index.html
-└── {issueKey}-test-report.md   # Markdown report (chi tiết nhất)
+├── test-output.log              # Log stdout & stderr từ pytest
+├── junit.xml                    # Báo cáo chuẩn JUnit XML (dùng cho CI/CD)
+├── report.html                  # Báo cáo HTML trực quan (kèm pytest-html)
+└── {issueKey}-test-report.md   # Báo cáo Markdown chi tiết kèm Traceability Matrix
 ```
+
+---
 
 ## Tích hợp với Pipeline
 
@@ -539,150 +440,109 @@ Giai đoạn 1         Giai đoạn 2         Giai đoạn 3         Giai đoạ
 Import Jira        Thiết kế test       Sinh test code      Chạy test & Report
 ```
 
-**Khi nào invoke `qa-run-test`:**
-- Sau khi `/qa-auto-design` sinh test code xong
-- Sau khi DEV fix bug (regression check)
-- Định kỳ (nightly regression)
-- Trước khi release (smoke test)
+- Kích hoạt sau khi `/qa-auto-design` đã sinh test code xong trong thư mục `steps/`.
+- Kích hoạt lại (Re-run) sau khi DEV fix bug để xác nhận chất lượng trước khi đóng task.
+
+---
 
 ## Các Tình huống Thường gặp
 
-### Tình huống 1: Test failed do app bug
+### Tình huống 1: Test failed do bug ứng dụng
+- **Dấu hiệu:** Request gửi đúng spec, nhưng response trả về status code sai hoặc dữ liệu sai.
+- **Xử lý:** KHÔNG sửa code test. Ghi nhận đầy đủ Request, Response, mã lỗi vào báo cáo và gắn nhãn P0 Application Bug để DEV sửa.
 
-```markdown
-**Kết quả:** 3 tests failed
+### Tình huống 2: Lỗi kỹ thuật script (ImportError, Fixture missing)
+- **Dấu hiệu:** Pytest crash trước khi chạy test case hoặc báo fixture không tìm thấy.
+- **Xử lý:** Áp dụng Self-fix loop để sửa file `conftest.py` hoặc file script trong `steps/`. Chạy lại ngay.
 
-**Root cause:** App code thiếu validation
+### Tình huống 3: Test flaky do mạng / timeout
+- **Dấu hiệu:** Test lúc pass lúc fail (đặc biệt là WebSocket hoặc UI animation).
+- **Xử lý:** Tăng timeout hợp lý, thay hard sleep bằng smart wait (`wait_for`, `expect(...).to_be_visible()`).
 
-**Action:**
-1. Tạo bug ticket với chi tiết từ test report
-2. Gửi cho DEV team
-3. CHỜ DEV fix
-4. Re-run test sau khi fix
-```
+### Tình huống 4: Thiếu thư mục `steps/`
+- **Dấu hiệu:** Quét không tìm thấy thư mục `steps/` hoặc không có file `test_*.py` / `*_test.py`.
+- **Xử lý:** Thông báo rõ cho user chưa có test script, gợi ý chạy `/qa-auto-design {issueKey}` để sinh code kiểm thử.
 
-### Tình huống 2: Test failed do test code sai
-
-```markdown
-**Kết quả:** 5 tests failed
-
-**Root cause:** Assertion sai (expect 400, nhưng API spec nói 422 mới đúng)
-
-**Action:**
-1. Fix test code (không fix app code)
-2. Re-run test
-3. Nếu pass → Update test report
-```
-
-### Tình huống 3: Test flaky (pass/fail không ổn định)
-
-```markdown
-**Kết quả:** `test_websocket` pass 2/3 runs
-
-**Root cause:** Race condition, hard-coded wait
-
-**Action:**
-1. Refactor test với smart wait
-2. Tăng timeout
-3. Re-run 10 lần để verify stability
-```
-
-### Tình huống 4: Test skip do environment
-
-```markdown
-**Kết quả:** 10 tests skipped
-
-**Root cause:** Test cần DB nhưng DB không available trong CI
-
-**Action:**
-1. Setup DB trong CI (preferred)
-2. Hoặc mock DB (fallback)
-3. Hoặc accept skip (document reason)
-```
+---
 
 ## Checklist Xác minh
 
-Trước khi xuất báo cáo:
+Trước khi bàn giao kết quả và kết thúc lượt chạy:
 
-- [ ] Test đã chạy xong (không timeout giữa chừng)
-- [ ] Có log output đầy đủ
-- [ ] Đã parse metrics (total, passed, failed, skipped)
-- [ ] Mỗi failed test có chi tiết error + root cause
-- [ ] Đã phân loại failures (critical, flaky, environment)
-- [ ] Có traceability matrix (nếu test từ qa-auto-design)
-- [ ] Có action items cho mỗi failure
-- [ ] Report file đã được tạo tại đúng đường dẫn
+- [ ] Đã tự động định vị đúng thư mục `steps/`
+- [ ] Đã nhận diện đầy đủ các file `test_*.py` và `*_test.py` trong thư mục `steps/`
+- [ ] Đã đọc trước các file cấu hình (`conftest.py`, `.env`) và kịch bản liên quan (`*.feature`, spec, checklist)
+- [ ] Pre-flight check kiểm tra dependencies và biến môi trường đạt yêu cầu
+- [ ] Test đã chạy xong và log đầy đủ vào `test-output.log`
+- [ ] Đã parse đầy đủ metrics: Total, Passed, Failed, Skipped, Duration
+- [ ] Báo cáo có Ma trận Truy vết Toàn trình (Traceability Matrix)
+- [ ] Mỗi test fail đều có chi tiết phân loại lỗi, nguyên nhân gốc, và Request/Response (đối với API/WS)
+- [ ] Tuyệt đối không có hành vi gian lận (không sửa assertion để ép test pass)
+- [ ] File báo cáo Markdown đã được ghi đúng vào `/project-root/workspace/{issueKey}/test/result/`
+
+---
 
 ## Các Lệnh Hữu ích
 
-### Pytest
 ```bash
-# List all tests
-pytest --collect-only
+# Liệt kê tất cả các test case được pytest thu thập
+pytest "$TEST_DIR" -o python_files="test_*.py *_test.py" --collect-only
 
-# Run specific marker
-pytest -m smoke
+# Chạy test và hiển thị print/log ra terminal (-s)
+pytest "$TEST_DIR" -o python_files="test_*.py *_test.py" -v -s
 
-# Run last failed
-pytest --lf
+# Chạy chỉ các test có tag 'smoke'
+pytest "$TEST_DIR" -o python_files="test_*.py *_test.py" -m smoke -v
 
-# Show local variables in traceback
-pytest -l
+# Chạy lại duy nhất các test bị failed ở lần chạy trước
+pytest "$TEST_DIR" -o python_files="test_*.py *_test.py" --lf -v
 
-# Generate HTML report
-pytest --html=report.html --self-contained-html
+# Chạy test và dừng ngay ở test case đầu tiên bị fail
+pytest "$TEST_DIR" -o python_files="test_*.py *_test.py" -x -v
 ```
 
-### Jest
-```bash
-# Update snapshots
-npm test -- -u
-
-# Run in watch mode
-npm test -- --watch
-
-# Coverage threshold
-npm test -- --coverage --coverageThreshold='{"global":{"branches":80}}'
-```
+---
 
 ## Dấu hiệu Cảnh báo (Red Flags)
 
-Các triệu chứng cho thấy kết quả chạy test không đáng tin, dù báo cáo có màu xanh:
+Các triệu chứng cho thấy kết quả chạy test không đáng tin cậy:
 
-- Pass rate 100% ngay lần chạy đầu trên môi trường vừa dựng — thường là test chưa thực sự chạm hệ thống
-- Test pass khi chạy cả suite nhưng fail khi chạy riêng lẻ (phụ thuộc thứ tự thực thi)
-- Sửa assertion cho khớp kết quả thực tế để test chuyển sang PASS
-- Đánh dấu `@skip` một test đang fail rồi báo cáo pass rate cao hơn
-- Re-run nhiều lần tới khi may mắn xanh, gọi đó là "flaky" mà không điều tra
-- Thời gian chạy giảm đột ngột so với lần trước — có test bị bỏ qua âm thầm
-- Test fail nhưng exit code = 0, hoặc pipeline vẫn báo thành công
-- Báo cáo API/WebSocket không in Request/Response nên không debug được (vi phạm chuẩn output của repo)
-- Số test chạy ít hơn số scenario trong file `.feature`
-- Kết luận "do môi trường" mà không có bằng chứng cụ thể (log, status code, response)
+- Sửa assertion từ kỳ vọng đúng thành kết quả sai của ứng dụng chỉ để test hiển thị màu xanh
+- Bỏ qua việc đọc `conftest.py` và `.env` dẫn đến test fail hàng loạt do thiếu token rồi kết luận bừa do hệ thống chết
+- Xóa bớt test case hoặc gắn `@pytest.mark.skip` vào test đang fail mà không có lý do chính đáng
+- Báo cáo test API/WebSocket không có Request/Response làm DEV không thể tái hiện lỗi
+- Bỏ qua các file `*_test.py` chỉ vì tên file không bắt đầu bằng `test_`
+- Báo cáo pass rate 100% nhưng số lượng test case ít hơn đáng kể so với số scenario trong file `.feature`
+- Kết luận "do môi trường" mà không đưa ra log lỗi hay mã lỗi chứng minh cụ thể
+
+---
 
 ## Anti-patterns (Tránh)
 
 ❌ **KHÔNG:**
-- Chạy test mà không check dependencies trước
-- Bỏ qua failed tests mà không phân tích root cause
-- Report kết quả mà không có action items
-- Re-run test nhiều lần mà không fix gốc rễ
-- Commit test report files vào git (chỉ commit test code)
+- Chạy test mà không đọc trước file cấu hình (`conftest.py`, `.env`) và file kịch bản (`.feature`)
+- Sửa code test để biến bug ứng dụng thành pass
+- Bỏ qua các file có hậu tố `*_test.py`
+- Ghi đè báo cáo ra thư mục gốc dự án thay vì thư mục chuẩn `workspace/{issueKey}/test/result/`
+- Bỏ cuộc ngay khi gặp lỗi kỹ thuật nhỏ của script thay vì kích hoạt Self-fix loop
 
 ✅ **NÊN:**
-- Pre-flight check dependencies
-- Phân tích từng failed test chi tiết
-- Đề xuất action items cụ thể với priority
-- Fix root cause trước khi re-run
-- Report files vào `.gitignore`, chỉ share link hoặc artifact
+- Tự động quét và tìm đến đúng thư mục `steps/`
+- Chủ động đọc kỹ các file liên quan trước khi chạy để hiểu bức tranh toàn cảnh
+- Hỗ trợ đầy đủ cả `test_*.py` và `*_test.py`
+- Tự sửa lỗi kỹ thuật script (import, syntax, fixture) tối đa 3 vòng
+- Giữ nguyên kết quả fail nếu đó là lỗi thật của ứng dụng và ghi lại Request/Response chi tiết
+- Xuất báo cáo có bảng Ma trận Truy vết Toàn trình rõ ràng bằng Tiếng Việt
+
+---
 
 ## Xem thêm
 
 - `qa-auto-design` — Sinh test code từ Gherkin (giai đoạn trước)
-- `qa-pipeline` — Full pipeline bao gồm chạy test
-- `dev-debugging` — Debug khi test failed do app bug
+- `qa-test-design` — Thiết kế Checklist và Gherkin Feature (giai đoạn trước)
+- `qa-full-pipeline` — Pipeline kiểm thử toàn trình tự động
+- `dev-debugging` — Phân tích gỡ lỗi khi phát hiện bug ứng dụng
 - `../../../../references/qa-testing-checklist.md` — Baseline test coverage
-
 
 ---
 <CRITICAL_RULE>

@@ -102,3 +102,14 @@ Engine `beautiful` (`beautiful-mermaid`) chỉ dùng khi cần `--format ascii`,
 - Cạnh quay lại phải viết **đảo chiều khai báo** (`A <-.-|"Thử lại"| E` thay vì `E -.-> A`) — chỉ để cuối file là không đủ, thuật toán phá vòng lặp vẫn đảo nhầm cạnh chính và đẩy node đầu tiên sang phải.
 - **Không dùng `subgraph`** — cluster đẩy node ngoài nhóm ra tận mép phải.
 - **Không dùng `~~~`** — engine này không hỗ trợ, dòng bị bỏ qua im lặng, không báo lỗi.
+
+## 9. Cẩm Nang Nghiệp Vụ Chứng Khoán & Fintech (Domain Knowledge Base)
+Trong mọi tác vụ liên quan đến phân tích spec (BA), thiết kế kỹ thuật/API (DEV), thiết kế kiểm thử/automation (QA), review code hay audit bảo mật:
+- **BẮT BUỘC** tham chiếu và tuân thủ các quy tắc trong [references/securities-domain-rules.md](references/securities-domain-rules.md).
+- **Phạm vi bao phủ:**
+  1. **Quy tắc thị trường:** HOSE, HNX, UPCOM, phái sinh; biên độ dao động giá ($\pm 7\%, \pm 10\%, \pm 15\%$), bảng bước giá (10đ, 50đ, 100đ), quy tắc lô chẵn (100) và lô lẻ (1-99).
+  2. **Cờ phiên & Lệnh:** Lịch trình phiên ATO, Liên tục, ATC, PLO; mã cờ phiên KRX (`AA1`, `BB1`, `BC1`, `AW8`, `AW9`, `AC2`); quy tắc cấm sửa/hủy trong ATO/ATC; ma trận lệnh cho phép (LO, ATO, ATC, MP, MTL, MOK, MAK, PLO).
+  3. **Quản lý biến động khẩn cấp:** Xử lý cờ `EI8` (Instrument Halt), 15 phút định kỳ sau Halt (`EI1`), mở lại liên tục (`EI9`); cơ chế ngắt mạch thị trường Circuit Breaker (`AF6`, `AF8`, `BF9`).
+  4. **Dữ liệu thị trường (MDDS / KRX):** Khớp lệnh tick, Top 3/10 Bid-Ask, OHLC closed, tính tuần tự timestamp (time-series consistency) và đo lường độ trễ (latency tracking).
+  5. **Tài chính & Ký quỹ:** Sức mua khả dụng, tỷ lệ an toàn $R_{tt}$, Call Margin ($<85\%$), Force Sell ($<80\%$), và chu kỳ thanh toán T+2.
+

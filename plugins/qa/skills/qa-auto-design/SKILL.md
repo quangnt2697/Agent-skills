@@ -89,9 +89,10 @@ project-root/
 ### Bước 1: Nhận diện Task Type và Bối cảnh
 
 1. **Phân tích Jira / Yêu cầu:** Xác định rõ đối tượng cần test (Task Type) là gì:
-   - `WEB / UI` → Áp dụng mô hình POM (Page Object Model).
-   - `API` → Áp dụng API Object Pattern (REST).
-   - `WebSocket` → Áp dụng Async WS Service Pattern.
+   - `🌐 WEB / UI` → Áp dụng mô hình POM (Page Object Model) bằng Playwright.
+   - `📱 APP / MOBILE` → Áp dụng Screen Object Pattern (SOM) bằng Playwright Mobile Emulation hoặc Appium Native Client.
+   - `🔌 API` → Áp dụng API Object Pattern (REST).
+   - `⚡ WebSocket` → Áp dụng Async WS Service Pattern.
 2. Đọc file spec hoặc yêu cầu gốc (Jira `*-final.md`) nếu có trong workspace để hiểu luồng nghiệp vụ.
 
 ### Bước 2: Đối chiếu Checklist và Gherkin File (Quality Gate)
@@ -104,32 +105,52 @@ project-root/
 
 Tuỳ theo Task Type:
 
-**Với UI (Web/App):**
-- Sử dụng browser MCP (Playwright) để **tự mở trình duyệt** và inspect DOM thật.
-- Thu thập locators trực tiếp từ DOM. Phải verify locator tồn tại trước khi sử dụng.
-- **TUYỆT ĐỐI KHÔNG:** Suy đoán locator, copy locator mù quáng từ code cũ mà không verify.
+**Với Web UI (`🌐 WEB`): QUY TRÌNH THAO TÁC 5 BƯỚC VỚI MCP PLAYWRIGHT**
+Trước khi viết bất kỳ file Page Object nào, Agent **BẮT BUỘC** thực hiện quy trình Recon trên trình duyệt thật qua MCP Playwright:
+1. **Khởi động & Điều hướng (`playwright_navigate`):**
+   - Mở URL mục tiêu (đọc từ `.env`: `DASHBOARD_URL` hoặc `WEB_BASE_URL`).
+   - Nếu trang yêu cầu đăng nhập: Gọi ngay `playwright_login_dashboard` hoặc `playwright_login_trading` để tự động xác thực phiên làm việc.
+2. **Quan sát tổng thể (`playwright_screenshot`):**
+   - Chụp ảnh màn hình (`name="recon_initial"`) để quan sát bố cục trực quan, nhận diện dialog hoặc pop-up che khuất.
+3. **Soi DOM thật (`playwright_get_dom` & `playwright_inspect_element`):**
+   - Gọi `playwright_get_dom(selector=...)` lấy cây HTML của vùng chức năng cần test.
+   - Gọi `playwright_inspect_element(selector=...)` để soi chi tiết phần tử: tag, accessibility role, aria-label, placeholder, visibility, bounding box.
+4. **Thử nghiệm tương tác trước (`playwright_click` & `playwright_fill`):**
+   - Thử click hoặc fill thử dữ liệu mẫu qua MCP để xác nhận phần tử nhận sự kiện tốt, không bị disabled hay bị chặn bởi overlay.
+5. **Chốt Locator đưa vào Page Object (POM):**
+   - Chuyển đổi thành Semantic Locators Playwright (`page.get_by_role(...)`, `page.get_by_label(...)`, `page.get_by_placeholder(...)`).
+   - **TUYỆT ĐỐI KHÔNG:** Tự suy đoán locator hoặc dùng XPath tuyệt đối (`/html/body/...`).
 
-**Với API:**
+**Với Mobile App (`📱 APP`):**
+- Nếu là **Mobile Web / PWA / Hybrid:** Dùng Playwright Mobile context giả lập thiết bị (`Pixel 7`, `iPhone 14`) để inspect layout và touch targets (tối thiểu 44x44px).
+- Nếu là **Native App:** Quét mã nguồn App (Flutter / React Native / Android / iOS) hoặc Appium Inspector để trích xuất `accessibility_id`, `content-desc`, hoặc `resource-id`. Ưu tiên số 1 luôn là `Accessibility ID`.
+
+**Với API (`🔌 API`):**
 - Đọc API spec (Swagger/OpenAPI, Postman collection, hoặc tài liệu Jira).
 - Đối với các dự án có sẵn các file code api thì tiến hành đọc code api đó và viết automation script dựa theo code đó (ưu tiên viết lại giống với code đã sẵn có).
 - Trích xuất: Endpoints, HTTP Methods, Request/Response Schemas, Auth mechanism.
 
-**Với WebSocket:**
+**Với WebSocket (`⚡ WebSocket`):**
 - Đọc tài liệu Jira/spec để trích xuất: Connection URL, Auth mechanism, Channel/Topic names, Event Payload Schemas mẫu.
 - Đối với các dự án có sẵn các file code websocket thì tiến hành đọc code websocket đó và viết automation script dựa theo code đó (ưu tiên viết lại giống với code đã sẵn có).
 
-### Bước 4: Thiết kế POM / Service Objects
+### Bước 4: Thiết kế POM / SOM / Service Objects
 
 **Đọc quy tắc chi tiết:** 👉 Đọc file `references/automation_rules.md` trước khi viết code.
 
-**Với UI:**
+**Với Web UI:**
 - Viết class Page Object. Chỉ chứa locators + action methods. KHÔNG assert.
 - Tham khảo code mẫu: 👉 `examples/web_ui_pom.py`
 
+**Với Mobile App:**
+- Viết class Screen Object. Chỉ chứa selectors + mobile gestures (`tap`, `swipe`, `scroll`). KHÔNG assert.
+- Tham khảo code mẫu: 👉 `examples/mobile_app_pom.py`
+
 **Với API/WebSocket:**
 - Viết class Service/Client. Chỉ chứa logic gửi/nhận request. KHÔNG assert.
-- Viết class DTO/Model (Pydantic/Dataclass) cho request/response/event payload.
+- Viết class DTO/Model Pydantic v2 cho request/response/event payload.
 - Tham khảo code mẫu: 👉 `examples/api_ws_service.py`
+- Root fixtures & Screenshot on failure: 👉 `examples/conftest_template.py`
 
 ### Bước 5: Sinh Code Automation
 
@@ -161,7 +182,7 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
 
 3. **Dữ liệu động:** Setup prefix_testname_timestamp cho mọi dữ liệu cần unique.
 
-4. **Teardown (Data Cleanup):** Dùng cơ chế `yield` trong pytest fixture để dọn dẹp data rác (xoá user, huỷ lệnh...) sau khi test xong. **BẮT BUỘC ĐỐI VỚI API:** Phải gọi trực tiếp API Delete/Cancel trong block code sau `yield` để xóa bỏ dữ liệu rác vừa tạo ra, đảm bảo tính độc lập tuyệt đối giữa các test.
+4. **Teardown An Toàn (Data Cleanup):** Dùng cơ chế `yield` trong pytest fixture để dọn dẹp data rác (xoá user, huỷ lệnh...) sau khi test xong. **BẮT BUỘC:** Toàn bộ logic dọn dẹp sau `yield` phải nằm trong khối `try...finally` hoặc bọc `try/except` từng phần tử, đảm bảo dữ liệu rác luôn được dọn sạch kể cả khi test case bị assertion fail hoặc gặp lỗi runtime.
 
 5. **Authentication:**
    - KHÔNG hardcode tokens/passwords. Đọc từ `.env` / environment variables.
@@ -170,7 +191,17 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
 6. **Xử lý Bất đồng bộ (WebSocket/Async API):**
    - BẮT BUỘC sử dụng thư viện `pytest_asyncio` và mark `@pytest.mark.asyncio` cho các test case WebSocket.
    - TUYỆT ĐỐI CẤM dùng hard sleep (`time.sleep` hay `asyncio.sleep`) để chờ event trả về.
-   - BẮT BUỘC dùng cơ chế Timeout/Wait For Event (ví dụ: `await asyncio.wait_for(ws.recv(), timeout=5.0)`) để hứng gói tin một cách an toàn và fail fast.
+   - BẮT BUỘC dùng cơ chế Timeout/Wait For Event (ví dụ: `await asyncio.wait_for(ws.receive_event(), timeout=5.0)`) để hứng gói tin một cách an toàn và fail fast.
+
+7. **Chuẩn hóa Pydantic v2 cho Tầng DTO/Model:**
+   - BẮT BUỘC dùng Pydantic v2 (`BaseModel`, `Field`, `@field_validator(..., mode="after")` + `@classmethod`).
+   - Sử dụng `Model.model_validate(data)` thay vì khởi tạo lỏng lẻo. TUYỆT ĐỐI KHÔNG dùng cú pháp Pydantic v1 (`@validator` đã bị deprecated).
+
+8. **Liên kết Gherkin Chặt chẽ (Gherkin Traceability Binding):**
+   - Mỗi hàm test BẮT BUỘC phải gắn:
+     - `@pytest.mark.scenario("<Tên scenario trong .feature>")`
+     - `@pytest.mark.jira("{issueKey}")`
+     - Docstring BDD trích dẫn nguyên văn Given/When/Then tương ứng từ file `.feature`.
 
 ### Bước 6: Review Code (Quality Gate)
 
@@ -190,11 +221,13 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
 
 3. **Nếu review phát hiện lỗi** → sửa code → review lại → lặp cho đến khi code sạch và đúng cấu trúc.
 
-### Bước 7: Chạy Test & Xuất Báo Cáo
+### Bước 7: Thực thi Smoke Verification, Self-fix & Báo Cáo
 
-#### 7.1. Thực thi Test
+> **Phân định phạm vi:** Bước 7 của `qa-auto-design` tập trung vào việc **xác minh độ ổn định kỹ thuật (Smoke Verification)** của script vừa sinh ra thông qua Self-fix loop. Để chạy hồi quy chuyên sâu, phân tích flaky tests hoặc chạy theo suite lớn, chuyển tiếp sang `qa-run-test`.
 
-1. **Chạy test:** Thực thi `pytest` trên code vừa sinh ra.
+#### 7.1. Thực thi Test & Self-fix Loop
+
+1. **Chạy test xác minh:** Thực thi `pytest` trên code vừa sinh ra.
    ```bash
    # Neo về root repo và tạo sẵn thư mục report (xem .claude/rules/workspace-paths.md)
    cd "$(git rev-parse --show-toplevel)"
@@ -209,7 +242,7 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
    pytest "$TEST_DIR" -v --alluredir="$REPORT_DIR/allure-results"
    ```
 2. **Self-fix Loop (chỉ sửa lỗi script, KHÔNG sửa kết quả test):**
-   - Nếu `pytest` **không thể thực thi được** (lỗi runtime: ImportError, SyntaxError, fixture thiếu, timeout config sai, connection refused...) → đọc log lỗi → sửa code script → chạy lại → lặp cho đến khi script chạy hoàn tất.
+   - Nếu `pytest` **không thể thực thi được** (lỗi runtime: ImportError, SyntaxError, fixture thiếu, timeout config sai, connection refused...) → đọc log lỗi → sửa code script → chạy lại → lặp tối đa 3 vòng cho đến khi script chạy hoàn tất.
    - **KHÔNG ĐƯỢC sửa code để ép test case từ FAIL thành PASS.** Nếu test case FAIL vì ứng dụng/API trả kết quả sai so với spec → đó là kết quả hợp lệ, ghi nhận vào báo cáo, KHÔNG can thiệp.
    - **Tóm lại:** Self-fix = sửa lỗi kỹ thuật của script. Test FAIL do bug ứng dụng = kết quả cần báo cáo.
 3. **CI/CD Readiness:** Code phải chạy được trong CI (headless mode, không phụ thuộc local state).
@@ -309,20 +342,21 @@ Sau khi hoàn thành, Agent tự kiểm tra:
 ### Kiến trúc
 - [ ] File được đặt đúng thư mục (`pages/`, `services/`, `tests/`)
 - [ ] Assertions chỉ nằm trong tầng Tests, KHÔNG ở Page/Service
-- [ ] Có class DTO/Model cho API/WS response schema
+- [ ] Có class DTO/Model Pydantic v2 (`@field_validator`) cho API/WS schema
 
-### Coverage
-- [ ] Mỗi scenario trong file `.feature` đều có test method tương ứng
-- [ ] Có test cho cả happy path và negative/edge cases
+### Coverage & Traceability
+- [ ] Mỗi scenario trong file `.feature` đều có test method tương ứng (đủ 100%)
+- [ ] Có test cho cả happy path và negative/edge cases (BVA/EP)
+- [ ] Mọi hàm test đều có `@pytest.mark.scenario` và `@pytest.mark.jira` cùng docstring Given/When/Then
 
 ### Data & Auth
 - [ ] Dữ liệu unique sinh động (UUID/timestamp), không hardcode
 - [ ] Credentials đọc từ `.env`, không nằm trong source code
-- [ ] Có fixture teardown dọn dẹp data rác
+- [ ] Có fixture teardown dọn dẹp data rác an toàn bằng `try...finally`
 
 ### Code Quality
 - [ ] Không còn `print()`, `console.log()`, code comment rác
-- [ ] Sử dụng auto-retrying assertions (`expect`), không hard sleep
+- [ ] Sử dụng auto-retrying assertions (`expect`), TUYỆT ĐỐI KHÔNG hard sleep
 - [ ] Đã qua bước Review Code (Bước 6) — không bỏ qua
 
 ### Thực thi & Báo cáo
@@ -333,9 +367,10 @@ Sau khi hoàn thành, Agent tự kiểm tra:
 - [ ] Screenshot đính kèm khi UI test fail
 
 ### Quy tắc theo Task Type
-- [ ] **UI:** Locators lấy từ DOM thật, ưu tiên semantic (`get_by_role`, `get_by_label`)
+- [ ] **Web UI:** Locators lấy từ DOM thật, ưu tiên semantic (`get_by_role`, `get_by_label`), web-first assertions
+- [ ] **Mobile App:** Screen Object Model, ưu tiên `Accessibility ID`, thao tác cử chỉ (`tap`, `swipe`), xử lý offline/permissions
 - [ ] **API:** Đủ 7 assertions (Request Schema, Status Code, Response Schema, Business Fields, Error Detail, SLA, Headers)
-- [ ] **WebSocket:** Validate Event Payload Schema + Time-series (timestamp tuần tự) + Data Isolation
+- [ ] **WebSocket:** Validate Event Payload Schema + Time-series (timestamp tuần tự) + Data Isolation + Fail-fast timeout
 
 ## Quy trình QA tổng thể
 
@@ -360,9 +395,11 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 - Đọc bộ quy tắc chi tiết tại `references/automation_rules.md`
 - Template báo cáo kết quả test tại `references/report_template.md`
-- Tham khảo code mẫu UI tại `examples/web_ui_pom.py`
+- Tham khảo code mẫu Web UI (POM) tại `examples/web_ui_pom.py`
+- Tham khảo code mẫu Mobile App (SOM - Playwright/Appium) tại `examples/mobile_app_pom.py`
 - Tham khảo code mẫu API/WS (tái sử dụng code có sẵn) tại `examples/api_ws_service.py`
-- Tham khảo conftest.py mẫu (fixtures dùng chung) tại `examples/conftest_template.py`
+- Tham khảo conftest.py mẫu (fixtures dùng chung, mobile, auto screenshot) tại `examples/conftest_template.py`
+- Tham khảo template biến môi trường test tại `examples/.env.example`
 - Để import và phân tích Jira task, dùng skill `ba-spec`
 - Để thiết kế Gherkin/Checklist trước khi viết code, dùng skill `qa-test-design`
 - Để review code trước khi merge, dùng skill `code-review-and-quality`

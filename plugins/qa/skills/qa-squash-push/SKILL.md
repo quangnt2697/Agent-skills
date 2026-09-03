@@ -35,9 +35,11 @@ Phase B đăng nhập bằng session, dò node Sprint tương ứng trong campai
 - Chạy lại sau khi sửa Gherkin — script tự động ghi đè bản cũ trên Squash
 
 **KHÔNG sử dụng khi:**
-- File `.feature` chưa qua `qa-validate.sh` — đẩy Gherkin sai cú pháp lên Squash rồi phải dọn tay
+- File `.feature` chưa được thiết kế và kiểm thử cú pháp bởi `qa-test-design` (thiếu file `{issueKey}.feature`)
 - Chưa có `.env` khai báo đủ biến Phase A (xem Điều kiện Tiên quyết)
 - Chỉ muốn chạy test automation — đó là `qa-run-test`, không liên quan Squash
+
+> **Nguyên tắc Phân định Trách nhiệm (Separation of Concerns):** Kỹ năng `qa-squash-push` đóng vai trò là Transport/Sync Layer. Mọi kịch bản Gherkin đầu vào **BẮT BUỘC ĐÃ ĐƯỢC CHẠY SCRIPT VALIDATE & SELF-FIX 100% TỪ BƯỚC 11 CỦA `qa-test-design`**. Kỹ năng này TUYỆT ĐỐI KHÔNG làm nhiệm vụ validate hay sửa đổi nội dung Gherkin của phase trước.
 
 ---
 
@@ -92,7 +94,7 @@ Lưu ý đặc biệt: Phải chạy luồng này một cách liền mạch mà 
    - Nếu có: Lấy ID thư mục hiện tại.
 3. **Kiểm tra & Tạo Test Case:** Đặt tên test case là `{issueKey}-{namejira}`. Tìm test case trong thư mục Target.
    - Nếu chưa có: Tạo mới (POST, format: `GHERKIN`).
-   - Nếu đã có: Lấy Test Case ID hiện tại.
+   - Nếu đã có: Lấy Test Case ID hiện tại. **Tự động kiểm tra và xóa toàn bộ execution cũ** đang gắn với Test Case này để tránh dính kết quả rác cũ.
 4. **Cập nhật Gherkin Script:** Gọi PATCH update toàn bộ nội dung file `.feature` vào trường `script` của Test Case ID, dán đè dữ liệu cũ.
 
 **PHASE B — Campaign Workspace (API nội bộ `/backend`, session-based)**
@@ -105,7 +107,9 @@ Bỏ qua toàn bộ phase nếu thiếu `SQUASH_USERNAME`/`SQUASH_PASSWORD`.
    2. Tên node chứa cùng số hiệu sprint (`046`)
    3. Node có số ID lớn nhất
 7. **Tìm Requirement:** `GET {BASE}/backend/sprint-view/{sprintId}?frontEndErrorIsHandled=true`. Duyệt đệ quy toàn bộ response tìm object có `reference` khớp `{issueKey}` (không phân biệt hoa thường), lấy `id` (fallback `sprintReqVersionId`, `sprintReqVersionBindingId`).
-8. **Gán Test Case:** `POST {BASE}/backend/sprint-req-version/{sprintReqVersionId}/test-plan-items` với body `{"testCaseIds":[{TC_ID}]}`.
+7.5. **Xóa Test Plan Items Cũ (Clean before add):** Quét `GET /backend/sprint-req-version/{sprintReqVersionId}/test-plan-items`. Nếu đã có test plan item (hoặc execution cũ gắn với item), **tự động xóa execution rồi gọi DELETE xóa toàn bộ test plan item cũ** để làm sạch test plan.
+8. **Gán Mới Test Case:** `POST {BASE}/backend/sprint-req-version/{sprintReqVersionId}/test-plan-items` với body `{"testCaseIds":[{TC_ID}]}` để thêm mới lại.
+9. **Lưu Truy Vết:** Ghi file `workspace/{issueKey}/test/squash_sync.json` chứa `testCaseId`, `sprintName`, `sprintReqVersionId`, `syncedAt`.
 
 Bất kỳ bước nào từ 5–8 hỏng: in cảnh báo, giữ nguyên exit code 0.
 
@@ -151,8 +155,8 @@ Nếu script thất bại (Thiếu env, không tìm thấy file, lỗi API Phase
 | "Phase B hỏng chắc do script sai, sửa script luôn" | Nhóm `/backend` là API nội bộ không có cam kết ổn định. Kiểm tra bảng Xử lý sự cố trước — phần lớn là do cấu hình hoặc quy ước đặt tên, không phải script. |
 
 ## Dấu hiệu Cảnh báo (Red Flags)
-
-- Đẩy file `.feature` chưa chạy qua `qa-validate.sh`
+ 
+- Đẩy file `.feature` rỗng hoặc file chưa được hoàn thiện từ `qa-test-design`
 - Bỏ qua dòng `- Campaign Workspace:` trong output rồi báo với user là "đã xong"
 - In token, cookie `JSESSIONID`, hoặc `SQUASH_PASSWORD` ra log/chat
 - `.env` chưa nằm trong `.gitignore`

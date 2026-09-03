@@ -95,9 +95,14 @@ Mặc định là **chạy tự động xuyên suốt** theo `.claude/rules/auto
 1. Kiểm tra file Checklist và Gherkin đã được tạo tại `/project-root/workspace/{issueKey}/test/` chưa.
 2. Báo cáo số lượng test items và chuyển sang Phase 2.
 
-## Chuyển Phase 1 → Phase 2
-Nếu có `--no-automation`, dừng ở đây (đã hoàn thành mục tiêu). Ngược lại **chạy thẳng sang Phase 2**,
-log một dòng tóm tắt Test Design artifacts. Chỉ ở chế độ `--step` mới dừng hỏi user.
+## Chuyển Phase 1 → Phase 1.5: Đồng Bộ Lên Squash TM (qa-squash-push)
+Sau khi sinh xong Gherkin file, Agent **BẮT BUỘC TỰ ĐỘNG** thực hiện bước đồng bộ lên Squash TM mà **KHÔNG CẦN HỎI Ý KIẾN USER** (trừ khi có cờ `--no-squash`):
+1. Gọi `call_mcp_tool(ServerName="squash-tm", ToolName="squash_push_full_pipeline", ...)` với `issueKey`, `nameJira`, `gherkinContent`.
+2. **Cơ chế Clean & Sync:**
+   - Nếu trong Test Case đã có execution cũ: Tự động xóa execution đó đi trước khi cập nhật script.
+   - Nếu trong Campaign Workspace (Sprint Test Plan) đã có sẵn testcase: Tự động xóa test plan items/executions cũ và add mới.
+3. Lưu metadata đồng bộ vào `/project-root/workspace/{issueKey}/test/squash_sync.json`.
+4. Nếu có cờ `--no-automation`, dừng tại đây. Ngược lại **chạy thẳng sang Phase 2 (qa-auto-design)**. Chỉ ở chế độ `--step` mới dừng hỏi user.
 
 ## Phase 2: Test Automation (qa-auto-design)
 

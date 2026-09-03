@@ -297,7 +297,7 @@ Domain tài chính cần test concurrent:
 | `[APP]` | Playwright Mobile / Appium | Screen Object Pattern |
 
 **Nguyên tắc automation:**
-- **AI DOM Recon first** (WEB): Dùng browser MCP inspect real DOM — KHÔNG suy đoán locator
+- **AI DOM Recon first** (WEB): Bắt buộc dùng Playwright MCP (`playwright_navigate`, `playwright_login_*`, `playwright_screenshot`, `playwright_get_dom`, `playwright_inspect_element`) để mở trình duyệt thật Full HD 1920x1080 và inspect real DOM — TUYỆT ĐỐI KHÔNG suy đoán locator
 - **Smart Waits**: Không `time.sleep()` — dùng `expect(locator).to_be_visible()`
 - **Deterministic data**: Data test phải unique + traceable — KHÔNG hardcode
 - **Self-fix loop**: Script lỗi runtime → tự đọc log, sửa, chạy lại (≤3 lần)

@@ -423,6 +423,21 @@ Scenario Outline: Hệ thống từ chối lệnh khi dữ liệu không hợp l
     | quantity | 10.5           | Khối lượng phải là số nguyên |
 ```
 
+**Quy chuẩn Phân tích Giá trị Biên Chuyên sâu (Advanced BVA & EP cho Tài chính & Chứng khoán):**
+
+1. **Chuẩn hóa BVA 3 giá trị (3-value BVA):**
+   - Đối với domain tài chính, chứng khoán (giá sàn/trần, sức mua, room ngoại, bước giá - tick size), **BẮT BUỘC dùng 3-value BVA**: $\{Boundary - \epsilon, Boundary, Boundary + \epsilon\}$ thay vì chỉ test 2 giá trị.
+   - Ví dụ: Giá trần là `110,000` với bước giá $\epsilon = 100$: bảng Examples phải bao phủ `109,900` (hợp lệ), `110,000` (biên hợp lệ), và `110,100` (vượt trần - từ chối).
+2. **Biên Phiên giao dịch & Cửa sổ Thời gian (Time-window Boundary):**
+   - BẮT BUỘC thiết kế kịch bản tại các thời điểm giao thoa giữa các phiên:
+     - Giao thoa trước ATO: `08:59:59` (ngoài giờ) vs `09:00:00` (bắt đầu ATO).
+     - Giao thoa ATO -> Khớp lệnh liên tục: `09:14:59` vs `09:15:00`.
+     - Giao thoa Khớp lệnh liên tục -> ATC: `14:29:59` vs `14:30:00`.
+     - Giao thoa đóng cửa: `14:45:00` vs `14:45:01` (hết giờ, từ chối lệnh).
+3. **Biên Làm tròn & Độ chính xác Số thực (Rounding & Precision):**
+   - Các phép tính phí giao dịch, thuế bán, lãi vay ký quỹ (margin), tỷ lệ an toàn tài khoản thường sinh số thập phân lẻ.
+   - BẮT BUỘC kiểm tra biên làm tròn (Half-up, Truncate) và phòng chống lỗi floating-point (sử dụng Decimal trong code).
+
 **Chiến lược gắn Tag:**
 
 | Tag                  | Mục đích                              |
@@ -437,6 +452,27 @@ Scenario Outline: Hệ thống từ chối lệnh khi dữ liệu không hợp l
 | `@JIRA-XXXX`         | Liên kết với mã ticket                |
 | `@domain-securities` | Tag domain chứng khoán                |
 
+### Bước 11: Chạy Script Validate Bắt Buộc & Vòng Tự Sửa Lỗi (Self-Fix Loop)
+
+Ngay sau khi viết xong file `{issueKey}.feature`, Agent **BẮT BUỘC PHẢI CHẠY NGAY** script kiểm thử cú pháp nội bộ trước khi coi Giai đoạn 2 là hoàn tất:
+
+```bash
+bash plugins/qa/skills/qa-test-design/scripts/qa-validate.sh workspace/{issueKey}/test/{issueKey}.feature
+```
+
+**Nguyên tắc thực thi:**
+1. **Kiểm tra tự động 6 tiêu chuẩn cốt lõi:**
+   - Đúng duy nhất 1 khối `Feature:` trong file.
+   - Khối `Feature:` có ít nhất 1 tag hợp lệ (`@JIRA-XXXX`, `@domain-securities`).
+   - Mọi `Scenario` và `Scenario Outline` đều có tag.
+   - Không scenario nào vượt quá 10 steps.
+   - Tuân thủ thứ tự `Given` → `When` → `Then` nghiêm ngặt, không lặp vòng.
+   - Không chứa bất kỳ chi tiết cơ chế automation nào (CSS selector, xpath, SQL query).
+2. **Vòng lặp tự sửa lỗi (Self-Fix Loop ≤ 3 vòng):**
+   - Nếu script trả về `status: error` hoặc có vi phạm: Agent đọc thông báo lỗi từ JSON output, **TỰ ĐỘNG SỬA TRỰC TIẾP** file `.feature` và chạy lại `qa-validate.sh`.
+   - Lặp lại tối đa 3 lần. Chỉ được chuyển sang giai đoạn kế tiếp (hoặc push lên Squash TM) khi script trả về `status: pass` 100%.
+3. **Tuyệt đối KHÔNG:** Đẩy file `.feature` chưa validate sang kỹ năng khác hoặc để kỹ năng `qa-squash-push` phải đi sửa kịch bản.
+
 ### Các Anti-Pattern cần tránh
 
 | Anti-Pattern                                                | Tại sao thất bại                                                                             |
@@ -447,8 +483,10 @@ Scenario Outline: Hệ thống từ chối lệnh khi dữ liệu không hợp l
 | Điều hướng UI quá chi tiết thay vì thiết lập trạng thái     | Scenarios giòn và khó đọc                                                                    |
 | Assertion Then mơ hồ không có tín hiệu quan sát được        | "Hoạt động" không chứng minh gì — cần chỉ rõ cái gì thay đổi                                 |
 | Lạm dụng Scenario Outline với dòng trùng lặp                | Tăng thời gian chạy không tăng giá trị bao phủ                                               |
-| Chỉ test 1 trigger khi có nhiều trigger đối xứng            | Bỏ sót nút BÁN, tab thứ hai, phương thức input khác — cùng hành vi, khác điểm vào, bug riêng |
+| Chỉ test 1 trigger khi có nhiều trigger đối xứng (Bias)     | Bỏ sót nút BÁN, tab thứ hai, phương thức input khác — cùng hành vi, khác điểm vào, bug riêng |
 | Item checklist không có động từ hành động                   | Mô tả thay vì lệnh — không gán được Pass/Fail                                                |
+| Data Pollution in Steps (Nhồi JSON inline)                  | Bước When/Then nhồi một chuỗi JSON dài hàng trăm ký tự làm vỡ parser Gherkin trên Squash TM. Phải dùng DocStrings (`"""..."""`) |
+| State Leaking Across Scenarios                              | Scenario sau phụ thuộc ngầm vào dữ liệu hoặc kết quả của scenario trước; gây lỗi flaky khi chạy song song hoặc chạy lẻ |
 
 ### Template Gherkin
 
@@ -561,9 +599,11 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 **Sau khi hoàn thành Giai đoạn 2 (qa-test-design)**, Agent BẮT BUỘC TỰ ĐỘNG thực hiện ngay việc Push kịch bản lên Squash TM mà KHÔNG CẦN hỏi ý kiến người dùng:
 1. Agent tự động trích xuất `issueKey` và `namejira` từ tên file feature và metadata trong `final.md`.
 2. Lập tức gọi tool hệ thống để kết nối với Squash TM thông qua MCP. Sử dụng `call_mcp_tool` với `ServerName` là `squash-tm` và `ToolName` là `squash_push_full_pipeline`. Cung cấp đầy đủ các tham số: `issueKey`, `nameJira` và nội dung file Gherkin (`gherkinContent`). Tuyệt đối KHÔNG dùng shell script cũ.
-3. Sau khi đẩy lên Squash thành công (tool trả về kết quả thành công), báo cáo kết quả và chuyển sang Giai đoạn 3 (`qa-auto-design`) — **BẮT BUỘC** hỏi xin phép.
-
-<!-- > Ở chế độ `--step`, dừng lại sau bước 3 để user duyệt trước khi sang Giai đoạn 3. -->
+3. **Cơ chế Clean & Sync tự động:**
+   - **Xóa Execution cũ của Test Case:** Nếu Test Case đã có execution cũ trong lịch sử chạy, MCP sẽ tự động xóa sạch các execution đó để đảm bảo kịch bản mới không bị dính log cũ.
+   - **Ghi đè Campaign Test Plan:** Khi gán vào requirement trong Campaign Workspace, nếu đã tồn tại testcase/test-plan-item cũ thì MCP sẽ tự động xóa item/execution cũ và gán lại mới hoàn toàn.
+   - **Lưu Traceability:** Tự động tạo file `/project-root/workspace/{issueKey}/test/squash_sync.json` chứa `testCaseId`, `sprintName`, `sprintReqVersionId`.
+4. Sau khi đẩy lên Squash thành công (tool trả về kết quả thành công), báo cáo kết quả và tự động chuyển sang Giai đoạn 3 (`qa-auto-design`) theo quy định tự chủ của workspace. CHỈ dừng lại hỏi ý kiến người dùng khi có truyền cờ `--step` hoặc `--manual`.
 
 ## Xem thêm
 

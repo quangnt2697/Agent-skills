@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
+const cp = require('child_process');
 const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
 const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { CallToolRequestSchema, ListToolsRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
@@ -34,7 +35,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         tools: [
             {
                 name: "squash_push_full_pipeline",
-                description: "Đẩy Gherkin script lên Squash TM (Test Case) và tự động gán vào Sprint tương ứng trong Campaign Workspace.",
+                description: "Đẩy Gherkin script lên Squash TM (Test Case), tự động xóa execution cũ nếu có, đồng bộ Campaign Workspace (clean & add mới).",
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -49,42 +50,33 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     };
 });
 
-async function callApi(method, endpoint, payload = null) {
+function execCurl(args) {
+    const res = cp.spawnSync('curl', args, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+    if (res.error) throw res.error;
+    return res.stdout || '';
+}
+
+function callApi(method, endpoint, payload = null) {
     const url = `${process.env.SQUASH_BASE_URL}${endpoint}`;
-    const headers = {
-        "Authorization": `Bearer ${process.env.SQUASH_API_TOKEN}`,
-        "Accept": "application/json"
-    };
+    const args = [
+        '-s',
+        '--max-time', '60',
+        '-X', method,
+        url,
+        '-H', `Authorization: Bearer ${process.env.SQUASH_API_TOKEN}`,
+        '-H', 'Accept: application/json'
+    ];
     if (payload) {
-        headers["Content-Type"] = "application/json";
+        args.push('-H', 'Content-Type: application/json');
+        args.push('-d', JSON.stringify(payload));
     }
-    const options = { method, headers };
-    if (payload) options.body = JSON.stringify(payload);
-
-    const res = await fetch(url, options);
-    if (!res.ok) {
-        throw new Error(`API Error ${res.status}: ${await res.text()}`);
+    const out = execCurl(args);
+    if (!out) return null;
+    try {
+        return JSON.parse(out);
+    } catch {
+        return out;
     }
-    return await res.json();
-}
-
-async function extractCookieAndXsrf(response, cookiesMap) {
-    const setCookieHeaders = response.headers.getSetCookie ? response.headers.getSetCookie() : [];
-    let xsrfToken = null;
-    for (const c of setCookieHeaders) {
-        const cookiePair = c.split(';')[0];
-        const [k, ...vs] = cookiePair.split('=');
-        const v = vs.join('=');
-        cookiesMap.set(k.trim(), v.trim());
-        if (k.trim() === 'XSRF-TOKEN') {
-            xsrfToken = v.trim();
-        }
-    }
-    return xsrfToken;
-}
-
-function getCookieString(cookiesMap) {
-    return Array.from(cookiesMap.entries()).map(([k, v]) => `${k}=${v}`).join('; ');
 }
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -92,192 +84,253 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { issueKey, nameJira, gherkinContent } = request.params.arguments;
         const testCaseName = `${issueKey}-${nameJira}`;
         let logs = [];
-        
+        const cookieJar = path.join('/tmp', `squash_mcp_cookie_${Date.now()}_${Math.random().toString(36).slice(2)}.txt`);
+
         try {
-            // PHASE A: REST API
-            logs.push("1. Tìm Sprint mới nhất từ Requirement Workspace (Folder G.3.1)...");
-            const reqFolders = await callApi("GET", `/api/rest/latest/requirement-folders/${process.env.SQUASH_REQ_G31_FOLDER_ID}/content`);
-            const sprintFolders = (reqFolders._embedded?.content || []).filter(f => /^EnTrade Sprint \d+$/.test(f.name));
+            // Khởi tạo session cookie jar
+            const getXsrf = () => {
+                if (!fs.existsSync(cookieJar)) return '';
+                const lines = fs.readFileSync(cookieJar, 'utf-8').split('\n');
+                for (let i = lines.length - 1; i >= 0; i--) {
+                    const parts = lines[i].split(/\t|\s+/);
+                    if (parts.includes('XSRF-TOKEN')) {
+                        return parts[parts.length - 1].trim();
+                    }
+                }
+                return '';
+            };
+
+            const callBackend = (method, endpoint, payload = null) => {
+                const url = `${process.env.SQUASH_BASE_URL}${endpoint}`;
+                const xsrf = getXsrf();
+                const args = [
+                    '-s',
+                    '-b', cookieJar,
+                    '-c', cookieJar,
+                    '-X', method,
+                    url,
+                    '-H', 'Origin: https://tm.dnse.com.vn',
+                    '-H', `${process.env.SQUASH_BASE_URL}/campaign-workspace`,
+                    '-H', 'User-Agent: Mozilla/5.0',
+                    '-H', 'Accept: application/json, text/plain, */*',
+                    '-H', `X-XSRF-TOKEN: ${xsrf}`
+                ];
+                if (payload) {
+                    args.push('-H', 'Content-Type: application/json');
+                    args.push('--data-raw', JSON.stringify(payload));
+                }
+                const out = execCurl(args);
+                if (!out) return null;
+                try {
+                    return JSON.parse(out);
+                } catch {
+                    return out;
+                }
+            };
+
+            // Đăng nhập session backend
+            let hasBackendSession = false;
+            if (process.env.SQUASH_USERNAME && process.env.SQUASH_PASSWORD) {
+                logs.push("Khởi tạo session backend Squash TM...");
+                execCurl(['-s', '-L', '-o', '/dev/null', '-c', cookieJar, '-H', 'User-Agent: Mozilla/5.0', `${process.env.SQUASH_BASE_URL}/login`]);
+                const initXsrf = getXsrf();
+                if (initXsrf) {
+                    execCurl([
+                        '-s', '-b', cookieJar, '-c', cookieJar,
+                        '-X', 'POST', `${process.env.SQUASH_BASE_URL}/backend/login`,
+                        '-H', 'Origin: https://tm.dnse.com.vn',
+                        '-H', `Referer: ${process.env.SQUASH_BASE_URL}/login`,
+                        '-H', 'User-Agent: Mozilla/5.0',
+                        '-H', 'Accept: application/json, text/plain, */*',
+                        '-H', 'Content-Type: application/x-www-form-urlencoded',
+                        '-H', `X-XSRF-TOKEN: ${initXsrf}`,
+                        '--data-urlencode', `username=${process.env.SQUASH_USERNAME}`,
+                        '--data-urlencode', `password=${process.env.SQUASH_PASSWORD}`
+                    ]);
+                    hasBackendSession = true;
+                    logs.push(`✅ Đăng nhập backend thành công (${process.env.SQUASH_USERNAME})`);
+                }
+            }
+
+            // PHASE A: Test Case Workspace
+            logs.push("1. Tìm Sprint mới nhất từ Test Case Workspace (Folder G.3.1)...");
+            const tcFolders = callApi("GET", `/api/rest/latest/test-case-folders/${process.env.SQUASH_TC_G31_FOLDER_ID}/content?size=100`);
+            const sprintFolders = (tcFolders?._embedded?.content || []).filter(f => /^EnTrade Sprint \d+$/.test(f.name));
             sprintFolders.sort((a, b) => {
                 const nA = parseInt(a.name.match(/\d+/)[0]);
                 const nB = parseInt(b.name.match(/\d+/)[0]);
                 return nA - nB;
             });
-            const latestSprint = sprintFolders.pop();
+            let latestSprint = sprintFolders.pop();
+
+            if (!latestSprint && process.env.SQUASH_REQ_G31_FOLDER_ID) {
+                logs.push("Chưa thấy Sprint bên Test Case, quét Requirement Workspace...");
+                const reqFolders = callApi("GET", `/api/rest/latest/requirement-folders/${process.env.SQUASH_REQ_G31_FOLDER_ID}/content?size=100`);
+                const reqSprints = (reqFolders?._embedded?.content || []).filter(f => /^EnTrade Sprint \d+$/.test(f.name));
+                reqSprints.sort((a, b) => parseInt(a.name.match(/\d+/)[0]) - parseInt(b.name.match(/\d+/)[0]));
+                latestSprint = reqSprints.pop();
+            }
+
             if (!latestSprint) throw new Error("Không tìm thấy thư mục 'EnTrade Sprint xxx'");
             logs.push(`Tìm thấy Sprint: ${latestSprint.name}`);
             const sprintNumber = latestSprint.name.match(/\d+/)[0];
 
-            logs.push("2. Đồng bộ thư mục sang Test Case Workspace...");
-            const tcFolders = await callApi("GET", `/api/rest/latest/test-case-folders/${process.env.SQUASH_TC_G31_FOLDER_ID}/content?size=100`);
-            let targetTcFolder = (tcFolders._embedded?.content || []).find(f => f.name === latestSprint.name);
+            let targetTcFolder = (tcFolders?._embedded?.content || []).find(f => f.name === latestSprint.name);
             if (!targetTcFolder) {
-                targetTcFolder = await callApi("POST", "/api/rest/latest/test-case-folders", {
+                targetTcFolder = callApi("POST", "/api/rest/latest/test-case-folders", {
                     _type: "test-case-folder",
                     name: latestSprint.name,
                     parent: { _type: "test-case-folder", id: process.env.SQUASH_TC_G31_FOLDER_ID }
                 });
                 logs.push(`Đã tạo mới thư mục Test Case ID: ${targetTcFolder.id}`);
+            } else {
+                logs.push(`Thư mục Test Case đã tồn tại ID: ${targetTcFolder.id}`);
             }
 
-            logs.push(`3. Kiểm tra Test Case: ${testCaseName}`);
-            const searchRes = await callApi("GET", `/api/rest/latest/test-cases?search=${encodeURIComponent(`name~"${testCaseName}"`)}&size=100`);
-            let tcId = (searchRes._embedded?.['test-cases'] || []).find(tc => tc.name === testCaseName)?.id;
-            if (!tcId) {
-                const newTc = await callApi("POST", "/api/rest/latest/test-cases", {
+            logs.push(`2. Kiểm tra Test Case: ${testCaseName}...`);
+            const content = callApi("GET", `/api/rest/latest/test-case-folders/${targetTcFolder.id}/content?size=100`);
+            let targetTestCase = (content?._embedded?.content || []).find(f => f.name === testCaseName || f.name.startsWith(`${issueKey}-`));
+
+            if (!targetTestCase) {
+                targetTestCase = callApi("POST", "/api/rest/latest/test-cases", {
                     _type: "scripted-test-case",
                     name: testCaseName,
                     description: "Auto-generated test case from Jira",
                     parent: { _type: "test-case-folder", id: targetTcFolder.id }
                 });
-                tcId = newTc.id;
-                logs.push(`Đã tạo Test Case mới ID: ${tcId}`);
+                logs.push(`Đã tạo mới Test Case ID: ${targetTestCase.id}`);
+            } else {
+                logs.push(`Test Case đã tồn tại ID: ${targetTestCase.id}`);
+
+                // XÓA EXECUTION CŨ CỦA TEST CASE
+                if (hasBackendSession) {
+                    logs.push(`Kiểm tra executions cũ của Test Case ${targetTestCase.id}...`);
+                    const execGridPayload = {
+                        gridRequest: 1,
+                        size: 50,
+                        page: 0,
+                        gridId: "test-case-view-execution"
+                    };
+                    const execRes = callBackend("POST", `/backend/test-case/${targetTestCase.id}/executions`, execGridPayload);
+                    const oldExecIds = (execRes?.dataRows || []).map(r => r.id).filter(Boolean);
+                    if (oldExecIds.length > 0) {
+                        for (const execId of oldExecIds) {
+                            callApi("DELETE", `/api/rest/latest/executions/${execId}`);
+                            callBackend("DELETE", `/backend/executions/${execId}`);
+                            logs.push(`✅ Đã xóa execution cũ: ${execId}`);
+                        }
+                    } else {
+                        logs.push("Không có execution cũ nào cần xóa.");
+                    }
+                }
             }
 
-            logs.push("4. Cập nhật script Gherkin...");
-            await callApi("PATCH", `/api/rest/latest/test-cases/${tcId}`, {
+            logs.push("3. Cập nhật script Gherkin...");
+            callApi("PATCH", `/api/rest/latest/test-cases/${targetTestCase.id}`, {
                 _type: "scripted-test-case",
                 script: gherkinContent
             });
-            logs.push("✅ Phase A hoàn tất!");
+            logs.push("✅ Đã cập nhật script Gherkin thành công");
 
-            // PHASE B: Backend API
-            logs.push("5. Đăng nhập Campaign Workspace...");
-            const cookiesMap = new Map();
-            let loginPageRes = await fetch(`${process.env.SQUASH_BASE_URL}/login`);
-            let xsrfToken = await extractCookieAndXsrf(loginPageRes, cookiesMap);
+            // PHASE B: Campaign Workspace
+            let sprintReqVersionId = null;
+            if (hasBackendSession) {
+                logs.push(`4. Dò node Sprint '${latestSprint.name}' trong Campaign Workspace...`);
+                let openedNodes = [`CampaignLibrary-${process.env.SQUASH_PROJECT_ID}`];
+                let treeJson = callBackend("POST", "/backend/campaign-tree", { openedNodes, selectedNodes: [] });
 
-            const loginRes = await fetch(`${process.env.SQUASH_BASE_URL}/backend/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-XSRF-TOKEN": xsrfToken,
-                    "Cookie": getCookieString(cookiesMap)
-                },
-                body: `username=${encodeURIComponent(process.env.SQUASH_USERNAME)}&password=${encodeURIComponent(process.env.SQUASH_PASSWORD)}`
-            });
-            xsrfToken = await extractCookieAndXsrf(loginRes, cookiesMap) || xsrfToken;
-            if (loginRes.status !== 200 && loginRes.status !== 204) {
-                logs.push(`⚠️ Đăng nhập thất bại. Bỏ qua Phase B.`);
-                return { content: [{ type: "text", text: logs.join('\n') }] };
-            }
+                // Mở các nhóm con
+                const childGroups = (treeJson?.dataRows || [])
+                    .filter(r => r.parentRowId === `CampaignLibrary-${process.env.SQUASH_PROJECT_ID}`)
+                    .map(r => r.id);
+                if (childGroups.length > 0) {
+                    openedNodes = Array.from(new Set([...openedNodes, ...childGroups]));
+                    treeJson = callBackend("POST", "/backend/campaign-tree", { openedNodes, selectedNodes: [] });
+                }
 
-            logs.push("6. Dò node Sprint...");
-            let treeJson = await fetch(`${process.env.SQUASH_BASE_URL}/backend/campaign-tree`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": xsrfToken, "Cookie": getCookieString(cookiesMap) },
-                body: JSON.stringify({ openedNodes: [], selectedNodes: [] })
-            }).then(r => r.json());
-            
-            // Recursive expansion to find nested Sprint nodes
-            const pid = process.env.SQUASH_PROJECT_ID;
-            let prevOpened = "[]";
-            let openedNodes = [];
-            
-            while (true) {
-                // Collect nodes to open
-                let newOpened = [];
-                function collectNodes(obj) {
-                    if (!obj || typeof obj !== 'object') return;
-                    if (Array.isArray(obj)) {
-                        obj.forEach(collectNodes);
-                        return;
-                    }
-                    const idStr = obj.id ? obj.id.toString() : "";
-                    if (idStr && /^(CampaignLibrary|SprintGroup|CampaignFolder)-\d+$/.test(idStr)) {
-                        if (!idStr.startsWith("CampaignLibrary-") || idStr === `CampaignLibrary-${pid}`) {
-                            newOpened.push(idStr);
+                // Khớp Sprint
+                const sprintNode = (treeJson?.dataRows || []).find(r => 
+                    r.id && /^Sprint-\d+$/.test(r.id) && 
+                    (r.data?.NAME === latestSprint.name || (r.data?.NAME && r.data.NAME.includes(sprintNumber)))
+                );
+
+                if (sprintNode) {
+                    const sprintId = sprintNode.id.replace('Sprint-', '');
+                    logs.push(`✅ Khớp Sprint trong Campaign ID: ${sprintId}`);
+
+                    logs.push(`5. Tìm requirement '${issueKey}' trong Sprint ${sprintId}...`);
+                    const sprintView = callBackend("GET", `/backend/sprint-view/${sprintId}?frontEndErrorIsHandled=true`);
+                    
+                    // Tìm requirement version
+                    function findReq(obj) {
+                        if (!obj || typeof obj !== 'object') return null;
+                        if (obj.reference && obj.reference.toLowerCase() === issueKey.toLowerCase()) {
+                            return obj.id || obj.sprintReqVersionId;
                         }
+                        for (const val of Object.values(obj)) {
+                            const found = findReq(val);
+                            if (found) return found;
+                        }
+                        return null;
                     }
-                    Object.values(obj).forEach(collectNodes);
+                    sprintReqVersionId = findReq(sprintView);
+
+                    if (sprintReqVersionId) {
+                        logs.push(`✅ Tìm thấy Sprint Requirement Version ID: ${sprintReqVersionId}`);
+
+                        // Gán Test Case vào requirement
+                        logs.push(`6. Gán Test Case #${targetTestCase.id} vào requirement trong Campaign...`);
+                        callBackend("POST", `/backend/sprint-req-version/${sprintReqVersionId}/test-plan-items`, {
+                            testCaseIds: [targetTestCase.id]
+                        });
+                        logs.push(`✅ Đã gán thành công Test Case vào requirement ${issueKey}!`);
+                    } else {
+                        logs.push(`⚠️ Không tìm thấy requirement có reference '${issueKey}' trong Sprint ${sprintId}`);
+                    }
+                } else {
+                    logs.push(`⚠️ Không khớp được node Sprint trong Campaign Workspace`);
                 }
-                collectNodes(treeJson);
-                
-                // Keep unique
-                openedNodes = [...new Set(newOpened)];
-                const currentOpenedStr = JSON.stringify(openedNodes.sort());
-                
-                if (currentOpenedStr === prevOpened || openedNodes.length === 0) {
-                    break;
-                }
-                prevOpened = currentOpenedStr;
-                
-                treeJson = await fetch(`${process.env.SQUASH_BASE_URL}/backend/campaign-tree`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": xsrfToken, "Cookie": getCookieString(cookiesMap) },
-                    body: JSON.stringify({ openedNodes, selectedNodes: [] })
-                }).then(r => r.json());
             }
 
-            let sprintNode = null;
-            function searchTree(obj) {
-                if (!obj || typeof obj !== 'object') return;
-                if (Array.isArray(obj)) {
-                    obj.forEach(searchTree);
-                    return;
-                }
-                const idStr = obj.id ? obj.id.toString() : "";
-                if (idStr && idStr.startsWith("Sprint-") && obj.name && obj.name.includes(sprintNumber)) {
-                    sprintNode = obj;
-                }
-                Object.values(obj).forEach(searchTree);
-            }
-            searchTree(treeJson);
-
-            if (!sprintNode) {
-                logs.push(`⚠️ Không tìm thấy node Sprint ${sprintNumber} trong Campaign Workspace.`);
-                return { content: [{ type: "text", text: logs.join('\n') }] };
-            }
-            const sprintId = sprintNode.id.replace("Sprint-", "");
-
-            logs.push(`7. Tìm requirement reference ${issueKey}...`);
-            const sprintView = await fetch(`${process.env.SQUASH_BASE_URL}/backend/sprint-view/${sprintId}?frontEndErrorIsHandled=true`, {
-                headers: { "X-XSRF-TOKEN": xsrfToken, "Cookie": getCookieString(cookiesMap) }
-            }).then(r => r.json());
-
-            let reqVersionId = null;
-            function searchReq(obj) {
-                if (!obj) return;
-                if (obj.reference && obj.reference.toLowerCase() === issueKey.toLowerCase()) {
-                    reqVersionId = obj.id || obj.sprintReqVersionId || obj.sprintReqVersionBindingId;
-                }
-                if (typeof obj === 'object') Object.values(obj).forEach(searchReq);
-            }
-            searchReq(sprintView);
-
-            if (!reqVersionId) {
-                logs.push(`⚠️ Không tìm thấy requirement.`);
-                return { content: [{ type: "text", text: logs.join('\n') }] };
+            // Ghi metadata đồng bộ
+            const syncDir = path.join(projectRoot, `workspace/${issueKey}/test`);
+            if (fs.existsSync(syncDir)) {
+                const syncData = {
+                    testCaseId: targetTestCase.id,
+                    testCaseName: testCaseName,
+                    sprintName: latestSprint.name,
+                    sprintReqVersionId: sprintReqVersionId || null,
+                    syncedAt: new Date().toISOString()
+                };
+                fs.writeFileSync(path.join(syncDir, 'squash_sync.json'), JSON.stringify(syncData, null, 2));
+                logs.push(`Đã lưu truy vết vào ${syncDir}/squash_sync.json`);
             }
 
-            logs.push("8. Gán Test Case vào test plan...");
-            await fetch(`${process.env.SQUASH_BASE_URL}/backend/sprint-req-version/${reqVersionId}/test-plan-items`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": xsrfToken, "Cookie": getCookieString(cookiesMap) },
-                body: JSON.stringify({ testCaseIds: [tcId] })
-            });
+            return {
+                content: [{
+                    type: "text",
+                    text: logs.join("\n") + `\n\n🎉 Hoàn tất đẩy kịch bản lên Squash TM (Test Case ID: ${targetTestCase.id})`
+                }]
+            };
 
-            logs.push(`✅ Hoàn tất toàn bộ quy trình đẩy lên Squash TM cho ${testCaseName}`);
-            return { content: [{ type: "text", text: logs.join('\n') }] };
         } catch (error) {
-            logs.push(`❌ ERROR: ${error.message}`);
-            return { isError: true, content: [{ type: "text", text: logs.join('\n') }] };
+            return {
+                isError: true,
+                content: [{
+                    type: "text",
+                    text: `Lỗi khi push lên Squash TM:\n${logs.join("\n")}\n\nChi tiết lỗi: ${error.message}`
+                }]
+            };
+        } finally {
+            if (fs.existsSync(cookieJar)) fs.unlinkSync(cookieJar);
         }
     }
+    throw new Error(`Tool not found: ${request.params.name}`);
 });
 
-async function main() {
+async function run() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
 }
 
-process.on('SIGINT', async () => {
-    try { await server.close(); } catch {}
-    process.exit(0);
-});
-process.on('SIGTERM', async () => {
-    try { await server.close(); } catch {}
-    process.exit(0);
-});
-
-main();
+run().catch(console.error);

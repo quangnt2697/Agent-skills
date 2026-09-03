@@ -1,0 +1,4701 @@
+Date: Fri, 5 Jun 2026 04:09:15 +0000 (UTC)
+Message-ID: <1197806315.1.1780632555895@42ea14cf84d7>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_0_1366512268.1780632555870"
+
+------=_Part_0_1366512268.1780632555870
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>C=E1=BB=9D phi=C3=AAn</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font: var(--ds-font-body-small, Arial, Helvetica, FreeSans, sans-se=
+rif);
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-text, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        page-break-after: avoid;
+    }
+
+    pre {
+        font: var(--ds-font-code, Monaco, "Courier New", monospace);
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>C=E1=BB=9D phi=C3=AAn</h1>
+    <div class=3D"Section1">
+        <h3 id=3D"C=E1=BB=9Dphi=C3=AAn-1.M=C3=B4t=E1=BA=A3=C3=BDngh=C4=A9ac=
+=C3=A1cphi=C3=AAn">
+<style>[data-colorid=3Dsd146aayw8]{color:#ff5630} html[data-color-mode=3Dda=
+rk] [data-colorid=3Dsd146aayw8]{color:#cf2600}[data-colorid=3Dsuv6707qtn]{c=
+olor:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Dsuv6707qtn]{colo=
+r:#cf2600}[data-colorid=3Dqcdenl766a]{color:#ff5630} html[data-color-mode=
+=3Ddark] [data-colorid=3Dqcdenl766a]{color:#cf2600}[data-colorid=3Df3k9718x=
+lg]{color:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Df3k9718xlg]=
+{color:#cf2600}[data-colorid=3Dwn8ax8pj70]{color:#ff5630} html[data-color-m=
+ode=3Ddark] [data-colorid=3Dwn8ax8pj70]{color:#cf2600}[data-colorid=3Df5mi9=
+0898r]{color:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Df5mi9089=
+8r]{color:#cf2600}[data-colorid=3Dd35czglc8m]{color:#ff5630} html[data-colo=
+r-mode=3Ddark] [data-colorid=3Dd35czglc8m]{color:#cf2600}[data-colorid=3Dtn=
+d9g33z6a]{color:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Dtnd9g=
+33z6a]{color:#cf2600}[data-colorid=3Dtxsnn2n7zd]{color:#ff5630} html[data-c=
+olor-mode=3Ddark] [data-colorid=3Dtxsnn2n7zd]{color:#cf2600}[data-colorid=
+=3Dej8qmy08pa]{color:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3D=
+ej8qmy08pa]{color:#cf2600}[data-colorid=3Dawasupqxk8]{color:#ff5630} html[d=
+ata-color-mode=3Ddark] [data-colorid=3Dawasupqxk8]{color:#cf2600}[data-colo=
+rid=3Dulz8shg8h0]{color:#ff5630} html[data-color-mode=3Ddark] [data-colorid=
+=3Dulz8shg8h0]{color:#cf2600}[data-colorid=3Dr6bclj5bvf]{color:#ff5630} htm=
+l[data-color-mode=3Ddark] [data-colorid=3Dr6bclj5bvf]{color:#cf2600}[data-c=
+olorid=3Ddxx5ygvpry]{color:#ff5630} html[data-color-mode=3Ddark] [data-colo=
+rid=3Ddxx5ygvpry]{color:#cf2600}[data-colorid=3Dgaymra0ht8]{color:#ff5630} =
+html[data-color-mode=3Ddark] [data-colorid=3Dgaymra0ht8]{color:#cf2600}[dat=
+a-colorid=3Dameg16ebb9]{color:#ff5630} html[data-color-mode=3Ddark] [data-c=
+olorid=3Dameg16ebb9]{color:#cf2600}[data-colorid=3Dzsc6telftq]{color:#ff563=
+0} html[data-color-mode=3Ddark] [data-colorid=3Dzsc6telftq]{color:#cf2600}[=
+data-colorid=3Dn9gehvex8e]{color:#ff5630} html[data-color-mode=3Ddark] [dat=
+a-colorid=3Dn9gehvex8e]{color:#cf2600}[data-colorid=3Dt1xn6yqbpm]{color:#ff=
+5630} html[data-color-mode=3Ddark] [data-colorid=3Dt1xn6yqbpm]{color:#cf260=
+0}[data-colorid=3Dw0b4rra45d]{color:#ff5630} html[data-color-mode=3Ddark] [=
+data-colorid=3Dw0b4rra45d]{color:#cf2600}[data-colorid=3Dad0hmw1isr]{color:=
+#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Dad0hmw1isr]{color:#cf=
+2600}[data-colorid=3Dzflmdber3o]{color:#ff5630} html[data-color-mode=3Ddark=
+] [data-colorid=3Dzflmdber3o]{color:#cf2600}[data-colorid=3Dwcbkby7oil]{col=
+or:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Dwcbkby7oil]{color:=
+#cf2600}[data-colorid=3Df2jj8wyxmj]{color:#ff5630} html[data-color-mode=3Dd=
+ark] [data-colorid=3Df2jj8wyxmj]{color:#cf2600}[data-colorid=3Dcojd235n3f]{=
+color:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Dcojd235n3f]{col=
+or:#cf2600}[data-colorid=3Dz8us1segz8]{color:#ff5630} html[data-color-mode=
+=3Ddark] [data-colorid=3Dz8us1segz8]{color:#cf2600}[data-colorid=3Dqyv7t8ks=
+i9]{color:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Dqyv7t8ksi9]=
+{color:#cf2600}[data-colorid=3Ducohjdzdny]{color:#ff5630} html[data-color-m=
+ode=3Ddark] [data-colorid=3Ducohjdzdny]{color:#cf2600}[data-colorid=3Dzr1dl=
+oxlh3]{color:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Dzr1dloxl=
+h3]{color:#cf2600}[data-colorid=3Dsa9o9uuuyr]{color:#ff5630} html[data-colo=
+r-mode=3Ddark] [data-colorid=3Dsa9o9uuuyr]{color:#cf2600}[data-colorid=3Dhb=
+lt9noawb]{color:#ff5630} html[data-color-mode=3Ddark] [data-colorid=3Dhblt9=
+noawb]{color:#cf2600}</style>1. M=C3=B4 t=E1=BA=A3 =C3=BD ngh=C4=A9a c=C3=
+=A1c phi=C3=AAn</h3>
+<div class=3D"table-wrap">
+<table data-table-width=3D"760" data-layout=3D"default" data-local-id=3D"5a=
+072210-deef-4553-9e79-0f5735402904" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 80.0px;">
+<col style=3D"width: 265.0px;">
+<col style=3D"width: 275.0px;">
+<col style=3D"width: 140.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>BoardEvent ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event Name</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>M=C3=B4 t=E1=BA=A3&nbsp;</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Note</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AA1</p></td>
+<td class=3D"confluenceTd">
+<p>Opening CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>M=E1=BB=9F phi=C3=AAn =C4=91=E1=BB=8Bnh k=E1=BB=B3 m=E1=BB=9F c=E1=BB=AD=
+a</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AA2</p></td>
+<td class=3D"confluenceTd">
+<p>Opening CA Execution</p></td>
+<td class=3D"confluenceTd">
+<p>th=E1=BB=B1c hi=E1=BB=87n Kh=E1=BB=9Bp phi=C3=AAn =C4=91=E1=BB=8Bnh k=E1=
+=BB=B3 m=E1=BB=9F c=E1=BB=ADa</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>M=E1=BB=9F phi=C3=AAn li=C3=AAn t=E1=BB=A5c&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc GD c=E1=BB=A7a b=E1=BA=A3ng&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AC2</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Execution</p></td>
+<td class=3D"confluenceTd">
+<p>Th=E1=BB=B1c hi=E1=BB=87n Kh=E1=BB=9Bp l=E1=BB=87nh =C4=91=E1=BB=8Bnh k=
+=E1=BB=B3 d=C3=B3ng c=E1=BB=ADa&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AD1</p></td>
+<td class=3D"confluenceTd">
+<p>Order Reception Start</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u nh=E1=BA=ADn l=E1=BB=87nh&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AD2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Excecution</p></td>
+<td class=3D"confluenceTd">
+<p>Th=E1=BB=B1c hi=E1=BB=87n kh=E1=BB=9Bp l=E1=BB=87nh =C4=91=E1=BB=8Bnh k=
+=E1=BB=B3&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AE1</p></td>
+<td class=3D"confluenceTd">
+<p>Market Halt Release</p></td>
+<td class=3D"confluenceTd">
+<p>G=E1=BB=A1 b=E1=BB=8F ng=E1=BB=ABng GD to=C3=A0n th=E1=BB=8B tr=C6=B0=E1=
+=BB=9Dng&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AE8</p></td>
+<td class=3D"confluenceTd">
+<p>Market Halt</p></td>
+<td class=3D"confluenceTd">
+<p>Ng=E1=BB=ABng GD</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AF1</p></td>
+<td class=3D"confluenceTd">
+<p>CA Open after CB</p></td>
+<td class=3D"confluenceTd">
+<p>=C4=90=E1=BB=8Bnh k=E1=BB=B3 sau CB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AF4</p></td>
+<td class=3D"confluenceTd">
+<p>CB Determ. Start</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u =C4=91=C3=A1nh gi=C3=A1 CB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AF5</p></td>
+<td class=3D"confluenceTd">
+<p>CB Determ. End</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc =C4=91=C3=A1nh gi=C3=A1 CB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AF6</p></td>
+<td class=3D"confluenceTd">
+<p>CB Notice</p></td>
+<td class=3D"confluenceTd">
+<p>Th=C3=B4ng b=C3=A1o CB&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AF7</p></td>
+<td class=3D"confluenceTd">
+<p>CB Notice Clear</p></td>
+<td class=3D"confluenceTd">
+<p>X=C3=B3a th=C3=B4ng b=C3=A1o&nbsp; CB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AF8</p></td>
+<td class=3D"confluenceTd">
+<p>Suspension by CB</p></td>
+<td class=3D"confluenceTd">
+<p>Ng=E1=BB=ABng GD do CB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AQ3</p></td>
+<td class=3D"confluenceTd">
+<p>Market Final Closing</p></td>
+<td class=3D"confluenceTd">
+<p>=C4=91=C3=B3ng c=E1=BB=ADa thi tr=C6=B0=E1=BB=9Dng</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AT4</p></td>
+<td class=3D"confluenceTd">
+<p>PLE Determ. Start</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u =C4=91=C3=A1nh gi=C3=A1 PLE</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AT5</p></td>
+<td class=3D"confluenceTd">
+<p>PLE Determ. End</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc =C4=91=C3=A1nh gi=C3=A1 PLE</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AT6</p></td>
+<td class=3D"confluenceTd">
+<p>PLE Notice</p></td>
+<td class=3D"confluenceTd">
+<p>Th=C3=B4ng b=C3=A1o PLE</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AT8</p></td>
+<td class=3D"confluenceTd">
+<p>PLE Trigger</p></td>
+<td class=3D"confluenceTd">
+<p>K=C3=ADch ho=E1=BA=A1t PLE</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>Ngh=E1=BB=89 tr=C6=B0a</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open after Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>Ti=E1=BA=BFp t=E1=BB=A5c GD sau ngh=E1=BB=89 tr=C6=B0a</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>AX1</p></td>
+<td class=3D"confluenceTd">
+<p>Board Start</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=A3ng b=E1=BA=AFt =C4=91=E1=BA=A7u GD</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>BB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open for Non-PCA Instr.</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u GD phi=C3=AAn li=C3=AAn t=E1=BB=A5c v=E1=BB=
+=9Bi ch=E1=BB=A9ng kho=C3=A1n tr=E1=BA=A1ng th=C3=A1i th=C3=B4ng th=C6=B0=
+=E1=BB=9Dng</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>BC1</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u phi=C3=AAn =C4=91=E1=BB=8Bnh k=E1=BB=B3 =C4=
+=91=C3=B3ng c=E1=BB=ADa</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>BE2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Excecution after Market Halt</p></td>
+<td class=3D"confluenceTd">
+<p>th=E1=BB=B1c hi=E1=BB=87n kh=E1=BB=9Bp =C4=91=E1=BB=8Bnh k=E1=BB=B3 sau =
+market halt</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>BE9</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open after Market Halt</p></td>
+<td class=3D"confluenceTd">
+<p>GD li=C3=AAn t=E1=BB=A5c sau khi ng=E1=BB=ABng GD to=C3=A0n th=E1=BB=8B =
+tr=C6=B0=E1=BB=9Dng</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>BF2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Excecution after CB</p></td>
+<td class=3D"confluenceTd">
+<p>Th=E1=BB=B1c hi=E1=BB=87n kh=E1=BB=9Bp =C4=91=E1=BB=8Bnh k=E1=BB=B3 sau =
+CB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>BF9</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open after CB</p></td>
+<td class=3D"confluenceTd">
+<p>GD li=C3=AAn t=E1=BB=A5c sau khi CB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>CC1</p></td>
+<td class=3D"confluenceTd">
+<p>Closing PCA Open</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u phi=C3=AAn PCA ( kh=E1=BB=9Bp l=E1=BB=87nh =
+=C4=91=E1=BB=8Bnh k=E1=BB=B3 nhi=E1=BB=81u =C4=91=E1=BB=A3t) =C4=91=C3=B3ng=
+ c=E1=BB=ADa&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>CD1</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Open</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u&nbsp; phi=C3=AAn PCA =C4=91=E1=BB=8Bnh k=E1=
+=BB=B3 nhi=E1=BB=81u =C4=91=E1=BB=A3t)</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p>TH=E1=BB=B0c hi=E1=BB=87n Kh=E1=BB=9Bp l=E1=BB=87nh =C4=91=E1=BB=8Bnh k=
+=E1=BB=B3 nhi=E1=BB=81u =C4=91=E1=BB=A3t</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>EI1</p></td>
+<td class=3D"confluenceTd">
+<p>Trading Halt Release by Instr./Product</p></td>
+<td class=3D"confluenceTd">
+<p>G=E1=BB=A1 b=E1=BB=8F d=E1=BB=ABng GD cho 1 ch=E1=BB=A9ng kho=C3=A1n&nbs=
+p;</p></td>
+<td class=3D"confluenceTd">
+<p>Nh=E1=BA=ADn EI1 t=E1=BB=A9c l=C3=A0 s=E1=BA=BD v=C3=A0o phi=C3=AAn KH=
+=E1=BB=9AP L=E1=BB=86NH =C4=90=E1=BB=8ANH K=E1=BB=B2, sau =C4=91=C3=B3 15p =
+S=E1=BB=9F m=E1=BB=9Bi b=E1=BA=AFn EI9 =C4=91=E1=BB=83 v=C3=A0o phi=C3=AAn =
+KL LI=C3=8AN T=E1=BB=A4C</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>EI2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Excecution after Instr./Product Halt</p></td>
+<td class=3D"confluenceTd">
+<p>Th=E1=BB=B1c hi=E1=BB=87n kh=E1=BB=9Bp =C4=91=E1=BB=8Bnh k=E1=BB=B3 sau =
+halt</p></td>
+<td class=3D"confluenceTd">
+<p>FAT ko g=E1=BB=ADi msg n=C3=A0y l=C3=BAc unhalt</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>EI8</p></td>
+<td class=3D"confluenceTd">
+<p>Instr./Product Halt</p></td>
+<td class=3D"confluenceTd">
+<p>D=E1=BB=ABng GD 1 ch=E1=BB=A9ng kho=C3=A1n&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>EI9</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open after Instr./Product Halt</p></td>
+<td class=3D"confluenceTd">
+<p>Giao d=E1=BB=8Bch li=C3=AAn t=E1=BB=A5c sau halt&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>S=C3=A0n UPX th=C3=AC unhalt S=E1=BB=9F ch=E1=BB=89 tr=E1=BA=A3 EI9 =C4=
+=91=E1=BB=83 v=C3=A0o phi=C3=AAn KLLT lu=C3=B4n</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>GT1</p></td>
+<td class=3D"confluenceTd">
+<p>GT Order Load</p></td>
+<td class=3D"confluenceTd">
+<p>T=E1=BA=A3i l=E1=BB=87nh GTC xu=E1=BB=91ng h=E1=BB=87 th=E1=BB=91ng</p><=
+/td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p></p>
+<h3 id=3D"C=E1=BB=9Dphi=C3=AAn-2.Phi=C3=AAnHOSEchoCP,CCQ=C4=91=C3=B3ng,ETF,=
+CW(STO)">2. Phi=C3=AAn HOSE cho CP, CCQ =C4=91=C3=B3ng, ETF, CW (STO)</h3>
+<div class=3D"panel" style=3D"background-color: #C0B6F2;border-width: 1px;"=
+>
+<div class=3D"panelContent" style=3D"background-color: #C0B6F2;">
+<p>Map Phi=C3=AAn theo: <strong>Tsc Product Group ID + Board ID + Board Eve=
+nt ID</strong></p>
+</div>
+</div>
+<p><strong>Buy-in </strong>(=C4=90=C3=A2y l=C3=A0 Board m=E1=BB=9Bi =E2=86=
+=92 Ko map =C4=91=C6=B0=E1=BB=A3c sang phi=C3=AAn c=C5=A9, FE c=E1=BB=A9 l=
+=E1=BA=AFng nghe event n=C3=A0y =C4=91=E1=BB=83 bi=E1=BA=BFt khi n=C3=A0o b=
+=E1=BA=AFt =C4=91=E1=BA=A7u v=C3=A0 k=E1=BA=BFt th=C3=BAc Buy-in)</p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"932475da-f618-4f73-aef3-68af00c7e4f9" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 48.0px;">
+<col style=3D"width: 96.0px;">
+<col style=3D"width: 136.0px;">
+<col style=3D"width: 122.0px;">
+<col style=3D"width: 75.0px;">
+<col style=3D"width: 217.0px;">
+<col style=3D"width: 103.0px;">
+<col style=3D"width: 101.0px;">
+<col style=3D"width: 81.0px;">
+<col style=3D"width: 83.0px;">
+<col style=3D"width: 88.0px;">
+<col style=3D"width: 171.0px;">
+<col style=3D"width: 364.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID Original</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G7</p></td>
+<td class=3D"confluenceTd">
+<p>Buy-In</p></td>
+<td class=3D"confluenceTd">
+<p>AD1</p></td>
+<td class=3D"confluenceTd">
+<p>Order Reception Start</p></td>
+<td rowspan=3D"2" class=3D"confluenceTd">
+<p>STO : HoSE Stock</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>60</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Buy-in</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"qcdenl766a">LO, ATO, MP, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>2</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G7</p></td>
+<td class=3D"confluenceTd">
+<p>Buy-In</p></td>
+<td class=3D"confluenceTd">
+<p>AD2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Excecution</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Buy-in</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"dxx5ygvpry">LO, ATO, MP, ATC</span></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Giao d=E1=BB=8Bch Kh=E1=BB=9Bp l=E1=BB=87nh (L=C3=B4 ch=E1=BA=B5=
+n + L=C3=B4 l=E1=BA=BB)</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"adefc262-2004-43b7-8ab0-997d7f17fc81" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 48.0px;">
+<col style=3D"width: 93.0px;">
+<col style=3D"width: 114.0px;">
+<col style=3D"width: 79.0px;">
+<col style=3D"width: 68.0px;">
+<col style=3D"width: 212.0px;">
+<col style=3D"width: 93.0px;">
+<col style=3D"width: 99.0px;">
+<col style=3D"width: 80.0px;">
+<col style=3D"width: 77.0px;">
+<col style=3D"width: 79.0px;">
+<col style=3D"width: 404.0px;">
+<col style=3D"width: 208.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID Original</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>GT1</p></td>
+<td class=3D"confluenceTd">
+<p>GT Order Load</p></td>
+<td rowspan=3D"46" class=3D"confluenceTd">
+<p>STO : HoSE Stock</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>01</p></td>
+<td class=3D"confluenceTd">
+<p>08:55:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:55:00</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"f2jj8wyxmj">LO, ATO, MP, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>2</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>GT1</p></td>
+<td class=3D"confluenceTd">
+<p>GT Order Load</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>01</p></td>
+<td class=3D"confluenceTd">
+<p>08:55:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:55:00</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"qyv7t8ksi9">LO, ATO, MP, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>3</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AA1</p></td>
+<td class=3D"confluenceTd">
+<p>Opening CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>10</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn ATO l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"awasupqxk8">ATO, LO</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>AA1</p></td>
+<td class=3D"confluenceTd">
+<p>Opening CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>10</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn ATO l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"wn8ax8pj70">ATO, LO</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>5</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>BB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open for Non-PCA Instr.</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn li=C3=AAn t=E1=BB=A5c s=C3=A1ng l=C3=B4 ch=E1=BA=B5n c=E1=BB=
+=A7a CK giao d=E1=BB=8Bch b=C3=ACnh th=C6=B0=E1=BB=9Dng</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"ej8qmy08pa">LO, MP, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>6</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD1</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>80</p></td>
+<td class=3D"confluenceTd">
+<p>09:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n - phi=
+=C3=AAn c=E1=BB=A7a CK b=E1=BB=8B H=E1=BA=A1n ch=E1=BA=BF giao d=E1=BB=8Bch=
+ (HCGD)</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>7</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>BB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open for Non-PCA Instr.</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn li=C3=AAn t=E1=BB=A5c s=C3=A1ng l=C3=B4 l=E1=BA=BB c=E1=BB=A7=
+a CK giao d=E1=BB=8Bch b=C3=ACnh th=C6=B0=E1=BB=9Dng</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"ulz8shg8h0">LO, MP, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>8</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD1</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>80</p></td>
+<td class=3D"confluenceTd">
+<p>09:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB - phi=C3=
+=AAn c=E1=BB=A7a CK b=E1=BB=8B H=E1=BA=A1n ch=E1=BA=BF giao d=E1=BB=8Bch (H=
+CGD)</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>9</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>09:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>10</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>09:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>11</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>09:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>12</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>09:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>13</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>10:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>10:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>14</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>10:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>10:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>15</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>10:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>10:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>16</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>10:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>10:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>17</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>10:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>10:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>18</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>10:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>10:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>19</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>10:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>10:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>20</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>10:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>10:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>21</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>22</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>23</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>24</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>25</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>26</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>27</p></td>
+<td class=3D"confluenceTd">
+<p>G1/G4</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Ngh=E1=BB=89 tr=C6=B0a</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"suv6707qtn">LO, MP, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>28</p></td>
+<td class=3D"confluenceTd">
+<p>G1/G4</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open after Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Ngh=E1=BB=89 tr=C6=B0a, b=E1=BA=AFt =C4=91=E1=BA=
+=A7u li=C3=AAn t=E1=BB=A5c chi=E1=BB=81u</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"r6bclj5bvf">LO, MP, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>29</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:14:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:14:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>30</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>31</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>32</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>33</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>34</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>35</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>14:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>36</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>14:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>37</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>14:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>38</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>14:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:15:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>39</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CD3</p></td>
+<td class=3D"confluenceTd">
+<p>PCA Execution</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn PCA l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>41</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>CC1</p></td>
+<td class=3D"confluenceTd">
+<p>Closing PCA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>30</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u phi=C3=AAn PCA =C4=91=C3=B3ng c=E1=BB=ADa l=
+=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>42</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>BC1</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>30</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn ATC l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"ucohjdzdny">LO, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>43</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>CC1</p></td>
+<td class=3D"confluenceTd">
+<p>Closing PCA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>30</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u phi=C3=AAn PCA =C4=91=C3=B3ng c=E1=BB=ADa l=
+=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>BE ch=C6=B0a tr=E1=BA=A3 PCA</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>44</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>BC1</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>30</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn ATC l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"z8us1segz8">LO, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>45</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd lot</p></td>
+<td class=3D"confluenceTd">
+<p>AD2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Excecution</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt phi=C3=AAn ATC l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"sd146aayw8">LO, MP, ATO, ATC</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>46</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AC2</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Execution</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt phi=C3=AAn ATC l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"tnd9g33z6a">LO, MP, ATO, ATC</span></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Giao d=E1=BB=8Bch Tho=E1=BA=A3 thu=E1=BA=ADn (l=C3=B4 ch=E1=BA=
+=B5n + l=C3=B4 l=E1=BA=BB)</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"dcec3412-0be4-4287-a091-79761fc201d5" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 48.0px;">
+<col style=3D"width: 61.0px;">
+<col style=3D"width: 122.0px;">
+<col style=3D"width: 75.0px;">
+<col style=3D"width: 217.0px;">
+<col style=3D"width: 103.0px;">
+<col style=3D"width: 101.0px;">
+<col style=3D"width: 81.0px;">
+<col style=3D"width: 83.0px;">
+<col style=3D"width: 88.0px;">
+<col style=3D"width: 395.0px;">
+<col style=3D"width: 140.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>7</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td rowspan=3D"10" class=3D"confluenceTd">
+<p>STO : HoSE Stock</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=
+=9D l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>8</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (Odd lot- regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=
+=9D l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>30</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Ngh=E1=BB=89 tr=C6=B0a</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>31</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open after Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Ngh=E1=BB=89 tr=C6=B0a, b=E1=BA=AFt =C4=91=E1=BA=
+=A7u li=C3=AAn t=E1=BB=A5c chi=E1=BB=81u</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>48</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>14:44:59</p></td>
+<td class=3D"confluenceTd">
+<p>14:44:59</p></td>
+<td class=3D"confluenceTd">
+<p>=C4=90=C3=B3ng c=E1=BB=ADa Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=9D =
+l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>49</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (Odd lot- regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>=C4=90=C3=B3ng c=E1=BB=ADa Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=9D =
+l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>52</p></td>
+<td class=3D"confluenceTd">
+<p>T3</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (post)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn sau gi=E1=BB=9D =
+l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>53</p></td>
+<td class=3D"confluenceTd">
+<p>T6</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiaion(Odd lot- post)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn sau gi=E1=BB=9D =
+l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>54&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>T3</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (post)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Tho=E1=BA=A3 thu=E1=BA=ADn sau gi=E1=BB=9D l=C3=B4=
+ ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>55</p></td>
+<td class=3D"confluenceTd">
+<p>T6</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiaion(Odd lot- post)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Tho=E1=BA=A3 thu=E1=BA=ADn sau gi=E1=BB=9D l=C3=B4=
+ l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id=3D"C=E1=BB=9Dphi=C3=AAn-2.Phi=C3=AAnHOSEchoTr=C3=A1iphi=E1=BA=BFu(BD=
+O)">2. Phi=C3=AAn HOSE cho Tr=C3=A1i phi=E1=BA=BFu (BDO)</h3>
+<p>TBC</p>
+<h3 id=3D"C=E1=BB=9Dphi=C3=AAn-3.Phi=C3=AAnHNX(STX)">3. Phi=C3=AAn HNX (STX=
+)</h3>
+<div class=3D"panel" style=3D"background-color: #C0B6F2;border-width: 1px;"=
+>
+<div class=3D"panelContent" style=3D"background-color: #C0B6F2;">
+<p>Map Phi=C3=AAn theo: <strong>Tsc Product Group ID + Board ID + Board Eve=
+nt ID</strong></p>
+</div>
+</div>
+<p><strong>Buy-in </strong>(=C4=90=C3=A2y l=C3=A0 Board m=E1=BB=9Bi =E2=86=
+=92 Ko map =C4=91=C6=B0=E1=BB=A3c sang phi=C3=AAn c=C5=A9, FE c=E1=BB=A9 l=
+=E1=BA=AFng nghe event n=C3=A0y =C4=91=E1=BB=83 bi=E1=BA=BFt khi n=C3=A0o b=
+=E1=BA=AFt =C4=91=E1=BA=A7u v=C3=A0 k=E1=BA=BFt th=C3=BAc Buy-in)</p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"center" data-local-id=3D"11=
+f5466b-9863-4acf-b2bf-d17dbf2708c5" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 58.0px;">
+<col style=3D"width: 93.0px;">
+<col style=3D"width: 153.0px;">
+<col style=3D"width: 80.0px;">
+<col style=3D"width: 95.0px;">
+<col style=3D"width: 193.0px;">
+<col style=3D"width: 189.0px;">
+<col style=3D"width: 182.0px;">
+<col style=3D"width: 124.0px;">
+<col style=3D"width: 136.0px;">
+<col style=3D"width: 143.0px;">
+<col style=3D"width: 140.0px;">
+<col style=3D"width: 209.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID Original</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G7</p></td>
+<td class=3D"confluenceTd">
+<p>Buy-In</p></td>
+<td class=3D"confluenceTd">
+<p>AD1</p></td>
+<td class=3D"confluenceTd">
+<p>Order Reception Start</p></td>
+<td class=3D"confluenceTd">
+<p>STX</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>60</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Buy-in</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"t1xn6yqbpm">LO, MTL, ATC, MOK, MAK</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>2</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G7</p></td>
+<td class=3D"confluenceTd">
+<p>Buy-In</p></td>
+<td class=3D"confluenceTd">
+<p>AD2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Excecution</p></td>
+<td class=3D"confluenceTd">
+<p>STX</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Buy-in</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"hblt9noawb">LO, MTL, ATC, MOK, MAK</span></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Giao d=E1=BB=8Bch Kh=E1=BB=9Bp l=E1=BB=87nh (L=C3=B4 ch=E1=BA=B5=
+n + L=C3=B4 l=E1=BA=BB)</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"87e4a2a8-5799-4fad-ad85-a68c45db3caa" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 48.0px;">
+<col style=3D"width: 53.0px;">
+<col style=3D"width: 69.0px;">
+<col style=3D"width: 57.0px;">
+<col style=3D"width: 67.0px;">
+<col style=3D"width: 164.0px;">
+<col style=3D"width: 67.0px;">
+<col style=3D"width: 94.0px;">
+<col style=3D"width: 74.0px;">
+<col style=3D"width: 60.0px;">
+<col style=3D"width: 66.0px;">
+<col style=3D"width: 270.0px;">
+<col style=3D"width: 140.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID Original</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>3</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AX1</p></td>
+<td class=3D"confluenceTd">
+<p>Board Start</p></td>
+<td rowspan=3D"13" class=3D"confluenceTd">
+<p>STX</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>M=E1=BB=9F B=E1=BA=A3ng G1 - l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"zsc6telftq">LO, MTL, ATC, MOK, MAK</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>4</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>BB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open for Non-PCA Instr.</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Phi=C3=AAn Li=C3=AAn t=E1=BB=A5c l=C3=B4 ch=
+=E1=BA=B5n c=E1=BB=A7a CK giao d=E1=BB=8Bch b=C3=ACnh th=C6=B0=E1=BB=9Dng</=
+p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"ameg16ebb9">LO, MTL, ATC, MOK, MAK</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>5</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd Lot</p></td>
+<td class=3D"confluenceTd">
+<p>AX1</p></td>
+<td class=3D"confluenceTd">
+<p>Board Start</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>M=E1=BB=9F b=E1=BA=A3ng G4 - l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"f5mi90898r">LO, MTL, ATC, MOK, MAK</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>6</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd Lot</p></td>
+<td class=3D"confluenceTd">
+<p>BB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open for Non-PCA Instr.</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Phi=C3=AAn Li=C3=AAn t=E1=BB=A5c l=C3=B4 l=
+=E1=BA=BB c=E1=BB=A7a CK giao d=E1=BB=8Bch b=C3=ACnh th=C6=B0=E1=BB=9Dng</p=
+></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"cojd235n3f">LO, MTL, ATC, MOK, MAK</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>9</p></td>
+<td class=3D"confluenceTd">
+<p>G1/G4</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Ngh=E1=BB=89 tr=C6=B0a</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"d35czglc8m">LO, MTL, ATC, MOK, MAK</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>10</p></td>
+<td class=3D"confluenceTd">
+<p>G1/G4</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open after Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Ngh=E1=BB=89 tr=C6=B0a, b=E1=BA=AFt =C4=91=E1=BA=
+=A7u li=C3=AAn t=E1=BB=A5c chi=E1=BB=81u</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"wcbkby7oil">LO, MTL, ATC, MOK, MAK</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>11</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>BC1</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>30</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Phi=C3=AAn ATC l=C3=B4 ch=E1=BA=B5n</p></td=
+>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"txsnn2n7zd">LO, ATC, PLO</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>12</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd Lot</p></td>
+<td class=3D"confluenceTd">
+<p>BC1</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>30</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Phi=C3=AAn ATC l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"n9gehvex8e">LO, ATC, PLO</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>15</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd Lot</p></td>
+<td class=3D"confluenceTd">
+<p>AD2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Excecution</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt phi=C3=AAn ATC l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"zr1dloxlh3">PLO</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>16</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AC2</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Execution</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt phi=C3=AAn ATC l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"w0b4rra45d">PLO</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>17</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G3</p></td>
+<td class=3D"confluenceTd">
+<p>Post closing</p></td>
+<td class=3D"confluenceTd">
+<p>AD1</p></td>
+<td class=3D"confluenceTd">
+<p>Order Reception Start</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>60</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u nh=E1=BA=ADn l=E1=BB=87nh cho phi=C3=AAn Kh=
+=E1=BB=9Bp l=E1=BB=87nh sau gi=E1=BB=9D l=C3=B4 ch=E1=BA=B5n (10p =C4=91=E1=
+=BA=A7u ch=E1=BB=89 nh=E1=BA=ADn l=E1=BB=87nh)</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"gaymra0ht8">PLO</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>21</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G3</p></td>
+<td class=3D"confluenceTd">
+<p>Post closing</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>14:55:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:55:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u cho kh=E1=BB=9Bp l=E1=BB=87nh li=C3=AAn t=
+=E1=BB=A5c =E1=BB=9F Phi=C3=AAn Kh=E1=BB=9Bp l=E1=BB=87nh sau gi=E1=BB=9D</=
+p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"zflmdber3o">PLO</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>24</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G3</p></td>
+<td class=3D"confluenceTd">
+<p>Post closing</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Kh=E1=BB=9Bp l=E1=BB=87nh sau gi=E1=BB=9D</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"ad0hmw1isr">LO, MTL, ATC, MOK, MAK, PLO</span></p>=
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Giao d=E1=BB=8Bch Tho=E1=BA=A3 thu=E1=BA=ADn (l=C3=B4 ch=E1=BA=
+=B5n + l=C3=B4 l=E1=BA=BB)</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"a6d910ca-b702-41c0-8d3b-bf2b256edcb9" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 48.0px;">
+<col style=3D"width: 85.0px;">
+<col style=3D"width: 85.0px;">
+<col style=3D"width: 433.0px;">
+<col style=3D"width: 93.0px;">
+<col style=3D"width: 239.0px;">
+<col style=3D"width: 85.0px;">
+<col style=3D"width: 100.0px;">
+<col style=3D"width: 79.0px;">
+<col style=3D"width: 77.0px;">
+<col style=3D"width: 74.0px;">
+<col style=3D"width: 402.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID Original</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map phi=C3=AAn</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>7</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td rowspan=3D"10" class=3D"confluenceTd">
+<p>STX</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=
+=9D l=C3=B4 ch=E1=BA=B5n</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>8</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (Odd lot- regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=
+=9D l=C3=B4 l=E1=BA=BB</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>9</p></td>
+<td class=3D"confluenceTd">
+<p>T1/T4</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Ngh=E1=BB=89 tr=C6=B0a</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>10</p></td>
+<td class=3D"confluenceTd">
+<p>T1/T4</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open after Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Ngh=E1=BB=89 tr=C6=B0a</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>13</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=9D l=C3=
+=B4 ch=E1=BA=B5n</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>14</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (Odd lot- regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=9D l=C3=
+=B4 l=E1=BA=BB</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>18</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>T3</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (post)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn sau gi=E1=BB=9D =
+l=C3=B4 ch=E1=BA=B5n</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>19</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>T6</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiaion(Odd lot- post)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn sau gi=E1=BB=9D =
+l=C3=B4 l=E1=BA=BB</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>22</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>T3</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (post)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Tho=E1=BA=A3 thu=E1=BA=ADn sau gi=E1=BB=9D l=C3=B4=
+ ch=E1=BA=B5n</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>23</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>T6</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiaion(Odd lot- post)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Tho=E1=BA=A3 thu=E1=BA=ADn sau gi=E1=BB=9D l=C3=B4=
+ l=E1=BA=BB</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>T1/T4</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AQ3</p></td>
+<td class=3D"confluenceTd">
+<p>Interface Connection Cut-off</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>15:05:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:05:00</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id=3D"C=E1=BB=9Dphi=C3=AAn-3.Phi=C3=AAnUpcom(UPX)">3. Phi=C3=AAn Upcom =
+(UPX)</h3>
+<div class=3D"panel" style=3D"background-color: #C0B6F2;border-width: 1px;"=
+>
+<div class=3D"panelContent" style=3D"background-color: #C0B6F2;">
+<p>Map Phi=C3=AAn theo: <strong>Tsc Product Group ID + Board ID + Board Eve=
+nt ID</strong></p>
+</div>
+</div>
+<p><strong>Buy-in </strong>(=C4=90=C3=A2y l=C3=A0 Board m=E1=BB=9Bi =E2=86=
+=92 Ko map =C4=91=C6=B0=E1=BB=A3c sang phi=C3=AAn c=C5=A9, FE c=E1=BB=A9 l=
+=E1=BA=AFng nghe event n=C3=A0y =C4=91=E1=BB=83 bi=E1=BA=BFt khi n=C3=A0o b=
+=E1=BA=AFt =C4=91=E1=BA=A7u v=C3=A0 k=E1=BA=BFt th=C3=BAc Buy-in)</p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"310c9096-a12d-46ab-8462-a01a8b801350" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 50.0px;">
+<col style=3D"width: 140.0px;">
+<col style=3D"width: 129.0px;">
+<col style=3D"width: 75.0px;">
+<col style=3D"width: 86.0px;">
+<col style=3D"width: 212.0px;">
+<col style=3D"width: 121.0px;">
+<col style=3D"width: 128.0px;">
+<col style=3D"width: 100.0px;">
+<col style=3D"width: 106.0px;">
+<col style=3D"width: 96.0px;">
+<col style=3D"width: 428.0px;">
+<col style=3D"width: 129.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID Original</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G7</p></td>
+<td class=3D"confluenceTd">
+<p>Buy-In</p></td>
+<td class=3D"confluenceTd">
+<p>AD1</p></td>
+<td class=3D"confluenceTd">
+<p>Order Reception Start</p></td>
+<td class=3D"confluenceTd">
+<p>UPX</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>60</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Buy-in</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"f3k9718xlg">LO</span></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>2</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G7</p></td>
+<td class=3D"confluenceTd">
+<p>Buy-In</p></td>
+<td class=3D"confluenceTd">
+<p>AD2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Excecution</p></td>
+<td class=3D"confluenceTd">
+<p>UPX</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Buy-in</p></td>
+<td class=3D"confluenceTd">
+<p><span data-colorid=3D"sa9o9uuuyr">LO</span></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Giao d=E1=BB=8Bch Kh=E1=BB=9Bp l=E1=BB=87nh (L=C3=B4 ch=E1=BA=B5=
+n + L=C3=B4 l=E1=BA=BB)</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"wide" data-local-id=3D"09be=
+e741-c4b5-4263-b3e1-3cd039872b68" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 48.0px;">
+<col style=3D"width: 140.0px;">
+<col style=3D"width: 148.0px;">
+<col style=3D"width: 94.0px;">
+<col style=3D"width: 71.0px;">
+<col style=3D"width: 222.0px;">
+<col style=3D"width: 94.0px;">
+<col style=3D"width: 118.0px;">
+<col style=3D"width: 89.0px;">
+<col style=3D"width: 94.0px;">
+<col style=3D"width: 97.0px;">
+<col style=3D"width: 456.0px;">
+<col style=3D"width: 129.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID Original</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>3</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td rowspan=3D"6" class=3D"confluenceTd">
+<p>UPX</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Phi=C3=AAn li=C3=AAn t=E1=BB=A5c s=C3=A1ng =
+l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>LO</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd Lot</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Phi=C3=AAn li=C3=AAn t=E1=BB=A5c s=C3=A1ng =
+l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>LO</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>8</p></td>
+<td class=3D"confluenceTd">
+<p>G1/G4</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Ngh=E1=BB=89 tr=C6=B0a</p></td>
+<td class=3D"confluenceTd">
+<p>LO</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>9</p></td>
+<td class=3D"confluenceTd">
+<p>G1/G4</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open after Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Ngh=E1=BB=89 tr=C6=B0a, b=E1=BA=AFt =C4=91=C3=A2=
+=C3=B9 phi=C3=AAn li=C3=AAn t=E1=BB=A5c chi=E1=BB=81u</p></td>
+<td class=3D"confluenceTd">
+<p>LO</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>13</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>G4</p></td>
+<td class=3D"confluenceTd">
+<p>Odd Lot</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt phi=C3=AAn l=C3=B4 l=E1=BA=BB</p></td>
+<td class=3D"confluenceTd">
+<p>LO</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>14</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt phi=C3=AAn l=C3=B4 ch=E1=BA=B5n</p></td>
+<td class=3D"confluenceTd">
+<p>LO</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Giao d=E1=BB=8Bch Tho=E1=BA=A3 thu=E1=BA=ADn (L=C3=B4 ch=E1=BA=
+=B5n + L=C3=B4 l=E1=BA=BB)</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"wide" data-local-id=3D"5b0f=
+d899-cef8-47bd-8928-ed4e5046ae8a" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 52.0px;">
+<col style=3D"width: 73.0px;">
+<col style=3D"width: 243.0px;">
+<col style=3D"width: 87.0px;">
+<col style=3D"width: 236.0px;">
+<col style=3D"width: 111.0px;">
+<col style=3D"width: 138.0px;">
+<col style=3D"width: 104.0px;">
+<col style=3D"width: 111.0px;">
+<col style=3D"width: 114.0px;">
+<col style=3D"width: 531.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map phi=C3=AAn</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>5</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td rowspan=3D"6" class=3D"confluenceTd">
+<p>UPX</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=
+=9D l=C3=B4 ch=E1=BA=B5n</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>6</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (Odd lot- regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=
+=9D l=C3=B4 l=E1=BA=BB</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>8</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Ngh=E1=BB=89 tr=C6=B0a</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>9</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open after Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Ngh=E1=BB=89 tr=C6=B0a</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>11</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=9D l=C3=
+=B4 ch=E1=BA=B5n</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>12</p></td>
+<td class=3D"confluenceTd">
+<p>T4</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (Odd lot- regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>15:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc Tho=E1=BA=A3 thu=E1=BA=ADn trong gi=E1=BB=9D l=C3=
+=B4 l=E1=BA=BB</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p></p>
+<h3 id=3D"C=E1=BB=9Dphi=C3=AAn-3.Phi=C3=AAnPh=C3=A1isinh(maretID=3DDVX&amp;=
+product_group_id=3DFIO(IndexFuture)/FBX(BondFuture)">3. Phi=C3=AAn Ph=C3=A1=
+i sinh (maretID =3D DVX &amp; product_group_id =3D FIO (Index Future) / FBX=
+ (Bond Future)</h3>
+<div class=3D"panel" style=3D"background-color: #C0B6F2;border-width: 1px;"=
+>
+<div class=3D"panelContent" style=3D"background-color: #C0B6F2;">
+<p>Map Phi=C3=AAn theo: <strong>Tsc Product Group ID + Board Event ID</stro=
+ng></p>
+</div>
+</div>
+<p><strong>Index Future (FIO) - Kh=E1=BB=9Bp l=E1=BB=87nh</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"ea8e24c9-9eb7-43d8-8991-b03587b6e6c6" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 49.0px;">
+<col style=3D"width: 140.0px;">
+<col style=3D"width: 83.0px;">
+<col style=3D"width: 76.0px;">
+<col style=3D"width: 74.0px;">
+<col style=3D"width: 241.0px;">
+<col style=3D"width: 80.0px;">
+<col style=3D"width: 99.0px;">
+<col style=3D"width: 77.0px;">
+<col style=3D"width: 135.0px;">
+<col style=3D"width: 72.0px;">
+<col style=3D"width: 71.0px;">
+<col style=3D"width: 317.0px;">
+<col style=3D"width: 140.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID Original</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map Phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>GT1</p></td>
+<td class=3D"confluenceTd">
+<p>GT Order Load</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>01</p></td>
+<td class=3D"confluenceTd">
+<p>GT Order Load</p></td>
+<td class=3D"confluenceTd">
+<p>08:40:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:40:00</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>LO, ATO, MTL, MAK, MOK</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>2</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AA1</p></td>
+<td class=3D"confluenceTd">
+<p>Opening CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>10</p></td>
+<td class=3D"confluenceTd">
+<p>Opening Call Auction</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn ATO</p></td>
+<td class=3D"confluenceTd">
+<p>ATO, LO</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>4</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>BB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open for Non-PCA Instrument</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn li=C3=AAn t=E1=BB=A5c s=C3=A1ng</p></td>
+<td class=3D"confluenceTd">
+<p>LO, ATC, MTL, MOK, MAK</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>5</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u ngh=E1=BB=89 tr=C6=B0a (=C3=A1p d=E1=BB=A5n=
+g cho c=E1=BA=A3 giao d=E1=BB=8Bch kh=E1=BB=9Bp l=E1=BB=87nh v=C3=A0 giao d=
+=E1=BB=8Bch tho=E1=BA=A3 thu=E1=BA=ADn)</p></td>
+<td class=3D"confluenceTd">
+<p>LO, ATC, MTL, MOK, MAK</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>6</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open After Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc ngh=E1=BB=89 tr=C6=B0a, b=E1=BA=AFt =C4=91=E1=BA=
+=A7u phi=C3=AAn li=C3=AAn t=E1=BB=A5c chi=E1=BB=81u (=C3=A1p d=E1=BB=A5ng c=
+ho c=E1=BA=A3 giao d=E1=BB=8Bch kh=E1=BB=9Bp l=E1=BB=87nh v=C3=A0 giao d=E1=
+=BB=8Bch tho=E1=BA=A3 thu=E1=BA=ADn)</p></td>
+<td class=3D"confluenceTd">
+<p>LO, ATC, MTL, MOK, MAK</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>7</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>BC1</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>30</p></td>
+<td class=3D"confluenceTd">
+<p>Closing Call Auction</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn ATC</p></td>
+<td class=3D"confluenceTd">
+<p>LO, ATC</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>9</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AC2</p></td>
+<td class=3D"confluenceTd">
+<p>Closing CA Execution</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt phi=C3=AAn ATC</p></td>
+<td class=3D"confluenceTd">
+<p>LO, ATO, ATC, MTL, MAK, MOK</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Index Future (FIO) - Tho=E1=BA=A3 thu=E1=BA=ADn</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"8eb8f17a-30b2-4c1e-a3fc-44b91f60a53f" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 49.0px;">
+<col style=3D"width: 64.0px;">
+<col style=3D"width: 95.0px;">
+<col style=3D"width: 74.0px;">
+<col style=3D"width: 241.0px;">
+<col style=3D"width: 80.0px;">
+<col style=3D"width: 99.0px;">
+<col style=3D"width: 77.0px;">
+<col style=3D"width: 135.0px;">
+<col style=3D"width: 72.0px;">
+<col style=3D"width: 71.0px;">
+<col style=3D"width: 317.0px;">
+<col style=3D"width: 140.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map Phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>3</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>Continuos Auction</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Giao d=E1=BB=8Bch tho=E1=BA=A3 thu=E1=BA=AD=
+n</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>5</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u ngh=E1=BB=89 tr=C6=B0a (=C3=A1p d=E1=BB=A5n=
+g cho c=E1=BA=A3 giao d=E1=BB=8Bch kh=E1=BB=9Bp l=E1=BB=87nh v=C3=A0 giao d=
+=E1=BB=8Bch tho=E1=BA=A3 thu=E1=BA=ADn)</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>6</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open After Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc ngh=E1=BB=89 tr=C6=B0a, b=E1=BA=AFt =C4=91=E1=BA=
+=A7u phi=C3=AAn li=C3=AAn t=E1=BB=A5c chi=E1=BB=81u (=C3=A1p d=E1=BB=A5ng c=
+ho c=E1=BA=A3 giao d=E1=BB=8Bch kh=E1=BB=9Bp l=E1=BB=87nh v=C3=A0 giao d=E1=
+=BB=8Bch tho=E1=BA=A3 thu=E1=BA=ADn)</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>8</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>FIO</p></td>
+<td class=3D"confluenceTd">
+<p>BE</p></td>
+<td class=3D"confluenceTd">
+<p>99</p></td>
+<td class=3D"confluenceTd">
+<p>Board Closing</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>=C4=90=C3=B3ng Giao d=E1=BB=8Bch tho=E1=BA=A3 thu=E1=BA=ADn</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p></p>
+<p><strong>Bond Future (FBX) - Kh=E1=BB=9Bp l=E1=BB=87nh</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"6394e459-8095-48ab-9801-c08fd59cac46" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 60.0px;">
+<col style=3D"width: 78.0px;">
+<col style=3D"width: 115.0px;">
+<col style=3D"width: 90.0px;">
+<col style=3D"width: 222.0px;">
+<col style=3D"width: 102.0px;">
+<col style=3D"width: 109.0px;">
+<col style=3D"width: 123.0px;">
+<col style=3D"width: 133.0px;">
+<col style=3D"width: 159.0px;">
+<col style=3D"width: 132.0px;">
+<col style=3D"width: 183.0px;">
+<col style=3D"width: 154.0px;">
+<col style=3D"width: 140.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID Original</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map Phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>GT1</p></td>
+<td class=3D"confluenceTd">
+<p>GT Order Load</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>01</p></td>
+<td class=3D"confluenceTd">
+<p>GT Order Load</p></td>
+<td class=3D"confluenceTd">
+<p>08:40:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:40:00</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>LO, ATO, MTL, MAK, MOK</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>3</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AA1</p></td>
+<td class=3D"confluenceTd">
+<p>Opening CA Open</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p>SS</p></td>
+<td class=3D"confluenceTd">
+<p>10</p></td>
+<td class=3D"confluenceTd">
+<p>Opening Call Auction</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn ATO</p></td>
+<td class=3D"confluenceTd">
+<p>ATO, LO</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>7</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>BB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open for Non-PCA Instrument</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>09:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>Phi=C3=AAn li=C3=AAn t=E1=BB=A5c s=C3=A1ng</p></td>
+<td class=3D"confluenceTd">
+<p>LO, MTL, MOK, MAK</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>9</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u ngh=E1=BB=89 tr=C6=B0a (=C3=A1p d=E1=BB=A5n=
+g cho c=E1=BA=A3 giao d=E1=BB=8Bch kh=E1=BB=9Bp l=E1=BB=87nh v=C3=A0 giao d=
+=E1=BB=8Bch tho=E1=BA=A3 thu=E1=BA=ADn)</p></td>
+<td class=3D"confluenceTd">
+<p>LO, MTL, MOK, MAK</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>11</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open After Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc ngh=E1=BB=89 tr=C6=B0a, b=E1=BA=AFt =C4=91=E1=BA=
+=A7u phi=C3=AAn li=C3=AAn t=E1=BB=A5c chi=E1=BB=81u (=C3=A1p d=E1=BB=A5ng c=
+ho c=E1=BA=A3 giao d=E1=BB=8Bch kh=E1=BB=9Bp l=E1=BB=87nh v=C3=A0 giao d=E1=
+=BB=8Bch tho=E1=BA=A3 thu=E1=BA=ADn)</p></td>
+<td class=3D"confluenceTd">
+<p>LO, MTL, MOK, MAK</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>16</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>G1</p></td>
+<td class=3D"confluenceTd">
+<p>Main</p></td>
+<td class=3D"confluenceTd">
+<p>AD2</p></td>
+<td class=3D"confluenceTd">
+<p>CA Execution</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt phi=C3=AAn</p></td>
+<td class=3D"confluenceTd">
+<p>LO, ATO, MTL, MAK, MOK</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Bond Future (FBX) - Tho=E1=BA=A3 thu=E1=BA=ADn</strong></p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"1800" data-layout=3D"full-width" data-local-id=
+=3D"77ba8e1d-13e4-4447-909d-9622fb9c4f37" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 72.0px;">
+<col style=3D"width: 85.0px;">
+<col style=3D"width: 124.0px;">
+<col style=3D"width: 98.0px;">
+<col style=3D"width: 240.0px;">
+<col style=3D"width: 110.0px;">
+<col style=3D"width: 118.0px;">
+<col style=3D"width: 97.0px;">
+<col style=3D"width: 179.0px;">
+<col style=3D"width: 97.0px;">
+<col style=3D"width: 97.0px;">
+<col style=3D"width: 317.0px;">
+<col style=3D"width: 166.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>No</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Board Event</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Tsc Product Group ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Session Open Close Code</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session ID</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Trading Session</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Expected Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Processed Time</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Map Phi=C3=AAn</p></td>
+<td data-highlight-colour=3D"#ff8f73" class=3D"confluenceTd">
+<p>Lo=E1=BA=A1i l=E1=BB=87nh</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>5</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB1</p></td>
+<td class=3D"confluenceTd">
+<p>Cont.A Open</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p>BS</p></td>
+<td class=3D"confluenceTd">
+<p>40</p></td>
+<td class=3D"confluenceTd">
+<p>Continuos Auction</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>08:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u Giao d=E1=BB=8Bch tho=E1=BA=A3 thu=E1=BA=AD=
+n</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>9</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW8</p></td>
+<td class=3D"confluenceTd">
+<p>Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>11:30:00</p></td>
+<td class=3D"confluenceTd">
+<p>B=E1=BA=AFt =C4=91=E1=BA=A7u ngh=E1=BB=89 tr=C6=B0a (=C3=A1p d=E1=BB=A5n=
+g cho c=E1=BA=A3 giao d=E1=BB=8Bch kh=E1=BB=9Bp l=E1=BB=87nh v=C3=A0 giao d=
+=E1=BB=8Bch tho=E1=BA=A3 thu=E1=BA=ADn)</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>11</p></td>
+<td class=3D"confluenceTd">
+<p>AL</p></td>
+<td class=3D"confluenceTd">
+<p>ALL</p></td>
+<td class=3D"confluenceTd">
+<p>AW9</p></td>
+<td class=3D"confluenceTd">
+<p>Open After Lunch Break</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>13:00:00</p></td>
+<td class=3D"confluenceTd">
+<p>K=E1=BA=BFt th=C3=BAc ngh=E1=BB=89 tr=C6=B0a, b=E1=BA=AFt =C4=91=E1=BA=
+=A7u phi=C3=AAn li=C3=AAn t=E1=BB=A5c chi=E1=BB=81u (=C3=A1p d=E1=BB=A5ng c=
+ho c=E1=BA=A3 giao d=E1=BB=8Bch kh=E1=BB=9Bp l=E1=BB=87nh v=C3=A0 giao d=E1=
+=BB=8Bch tho=E1=BA=A3 thu=E1=BA=ADn)</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>14</p></td>
+<td class=3D"confluenceTd">
+<p>T1</p></td>
+<td class=3D"confluenceTd">
+<p>Negotiation (regular)</p></td>
+<td class=3D"confluenceTd">
+<p>AB2</p></td>
+<td class=3D"confluenceTd">
+<p>Board Trading Close</p></td>
+<td class=3D"confluenceTd">
+<p>FBX</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p>14:45:00</p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+<td class=3D"confluenceTd">
+<p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p></p>
+<p></p>
+<p>li=E1=BB=87u tham kh=E1=BA=A3o c=E1=BB=A7a HNX:</p>
+<p class=3D"media-group"><img height=3D"250" style=3D"margin: 2px; border: =
+1px solid #ddd; box-sizing: border-box; vertical-align: text-bottom;" src=
+=3D"5a9816c6fcee00fbfe9772d630308dd6546b6927b3bc8ef373466915e5174424" width=
+=3D"250"><img height=3D"250" style=3D"margin: 2px; border: 1px solid #ddd; =
+box-sizing: border-box; vertical-align: text-bottom;" src=3D"df506cdcda2ff2=
+8ce27dcc5e5c1e1d5b0134bbd84e21e783dd0cab72dd44f986" width=3D"250"></p>
+<p></p>
+    </div>
+</body>
+</html>
+------=_Part_0_1366512268.1780632555870
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: base64
+Content-Location: file:///C:/5a9816c6fcee00fbfe9772d630308dd6546b6927b3bc8ef373466915e5174424
+
+iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAMAAAC/MqoPAAADAFBMVEX19fXv7+98fHx1dXV9fX23
+t7eenp5wcHDn5+f09PTz8/Pd3d2SkpLY2Njt7e3Q0NCioqJycnKqqqq7u7uurq6CgoKGhobOzs7D
+w8PR0dGNjY3Hx8fj4+PGxsbS0tKoqKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAABYhwFnAAAEhUlEQVR4Xu3cDXOaSBjA8RUhi+8ajSaX2PL9P1Wml5sz3mVaq9Go
+UY4FQVxNJtAK8fz/JpXl4WHHx1WcyoIQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHAC
+CnrgOOz1uqjH3rAyjBc9dsJs07L12Ftsy/hw7gm4sPTIe6wLPXIUhh44ig+/233FtR45YVIPvC9h
+ekrZjPqndMalJ/oQpmau9Ej9+mJudK7cub5B2U8/hpxKr02Ls4UrVpPaodr30k+YftzqyZugcSNr
+u1t8evop02qpm1/CZqNYj28JZFN6Loe5VvNb2Bw1WvEtWTL1QBams217nsszyI72Di7G/tNUVwda
+bfv/9w1fMt3tys/cRj2P0j8JSj9HlH6Ocis9my+w9+RWev4o/RxR+jmi9HNE6eeI0vNTLpf1UEZy
+KV0Vu9ycSS5aU1HKpfo8Sp+NbG+wm8FKbS2EO9pNyEYepYtyQ0yb36+F+kX+aSpEI5dRz+XEk2u8
+iJ/lYsXofK+5XunWbPeMejYnnnIpvTouL8VC1IrPxngpRGVW3j3zlk3p2dB/l+jL2HQZ27jdrvj0
+9FO2V0vbrITNmmzHtyh76Sdsv5a+0ezZpZLda5r6mB9KP10HaqlbVVO2zKp1YObegfSTlbCWhOkp
+5fK9/jlQ+pGtEk39tLP5Ws+mdCNRMauMnpQeOArDTTI9OKPSD3y1HMP5TgoHAAAAAAAAAByboweS
+cPSAxtEDCaX9td/ZnA2Vzk74lKQtXYh+9PC2ez2QxL0e+M1Sl14bqsehmvpUa0nZsr13QkdK2RHx
+hvfX9tr+nWa+Sld2nG0HXtyfS6ISquVtIFyqVLXPV9VR1Iuoy0vv8VKq80ZRH2mkLn0qvghxI9QN
+ZxbVhbTUJfjjruyO1XS4qOGZtORVYelVOOg2uuNtBwu3ILsTIW4nHXmxfN0GwqXHGrQarYGqLexF
+XQT73Be95yt1XWwsNTuOsIpqlmd4sKlLNTRew9ppeH8Nr33ntYMR3qR75N1m2QsTwsBm6XhN9cr6
+HYW9KH15q3ZS2zepqaQedWGZlYrpX4ZcaUnnUp0ifBabiXhRw6OG6kHdn0EF1b+N9j9XHf+ZD1zX
+NV+2gWiDCDrxO4p68fx5/bB+9Fvx1Mw4Xu3dKyt47f+4Kxe8paM+i7Yao6gRfGKDLD8YrPq+XBTl
+RXzkNoFw6YT7BB2J8FGIqqvS1Fq4SxrpR12Yo/Da88nD1H/+ai6cP4kgasSpYDRbzvNtsTLVsSo6
++xwGwqV4o6P2slnYHNtiqYn9Qumz+Xxz44WXes8/3k/69b5RjTdiqioYOyTJtl1X3wKtQce22/7B
+IAiES896vyNHVCadUXPiv4ix1OR+ofSIXZj/KKlGbTgfVp7ijZin6+FoWPk7Wm9N3Ll62wy6Y9ed
+tLaBcOlZqn2udzuqv7p/icfaq7qzSSw1X85eY89tNlPiPiTDl8y4+1H6N3aXirxlWPrlo5i75sIJ
+1u7jmwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv9t/rnny9Hy9eEQAAAAASUVORK5CYII=
+
+------=_Part_0_1366512268.1780632555870
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: base64
+Content-Location: file:///C:/df506cdcda2ff28ce27dcc5e5c1e1d5b0134bbd84e21e783dd0cab72dd44f986
+
+iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAMAAAC/MqoPAAADAFBMVEX19fXv7+98fHx1dXV9fX23
+t7eenp5wcHDn5+f09PTz8/Pd3d2SkpLY2Njt7e3Q0NCioqJycnKqqqq7u7uurq6CgoKGhobOzs7D
+w8PR0dGNjY3Hx8fj4+PGxsbS0tKoqKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAABYhwFnAAAFqklEQVR4Xu3cC3eiOBQH8IBA8AHV+mzVKd//S2132jnbdttxfNSK
+D9gkAob42LFnhbr+fzNiuLko9xBwpqQSAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAcAY0NXAadhAU1NgeK12fqbEzZhumrcb2sU39t3PPgGWqkUNMS42chK4GTuK3R7tQ
+CNTIGaNq4LAj0z8pm6P+JV1w6UedhJ9mrNSI27F8vdEMfbWD204/hZxKd6aFj3lIVhNnV+1b6WdM
+vW616c26cUOddI+gpp8zpRbX+BY3rwqu3LOWTem5XOZq1e9xc3hVk3uyZKiBLEw/Nm0/lz3IjjKC
+C9J/mlx+oVX6/78DvmiEm5VRbkc9j9K/CJR+iVD6Jcqt9Gw+wA7JrfT8ofRLhNIvEUq/RCj9EqH0
+/JRKJTWUkVxK58UuojvJBXNKirlUn0fpH0ObHezqesUJCAmH6YRs5FE6KV2RaXXQIfwn8m9TQq5y
+Oeq53HgK9RkZlQplvTFwQla6+ZG+o57NjadcSq+MSwsyJ07hXR8vCCl/lNJ33rIpPRvqzyX6VJou
+Y+vdzYqgpp+zrVrqRjluOrQu93Bb6Wdsu5a+Xm3bxaLdrhrqMd+Vfr521OKaFYPWjIq5Y+bejvSz
+dWQtR6Z/Ui6f618DSj+x1VFTP+1sPtazKV0/qphVRjulBk5CD4+ZHpxR6Ts+Wk7hcieFAwAAAAAA
+AAAAAMB/waSeGtrLUwNZ8pT1+KfjXlX4lepM8aQ+uW02HjYr+4lNlNfvTi3DKNo+exHTMPSAkL5v
+GG3Nlxqks+ivt4pz7NrKMK6D5cFktz43jKr0C6Rbb765+3IvSD2/a/ZTjex3n159rVlzo8h2uatX
+aEVvE/JS0ZrPUyI1yKC1Tk5yQmLMDbY8lKz5C2NenaxX/oW3fupRfjtGozapU0orJdbBG7pNPE7K
+luOE3NGQ3vGOaxoS7451dRtsUSbEqVFaizdPXkBiUzb2+CQ6KxqBPJBqeGKZ5Ih5OHHfnmRrc4ve
+pddseU01j09eYdT5K170TBts0aCkS7uuQy3WQTtur1BInyqeEjfZSoe/pser9ajj3lKxYC/Y19xW
+M9pcfo21UrnFq+G/wO9Euxs/Jw1PLJOcQqtcKjej4bovmU/Ki5Rpn7Rpj/dQy3b78RbJgBeHxSPB
+mLXHAXmt/hiNmxpbsZ9Gjzc7fudWjuvB0+gp4OOr/c4W1nj084YvWNt/CEezkbRditdqDk120vA3
+4g9uGv+yb9IQkpzysNlqjipKTjqZLKNBy7y3Xrq/qo+i3ZqNHuKJauq5viQ99mdJyFMYhga/77dg
+j8fo+xVkqTgfq2K8ikse23wmFqy7XKPe9d77h/cvAZmnQ+zKpzQUlLz9+RZNOtmXPBtbc2sRzUV9
+6DwGz6JV/7vZ6Elpghc3mhax2Pikcca6w0sP1mQ1aiSnn4imFvS2V9KitNRrxHr8rNgMeItG3+CQ
+NKKtkhyxa3yrQ8mbHKYS8q924j3frAI/i4WtW9mWRjQe3Lon/Mehiax8Ftye6QOTxynfj72bD9hj
+yd/NZ+OENDS6PjuSRmyTkziQLK/UF1UturZ9n68MTe4j8vGg4urYoQ3brsfHURy+zmbnPeWom7TP
+Lh/8MhcFpaNuuW3+jx6xOQ9KD9qx3S69ZR9ctO7WaZu/bTQFIWlE2VJOkzqaQ5sHk9si51asl2mX
+rZfFG9Zt927fZY59bPr8gvHUGofhRP4KjWDwzrt3WnRehi+dNzXM2Zr/q0h2b14bhP5rmR32H8Fk
+OOHn4+Cmw/bClhpsx/hfKcevz6153T+Y/FxhOeZf/E3cZfiDPDtLfkbUJqGf39ckwBegqYGDvPXT
+vRwDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICv6B/sJFY5zxHoDQAAAABJ
+RU5ErkJggg==
+------=_Part_0_1366512268.1780632555870--
