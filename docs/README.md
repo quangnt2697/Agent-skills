@@ -4,69 +4,51 @@ Thư mục này chứa documentation cho agent-skills repository.
 
 ---
 
-## 📚 Core Documentation
+## 📚 Core Documentation (Guides)
 
-### [getting-started.md](getting-started.md)
+### [guides/getting-started.md](guides/getting-started.md)
 Hướng dẫn cài đặt và bắt đầu sử dụng agent-skills. Bao gồm:
 - Cài đặt với Claude Code
 - Workflow cơ bản cho từng persona (BA/PO, QA, DEV)
 - Examples với real Jira issues
 - Troubleshooting common issues
 
-### [skill-anatomy.md](skill-anatomy.md)
+### [guides/adoption-guide.md](guides/adoption-guide.md)
+Cẩm nang áp dụng Agent Skills trong doanh nghiệp:
+- Phối hợp liên vai trò từ BA -> QA -> DEV -> Review
+- Quy ước lưu trữ workspace chuẩn
+- Cơ chế Continuous Learning & Checkpoints
+
+### [guides/skill-anatomy.md](guides/skill-anatomy.md)
 Cấu trúc chi tiết của một skill. Đọc file này trước khi tạo skill mới. Bao gồm:
 - YAML frontmatter requirements
 - Sections bắt buộc (Tổng quan, Quy trình, Xác minh)
 - Best practices
 - Template & examples
 
-### [agents.md](agents.md)
-Chi tiết về 3 personas và ranh giới trách nhiệm:
+### [guides/agents.md](guides/agents.md)
+Chi tiết về các personas và ranh giới trách nhiệm:
 - BA/PO: Requirements analysis, User Stories, Prioritization
 - QA/SDET: Test design, Automation, Quality assurance
 - DEV: Tech spec, Implementation, Unit testing
+- Code Reviewer & Auditors: Đánh giá chất lượng đa chiều
 
 ---
 
-## 📖 Tài liệu tham chiếu tách từ CLAUDE.md
+## 📖 Tài liệu kiến trúc (Architecture & Ranh giới)
 
-Hai file dưới đây chứa phần diễn giải chi tiết. CLAUDE.md chỉ giữ luật rút gọn và
-trỏ tới đây — mục đích là để chỉ thị trong CLAUDE.md không bị loãng.
-
-### [test-ownership.md](test-ownership.md)
+### [architecture/test-ownership.md](architecture/test-ownership.md)
 **Ai viết loại test nào**
 
 Chi tiết từng loại test kèm ví dụ code: unit (DEV), integration (DEV + QA),
 E2E (QA), performance, security, và hai vòng code review.
 
-### [ba-workflow-detail.md](ba-workflow-detail.md)
+### [architecture/ba-workflow-detail.md](architecture/ba-workflow-detail.md)
 **Ranh giới BA/PO — chi tiết**
 
 Trách nhiệm đầy đủ của BA/PO, handoff sang QA/DEV, và so sánh `ba-spec` với `ba-refine`.
 
----
-
-## 🔍 Analysis & Review Documents
-
-### [ba-po-separation-proposal.md](ba-po-separation-proposal.md)
-**Tại sao tách BA/PO khỏi QA?**
-
-Chi tiết lý do tách BA/PO thành persona độc lập:
-- Vấn đề: BA skills đang bị gộp vào QA persona
-- Giải pháp: Tạo BA/PO persona với 9 skills độc lập
-- Ranh giới rõ ràng: BA/PO → QA handoff workflow
-- Implementation plan: 4 phases
-
-### [ba-ac-vs-qa-checklist-comparison.md](ba-ac-vs-qa-checklist-comparison.md)
-**So sánh BA Acceptance Criteria vs QA Test Checklist**
-
-Phân tích overlap giữa 2 skills:
-- BA AC = High-level rules (generic)
-- QA Checklist = Low-level test cases (concrete data)
-- Kết luận: BA viết AC trong Section 9 của `*-final.md`, QA transform thành Test Checklist
-- Lý do xóa skill `ba-acceptance-criteria`
-
-### [ba-ac-vs-qa-gherkin-overlap-analysis.md](ba-ac-vs-qa-gherkin-overlap-analysis.md)
+### [architecture/ba-ac-vs-qa-gherkin-overlap-analysis.md](architecture/ba-ac-vs-qa-gherkin-overlap-analysis.md)
 **BA có nên viết Gherkin không?**
 
 Phân tích ai nên viết BDD Gherkin scenarios:
@@ -75,15 +57,10 @@ Phân tích ai nên viết BDD Gherkin scenarios:
 - Industry best practice: ATDD workflow
 - Ranh giới: BA = WHAT must be true, QA = HOW to test
 
-### [qa-skills-comprehensive-review.md](qa-skills-comprehensive-review.md)
-**Review toàn diện 5 QA skills** (40+ pages)
+### [architecture/gitlab-mcp-integration-roadmap.md](architecture/gitlab-mcp-integration-roadmap.md)
+**Lộ trình tích hợp GitLab MCP vào quy trình**
 
-Chi tiết:
-- Phân tích từng skill (qa-test-design, qa-auto-design, qa-run-test, qa-code2spec, qa-squash-push)
-- 10 issues found với priority (P0/P1/P2)
-- Recommendations & action items
-- Coverage gaps matrix
-- Quality metrics (average 3.9/5 stars)
+Chi tiết tích hợp Phase A (Code Reviewer đọc MR thật, pipeline, threads) và Phase B (Traceability).
 
 ---
 
@@ -91,12 +68,12 @@ Chi tiết:
 
 agent-skills hỗ trợ nhiều AI coding platforms:
 
-### [gemini-cli-setup.md](gemini-cli-setup.md)
+### [guides/gemini-cli-setup.md](guides/gemini-cli-setup.md)
 **Hướng dẫn cài đặt agent-skills với Gemini CLI**
 
 Gemini CLI có skills system tương tự Claude Code. File này hướng dẫn cài đặt từ repo hoặc local clone.
 
-### [antigravity-setup.md](antigravity-setup.md)
+### [guides/antigravity-setup.md](guides/antigravity-setup.md)
 **Hướng dẫn cài đặt agent-skills với Antigravity CLI (agy)**
 
 Antigravity CLI có native plugin system. File này hướng dẫn cài đặt dưới dạng plugin và cách sử dụng custom commands.
@@ -116,4 +93,4 @@ Antigravity CLI có native plugin system. File này hướng dẫn cài đặt d
 
 ---
 
-**Tip:** Bắt đầu với [getting-started.md](getting-started.md) nếu bạn mới sử dụng agent-skills.
+**Tip:** Bắt đầu với [guides/getting-started.md](guides/getting-started.md) nếu bạn mới sử dụng agent-skills.

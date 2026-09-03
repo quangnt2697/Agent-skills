@@ -39,15 +39,13 @@ lúc này.
 khái niệm chung nhưng không có bước fetch nội dung MR thật (description, discussion
 threads, approval state, pipeline status gắn với MR) từ GitLab.
 
-**Quyết định của user (2026-08-30):** Chưa làm, để sau.
+**Quyết định của user (2026-09-03):** Đã phê duyệt và triển khai tích hợp Phase A vào `cr-review-code-and-quality`.
 
-## Nếu user quyết định triển khai — theo phase, không làm cả 2 cùng lúc
+## Triển khai theo Phase
 
-### Phase A (đề xuất làm trước — rủi ro thấp, giá trị rõ): Code Reviewer đọc MR thật
+### Phase A (ĐÃ TRIỂN KHAI): Code Reviewer đọc MR thật (Remote-First)
 
-**Mục tiêu:** `cr-review-code-and-quality` có thêm bước tùy chọn — nếu user cung cấp
-MR IID hoặc agent phát hiện đang review một branch có MR mở tương ứng, fetch context
-thật qua GitLab MCP trước khi review, thay vì chỉ diff cục bộ.
+**Mục tiêu:** `cr-review-code-and-quality` đã được bổ sung Bước 0 (tùy chọn) — tự động nhận diện Project trong môi trường đa Group / đa Project, luôn đọc code mới nhất trên server GitLab, và phân tích ngữ cảnh các lần MR (versions diff, pipeline, unresolved threads).
 
 **Tool GitLab MCP cần dùng** (đã verify tồn tại trong readonly mode — xem
 `references/gitlab-mcp-strategy.md`):

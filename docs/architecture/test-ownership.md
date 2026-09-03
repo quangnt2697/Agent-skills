@@ -1,7 +1,7 @@
 # Ai sở hữu loại test nào
 
 > Tài liệu tham chiếu, kèm ví dụ code. Bảng tổng kết ngắn gọn nằm ở
-> [CLAUDE.md](../CLAUDE.md#tổng-kết-ranh-giới).
+> [CLAUDE.md](../../CLAUDE.md#tổng-kết-ranh-giới). File này chứa phần diễn giải chi tiết, lý do thiết kế, và các case đặc biệt.
 
 ### Unit Test: Thuộc DEV
 

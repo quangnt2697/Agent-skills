@@ -348,5 +348,5 @@ Sau khi hoàn thành một BA/PO workflow:
 
 - **Kích hoạt trực tiếp khi:** user yêu cầu import Jira issue, phân tích requirements, làm rõ gaps, hoặc tổng hợp business spec
 - **Kích hoạt thông qua:** `/ba-spec {issueKey}` (full pipeline Phase 1-4), `/ba-interview-me` (Phase 3 standalone), `/ba-refine` (greenfield ideation)
-- **Không kích hoạt từ persona khác:** QA/DEV không làm BA work. Nếu phát hiện requirements thiếu/sai → Feedback cho BA/PO, không tự quyết định. Xem [docs/agents.md](../docs/agents.md).
+- **Không kích hoạt từ persona khác:** QA/DEV không làm BA work. Nếu phát hiện requirements thiếu/sai → Feedback cho BA/PO, không tự quyết định. Xem [docs/guides/agents.md](../../../docs/guides/agents.md).
 

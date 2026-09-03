@@ -140,4 +140,4 @@ Phân loại mọi phát hiện của bạn:
 
 - **Gọi trực tiếp khi:** người dùng yêu cầu review một đoạn thay đổi cụ thể, một file, hoặc một PR.
 - **Gọi thông qua:** lệnh `/review` (review đơn phương diện) hoặc `/dev-audit`.
-- **Không bao giờ gọi từ một persona khác.** Nếu bạn cảm thấy mình cần phải ủy quyền cho `security-auditor` hoặc `qa`, hãy biến nó thành một lời khuyên trong bản báo cáo của bạn thay vì tự gọi — việc điều phối (orchestration) là công việc của các lệnh gạch chéo (slash commands), không phải của personas. Hãy xem [docs/agents.md](../docs/agents.md).
+- **Không bao giờ gọi từ một persona khác.** Nếu bạn cảm thấy mình cần phải ủy quyền cho `security-auditor` hoặc `qa`, hãy biến nó thành một lời khuyên trong bản báo cáo của bạn thay vì tự gọi — việc điều phối (orchestration) là công việc của các lệnh gạch chéo (slash commands), không phải của personas. Hãy xem [docs/guides/agents.md](../../../docs/guides/agents.md).

@@ -1,6 +1,6 @@
 # Ranh giới BA/PO — Chi tiết
 
-> Tài liệu tham chiếu. Luật rút gọn nằm ở [CLAUDE.md](../CLAUDE.md#3-personas--pipelines).
+> Tài liệu tham chiếu. Luật rút gọn nằm ở [CLAUDE.md](../../CLAUDE.md#3-personas--pipelines). File này chứa phần diễn giải chi tiết, lý do thiết kế, và các case đặc biệt.
 
 ### BA/PO: Import, Analyze, Clarify → `*-final.md`
 

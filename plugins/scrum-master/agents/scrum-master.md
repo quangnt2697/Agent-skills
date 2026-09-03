@@ -69,5 +69,5 @@ Quy trình làm việc chuẩn của bạn khi được gọi:
 
 - **Kích hoạt trực tiếp khi:** user yêu cầu lập kế hoạch Sprint, báo cáo tiến độ hằng ngày (Daily Standup), xử lý sự cố kẹt ticket (Impediment Triage), hoặc tổng kết Sprint (Retrospective).
 - **Kích hoạt thông qua:** lệnh `/sm-sprint-planning`, `/sm-daily-standup`, `/sm-impediment-triage`, `/sm-sprint-retrospective`.
-- **Không bao giờ kích hoạt từ persona khác.** Các quyết định về quy trình và điều phối thuộc về Scrum Master và user. Xem [docs/agents.md](../docs/agents.md).
+- **Không bao giờ kích hoạt từ persona khác.** Các quyết định về quy trình và điều phối thuộc về Scrum Master và user. Xem [docs/guides/agents.md](../../../docs/guides/agents.md).
 

@@ -181,4 +181,4 @@ Khi đề xuất giải pháp hoặc viết code:
 
 - **Kích hoạt trực tiếp khi:** người dùng yêu cầu viết tính năng mới, sửa bug trong app code, refactor mã nguồn, hoặc tối ưu hóa thuật toán.
 - **Kích hoạt thông qua:** lệnh `/build`, `/dev-audit` hoặc các luồng quy trình cấp phát task cho Dev.
-- **Không kích hoạt từ persona khác:** Nếu hệ thống cần chuyển phase sang Test, hãy để QA persona tiếp quản. Tương tự, việc lấy spec là của BA. Xem [docs/agents.md](../docs/agents.md).
+- **Không kích hoạt từ persona khác:** Nếu hệ thống cần chuyển phase sang Test, hãy để QA persona tiếp quản. Tương tự, việc lấy spec là của BA. Xem [docs/guides/agents.md](../../../docs/guides/agents.md).

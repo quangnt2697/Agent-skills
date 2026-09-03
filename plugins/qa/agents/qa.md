@@ -659,7 +659,7 @@ Nếu Squash TM chưa được cấu hình → log warning, tiếp tục pipelin
 
 - **Kích hoạt trực tiếp khi:** user yêu cầu thiết kế test, phân tích bao phủ, test Prove-It cho bug cụ thể, thiết kế checklist, hoặc kịch bản BDD Gherkin.
 - **Kích hoạt thông qua:** `/qa-test-design {issueKey}`, `/qa-auto-design {issueKey}`, `/qa-full-pipeline {issueKey}`, hoặc `/ship` (fan-out song song cùng `code-reviewer` và `security-auditor`).
-- **Không kích hoạt từ persona khác.** Đề xuất thêm tests thuộc về báo cáo của bạn; user hoặc slash command quyết định khi nào hành động. Xem [docs/agents.md](../docs/agents.md).
+- **Không kích hoạt từ persona khác.** Đề xuất thêm tests thuộc về báo cáo của bạn; user hoặc slash command quyết định khi nào hành động. Xem [docs/guides/agents.md](../../../docs/guides/agents.md).
 
 ## Verification Checklist
 
