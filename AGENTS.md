@@ -28,8 +28,8 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 
 ## 4. Quy Trình QA Toàn Trình (The QA Pipeline)
 1. **Phân tích Yêu cầu (`/ba-spec`)**: Đọc Jira, phỏng vấn user, tổng hợp thành Đặc tả (`final.md`).
-2. **Thiết kế Kiểm thử (`/qa-test-design`)**: Sinh ra Checklist (BVA, EP) và viết kịch bản BDD (Gherkin).
-3. **Sinh Code & Chạy (`/qa-auto-design`)**: Từ Gherkin, sinh code Automation, tự chạy test và xuất báo cáo.
+2. **Thiết kế Kiểm thử (`/qa-test-design`)**: Sinh ra Checklist (BVA, EP) và viết kịch bản BDD (Gherkin). **Bắt buộc đọc dữ liệu từ TimescaleDB** (thông qua Database MCP Server `node .agents/db-mcp.js --db timescale` hoặc cache `references/timescale-schema.md`). **Quy tắc phiên bản:** Bắt buộc ưu tiên sử dụng các bảng **v3**; chỉ khi dữ liệu không có bảng v3 thì mới dùng bảng **v2** — cấm tuyệt đối hardcode/tự bịa dữ liệu chứng khoán.
+3. **Sinh Code & Chạy (`/qa-auto-design`)**: Từ Gherkin, sinh code Automation, tự chạy test và xuất báo cáo. Fixture test data phải lấy từ dữ liệu thực tế trong TimescaleDB (ưu tiên v3, fallback v2).
 4. **Quy trình Toàn trình (`/qa-full-pipeline`)**: Chạy mượt mà từ bước 1 đến 3 mà không dừng lại hỏi user. Thêm cờ `--step` nếu muốn dừng review sau mỗi phase.
 
 ## 5. Quy Trình Quản Lý & Điều Phối (The Scrum Master Pipeline)
@@ -42,6 +42,7 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 - **Ngôn ngữ:** Mọi tài liệu (Spec, Checklist, Kịch bản, Báo cáo) BẮT BUỘC viết bằng Tiếng Việt rõ ràng, mạch lạc.
 - **Truy vết (Traceability):** Test case phải map 1-1 với Checklist và Spec. Báo cáo cuối cùng phải có ma trận truy vết (End-to-End Traceability).
 - **Log Lỗi:** Trong báo cáo test API/WebSocket, bắt buộc in ra Request/Response để debug.
+- **Dữ liệu Kiểm Thử Chứng Khoán Thật:** Mọi checklist, kịch bản Gherkin (`.feature`) và automation script liên quan đến chứng khoán BẮT BUỘC đọc từ TimescaleDB (DB 644 / `references/timescale-schema.md`). Bắt buộc ưu tiên dùng bảng **v3**, chỉ dùng **v2** khi không có bảng v3 tương ứng. Không dùng mã giả định hoặc giá trần/sàn phi thực tế.
 
 ## 7. Tự Chủ & Chủ Động
 - **Mặc định là TỰ CHẠY.** Chỉ dừng hỏi user khi rơi vào 5 trường hợp của danh sách đóng trong `.claude/rules/autonomy-contract.md`: thiếu input bắt buộc, thiếu credential, có câu hỏi 🔴 Critical, sắp commit/merge vào main, hoặc hành động không hoàn tác được bằng `git revert`.
@@ -111,5 +112,19 @@ Trong mọi tác vụ liên quan đến phân tích spec (BA), thiết kế kỹ
   2. **Cờ phiên & Lệnh:** Lịch trình phiên ATO, Liên tục, ATC, PLO; mã cờ phiên KRX (`AA1`, `BB1`, `BC1`, `AW8`, `AW9`, `AC2`); quy tắc cấm sửa/hủy trong ATO/ATC; ma trận lệnh cho phép (LO, ATO, ATC, MP, MTL, MOK, MAK, PLO).
   3. **Quản lý biến động khẩn cấp:** Xử lý cờ `EI8` (Instrument Halt), 15 phút định kỳ sau Halt (`EI1`), mở lại liên tục (`EI9`); cơ chế ngắt mạch thị trường Circuit Breaker (`AF6`, `AF8`, `BF9`).
   4. **Dữ liệu thị trường (MDDS / KRX):** Khớp lệnh tick, Top 3/10 Bid-Ask, OHLC closed, tính tuần tự timestamp (time-series consistency) và đo lường độ trễ (latency tracking).
-  5. **Tài chính & Ký quỹ:** Sức mua khả dụng, tỷ lệ an toàn $R_{tt}$, Call Margin ($<85\%$), Force Sell ($<80\%$), và chu kỳ thanh toán T+2.
+  5. **Tài chính & Ký quỹ truyền thống:** Sức mua khả dụng, tỷ lệ an toàn danh mục $R_{tt}$, Call Margin ($<85\%$), Force Sell ($<80\%$), chu kỳ thanh toán T+2, và quản lý Room ngoại/Room CTCK.
+  6. **Quản trị vị thế ký quỹ theo Deal (Deal-based Margin):** Định danh Deal $(\text{accountNo}, \text{symbol}, \text{loanPackageId})$, 1 tài khoản đơn nhất (thay thế mô hình tiểu khoản .1/.6), cách ly rủi ro từng vị thế, công thức giá vốn & giá hòa vốn chính xác, tỷ lệ Deal ($R_{\text{deal}}$), cơ chế Giá chặn Margin (Loan Price / Cap Price), quy trình Call Margin & Smart Order Force Sell theo Deal, và ma trận đồng bộ sự kiện Core/Flex (`txCode`).
+  7. **Bắt buộc đọc dữ liệu chứng khoán từ TimescaleDB (DB ID: 644) — Ưu tiên v3 trước, v2 sau:**
+     - Khi thiết kế Checklist kiểm thử, viết kịch bản BDD Gherkin (`.feature`) hoặc tạo code Automation Test (API/UI/WebSocket) liên quan đến chứng khoán, Agent **BẮT BUỘC** phải tra cứu TimescaleDB (qua Database MCP tool hoặc tài liệu cache [references/timescale-schema.md](references/timescale-schema.md) / [`.agents/cache/schema-644.json`](.agents/cache/schema-644.json)).
+     - **Quy tắc phiên bản bắt buộc (V3 > V2):** Luôn ưu tiên sử dụng các bảng **v3**, chỉ khi loại dữ liệu không có bảng v3 thì mới dùng bảng **v2**. Cụ thể:
+       + **Dữ liệu khớp lệnh Tick:** Ưu tiên `krx_mdds_v3_ticks`, `krx_mdds_v3_ticks_extra` (fallback `krx_mdds_v2_ticks`, `ticks`).
+       + **Sổ lệnh Top 3/10 Giá:** Ưu tiên `krx_mdds_v3_top_prices` (fallback `krx_mdds_v2_top_prices`).
+       + **Đặc tả mã chứng khoán:** Ưu tiên `security_definition_v3` (fallback `security_definitions`, `symbols`).
+       + **Sự kiện Bảng & Cờ phiên:** Ưu tiên `krx_mdds_v3_board_events`, `krx_mdds_v3_symbol_board_events` (fallback `krx_mdds_v2_board_events`, `sessions`).
+       + **Chỉ số thị trường:** Ưu tiên `krx_mdds_v3_market_indices` (fallback `krx_mdds_v2_market_indices`, `indices`).
+       + **Giao dịch khối ngoại:** Ưu tiên `krx_mdds_v3_trading_foreign_investors` (fallback `trading_result_of_foreign_investors`).
+       + **Giá dự kiến ATO/ATC:** Sử dụng `expected_price_v3`.
+       + **Giá trần / sàn / tham chiếu:** Sử dụng `krx_mdds_v2_stock_infos` (do không có v3).
+       + **Nến biểu đồ OHLC:** Sử dụng `krx_mdds_v2_stock_ohlc`, `krx_mdds_v2_index_ohlc` (do không có v3).
+     - **NGHIÊM CẤM:** Tự bịa mã chứng khoán không có thật, hoặc hardcode các mức giá vi phạm quy tắc biên độ/bước giá của Sở.
 

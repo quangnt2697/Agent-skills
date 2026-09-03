@@ -1,6 +1,6 @@
 ---
 name: cr-code-simplification
-description: Đơn giản hóa code cho rõ ràng. Phân chia logic theo persona: Dev (tối ưu hóa app code, kiến trúc) và QA (tối ưu hóa automation test, BDD, data mock). Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó đọc, khó bảo trì, hoặc chứa sự phức tạp thừa thãi.
+description: "Đơn giản hóa code cho rõ ràng. Phân chia logic theo persona: Dev (tối ưu hóa app code, kiến trúc) và QA (tối ưu hóa automation test, BDD, data mock). Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó đọc, khó bảo trì, hoặc chứa sự phức tạp thừa thãi."
 ---
 
 # Kỹ năng: Đơn giản hóa Code (Code Simplification)

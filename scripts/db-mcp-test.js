@@ -1,0 +1,155 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { sanitizeQuery, applyLimit, HARD_CAP_MAX_ROWS, DEFAULT_MAX_ROWS } = require('../.agents/db-mcp.js');
+
+test('DB MCP SQL Sanitizer: Cho phép các câu lệnh đọc hợp lệ', () => {
+    // 1. SELECT đơn giản
+    const q1 = sanitizeQuery('SELECT id, username, balance FROM users WHERE status = 1');
+    assert.equal(q1.valid, true);
+    assert.equal(q1.cleanSql, 'SELECT id, username, balance FROM users WHERE status = 1');
+
+    // 2. Query có comment
+    const q2 = sanitizeQuery('-- comment 1\nSELECT * FROM orders /* comment 2 */ WHERE id = 10');
+    assert.equal(q2.valid, true);
+    assert.equal(q2.cleanSql, 'SELECT * FROM orders  WHERE id = 10');
+
+    // 3. CTE (Common Table Expression)
+    const q3 = sanitizeQuery('WITH deal_summary AS (SELECT deal_id, sum(volume) as total FROM order_deals GROUP BY deal_id) SELECT * FROM deal_summary');
+    assert.equal(q3.valid, true);
+
+    // 4. EXPLAIN & SHOW
+    const q4 = sanitizeQuery('EXPLAIN SELECT * FROM securities WHERE symbol = \'VND\'');
+    assert.equal(q4.valid, true);
+
+    const q5 = sanitizeQuery('SHOW server_version');
+    assert.equal(q5.valid, true);
+});
+
+test('DB MCP SQL Sanitizer: Chặn tuyệt đối các câu lệnh thay đổi dữ liệu (DML/DDL)', () => {
+    const forbidden = [
+        'DROP TABLE users',
+        'DELETE FROM orders WHERE id = 1',
+        'UPDATE accounts SET balance = balance + 1000000',
+        'INSERT INTO users (name) VALUES (\'attacker\')',
+        'ALTER TABLE deals ADD COLUMN hacked text',
+        'TRUNCATE TABLE transactions',
+        'GRANT ALL PRIVILEGES ON DATABASE test TO guest',
+        'REVOKE SELECT ON users FROM public',
+        'VACUUM FULL',
+        'REINDEX TABLE orders',
+        'EXEC sp_dosomething',
+        'COPY users TO \'/tmp/leak.txt\''
+    ];
+
+    for (const sql of forbidden) {
+        const res = sanitizeQuery(sql);
+        assert.equal(res.valid, false, `Không được phép cho qua: ${sql}`);
+        assert.match(res.error, /TRUY VẤN BỊ CHẶN/);
+    }
+});
+
+test('DB MCP SQL Sanitizer: Chặn đa câu lệnh phân tách bằng dấu chấm phẩy (;)', () => {
+    const multiSql = 'SELECT 1; DROP TABLE users;';
+    const res = sanitizeQuery(multiSql);
+    assert.equal(res.valid, false);
+    assert.match(res.error, /không cho phép chạy nhiều câu lệnh cùng lúc/);
+});
+
+test('DB MCP SQL Sanitizer: Chặn câu lệnh DML ngụy trang trong CTE hoặc subquery', () => {
+    const sneakySql = 'WITH deleted_rows AS (DELETE FROM orders RETURNING *) SELECT * FROM deleted_rows';
+    const res = sanitizeQuery(sneakySql);
+    assert.equal(res.valid, false);
+    assert.match(res.error, /TRUY VẤN BỊ CHẶN/);
+});
+
+test('DB MCP Auto Limit: Tự động bổ sung LIMIT khi chưa có', () => {
+    const sql = 'SELECT * FROM deals WHERE status = \'ACTIVE\'';
+    const limited = applyLimit(sql);
+    assert.equal(limited, `SELECT * FROM deals WHERE status = 'ACTIVE' LIMIT ${DEFAULT_MAX_ROWS}`);
+});
+
+test('DB MCP Auto Limit: Giữ nguyên LIMIT hợp lệ nhỏ hơn trần tối đa', () => {
+    const sql = 'SELECT * FROM deals LIMIT 10';
+    const limited = applyLimit(sql);
+    assert.equal(limited, 'SELECT * FROM deals LIMIT 10');
+});
+
+test('DB MCP Auto Limit: Ép trần giới hạn tối đa nếu query yêu cầu quá nhiều dòng', () => {
+    const sql = 'SELECT * FROM deals LIMIT 5000';
+    const limited = applyLimit(sql);
+    assert.equal(limited, `SELECT * FROM deals LIMIT ${HARD_CAP_MAX_ROWS}`);
+});
+
+test('DB MCP Auto Limit: Không gắn LIMIT vào EXPLAIN hoặc SHOW', () => {
+    const sqlExplain = 'EXPLAIN SELECT * FROM deals';
+    assert.equal(applyLimit(sqlExplain), 'EXPLAIN SELECT * FROM deals');
+
+    const sqlShow = 'SHOW timezone';
+    assert.equal(applyLimit(sqlShow), 'SHOW timezone');
+});
+
+test('DB MCP Error Formatter: Xử lý AggregateError và lỗi thông thường', () => {
+    const { formatErrorMessage } = require('../.agents/db-mcp.js');
+
+    // 1. Lỗi thông thường
+    assert.equal(formatErrorMessage(new Error('Syntax error at or near SELECT')), 'Syntax error at or near SELECT');
+
+    // 2. AggregateError
+    const aggErr = {
+        code: 'ECONNREFUSED',
+        errors: [
+            { message: 'connect ECONNREFUSED 127.0.0.1:5432' }
+        ]
+    };
+    assert.match(formatErrorMessage(aggErr), /ECONNREFUSED: connect ECONNREFUSED 127.0.0.1:5432/);
+});
+
+test('DB MCP Config: Nạp cấu hình từ DATABASE_URL hoặc các biến DB_*', () => {
+    const { getPoolConfig } = require('../.agents/db-mcp.js');
+    const prevUrl = process.env.DATABASE_URL;
+
+    process.env.DATABASE_URL = 'postgresql://testuser:testpass@db.local:5432/testdb';
+    const cfg = getPoolConfig();
+    assert.equal(cfg.connectionString, 'postgresql://testuser:testpass@db.local:5432/testdb');
+
+    delete process.env.DATABASE_URL;
+    process.env.DB_HOST = 'custom-host';
+    process.env.DB_PORT = '5433';
+    process.env.DB_NAME = 'custom-db';
+    const cfg2 = getPoolConfig();
+    assert.equal(cfg2.host, 'custom-host');
+    assert.equal(cfg2.port, 5433);
+    assert.equal(cfg2.database, 'custom-db');
+
+    // Restore
+    if (prevUrl) process.env.DATABASE_URL = prevUrl;
+    else delete process.env.DATABASE_URL;
+});
+
+test('DB MCP Metabase: Phân giải chính xác Database IDs (timescale: 644, openapi: 535, openapi-sandbox: 655)', () => {
+    const { resolveDatabaseId, getDatabaseName, isMetabaseMode } = require('../.agents/db-mcp.js');
+
+    assert.equal(isMetabaseMode(), true);
+
+    // 1. Alias name
+    assert.equal(resolveDatabaseId('timescale'), 644);
+    assert.equal(resolveDatabaseId('openapi'), 535);
+    assert.equal(resolveDatabaseId('openapi-sandbox'), 655);
+    assert.equal(resolveDatabaseId('sandbox'), 655);
+
+    // 2. Mặc định (khi không truyền)
+    assert.equal(resolveDatabaseId(undefined), 644);
+    assert.equal(resolveDatabaseId(null), 644);
+    assert.equal(resolveDatabaseId(''), 644);
+
+    // 3. ID số hoặc chuỗi số
+    assert.equal(resolveDatabaseId(644), 644);
+    assert.equal(resolveDatabaseId('535'), 535);
+    assert.equal(resolveDatabaseId(655), 655);
+
+    // 4. Lấy tên database
+    assert.equal(getDatabaseName(644), 'timescale');
+    assert.equal(getDatabaseName(535), 'openapi');
+    assert.equal(getDatabaseName(655), 'openapi-sandbox');
+});
+

@@ -1,6 +1,6 @@
 ---
 name: dev-test-driven-development
-description: Hướng dẫn phát triển dựa trên kiểm thử. Sử dụng khi triển khai bất kỳ logic nào, sửa bất kỳ lỗi nào, hoặc thay đổi bất kỳ hành vi nào. Sử dụng khi bạn cần chứng minh code hoạt động đúng, khi nhận được báo cáo lỗi, hoặc khi chuẩn bị sửa đổi chức năng hiện có.
+description: Hướng dẫn phát triển dựa trên kiểm thử (TDD / Test-Driven Development, Red-Green-Refactor). Sử dụng khi triển khai bất kỳ logic nào, sửa bất kỳ lỗi nào, hoặc thay đổi bất kỳ hành vi nào. Sử dụng khi bạn cần chứng minh code hoạt động đúng, khi nhận được báo cáo lỗi, hoặc khi chuẩn bị sửa đổi chức năng hiện có.
 ---
 
 # Phát triển Hướng Kiểm thử (Test-Driven Development)

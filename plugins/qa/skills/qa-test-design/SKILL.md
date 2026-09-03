@@ -134,6 +134,7 @@ Nếu không có file final.md, hỏi user cung cấp spec, PRD, hoặc mô tả
 6. **Liệt kê danh sách đóng** — khi spec liệt kê một tập hợp hữu hạn, đóng (loại lệnh, trạng thái tài khoản, loại chứng khoán, sàn...), ghi lại TẤT CẢ giá trị rõ ràng. Không lấy mẫu — mỗi giá trị trong danh sách đóng BẮT BUỘC xuất hiện ít nhất 1 lần trong checklist item và 1 dòng Examples.
 7. **Xác định biến thể schema API** — nếu spec mô tả nhiều loại API, hoặc 1 API chấp nhận/trả về các schema khác nhau dựa trên giá trị trường cụ thể (VD: `type`), BẮT BUỘC liệt kê tất cả biến thể schema.
 8. **Xác định Path & Path Parameters** — ghi lại cấu trúc path và các path parameters cần validate.
+9. **Đọc dữ liệu chứng khoán thực tế từ TimescaleDB (DB ID: 644) — Bắt buộc ưu tiên V3, fallback V2:** Nếu tính năng liên quan đến nghiệp vụ chứng khoán (đặt lệnh, tính sức mua, hiển thị bảng giá, khớp lệnh, cảnh báo trần/sàn): BẮT BUỘC sử dụng Database MCP tool (`node .agents/db-mcp.js --describe <table_name> --db timescale`) hoặc tra cứu từ cache `../../../../references/timescale-schema.md` để lấy thông tin thực tế. **Nguyên tắc phiên bản:** Luôn ưu tiên dùng các bảng **v3** (`security_definition_v3`, `krx_mdds_v3_ticks`, `krx_mdds_v3_top_prices`, `krx_mdds_v3_board_events`, `krx_mdds_v3_market_indices`); chỉ khi loại dữ liệu không có bảng v3 tương ứng thì mới dùng bảng **v2** (như giá trần/sàn/tham chiếu trong `krx_mdds_v2_stock_infos`, nến trong `krx_mdds_v2_stock_ohlc`). TUYỆT ĐỐI KHÔNG tự bịa mã chứng khoán không tồn tại hoặc đưa ra các mức giá vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$) trong checklist.
 
 Nếu `spec-driven-development` đã tạo spec, dùng nó làm nguồn chính. Không trích xuất lại những gì đã được ghi nhận.
 
@@ -353,6 +354,16 @@ Feature: <Short title reflecting the behavior area>
 - **Validation Path và Tài khoản:** Đảm bảo có scenarios validate path variables (VD: ID sai định dạng, ID thuộc user khác) và ràng buộc truy cập tài khoản (IDOR).
 - **Bao phủ Cách ly Dữ liệu (Data / Topic Isolation):** Đặc biệt với hệ thống Event-driven (WebSocket/Kafka) hoặc API đa luồng, **BẮT BUỘC** có scenario đảm bảo dữ liệu/event của kênh/thị trường này không bị rò rỉ (leak) hoặc gửi chéo sang kênh/thị trường khác (VD: Cross-market isolation, nhận chéo event của mã chứng khoán/thị trường không subscribe).
 - **Tương tác chéo giữa các trường:** Khi thay đổi trường A ảnh hưởng trường B (VD: đổi giá tính lại sức mua → thay đổi gợi ý khối lượng), bao gồm ít nhất 1 scenario kiểm tra hiệu ứng xuôi chiều lên trường B sau khi sửa trường A.
+- **Dữ liệu kiểm thử chứng khoán thực tế (TimescaleDB Integration — Ưu tiên V3 > V2):** Khi thiết kế bảng `Examples:` hoặc dữ liệu cụ thể trong Scenario (`Given`/`When`/`Then`):
+  - Mọi mã chứng khoán (`symbol`), mức giá (`price`, `ceiling_price`, `floor_price`, `ref_price`) và sổ lệnh BẮT BUỘC phải lấy từ các bảng dữ liệu thực tế trong TimescaleDB, **ưu tiên bảng v3 trước, v2 sau**:
+    + Mã & Niêm yết: `security_definition_v3` (fallback `security_definitions`).
+    + Dữ liệu tick khớp lệnh: `krx_mdds_v3_ticks`, `krx_mdds_v3_ticks_extra` (fallback `krx_mdds_v2_ticks`).
+    + Sổ lệnh Top 3/10: `krx_mdds_v3_top_prices` (fallback `krx_mdds_v2_top_prices`).
+    + Giá trần/sàn/tham chiếu: `krx_mdds_v2_stock_infos` (dùng v2 vì không có v3).
+  - Kiểm thử giá trị biên (BVA) cho đặt lệnh phải dựa trên giá trần/sàn/tham chiếu thật:
+    + Giá hợp lệ: $P_{\text{floor}} \le P \le P_{\text{ceiling}}$ và chia hết cho `tick_size`.
+    + Biên trên ngoài dải: $P_{\text{ceiling}} + \text{tick\_size}$ (Hệ thống phải từ chối).
+    + Biên dưới ngoài dải: $P_{\text{floor}} - \text{tick\_size}$ (Hệ thống phải từ chối).
 
 **Quy tắc viết:**
 

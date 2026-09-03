@@ -15,6 +15,10 @@
     "playwright": {
       "command": "node",
       "args": ["./.agents/playwright-mcp.js"]
+    },
+    "database": {
+      "command": "node",
+      "args": ["./.agents/db-mcp.js"]
     }
   }
 }

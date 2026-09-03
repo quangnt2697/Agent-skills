@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Atlassian Rovo MCP - Headless Stdio Proxy
- * Chuyển đổi giao thức kết nối MCP từ Stdio sang SSE/HTTP.
+ * Chuyển đổi giao thức kết nối MCP từ Stdio sang HTTP Streamable MCP của Atlassian.
  * Tự động đọc xác thực từ file `.env` (không lộ Token vào hệ thống Git).
  */
 
@@ -39,119 +39,103 @@ if (!email || !token) {
     process.exit(1);
 }
 
-// 2. Chuẩn bị kết nối SSE
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
-const sseUrl = 'https://mcp.atlassian.com/v1/mcp'; // Headless endpoint
-let postUrl = ''; // Sẽ được cấp qua sự kiện 'endpoint' từ SSE
+const mcpUrl = new URL('https://mcp.atlassian.com/v1/mcp');
 
-const sseReq = https.get(sseUrl, {
-    headers: {
-        'Authorization': authHeader,
-        'Accept': 'text/event-stream'
-    }
-}, (res) => {
-    if (res.statusCode !== 200) {
-        console.error(`Lỗi kết nối SSE: HTTP ${res.statusCode}`);
-        process.exit(1);
-    }
+let sessionId = null;
+const messageQueue = [];
+let isSending = false;
 
-    let buffer = '';
-    let currentEvent = 'message';
+async function processQueue() {
+    if (isSending || messageQueue.length === 0) return;
+    isSending = true;
 
-    res.on('data', (chunk) => {
-        buffer += chunk.toString();
-        let lines = buffer.split(/\r?\n/);
-        buffer = lines.pop(); // Giữ lại phần chưa hoàn chỉnh
-
-        for (let line of lines) {
-            if (line.startsWith('event:')) {
-                currentEvent = line.slice(6).trim();
-            } else if (line.startsWith('data:')) {
-                const data = line.slice(5).trim();
-                
-                if (currentEvent === 'endpoint') {
-                    // MCP Spec: event 'endpoint' chứa URL để gửi tin nhắn POST
-                    postUrl = data.startsWith('http') ? data : new URL(data, sseUrl).toString();
-                    currentEvent = 'message'; // reset
-                    flushQueue();
-                } else {
-                    // Ghi thẳng JSON-RPC message ra stdout (cho IDE đọc)
-                    process.stdout.write(data + '\n');
-                    currentEvent = 'message'; // reset
-                }
-            } else if (line === '') {
-                // Hết block event
-                currentEvent = 'message';
-            }
+    while (messageQueue.length > 0) {
+        const msg = messageQueue.shift();
+        try {
+            await sendPost(msg);
+        } catch (err) {
+            console.error("Lỗi gửi MCP request tới Atlassian:", err.message);
         }
+    }
+
+    isSending = false;
+}
+
+function sendPost(postData) {
+    return new Promise((resolve, reject) => {
+        const headers = {
+            'Authorization': authHeader,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/event-stream',
+            'Content-Length': Buffer.byteLength(postData)
+        };
+
+        if (sessionId) {
+            headers['mcp-session-id'] = sessionId;
+        }
+
+        const req = https.request(mcpUrl, {
+            method: 'POST',
+            headers: headers
+        }, (res) => {
+            if (res.headers['mcp-session-id']) {
+                sessionId = res.headers['mcp-session-id'];
+            }
+
+            let buffer = '';
+            res.on('data', (chunk) => {
+                buffer += chunk.toString();
+                const lines = buffer.split(/\r?\n/);
+                buffer = lines.pop(); // Giữ lại phần chưa hoàn chỉnh
+
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        const data = line.slice(5).trim();
+                        if (data) {
+                            process.stdout.write(data + '\n');
+                        }
+                    }
+                }
+            });
+
+            res.on('end', () => {
+                if (buffer.trim()) {
+                    if (buffer.startsWith('data:')) {
+                        const data = buffer.slice(5).trim();
+                        if (data) process.stdout.write(data + '\n');
+                    } else if (buffer.startsWith('{')) {
+                        process.stdout.write(buffer.trim() + '\n');
+                    }
+                }
+                resolve();
+            });
+        });
+
+        req.on('error', (err) => {
+            reject(err);
+        });
+
+        req.write(postData);
+        req.end();
     });
+}
 
-    res.on('close', cleanup);
-    res.on('end', cleanup);
-});
-
-sseReq.on('error', (err) => {
-    console.error("Lỗi SSE Request:", err);
-    process.exit(1);
-});
-
-// 3. Đọc từ Stdin (tin nhắn từ IDE) và đẩy qua POST
+// 2. Đọc từ Stdin (tin nhắn từ IDE)
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     terminal: false
 });
 
-// Hàng đợi tin nhắn trong trường hợp IDE gửi trước khi postUrl kịp khởi tạo
-const messageQueue = [];
-
-function flushQueue() {
-    if (!postUrl) return;
-    while (messageQueue.length > 0) {
-        const msg = messageQueue.shift();
-        sendPostRequest(msg);
-    }
-}
-
-function sendPostRequest(postData) {
-    const urlObj = new URL(postUrl);
-    const postReq = https.request(urlObj, {
-        method: 'POST',
-        headers: {
-            'Authorization': authHeader,
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(postData)
-        }
-    }, (res) => {
-        // Response rỗng, kết quả sẽ được trả về qua luồng SSE
-        res.on('data', () => {}); 
-    });
-    
-    postReq.on('error', (err) => {
-        console.error("Lỗi POST Request:", err);
-    });
-    
-    postReq.write(postData);
-    postReq.end();
-}
-
 rl.on('line', (line) => {
     const trimmed = line.trim();
     if (!trimmed) return;
-    
-    if (!postUrl) {
-        messageQueue.push(trimmed);
-    } else {
-        sendPostRequest(trimmed);
-    }
+    messageQueue.push(trimmed);
+    processQueue();
 });
 
 function cleanup() {
-    try {
-        if (sseReq && !sseReq.destroyed) {
-            sseReq.destroy();
-        }
-    } catch (_) {}
     process.exit(0);
 }
 

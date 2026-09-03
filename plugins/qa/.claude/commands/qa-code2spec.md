@@ -4,13 +4,15 @@ description: "Dịch ngược Code thành Spec (Reverse Engineering) hỗ trợ 
 
 Kích hoạt skill `qa-code2spec`. Đọc file SKILL.md trong thư mục `qa-code2spec` để hiểu luồng thực thi.
 
-$ARGUMENTS chứa đường dẫn tới file mã nguồn (VD: `src/controllers/order.py` hoặc `src/routes/payment.ts`).
+$ARGUMENTS chứa đường dẫn tới file mã nguồn (VD: `src/controllers/order.py` hoặc `src/routes/payment.ts`) hoặc reference trên GitLab.
 
 ## Nguyên tắc thực thi:
-1. **KHÔNG** giả định ngôn ngữ lập trình. Tự nhận diện cấu trúc code.
-2. Dùng kỹ năng `qa-code-review` để truy vết sâu vào các file được import (Model, Service, DTO). Đừng chỉ đọc file gốc.
-3. Kích hoạt `ba-interview-me` để phỏng vấn user về các Điểm mù (Gaps) hoặc Edge cases mà dev chưa xử lý trong code.
-4. Tổng hợp thành file `{tên_file}-final.md` xuất ra thư mục `/project-root/workspace/{tên_file}/spec/`. Cấu trúc file final giống hệt như output của lệnh `/ba-spec`.
+1. **Kiểm tra GitLab trước tiên**: Luôn kiểm tra `git status` và `git fetch` để đảm bảo đang phân tích trên commit mới nhất từ GitLab (hoặc đọc trực tiếp qua GitLab MCP nếu là MR/remote branch).
+2. **KHÔNG** giả định ngôn ngữ lập trình. Tự nhận diện cấu trúc code.
+3. Truy vết sâu vào các file được import (Model, Service, DTO, 5 yếu tố backend). Đừng chỉ đọc file router/controller.
+4. Đối chiếu với cẩm nang nghiệp vụ chứng khoán (`references/securities-domain-rules.md`).
+5. Kích hoạt `ba-interview-me` để phỏng vấn user về các Điểm mù (Gaps) hoặc Edge cases chưa rõ.
+6. Xuất ra file `/project-root/workspace/{tên_file}/spec/final.md`. Cấu trúc file final tuân thủ chuẩn `profile-api.md` và bắt buộc có header `**Loại task:** 🔌 API` cùng metadata Commit SHA từ GitLab.
 
 Sau khi ghi file final thành công, hướng dẫn user gõ `/qa-test-design` để tiếp tục luồng QA automation.
 
