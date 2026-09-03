@@ -15,7 +15,9 @@
     "validate:links": "node scripts/validate-reference-links.js",
     "validate:paths": "node scripts/validate-artifact-paths.js",
     "test:unit": "node --test scripts/*-test.js",
-    "evals": "node scripts/run-evals.js"
+    "evals": "node scripts/run-evals.js",
+    "setup:plugins": "node scripts/setup-plugins.js",
+    "unlink:plugins": "node scripts/setup-plugins.js --unlink"
   },
   "engines": {
     "node": ">=20"

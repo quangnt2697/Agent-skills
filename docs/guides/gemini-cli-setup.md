@@ -1,33 +1,25 @@
 # Sử dụng agent-skills với Gemini CLI
 
-## Cài Đặt (Setup)
+## Cài Đặt (Quick Setup)
 
-### Lựa chọn 1: Cài đặt dưới dạng Skills (Khuyên dùng)
+### Lựa chọn 1: Cài đặt Tự Động Toàn Cục qua npm script (Khuyên dùng)
 
-Gemini CLI có một hệ thống skills tự nhiên giúp tự động phát hiện (auto-discover) các file `SKILL.md` nằm trong thư mục `.gemini/skills/` hoặc `.agents/skills/`. Mỗi skill sẽ tự động kích hoạt khi có nhu cầu dựa trên sự khớp (match) với task của bạn.
+Do `agent-skills` được phân chia thành 8 sub-plugins modular theo từng persona và domain, bạn chỉ cần thực hiện 2 bước đơn giản để toàn bộ hệ sinh thái Gemini CLI trên máy nhận diện được tất cả các skills:
 
-**Cài đặt từ repo:**
+1. Clone repository về máy:
+   ```bash
+   git clone https://gitlab.dnse.com.vn/my-project/agent-skills.git
+   cd agent-skills
+   npm install
+   ```
 
-```bash
-gemini skills install https://github.com/addyosmani/agent-skills.git --path skills
-```
+2. Chạy lệnh thiết lập symlinks toàn cục:
+   ```bash
+   npm run setup:plugins
+   ```
 
-**Hoặc cài đặt từ một bản clone cục bộ:**
-
-```bash
-git clone https://github.com/addyosmani/agent-skills.git
-cd agent-skills
-npm install
-gemini skills install /path/to/agent-skills/skills/
-```
-
-**Chỉ cài đặt riêng cho workspace cụ thể:**
-
-```bash
-gemini skills install /path/to/agent-skills/skills/ --scope workspace
-```
-
-Các skills cài đặt ở phạm vi workspace sẽ nằm trong `.gemini/skills/` (hoặc `.agents/skills/`). Các skills cấp user sẽ nằm ở `~/.gemini/skills/`.
+Lệnh này sẽ tự động liên kết 8 plugins (`agent-skills-ba-po`, `agent-skills-qa`, `agent-skills-dev`, `agent-skills-scrum-master`, `agent-skills-code-reviewer`, `agent-skills-security-auditor`, `agent-skills-web-performance-auditor`, `agent-skills-core`) vào thư mục `~/.gemini/config/plugins/`. Khi mở bất kỳ dự án nào, Gemini CLI sẽ tự động nạp toàn bộ 42 skills và 7 agents.
+- Để gỡ bỏ liên kết: `npm run unlink:plugins`.
 
 Sau khi cài đặt xong, hãy xác minh bằng lệnh:
 

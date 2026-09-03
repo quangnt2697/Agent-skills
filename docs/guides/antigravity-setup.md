@@ -2,32 +2,36 @@
 
 Gói `agent-skills` có thể được cài đặt dưới dạng một native plugin (plugin bản địa) trong Antigravity CLI (`agy`), cung cấp cho agent quyền truy cập vào các workflows có cấu trúc, các personas và các slash commands tùy chỉnh.
 
-## Cài Đặt
+## Cài Đặt (Quick Setup)
 
-### Lựa chọn 1: Cài đặt Native Plugin (Khuyên dùng)
+### Lựa chọn 1: Cài đặt Tự Động qua npm script (Khuyên dùng)
 
-Antigravity CLI có một hệ thống plugin hạng nhất (first-class) để đăng ký các skills, agents và các lệnh tùy chỉnh.
+Do `agent-skills` được tổ chức theo kiến trúc modular gồm 8 plugins chuyên biệt (`ba-po`, `qa`, `dev`, `scrum-master`, `code-reviewer`, `security-auditor`, `web-performance-auditor`, `core`), cách cài đặt chuẩn xác và tiện lợi nhất cho Antigravity và Gemini CLI là:
 
-**Cài đặt từ kho lưu trữ từ xa (remote repository):**
-
-```bash
-agy plugin install https://github.com/addyosmani/agent-skills.git
-```
-
-**Cài đặt từ một bản clone cục bộ:**
-
-1. Clone repository:
+1. Clone repository về máy của bạn:
    ```bash
-   git clone https://github.com/addyosmani/agent-skills.git
+   git clone https://gitlab.dnse.com.vn/my-project/agent-skills.git
    cd agent-skills
    npm install
    ```
-2. Cài đặt plugin bằng `agy`:
+
+2. Chạy script thiết lập tự động:
    ```bash
-   agy plugin install /path/to/agent-skills
+   npm run setup:plugins
    ```
 
-Quá trình này sẽ xác thực plugin và cài đặt nó vào thư mục cấu hình Antigravity toàn cục của bạn (`~/.gemini/antigravity-cli/plugins/agent-skills/`).
+Script sẽ tự động tạo các symbolic links tương ứng từ 8 sub-plugins trong `plugins/` sang thư mục cấu hình toàn cục `~/.gemini/config/plugins/`.
+- Khi bạn cập nhật hoặc `git pull` code mới trong repo `agent-skills`, các plugins trên Antigravity sẽ tự động cập nhật ngay lập tức mà không cần cài đặt lại.
+- Nếu muốn gỡ bỏ, chỉ cần chạy: `npm run unlink:plugins`.
+
+### Lựa chọn 2: Cài đặt Native Plugin qua agy CLI
+
+Bạn cũng có thể cài đặt từng sub-plugin cụ thể bằng lệnh của Antigravity CLI:
+```bash
+agy plugin install /path/to/agent-skills/plugins/ba-po
+agy plugin install /path/to/agent-skills/plugins/qa
+agy plugin install /path/to/agent-skills/plugins/dev
+```
 
 ### Lựa chọn 2: Import từ Gemini CLI
 

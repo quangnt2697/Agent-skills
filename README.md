@@ -49,40 +49,34 @@ Kỹ sư chuyên trách đánh giá hiệu năng web, Core Web Vitals (LCP, FID,
 
 ## ⚡ Quick Start
 
-### Cài đặt với Antigravity CLI (Khuyên dùng)
+### Cài đặt Toàn Cục cho Gemini CLI & Antigravity (Khuyên dùng)
 
-Bạn có thể cài đặt từng plugin riêng lẻ theo nhu cầu:
+Để tất cả các dự án trên máy tự động nhận diện và gọi được toàn bộ 42 skills và 7 personas của `agent-skills`, bạn chỉ cần:
 
 ```bash
-# Cài đặt một plugin cụ thể từ remote repository (ví dụ: BA/PO)
-agy plugin install https://github.com/addyosmani/agent-skills.git --path plugins/ba-po
-
-# Hoặc cài đặt từ local clone
-git clone https://github.com/addyosmani/agent-skills.git
+# 1. Clone repository
+git clone https://gitlab.dnse.com.vn/my-project/agent-skills.git
 cd agent-skills
 npm install
 
-# Cài đặt các plugins bạn cần
-agy plugin install ./plugins/core
-agy plugin install ./plugins/dev
-agy plugin install ./plugins/qa
+# 2. Thiết lập liên kết tự động tới ~/.gemini/config/plugins/
+npm run setup:plugins
 ```
+
+> 💡 **Lưu ý:** Lệnh trên tạo các symlinks an toàn từ 8 sub-plugins (`agent-skills-ba-po`, `agent-skills-qa`, `agent-skills-dev`, v.v.) vào thư mục cấu hình toàn cục `~/.gemini/config/plugins/`. Khi bạn `git pull` code mới, các dự án khác sẽ tự động nhận diện cập nhật ngay lập tức. Để gỡ bỏ, chỉ cần chạy `npm run unlink:plugins`.
 
 ### Cài đặt với Claude Code
 
 ```bash
-# Clone repository
-git clone https://github.com/addyosmani/agent-skills.git
-cd agent-skills
-npm install
-
-# Mở thư mục gốc để tải toàn bộ plugin, hoặc cd vào từng plugin
-# Gõ `/` trong Claude Code để xem danh sách slash commands
+# Mở thư mục gốc trong Claude Code để tải toàn bộ plugins
+claude
+# Hoặc gõ `/` trong chat để xem danh sách 35 slash commands
 ```
 
-**Xem chi tiết:** 
+**Xem tài liệu chi tiết:** 
 - [docs/guides/antigravity-setup.md](docs/guides/antigravity-setup.md) — Antigravity CLI
 - [docs/guides/gemini-cli-setup.md](docs/guides/gemini-cli-setup.md) — Gemini CLI
+- [docs/guides/adoption-guide.md](docs/guides/adoption-guide.md) — Cẩm nang áp dụng theo quy trình Agile/Scrum
 
 ### Workflow cơ bản
 
