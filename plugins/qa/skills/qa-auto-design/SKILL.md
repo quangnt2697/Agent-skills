@@ -32,6 +32,7 @@ Người dùng gọi lệnh `/qa-auto-design` hoặc yêu cầu "viết code aut
 3. **Smart Waits:** Không hard sleep (`time.sleep`, `wait_for_timeout`). Chỉ dùng auto-waiting/auto-retrying assertions.
 4. **Deterministic & Real Securities Data (V3 > V2):** Test data phải unique + traceable, không hardcode bừa bãi. Đối với các bài test liên quan đến chứng khoán, Agent BẮT BUỘC đọc dữ liệu từ TimescaleDB (DB ID: 644 / cache `../../../../references/timescale-schema.md`). **Quy tắc phiên bản:** Bắt buộc ưu tiên sử dụng các bảng **v3** (như `krx_mdds_v3_ticks`, `krx_mdds_v3_top_prices`, `security_definition_v3`); nếu không có bảng v3 mới fallback sang bảng **v2** (như `krx_mdds_v2_stock_infos`, `krx_mdds_v2_stock_ohlc`). Tuyệt đối không hardcode mã giả hoặc giá vi phạm biên độ thị trường.
 5. **Self-fix Loop:** Agent tự chạy test → nếu script lỗi runtime (ImportError, SyntaxError...) → tự đọc log, sửa script, chạy lại → đến khi script thực thi hoàn tất. KHÔNG sửa code để ép test case FAIL thành PASS.
+6. **Cấu Trúc Chuẩn & Kế Thừa Môi Trường (3-Tier):** Mã automation test bắt buộc tuân theo blueprint thư mục tại `workspace/{issueKey}/test/` (xem [references/folder_structure_blueprint.md](references/folder_structure_blueprint.md)), tuyệt đối không tự nghĩ ra file/thư mục tùy tiện. Tự động kế thừa credentials (`api-key`, `api-secret`, URLs, tokens) từ Root và các task anh em cùng hệ thống (xem [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md)).
 
 ---
 
@@ -55,36 +56,35 @@ Bước 6: Review Code (Quality Gate)
 Bước 7: Chạy Test & Xuất Báo Cáo
 ```
 
-### Bước 0: Kiểm tra Kiến trúc Project
+### Bước 0: Kiểm tra Kiến trúc Project & Áp dụng Blueprint Chuẩn
 
-Trước khi viết bất kỳ code nào, Agent **BẮT BUỘC** phải:
-
-1. **Quét cấu trúc thư mục hiện có** của workspace để xác định project đã có sẵn hay cần tạo mới.
-2. **KHÔNG tự động xóa file source** khi chưa xác nhận với user.
-3. **Đặt file đúng thư mục** theo kiến trúc project. Nếu project mới (Playwright + Python), khởi tạo theo cấu trúc chuẩn:
+Trước khi viết bất kỳ code nào, Agent **BẮT BUỘC** tuân thủ cấu trúc thư mục chuẩn tại `/project-root/workspace/{issueKey}/test/` (chi tiết xem [references/folder_structure_blueprint.md](references/folder_structure_blueprint.md)):
 
 ```
-project-root/
-├── conftest.py                   # Root fixtures + browser setup
-├── .env.example                  # KHÔNG chứa credentials thật
-├── src/
-│   ├── pages/                    # Page Object classes (UI)
-│   │   ├── base_page.py
-│   │   └── login_page.py
-│   ├── services/                 # API/WS Client classes
-│   │   ├── api_client.py
-│   │   └── ws_client.py
-│   ├── models/                   # DTO / Pydantic models
-│   │   └── order_event.py
-│   └── utils/                    # Helpers & data generators
-│       ├── test_data.py
-│       └── env_config.py
-├── tests/                        # Test specs (grouped by feature)
-│   ├── ui/
-│   ├── api/
-│   └── ws/
-└── test-data/                    # External test data (JSON/YAML)
+workspace/{issueKey}/test/
+├── checklist.md                        # Checklist BVA/EP (từ qa-test-design)
+├── {issueKey}.feature                  # Kịch bản BDD Gherkin (từ qa-test-design)
+├── .env                                # Task config (kế thừa từ Root/Sibling)
+├── pytest.ini                          # Cấu hình test runner (pythonpath, log_cli)
+├── steps/                              # Toàn bộ mã nguồn test
+│   ├── conftest.py                     # Root fixtures: nạp env 3 tầng, auth token
+│   ├── test_{feature_name}.py          # File test chính (map 1-1 với Gherkin)
+│   ├── services/                       # API/WS client classes (hoặc wrapper SDK)
+│   ├── pages/                          # Page Object Model (chỉ cho Web UI)
+│   ├── models/                         # DTO / Pydantic v2 schemas
+│   └── helpers/                        # Utility, dynamic data & boundary resolver
+└── result/                             # Kết quả test (chứa đúng 4 file output duy nhất)
+    ├── junit.xml                       # Báo cáo chuẩn JUnit XML (duy nhất 1 file)
+    ├── report.html                     # Báo cáo trực quan HTML (duy nhất 1 file)
+    ├── test-output.log                 # Log chi tiết đầy đủ thực thi test (duy nhất 1 file)
+    ├── report.md                       # Báo cáo Markdown tổng kết (duy nhất 1 file)
+    └── screenshots/                    # Ảnh chụp khi test fail (chỉ cho UI)
 ```
+
+**Quy tắc chống ảo giác (Anti-Hallucination):**
+- **CẤM** tự ý tạo thư mục lạ (`src/`, `tests/`, `utils/`, `common/`...) bên ngoài blueprint chuẩn trên.
+- Tuân thủ ma trận file cho phép theo Task Type (chi tiết trong [references/folder_structure_blueprint.md](references/folder_structure_blueprint.md)): API/WebSocket KHÔNG tạo `pages/`; Web UI KHÔNG tạo `services/`.
+- Cấu hình `pytest.ini` với `pythonpath = . steps ../../.. ../../../shared` để import SDK/client dùng chung.
 
 ### Bước 1: Nhận diện Task Type và Bối cảnh
 
@@ -100,9 +100,12 @@ project-root/
 1. **Quét file `.feature` và Checklist:** Agent **BẮT BUỘC** phải tìm và đọc file Checklist (nếu có) và `.feature` liên quan đến tính năng này.
 2. **Đảm bảo Coverage 100%:** Số lượng test method/case sinh ra phải phản ánh chính xác và cover toàn bộ các scenario trong file Gherkin. KHÔNG tự ý bỏ sót bất kỳ một kịch bản nào.
 3. **Quy trình bắt buộc:** Nếu file `.feature` không tồn tại, yêu cầu user tạo Gherkin file trước khi viết code (có thể thông qua skill `qa-test-design`). KHÔNG tự ý sáng tác code khi không có thiết kế test case đầu vào.
-4. **Quy tụ quyền sở hữu & Tự động Khởi tạo File Cấu hình Môi trường (`.env`):**
+4. **Quy tụ quyền sở hữu & Tự động Kế thừa Cấu hình Môi trường (`.env`):**
    - `qa-auto-design` là **chủ sở hữu duy nhất (Single Owner)** của file mẫu cấu hình môi trường kiểm thử (`examples/.env.example`).
-   - Khi chuẩn bị sinh mã test cho task tại `/project-root/workspace/{issueKey}/test/`: nếu thư mục test chưa có file `.env` (và root project cũng chưa có), Agent **BẮT BUỘC tự động sao chép template** từ file `examples/.env.example` của skill sang `/project-root/workspace/{issueKey}/test/.env`. Điều này giúp test suite độc lập và sẵn sàng thực thi ở bất kỳ project nào.
+   - Khi chuẩn bị sinh mã test cho task tại `/project-root/workspace/{issueKey}/test/`:
+     * Áp dụng **cơ chế nạp phân tầng (Cascading Auto-Discovery)**: Tự động dò quét kho credentials trung tâm tại repo `agent-skills/.env`, Root `.env` của project hiện tại, và các task anh em cùng hệ thống (`workspace/*/test/.env`) để kế thừa `API_KEY`, `API_SECRET`, `BASE_URL`, `WS_URL`, `API_TOKEN`.
+     * Tự động khởi tạo file `workspace/{issueKey}/test/.env` từ template và điền sẵn các giá trị đã tìm thấy. **TUYỆT ĐỐI KHÔNG** bắt user phải nhập lại credentials đã có sẵn trên máy.
+     * Chi tiết cơ chế kế thừa xem [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md).
 
 ### Bước 3: Phân tích & Recon
 
@@ -192,9 +195,10 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
 
 4. **Teardown An Toàn (Data Cleanup):** Dùng cơ chế `yield` trong pytest fixture để dọn dẹp data rác (xoá user, huỷ lệnh...) sau khi test xong. **BẮT BUỘC:** Toàn bộ logic dọn dẹp sau `yield` phải nằm trong khối `try...finally` hoặc bọc `try/except` từng phần tử, đảm bảo dữ liệu rác luôn được dọn sạch kể cả khi test case bị assertion fail hoặc gặp lỗi runtime.
 
-5. **Authentication:**
+5. **Authentication & Token Caching:**
    - KHÔNG hardcode tokens/passwords. Đọc từ `.env` / environment variables.
-   - Lấy Auth Token 1 lần ở session-scoped fixture (`@pytest.fixture(scope="session")`), tái sử dụng giữa các tests để tránh spam API Login.
+   - Lấy Auth Token 1 lần ở session-scoped fixture (`@pytest.fixture(scope="session")`), kết hợp bộ nhớ cache cục bộ để tái sử dụng giữa các sessions và lần chạy khác nhau trong ngày, tránh spam API Login.
+   - Chi tiết cài đặt nạp env phân tầng và token caching xem [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md).
 
 6. **Xử lý Bất đồng bộ (WebSocket/Async API):**
    - BẮT BUỘC sử dụng thư viện `pytest_asyncio` và mark `@pytest.mark.asyncio` cho các test case WebSocket.
@@ -357,8 +361,10 @@ Sau khi test chạy xong, Agent **BẮT BUỘC** xuất báo cáo kết quả d�
 
 Sau khi hoàn thành, Agent tự kiểm tra:
 
-### Kiến trúc
-- [ ] File được đặt đúng thư mục (`pages/`, `services/`, `tests/`)
+### Kiến trúc & Cấu trúc Thư mục
+- [ ] Tuân thủ chính xác blueprint tại `workspace/{issueKey}/test/` ([references/folder_structure_blueprint.md](references/folder_structure_blueprint.md)), KHÔNG tự nghĩ ra thư mục lạ
+- [ ] Ma trận file đúng theo Task Type (không sinh `pages/` cho API, không sinh `services/` cho UI)
+- [ ] Có `pytest.ini` thiết lập `pythonpath` chuẩn để import shared fixtures/SDK
 - [ ] Assertions chỉ nằm trong tầng Tests, KHÔNG ở Page/Service
 - [ ] Có class DTO/Model Pydantic v2 (`@field_validator`) cho API/WS schema
 
@@ -388,7 +394,18 @@ Sau khi hoàn thành, Agent tự kiểm tra:
 - [ ] **Web UI:** Locators lấy từ DOM thật, ưu tiên semantic (`get_by_role`, `get_by_label`), web-first assertions
 - [ ] **Mobile App:** Screen Object Model, ưu tiên `Accessibility ID`, thao tác cử chỉ (`tap`, `swipe`), xử lý offline/permissions
 - [ ] **API:** Đủ 7 assertions (Request Schema, Status Code, Response Schema, Business Fields, Error Detail, SLA, Headers)
-- [ ] **WebSocket:** Validate Event Payload Schema + Time-series (timestamp tuần tự) + Data Isolation + Fail-fast timeout
+- [ ] **WebSocket:** Đủ 8 assertions — xem bảng dưới:
+
+| # | Assertion | Mô tả |
+|---|---|---|
+| **WS-1** | **Handshake & Auth** | Xác nhận kết nối thành công / từ chối đúng khi sai auth |
+| **WS-2** | **Subscribe ACK** | Server phản hồi xác nhận subscribe (không im lặng) |
+| **WS-3** | **Event Payload Schema** | Cấu trúc JSON event khớp 100% với spec (dùng Pydantic v2 validate) |
+| **WS-4** | **Business Fields** | Giá trị nghiệp vụ đúng (symbol, price nằm trong biên trần/sàn, side, qty > 0) |
+| **WS-5** | **Time-series Consistency** | Mỗi event có `timestamp` tăng dần (event[n+1].ts ≥ event[n].ts) |
+| **WS-6** | **Data Isolation** | Event của kênh A không leak sang kênh B (cross-market, cross-account) |
+| **WS-7** | **Fail-fast Timeout** | Dùng `asyncio.wait_for(..., timeout=N)` — không nhận event giả, không hard sleep |
+| **WS-8** | **Close Frame & Cleanup** | Sau test, kết nối đóng sạch (close code 1000 normal / 1008 policy); teardown yield dọn socket |
 
 ## Quy trình QA tổng thể
 
@@ -412,10 +429,14 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 ## Xem thêm
 
 - Đọc bộ quy tắc chi tiết tại `references/automation_rules.md`
+- Mẫu bộ cấu trúc thư mục chuẩn tại `references/folder_structure_blueprint.md`
+- Cơ chế chia sẻ fixture và kế thừa env phân tầng tại `references/shared_fixtures_and_env.md`
 - Template báo cáo kết quả test tại `references/report_template.md`
 - Tham khảo code mẫu Web UI (POM) tại `examples/web_ui_pom.py`
 - Tham khảo code mẫu Mobile App (SOM - Playwright/Appium) tại `examples/mobile_app_pom.py`
 - Tham khảo code mẫu API/WS (tái sử dụng code có sẵn) tại `examples/api_ws_service.py`
+- **[Mới]** Tham khảo test mẫu REST API với đủ 7 assertions (Request Schema, Status Code, Response Schema, Business Fields, Error Detail, SLA, Headers) tại `examples/test_api_example.py`
+- **[Mới]** Tham khảo test mẫu WebSocket với đủ 8 assertions (Handshake, Subscribe ACK, Payload Schema, Business Fields, Time-series, Data Isolation, Fail-fast Timeout, Close Frame) tại `examples/test_ws_example.py`
 - Tham khảo conftest.py mẫu (fixtures dùng chung, mobile, auto screenshot, EnvConfig) tại `examples/conftest_template.py`
 - Tham khảo template biến môi trường test tại `examples/.env.example` (Single Source of Truth cho cấu hình kiểm thử)
 - Để import và phân tích Jira task, dùng skill `ba-spec`

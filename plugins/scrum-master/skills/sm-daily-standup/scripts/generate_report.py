@@ -331,7 +331,7 @@ def main():
     template = template.replace("{timestamp}", today_dt.strftime("%Y-%m-%d %H:%M:%S"))
     
     # Save report
-    sprint_dir = os.path.join(project_root, "workspace", "sprint")
+    sprint_dir = os.path.join(project_root, "workspace", "sprint", "trace")
     os.makedirs(sprint_dir, exist_ok=True)
     report_path = os.path.join(sprint_dir, "daily-standup-report.md")
     

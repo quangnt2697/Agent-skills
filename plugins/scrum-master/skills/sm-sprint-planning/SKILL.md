@@ -112,7 +112,7 @@ Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
       -H "Accept: application/json" \
       "${ATLASSIAN_BASE_URL}/rest/agile/1.0/board/{boardId}/backlog?maxResults=200&fields=summary,status,assignee,customfield_10016,priority,labels"
     ```
-    - `customfield_10016` = Story Points (field phổ biến trên Jira Cloud, có thể khác tùy dự án).
+    - `customfield_10022` = Story Points (field thực tế trên workspace này). Fallback về `customfield_10016` nếu `customfield_10022` là null (Jira Cloud mặc định).
 - **Fallback bằng JQL** nếu không có Board ID:
   ```bash
   # Active sprint

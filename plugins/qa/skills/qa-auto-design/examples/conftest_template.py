@@ -18,11 +18,74 @@ import time
 import uuid
 import urllib.request
 from urllib.parse import urlparse
+import glob
+from pathlib import Path
 import pytest
 from dotenv import load_dotenv, find_dotenv
 
-# Tự động tìm nạp .env từ thư mục hiện tại hoặc ngược lên thư mục cha
-load_dotenv(find_dotenv(usecwd=True))
+# ==========================================================
+# CƠ CHẾ NẠP MÔI TRƯỜNG PHÂN TẦNG (Cascading Env Load)
+# Tự động kế thừa từ:
+# Tier 0: Repo agent-skills/.env (Kho credentials trung tâm toàn máy)
+# Tier 1: Project Root .env (Cấu hình riêng của dự án hiện tại)
+# Tier 2: Sibling task .env cùng domain (kế thừa nếu thiếu)
+# Tier 3: Task-local .env (ưu tiên ghi đè cao nhất)
+# ==========================================================
+def load_hierarchical_env():
+    """
+    Nạp cấu hình môi trường phân tầng:
+    0. Central agent-skills/.env (kho credentials tập trung trên máy)
+    1. Root .env của project hiện tại (nền tảng)
+    2. Sibling task .env cùng domain (kế thừa credentials đã khởi tạo: API_KEY, SECRET,...)
+    3. Task-local .env (ưu tiên ghi đè cao nhất)
+    """
+    current_dir = Path(__file__).resolve().parent  # steps/
+    task_test_dir = current_dir.parent             # workspace/{issueKey}/test/
+    workspace_dir = task_test_dir.parent.parent    # workspace/
+    project_root = workspace_dir.parent            # repo root của project hiện tại
+
+    # 0. Nạp từ Repo agent-skills/.env trung tâm (Lưu tập trung toàn bộ credentials trên máy)
+    agent_env_candidates = [
+        os.getenv("AGENT_SKILLS_ENV_PATH"),
+        os.getenv("AGENT_SKILLS_PATH", "") + "/.env" if os.getenv("AGENT_SKILLS_PATH") else None,
+        # Tìm agent-skills/ tại các vị trí phổ biến (không hardcode path máy cụ thể)
+        next(
+            (p for p in [
+                project_root.parent / "agent-skills" / ".env",
+                project_root.parent.parent / "agent-skills" / ".env",
+            ] if Path(p).exists()), None
+        ),
+        project_root.parent / "agent-skills" / ".env",
+        project_root / ".env" if project_root.name == "agent-skills" else None,
+    ]
+    for candidate in agent_env_candidates:
+        if candidate and Path(candidate).exists():
+            load_dotenv(candidate, override=False)
+            break
+
+    # 1. Nạp từ Project Root của dự án hiện tại (nếu có cấu hình riêng)
+    root_env = project_root / ".env"
+    if root_env.exists():
+        load_dotenv(root_env, override=False)
+
+    # 2. Kế thừa từ Sibling Tasks (nếu thiếu API_KEY hoặc API_SECRET)
+    if not os.getenv("API_KEY") or not os.getenv("API_SECRET"):
+        sibling_envs = glob.glob(str(workspace_dir / "*" / "test" / ".env"))
+        for sib in sibling_envs:
+            if Path(sib).resolve() != (task_test_dir / ".env").resolve():
+                load_dotenv(sib, override=False)
+                if os.getenv("API_KEY") and os.getenv("API_SECRET"):
+                    break
+
+    # 3. Nạp Task-local .env (Ưu tiên ghi đè cao nhất)
+    local_env = task_test_dir / ".env"
+    if local_env.exists():
+        load_dotenv(local_env, override=True)
+    else:
+        # Fallback tìm ngược lên thư mục cha
+        load_dotenv(find_dotenv(usecwd=True))
+
+load_hierarchical_env()
 
 
 # ==========================================================
@@ -279,8 +342,24 @@ def auth_token_user_b():
 def dashboard_auth_token(dashboard_url, dashboard_username, dashboard_password):
     """
     Đăng nhập Dashboard OpenAPI tự động để lấy Bearer token.
-    Tự động suy luận URL gốc từ dashboard_url (bỏ qua hash path).
+    Có tích hợp bộ nhớ cache cục bộ (~/.cache/dashboard_test_token_cache.json)
+    để tái sử dụng giữa các session và lần chạy khác nhau trong ngày, tránh spam API Login.
     """
+    cache_file = Path.home() / ".cache" / "dashboard_test_token_cache.json"
+    cache_key = f"{dashboard_username}@{dashboard_url}"
+
+    # 1. Đọc từ Cache nếu còn hạn (< 45 phút)
+    if cache_file.exists():
+        try:
+            with open(cache_file, "r") as f:
+                data = json.load(f)
+                entry = data.get(cache_key)
+                if entry and (time.time() - entry.get("timestamp", 0) < 2700):
+                    return entry.get("token")
+        except Exception:
+            pass
+
+    # 2. Gọi API Login nếu cache không tồn tại hoặc hết hạn
     parsed = urlparse(dashboard_url)
     origin = f"{parsed.scheme}://{parsed.netloc}"
     login_url = f"{origin}/api/v5/login"
@@ -298,7 +377,21 @@ def dashboard_auth_token(dashboard_url, dashboard_username, dashboard_password):
     try:
         with urllib.request.urlopen(req, timeout=5) as resp:
             data = json.loads(resp.read().decode("utf-8"))
-            return data.get("token")
+            token = data.get("token")
+            # Lưu lại vào cache
+            if token:
+                try:
+                    cache_file.parent.mkdir(parents=True, exist_ok=True)
+                    cache_data = {}
+                    if cache_file.exists():
+                        with open(cache_file, "r") as f:
+                            cache_data = json.load(f)
+                    cache_data[cache_key] = {"token": token, "timestamp": time.time()}
+                    with open(cache_file, "w") as f:
+                        json.dump(cache_data, f)
+                except Exception:
+                    pass
+            return token
     except Exception as e:
         print(f"\n⚠️ Không thể lấy token Dashboard tại {login_url}: {e}")
         return None

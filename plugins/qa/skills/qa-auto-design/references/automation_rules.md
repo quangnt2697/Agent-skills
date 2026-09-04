@@ -38,19 +38,21 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - **BẮT BUỘC dùng khối `try...finally`:** Toàn bộ logic teardown sau `yield` phải nằm trong khối `finally` hoặc bọc `try/except` từng phần tử để đảm bảo dữ liệu luôn được dọn dẹp kể cả khi test case raise exception hoặc assertion thất bại.
 - Ví dụ: Test tạo order/user → fixture phải gọi API DELETE/Cancel ở khối teardown.
 
-### 1.6. Authentication & Bảo mật
+### 1.6. Authentication & Kế Thừa Cấu Hình Môi Trường (3-Tier Env)
 - **KHÔNG hardcode** passwords, secret keys, API tokens trực tiếp trong source code hoặc file test data.
-- Đọc credentials và base URL từ biến môi trường (`.env`, config files).
-- **Quản lý Token Lifecycle:**
-  - Lấy Auth Token ở bước Setup (session-scoped `@pytest.fixture`).
-  - Tái sử dụng token giữa các test cases để tối ưu thời gian chạy.
-  - Xử lý kịch bản tự động refresh token khi token hết hạn.
-- **Masking Sensitive Data:** Tự động ẩn thông tin nhạy cảm (Password, Token) trong log và report.
+- **Kế thừa cấu hình 3 tầng (3-Tier Auto-Discovery):** Tự động dò quét Root `.env` và các task anh em cùng hệ thống (`workspace/*/test/.env`) để kế thừa các credentials (`API_KEY`, `API_SECRET`, `BASE_URL`, `WS_URL`, `API_TOKEN`) mà không cần hỏi lại user.
+- **Quản lý Token Lifecycle & Caching:**
+  - Lấy Auth Token ở session-scoped fixture (`@pytest.fixture(scope="session")`).
+  - Hỗ trợ cache file cục bộ để tái sử dụng token giữa các session chạy test khác nhau trong ngày, tránh spam API Login.
+- Chi tiết cơ chế xem [shared_fixtures_and_env.md](shared_fixtures_and_env.md).
 
-### 1.7. Quản lý File & Thư mục
-- KHÔNG tự động xóa file source khi chưa xác nhận với user.
-- Kiểm tra cấu trúc thư mục hiện có trước khi tạo file mới — tránh duplicate.
-- Đặt file đúng thư mục theo kiến trúc project.
+### 1.7. Quản lý Cấu Trúc Thư Mục Chuẩn (Blueprint)
+- Toàn bộ tài nguyên kiểm thử của task BẮT BUỘC nằm trong `/project-root/workspace/{issueKey}/test/`.
+- **CẤM TỰ NGHĨ RA THƯ MỤC:** Tuyệt đối không tự ý tạo các thư mục rời rạc như `src/`, `tests/`, `utils/`, `common/` bên ngoài blueprint.
+- Tuân thủ ma trận cho phép theo Task Type: Không sinh `pages/` cho API/WS; Không sinh `services/` cho Web UI.
+- Thư mục `result/` chỉ chứa duy nhất 1 file mỗi loại (`junit.xml`, `report.html`, `test-output.log`, `report.md`).
+- Thiết lập `pytest.ini` với `pythonpath` chuẩn để import shared fixtures và SDK của dự án.
+- Chi tiết sơ đồ cây thư mục và quy định từng file xem [folder_structure_blueprint.md](folder_structure_blueprint.md).
 
 ### 1.8. Chất lượng Code (Clean Code & Web-First Assertions)
 - Không logic trùng lặp — tạo helper methods cho các hành động lặp đi lặp lại.

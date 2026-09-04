@@ -46,7 +46,7 @@
 
 ## 3. 🚨 Cảnh báo Ticket bị treo
 
-> Các ticket nằm ở một trạng thái quá **7 ngày** mà chưa chuyển tiếp.
+> Các ticket nằm ở một trạng thái quá **4 ngày** mà chưa chuyển tiếp.
 
 | # | Ticket   | Tiêu đề   | Trạng thái hiện tại  | Ưu tiên | Assignee   | Thời gian bị treo   | Mức độ                        |
 |---|----------|-----------|----------------------|---------|------------|---------------------|-------------------------------|

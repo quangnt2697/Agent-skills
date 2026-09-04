@@ -316,7 +316,9 @@ Domain tài chính cần test concurrent:
 **Issue:** JIRA-123
 **Task Type:** [WEB] / [API] / [APP] / [WS]
 **Ngày tạo:** YYYY-MM-DD | **Người tạo:** QA/SDET
-**Spec:** workspace/JIRA-123/spec/final.md
+**Spec:** `workspace/JIRA-123/spec/final.md`
+**Môi trường:** [UAT / Staging / Production]
+**Phiên bản / Nhánh:** [Build Version / Branch]
 
 ---
 
@@ -678,3 +680,6 @@ Sau khi hoàn thành một QA workflow, tự kiểm tra:
 - [ ] `trace/matrix.md` có coverage ≥ 90% trước khi báo cáo DONE
 - [ ] Failures được phân loại rõ: real bug / flaky / env issue
 - [ ] Bugs report gửi DEV đủ: error message + log line + severity + expected vs actual
+- [ ] `conftest.py` có session-scoped auth fixture — KHÔNG spam login API mỗi test case
+- [ ] `.env` được tạo đúng tầng task-local; credentials KHÔNG nằm trong source code
+- [ ] `pytest.ini` có `pythonpath` khai báo đúng để import shared SDK/fixtures (tránh `ImportError`)

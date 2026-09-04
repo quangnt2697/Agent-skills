@@ -15,6 +15,8 @@ Chạy automation test đã có sẵn trong project và xuất báo cáo kết q
 3. **Thực thi Đầy đủ Quy chuẩn File Test:** Tự động tìm và chạy tất cả các file test theo cả hai quy chuẩn đặt tên chuẩn của pytest: `test_*.py` và `*_test.py`.
 4. **Tự động Sửa Lỗi Kỹ thuật Script (Self-fix Loop):** Tự sửa lỗi import, syntax, fixture thiếu tối đa 3 vòng lặp. Tuyệt đối KHÔNG sửa code/assertion để ép test case FAIL thành PASS nếu fail do bug ứng dụng.
 5. **Báo cáo Truy vết Toàn trình (End-to-End Traceability):** Ánh xạ từ Business Rule → Checklist → Gherkin Scenario → Test Method → Kết quả thực thi.
+6. **Độc bản Output (Single File Per Type — BẮT BUỘC):** Sau khi chạy xong, trong thư mục kết quả (`$REPORT_DIR`) chỉ sinh ra **DUY NHẤT 1 file cho mỗi loại định dạng**: 1 file `.xml` (`junit.xml`), 1 file `.html` (`report.html`), 1 file `.log` (`test-output.log`), 1 file `.md` (`report.md`). Tuyệt đối không sinh trùng 2 file cùng loại (cấm sinh đồng thời `{issueKey}-test-report.md` và `report.md`).
+7. **Ghi lại Chi tiết Full Log:** File `test-output.log` ghi lại 100% full log chi tiết (tắt cơ chế nuốt log của pytest qua cờ `-s`, bật live logging `-o log_cli=true -o log_cli_level=INFO`, bảng summary `-rA` và chuyển hướng `2>&1 | tee`).
 
 ## Khi nào sử dụng
 
@@ -103,8 +105,8 @@ echo "Đã tìm thấy các file test trong $TEST_DIR:"
 echo "$TEST_FILES"
 ```
 
-#### 0.3. Khởi tạo Thư mục Báo cáo (`REPORT_DIR`):
-Luôn đảm bảo thư mục lưu báo cáo được tạo sẵn:
+#### 0.3. Khởi tạo Thư mục Báo cáo (`REPORT_DIR`) & Dọn dẹp File Trùng Lặp Cũ:
+Luôn đảm bảo thư mục lưu báo cáo được tạo sẵn và dọn dẹp các file trùng lặp cũ từ lần chạy trước:
 ```bash
 if [ -n "$ISSUE_KEY" ]; then
     export REPORT_DIR="/project-root/workspace/${ISSUE_KEY}/test/result"
@@ -113,6 +115,12 @@ else
     export REPORT_DIR="$(dirname "$TEST_DIR")/result"
 fi
 mkdir -p "$REPORT_DIR"
+
+# Dọn dẹp file trùng lặp cũ (nếu có) để đảm bảo quy tắc độc bản 1 file mỗi loại
+# Xóa các file báo cáo markdown đặt tên kiểu cũ (*test-report.md) nếu có để chỉ giữ report.md
+find "$REPORT_DIR" -maxdepth 1 -type f -name "*test-report.md" -delete 2>/dev/null || true
+# Xóa các file log thừa (chỉ giữ test-output.log sẽ được ghi đè)
+find "$REPORT_DIR" -maxdepth 1 -type f -name "*.log" ! -name "test-output.log" -delete 2>/dev/null || true
 ```
 
 ---
@@ -189,19 +197,41 @@ fi
 
 ### Bước 3: Thực thi Test Suite & Self-fix Loop
 
-#### 3.1. Lệnh Chạy Test Chuẩn
-Chạy tất cả các file `test_*.py` và `*_test.py` trong thư mục `steps`:
+#### 3.1. Lệnh Chạy Test Chuẩn (Full Log Chi Tiết & Độc Bản Output)
+Chạy tất cả các file `test_*.py` và `*_test.py` trong thư mục `steps` với đầy đủ cờ để ghi nhận Full Log và sinh đúng 1 file mỗi loại:
 
 ```bash
-# Chạy toàn bộ test trong thư mục steps hỗ trợ cả test_*.py và *_test.py
+# Đảm bảo thư mục result tồn tại
+mkdir -p "$REPORT_DIR"
+
+# Chạy toàn bộ test trong thư mục steps với full log chi tiết
 pytest "$TEST_DIR" \
   -o python_files="test_*.py *_test.py" \
   -v \
+  -s \
+  -o log_cli=true \
+  -o log_cli_level=INFO \
+  -o log_cli_format="%(asctime)s [%(levelname)8s] (%(name)s:%(lineno)s) %(message)s" \
+  -o log_cli_date_format="%Y-%m-%d %H:%M:%S" \
+  -rA \
   --tb=short \
   --junitxml="$REPORT_DIR/junit.xml" \
   --html="$REPORT_DIR/report.html" \
-  --self-contained-html 2>&1 | tee "$REPORT_DIR/test-output.log"
+  --self-contained-html \
+  2>&1 | tee "$REPORT_DIR/test-output.log"
 ```
+
+**Chi tiết các cờ kỹ thuật bắt buộc để ghi lại FULL CHI TIẾT LOG vào `test-output.log`:**
+- `-s` (tương đương `--capture=no`): **BẮT BUỘC.** Vô hiệu hóa cơ chế bắt log ngầm của pytest. Mặc định, pytest nuốt/ẩn toàn bộ `print()` và output của các test PASSED. Khi thêm `-s`, toàn bộ thông tin Request/Response API, WebSocket message frames, query parameters và print debug đều được hiển thị trực tiếp ra console stream.
+- `-o log_cli=true -o log_cli_level=INFO`: **BẮT BUỘC.** Kích hoạt live logging cho pytest, đảm bảo tất cả output từ module Python `logging` (như logging trong HTTP client, WebSocket client, POM, utils) đều được stream trực tiếp ra console theo thời gian thực kèm timestamp chuẩn.
+- `-rA`: **BẮT BUỘC.** Hiển thị bảng tóm tắt chi tiết (short test summary info) cho TOÀN BỘ test cases (Passed, Failed, Skipped) ở cuối phiên chạy.
+- `--tb=short`: Hiển thị stack trace ngắn gọn, tập trung vào dòng code bị lỗi khi có failure.
+- `--junitxml="$REPORT_DIR/junit.xml"`: Xuất file XML DUY NHẤT.
+- `--html="$REPORT_DIR/report.html" --self-contained-html`: Xuất file HTML trực quan DUY NHẤT.
+- `2>&1 | tee "$REPORT_DIR/test-output.log"`: **BẮT BUỘC DÙNG `2>&1`.** Chuyển hướng cả STDOUT (luồng 1) và STDERR (luồng 2) vào lệnh `tee`, vừa hiển thị tiến trình ra terminal vừa ghi đè lưu trọn vẹn 100% Full Log chi tiết vào DUY NHẤT 1 file `test-output.log`.
+
+**Lưu ý cấu hình `pytest.ini`:**
+- Nếu dự án có cấu hình logging trong file `pytest.ini`, đảm bảo biến `log_file` (nếu khai báo) phải trỏ đúng vào `test-output.log` (hoặc để lệnh CLI quản lý tập trung qua `tee`). **TUYỆT ĐỐI KHÔNG** cấu hình sinh thêm file log thứ hai (như `pytest.log` hay `test.log`) làm vi phạm quy tắc độc bản 1 file mỗi loại.
 
 **Các biến thể linh hoạt theo nhu cầu:**
 - **Chạy theo marker (tag):**
@@ -275,8 +305,15 @@ Mỗi test case failed liên quan đến API hoặc WebSocket BẮT BUỘC phả
 
 ### Bước 5: Sinh Báo cáo (Generate Report Artifact)
 
-Xuất báo cáo dưới dạng Markdown artifact lưu tại:
-`/project-root/workspace/{issueKey}/test/result/{issueKey}-test-report.md` (hoặc `test/result/report.md`).
+Xuất báo cáo dưới dạng Markdown artifact lưu tại DUY NHẤT một file chuẩn:
+`/project-root/workspace/{issueKey}/test/result/report.md` (hoặc `test/result/report.md` nếu không gắn với issueKey).
+
+> [!IMPORTANT]
+> **QUY TẮC ĐỘC BẢN FILE BÁO CÁO MARKDOWN (BẮT BUỘC):**
+> - Tên file Markdown báo cáo **BẮT BUỘC CỐ ĐỊNH** là `report.md`.
+> - **NGHIÊM CẤM** đặt tên `{issueKey}-test-report.md` hoặc bất kỳ biến thể nào khác.
+> - **NGHIÊM CẤM** chạy lệnh sao chép `cp report.md {issueKey}-test-report.md` hoặc tạo 2 file Markdown cùng lúc.
+> - Báo cáo `report.md` là nguồn sự thật duy nhất cho kết quả kiểm thử, thống nhất hoàn toàn với các skill khác trong pipeline (`qa-auto-design`, `qa-full-pipeline`).
 
 #### Template Báo cáo Chuẩn:
 
@@ -398,7 +435,7 @@ Xuất báo cáo dưới dạng Markdown artifact lưu tại:
 
 ## 📁 6. Danh mục File Artifacts
 
-- **Báo cáo Markdown:** `/project-root/workspace/{issueKey}/test/result/{issueKey}-test-report.md`
+- **Báo cáo Markdown:** `/project-root/workspace/{issueKey}/test/result/report.md`
 - **Báo cáo HTML:** `/project-root/workspace/{issueKey}/test/result/report.html`
 - **JUnit XML:** `/project-root/workspace/{issueKey}/test/result/junit.xml`
 - **Log Runner:** `/project-root/workspace/{issueKey}/test/result/test-output.log`
@@ -416,16 +453,27 @@ Trình bày ngắn gọn bảng tổng kết cho người dùng:
 
 ---
 
-## Output Files
+## Output Files & Quy chuẩn Độc bản
 
-Mọi file output của skill **BẮT BUỘC** nằm dưới `/project-root/workspace/{issueKey}/test/result/`:
+Sau khi chạy test, thư mục kết quả (`$REPORT_DIR`) **BẮT BUỘC CHỈ TỒN TẠI DUY NHẤT 1 FILE CHO MỖI ĐỊNH DẠNG**:
+
+| Định dạng | File chuẩn duy nhất | Mô tả & Nội dung | Quy định cấm trùng lặp |
+|---|---|---|---|
+| **XML** | `junit.xml` | Báo cáo chuẩn JUnit XML (dùng cho CI/CD) | **DUY NHẤT 1 FILE.** Cấm tạo thêm file xml nào khác (`test-results.xml`, `results.xml`). |
+| **HTML** | `report.html` | Báo cáo HTML trực quan (tạo bởi pytest-html) | **DUY NHẤT 1 FILE.** Cấm tạo thêm file html nào khác. |
+| **LOG** | `test-output.log` | Log runner ghi lại **chi tiết full log** 100% console stdout & stderr | **DUY NHẤT 1 FILE.** Cấm tạo thêm file log nào khác (`pytest.log`, `runner.log`). Bắt buộc ghi full log chi tiết. |
+| **MD** | `report.md` | Báo cáo Markdown chi tiết kèm Traceability Matrix | **DUY NHẤT 1 FILE.** Cấm tạo thêm file md nào khác (`{issueKey}-test-report.md`). Không copy trùng lặp. |
+
+*(Lưu ý: Nếu có ảnh chụp màn hình khi UI test thất bại, ảnh được lưu riêng trong thư mục con `screenshots/` theo chuẩn UI testing).*
+
+Cấu trúc thư mục kết quả chuẩn — **tuyệt đối không sinh trùng 2 file cùng loại**:
 
 ```
 /project-root/workspace/{issueKey}/test/result/
-├── test-output.log              # Log stdout & stderr từ pytest
-├── junit.xml                    # Báo cáo chuẩn JUnit XML (dùng cho CI/CD)
-├── report.html                  # Báo cáo HTML trực quan (kèm pytest-html)
-└── {issueKey}-test-report.md   # Báo cáo Markdown chi tiết kèm Traceability Matrix
+├── junit.xml                    # Duy nhất 1 file XML chuẩn JUnit (dùng cho CI/CD)
+├── report.html                  # Duy nhất 1 file HTML trực quan (kèm pytest-html)
+├── test-output.log              # Duy nhất 1 file LOG (chứa FULL CHI TIẾT console stdout/stderr)
+└── report.md                    # Duy nhất 1 file Markdown báo cáo chính thức
 ```
 
 ---
@@ -473,12 +521,14 @@ Trước khi bàn giao kết quả và kết thúc lượt chạy:
 - [ ] Đã nhận diện đầy đủ các file `test_*.py` và `*_test.py` trong thư mục `steps/`
 - [ ] Đã đọc trước các file cấu hình (`conftest.py`, `.env`) và kịch bản liên quan (`*.feature`, spec, checklist)
 - [ ] Pre-flight check kiểm tra dependencies và biến môi trường đạt yêu cầu
-- [ ] Test đã chạy xong và log đầy đủ vào `test-output.log`
+- [ ] **Độc bản Output:** Thư mục `$REPORT_DIR` chỉ chứa **DUY NHẤT 1 file mỗi loại**: đúng 1 `junit.xml`, 1 `report.html`, 1 `test-output.log`, 1 `report.md`.
+- [ ] **Không sinh trùng lặp:** Tuyệt đối không có 2 file cùng loại (không có file `{issueKey}-test-report.md` bên cạnh `report.md`, không có file log/xml thứ hai).
+- [ ] **Full Log Chi Tiết:** File `test-output.log` đã ghi lại chi tiết full log (không bị nuốt log của các test passed, có đầy đủ request/response, websocket frames, logging output, session info).
 - [ ] Đã parse đầy đủ metrics: Total, Passed, Failed, Skipped, Duration
-- [ ] Báo cáo có Ma trận Truy vết Toàn trình (Traceability Matrix)
+- [ ] Báo cáo `report.md` có Ma trận Truy vết Toàn trình (Traceability Matrix)
 - [ ] Mỗi test fail đều có chi tiết phân loại lỗi, nguyên nhân gốc, và Request/Response (đối với API/WS)
 - [ ] Tuyệt đối không có hành vi gian lận (không sửa assertion để ép test pass)
-- [ ] File báo cáo Markdown đã được ghi đúng vào `/project-root/workspace/{issueKey}/test/result/`
+- [ ] File báo cáo Markdown `report.md` đã được ghi đúng vào `/project-root/workspace/{issueKey}/test/result/`
 
 ---
 
@@ -525,11 +575,17 @@ Các triệu chứng cho thấy kết quả chạy test không đáng tin cậy:
 - Bỏ qua các file có hậu tố `*_test.py`
 - Ghi đè báo cáo ra thư mục gốc dự án thay vì thư mục chuẩn `workspace/{issueKey}/test/result/`
 - Bỏ cuộc ngay khi gặp lỗi kỹ thuật nhỏ của script thay vì kích hoạt Self-fix loop
+- Sinh trùng 2 file cùng loại (VD: vừa tạo `report.md` vừa tạo `{issueKey}-test-report.md`, hoặc copy nhân đôi file báo cáo)
+- Chạy `pytest` thiếu cờ `-s` hoặc thiếu cấu hình live logging khiến `test-output.log` bị trống hoặc chỉ có vài chục dòng tóm tắt
+- Quên toán tử `2>&1 | tee "$REPORT_DIR/test-output.log"` làm mất log trên môi trường shell
 
 ✅ **NÊN:**
 - Tự động quét và tìm đến đúng thư mục `steps/`
 - Chủ động đọc kỹ các file liên quan trước khi chạy để hiểu bức tranh toàn cảnh
 - Hỗ trợ đầy đủ cả `test_*.py` và `*_test.py`
+- Luôn dọn dẹp các file trùng lặp cũ và đảm bảo kết quả chỉ sinh ra DUY NHẤT 1 file mỗi loại (1 xml, 1 html, 1 log, 1 md)
+- Đặt tên cố định cho file Markdown báo cáo là `report.md`
+- Chạy lệnh pytest kèm `-v -s -o log_cli=true -o log_cli_level=INFO -rA` và `2>&1 | tee` để `test-output.log` ghi lại 100% full log chi tiết
 - Tự sửa lỗi kỹ thuật script (import, syntax, fixture) tối đa 3 vòng
 - Giữ nguyên kết quả fail nếu đó là lỗi thật của ứng dụng và ghi lại Request/Response chi tiết
 - Xuất báo cáo có bảng Ma trận Truy vết Toàn trình rõ ràng bằng Tiếng Việt

@@ -24,6 +24,7 @@ Trình bày checklist cho user review trước khi chuyển sang Phase 2.
 3. Tham khảo `references/qa-testing-checklist.md` cho bảng BVA, phân vùng tương đương (equivalence partitioning), và các mẫu validation domain tài chính.
 4. KHÔNG tạo code implementation test — command này chỉ thiết kế test artifacts. Dùng `/qa-auto-design` để sinh code automation.
 5. BẮT BUỘC chỉ sinh ra chính xác 1 file checklist và 1 file .feature duy nhất cho toàn bộ Jira task. Gom tất cả các tính năng/kịch bản vào chung 1 file `.feature`. Output lưu tại đường dẫn `/project-root/workspace/{issueKey}/test/` với tên 2 file là: `checklist.md` và `{issueKey}.feature`.
+6. Kịch bản Gherkin và Checklist BẮT BUỘC viết bằng ngôn ngữ thuần nghiệp vụ (Ubiquitous Language). TUYỆT ĐỐI KHÔNG dùng tên biến code hoặc cấu hình kỹ thuật (như `MAX_CONNECTOR`, `MAX_STREAM`, `.env`, `close code 1008`). Đối với các kịch bản kiểm thử giới hạn (hạn mức kết nối, quota theo dõi, kiểm soát tần suất rate limit theo 3 bậc User Tier `normal`, `vip`, `ultimate`), BẮT BUỘC sử dụng mô hình Ranh giới Tượng trưng (Symbolic Boundaries: `TAI_HAN_MUC`, `VUOT_HAN_MUC`, `DUOI_HAN_MUC`, `TRONG_NGUONG`, `VUOT_NGUONG`) để độc lập hoàn toàn với môi trường thực thi.
 
 <critical_instruction>
 HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.

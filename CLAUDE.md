@@ -62,7 +62,7 @@ Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
 **Pipeline QA:**
 ```
 (Nhận *-final.md từ BA/PO) → /qa-test-design → /qa-auto-design → /qa-run-test
-                                       └─── hoặc chạy full: /qa-pipeline ───┘
+                                       └─── hoặc chạy full: /qa-full-pipeline ───┘
 ```
 
 **Ranh giới:**
@@ -371,25 +371,6 @@ Riêng skill `ba-design-flowchart` có môi trường Node độc lập:
 - Không bao giờ: Thêm kỹ năng chỉ là lời khuyên chung thay vì quy trình hành động cụ thể
 - Không bao giờ: Duplicate nội dung giữa các kỹ năng — tham chiếu chéo thay vì copy
 
-## Git Workflow
+## Git Workflow & Autonomy
 
-**Branch-based Development (BẮT BUỘC):**
-- ❌ KHÔNG commit trực tiếp vào `main`/`master`
-- ✅ Tạo feature branch cho MỌI thay đổi code app: `feature/{issueKey}` hoặc `feature/{feature-name}`
-- ✅ Verify nhiều lần (test + build) trong quá trình code, NHƯNG chỉ commit 1 lần SAU KHI hoàn thành task
-- ✅ Merge vào main CHỈ SAU KHI: (1) Test pass + (2) Build success + (3) User approve
-- 📖 Xem chi tiết: `.claude/rules/git-workflow.md`
-
-## Tự chủ (Autonomy)
-
-**Mặc định là TỰ CHẠY.** Agent chỉ dừng hỏi user khi rơi vào 5 trường hợp của danh sách đóng:
-1. Thiếu file input bắt buộc không thể tự tạo
-2. Thiếu credential/secret không thể tự lấy
-3. Có câu hỏi 🔴 Critical làm thay đổi bản chất output
-4. Sắp commit/merge vào `main`
-5. Hành động không thể hoàn tác bằng `git revert`
-
-Mọi trường hợp khác: tự quyết, ghi giả định vào output, chạy tiếp. Confidence Level chỉ dùng
-để **báo cáo**, không dùng chặn luồng.
-
-- 📖 Xem chi tiết: `.claude/rules/autonomy-contract.md`
+Xem chi tiết tại [`AGENTS.md`](AGENTS.md) (Section 7 — Tự Chủ & Chủ Động) và [`.claude/rules/git-workflow.md`](.claude/rules/git-workflow.md).

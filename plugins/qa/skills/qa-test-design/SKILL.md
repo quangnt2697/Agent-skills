@@ -286,7 +286,6 @@ Mỗi checklist phải bao gồm các cột sau:
 ### Template Checklist Chuyên biệt cho WebSocket (Phân Tầng User Tier & Rate Limit)
 
 ```markdown
-```markdown
 **Môi trường:** [UAT / Staging]
 **Giao thức:** WebSocket (Kênh dữ liệu trực tuyến)
 **Phân tầng tài khoản:** `normal`, `vip`, `ultimate`
