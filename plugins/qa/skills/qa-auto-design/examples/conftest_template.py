@@ -26,8 +26,79 @@ load_dotenv(find_dotenv(usecwd=True))
 
 
 # ==========================================================
-# 1. CLI OPTIONS (pytest_addoption)
+# 0. DYNAMIC ENVIRONMENT CONFIG & SYMBOLIC BOUNDARIES (EnvConfig)
 # ==========================================================
+# Quản lý tập trung biến môi trường từ .env và tự động ánh xạ
+# các vị trí biên BVA tượng trưng (TAI_HAN_MUC, VUOT_HAN_MUC)
+# từ kịch bản Gherkin sang giá trị số nguyên thực tế lúc runtime.
+# Giúp test suite chỉ cần sửa ở 1 chỗ duy nhất (.env).
+# ==========================================================
+
+class EnvConfig:
+    """Quản lý cấu hình môi trường tập trung và ánh xạ biên động từ .env."""
+
+    @staticmethod
+    def get_max_connector(tier: str) -> int:
+        """Hạn mức kết nối socket đồng thời theo tier."""
+        tier_normalized = tier.strip().lower()
+        key = f"{tier_normalized.upper()}_USER_MAX_CONNECTOR"
+        defaults = {"normal": 10, "vip": 25, "ultimate": 50}
+        return int(os.getenv(key, defaults.get(tier_normalized, 10)))
+
+    @staticmethod
+    def get_max_stream(tier: str) -> int:
+        """Hạn mức số stream/mã chứng khoán theo dõi theo tier."""
+        tier_normalized = tier.strip().lower()
+        key = f"{tier_normalized.upper()}_USER_MAX_STREAM"
+        defaults = {"normal": 200, "vip": 400, "ultimate": 400}
+        return int(os.getenv(key, defaults.get(tier_normalized, 200)))
+
+    @staticmethod
+    def get_rate_limit(tier: str) -> int:
+        """Ngưỡng tần suất gửi tin nhắn/yêu cầu (msg/s) theo tier."""
+        tier_normalized = tier.strip().lower()
+        key = f"{tier_normalized.upper()}_USER_RATE_LIMIT"
+        defaults = {"normal": 10, "vip": 50, "ultimate": 200}
+        return int(os.getenv(key, defaults.get(tier_normalized, 10)))
+
+    @classmethod
+    def resolve_boundary(cls, tier: str, metric_type: str, boundary_pos: str) -> int:
+        """
+        Ánh xạ vị trí biên tượng trưng từ Gherkin sang giá trị số nguyên thực tế:
+        - TAI_HAN_MUC / AT_LIMIT: đúng bằng limit
+        - VUOT_HAN_MUC / OVER_LIMIT: limit + 1
+        - DUOI_HAN_MUC / BELOW_LIMIT: max(1, limit - 1)
+        - TRONG_NGUONG / WITHIN_LIMIT: đúng bằng ngưỡng (limit)
+        - VUOT_NGUONG / BEYOND_LIMIT: vượt ngưỡng (limit + 5 hoặc limit * 1.2)
+        """
+        m_type = metric_type.strip().upper()
+        if m_type in ("CONNECTOR", "SOCKET", "CONNECTION"):
+            limit = cls.get_max_connector(tier)
+        elif m_type in ("STREAM", "TOPIC", "SYMBOL"):
+            limit = cls.get_max_stream(tier)
+        elif m_type in ("RATE_LIMIT", "MESSAGE", "TAN_SUAT"):
+            limit = cls.get_rate_limit(tier)
+        else:
+            raise ValueError(f"Loại hạn mức không hợp lệ: {metric_type}")
+
+        b_pos = boundary_pos.strip().upper()
+        if b_pos in ("TAI_HAN_MUC", "AT_LIMIT", "LIMIT"):
+            return limit
+        elif b_pos in ("VUOT_HAN_MUC", "OVER_LIMIT"):
+            return limit + 1
+        elif b_pos in ("DUOI_HAN_MUC", "BELOW_LIMIT"):
+            return max(1, limit - 1)
+        elif b_pos in ("TRONG_NGUONG", "WITHIN_LIMIT"):
+            return limit
+        elif b_pos in ("VUOT_NGUONG", "BEYOND_LIMIT"):
+            return limit + max(1, int(limit * 0.2))
+        else:
+            # Fallback nếu truyền trực tiếp số nguyên
+            try:
+                return int(boundary_pos)
+            except ValueError:
+                raise ValueError(f"Không thể giải quyết vị trí biên: '{boundary_pos}'")
+
 # Cho phép truyền ghi đè qua CLI (ví dụ: pytest --ws-url=wss://...)
 # Mặc định ưu tiên đọc từ biến môi trường trong .env
 # ==========================================================

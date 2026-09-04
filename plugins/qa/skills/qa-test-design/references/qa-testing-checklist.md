@@ -194,6 +194,22 @@ Scenario Outline: Hiển thị dữ liệu theo thị trường <thị_trường
 - [ ] Xác nhận response time < SLA (thường ≤ 2 giây)
 - [ ] Xác nhận rate limit trả về 429 khi vượt ngưỡng
 
+### 5.6. WebSocket: Phân tầng Bậc tài khoản (normal, vip, ultimate) & Kiểm soát tần suất (P0 - P2)
+*(Áp dụng mô hình Ranh giới Tượng trưng BVA: TAI_HAN_MUC, VUOT_HAN_MUC theo cấu hình môi trường)*
+
+- [ ] **Chứng thực phiên theo Bậc tài khoản (P0):** Xác nhận thông tin chứng thực và phân loại đúng Bậc tài khoản (`normal`, `vip`, `ultimate`) khi mở kết nối trực tuyến.
+- [ ] **Giới hạn số kết nối đồng thời theo Bậc (P0 — BVA theo hạn mức):**
+  - Xác nhận tài khoản mở kết nối tại hạn mức cho phép (`TAI_HAN_MUC`) thành công.
+  - Xác nhận tài khoản mở kết nối vượt quá hạn mức cho phép (`VUOT_HAN_MUC`) bị từ chối do vi phạm chính sách kết nối.
+- [ ] **Quyền hạn kênh dữ liệu theo Bậc (P0):** Xác nhận tài khoản bậc `normal` không thể đăng ký theo dõi các luồng dữ liệu đặc quyền (Sổ lệnh độ sâu Top 10 giá, luồng giao dịch riêng tư của tài khoản khác).
+- [ ] **Hạn mức theo dõi luồng/mã theo Bậc (P1 — BVA theo hạn mức):**
+  - Xác nhận tài khoản đăng ký theo dõi số lượng mã/kênh tại hạn mức (`TAI_HAN_MUC`) thành công.
+  - Xác nhận tài khoản đăng ký theo dõi vượt hạn mức (`VUOT_HAN_MUC`) bị từ chối với thông báo vượt quá hạn mức cho phép của tài khoản (`TIER_QUOTA_EXCEEDED`).
+- [ ] **Kiểm soát tần suất gửi yêu cầu theo Bậc (P1):** Xác nhận client gửi yêu cầu dồn dập vượt ngưỡng tần suất của Bậc (`VUOT_NGUONG`) nhận được thông báo từ chối (`RATE_LIMIT_EXCEEDED`) kèm thời gian chờ thử lại (`retry_after`).
+- [ ] **Bảo vệ chống gửi yêu cầu dồn dập / Spam (P2):** Xác nhận gửi yêu cầu liên tục với tần suất cực hạn dẫn đến hệ thống chủ động ngắt kết nối do vi phạm chính sách bảo vệ.
+- [ ] **Cơ chế Cooldown & Hồi phục (P1):** Xác nhận sau khi hết thời gian chờ phạt, client gửi lại yêu cầu được hệ thống chấp nhận và xử lý bình thường.
+- [ ] **Điều tiết dữ liệu đẩy về theo Bậc & Chống bão giá (P2):** Xác nhận hệ thống điều tiết tần suất đẩy dữ liệu theo Bậc tài khoản (`normal` nhận snapshot gộp khi thị trường biến động mạnh, `vip`/`ultimate` nhận dữ liệu tức thời) và áp dụng gộp dữ liệu khi có biến động giao dịch cực lớn.
+
 ---
 
 ## 6. Chiến lược Gắn Tag
@@ -208,6 +224,8 @@ Scenario Outline: Hiển thị dữ liệu theo thị trường <thị_trường
 | `@api`               | Test cấp API                           | -             |
 | `@ui`                | Test cấp UI                            | -             |
 | `@ws`                | Test WebSocket                         | -             |
+| `@tier`              | Phân tầng User Tier (normal, vip...)   | -             |
+| `@rate-limit`        | Giới hạn tần suất và Quota             | -             |
 | `@security`          | Bảo mật / Phân quyền                   | 🔴 Cao        |
 | `@JIRA-XXXX`         | Liên kết ticket                        | -             |
 | `@domain-securities` | Domain chứng khoán                     | -             |

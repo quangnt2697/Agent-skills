@@ -330,6 +330,20 @@ WebSocket là giao thức real-time hai chiều (bidirectional) giữa client v�
 | **Detect Stale Connection** | Server không respond pong 3 lần liên tiếp | Client close connection, reconnect                    | P1         |
 | **Client Idle**             | Client không gửi message 5 phút           | Server không close connection (server-initiated ping) | P2         |
 
+#### 8. User Tier (normal, vip, ultimate) & Rate Limiting for WebSocket
+*(Áp dụng mô hình Ranh giới Tượng trưng BVA: TAI_HAN_MUC, VUOT_HAN_MUC)*
+
+| Test Case | Action | Expected Result | Priority |
+|---|---|---|---|
+| **Handshake Auth per Tier** | Client mở kết nối với thông tin chứng thực của tier (`normal`/`vip`/`ultimate`) | Server xác thực và gán đúng quyền / quota của tier tương ứng | P0 |
+| **Max Connections per Tier** | User mở kết nối tại hạn mức (`TAI_HAN_MUC`) và vượt hạn mức (`VUOT_HAN_MUC`) | Kết nối tại hạn mức thành công; kết nối vượt hạn mức bị từ chối do vi phạm chính sách | P0 |
+| **Topic Permission per Tier** | User tier `normal` subscribe VIP topic (Depth Top 10, private stream) | Server từ chối với thông báo không đủ quyền truy cập | P0 |
+| **Subscription Quota per Tier** | User theo dõi số mã/kênh tại hạn mức (`TAI_HAN_MUC`) và vượt hạn mức (`VUOT_HAN_MUC`) | Tại hạn mức thành công; vượt hạn mức bị từ chối với mã lỗi `TIER_QUOTA_EXCEEDED` | P1 |
+| **Inbound Rate Limit per Tier** | Client gửi message với tần suất trong ngưỡng (`TRONG_NGUONG`) và vượt ngưỡng (`VUOT_NGUONG`) | Trong ngưỡng được xử lý; vượt ngưỡng phản hồi `RATE_LIMIT_EXCEEDED` kèm `retry_after` | P1 |
+| **Spam / DoS Protection** | Client spam liên tục vượt ngưỡng cực hạn | Server chủ động ngắt kết nối do vi phạm chính sách bảo vệ | P2 |
+| **Cooldown & Recovery** | Client đợi hết thời gian `retry_after` và gửi lại message | Server chấp nhận message và xử lý bình thường | P1 |
+| **Outbound Push Throttling** | Thị trường biến động mạnh / bão giá | Server tự động gộp/debounce theo Tier (Normal snapshot, VIP/Ultimate real-time) | P2 |
+
 ### Gherkin Examples for WebSocket
 
 #### Connection & Subscribe

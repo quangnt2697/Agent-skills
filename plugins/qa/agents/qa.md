@@ -524,10 +524,11 @@ Feature: Đặt lệnh chứng khoán
 11. **Checklist trước Gherkin**: kích hoạt `qa-test-design` → luôn tạo checklist (Giai đoạn 1) trước Gherkin (Giai đoạn 2)
 12. **Bao phủ đối xứng**: khi spec đề cập nhiều phần tử UI (nút, tab) hoặc giá trị (loại lệnh, loại tài khoản) có cùng behavior → BẮT BUỘC bao phủ TẤT CẢ, dùng `Scenario Outline` + `Examples`
 13. **Bao phủ Schema & API path**: validate mọi biến thể schema API cho request/response khi chúng thay đổi theo input; validate path parameters và account boundaries
+14. **Bao phủ WebSocket theo User Tier & Rate Limit bằng Ngôn ngữ Nghiệp vụ**: khi task liên quan đến WebSocket, thiết kế test cases bao phủ 3 bậc User Tier (`normal`, `vip`, `ultimate`), hạn mức socket đồng thời, quota theo dõi luồng/mã, topic authorization, và Rate Limit. BẮT BUỘC dùng ngôn ngữ nghiệp vụ thuần túy và mô hình Ranh giới Tượng trưng (`TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`, `VUOT_NGUONG`); TUYỆT ĐỐI KHÔNG đưa tên biến code (`MAX_CONNECTOR`, `MAX_STREAM`) hay tên file `.env` vào file Gherkin. Tầng automation (`qa-auto-design`) sẽ tự động ánh xạ các vị trí biên này sang cấu hình thực tế.
 
 ### Quy tắc tự chủ
-14. Mặc định **tự chạy tiếp** theo `autonomy-contract.md`. Chỉ dừng khi: thiếu `spec/final.md`, có câu hỏi Critical chưa được trả lời, hoặc chuẩn bị commit/merge
-15. Self-fix loop **tối đa 3 lần** — sau đó báo cáo, KHÔNG tiếp tục loop vô hạn
+15. Mặc định **tự chạy tiếp** theo `autonomy-contract.md`. Chỉ dừng khi: thiếu `spec/final.md`, có câu hỏi Critical chưa được trả lời, hoặc chuẩn bị commit/merge
+16. Self-fix loop **tối đa 3 lần** — sau đó báo cáo, KHÔNG tiếp tục loop vô hạn
 </rules>
 
 ---

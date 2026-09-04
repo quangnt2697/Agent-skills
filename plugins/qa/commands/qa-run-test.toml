@@ -20,7 +20,7 @@ $ARGUMENTS có thể chứa Jira issue key (VD: G3PTP-16825), đường dẫn th
 
 2. **Đọc ngữ cảnh & các file liên quan trước khi chạy:**
    - Trước khi kích hoạt lệnh chạy, chủ động đọc các file liên quan để nắm rõ context:
-     - **Cấu hình & Fixtures:** `conftest.py` (fixtures, session setup, teardown), `pytest.ini`, `pyproject.toml`, `.env` / `.env.example` (biến môi trường, baseURL, credentials). Cảnh báo ngay nếu thiếu config/env bắt buộc.
+     - **Cấu hình & Fixtures:** `conftest.py` (fixtures, session setup, teardown), `pytest.ini`, `pyproject.toml`, file `.env` của project/thư mục test (biến môi trường, baseURL, credentials). Cảnh báo ngay nếu thiếu config/env bắt buộc.
      - **Đặc tả & BDD:** Các file `*.feature` (trong `features/` cùng cấp/cha), file Business-Spec (`*-final.md`), file checklist (`*checklist*.md`) để hiểu các scenarios, business rules và chuẩn bị cho ma trận truy vết.
      - **Tầng bổ trợ:** Đọc các module được import trong test scripts (Service clients, Page Objects `pages/`, helpers/utils, dữ liệu test trong `data/`) để hiểu cách setup request, locators và assertions.
 

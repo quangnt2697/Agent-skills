@@ -131,8 +131,8 @@ Trước khi gõ lệnh chạy test, Agent chủ động đọc và phân tích 
   - Kiểm tra scope của fixture (`session`, `module`, `function`) và các hook teardown (`yield`).
 - **`pytest.ini` / `setup.cfg` / `pyproject.toml`:**
   - Đọc các cấu hình pytest: cấu hình `python_files = test_*.py *_test.py`, markers tùy chỉnh (`@pytest.mark.smoke`, `@pytest.mark.asyncio`), timeout, addopts.
-- **`.env` / `.env.example` / file config:**
-  - Kiểm tra các biến môi trường bắt buộc (VD: `API_BASE_URL`, `AUTH_TOKEN`, `DB_HOST`, `WS_URL`).
+- **File cấu hình môi trường runtime (`.env` / config file):**
+  - Kiểm tra các biến môi trường bắt buộc (VD: `BASE_URL`, `AUTH_TOKEN`, `DB_HOST`, `WS_URL`).
   - Nếu phát hiện thiếu file `.env` hoặc thiếu biến cấu hình cốt lõi, cảnh báo ngay trước khi test bị crash hàng loạt.
 
 #### 1.2. File Kịch bản BDD & Đặc tả Nghiệp vụ:

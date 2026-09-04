@@ -100,6 +100,9 @@ project-root/
 1. **Quét file `.feature` và Checklist:** Agent **BẮT BUỘC** phải tìm và đọc file Checklist (nếu có) và `.feature` liên quan đến tính năng này.
 2. **Đảm bảo Coverage 100%:** Số lượng test method/case sinh ra phải phản ánh chính xác và cover toàn bộ các scenario trong file Gherkin. KHÔNG tự ý bỏ sót bất kỳ một kịch bản nào.
 3. **Quy trình bắt buộc:** Nếu file `.feature` không tồn tại, yêu cầu user tạo Gherkin file trước khi viết code (có thể thông qua skill `qa-test-design`). KHÔNG tự ý sáng tác code khi không có thiết kế test case đầu vào.
+4. **Quy tụ quyền sở hữu & Tự động Khởi tạo File Cấu hình Môi trường (`.env`):**
+   - `qa-auto-design` là **chủ sở hữu duy nhất (Single Owner)** của file mẫu cấu hình môi trường kiểm thử (`examples/.env.example`).
+   - Khi chuẩn bị sinh mã test cho task tại `/project-root/workspace/{issueKey}/test/`: nếu thư mục test chưa có file `.env` (và root project cũng chưa có), Agent **BẮT BUỘC tự động sao chép template** từ file `examples/.env.example` của skill sang `/project-root/workspace/{issueKey}/test/.env`. Điều này giúp test suite độc lập và sẵn sàng thực thi ở bất kỳ project nào.
 
 ### Bước 3: Phân tích & Recon
 
@@ -178,7 +181,12 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
    Assert:  Kiểm tra kết quả (expect, assert)
    ```
 
-2. **Tham số hoá (Parameterize)** cho các `Scenario Outlines` từ Gherkin → dùng `@pytest.mark.parametrize`.
+2. **Tham số hoá (Parameterize) & Ánh xạ Ranh giới Tượng trưng (Symbolic Boundaries):**
+   - Sử dụng `@pytest.mark.parametrize` cho các `Scenario Outlines` từ Gherkin.
+   - Khi kịch bản Gherkin sử dụng các vị trí biên tượng trưng (`TAI_HAN_MUC`, `VUOT_HAN_MUC`, `DUOI_HAN_MUC`, `TRONG_NGUONG`, `VUOT_NGUONG`):
+     * **TUYỆT ĐỐI KHÔNG** hardcode số cụ thể (`10, 11, 200, 201`) vào logic test.
+     * **BẮT BUỘC** sử dụng helper `EnvConfig.resolve_boundary(tier, metric_type, boundary_pos)` (từ `conftest.py`) để tính toán giá trị thực tế lúc runtime dựa trên file `.env`.
+     * Khi người dùng thay đổi giá trị trong `.env`, toàn bộ test suite tự động thích ứng mà không cần sửa một dòng code test nào.
 
 3. **Dữ liệu động:** Setup prefix_testname_timestamp cho mọi dữ liệu cần unique.
 
@@ -408,8 +416,8 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 - Tham khảo code mẫu Web UI (POM) tại `examples/web_ui_pom.py`
 - Tham khảo code mẫu Mobile App (SOM - Playwright/Appium) tại `examples/mobile_app_pom.py`
 - Tham khảo code mẫu API/WS (tái sử dụng code có sẵn) tại `examples/api_ws_service.py`
-- Tham khảo conftest.py mẫu (fixtures dùng chung, mobile, auto screenshot) tại `examples/conftest_template.py`
-- Tham khảo template biến môi trường test tại `examples/.env.example`
+- Tham khảo conftest.py mẫu (fixtures dùng chung, mobile, auto screenshot, EnvConfig) tại `examples/conftest_template.py`
+- Tham khảo template biến môi trường test tại `examples/.env.example` (Single Source of Truth cho cấu hình kiểm thử)
 - Để import và phân tích Jira task, dùng skill `ba-spec`
 - Để thiết kế Gherkin/Checklist trước khi viết code, dùng skill `qa-test-design`
 - Để review code trước khi merge, dùng skill `code-review-and-quality`

@@ -25,9 +25,13 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
   - VD: `auto_api_createUser_20260805_a8f2@test.com`
 - Hỗ trợ chạy parallel: mỗi test method có data riêng biệt, không conflict.
 
-### 1.4. Data-Driven Testing
+### 1.4. Data-Driven Testing & Symbolic Boundary Mapping
 - Sử dụng `@pytest.mark.parametrize` cho các scenario phải kiểm tra nhiều giá trị đầu vào/ra (phản ánh `Scenario Outline` trong Gherkin).
 - KHÔNG viết vòng lặp `for` hoặc tạo hàng chục hàm test giống hệt nhau.
+- **Ánh xạ Ranh giới Tượng trưng (Symbolic Boundaries):**
+  - Khi Gherkin sử dụng các vị trí biên tượng trưng (`TAI_HAN_MUC`, `VUOT_HAN_MUC`, `DUOI_HAN_MUC`, `TRONG_NGUONG`, `VUOT_NGUONG`), test code **TUYỆT ĐỐI KHÔNG** hardcode số cụ thể.
+  - BẮT BUỘC gọi `EnvConfig.resolve_boundary(tier, metric_type, boundary_pos)` để tự động tính toán giá trị thực tế lúc runtime dựa trên cấu hình `.env`.
+  - Giúp bảo toàn tính độc lập của test suite: khi người dùng thay đổi giá trị trong `.env`, không cần sửa lại bất kỳ dòng code test nào.
 
 ### 1.5. Dọn dẹp dữ liệu (Teardown An Toàn)
 - Phải xoá data rác đã tạo ra trong quá trình test thông qua pytest fixture (`yield` pattern).

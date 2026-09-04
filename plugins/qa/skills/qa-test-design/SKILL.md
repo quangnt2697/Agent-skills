@@ -135,6 +135,18 @@ Nếu không có file final.md, hỏi user cung cấp spec, PRD, hoặc mô tả
 7. **Xác định biến thể schema API** — nếu spec mô tả nhiều loại API, hoặc 1 API chấp nhận/trả về các schema khác nhau dựa trên giá trị trường cụ thể (VD: `type`), BẮT BUỘC liệt kê tất cả biến thể schema.
 8. **Xác định Path & Path Parameters** — ghi lại cấu trúc path và các path parameters cần validate.
 9. **Đọc dữ liệu chứng khoán thực tế từ TimescaleDB (DB ID: 644) — Bắt buộc ưu tiên V3, fallback V2:** Nếu tính năng liên quan đến nghiệp vụ chứng khoán (đặt lệnh, tính sức mua, hiển thị bảng giá, khớp lệnh, cảnh báo trần/sàn): BẮT BUỘC sử dụng Database MCP tool (`node .agents/db-mcp.js --describe <table_name> --db timescale`) hoặc tra cứu từ cache `../../../../references/timescale-schema.md` để lấy thông tin thực tế. **Nguyên tắc phiên bản:** Luôn ưu tiên dùng các bảng **v3** (`security_definition_v3`, `krx_mdds_v3_ticks`, `krx_mdds_v3_top_prices`, `krx_mdds_v3_board_events`, `krx_mdds_v3_market_indices`); chỉ khi loại dữ liệu không có bảng v3 tương ứng thì mới dùng bảng **v2** (như giá trần/sàn/tham chiếu trong `krx_mdds_v2_stock_infos`, nến trong `krx_mdds_v2_stock_ohlc`). TUYỆT ĐỐI KHÔNG tự bịa mã chứng khoán không tồn tại hoặc đưa ra các mức giá vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$) trong checklist.
+10. **Nhận diện tính năng WebSocket & Phân tầng Bậc tài khoản (User Tier), Kiểm soát tần suất theo nghiệp vụ:** Khi task có liên quan đến luồng dữ liệu thời gian thực qua WebSocket (bảng giá, sổ lệnh, tick khớp lệnh, nến OHLC, thông báo biến động số dư/lệnh, chat hỗ trợ...):
+    - **Hệ thống có chính xác 3 Bậc tài khoản (User Tier):** `normal`, `vip`, `ultimate`.
+    - **Quy tắc Phân tầng Nghiệp vụ & Quyền hạn (Đặc tả thuần nghiệp vụ, KHÔNG phụ thuộc file cấu hình kỹ thuật):**
+      + *Hạn mức số kết nối đồng thời theo bậc tài khoản:* Mỗi bậc tài khoản có hạn mức số kết nối socket đồng thời cho phép (`normal` < `vip` < `ultimate`). Kết nối vượt hạn mức bị từ chối do vi phạm chính sách kết nối.
+      + *Hạn mức số luồng/mã chứng khoán theo dõi:* Mỗi bậc tài khoản có quota số mã/kênh dữ liệu tối đa được phép theo dõi (subscribe quota). Đăng ký vượt hạn mức bị từ chối với thông báo vượt hạn mức tài khoản.
+      + *Quyền truy cập kênh dữ liệu:* Kênh công khai (`normal`: ticker, delayed ticks, Top 3 giá) vs kênh đặc quyền (`vip`/`ultimate`: realtime tick-by-tick, sổ lệnh Top 10 giá, nến 1s, luồng riêng tư lệnh/tài khoản).
+      + *Chứng thực tài khoản theo bậc:* Sử dụng thông tin chứng thực tương ứng với từng bậc tài khoản.
+    - **Quy tắc Kiểm soát Tần suất & Điều tiết Dữ liệu:**
+      + *Ngưỡng tần suất gửi yêu cầu (Inbound Rate Limit):* Tần suất gửi yêu cầu lên server theo từng bậc (`normal` gửi chậm hơn `vip`/`ultimate`). Vượt ngưỡng bị phản hồi từ chối kèm thời gian chờ thử lại (`retry_after`).
+      + *Bảo vệ chống gửi dồn dập (Spam/Flood):* Gửi yêu cầu với tần suất cực hạn dẫn đến hệ thống chủ động ngắt kết nối do vi phạm chính sách bảo vệ.
+      + *Thời gian hồi phục (Cooldown):* Sau thời gian chờ phạt, tài khoản có thể gửi lại yêu cầu bình thường.
+      + *Điều tiết dữ liệu đẩy về (Outbound Throttling):* Server điều tiết tần suất đẩy dữ liệu theo bậc tài khoản (`normal` nhận snapshot gộp khi thị trường biến động mạnh, `vip`/`ultimate` nhận realtime tick-by-tick tức thời) và gộp dữ liệu để chống quá tải client.
 
 Nếu `spec-driven-development` đã tạo spec, dùng nó làm nguồn chính. Không trích xuất lại những gì đã được ghi nhận.
 
@@ -144,11 +156,11 @@ Tổ chức các item checklist thành các nhóm logic dựa trên chiều ki�
 
 | Nhóm                                     | Ưu tiên   | Bao gồm                                                                                                                                                                                                                                                                |
 |------------------------------------------|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Bảo mật & Phân quyền**                 | P0        | API key, signature, tokens, authorization, permission, ràng buộc truy cập path/tài khoản                                                                                                                                                                               |
+| **Bảo mật & Phân quyền**                 | P0        | API key, signature, tokens, authorization, permission, ràng buộc truy cập path/tài khoản, phân tầng User Tier (`normal`, `vip`, `ultimate`), giới hạn số kết nối WebSocket đồng thời theo hạn mức của tier, quyền subscribe topic riêng tư/đặc quyền theo tier |
 | **Đường dẫn & HTTP**                     | P1        | HTTP methods, endpoints, URL validation, định tuyến theo loại thị trường, query string và path parameters                                                                                                                                                              |
-| **Dữ liệu đầu vào & Validation Schema**  | P1        | Trường bắt buộc, kiểu dữ liệu, validation định dạng, biến thể schema theo giá trị input. BẮT BUỘC validate cả Request (Input) và Response (Output) schemas. Đặc biệt với API/WebSocket, BẮT BUỘC validate rõ ràng Event Payload Schema dựa trên ví dụ trong Jira/Spec. |
+| **Dữ liệu đầu vào & Validation Schema**  | P1        | Trường bắt buộc, kiểu dữ liệu, validation định dạng, biến thể schema theo giá trị input, hạn mức quota subscribe channel/symbol WebSocket theo User Tier. BẮT BUỘC validate cả Request (Input) và Response (Output) schemas. Đặc biệt với API/WebSocket, BẮT BUỘC validate rõ ràng Event Payload Schema dựa trên ví dụ trong Jira/Spec. |
 | **Quy tắc nghiệp vụ**                    | P0        | Giới hạn giá, quy tắc khối lượng, kiểm tra số dư, hạn chế thời gian                                                                                                                                                                                                    |
-| **Ngoại lệ & Hiệu năng**                 | P2        | Đồng thời (Race conditions), Idempotency, Tràn số, Rate limiting (Throttling), xung đột tài sản chéo                                                                                                                                                                   |
+| **Ngoại lệ & Hiệu năng**                 | P2        | Đồng thời (Race conditions), Idempotency, Tràn số, Rate limiting (Throttling) cho API và WebSocket (Inbound message rate limit theo Tier, handshake rate limit, close frame 1008, cooldown recovery, outbound push throttling), xung đột tài sản chéo             |
 | **Luồng thành công & Nhất quán dữ liệu** | P0        | Luồng thành công, schema response đầy đủ, xác minh dữ liệu end-to-end                                                                                                                                                                                                  |
 
 ### Bước 3: Viết từng item
@@ -246,7 +258,7 @@ Mỗi checklist phải bao gồm các cột sau:
 - [ ] Xác nhận hiển thị đúng format số tiền (VD: `1,000,000 VND`) — [P1]
 ```
 
-### Template Checklist Chuyên biệt cho API / WebSocket
+### Template Checklist Chuyên biệt cho REST API
 
 **Môi trường:** [UAT / Staging]
 **Base URL / Endpoint:** `[POST] /api/v1/orders`
@@ -263,11 +275,45 @@ Mỗi checklist phải bao gồm các cột sau:
 ## 3. Kiểm tra HTTP Code & Response Structure (P1)
 - [ ] Xác nhận Response Header có chứa `Content-Type: application/json` — [P1]
 - [ ] Xác nhận cấu trúc body trả về (Success/Error) đúng chuẩn Schema đã định nghĩa (VD: có đủ `code`, `message`, `data`) — [P1]
-- [ ] Xác nhận response schema liệt kê đủ các field bắt buộc theo spec  — [P1]
+- [ ] Xác nhận response schema liệt kê đủ các field bắt buộc theo spec — [P1]
 
 ## 4. Kiểm tra Edge Cases & Rate Limit (P2)
 - [ ] Xác nhận API xử lý đúng tính chất Idempotency khi gửi lại cùng 1 `Idempotency-Key` (không tạo data đúp) — [P2]
-- [ ] Xác nhận WebSocket tự động reconnect và resubscribe vào channel khi bị ngắt kết nối đột ngột — [P2]
+- [ ] Xác nhận API trả về HTTP `429 Too Many Requests` khi gửi vượt ngưỡng rate limit — [P2]
+
+```
+
+### Template Checklist Chuyên biệt cho WebSocket (Phân Tầng User Tier & Rate Limit)
+
+```markdown
+```markdown
+**Môi trường:** [UAT / Staging]
+**Giao thức:** WebSocket (Kênh dữ liệu trực tuyến)
+**Phân tầng tài khoản:** `normal`, `vip`, `ultimate`
+
+## 1. Kiểm tra Quyền hạn & Giới hạn Kết nối theo Bậc tài khoản (P0)
+- [ ] **Chứng thực phiên theo Bậc tài khoản:** Xác nhận từ chối kết nối khi thông tin chứng thực không hợp lệ hoặc hết hạn; chứng thực thành công khi dùng đúng thông tin tài khoản theo từng bậc (`normal`, `vip`, `ultimate`) — [P0]
+- [ ] **Giới hạn số kết nối đồng thời theo Bậc (BVA theo hạn mức):**
+  - Xác nhận tài khoản mở kết nối tại hạn mức cho phép (`TAI_HAN_MUC`) thành công — [P0]
+  - Xác nhận tài khoản mở kết nối vượt quá hạn mức (`VUOT_HAN_MUC`) bị từ chối do vi phạm chính sách kết nối — [P0]
+- [ ] **Kiểm soát quyền truy cập kênh dữ liệu theo Bậc:** Xác nhận tài khoản bậc `normal` không thể đăng ký theo dõi các luồng dữ liệu đặc quyền (Sổ lệnh độ sâu Top 10 giá, luồng giao dịch riêng tư của tài khoản khác); hệ thống từ chối và phản hồi không đủ quyền hạn — [P0]
+- [ ] **Cách ly luồng dữ liệu riêng tư:** Dữ liệu giao dịch/tài khoản riêng tư của bậc tài khoản này tuyệt đối không gửi sang tài khoản khác — [P0]
+
+## 2. Kiểm tra Cấu trúc Dữ liệu & Hạn mức Theo dõi (P1)
+- [ ] **Hạn mức theo dõi luồng/mã chứng khoán theo Bậc (BVA theo hạn mức):**
+  - Xác nhận tài khoản đăng ký theo dõi số lượng mã/kênh tại hạn mức (`TAI_HAN_MUC`) thành công — [P1]
+  - Xác nhận tài khoản đăng ký theo dõi vượt hạn mức (`VUOT_HAN_MUC`) bị từ chối với thông báo vượt quá hạn mức cho phép của tài khoản — [P1]
+- [ ] **Tính toàn vẹn cấu trúc dữ liệu:** Xác nhận gói tin gửi lên và sự kiện đẩy về giải mã đúng định dạng mã hóa và khớp 100% cấu trúc dữ liệu đã đặc tả — [P1]
+- [ ] **Khôi phục trạng thái theo dõi khi kết nối lại:** Xác nhận sau khi kết nối lại tự động, hệ thống khôi phục đúng danh sách mã/kênh hợp lệ trong hạn mức của tài khoản — [P1]
+
+## 3. Kiểm tra Kiểm soát Tần suất & Cơ chế Bảo vệ (P1/P2)
+- [ ] **Ngưỡng tần suất gửi yêu cầu theo Bậc:** Xác nhận gửi yêu cầu vượt ngưỡng tần suất quy định của bậc tài khoản nhận được thông báo từ chối kèm thời gian chờ thử lại — [P1]
+- [ ] **Bảo vệ chống gửi yêu cầu dồn dập (Spam/Flood):** Xác nhận gửi yêu cầu liên tục vượt ngưỡng cực hạn dẫn đến hệ thống chủ động ngắt kết nối do vi phạm chính sách bảo vệ — [P2]
+- [ ] **Hồi phục sau giới hạn tần suất (Cooldown):** Xác nhận sau khi hết thời gian phạt chờ, tài khoản có thể gửi lại yêu cầu và hệ thống xử lý bình thường mà không bị chặn vĩnh viễn — [P1]
+
+## 4. Kiểm tra Điều tiết Dữ liệu & Hiệu năng Thời gian thực (P1/P2)
+- [ ] **Tần suất cung cấp dữ liệu theo Bậc:** Xác nhận phân tầng tốc độ đẩy dữ liệu (bậc `normal` nhận dữ liệu snapshot gộp khi thị trường biến động mạnh, bậc `vip` & `ultimate` nhận dữ liệu khớp lệnh tức thời) — [P1]
+- [ ] **Điều tiết dữ liệu khi thị trường bão giá:** Xác nhận hệ thống tự động gộp dữ liệu để chống quá tải client khi có biến động giao dịch cực lớn — [P2]
 
 ---
 
@@ -353,6 +399,13 @@ Feature: <Short title reflecting the behavior area>
 - **Bao phủ Schema Validation (API & WebSocket):** BẮT BUỘC có step/scenario tường minh để kiểm tra Response Schema (hoặc Event Payload Schema của WebSocket) đối chiếu với mẫu JSON/tài liệu lấy từ Jira. Không gộp ẩn vào các step nghiệp vụ chung chung.
 - **Validation Path và Tài khoản:** Đảm bảo có scenarios validate path variables (VD: ID sai định dạng, ID thuộc user khác) và ràng buộc truy cập tài khoản (IDOR).
 - **Bao phủ Cách ly Dữ liệu (Data / Topic Isolation):** Đặc biệt với hệ thống Event-driven (WebSocket/Kafka) hoặc API đa luồng, **BẮT BUỘC** có scenario đảm bảo dữ liệu/event của kênh/thị trường này không bị rò rỉ (leak) hoặc gửi chéo sang kênh/thị trường khác (VD: Cross-market isolation, nhận chéo event của mã chứng khoán/thị trường không subscribe).
+- **Bao phủ WebSocket theo User Tier & Rate Limit theo Ngôn ngữ Nghiệp vụ:** Nếu tính năng sử dụng giao thức WebSocket, Agent **BẮT BUỘC** thiết kế các kịch bản kiểm thử bao phủ 3 bậc tài khoản `normal`, `vip`, `ultimate` bằng **Ranh giới Tượng trưng (Symbolic Boundaries)**:
+  1. *Ma trận User Tier vs Hạn mức theo dõi (Subscription Quota) & Quyền hạn kênh:* BẮT BUỘC dùng Scenario Outline kiểm thử 3 bậc tài khoản (`normal`, `vip`, `ultimate`) với số lượng mã/kênh theo dõi theo vị trí biên (`TAI_HAN_MUC`, `VUOT_HAN_MUC`) và quyền hạn truy cập kênh (kênh công khai vs kênh đặc quyền).
+  2. *Ma trận User Tier vs Kiểm soát tần suất gửi tin (Rate Limit):* BẮT BUỘC dùng Scenario Outline kiểm thử ngưỡng tốc độ gửi message theo từng tier ở 2 trạng thái `TRONG_NGUONG` (chấp nhận) và `VUOT_NGUONG` (từ chối kèm thời gian chờ thử lại `retry_after`).
+  3. *Giới hạn kết nối đồng thời (Max Concurrent Sockets — BVA theo vị trí biên):* Kịch bản kiểm thử áp dụng BVA cho số lượng socket mở đồng thời theo vị trí biên: `TAI_HAN_MUC` (kết nối thành công) và `VUOT_HAN_MUC` (bị từ chối do vi phạm chính sách kết nối).
+  4. *Cơ chế Cooldown & Hồi phục sau Giới hạn tần suất:* Kịch bản kiểm tra sau khi bị tạm khóa do vượt tần suất, chờ hết thời gian phạt thì gửi lại yêu cầu thành công (không bị block vĩnh viễn).
+  5. *Bảo vệ chống Spam cực hạn:* Kịch bản kiểm tra khi gửi yêu cầu liên tục vượt ngưỡng cực hạn, server chủ động ngắt kết nối do vi phạm chính sách bảo vệ.
+  6. *Điều tiết dữ liệu đẩy về khi thị trường biến động mạnh:* Kịch bản xác nhận tần suất đẩy dữ liệu real-time tương ứng với đặc quyền của từng tier (`normal` nhận snapshot gộp, `vip`/`ultimate` nhận dữ liệu tức thời).
 - **Tương tác chéo giữa các trường:** Khi thay đổi trường A ảnh hưởng trường B (VD: đổi giá tính lại sức mua → thay đổi gợi ý khối lượng), bao gồm ít nhất 1 scenario kiểm tra hiệu ứng xuôi chiều lên trường B sau khi sửa trường A.
 - **Dữ liệu kiểm thử chứng khoán thực tế (TimescaleDB Integration — Ưu tiên V3 > V2):** Khi thiết kế bảng `Examples:` hoặc dữ liệu cụ thể trong Scenario (`Given`/`When`/`Then`):
   - Mọi mã chứng khoán (`symbol`), mức giá (`price`, `ceiling_price`, `floor_price`, `ref_price`) và sổ lệnh BẮT BUỘC phải lấy từ các bảng dữ liệu thực tế trong TimescaleDB, **ưu tiên bảng v3 trước, v2 sau**:
@@ -365,8 +418,20 @@ Feature: <Short title reflecting the behavior area>
     + Biên trên ngoài dải: $P_{\text{ceiling}} + \text{tick\_size}$ (Hệ thống phải từ chối).
     + Biên dưới ngoài dải: $P_{\text{floor}} - \text{tick\_size}$ (Hệ thống phải từ chối).
 
-**Quy tắc viết:**
+**Quy tắc viết Gherkin chuẩn Nghiệp vụ:**
 
+- **NGHIÊM CẤM TỪ KHÓA KỸ THUẬT VÀ TÊN BIẾN CODE TRONG GHERKIN:**
+  + **TUYỆT ĐỐI KHÔNG** dùng tên biến môi trường hoặc mã lập trình: Cấm `MAX_CONNECTOR`, `MAX_STREAM`, `.env`, `NORMAL_USER_MAX_CONNECTOR`, `WS_URL`, `API_KEY`...
+  + **TUYỆT ĐỐI KHÔNG** dùng mã lỗi kỹ thuật tầng socket trần trụi (như `close code 1008`) làm tên step hay giá trị nghiệp vụ, mà phải dùng trạng thái nghiệp vụ: `VI_PHAM_CHINH_SACH`, `TU_CHOI_KET_NOI`.
+  + **TUYỆT ĐỐI KHÔNG** để lộ chi tiết framework hoặc kỹ thuật: không selector, không xpath, không endpoint url, không "chờ 5s", "cuộn đến".
+  + Kịch bản BDD phải được viết bằng **Ngôn ngữ miền nghiệp vụ (Ubiquitous Language)** để Product Owner, BA, QA Manual và Developer đều đọc hiểu như nhau.
+- **ÁP DỤNG MÔ HÌNH RANH GIỚI TƯỢNG TRƯNG (SYMBOLIC BOUNDARIES):**
+  + Đối với các kịch bản kiểm thử biên (BVA) cho hạn mức tài khoản, quota, rate limit: BẮT BUỘC dùng các vị trí biên tượng trưng trong bảng `Examples:` thay vì gán số chết:
+    * `TAI_HAN_MUC` (tại hạn mức cho phép)
+    * `VUOT_HAN_MUC` (vượt quá hạn mức 1 đơn vị)
+    * `DUOI_HAN_MUC` (dưới hạn mức 1 đơn vị)
+    * `TRONG_NGUONG` / `VUOT_NGUONG` (cho tần suất gửi tin / Rate Limit)
+  + Nhờ đó, file `.feature` không bao giờ phải sửa lại khi môi trường thay đổi cấu hình hạn mức. Tầng Automation Test (`qa-auto-design`) sẽ tự động ánh xạ các vị trí biên này sang số thực tế từ `.env`.
 - Viết kiểu khai báo (dựa trên trạng thái), không viết kiểu mệnh lệnh (điều hướng từng bước):
 
 ```gherkin
@@ -380,10 +445,7 @@ And nhập mật khẩu "Pass123"
 And nhấn nút "Đăng nhập"
 ```
 
-- Sử dụng ngôn ngữ nghiệp vụ/domain, không dùng ngôn ngữ kỹ thuật hay framework
-- Không để lộ cơ chế tự động hoá: không selector, xpath, "chờ", "cuộn đến"
-- Ưu tiên thiết lập trạng thái hơn là điều hướng — mô tả trạng thái khởi đầu có ý nghĩa
-- Dùng dữ liệu mẫu cụ thể, thực tế (mã CK `VNM`, `SSI`, số tiền `50000`) — không dùng placeholder (`foo`, `bar`)
+- Dùng dữ liệu mẫu cụ thể, thực tế cho domain nghiệp vụ (mã CK `VNM`, `SSI`, số tiền `50000`) — không dùng placeholder vô nghĩa (`foo`, `bar`)
 - Giữ mỗi scenario dưới **10 steps**
 
 ### Bước 9: Given / When / Then
@@ -401,6 +463,15 @@ Coi `Given / When / Then` như `Sắp xếp / Thực hiện / Xác minh`:
 - `When gửi đồng thời "5" requests tới endpoint "/api/orders"`
 - `Then API trả về response schema khớp với định dạng "OrderResponse"`
 - `Then cấu trúc JSON trả về chứa mảng "data" có "5" phần tử`
+
+**Ví dụ steps cho WebSocket (User Tier & Rate Limit):**
+- `Given người dùng đã xác thực WebSocket với tài khoản bậc "normal"`
+- `Given hạn mức gửi tin của bậc "normal" là "10" msg/giây`
+- `When người dùng gửi đồng thời "15" messages subscribe trong vòng "1" giây`
+- `Then server trả về error frame chứa mã lỗi "RATE_LIMIT_EXCEEDED" và thời gian chờ "60" giây`
+- `Then kết nối WebSocket bị đóng với close code "1008" và lý do "Spam threshold exceeded"`
+- `When người dùng đợi hết thời gian chờ "60" giây và gửi lại message subscribe hợp lệ`
+- `Then server chấp nhận yêu cầu và trả về trạng thái "SUBSCRIBED"`
 
 **Quy tắc nghiêm ngặt:**
 
@@ -432,6 +503,55 @@ Scenario Outline: Hệ thống từ chối lệnh khi dữ liệu không hợp l
     | price    | chuỗi_chữ_abc  | Định dạng không hợp lệ       |
     | quantity | -100           | Giá trị phải lớn hơn 0       |
     | quantity | 10.5           | Khối lượng phải là số nguyên |
+
+@ws @tier @rate-limit @negative @edge-case
+Scenario Outline: Kiểm tra kiểm soát tần suất gửi yêu cầu theo bậc tài khoản
+  Given người dùng đã xác thực kết nối dữ liệu trực tuyến với tài khoản bậc "<tier>"
+  When người dùng gửi liên tiếp các yêu cầu với tần suất "<muc_tan_suat>" quy định của bậc tài khoản
+  Then hệ thống phản hồi kết quả là "<ket_qua>"
+  And thông báo tương ứng là "<thong_bao>"
+
+  Examples:
+    | tier     | muc_tan_suat | ket_qua   | thong_bao            |
+    | normal   | TRONG_NGUONG | CHAP_NHAN | THANH_CONG           |
+    | normal   | VUOT_NGUONG  | TU_CHOI   | RATE_LIMIT_EXCEEDED  |
+    | vip      | TRONG_NGUONG | CHAP_NHAN | THANH_CONG           |
+    | vip      | VUOT_NGUONG  | TU_CHOI   | RATE_LIMIT_EXCEEDED  |
+    | ultimate | TRONG_NGUONG | CHAP_NHAN | THANH_CONG           |
+    | ultimate | VUOT_NGUONG  | TU_CHOI   | RATE_LIMIT_EXCEEDED  |
+
+@ws @tier @security @happy-path
+Scenario Outline: Kiểm tra hạn mức theo dõi luồng dữ liệu thị trường theo bậc tài khoản
+  Given người dùng đăng nhập tài khoản bậc "<tier>"
+  And kết nối trực tuyến tới dịch vụ dữ liệu thị trường thành công
+  When người dùng gửi yêu cầu theo dõi số lượng mã chứng khoán "<vi_tri_bien>" hạn mức cho phép
+  Then hệ thống trả về trạng thái đăng ký là "<trang_thai>"
+  And thông báo phản hồi là "<thong_bao>"
+
+  Examples:
+    | tier     | vi_tri_bien  | trang_thai | thong_bao            |
+    | normal   | TAI_HAN_MUC  | SUCCESS    | NONE                 |
+    | normal   | VUOT_HAN_MUC | FAILED     | TIER_QUOTA_EXCEEDED  |
+    | vip      | TAI_HAN_MUC  | SUCCESS    | NONE                 |
+    | vip      | VUOT_HAN_MUC | FAILED     | TIER_QUOTA_EXCEEDED  |
+    | ultimate | TAI_HAN_MUC  | SUCCESS    | NONE                 |
+    | ultimate | VUOT_HAN_MUC | FAILED     | TIER_QUOTA_EXCEEDED  |
+
+@ws @tier @bva @security
+Scenario Outline: Kiểm tra giới hạn số lượng kết nối trực tuyến đồng thời theo bậc tài khoản
+  Given người dùng có tài khoản thuộc bậc "<tier>"
+  When người dùng mở đồng thời số kết nối "<vi_tri_bien>" hạn mức cho phép của tài khoản
+  Then trạng thái của kết nối cuối cùng là "<trang_thai_ket_noi>"
+  And lý do phản hồi là "<ly_do>"
+
+  Examples:
+    | tier     | vi_tri_bien  | trang_thai_ket_noi | ly_do              |
+    | normal   | TAI_HAN_MUC  | THANH_CONG         | CHAP_NHAN_KET_NOI  |
+    | normal   | VUOT_HAN_MUC | TU_CHOI            | VI_PHAM_CHINH_SACH |
+    | vip      | TAI_HAN_MUC  | THANH_CONG         | CHAP_NHAN_KET_NOI  |
+    | vip      | VUOT_HAN_MUC | TU_CHOI            | VI_PHAM_CHINH_SACH |
+    | ultimate | TAI_HAN_MUC  | THANH_CONG         | CHAP_NHAN_KET_NOI  |
+    | ultimate | VUOT_HAN_MUC | TU_CHOI            | VI_PHAM_CHINH_SACH |
 ```
 
 **Quy chuẩn Phân tích Giá trị Biên Chuyên sâu (Advanced BVA & EP cho Tài chính & Chứng khoán):**
@@ -459,6 +579,9 @@ Scenario Outline: Hệ thống từ chối lệnh khi dữ liệu không hợp l
 | `@negative`          | Kịch bản lỗi và từ chối               |
 | `@edge-case`         | Điều kiện biên và bất thường          |
 | `@api`               | Test cấp độ API                       |
+| `@ws`                | Test cấp độ WebSocket                 |
+| `@tier`              | Phân tầng User Tier (normal, vip, ultimate) |
+| `@rate-limit`        | Giới hạn tần suất và Quota            |
 | `@security`          | Kịch bản liên quan bảo mật            |
 | `@JIRA-XXXX`         | Liên kết với mã ticket                |
 | `@domain-securities` | Tag domain chứng khoán                |
