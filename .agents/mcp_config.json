@@ -19,6 +19,10 @@
     "database": {
       "command": "node",
       "args": ["./.agents/db-mcp.js"]
+    },
+    "test-data": {
+      "command": "node",
+      "args": ["./.agents/test-data-mcp.js"]
     }
   }
 }

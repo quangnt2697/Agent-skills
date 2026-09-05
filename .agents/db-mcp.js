@@ -25,125 +25,13 @@ const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
 const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
 const { CallToolRequestSchema, ListToolsRequestSchema } = require('@modelcontextprotocol/sdk/types.js');
 
-// 1. Tải biến môi trường từ .env
-function loadEnv(filePath) {
-    if (!fs.existsSync(filePath)) return;
-    const content = fs.readFileSync(filePath, 'utf-8');
-    content.split(/\r?\n/).forEach(line => {
-        const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-        if (match) {
-            let key = match[1];
-            let value = match[2] || '';
-            value = value.replace(/(^['"]|['"]$)/g, '').trim();
-            if (process.env[key] === undefined) {
-                process.env[key] = value;
-            }
-        }
-    });
-}
-
-const projectRoot = path.join(__dirname, '..');
-loadEnv(path.join(projectRoot, '.env'));
-
-// 2. Cấu hình & Tham số hệ thống
-const DEFAULT_MAX_ROWS = 50;
-const HARD_CAP_MAX_ROWS = 200;
-const DEFAULT_STATEMENT_TIMEOUT_MS = parseInt(process.env.DB_STATEMENT_TIMEOUT || '5000', 10);
-
-// Metabase Database ID Mapping
-const METABASE_DB_MAP = {
-    'timescale': parseInt(process.env.METABASE_DB_TIMESCALE_ID || '644', 10),
-    'openapi': parseInt(process.env.METABASE_DB_OPENAPI_ID || '535', 10),
-    'openapi-sandbox': parseInt(process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '655', 10),
-    'sandbox': parseInt(process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '655', 10)
-};
-
-function isMetabaseMode() {
-    return Boolean(process.env.METABASE_URL || process.env.METABASE_API_TOKEN);
-}
-
-function resolveDatabaseId(dbIdentifier) {
-    if (!dbIdentifier) {
-        const defaultDb = (process.env.METABASE_DEFAULT_DATABASE || 'timescale').toLowerCase();
-        return METABASE_DB_MAP[defaultDb] || parseInt(defaultDb, 10) || 644;
-    }
-    if (typeof dbIdentifier === 'number') {
-        return dbIdentifier;
-    }
-    const key = String(dbIdentifier).trim().toLowerCase();
-    if (METABASE_DB_MAP[key]) {
-        return METABASE_DB_MAP[key];
-    }
-    const parsed = parseInt(key, 10);
-    if (!isNaN(parsed)) {
-        return parsed;
-    }
-    return METABASE_DB_MAP['timescale'] || 644;
-}
-
-function getDatabaseName(dbId) {
-    for (const [name, id] of Object.entries(METABASE_DB_MAP)) {
-        if (id === dbId && name !== 'sandbox') return name;
-    }
-    return `db-${dbId}`;
-}
-
-// 3. Metabase API Client
-function getMetabaseHeaders() {
-    const token = process.env.METABASE_API_TOKEN || process.env.METABASE_SESSION_TOKEN || '';
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-    };
-    if (token) {
-        headers['X-API-KEY'] = token;
-        headers['X-Metabase-Session'] = token;
-    }
-    return headers;
-}
-
-const metadataCache = new Map();
-const METADATA_CACHE_TTL_MS = 5 * 60 * 1000;
-
-async function metabaseFetch(endpoint, options = {}) {
-    const baseUrl = (process.env.METABASE_URL || 'https://mb-uat.dnse.com.vn').replace(/\/+$/, '');
-    const url = `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
-    const headers = { ...getMetabaseHeaders(), ...(options.headers || {}) };
-
-    const timeoutMs = options.timeout || (endpoint.includes('/metadata') ? 35000 : DEFAULT_STATEMENT_TIMEOUT_MS);
-
-    let res;
-    try {
-        res = await fetch(url, {
-            ...options,
-            headers,
-            signal: AbortSignal.timeout(timeoutMs)
-        });
-    } catch (netErr) {
-        throw new Error(`Không thể kết nối tới Metabase (${baseUrl}): ${formatErrorMessage(netErr)}`);
-    }
-
-    if (!res.ok) {
-        const errText = await res.text();
-        let errMsg = errText;
-        try {
-            const parsed = JSON.parse(errText);
-            errMsg = parsed.message || parsed.error || errText;
-        } catch (_) {}
-        if (res.status === 401 || res.status === 403) {
-            throw new Error(`Xác thực Metabase thất bại (${res.status}): Vui lòng kiểm tra METABASE_API_TOKEN trong .env. Chi tiết: ${errMsg}`);
-        }
-        throw new Error(`Lỗi Metabase API (${res.status}): ${errMsg}`);
-    }
-
-    return await res.json();
-}
-
-const CACHE_DIR = path.join(projectRoot, '.agents', 'cache');
-
-function getDiskCachePath(dbId) {
-    return path.join(CACHE_DIR, `schema-${dbId}.json`);
-}
+// --- CÁC HÀM TIỆN ÍCH DÙNG CHUNG (TỪ db-client.js) ---
+const {
+    loadEnv, projectRoot, DEFAULT_MAX_ROWS, HARD_CAP_MAX_ROWS, DEFAULT_STATEMENT_TIMEOUT_MS,
+    METABASE_DB_MAP, isMetabaseMode, resolveDatabaseId, getDatabaseName,
+    getMetabaseHeaders, formatErrorMessage, metabaseFetch,
+    sanitizeQuery, applyLimit, CACHE_DIR, ensureCacheDir, getDiskCachePath
+} = require('./db-client');
 
 async function getDatabaseMetadata(dbId, forceRefresh = false) {
     if (!forceRefresh) {
@@ -413,81 +301,7 @@ function getPool() {
     return poolInstance;
 }
 
-// 5. Bộ lọc SQL Sanitizer & Auto Limit (Lớp bảo vệ độc lập)
-function sanitizeQuery(sql) {
-    if (!sql || typeof sql !== 'string') {
-        return { valid: false, error: 'Câu lệnh SQL không hợp lệ hoặc bị rỗng.' };
-    }
-
-    const strippedSql = sql
-        .replace(/--.*$/gm, '')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .trim();
-
-    if (!strippedSql) {
-        return { valid: false, error: 'Câu lệnh SQL rỗng sau khi loại bỏ comment.' };
-    }
-
-    const statements = strippedSql.split(';').map(s => s.trim()).filter(Boolean);
-    if (statements.length > 1) {
-        return {
-            valid: false,
-            error: 'BẢO VỆ AN TOÀN: DB MCP không cho phép chạy nhiều câu lệnh cùng lúc phân tách bằng dấu chấm phẩy (;).'
-        };
-    }
-
-    const singleStmt = statements[0];
-
-    const startsWithRead = /^(SELECT|WITH|EXPLAIN|SHOW)\b/i.test(singleStmt);
-    if (!startsWithRead) {
-        return {
-            valid: false,
-            error: `TRUY VẤN BỊ CHẶN: Chỉ chấp nhận câu lệnh đọc (SELECT, WITH, EXPLAIN, SHOW). Nhận được: "${singleStmt.slice(0, 30)}..."`
-        };
-    }
-
-    const forbiddenPattern = /\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|GRANT|REVOKE|REINDEX|VACUUM|COPY|EXECUTE|EXEC)\b/i;
-    if (forbiddenPattern.test(singleStmt)) {
-        const match = singleStmt.match(forbiddenPattern)[0];
-        return {
-            valid: false,
-            error: `TRUY VẤN BỊ CHẶN: Phát hiện từ khóa thay đổi dữ liệu hoặc quyền cấu trúc: "${match.toUpperCase()}". DB MCP hoạt động ở chế độ READ-ONLY.`
-        };
-    }
-
-    return { valid: true, cleanSql: singleStmt };
-}
-
-function applyLimit(cleanSql, requestedLimit) {
-    let limit = typeof requestedLimit === 'number' && requestedLimit > 0 ? requestedLimit : DEFAULT_MAX_ROWS;
-    if (limit > HARD_CAP_MAX_ROWS) {
-        limit = HARD_CAP_MAX_ROWS;
-    }
-
-    if (/^(EXPLAIN|SHOW)\b/i.test(cleanSql)) {
-        return cleanSql;
-    }
-
-    const limitMatch = cleanSql.match(/\bLIMIT\s+(\d+)/i);
-    if (limitMatch) {
-        const existingLimit = parseInt(limitMatch[1], 10);
-        if (existingLimit > HARD_CAP_MAX_ROWS) {
-            return cleanSql.replace(/\bLIMIT\s+\d+/i, `LIMIT ${HARD_CAP_MAX_ROWS}`);
-        }
-        return cleanSql;
-    }
-
-    return `${cleanSql} LIMIT ${limit}`;
-}
-
-function formatErrorMessage(err) {
-    if (!err) return 'Lỗi không xác định';
-    if (err.errors && Array.isArray(err.errors) && err.errors.length > 0) {
-        return `${err.code || 'LỖI MẠNG'}: ${err.errors.map(e => e.message || e.code).join('; ')}`;
-    }
-    return err.message || err.code || String(err);
-}
-
+// 5. SQL Sanitizer, Auto Limit, Error Format (Import từ db-client)
 // 6. Khởi tạo MCP Server
 const server = new Server(
     { name: 'database-mcp', version: '2.0.0' },
