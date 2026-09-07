@@ -179,11 +179,11 @@ Chỉ sau hai câu hỏi, agent đã phát hiện ra yêu cầu thực sự khô
 
 ## Tương tác với các Kỹ năng Khác
 
-- **`idea-refine`**: kỹ năng theo sau (downstream). Nếu ý định được xác nhận là "Tôi muốn X nhưng tôi không biết cách khoanh vùng nó", hãy bàn giao cho `idea-refine` để tạo ra các biến thể dựa trên ý định giờ đã rõ ràng.
-- **`tech-spec`**: kỹ năng theo sau. Nếu ý định được xác nhận là cụ thể ("Tôi muốn X cho đối tượng người dùng Y với tiêu chí thành công Z"), hãy bàn giao cho `tech-spec` để viết nó ra thành tài liệu.
-- **`planning-and-task-breakdown`**: cách kỹ năng này hai bước về phía sau (sau khi đã có spec).
+- **`ba-refine`**: kỹ năng theo sau (downstream). Nếu ý định được xác nhận là "Tôi muốn X nhưng tôi không biết cách khoanh vùng nó", hãy bàn giao cho `ba-refine` để tạo ra các biến thể dựa trên ý định giờ đã rõ ràng.
+- **`dev-spec-driven-development`**: kỹ năng theo sau. Nếu ý định được xác nhận là cụ thể ("Tôi muốn X cho đối tượng người dùng Y với tiêu chí thành công Z"), hãy bàn giao cho `dev-spec-driven-development` để viết nó ra thành tài liệu.
+- **`dev-planning-and-task-breakdown`**: cách kỹ năng này hai bước về phía sau (sau khi đã có spec).
 - **`dev-doubt-driven-development`**: nằm ở đầu kia của dòng thời gian. Interview-me là việc trích xuất ý định TRƯỚC KHI ra quyết định; dev-doubt-driven-development là việc kiểm tra chéo SAU KHI đã có quyết định/kế hoạch. Cả hai đều nhằm bắt lỗi sai lệch, nhưng ở những thời điểm khác nhau.
-- **`source-driven-development`**: vuông góc (không liên quan trực tiếp). Interview-me làm rõ người dùng muốn gì; SDD xác minh các thông tin kỹ thuật của framework. Chúng không cạnh tranh với nhau.
+- **`dev-source-driven-development`**: vuông góc (không liên quan trực tiếp). Interview-me làm rõ người dùng muốn gì; SDD xác minh các thông tin kỹ thuật của framework. Chúng không cạnh tranh với nhau.
 
 ## Những lời Biện minh Thường gặp (Rationalizations)
 

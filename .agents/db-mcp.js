@@ -28,7 +28,7 @@ const { CallToolRequestSchema, ListToolsRequestSchema } = require('@modelcontext
 // --- CÁC HÀM TIỆN ÍCH DÙNG CHUNG (TỪ db-client.js) ---
 const {
     loadEnv, projectRoot, DEFAULT_MAX_ROWS, HARD_CAP_MAX_ROWS, DEFAULT_STATEMENT_TIMEOUT_MS,
-    METABASE_DB_MAP, isMetabaseMode, resolveDatabaseId, getDatabaseName,
+    METABASE_DB_MAP, isMetabaseMode, resolveDatabaseId, getDatabaseName, resolveOpenApiDatabase,
     getMetabaseHeaders, formatErrorMessage, metabaseFetch,
     sanitizeQuery, applyLimit, CACHE_DIR, ensureCacheDir, getDiskCachePath
 } = require('./db-client');
@@ -711,6 +711,7 @@ module.exports = {
     isMetabaseMode,
     resolveDatabaseId,
     getDatabaseName,
+    resolveOpenApiDatabase,
     METABASE_DB_MAP,
     HARD_CAP_MAX_ROWS,
     DEFAULT_MAX_ROWS

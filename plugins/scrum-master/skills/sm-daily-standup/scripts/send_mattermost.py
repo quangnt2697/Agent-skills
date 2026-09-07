@@ -21,12 +21,13 @@ def main():
     parser.add_argument("--project-root", required=True, help="Path to the project root directory")
     args = parser.parse_args()
 
-    project_root = args.project_root
+    project_root = os.path.abspath(args.project_root)
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    plugin_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
+    # repo_root is 5 levels up: scripts -> sm-daily-standup -> skills -> scrum-master -> plugins -> repo_root
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))))
 
     # Load ENVs
-    env_vars = load_env(os.path.join(plugin_root, ".env"))
+    env_vars = load_env(os.path.join(repo_root, ".env"))
     project_env = load_env(os.path.join(project_root, ".env"))
     env_vars.update(project_env)
 
@@ -36,7 +37,10 @@ def main():
         print("Error: MATTERMOST_WEBHOOK_URL not found in .env")
         return
 
-    report_path = os.path.join(project_root, "workspace", "sprint", "daily-standup-report.md")
+    # Check trace path first, then fallback to workspace/sprint root
+    report_path = os.path.join(project_root, "workspace", "sprint", "trace", "daily-standup-report.md")
+    if not os.path.exists(report_path):
+        report_path = os.path.join(project_root, "workspace", "sprint", "daily-standup-report.md")
     
     if not os.path.exists(report_path):
         print(f"Error: Report file not found at {report_path}")

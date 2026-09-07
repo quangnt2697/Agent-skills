@@ -30,6 +30,7 @@ const {
     sanitizeQuery, applyLimit,
     CACHE_DIR, ensureCacheDir,
     DEFAULT_STATEMENT_TIMEOUT_MS,
+    resolveOpenApiDatabase,
 } = require('./db-client');
 
 const { Server }               = require('@modelcontextprotocol/sdk/server/index.js');
@@ -157,9 +158,9 @@ const SNAPSHOT_CONFIG = {
 const TZ = "'Asia/Ho_Chi_Minh'";
 
 function buildSessionQuery(cfg, date) {
-    const dateFilter = date
-        ? `'${date}'`
-        : `CURRENT_DATE`;
+    const whereClause = date
+        ? `WHERE DATE(sending_time AT TIME ZONE ${TZ}) = '${date}'`
+        : '';
     return `
 SELECT DISTINCT ON (market_id, board_id)
     market_id,
@@ -167,19 +168,22 @@ SELECT DISTINCT ON (market_id, board_id)
     trading_session_id  AS session_flag,
     sending_time        AS started_at
 FROM ${cfg.table}
-WHERE DATE(sending_time AT TIME ZONE ${TZ}) = ${dateFilter}
+${whereClause}
 ORDER BY market_id, board_id, sending_time DESC
 LIMIT 50`.trim();
 }
 
 function buildSecurityPickQuery(cfg, date) {
-    const marketIds  = cfg.markets_id ? cfg.markets_id.join(', ') : '1, 2, 3';
+    const marketIds  = cfg.markets_id ? cfg.markets_id.join(', ') : '6, 7, 8';
     const n          = cfg.symbols_per_board || 2;
-    const dateFilter = date ? `'${date}'` : `CURRENT_DATE`;
-    // Yêu cầu: CHỈ lấy từ security_definition_v3
+    const whereConditions = [`market_id IN (${marketIds})`];
+    if (date) {
+        whereConditions.push(`DATE(sending_time AT TIME ZONE ${TZ}) = '${date}'`);
+    }
+
     return `
 WITH ranked AS (
-    SELECT DISTINCT ON (market_id, board_id, symbol)
+    SELECT
         symbol,
         market_id,
         board_id,
@@ -191,19 +195,20 @@ WITH ranked AS (
             ORDER BY sending_time DESC
         ) AS rn
     FROM security_definition_v3
-    WHERE DATE(sending_time AT TIME ZONE ${TZ}) = ${dateFilter}
+    WHERE ${whereConditions.join(' AND ')}
 )
 SELECT symbol, market_id, board_id, ceiling_price, floor_price, reference_price
 FROM ranked
 WHERE rn <= ${n}
-  AND market_id IN (${marketIds})
 ORDER BY market_id, board_id, symbol
 LIMIT 200`.trim();
 }
 
 function buildPriceLimitsQuery(cfg, symbols, date) {
     const symList    = symbols.map(s => `'${s}'`).join(', ');
-    const dateFilter = date ? `'${date}'` : `CURRENT_DATE`;
+    const dateClause = date
+        ? `AND DATE(sending_time AT TIME ZONE ${TZ}) = '${date}'`
+        : '';
     // Dùng security_definition_v3: có ceiling_price, floor_price, basic_price (=reference)
     return `
 SELECT DISTINCT ON (symbol)
@@ -213,14 +218,16 @@ SELECT DISTINCT ON (symbol)
     floor_price
 FROM security_definition_v3
 WHERE symbol IN (${symList})
-  AND DATE(sending_time AT TIME ZONE ${TZ}) = ${dateFilter}
+  ${dateClause}
 ORDER BY symbol, sending_time DESC
 LIMIT 200`.trim();
 }
 
 function buildTickSnapshotQuery(cfg, symbols, date) {
     const symList = symbols.map(s => `'${s}'`).join(', ');
-    const dateFilter = date ? `'${date}'` : `CURRENT_DATE`;
+    const dateClause = date
+        ? `AND DATE(sending_time AT TIME ZONE ${TZ}) = '${date}'`
+        : '';
     return `
 SELECT DISTINCT ON (symbol)
     symbol,
@@ -231,7 +238,7 @@ SELECT DISTINCT ON (symbol)
     sending_time        AS last_match_time
 FROM ${cfg.table}
 WHERE symbol IN (${symList})
-  AND DATE(sending_time AT TIME ZONE ${TZ}) = ${dateFilter}
+  ${dateClause}
 ORDER BY symbol, sending_time DESC
 LIMIT 200`.trim();
 }
@@ -477,6 +484,216 @@ async function tdExportFixture({ issueKey, data, filename = 'market_data' }) {
     };
 }
 
+// ─── CÁC TOOL MỚI BỔ SUNG ────────────────────────────────────────────────────
+
+function safeJsonParse(val, defaultVal = []) {
+    if (val === null || val === undefined) return defaultVal;
+    if (typeof val === 'object') return val;
+    try {
+        return JSON.parse(val);
+    } catch (_) {
+        return defaultVal;
+    }
+}
+
+/**
+ * td_get_order_book — Sổ lệnh thị trường (Market Depth / Top Prices)
+ * Lấy tất cả các bước giá chào mua (bid) và chào bán (offer) đang có của mã từ KRX MDDS v3 (fallback v2).
+ */
+async function tdGetOrderBook({ symbol, date, table_version = 'v3' } = {}) {
+    if (!symbol) throw new Error('Thiếu tham số bắt buộc: symbol');
+    const sym = symbol.toUpperCase().trim();
+    const tbl = table_version === 'v2' ? 'krx_mdds_v2_top_prices' : 'krx_mdds_v3_top_prices';
+    const dateFilter = date ? `'${date}'` : 'CURRENT_DATE';
+
+    // 1. Query theo ngày chỉ định (hoặc hôm nay)
+    let sql = `
+SELECT DISTINCT ON (symbol)
+    symbol, market_id, board_id, isin, sending_time,
+    bid, offer, total_bid_qtty, total_offer_qtty
+FROM ${tbl}
+WHERE symbol = '${sym}'
+  AND DATE(sending_time AT TIME ZONE ${TZ}) = ${dateFilter}
+ORDER BY symbol, sending_time DESC
+LIMIT 1`.trim();
+
+    let { rows } = await metabaseRunSql(sql, DB_TIMESCALE);
+
+    // 2. Nếu ngày hôm nay chưa có dữ liệu/ngoài giờ giao dịch, tự động lấy snapshot mới nhất
+    if (!rows.length && !date) {
+        sql = `
+SELECT DISTINCT ON (symbol)
+    symbol, market_id, board_id, isin, sending_time,
+    bid, offer, total_bid_qtty, total_offer_qtty
+FROM ${tbl}
+WHERE symbol = '${sym}'
+ORDER BY symbol, sending_time DESC
+LIMIT 1`.trim();
+        const fallbackRes = await metabaseRunSql(sql, DB_TIMESCALE);
+        rows = fallbackRes.rows;
+    }
+
+    if (!rows.length) {
+        throw new Error(`Không tìm thấy dữ liệu sổ lệnh cho mã "${sym}" trong bảng ${tbl}.`);
+    }
+
+    const r = rows[0];
+    const parsedBid = safeJsonParse(r.bid);
+    const parsedOffer = safeJsonParse(r.offer);
+    const cfg = SNAPSHOT_CONFIG.security_info;
+
+    return {
+        symbol:            r.symbol,
+        market_id:         r.market_id,
+        market_name:       cfg.market_name_map[r.market_id] || String(r.market_id),
+        board_id:          r.board_id,
+        board_name:        cfg.board_name_map[r.board_id] || String(r.board_id),
+        isin:              r.isin,
+        sending_time:      r.sending_time,
+        total_bid_qtty:    r.total_bid_qtty,
+        total_offer_qtty:  r.total_offer_qtty,
+        bid_levels:        parsedBid,   // Toàn bộ các bước giá chào mua [{price, qtty}, ...]
+        offer_levels:      parsedOffer, // Toàn bộ các bước giá chào bán [{price, qtty}, ...]
+        levels_count: {
+            bid:   Array.isArray(parsedBid) ? parsedBid.length : 0,
+            offer: Array.isArray(parsedOffer) ? parsedOffer.length : 0,
+        },
+        source_table:      tbl,
+    };
+}
+
+/**
+ * td_get_personal_orders — Sổ lệnh cá nhân của một tài khoản (Personal Order Book)
+ * Truy vấn danh sách lệnh đặt thực tế của tài khoản từ DB OpenAPI (535) hoặc Sandbox (655).
+ */
+async function tdGetPersonalOrders({ account_no, symbol, status, environment, limit = 20 } = {}) {
+    const targetDb = resolveOpenApiDatabase(environment);
+    const n = Math.min(limit, 100);
+    const whereClauses = ['1=1'];
+    if (account_no) whereClauses.push(`account_no = '${account_no.trim()}'`);
+    if (symbol) whereClauses.push(`symbol = '${symbol.toUpperCase().trim()}'`);
+    if (status) whereClauses.push(`status = '${status.trim().toUpperCase()}'`);
+
+    const sql = `
+SELECT *
+FROM orders
+WHERE ${whereClauses.join(' AND ')}
+ORDER BY created_at DESC
+LIMIT ${n}`.trim();
+
+    try {
+        const { rows } = await metabaseRunSql(sql, targetDb);
+        return {
+            environment: targetDb,
+            count: rows.length,
+            orders: rows,
+        };
+    } catch (err) {
+        return {
+            environment: targetDb,
+            status: 'UNAVAILABLE_OR_EMPTY',
+            message: `Không thể lấy sổ lệnh cá nhân từ database ${targetDb}: ${err.message}`,
+            orders: [],
+        };
+    }
+}
+
+/**
+ * td_get_api_key_sample — Lấy mẫu API Key / Credential kiểm thử
+ * Phục vụ test auth hoặc verify trạng thái key từ đúng database môi trường (535 vs 655).
+ */
+async function tdGetApiKeySample({ environment, limit = 5 } = {}) {
+    const targetDb = resolveOpenApiDatabase(environment);
+    const n = Math.min(limit, 50);
+    const sql = `
+SELECT id, investor_id, api_key, status, user_type_code, created_at
+FROM api_keys
+ORDER BY created_at DESC
+LIMIT ${n}`.trim();
+
+    try {
+        const { rows } = await metabaseRunSql(sql, targetDb);
+        return {
+            environment: targetDb,
+            count: rows.length,
+            api_keys: rows,
+        };
+    } catch (err) {
+        return {
+            environment: targetDb,
+            status: 'ERROR',
+            message: `Lỗi truy vấn api_keys từ database ${targetDb}: ${err.message}`,
+            api_keys: [],
+        };
+    }
+}
+
+/**
+ * td_get_market_indices — Chỉ số thị trường (VN-Index, VN30, UPCOM Index...)
+ * Lấy từ krx_mdds_v3_market_indices (DB 644).
+ */
+async function tdGetMarketIndices({ index_code, date, table_version = 'v3' } = {}) {
+    const tbl = table_version === 'v2' ? 'krx_mdds_v2_market_indices' : 'krx_mdds_v3_market_indices';
+    const dateFilter = date ? `'${date}'` : 'CURRENT_DATE';
+    const codeFilter = index_code ? `AND index_type_code = '${index_code.trim()}'` : '';
+
+    let sql = `
+SELECT DISTINCT ON (market_id, index_type_code)
+    market_id,
+    trading_session_id,
+    index_type_code,
+    transact_time,
+    value_indexes,
+    total_volume_traded,
+    gross_trade_amount
+FROM ${tbl}
+WHERE DATE(transact_time AT TIME ZONE ${TZ}) = ${dateFilter}
+  ${codeFilter}
+ORDER BY market_id, index_type_code, transact_time DESC
+LIMIT 50`.trim();
+
+    let { rows } = await metabaseRunSql(sql, DB_TIMESCALE);
+
+    if (!rows.length && !date) {
+        sql = `
+SELECT DISTINCT ON (market_id, index_type_code)
+    market_id,
+    trading_session_id,
+    index_type_code,
+    transact_time,
+    value_indexes,
+    total_volume_traded,
+    gross_trade_amount
+FROM ${tbl}
+WHERE 1=1
+  ${codeFilter}
+ORDER BY market_id, index_type_code, transact_time DESC
+LIMIT 50`.trim();
+        const fallbackRes = await metabaseRunSql(sql, DB_TIMESCALE);
+        rows = fallbackRes.rows;
+    }
+
+    const indexNameMap = {
+        '001': 'VN-Index',
+        '002': 'VN30',
+        '003': 'VNX50',
+        '101': 'HNX-Index',
+        '102': 'HNX30',
+        '301': 'UPCOM-Index',
+    };
+
+    return rows.map(r => ({
+        market_id:           r.market_id,
+        index_type_code:     r.index_type_code,
+        index_name:          indexNameMap[r.index_type_code] || `Index-${r.index_type_code}`,
+        trading_session_id:  r.trading_session_id,
+        transact_time:       r.transact_time,
+        index_value:         r.value_indexes,
+        total_volume_traded: r.total_volume_traded,
+        gross_trade_amount:  r.gross_trade_amount,
+    }));
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MCP SERVER SETUP
 // ─────────────────────────────────────────────────────────────────────────────
@@ -526,7 +743,7 @@ const TOOLS_SCHEMA = [
     },
     {
         name: 'td_get_price_limits',
-        description: 'Lấy giá trần/sàn/tham chiếu của 1 mã từ krx_mdds_v2_stock_infos.',
+        description: 'Lấy giá trần/sàn/tham chiếu của 1 mã từ security_definition_v3.',
         inputSchema: {
             type: 'object',
             required: ['symbol'],
@@ -544,6 +761,56 @@ const TOOLS_SCHEMA = [
             properties: {
                 market: { type: 'string', description: 'Lọc theo sàn: HOSE/HNX/UPCOM. null = tất cả' },
                 date:   { type: 'string', description: 'Ngày YYYY-MM-DD. Mặc định: hôm nay' },
+            },
+        },
+    },
+    {
+        name: 'td_get_order_book',
+        description: 'Lấy tất cả các bước giá chào mua (bid) và chào bán (offer) đang có của mã trên thị trường từ krx_mdds_v3_top_prices (DB 644).',
+        inputSchema: {
+            type: 'object',
+            required: ['symbol'],
+            properties: {
+                symbol:        { type: 'string', description: 'Mã chứng khoán (VD: FPT, SSI, VNM)' },
+                date:          { type: 'string', description: 'Ngày YYYY-MM-DD. Mặc định: hôm nay' },
+                table_version: { type: 'string', enum: ['v3', 'v2'], description: 'Phiên bản bảng. Mặc định: v3' },
+            },
+        },
+    },
+    {
+        name: 'td_get_personal_orders',
+        description: 'Lấy sổ lệnh cá nhân (danh sách lệnh đặt thực tế của tài khoản) từ database openapi (535) hoặc openapi-sandbox (655).',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                account_no:  { type: 'string', description: 'Số tài khoản chứng khoán' },
+                symbol:      { type: 'string', description: 'Mã chứng khoán cần lọc' },
+                status:      { type: 'string', description: 'Trạng thái lệnh (PENDING, FILLED, CANCELLED...)' },
+                environment: { type: 'string', enum: ['openapi', 'openapi-sandbox'], description: 'Môi trường OpenAPI. Mặc định: auto-detect từ BASE_URL' },
+                limit:       { type: 'number', description: 'Số lệnh tối đa cần lấy. Mặc định: 20' },
+            },
+        },
+    },
+    {
+        name: 'td_get_api_key_sample',
+        description: 'Lấy mẫu API Key / Credential kiểm thử từ database openapi (535) hoặc openapi-sandbox (655).',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                environment: { type: 'string', enum: ['openapi', 'openapi-sandbox'], description: 'Môi trường OpenAPI. Mặc định: auto-detect từ BASE_URL' },
+                limit:       { type: 'number', description: 'Số lượng key lấy mẫu. Mặc định: 5' },
+            },
+        },
+    },
+    {
+        name: 'td_get_market_indices',
+        description: 'Lấy chỉ số thị trường (VNINDEX, VN30, UPCOM...) từ krx_mdds_v3_market_indices (DB 644).',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                index_code:    { type: 'string', description: 'Mã chỉ số (001: VN-Index, 002: VN30, 301: UPCOM...). null = tất cả' },
+                date:          { type: 'string', description: 'Ngày YYYY-MM-DD. Mặc định: hôm nay' },
+                table_version: { type: 'string', enum: ['v3', 'v2'], description: 'Phiên bản bảng. Mặc định: v3' },
             },
         },
     },
@@ -569,23 +836,61 @@ async function handleToolCall(name, args) {
         case 'td_get_tick_samples':    return await tdGetTickSamples(args);
         case 'td_get_price_limits':    return await tdGetPriceLimits(args);
         case 'td_get_session_flags':   return await tdGetSessionFlags(args);
+        case 'td_get_order_book':      return await tdGetOrderBook(args);
+        case 'td_get_personal_orders': return await tdGetPersonalOrders(args);
+        case 'td_get_api_key_sample':  return await tdGetApiKeySample(args);
+        case 'td_get_market_indices':  return await tdGetMarketIndices(args);
         case 'td_export_fixture':      return await tdExportFixture(args);
         default: throw new Error(`Tool không tồn tại: ${name}`);
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CLI --test MODE
+// CLI MODE & HELP
 // ─────────────────────────────────────────────────────────────────────────────
+
+function printHelp() {
+    console.log(`
+Test Data MCP Server (.agents/test-data-mcp.js)
+==============================================
+Cung cấp fixture data chứng khoán thực tế từ TimescaleDB (DB 644) và OpenAPI (DB 535 / 655).
+
+Cú pháp CLI:
+  node .agents/test-data-mcp.js [options]
+
+Tùy chọn CLI:
+  --help, -h               In hướng dẫn này và thoát.
+  --test                   Chạy dry-run kiểm tra kết nối TimescaleDB & OpenAPI.
+  --symbol <MÃ> --test     Chạy dry-run kiểm tra chi tiết giá và sổ lệnh của mã chỉ định (VD: --symbol FPT --test).
+
+Danh sách Tools MCP khả dụng:
+  1. td_get_market_snapshot: Lấy snapshot thị trường (phiên hiện tại, N mã/board, giá trần/sàn/TC, tick).
+  2. td_get_security_info:   Chi tiết niêm yết 1 mã chứng khoán (sàn, board, giá trần/sàn).
+  3. td_get_tick_samples:    Mẫu tick khớp lệnh gần nhất (giá, khối lượng, timestamp).
+  4. td_get_price_limits:    Giá trần, sàn, tham chiếu của 1 mã từ security_definition_v3.
+  5. td_get_session_flags:   Cờ phiên giao dịch KRX hiện tại (AA1, BB1, BC1...).
+  6. td_get_order_book:      Sổ lệnh thị trường (toàn bộ các bước giá bid/offer từ krx_mdds_v3_top_prices).
+  7. td_get_personal_orders: Sổ lệnh cá nhân (danh sách lệnh đặt từ DB openapi 535 / openapi-sandbox 655).
+  8. td_get_api_key_sample:  Mẫu API credentials kiểm thử từ DB openapi (535) / openapi-sandbox (655).
+  9. td_get_market_indices:  Chỉ số thị trường (VNINDEX, VN30, UPCOM Index...).
+ 10. td_export_fixture:      Xuất dữ liệu fixture ra file JSON tại workspace/{issueKey}/test/fixtures/.
+`);
+}
 
 async function runTest() {
     console.log('[test-data-mcp] Chạy dry-run kiểm tra kết nối...\n');
+    let targetSymbol = null;
+    const symIdx = process.argv.indexOf('--symbol');
+    if (symIdx !== -1 && process.argv[symIdx + 1]) {
+        targetSymbol = process.argv[symIdx + 1].toUpperCase().trim();
+    }
+
     try {
         const snapshot = await tdGetMarketSnapshot({
             symbols_per_board: 1,
             include_groups: ['session', 'security_info', 'price_limits'],
         });
-        console.log('✅ Kết nối thành công!');
+        console.log('✅ Kết nối TimescaleDB (644) thành công!');
         console.log(`   Phiên hiện tại: ${snapshot.current_sessions.length} board(s)`);
         if (snapshot.current_sessions.length > 0) {
             const s = snapshot.current_sessions[0];
@@ -594,10 +899,31 @@ async function runTest() {
         console.log(`   Mã lấy được: ${snapshot._meta.total_symbols} symbols`);
         if (snapshot.securities.length > 0) {
             const sec = snapshot.securities[0];
-            console.log(`   → ${sec.symbol} (${sec.market}/${sec.board_id}): trần=${sec.ceiling_price}, sàn=${sec.floor_price}`);
+            console.log(`   → ${sec.symbol} (${sec.market_name}/${sec.board_name}): trần=${sec.ceiling_price}, sàn=${sec.floor_price}`);
         }
-        console.log(`   Thời gian query: ${snapshot._meta.query_duration_ms}ms`);
-        console.log(`   Bảng đã dùng: ${snapshot._meta.source_tables.join(', ')}`);
+
+        // Test sổ lệnh
+        const checkSym = targetSymbol || (snapshot.securities[0] ? snapshot.securities[0].symbol : 'FPT');
+        console.log(`\n📊 Kiểm tra Sổ lệnh Thị trường (Market Depth) cho mã "${checkSym}":`);
+        const ob = await tdGetOrderBook({ symbol: checkSym });
+        console.log(`   Bảng nguồn: ${ob.source_table} | Cập nhật lúc: ${ob.sending_time}`);
+        console.log(`   Tổng chào mua: ${ob.total_bid_qtty || 'N/A'} (${ob.levels_count.bid} bước giá)`);
+        console.log(`   Tổng chào bán: ${ob.total_offer_qtty || 'N/A'} (${ob.levels_count.offer} bước giá)`);
+        if (ob.bid_levels && ob.bid_levels.length > 0) {
+            console.log(`   Top 1 Bid: Giá ${ob.bid_levels[0].price} | KL ${ob.bid_levels[0].qtty}`);
+        }
+        if (ob.offer_levels && ob.offer_levels.length > 0) {
+            console.log(`   Top 1 Offer: Giá ${ob.offer_levels[0].price} | KL ${ob.offer_levels[0].qtty}`);
+        }
+
+        // Test OpenAPI database resolution
+        console.log('\n🌐 Kiểm tra Smart Environment Routing:');
+        const openapiDb = resolveOpenApiDatabase('openapi');
+        const sandboxDb = resolveOpenApiDatabase('sandbox');
+        console.log(`   OpenAPI UAT trỏ về: ${openapiDb} (ID: 535)`);
+        console.log(`   OpenAPI Sandbox trỏ về: ${sandboxDb} (ID: 655)`);
+
+        console.log('\n🎉 Toàn bộ kiểm tra test-data-mcp hoàn tất thành công!');
     } catch (err) {
         console.error('❌ Lỗi:', err.message);
         process.exit(1);
@@ -609,6 +935,11 @@ async function runTest() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function main() {
+    if (process.argv.includes('--help') || process.argv.includes('-h')) {
+        printHelp();
+        process.exit(0);
+    }
+
     if (process.argv.includes('--test')) {
         await runTest();
         return;
@@ -641,7 +972,27 @@ async function main() {
     process.stderr.write('[test-data-mcp] Server khởi động thành công — chờ request...\n');
 }
 
-main().catch(err => {
-    process.stderr.write(`[test-data-mcp] FATAL: ${err.message}\n`);
-    process.exit(1);
-});
+// Export các hàm phục vụ Unit Test & Modular imports
+module.exports = {
+    tdGetMarketSnapshot,
+    tdGetSecurityInfo,
+    tdGetTickSamples,
+    tdGetPriceLimits,
+    tdGetSessionFlags,
+    tdGetOrderBook,
+    tdGetPersonalOrders,
+    tdGetApiKeySample,
+    tdGetMarketIndices,
+    tdExportFixture,
+    handleToolCall,
+    TOOLS_SCHEMA,
+    safeJsonParse,
+    printHelp,
+};
+
+if (require.main === module) {
+    main().catch(err => {
+        process.stderr.write(`[test-data-mcp] FATAL: ${err.message}\n`);
+        process.exit(1);
+    });
+}

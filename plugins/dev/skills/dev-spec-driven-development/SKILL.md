@@ -19,7 +19,7 @@ Viết Tech-Spec (Technical Specification) chi tiết dựa trên Business-Spec 
 
 **Khi KHÔNG sử dụng:**
 - Chưa có Business-Spec → dùng `ba-spec` trước
-- Đã có Tech-Spec và cần code → dùng `planning-and-task-breakdown` hoặc `/build`
+- Đã có Tech-Spec và cần code → dùng `dev-planning-and-task-breakdown` hoặc `/build`
 - Bug fix nhỏ không cần thiết kế lại → code trực tiếp
 
 ## Input & Output
@@ -1070,7 +1070,7 @@ Các triệu chứng cho thấy Tech-Spec chưa sẵn sàng bàn giao cho `/plan
 ## Xem thêm
 
 - `ba-spec` — Import và phân tích Business-Spec (giai đoạn trước)
-- `planning-and-task-breakdown` — Chia nhỏ Tech-Spec thành tasks (giai đoạn sau)
+- `dev-planning-and-task-breakdown` — Chia nhỏ Tech-Spec thành tasks (giai đoạn sau)
 - `/build` — Code implementation từ tasks (giai đoạn sau)
 - `../../../../references/definition-of-done.md` — Tiêu chuẩn hoàn thành
 

@@ -398,13 +398,93 @@ def dashboard_auth_token(dashboard_url, dashboard_username, dashboard_password):
 
 
 # ==========================================================
-# 3. DYNAMIC TEST DATA
+# 3. DYNAMIC TEST DATA & ENVIRONMENT FIXTURES (TEST-DATA MCP)
 # ==========================================================
 
 @pytest.fixture
 def unique_id():
     """Sinh ID unique cho mỗi test method. Format: auto_[timestamp]_[random]."""
     return f"auto_{int(time.time())}_{uuid.uuid4().hex[:6]}"
+
+
+@pytest.fixture(scope="session")
+def target_environment():
+    """
+    Tự động nhận diện môi trường từ BASE_URL và điều hướng đúng Database:
+    - Nếu BASE_URL chứa 'sandbox' hoặc 'sb-openapi' hoặc 'sb-openapi-uat': trỏ về openapi-sandbox (DB ID: 655)
+    - Mặc định hoặc chứa 'openapi-uat' / 'openapi': trỏ về openapi (DB ID: 535)
+    """
+    base_url = os.getenv("BASE_URL", "")
+    raw = base_url.lower()
+    if "sandbox" in raw or "sb-openapi" in raw or "sb-openapi-uat" in raw:
+        return {
+            "name": "sandbox",
+            "base_url": base_url,
+            "db_id": int(os.getenv("METABASE_DB_OPENAPI_SANDBOX_ID", "655")),
+            "db_name": "openapi-sandbox",
+        }
+    return {
+        "name": "openapi",
+        "base_url": base_url,
+        "db_id": int(os.getenv("METABASE_DB_OPENAPI_ID", "535")),
+        "db_name": "openapi",
+    }
+
+
+@pytest.fixture(scope="session")
+def market_fixture():
+    """
+    Nạp dữ liệu thị trường thật được export bởi test-data-mcp
+    tại workspace/{issueKey}/test/fixtures/market_data.json.
+    """
+    test_dir = Path(__file__).resolve().parent.parent
+    fixture_file = test_dir / "fixtures" / "market_data.json"
+    if fixture_file.exists():
+        try:
+            with open(fixture_file, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+                return payload.get("data", payload)
+        except Exception as e:
+            print(f"⚠️ Lỗi đọc fixture {fixture_file}: {e}")
+    return {}
+
+
+@pytest.fixture(scope="session")
+def valid_order_symbol(market_fixture):
+    """
+    Lấy 1 mã chứng khoán hợp lệ kèm giá trần/sàn/tham chiếu thật từ fixture.
+    Fallback an toàn nếu chưa xuất file fixture.
+    """
+    securities = market_fixture.get("securities", [])
+    if securities and len(securities) > 0:
+        sec = securities[0]
+        ref = sec.get("reference_price") or 10000
+        ceil = sec.get("ceiling_price") or int(ref * 1.07)
+        floor = sec.get("floor_price") or int(ref * 0.93)
+        return {
+            "symbol": sec.get("symbol", "FPT"),
+            "market_id": sec.get("market_id", 6),
+            "board_id": sec.get("board_id", 2),
+            "reference_price": ref,
+            "ceiling_price": ceil,
+            "floor_price": floor,
+            "tick_size": 100 if ref >= 50000 else (50 if ref >= 10000 else 10),
+        }
+    return {
+        "symbol": "FPT",
+        "market_id": 6,
+        "board_id": 2,
+        "reference_price": 72.2,
+        "ceiling_price": 77.2,
+        "floor_price": 67.2,
+        "tick_size": 0.1,
+    }
+
+
+@pytest.fixture(scope="session")
+def order_book_fixture(market_fixture):
+    """Lấy dữ liệu sổ lệnh (toàn bộ bước giá bid/ask) từ fixture nếu có."""
+    return market_fixture.get("order_book", {})
 
 
 # ==========================================================

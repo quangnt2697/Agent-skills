@@ -5,7 +5,7 @@ description: "Chạy full QA pipeline tự động — ba-spec → qa-test-desig
 Chạy QA pipeline đầy đủ cho `$ARGUMENTS` (Jira issue key), **bao gồm cả bước import Jira**.
 
 Lệnh này = `/ba-spec` + `/qa-full-pipeline`. Phần orchestrate QA nằm trong kỹ năng
-`qa-full-pipeline` — đọc `skills/qa-full-pipeline/SKILL.md` và làm theo, không diễn giải lại.
+`qa-full-pipeline` — đọc `plugins/qa/skills/qa-full-pipeline/SKILL.md` và làm theo, không diễn giải lại.
 
 ## Quy trình
 
@@ -79,6 +79,6 @@ LƯU Ý: Mọi output bằng TIẾNG VIỆT (trừ code và tags).
 
 ## Xem thêm
 
-- `skills/qa-full-pipeline/SKILL.md` — quy trình QA đầy đủ (nguồn sự thật)
-- `skills/ba-spec/SKILL.md` — quy trình import Jira/Confluence
+- `plugins/qa/skills/qa-full-pipeline/SKILL.md` — quy trình QA đầy đủ (nguồn sự thật)
+- `plugins/ba-po/skills/ba-spec/SKILL.md` — quy trình import Jira/Confluence
 - `.claude/rules/autonomy-contract.md` — cổng dừng/chạy tiếp

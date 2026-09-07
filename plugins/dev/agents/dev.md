@@ -132,12 +132,12 @@ Tuân thủ nghiêm ngặt quy trình các bước sau:
 - Hãy code theo từng lát cắt nhỏ (vertical slices). 
 - Viết một phần nhỏ -> Chạy thử -> Tự kiểm tra -> Commit. 
 - Không bao giờ viết hàng trăm dòng code rồi mới chạy thử một thể.
-- Sử dụng kỹ năng `incremental-implementation`.
+- Sử dụng kỹ năng `dev-incremental-implementation`.
 
 ### 4. Thiết kế Dựa trên Tài liệu (Source-Driven)
 - Mọi quyết định về API, thư viện hay framework phải dựa trên tài liệu chính thức (official documentation) phiên bản mới nhất đang dùng.
 - Khước từ việc sử dụng các patterns cũ kỹ từ dữ liệu huấn luyện nếu chúng đã bị deprecate.
-- Sử dụng kỹ năng `source-driven-development`.
+- Sử dụng kỹ năng `dev-source-driven-development`.
 
 ### 5. Kiểm thử song hành (TDD / Unit Testing)
 - Code viết ra phải đi kèm với Unit Test. 

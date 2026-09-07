@@ -564,7 +564,7 @@ mkdir -p /project-root/workspace/{issueKey}/spec
 
 - **Downstream (After):**
   - `ba-backlog-prioritization` → Prioritize backlog dựa trên gaps identified
-  - `planning-and-task-breakdown` → Breakdown roadmap thành tasks
+  - `dev-planning-and-task-breakdown` → Breakdown roadmap thành tasks
   - `dev-spec-driven-development` → Transform gaps thành Tech-Spec
 
 ## Các Dấu hiệu Cảnh báo (Red Flags)

@@ -41,8 +41,8 @@ function parseEnvFile(envPath) {
 }
 
 function loadEnv() {
-    // PLUGIN_DIR là thư mục gốc của agent-skills (cách script này 3 cấp: skills/ba-refine/scripts)
-    const pluginDir = path.resolve(__dirname, '../../..');
+    // PLUGIN_DIR là thư mục gốc của agent-skills (cách script này 5 cấp: plugins/ba-po/skills/ba-refine/scripts)
+    const pluginDir = path.resolve(__dirname, '../../../../..');
     const projectRoot = process.cwd();
 
     // 1. Nguồn chính: đọc từ plugin dir

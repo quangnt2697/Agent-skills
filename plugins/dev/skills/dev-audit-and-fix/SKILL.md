@@ -16,9 +16,9 @@ Kỹ năng này cung cấp một quy trình khép kín, một chạm cho Develop
 - Nghi ngờ có lỗ hổng bảo mật hoặc điểm nghẽn hiệu năng nhưng chưa xác định được ở đâu
 
 **KHÔNG sử dụng khi:**
-- Chỉ cần review, không muốn agent sửa code → dùng `review-code-and-quality`
-- Chỉ cần dọn code cho dễ đọc, không tìm bug → dùng `code-simplification`
-- Đang triển khai tính năng mới → dùng `/build` với `incremental-implementation`
+- Chỉ cần review, không muốn agent sửa code → dùng `cr-review-code-and-quality`
+- Chỉ cần dọn code cho dễ đọc, không tìm bug → dùng `cr-code-simplification`
+- Đang triển khai tính năng mới → dùng `/build` với `dev-incremental-implementation`
 - Chưa có test nào cho phần code sắp đụng vào — Bước 4 dựa trên TDD, không có lưới an toàn thì rủi ro cao
 
 ## Quy trình Thực thi Chặt chẽ (4 Bước)
@@ -26,14 +26,14 @@ Kỹ năng này cung cấp một quy trình khép kín, một chạm cho Develop
 Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự, không được bỏ qua hay gộp bước:
 
 ### Bước 1: Kiểm toán Toàn diện (Audit & Review)
-*Tận dụng lăng kính của `review-code-and-quality`, `dev-debugging`, `dev-security` và `dev-performance`.*
+*Tận dụng lăng kính của `cr-review-code-and-quality`, `dev-debugging`, `dev-security` và `dev-performance`.*
 - Đọc kỹ mã nguồn của chức năng được yêu cầu (files, folder).
 - Đánh giá Kiến trúc (Architecture) & Techstack.
 - Tìm kiếm Bug tiềm ẩn, lỗ hổng bảo mật, hoặc những đoạn code quá phức tạp cần đơn giản hoá (Code Smell).
 - Trích xuất ra danh sách các vấn đề (Issues) cần giải quyết. KHÔNG tự ý sửa code ở Bước 1.
 
 ### Bước 2: Thiết kế Kế hoạch Đề xuất (Planning)
-*Tận dụng lăng kính của `planning-and-task-breakdown`.*
+*Tận dụng lăng kính của `dev-planning-and-task-breakdown`.*
 - Từ danh sách vấn đề ở Bước 1, lập ra một kế hoạch thực thi rõ ràng.
 - BẮT BUỘC lưu kế hoạch ra artifact `/project-root/workspace/{issueKey}/tech/plan.md` và danh sách task vào `/project-root/workspace/{issueKey}/tech/todo.md` với định dạng checklist (`- [ ] Task 1...`) để chuẩn bị cho việc Auto-Build.
 - Phân chia các task nhỏ, ưu tiên các lỗi nghiêm trọng hoặc vấn đề kiến trúc cốt lõi làm trước.
@@ -45,7 +45,7 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
   (Đây là cổng dừng hợp lệ theo trường hợp 5 của `.claude/rules/autonomy-contract.md` — sửa code hàng loạt là hành động khó hoàn tác. Sau khi có "OK", Bước 4 chạy thẳng đến hết, KHÔNG hỏi lại lần nào nữa.)
 
 ### Bước 4: Tự động Thực thi (Auto-Fix / Build Auto)
-*Tận dụng lăng kính của `incremental-implementation`, `dev-test-driven-development`, `source-driven-development`, `dev-frontend-engineering`, `dev-api-design`.*
+*Tận dụng lăng kính của `dev-incremental-implementation`, `dev-test-driven-development`, `dev-source-driven-development`, `dev-frontend-engineering`, `dev-api-design`.*
 
 **QUAN TRỌNG: Tự động Apply Fixes vào Code bằng CÔNG CỤ (TOOL CALLS)**
 - Khi người dùng phản hồi "OK" hoặc "Đồng ý", bạn BẮT BUỘC phải thực hiện hành động **GỌI CÔNG CỤ CỦA HỆ THỐNG** (ví dụ: `replace_file_content`, `multi_replace_file_content`, `write_to_file`, `edit_file`, hoặc bất kỳ công cụ chỉnh sửa file nào mà hệ thống cấp cho bạn) để áp dụng trực tiếp các thay đổi vào mã nguồn.
@@ -60,7 +60,7 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
   3. **Verify:** Run lại test và đảm bảo test PASS.
   4. Nếu test vẫn fail → tự động debug và fix lại (`dev-debugging`).
   5. Đánh dấu task đã hoàn thành `[x]` trong `todo.md`.
-- Trong lúc code, BẮT BUỘC tham khảo tài liệu chính thức (`source-driven-development`), thiết kế giao diện chuẩn production (`dev-frontend-engineering`), hoặc định nghĩa API/Types chặt chẽ (`dev-api-design`) tuỳ theo tính chất của task.
+- Trong lúc code, BẮT BUỘC tham khảo tài liệu chính thức (`dev-source-driven-development`), thiết kế giao diện chuẩn production (`dev-frontend-engineering`), hoặc định nghĩa API/Types chặt chẽ (`dev-api-design`) tuỳ theo tính chất của task.
 - Hoàn thành toàn bộ kế hoạch từ đầu đến cuối MÀ KHÔNG CẦN DỪNG LẠI HỎI Ý KIẾN giữa chừng (trừ khi gặp lỗi nghiêm trọng block toàn bộ).
 
 **Output Format sau mỗi fix:**

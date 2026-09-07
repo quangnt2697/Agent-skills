@@ -109,22 +109,25 @@ class TestCreateOrderAPI:
     @pytest.mark.jira("JIRA-123")
     @pytest.mark.happy_path
     @pytest.mark.smoke
-    def test_create_order_success(self, api_service, unique_prefix):
+    def test_create_order_success(self, api_service, unique_prefix, valid_order_symbol, target_environment):
         """
         Given nhà đầu tư đã xác thực với API Key hợp lệ
-        When đặt lệnh mua VNM với khối lượng 100 và giá 50000
+        When đặt lệnh mua với mã và giá lấy từ fixture thực tế
         Then hệ thống tạo lệnh thành công và trả về order_id
         """
-        # -- Arrange --
+        # -- Arrange (Lấy mã và giá thật từ fixture do test-data-mcp cung cấp) --
+        sym = valid_order_symbol["symbol"]
+        price = float(valid_order_symbol["reference_price"])
+
         payload = {
-            "symbol": "VNM", "side": "BUY",
-            "quantity": 100, "price": 50_000.0, "order_type": "LO",
+            "symbol": sym, "side": "BUY",
+            "quantity": 100, "price": price, "order_type": "LO",
             "client_ref": f"{unique_prefix}_ORDER",
         }
 
         # Assertion [1]: Request Schema — validate payload trước khi gửi
         req = ExampleOrderRequest(**payload)
-        assert req.symbol == "VNM" and req.quantity > 0
+        assert req.symbol == sym and req.quantity > 0
 
         # -- Act --
         status_code, body, headers, elapsed_ms = api_service.create_order(payload)
@@ -137,10 +140,10 @@ class TestCreateOrderAPI:
         assert resp.order_id, "order_id không được rỗng"
 
         # Assertion [4]: Business Fields — giá trị nghiệp vụ đúng
-        assert resp.symbol == "VNM"
+        assert resp.symbol == sym
         assert resp.status in ("PENDING", "ACTIVE")
         assert resp.quantity == 100
-        assert resp.price == 50_000.0
+        assert resp.price == price
 
         # Assertion [6]: SLA — response time < 2000ms
         assert elapsed_ms < 2_000, f"SLA vi phạm: {elapsed_ms:.0f}ms"

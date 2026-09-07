@@ -4,7 +4,7 @@ description: "[BA/PO] Phỏng vấn nhiều stakeholders (CEO, PM, Users, Suppor
 
 **Persona:** BA/PO (Business Analyst / Product Owner)
 
-Kích hoạt skill ba-stakeholder-interview với BA/PO persona. Đọc `skills/ba-stakeholder-interview/SKILL.md` để thực hiện đúng workflow.
+Kích hoạt skill ba-stakeholder-interview với BA/PO persona. Đọc `plugins/ba-po/skills/ba-stakeholder-interview/SKILL.md` để thực hiện đúng workflow.
 
 $ARGUMENTS có thể chứa:
 - Project name hoặc feature name (VD: "Mobile Trading App")

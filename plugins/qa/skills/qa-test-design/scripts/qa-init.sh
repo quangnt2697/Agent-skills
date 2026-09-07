@@ -8,14 +8,14 @@ set -e
 # .claude/rules/workspace-paths.md. checklist.md and <issueKey>.feature are
 # written directly into test/ by the skill, so they need no subdirectory.
 #
-# Convention: issueKey is always stored in LOWER CASE for consistency.
+# Convention: issueKey is always upper case matching Jira issue keys.
 # Example: qa-init.sh G3PTP-16825
 
 ISSUE_KEY_RAW="${1:?Usage: qa-init.sh <issueKey> [workspace-root]}"
 WORKSPACE_ROOT="${2:-workspace}"
 
-# Normalize issue key to lower case for consistent directory naming
-ISSUE_KEY=$(echo "$ISSUE_KEY_RAW" | tr '[:upper:]' '[:lower:]')
+# Normalize issue key to upper case for consistent directory naming
+ISSUE_KEY=$(echo "$ISSUE_KEY_RAW" | tr '[:lower:]' '[:upper:]')
 
 OUTPUT_DIR="${WORKSPACE_ROOT}/${ISSUE_KEY}/test"
 

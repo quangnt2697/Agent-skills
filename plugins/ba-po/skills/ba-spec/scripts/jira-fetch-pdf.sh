@@ -71,7 +71,7 @@ if [[ "$ISSUE_KEY" != "$RAW_KEY" ]]; then
 fi
 
 # --- Đọc .env ---
-PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
 PROJECT_ROOT="${PWD}"
 
 if [[ -f "${PLUGIN_DIR}/.env" ]]; then

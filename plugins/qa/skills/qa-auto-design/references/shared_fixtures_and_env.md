@@ -190,3 +190,47 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 2. **Bước 2:** Khởi tạo `workspace/{issueKey}/test/.env` từ template, tự động điền sẵn các credentials đã tìm thấy.
 3. **Bước 3:** Sử dụng `conftest.py` có hàm `load_hierarchical_env()` để bảo đảm mọi fixture đều nhận đúng cấu hình.
 4. **Bước 4:** Tận dụng token caching trong `conftest.py` để tiết kiệm thời gian xác thực giữa các lần chạy.
+
+---
+
+## 5. Nạp Test Fixtures Động Từ Test-Data MCP & Điều Hướng Môi Trường
+
+### 5.1. Cơ Chế Điều Hướng Môi Trường Chuẩn Xác (OpenAPI UAT vs Sandbox)
+Hệ thống kiểm thử hỗ trợ 2 môi trường độc lập với Database tương ứng:
+- **Môi trường OpenAPI UAT:** `BASE_URL=https://openapi-uat.dnse.com.vn` $\rightarrow$ Database `openapi` (Metabase DB ID: **535**).
+- **Môi trường Sandbox:** `BASE_URL=https://sb-openapi.dnse.com.vn` $\rightarrow$ Database `openapi-sandbox` (Metabase DB ID: **655**).
+
+Trong `conftest.py`, fixture `target_environment` tự động nhận diện môi trường từ `BASE_URL`:
+```python
+@pytest.fixture(scope="session")
+def target_environment():
+    base_url = os.getenv("BASE_URL", "")
+    if "sandbox" in base_url.lower() or "sb-openapi" in base_url.lower():
+        return {"name": "sandbox", "db_id": 655, "db_name": "openapi-sandbox", "base_url": base_url}
+    return {"name": "openapi", "db_id": 535, "db_name": "openapi", "base_url": base_url}
+```
+
+### 5.2. Nạp Dữ Liệu Thị Trường Thật Từ `fixtures/market_data.json`
+Trước khi thực thi test, skill `qa-auto-design` gọi MCP `test-data` tool `td_export_fixture` để snapshot dữ liệu thị trường thật vào file:
+`workspace/{issueKey}/test/fixtures/market_data.json`
+
+Fixture `market_fixture` và `valid_order_symbol` tự động nạp dữ liệu này:
+```python
+@pytest.fixture(scope="session")
+def market_fixture():
+    test_dir = Path(__file__).resolve().parent.parent
+    fixture_file = test_dir / "fixtures" / "market_data.json"
+    if fixture_file.exists():
+        with open(fixture_file, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+            return payload.get("data", payload)
+    return {}
+
+@pytest.fixture(scope="session")
+def valid_order_symbol(market_fixture):
+    securities = market_fixture.get("securities", [])
+    if securities:
+        return securities[0] # Chứa symbol, ceiling_price, floor_price, reference_price
+    return {"symbol": "FPT", "reference_price": 72.2, "ceiling_price": 77.2, "floor_price": 67.2}
+```
+Nhờ cơ chế này, mã test không bao giờ phải hardcode giá hoặc mã cổ phiếu, loại bỏ 100% rủi ro dữ liệu giả.

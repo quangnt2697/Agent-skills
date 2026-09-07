@@ -49,7 +49,7 @@ Tổng hợp *-final.md → Handoff to QA (/qa-test-design) or DEV (/tech-spec)
 - BA/PO viết AC = **Checklist** với business rules (WHAT must be true)
 - QA transforms AC = **Gherkin** scenarios với test data (HOW to test)
 - Không overlap: BA viết high-level rules, QA viết low-level test scenarios
-- Chi tiết: `docs/ba-ac-vs-qa-gherkin-overlap-analysis.md`
+- Chi tiết: `docs/architecture/ba-ac-vs-qa-gherkin-overlap-analysis.md`
 
 **Skills:** `ba-spec`, `ba-refine`, `ba-interview-me`, `ba-gap-analysis`, `ba-user-story-writing`, `ba-backlog-prioritization`, `ba-stakeholder-interview`, `ba-process-modeling`, `ba-design-flowchart`
 

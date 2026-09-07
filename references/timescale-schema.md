@@ -5,8 +5,8 @@
 - **Hệ quản trị CSDL:** TimescaleDB (PostgreSQL Extension)
 - **Hạ tầng nội bộ:** `encapital-timescaledb.market-info:5432/market`
 - **Tổng số bảng trong schema public:** `114` bảng
-- **Vị trí file Cache dữ liệu máy (Zero-Latency):** [`.agents/cache/schema-644.json`](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/.agents/cache/schema-644.json)
-- **Tài liệu tham chiếu chuẩn:** [`references/securities-domain-rules.md`](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/references/securities-domain-rules.md)
+- **Vị trí file Cache dữ liệu máy (Zero-Latency):** [`.agents/cache/schema-644.json`](../.agents/cache/schema-644.json)
+- **Tài liệu tham chiếu chuẩn:** [`references/securities-domain-rules.md`](./securities-domain-rules.md)
 
 ---
 

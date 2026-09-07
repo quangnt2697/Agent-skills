@@ -89,3 +89,46 @@ Bạn có thể chạy thử trực tiếp script từ Terminal để kiểm tra
 ```bash
 node .agents/db-mcp.js --test
 ```
+
+---
+
+## 7. Test Data MCP Server (`.agents/test-data-mcp.js`)
+
+Song song với `db-mcp.js` phục vụ truy vấn DB tổng quát, dự án cung cấp `.agents/test-data-mcp.js` (tên MCP: `test-data`) chuyên biệt cho QA/SDET trích xuất test fixture và dữ liệu kiểm thử chứng khoán chuẩn xác từ TimescaleDB (DB ID: 644) và OpenAPI (DB 535 / 655):
+
+### 7.1. Danh Sách Tools Khả Dụng
+
+| Tool Name | Tham số | Mục đích & Mô tả |
+| :--- | :--- | :--- |
+| `td_get_market_snapshot` | `symbols_per_board`, `markets`, `boards`, `date`, `include_groups` | Lấy snapshot thị trường: phiên hiện tại + N mã mỗi board/sàn (trần/sàn/TC, tổng KL/GT, tick gần nhất). |
+| `td_get_price_limits` | `symbol` *(string, required)*, `date` *(optional)* | Lấy giá trần, sàn, tham chiếu thật của 1 mã từ `security_definition_v3`. |
+| `td_get_security_info` | `symbol` *(string, required)* | Lấy thông tin niêm yết chứng khoán (sàn HOSE/HNX/UPCOM, board G1/G4, giá trần/sàn). |
+| `td_get_order_book` | `symbol` *(string, required)*, `date` *(optional)*, `table_version` *(v3/v2)* | **Sổ lệnh thị trường (Market Depth):** Lấy **tất cả các bước giá chào mua (`bid`) và chào bán (`offer`)** hiện có của mã từ `krx_mdds_v3_top_prices`. |
+| `td_get_personal_orders` | `account_no`, `symbol`, `status`, `environment` *(openapi/openapi-sandbox)*, `limit` | **Sổ lệnh cá nhân (Personal Orders):** Lấy danh sách lệnh đặt thực tế của tài khoản từ DB `openapi` (535) hoặc `openapi-sandbox` (655). |
+| `td_get_api_key_sample` | `environment` *(openapi/openapi-sandbox)*, `limit` | Lấy mẫu API credentials kiểm thử từ DB `openapi` (535) hoặc `openapi-sandbox` (655). |
+| `td_get_market_indices` | `index_code` *(optional)*, `date` *(optional)*, `table_version` *(v3/v2)* | Lấy chỉ số thị trường (VN-Index, VN30, UPCOM...) từ `krx_mdds_v3_market_indices`. |
+| `td_get_tick_samples` | `symbol` *(string, required)*, `date` *(optional)*, `limit` *(default: 10)* | Lấy mẫu dữ liệu khớp lệnh tick thực tế từ `krx_mdds_v3_ticks`. |
+| `td_get_session_flags` | `market` *(optional)*, `date` *(optional)* | Lấy cờ phiên giao dịch KRX hiện tại (AA1=ATO, BB1=Liên tục, BC1=ATC...). |
+| `td_export_fixture` | `issueKey` *(required)*, `data` *(required)*, `filename` *(default: 'market_data')* | Xuất fixture test data chuẩn hóa dạng JSON vào `workspace/{issueKey}/test/fixtures/`. |
+
+### 7.2. Cơ Chế Điều Hướng Môi Trường (Smart Environment Routing)
+Hệ thống tự động phân giải database OpenAPI dựa trên URL hoặc tham số môi trường (`resolveOpenApiDatabase`):
+- **OpenAPI Sandbox (DB ID: 655 - `openapi-sandbox`):** Khi tham số hoặc `BASE_URL` là:
+  - Tên môi trường: `'sandbox'`, `'openapi-sandbox'`
+  - URL Sandbox: `'https://sb-openapi.dnse.com.vn'`, `'https://sb-openapi-uat.dnse.com.vn'` (hoặc bất kỳ URL nào chứa `sb-openapi` / `sandbox`).
+- **OpenAPI UAT / Production (DB ID: 535 - `openapi`):** Khi tham số hoặc `BASE_URL` là:
+  - Tên môi trường: `'openapi'`
+  - URL UAT / Production: `'https://openapi-uat.dnse.com.vn'`, `'https://openapi.dnse.com.vn'`
+  - Khi không truyền, truyền rỗng `''` hoặc `null` $\rightarrow$ Tự động fallback về **`openapi` (ID: 535)**.
+
+### 7.3. Kiểm Tra Nhanh Qua CLI
+```bash
+# In hướng dẫn trợ giúp CLI đầy đủ
+node .agents/test-data-mcp.js --help
+
+# Chạy dry-run kiểm tra kết nối TimescaleDB (644) và OpenAPI
+node .agents/test-data-mcp.js --test
+
+# Kiểm tra chi tiết giá và sổ lệnh của 1 mã cụ thể (VD: FPT)
+node .agents/test-data-mcp.js --symbol FPT --test
+```

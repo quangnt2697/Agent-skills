@@ -632,9 +632,9 @@ Refactor nằm ở "make it right".
 
 ## Xem thêm
 
-- `incremental-implementation` — Baby steps khi code feature mới
+- `dev-incremental-implementation` — Baby steps khi code feature mới
 - `dev-test-driven-development` — TDD (Red-Green-Refactor cycle)
-- `review-code-and-quality` — Code review phát hiện code smells
+- `cr-review-code-and-quality` — Code review phát hiện code smells
 - Martin Fowler's "Refactoring" book — Catalog of 70+ refactorings
 
 

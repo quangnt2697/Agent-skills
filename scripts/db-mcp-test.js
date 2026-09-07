@@ -151,5 +151,18 @@ test('DB MCP Metabase: Phân giải chính xác Database IDs (timescale: 644, op
     assert.equal(getDatabaseName(644), 'timescale');
     assert.equal(getDatabaseName(535), 'openapi');
     assert.equal(getDatabaseName(655), 'openapi-sandbox');
+
+    // 5. Smart Environment Routing (resolveOpenApiDatabase)
+    const { resolveOpenApiDatabase } = require('../.agents/db-mcp.js');
+    assert.equal(resolveOpenApiDatabase('sandbox'), 'openapi-sandbox');
+    assert.equal(resolveOpenApiDatabase('openapi-sandbox'), 'openapi-sandbox');
+    assert.equal(resolveOpenApiDatabase('https://sb-openapi.dnse.com.vn'), 'openapi-sandbox');
+    assert.equal(resolveOpenApiDatabase('https://sb-openapi-uat.dnse.com.vn'), 'openapi-sandbox');
+
+    assert.equal(resolveOpenApiDatabase('openapi'), 'openapi');
+    assert.equal(resolveOpenApiDatabase('https://openapi-uat.dnse.com.vn'), 'openapi');
+    assert.equal(resolveOpenApiDatabase('https://openapi.dnse.com.vn'), 'openapi');
+    assert.equal(resolveOpenApiDatabase(''), 'openapi');
+    assert.equal(resolveOpenApiDatabase(null), 'openapi');
 });
 

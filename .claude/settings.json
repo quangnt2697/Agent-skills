@@ -9,13 +9,6 @@
       "Bash(bash plugins/ba-po/skills/ba-spec/scripts/jira-fetch-pdf.sh:*)",
       "Bash(bash plugins/ba-po/skills/ba-refine/scripts/jira-push-spec.sh:*)",
       "Bash(node plugins/ba-po/skills/ba-design-flowchart/scripts/render.mjs:*)",
-      "Bash(bash skills/qa-test-design/scripts/qa-init.sh:*)",
-      "Bash(bash skills/qa-test-design/scripts/qa-validate.sh:*)",
-      "Bash(bash skills/qa-squash-push/scripts/squash-push.sh:*)",
-      "Bash(bash skills/ba-spec/scripts/jira-auth-check.sh:*)",
-      "Bash(bash skills/ba-spec/scripts/jira-fetch-pdf.sh:*)",
-      "Bash(bash skills/ba-refine/scripts/jira-push-spec.sh:*)",
-      "Bash(node skills/ba-design-flowchart/scripts/render.mjs:*)",
       "Bash(bash hooks/claude/session-start.sh)",
 
       "Bash(pytest:*)",

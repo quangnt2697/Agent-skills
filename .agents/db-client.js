@@ -76,6 +76,23 @@ function getDatabaseName(dbId) {
     return `db-${dbId}`;
 }
 
+/**
+ * Tự động phân giải database OpenAPI dựa trên URL hoặc tên môi trường:
+ * - Nếu chứa 'sandbox' hoặc 'sb-openapi' (sb-openapi.dnse.com.vn, sb-openapi-uat.dnse.com.vn) -> openapi-sandbox (ID: 655)
+ * - Mặc định, rỗng, null, hoặc chứa 'openapi-uat' / 'openapi' -> openapi (ID: 535)
+ */
+function resolveOpenApiDatabase(targetEnvOrUrl) {
+    if (targetEnvOrUrl === null || targetEnvOrUrl === '') {
+        return 'openapi';
+    }
+    const input = targetEnvOrUrl === undefined ? (process.env.BASE_URL || '') : targetEnvOrUrl;
+    const raw = String(input).toLowerCase();
+    if (raw.includes('sandbox') || raw.includes('sb-openapi')) {
+        return 'openapi-sandbox';
+    }
+    return 'openapi';
+}
+
 // ─── 4. Metabase HTTP Client ──────────────────────────────────────────────────
 
 function getMetabaseHeaders() {
@@ -92,6 +109,10 @@ function formatErrorMessage(err) {
     if (!err) return 'Unknown error';
     if (err.name === 'TimeoutError' || err.code === 'UND_ERR_CONNECT_TIMEOUT') {
         return `Timeout — kết nối vượt quá giới hạn thời gian.`;
+    }
+    if (err.errors && Array.isArray(err.errors)) {
+        const msgs = err.errors.map(e => e.message || String(e)).join('; ');
+        return err.code ? `${err.code}: ${msgs}` : msgs;
     }
     return err.message || String(err);
 }
@@ -163,7 +184,7 @@ function sanitizeQuery(sql) {
 
     const statements = stripped.split(';').map(s => s.trim()).filter(Boolean);
     if (statements.length > 1) {
-        return { valid: false, error: 'BẢO VỆ AN TOÀN: Không cho phép nhiều câu lệnh phân tách bằng dấu chấm phẩy.' };
+        return { valid: false, error: 'BẢO VỆ AN TOÀN: không cho phép chạy nhiều câu lệnh cùng lúc (phân tách bằng dấu chấm phẩy).' };
     }
     const stmt = statements[0];
     if (!/^(SELECT|WITH|EXPLAIN|SHOW)\b/i.test(stmt)) {
@@ -217,6 +238,7 @@ module.exports = {
     isMetabaseMode,
     resolveDatabaseId,
     getDatabaseName,
+    resolveOpenApiDatabase,
     // http
     getMetabaseHeaders,
     formatErrorMessage,

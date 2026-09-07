@@ -31,7 +31,7 @@ log_warn()  { echo -e "${YELLOW}⚠️  $1${NC}"; }
 log_error() { echo -e "${RED}❌ $1${NC}"; }
 
 # --- Đọc .env ---
-PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
 PROJECT_ROOT="${PWD}"
 
 if [[ -f "${PLUGIN_DIR}/.env" ]]; then

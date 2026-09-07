@@ -4,7 +4,7 @@ description: "[BA/PO] Phân tích khoảng cách AS-IS vs TO-BE, identify gaps (
 
 **Persona:** BA/PO (Business Analyst / Product Owner)
 
-Kích hoạt skill ba-gap-analysis với BA/PO persona. Đọc `skills/ba-gap-analysis/SKILL.md` để thực hiện đúng workflow.
+Kích hoạt skill ba-gap-analysis với BA/PO persona. Đọc `plugins/ba-po/skills/ba-gap-analysis/SKILL.md` để thực hiện đúng workflow.
 
 $ARGUMENTS có thể chứa:
 - Jira issue key (VD: G3PTP-16584) → Đọc từ `/project-root/workspace/{issueKey}/spec/final.md`

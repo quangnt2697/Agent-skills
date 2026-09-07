@@ -483,7 +483,7 @@ mkdir -p /project-root/workspace/{issueKey}/spec
   - `ba-interview-me` → Collect scoring data (business value, urgency)
 
 - **Downstream (After):**
-  - `planning-and-task-breakdown` → Breakdown prioritized stories thành tasks
+  - `dev-planning-and-task-breakdown` → Breakdown prioritized stories thành tasks
   - `dev-spec-driven-development` → DEV làm stories theo priority order
   - `qa-test-design` → QA design test cases theo priority order
 

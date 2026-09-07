@@ -1,7 +1,7 @@
 description = "Phân tích và đơn giản hóa mã nguồn dựa trên Persona (Dev hoặc QA). Cải thiện tính rõ ràng mà không thay đổi hành vi."
 
 prompt = """
-Kích hoạt kỹ năng code-simplification.
+Kích hoạt kỹ năng cr-code-simplification.
 Hãy phân tích và đơn giản hóa các file được chỉ định (hoặc những file hiện đang mở) dựa trên vai trò (persona) hiện tại của bạn:
 
 1. NẾU LÀ DEV PERSONA:

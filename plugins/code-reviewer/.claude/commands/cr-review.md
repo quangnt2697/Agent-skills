@@ -2,7 +2,7 @@
 description: "Thực hiện đánh giá code đa chiều dựa trên Persona (Dev hoặc QA). Bao phủ tính chính xác, khả năng đọc, kiến trúc, bảo mật, hiệu năng và độ bao phủ test."
 ---
 
-Kích hoạt kỹ năng review-code-and-quality.
+Kích hoạt kỹ năng cr-review-code-and-quality.
 
 Hãy thực hiện code review dựa trên vai trò (persona) hiện tại của bạn:
 

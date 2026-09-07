@@ -21,15 +21,15 @@ Nhiệm vụ cao nhất của bạn là: **Xây dựng, Tối ưu và Đảm b�
 Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn của bạn phải tuân thủ nghiêm ngặt theo các giai đoạn sau:
 
 1. **Thiết kế Kỹ thuật (`/tech-spec`)**: Đọc tài liệu `*-final.md` từ BA, tạo Tech-Spec (áp dụng `dev-spec-driven-development`). Định nghĩa API Contract và Data Model (áp dụng `dev-api-design`).
-2. **Lập Kế hoạch (`/plan`)**: Chia nhỏ công việc thành các task rõ ràng để kiểm soát scope (áp dụng `planning-and-task-breakdown`).
-3. **Tiến hành Code (`/build`)**: Code theo từng bước tăng dần (áp dụng `incremental-implementation`). Tham chiếu chặt chẽ vào tài liệu gốc (`source-driven-development`), tuân thủ chuẩn giao diện (`dev-frontend-engineering`), đảm bảo tính cẩn trọng (`dev-doubt-driven-development`) và luôn đi kèm test (`dev-test-driven-development`).
-4. **Kiểm tra & Sửa lỗi (`/review`)**: Review mã nguồn (`review-code-and-quality`), debug và tự sửa nếu test hỏng (`dev-debugging`), dọn dẹp mã nguồn (`dev-refactoring`).
+2. **Lập Kế hoạch (`/plan`)**: Chia nhỏ công việc thành các task rõ ràng để kiểm soát scope (áp dụng `dev-planning-and-task-breakdown`).
+3. **Tiến hành Code (`/build`)**: Code theo từng bước tăng dần (áp dụng `dev-incremental-implementation`). Tham chiếu chặt chẽ vào tài liệu gốc (`dev-source-driven-development`), tuân thủ chuẩn giao diện (`dev-frontend-engineering`), đảm bảo tính cẩn trọng (`dev-doubt-driven-development`) và luôn đi kèm test (`dev-test-driven-development`).
+4. **Kiểm tra & Sửa lỗi (`/review`)**: Review mã nguồn (`cr-review-code-and-quality`), debug và tự sửa nếu test hỏng (`dev-debugging`), dọn dẹp mã nguồn (`dev-refactoring`).
 5. **Kiểm toán Tự động (`/dev-audit`)**: Quét và tự động sửa các vấn đề bảo mật (`dev-security`), tối ưu hiệu năng (`dev-performance`), tìm bug tiềm ẩn và apply code trực tiếp (`dev-audit-and-fix`).
 
 ## 4. Quy Trình QA Toàn Trình (The QA Pipeline)
 1. **Phân tích Yêu cầu (`/ba-spec`)**: Đọc Jira, phỏng vấn user, tổng hợp thành Đặc tả (`final.md`).
-2. **Thiết kế Kiểm thử (`/qa-test-design`)**: Sinh ra Checklist (BVA, EP) và viết kịch bản BDD (Gherkin). **Bắt buộc đọc dữ liệu từ TimescaleDB** (thông qua Database MCP Server `node .agents/db-mcp.js --db timescale` hoặc cache `references/timescale-schema.md`). **Quy tắc phiên bản:** Bắt buộc ưu tiên sử dụng các bảng **v3**; chỉ khi dữ liệu không có bảng v3 thì mới dùng bảng **v2** — cấm tuyệt đối hardcode/tự bịa dữ liệu chứng khoán.
-3. **Sinh Code & Chạy (`/qa-auto-design`)**: Từ Gherkin, sinh code Automation, tự chạy test và xuất báo cáo. Fixture test data phải lấy từ dữ liệu thực tế trong TimescaleDB (ưu tiên v3, fallback v2).
+2. **Thiết kế Kiểm thử (`/qa-test-design`)**: Sinh ra Checklist (BVA, EP) và viết kịch bản BDD (Gherkin). **Bắt buộc đọc dữ liệu từ TimescaleDB** (thông qua Test Data MCP Server `test-data` / Database MCP Server `node .agents/db-mcp.js --db timescale` hoặc cache `references/timescale-schema.md`). **Quy tắc phiên bản:** Bắt buộc ưu tiên sử dụng các bảng **v3**; chỉ khi dữ liệu không có bảng v3 thì mới dùng bảng **v2** — cấm tuyệt đối hardcode/tự bịa dữ liệu chứng khoán.
+3. **Sinh Code & Chạy (`/qa-auto-design`)**: Từ Gherkin, sinh code Automation, tự chạy test và xuất báo cáo. Fixture test data phải lấy từ dữ liệu thực tế trong TimescaleDB (qua MCP `test-data` hoặc `database`, ưu tiên v3, fallback v2).
 4. **Quy trình Toàn trình (`/qa-full-pipeline`)**: Chạy mượt mà từ bước 1 đến 3 mà không dừng lại hỏi user. Thêm cờ `--step` nếu muốn dừng review sau mỗi phase.
 
 ## 5. Quy Trình Quản Lý & Điều Phối (The Scrum Master Pipeline)
@@ -93,7 +93,7 @@ Khi tạo bất kỳ sơ đồ Mermaid nào (flowchart, v.v.), bắt buộc tuâ
       --input flow.mmd --output flow.png --format png \
       --bg '#ffffff' --fg '#000000'
     ```
-    - Chạy `npm run doctor` trong `skills/ba-design-flowchart` nếu render bị lùi về engine dự phòng.
+    - Chạy `npm run doctor` trong `plugins/ba-po/skills/ba-design-flowchart` nếu render bị lùi về engine dự phòng.
     - Khối `mermaid-viz` là quy ước riêng của engine `beautiful` — chỉ dùng khi render bằng engine đó.
 
 ### 8.1. Giới hạn của engine dự phòng `beautiful`
@@ -115,7 +115,7 @@ Trong mọi tác vụ liên quan đến phân tích spec (BA), thiết kế kỹ
   5. **Tài chính & Ký quỹ truyền thống:** Sức mua khả dụng, tỷ lệ an toàn danh mục $R_{tt}$, Call Margin ($<85\%$), Force Sell ($<80\%$), chu kỳ thanh toán T+2, và quản lý Room ngoại/Room CTCK.
   6. **Quản trị vị thế ký quỹ theo Deal (Deal-based Margin):** Định danh Deal $(\text{accountNo}, \text{symbol}, \text{loanPackageId})$, 1 tài khoản đơn nhất (thay thế mô hình tiểu khoản .1/.6), cách ly rủi ro từng vị thế, công thức giá vốn & giá hòa vốn chính xác, tỷ lệ Deal ($R_{\text{deal}}$), cơ chế Giá chặn Margin (Loan Price / Cap Price), quy trình Call Margin & Smart Order Force Sell theo Deal, và ma trận đồng bộ sự kiện Core/Flex (`txCode`).
   7. **Bắt buộc đọc dữ liệu chứng khoán từ TimescaleDB (DB ID: 644) — Ưu tiên v3 trước, v2 sau:**
-     - Khi thiết kế Checklist kiểm thử, viết kịch bản BDD Gherkin (`.feature`) hoặc tạo code Automation Test (API/UI/WebSocket) liên quan đến chứng khoán, Agent **BẮT BUỘC** phải tra cứu TimescaleDB (qua Database MCP tool hoặc tài liệu cache [references/timescale-schema.md](references/timescale-schema.md) / [`.agents/cache/schema-644.json`](.agents/cache/schema-644.json)).
+     - Khi thiết kế Checklist kiểm thử, viết kịch bản BDD Gherkin (`.feature`) hoặc tạo code Automation Test (API/UI/WebSocket) liên quan đến chứng khoán, Agent **BẮT BUỘC** phải tra cứu TimescaleDB (qua MCP `test-data` [`td_get_market_snapshot`, `td_get_price_limits`...], Database MCP tool [`db_query`] hoặc tài liệu cache [references/timescale-schema.md](references/timescale-schema.md) / [`.agents/cache/schema-644.json`](.agents/cache/schema-644.json)).
      - **Quy tắc phiên bản bắt buộc (V3 > V2):** Luôn ưu tiên sử dụng các bảng **v3**, chỉ khi loại dữ liệu không có bảng v3 thì mới dùng bảng **v2**. Cụ thể:
        + **Dữ liệu khớp lệnh Tick:** Ưu tiên `krx_mdds_v3_ticks`, `krx_mdds_v3_ticks_extra` (fallback `krx_mdds_v2_ticks`, `ticks`).
        + **Sổ lệnh Top 3/10 Giá:** Ưu tiên `krx_mdds_v3_top_prices` (fallback `krx_mdds_v2_top_prices`).

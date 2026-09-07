@@ -35,9 +35,9 @@ Gemini CLI sẽ tự động tiêm (inject) tên và mô tả của skill vào p
 
 ```bash
 # Tạo GEMINI.md chứa các skills cốt lõi làm ngữ cảnh cố định
-cat /path/to/agent-skills/skills/incremental-implementation/SKILL.md > GEMINI.md
+cat /path/to/agent-skills/plugins/dev/skills/dev-incremental-implementation/SKILL.md > GEMINI.md
 echo -e "\n---\n" >> GEMINI.md
-cat /path/to/agent-skills/skills/review-code-and-quality/SKILL.md >> GEMINI.md
+cat /path/to/agent-skills/plugins/code-reviewer/skills/cr-review-code-and-quality/SKILL.md >> GEMINI.md
 ```
 
 Bạn cũng có thể module hóa bằng cách import từ các file riêng biệt:
@@ -46,7 +46,7 @@ Bạn cũng có thể module hóa bằng cách import từ các file riêng bi�
 # Hướng dẫn dự án
 
 @skills/dev-test-driven-development/SKILL.md
-@skills/incremental-implementation/SKILL.md
+@skills/dev-incremental-implementation/SKILL.md
 ```
 
 Sử dụng `/memory show` để kiểm tra ngữ cảnh đã được load, và `/memory reload` để làm mới sau khi thay đổi.
@@ -59,8 +59,8 @@ Sử dụng `/memory show` để kiểm tra ngữ cảnh đã được load, và
 
 Thêm các skills này làm ngữ cảnh cố định cho mọi phiên làm việc:
 
-- `incremental-implementation` — Xây dựng bằng các phần cắt nhỏ có thể xác minh được
-- `review-code-and-quality` — Review 5 phương diện
+- `dev-incremental-implementation` — Xây dựng bằng các phần cắt nhỏ có thể xác minh được
+- `cr-review-code-and-quality` — Review 5 phương diện
 
 ### Gọi Khi Cần (On-Demand với Skills)
 

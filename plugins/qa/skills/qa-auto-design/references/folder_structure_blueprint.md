@@ -15,6 +15,8 @@ workspace/{issueKey}/test/
 ├── {issueKey}.feature                  # Kịch bản BDD Gherkin (sinh bởi qa-test-design)
 ├── .env                                # Task-level config (kế thừa từ Root/Shared & ghi đè riêng)
 ├── pytest.ini                          # Cấu hình test runner chuẩn (pythonpath, log_cli, reporting)
+├── fixtures/                           # Test data fixtures từ TimescaleDB (sinh bởi test-data MCP / td_export_fixture)
+│   └── *.json                          # Dữ liệu snapshot, price limits, tick samples chuẩn hóa
 ├── steps/                              # Toàn bộ mã nguồn thực thi test
 │   ├── conftest.py                     # Root fixtures: nạp env phân tầng, auth token, shared fixture
 │   ├── test_{feature_name}.py          # File test chính (ánh xạ 1-1 với Gherkin scenario)
@@ -51,6 +53,7 @@ Agent **TUYỆT ĐỐI KHÔNG** sinh ra các thư mục không liên quan đến
 | `{issueKey}.feature` | ✅ | ✅ | ✅ | ✅ | Bắt buộc (từ `qa-test-design`) |
 | `.env` | ✅ | ✅ | ✅ | ✅ | Nạp tự động từ Root/Sibling/Template |
 | `pytest.ini` | ✅ | ✅ | ✅ | ✅ | Cấu hình test runner & pythonpath |
+| `fixtures/` | ✅ | ✅ | ✅ | ✅ | Test fixtures từ TimescaleDB (nếu cần test data) |
 | `steps/conftest.py` | ✅ | ✅ | ✅ | ✅ | Fixtures dùng chung toàn task |
 | `steps/test_*.py` | ✅ | ✅ | ✅ | ✅ | File test chính (chứa assert & marks) |
 | `steps/services/` | ✅ | ✅ | ❌ | ❌ | **CẤM** sinh trong Web UI/Mobile trừ khi mock API |

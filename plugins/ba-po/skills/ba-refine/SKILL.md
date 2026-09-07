@@ -385,7 +385,7 @@ Sau khi user chọn hướng đi cuối cùng, thực hiện **3 bước tuần 
 
 Tạo file nháp tại: `/project-root/workspace/{issueKey}/spec/refined-draft.md`
 
-📄 **Template chuẩn:** `skills/ba-refine/templates/jira-description-template.md`
+📄 **Template chuẩn:** `plugins/ba-po/skills/ba-refine/templates/jira-description-template.md`
 
 File template là **skeleton thuần** — mọi dòng trong đó đều là nội dung sẽ lên Jira. Agent copy skeleton, thay các placeholder `[...]` bằng nội dung thật, và **không thêm bất cứ dòng nào của riêng mình** vào đầu/cuối file.
 
@@ -1052,7 +1052,7 @@ Options:
 
 ## Ví dụ Output Chất lượng Cao
 
-Xem `skills/ba-refine/examples.md` để có ví dụ đầy đủ về một phiên refine tốt.
+Xem `plugins/ba-po/skills/ba-refine/examples.md` để có ví dụ đầy đủ về một phiên refine tốt.
 
 **Đặc điểm của session tốt:**
 - Không vội vàng (dành thời gian làm rõ)

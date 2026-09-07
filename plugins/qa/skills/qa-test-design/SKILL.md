@@ -134,7 +134,12 @@ Nếu không có file final.md, hỏi user cung cấp spec, PRD, hoặc mô tả
 6. **Liệt kê danh sách đóng** — khi spec liệt kê một tập hợp hữu hạn, đóng (loại lệnh, trạng thái tài khoản, loại chứng khoán, sàn...), ghi lại TẤT CẢ giá trị rõ ràng. Không lấy mẫu — mỗi giá trị trong danh sách đóng BẮT BUỘC xuất hiện ít nhất 1 lần trong checklist item và 1 dòng Examples.
 7. **Xác định biến thể schema API** — nếu spec mô tả nhiều loại API, hoặc 1 API chấp nhận/trả về các schema khác nhau dựa trên giá trị trường cụ thể (VD: `type`), BẮT BUỘC liệt kê tất cả biến thể schema.
 8. **Xác định Path & Path Parameters** — ghi lại cấu trúc path và các path parameters cần validate.
-9. **Đọc dữ liệu chứng khoán thực tế từ TimescaleDB (DB ID: 644) — Bắt buộc ưu tiên V3, fallback V2:** Nếu tính năng liên quan đến nghiệp vụ chứng khoán (đặt lệnh, tính sức mua, hiển thị bảng giá, khớp lệnh, cảnh báo trần/sàn): BẮT BUỘC sử dụng Database MCP tool (`node .agents/db-mcp.js --describe <table_name> --db timescale`) hoặc tra cứu từ cache `../../../../references/timescale-schema.md` để lấy thông tin thực tế. **Nguyên tắc phiên bản:** Luôn ưu tiên dùng các bảng **v3** (`security_definition_v3`, `krx_mdds_v3_ticks`, `krx_mdds_v3_top_prices`, `krx_mdds_v3_board_events`, `krx_mdds_v3_market_indices`); chỉ khi loại dữ liệu không có bảng v3 tương ứng thì mới dùng bảng **v2** (như giá trần/sàn/tham chiếu trong `krx_mdds_v2_stock_infos`, nến trong `krx_mdds_v2_stock_ohlc`). TUYỆT ĐỐI KHÔNG tự bịa mã chứng khoán không tồn tại hoặc đưa ra các mức giá vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$) trong checklist.
+9. **Đọc dữ liệu chứng khoán thực tế từ TimescaleDB (DB ID: 644) qua Test-Data MCP — Bắt buộc ưu tiên V3, fallback V2:** Nếu tính năng liên quan đến nghiệp vụ chứng khoán (đặt lệnh, tính sức mua, hiển thị bảng giá, khớp lệnh, cảnh báo trần/sàn): BẮT BUỘC sử dụng MCP Server `test-data` (hoặc Database MCP `node .agents/db-mcp.js --db timescale`, tài liệu cache `../../../../references/timescale-schema.md`) để lấy thông tin thực tế:
+    - **Biên độ giá trần/sàn/tham chiếu:** Gọi `td_get_price_limits(symbol)` hoặc `td_get_market_snapshot()` để lấy giá trị biên thật.
+    - **Sổ lệnh thị trường (Market Depth):** Gọi `td_get_order_book(symbol)` để lấy tất cả các bước giá chào mua (`bid`) và chào bán (`offer`) thực tế khi thiết kế test cho Bảng giá/Khớp lệnh.
+    - **Sổ lệnh cá nhân (Personal Orders):** Gọi `td_get_personal_orders(account_no, symbol, status, environment)` để tra cứu trạng thái lệnh của tài khoản trên DB tương ứng (`openapi` [535] hoặc `openapi-sandbox` [655]).
+    - **Cờ phiên KRX:** Gọi `td_get_session_flags()` để lấy mã cờ phiên (`AA1`, `BB1`, `BC1`...).
+    - **Nguyên tắc phiên bản:** Luôn ưu tiên dùng các bảng **v3** (`security_definition_v3`, `krx_mdds_v3_ticks`, `krx_mdds_v3_top_prices`, `krx_mdds_v3_board_events`, `krx_mdds_v3_market_indices`); chỉ khi loại dữ liệu không có bảng v3 tương ứng thì mới dùng bảng **v2** (như `krx_mdds_v2_stock_infos`, `krx_mdds_v2_stock_ohlc`). TUYỆT ĐỐI KHÔNG tự bịa mã chứng khoán không tồn tại hoặc đưa ra các mức giá vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$) trong checklist.
 10. **Nhận diện tính năng WebSocket & Phân tầng Bậc tài khoản (User Tier), Kiểm soát tần suất theo nghiệp vụ:** Khi task có liên quan đến luồng dữ liệu thời gian thực qua WebSocket (bảng giá, sổ lệnh, tick khớp lệnh, nến OHLC, thông báo biến động số dư/lệnh, chat hỗ trợ...):
     - **Hệ thống có chính xác 3 Bậc tài khoản (User Tier):** `normal`, `vip`, `ultimate`.
     - **Quy tắc Phân tầng Nghiệp vụ & Quyền hạn (Đặc tả thuần nghiệp vụ, KHÔNG phụ thuộc file cấu hình kỹ thuật):**
@@ -406,12 +411,13 @@ Feature: <Short title reflecting the behavior area>
   5. *Bảo vệ chống Spam cực hạn:* Kịch bản kiểm tra khi gửi yêu cầu liên tục vượt ngưỡng cực hạn, server chủ động ngắt kết nối do vi phạm chính sách bảo vệ.
   6. *Điều tiết dữ liệu đẩy về khi thị trường biến động mạnh:* Kịch bản xác nhận tần suất đẩy dữ liệu real-time tương ứng với đặc quyền của từng tier (`normal` nhận snapshot gộp, `vip`/`ultimate` nhận dữ liệu tức thời).
 - **Tương tác chéo giữa các trường:** Khi thay đổi trường A ảnh hưởng trường B (VD: đổi giá tính lại sức mua → thay đổi gợi ý khối lượng), bao gồm ít nhất 1 scenario kiểm tra hiệu ứng xuôi chiều lên trường B sau khi sửa trường A.
-- **Dữ liệu kiểm thử chứng khoán thực tế (TimescaleDB Integration — Ưu tiên V3 > V2):** Khi thiết kế bảng `Examples:` hoặc dữ liệu cụ thể trong Scenario (`Given`/`When`/`Then`):
-  - Mọi mã chứng khoán (`symbol`), mức giá (`price`, `ceiling_price`, `floor_price`, `ref_price`) và sổ lệnh BẮT BUỘC phải lấy từ các bảng dữ liệu thực tế trong TimescaleDB, **ưu tiên bảng v3 trước, v2 sau**:
-    + Mã & Niêm yết: `security_definition_v3` (fallback `security_definitions`).
-    + Dữ liệu tick khớp lệnh: `krx_mdds_v3_ticks`, `krx_mdds_v3_ticks_extra` (fallback `krx_mdds_v2_ticks`).
-    + Sổ lệnh Top 3/10: `krx_mdds_v3_top_prices` (fallback `krx_mdds_v2_top_prices`).
-    + Giá trần/sàn/tham chiếu: `krx_mdds_v2_stock_infos` (dùng v2 vì không có v3).
+- **Dữ liệu kiểm thử chứng khoán thực tế (TimescaleDB & Test-Data MCP — Ưu tiên V3 > V2):** Khi thiết kế bảng `Examples:` hoặc dữ liệu cụ thể trong Scenario (`Given`/`When`/`Then`):
+  - Mọi mã chứng khoán (`symbol`), mức giá (`price`, `ceiling_price`, `floor_price`, `ref_price`) và sổ lệnh BẮT BUỘC phải lấy từ MCP `test-data` (kết nối TimescaleDB DB 644, **ưu tiên bảng v3 trước, v2 sau**):
+    + Mã & Niêm yết: Gọi `td_get_security_info` hoặc `td_get_market_snapshot` (từ `security_definition_v3`).
+    + Dữ liệu tick khớp lệnh: Gọi `td_get_tick_samples` (từ `krx_mdds_v3_ticks`).
+    + Sổ lệnh thị trường (Toàn bộ bước giá bid/ask): Gọi `td_get_order_book` (từ `krx_mdds_v3_top_prices`, fallback `krx_mdds_v2_top_prices`).
+    + Sổ lệnh cá nhân: Gọi `td_get_personal_orders` (từ DB `openapi` 535 hoặc `openapi-sandbox` 655).
+    + Giá trần/sàn/tham chiếu: Gọi `td_get_price_limits` (từ `security_definition_v3`).
   - Kiểm thử giá trị biên (BVA) cho đặt lệnh phải dựa trên giá trần/sàn/tham chiếu thật:
     + Giá hợp lệ: $P_{\text{floor}} \le P \le P_{\text{ceiling}}$ và chia hết cho `tick_size`.
     + Biên trên ngoài dải: $P_{\text{ceiling}} + \text{tick\_size}$ (Hệ thống phải từ chối).
@@ -741,10 +747,10 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 ## Xem thêm
 
 - Tham khảo `references/qa-testing-checklist.md` cho các mẫu validation domain tài chính, bảng BVA, phân vùng tương đương, và quy ước viết
-- Nếu đã có spec, dùng yêu cầu từ `spec-driven-development` làm đầu vào cho Giai đoạn 1
+- Nếu đã có spec, dùng yêu cầu từ `dev-spec-driven-development` làm đầu vào cho Giai đoạn 1
 - Để import và phân tích Jira task trước khi thiết kế test, dùng `ba-spec`
 - Để sinh code automation test từ Gherkin file, dùng `qa-auto-design`
-- Để lập kế hoạch và phân rã tasks trước khi thiết kế test, dùng `planning-and-task-breakdown`
+- Để lập kế hoạch và phân rã tasks trước khi thiết kế test, dùng `dev-planning-and-task-breakdown`
 
 
 

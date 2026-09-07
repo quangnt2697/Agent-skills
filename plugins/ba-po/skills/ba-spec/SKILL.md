@@ -375,11 +375,8 @@ Nếu user trả lời "không biết" hoặc "cần confirm với team khác":
 ⚠️ **LƯU Ý QUAN TRỌNG VỀ ĐƯỜNG DẪN:**
 Luôn tạo file output tại ĐÚNG đường dẫn cấu trúc `/project-root/workspace/{issueKey}/spec/final.md` (tương đối từ thư mục gốc của dự án `${CLAUDE_PROJECT_DIR}`). TUYỆT ĐỐI KHÔNG lưu file với tên `{issueKey}-final.md` ngay tại thư mục gốc của dự án.
 
-### Bước kiểm tra trước khi ghi đè (Overwrite check):
-Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem file `/project-root/workspace/{issueKey}/spec/final.md` (hoặc đối với Confluence là `/project-root/workspace/{keyword}/spec/final.md`) đã tồn tại trong dự án chưa.
-- Nếu đã tồn tại, Agent **BẮT BUỘC** hỏi người dùng: "File `/project-root/workspace/{issueKey}/spec/final.md` đã tồn tại. Bạn có muốn ghi đè lên file cũ bằng bản tổng hợp mới không? (Yes/No)".
-- Nếu User chọn "No", Agent không ghi đè, giữ nguyên file cũ, và **bắt buộc tiếp tục tự động** sang bước tiếp theo của luồng (vd: chuyển sang kỹ năng `/qa-test-design` hoặc `/tech-spec`).
-- Nếu User chọn "Yes" (hoặc file chưa tồn tại), Agent tiến hành tạo/ghi đè file output theo template dưới đây.
+### Ghi đè file output (Overwrite policy):
+Nếu file `/project-root/workspace/{issueKey}/spec/final.md` (hoặc `/project-root/workspace/{keyword}/spec/final.md`) đã tồn tại, Agent tự động cập nhật/ghi đè bản tổng hợp mới nhất mà không dừng hỏi (tuân thủ `.claude/rules/autonomy-contract.md`), sau đó tự động chuyển tiếp sang bước tiếp theo của luồng.
 
 ### Template header (chung cho tất cả loại task)
 ```markdown
@@ -391,8 +388,8 @@ Trước khi tạo/ghi đè file output, Agent **BẮT BUỘC** kiểm tra xem f
 **Assignee:** <Assignee> | **Reporter:** <Reporter>
 **Labels:** <Labels> | **Sprint:** <Sprint>
 **Ngày trích xuất:** <Date>
-**Source PDF:** [{issueKey}.pdf](./source/{issueKey}.pdf)
-**Tài liệu tham chiếu:** [Xem danh sách](./source/metadata.json)
+**Source PDF:** [{issueKey}.pdf](../source/{issueKey}.pdf)
+**Tài liệu tham chiếu:** [Xem danh sách](../source/metadata.json)
 ```
 
 ### Sections 2–8 thay đổi theo loại task

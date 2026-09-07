@@ -2,7 +2,7 @@
 description: "Chia nhỏ công việc thành các task nhỏ có thể kiểm chứng được, kèm theo tiêu chí nghiệm thu và thứ tự phụ thuộc"
 ---
 
-Kích hoạt kỹ năng planning-and-task-breakdown.
+Kích hoạt kỹ năng dev-planning-and-task-breakdown.
 
 Đọc bản đặc tả (spec) hiện có và các phần liên quan của codebase. Sau đó:
 

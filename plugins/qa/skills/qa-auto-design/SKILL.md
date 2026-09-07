@@ -215,14 +215,16 @@ Do UI test thường chưa có sẵn Page Objects, Agent viết mới các class
      - `@pytest.mark.jira("{issueKey}")`
      - Docstring BDD trích dẫn nguyên văn Given/When/Then tương ứng từ file `.feature`.
 
-9. **Dữ liệu Fixture Chứng Khoán Thực Tế Từ TimescaleDB (Ưu tiên V3 > V2):**
+9. **Dữ liệu Fixture Chứng Khoán Thực Tế Từ Test-Data MCP (Ưu tiên V3 > V2):**
    - Đối với các test case liên quan đến nghiệp vụ chứng khoán (đặt lệnh LO/MP, hủy sửa lệnh, tính margin/sức mua, kiểm tra trần/sàn, streaming tick MDDS):
-     - **BẮT BUỘC** lấy fixture từ dữ liệu chứng khoán thực tế trong TimescaleDB (qua DB MCP `node .agents/db-mcp.js --describe <table_name> --db timescale` hoặc tra cứu tài liệu cache `../../../../references/timescale-schema.md`).
+     - **BẮT BUỘC** gọi tool `td_export_fixture` của MCP `test-data` để kết xuất dữ liệu snapshot thị trường vào file `workspace/{issueKey}/test/fixtures/market_data.json` trước khi sinh code.
+     - Trong file test, sử dụng các fixture chuẩn `valid_order_symbol`, `order_book_fixture`, và `target_environment` từ `conftest.py` thay vì hardcode giá/mã trong code test.
      - **Ưu tiên bảng V3 trước, V2 sau:**
-       + Mã chứng khoán & Niêm yết: Lấy từ `security_definition_v3` (fallback `security_definitions`, `symbols`).
-       + Khớp lệnh tick: Lấy từ `krx_mdds_v3_ticks`, `krx_mdds_v3_ticks_extra` (fallback `krx_mdds_v2_ticks`).
-       + Sổ lệnh Top 3/10: Lấy từ `krx_mdds_v3_top_prices` (fallback `krx_mdds_v2_top_prices`).
-       + Giá trần (`ceiling_price`), sàn (`floor_price`), tham chiếu (`reference_price`), bước giá: Lấy từ `krx_mdds_v2_stock_infos` (dùng v2 do không có v3).
+       + Mã chứng khoán & Niêm yết: Lấy từ `security_definition_v3` (fallback `security_definitions`).
+       + Khớp lệnh tick: Lấy từ `krx_mdds_v3_ticks` (fallback `krx_mdds_v2_ticks`).
+       + Sổ lệnh thị trường (Toàn bộ bước giá bid/ask): Lấy từ `krx_mdds_v3_top_prices` (qua `td_get_order_book`, fallback `krx_mdds_v2_top_prices`).
+       + Giá trần, sàn, tham chiếu: Lấy từ `security_definition_v3` (qua `td_get_price_limits`).
+       + Sổ lệnh cá nhân: Lấy từ DB tương ứng `openapi` (535) hoặc `openapi-sandbox` (655) qua `td_get_personal_orders`.
      - Tuyệt đối KHÔNG hardcode mã giả hoặc các mức giá vô lý (ví dụ: giá vượt trần/sàn) làm lệch lạc kết quả kiểm thử.
 
 ### Bước 6: Review Code (Quality Gate)

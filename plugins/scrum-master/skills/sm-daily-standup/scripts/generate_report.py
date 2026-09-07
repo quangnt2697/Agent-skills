@@ -26,15 +26,15 @@ def main():
     parser.add_argument("--project-root", required=True, help="Path to the project root directory")
     args = parser.parse_args()
 
-    project_root = args.project_root
+    project_root = os.path.abspath(args.project_root)
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    plugin_dir = os.path.dirname(script_dir) # sm-daily-standup is the plugin dir in this context? No, plugin_dir is agent-skills.
-    # Actually, script is in plugin_dir/skills/sm-daily-standup/scripts/generate_report.py
-    # So plugin_dir is 3 levels up
-    plugin_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
+    # repo_root is 5 levels up: scripts -> sm-daily-standup -> skills -> scrum-master -> plugins -> repo_root
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))))
 
-    # 1. Read config
-    config_path = os.path.join(plugin_root, "sm-config.yaml")
+    # 1. Read config: look in project_root first, fallback to repo_root
+    config_path = os.path.join(project_root, "sm-config.yaml")
+    if not os.path.exists(config_path):
+        config_path = os.path.join(repo_root, "sm-config.yaml")
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
@@ -52,8 +52,8 @@ def main():
     current_sprint_end = current_sprint_start + datetime.timedelta(days=duration_days - 1)
     day_in_sprint = days_since_anchor - (sprint_index * duration_days) + 1
 
-    # Load ENVs
-    env_vars = load_env(os.path.join(plugin_root, ".env"))
+    # Load ENVs: repo_root .env then project_root .env
+    env_vars = load_env(os.path.join(repo_root, ".env"))
     project_env = load_env(os.path.join(project_root, ".env"))
     env_vars.update(project_env) # Override with project env
 

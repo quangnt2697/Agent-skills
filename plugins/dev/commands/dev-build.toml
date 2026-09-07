@@ -1,7 +1,7 @@
 description = "Triển khai các task một cách tăng dần — viết test, code, xác minh. Thêm \"auto\" để chạy toàn bộ kế hoạch trong một lần duyệt. Tự động tạo feature branch, chỉ commit & merge SAU KHI user approve."
 
 prompt = """
-Kích hoạt kỹ năng incremental-implementation (triển khai tăng dần).
+Kích hoạt kỹ năng dev-incremental-implementation (triển khai tăng dần).
 
 Lấy task chưa hoàn thành tiếp theo từ kế hoạch hiện tại (ví dụ: /project-root/workspace/{issueKey}/tech/plan.md). Sau đó:
 

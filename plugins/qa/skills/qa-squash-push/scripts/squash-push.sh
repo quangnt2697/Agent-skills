@@ -68,7 +68,7 @@ load_env_file() {
     done < "$file"
 }
 
-PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
 PROJECT_ROOT="${PWD}"
 
 if [[ -f "${PLUGIN_DIR}/.env" ]]; then

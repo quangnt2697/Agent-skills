@@ -76,9 +76,9 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 - Confidence level
 
 **Gate Check:**
-- If confidence ≥ 90% → Continue
-- If confidence < 90% → Ask user
-- If has critical gaps → STOP (run ba-interview-me)
+- File `final.md` tồn tại và không rỗng → Continue
+- Ghi nhận Confidence level vào báo cáo (không chặn luồng)
+- Nếu có câu hỏi 🔴 Critical thay đổi bản chất nghiệp vụ → Dừng hỏi user theo `autonomy-contract.md` mục 2.3
 
 ---
 
@@ -96,8 +96,8 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 - Confidence level
 
 **Gate Check:**
-- If confidence ≥ 90% AND all BR covered → Continue
-- If confidence < 90% OR missing BR → Ask user
+- File `tech-spec.md` tồn tại và không rỗng → Continue
+- Ghi nhận Confidence level vào báo cáo (không chặn luồng)
 
 ---
 
@@ -115,13 +115,13 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 **Gate Check:**
 - If coverage ≥ 90% → Continue
-- If coverage < 90% → STOP, fix gaps, re-run Phase 2
+- If coverage < 90% → Tự bổ sung gaps vào Tech-Spec rồi chạy tiếp
 
 ---
 
-### Phase 4: planning-and-task-breakdown (DEV) — Plan
+### Phase 4: dev-planning-and-task-breakdown (DEV) — Plan
 
-**Invoke:** Skill `planning-and-task-breakdown`
+**Invoke:** Skill `dev-planning-and-task-breakdown`
 
 **Input:** Tech-Spec từ Phase 2
 
@@ -134,7 +134,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 ---
 
-### Phase 5: incremental-implementation (DEV) — Build
+### Phase 5: dev-incremental-implementation (DEV) — Build
 
 **Invoke:** `/build auto`
 
@@ -148,7 +148,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 **Gate Check:**
 - If build success + no syntax errors → Continue
-- If build fails → STOP, fix, re-run Phase 5
+- If build fails → Tự sửa lỗi và chạy lại
 
 ---
 
@@ -161,8 +161,8 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 - Test coverage report
 
 **Gate Check:**
-- If coverage ≥ 80% AND all tests pass → Continue
-- If coverage < 80% OR tests fail → Ask user
+- All tests pass → Continue
+- If tests fail → Tự debug và sửa test (tối đa 3 vòng theo `autonomy-contract.md`)
 
 ---
 
@@ -226,7 +226,6 @@ Sau khi hoàn thành 8 phases thành công:
 🎉 **E2E Delivery COMPLETED Successfully**
 
 **Issue:** JIRA-123 — Order Management System
-**Mode:** Semi-Auto
 **Total Duration:** 26 phút 40 giây
 **Overall Confidence:** 94% (High)
 

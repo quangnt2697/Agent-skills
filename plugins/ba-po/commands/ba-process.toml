@@ -3,7 +3,7 @@ description = "[BA/PO] Vẽ Business Process diagram (BPMN, flowchart, swim lane
 prompt = """
 **Persona:** BA/PO (Business Analyst / Product Owner)
 
-Kích hoạt skill ba-process-modeling với BA/PO persona. Đọc `skills/ba-process-modeling/SKILL.md` để thực hiện đúng workflow.
+Kích hoạt skill ba-process-modeling với BA/PO persona. Đọc `plugins/ba-po/skills/ba-process-modeling/SKILL.md` để thực hiện đúng workflow.
 
 $ARGUMENTS có thể chứa:
 - Process name (VD: "Đặt lệnh cổ phiếu")
