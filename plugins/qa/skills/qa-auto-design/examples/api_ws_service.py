@@ -5,22 +5,30 @@
 # NGUYÊN TẮC QUAN TRỌNG:
 # - Các class/model trong file này CHỈ LÀ VÍ DỤ MINH HOẠ cấu trúc.
 # - Khi triển khai thực tế, Agent BẮT BUỘC phải:
-#   1. Quét workspace để tìm code API/WS đã có sẵn (Rule 1.2)
-#   2. Import trực tiếp code của developer thay vì viết lại
-#   3. Tạo Pydantic model dựa trên spec/Jira thực tế, KHÔNG copy mẫu này
+#   1. Pre-generation Code Recon: Quét workspace để tìm module Auth, Token, và WebSocket Client đã có sẵn (Rule 9)
+#   2. Import trực tiếp code của developer thay vì viết lại từ đầu
+#   3. TUYỆT ĐỐI KHÔNG MOCK TRÊN UAT: Bắt buộc gọi trực tiếp BASE_URL (openapi-uat) và WS_URL (ws-openapi-uat)
+#   4. FULL REQUEST/RESPONSE LOGGING: Bọc qua LoggingSession / TestLogCollector để ghi lại đầy đủ
+#      payload & response của 100% test case (cả PASSED và FAILED) vào test-output.log và report.md.
+#   5. ORDER STATE MACHINE E2E (Rule 10): Khi test event lệnh, kết hợp API đặt lệnh + WebSocket subscribe +
+#      ORS Admin Execution Report (POST /ors/accounts/{accountNo}/orders/{orderId}/reports) để verify chuỗi event.
+#   6. Tạo Pydantic model dựa trên spec/Jira thực tế, KHÔNG copy mẫu này
+
 #
 # ==========================================================
 
 
 # ============================
-# PHẦN 1: CÁCH TÌM VÀ TÁI SỬ DỤNG CODE CÓ SẴN
+# PHẦN 1: CÁCH TÌM VÀ TÁI SỬ DỤNG CODE CÓ SẴN (CODE RECON GATE)
 # ============================
 #
-# Trước khi viết bất kỳ class nào, Agent cần thực hiện:
+# Trước khi viết bất kỳ class nào, Agent BẮT BUỘC thực hiện:
 #
-# Bước 1: Quét workspace
-#   - Tìm file `.py` chứa `requests`, `httpx`, `websockets`...
-#   - Tìm file có tên liên quan đến task Jira
+# Bước 1: Quét workspace bằng tool grep_search / list_dir
+#   - Quét Auth & Signature: tìm các hàm login, get_token, HMAC SHA256 signer
+#   - Quét API Client: tìm file `.py` chứa `requests`, `httpx`
+#   - Quét WebSocket Client: tìm file chứa `websockets`, `websocket-client`, hàm `subscribe`, `msgpack`
+#   - Tìm file có tên liên quan đến task Jira:
 #     VD: task G3PTP-16810 về "event order" → tìm folder *websocket*,
 #         file *order*, *event_order*...
 #

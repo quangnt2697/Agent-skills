@@ -66,11 +66,46 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - Self-fix Loop chỉ dùng để sửa **lỗi kỹ thuật của script** (ImportError, SyntaxError, fixture thiếu, timeout config sai, connection refused...).
 - **KHÔNG ĐƯỢC sửa code để ép test case từ FAIL thành PASS.** Nếu test case FAIL vì ứng dụng/API trả kết quả sai so với spec → đó là kết quả hợp lệ, ghi nhận vào báo cáo, KHÔNG can thiệp.
 
-### 1.10. Capture Request/Response (API & WebSocket)
-- Khi test API/WS, test script phải được thiết kế hoặc sử dụng log/interceptor để **bắt được toàn bộ thông tin Request đã gửi và Response thực tế trả về**.
-- Các thông tin này bắt buộc phải được đưa vào báo cáo (`report.md`) theo template để QA/BA và Dev có thể debug trực tiếp từ báo cáo mà không cần chạy lại test.
+### 1.10. Ghi Log Chi Tiết Toàn Bộ Payload & Response (Passed & Failed)
+- **BẮT BUỘC cho 100% Test Case:** Toàn bộ test case API và WebSocket — **bất kể kết quả là ✅ PASSED hay ❌ FAILED** — đều phải được hệ thống logging/interceptor ghi nhận chi tiết đầy đủ thông tin:
+  - **Với HTTP/REST API:**
+    + Timestamp thực hiện
+    + HTTP Method & Full Request URL (bao gồm path params và query params)
+    + Request Headers (masking sensitive tokens nhưng giữ nguyên định dạng)
+    + Request Payload / Body (JSON formatted)
+    + HTTP Status Code & Status Text (VD: `200 OK`, `400 Bad Request`)
+    + Response Time / Latency (ms)
+    + Response Headers
+    + Full Response Body (JSON formatted)
+  - **Với WebSocket:**
+    + Timestamp kết nối & Full WS URL kèm query/auth params
+    + Outgoing Messages: Action, Channel/Topic, Payload JSON
+    + Inbound Events: Channel/Topic, Timestamp, Full Event Payload JSON
+    + Thời gian chờ/nhận event (ms)
+- **Đầu ra log:**
+  1. Ghi có cấu trúc vào file `workspace/{issueKey}/test/result/test-output.log` với divider rõ ràng: `================ [TESTCASE: {test_name}] [RESULT: PASSED/FAILED] ===============`.
+  2. Xuất đầy đủ vào mục **Chi tiết Request & Response** trong báo cáo `workspace/{issueKey}/test/result/report.md` cho từng testcase để QA, BA và Dev có thể audit và debug trực tiếp mà không cần chạy lại test.
+- **CẤM TUYỆT ĐỐI:** Chỉ log khi test failed hoặc chỉ in log chung chung một dòng status code.
 
-### 1.11. Liên kết Kịch bản Gherkin Chặt chẽ (Gherkin Traceability Binding)
+### 1.11. Tuyệt Đối Không Mock Server Trên UAT (Real Base URLs Only)
+- **NGHIÊM CẤM MOCK TRÊN MÔI TRƯỜNG UAT:** Khi viết auto test script cho OpenAPI (REST API) hoặc WebSocket trên môi trường UAT / Sandbox, Agent **TUYỆT ĐỐI KHÔNG** được sử dụng mock server, mock client, hoặc thư viện giả lập (như `unittest.mock`, `pytest-mock`, `respx`, `responses`, `aioresponses`, WireMock, hay local mock websocket server).
+- **Mục tiêu của Automation Test:** Xác thực tính tương thích, độ trễ, handshake SSL và nghiệp vụ thực tế trên hệ thống backend UAT thật. Việc mock server làm mất hoàn toàn giá trị kiểm thử hệ thống (System Integration Testing).
+- **Ép buộc trỏ Real Base URLs:**
+  - REST API: Bắt buộc gọi trực tiếp `BASE_URL` (`https://openapi-uat.dnse.com.vn` hoặc sandbox) từ `.env`.
+  - WebSocket: Bắt buộc kết nối trực tiếp `WS_URL` (`wss://ws-openapi-uat.dnse.com.vn`) từ `.env`.
+- **Quality Gate:** Mọi test script chứa mock adapter, decorator `@patch` vào tầng HTTP client, hoặc dựng fake server sẽ bị đánh trượt Quality Gate ngay lập tức.
+
+### 1.12. Pre-generation Code Reconnaissance Gate (Quét Tận Dụng Code Có Sẵn)
+- Đối với các task OpenAPI (REST API hoặc WebSocket), trước khi sinh bất kỳ code test nào, Agent **BẮT BUỘC** phải thực hiện bước quét mã nguồn (Code Recon) trong toàn bộ workspace/repository:
+  1. **Quét Auth & Token:** Tìm các file chứa logic đăng nhập, tạo token, quản lý refresh token, hàm ký HMAC/SHA256 signature (`auth`, `token`, `login`, `sign`, `signature`).
+  2. **Quét WebSocket Client & Channels:** Tìm WebSocket client, connection manager, helper `subscribe`/`unsubscribe`, hàm decode/unpack msgpack (`websocket`, `ws_client`, `subscribe`, `channel`).
+  3. **Quét Enums & Constants:** Tìm các file định nghĩa tên channel, topic, loại lệnh, error code (`channels.py`, `constants.py`, `enums.py`).
+- **Quy tắc tái sử dụng bắt buộc:**
+  - Import và sử dụng trực tiếp các class, helper, function đã tìm thấy.
+  - Chỉ viết thêm class con kế thừa hoặc wrapper method nhỏ khi code có sẵn thiếu chức năng cụ thể.
+  - **TUYỆT ĐỐI CẤM** tự viết lại từ đầu các module client/auth mà codebase đã có.
+
+### 1.13. Liên kết Kịch bản Gherkin Chặt chẽ (Gherkin Traceability Binding)
 - Mỗi test function trong file `test_*.py` **BẮT BUỘC** phải có:
   1. Decorator `@pytest.mark.scenario("<Tên scenario chính xác trong .feature>")`
   2. Decorator `@pytest.mark.jira("{issueKey}")`
@@ -141,6 +176,15 @@ Mỗi Test Case API **BẮT BUỘC** thực hiện đủ **7 bước assertions:
 4. **Data Isolation (Tính cô lập):** User A chỉ nhận event của User A, tuyệt đối không nhận data của User B.
 5. **Trạng thái gián đoạn (Disruption):** Test luồng ngắt kết nối (mất mạng) và xác nhận hành vi hệ thống (có hoặc không replay event đã mất).
 6. **Async Testing & Fail-fast:** BẮT BUỘC dùng `@pytest.mark.asyncio` và bọc `await asyncio.wait_for(ws.receive_event(), timeout=5.0)` để fail-fast nếu không có event sau 5s. TUYỆT ĐỐI CẤM dùng `asyncio.sleep()` hay `time.sleep()` để chờ thụ động.
+7. **Kiểm Thử Luồng Chuyển Trạng Thái Lệnh E2E (Order & Conditional Order State Machine Testing):**
+   - **Mô hình Trigger - Listen - Verify:** Đối với các task liên quan đến event trạng thái lệnh (`order_events`, `conditional_orders`), Agent **TUYỆT ĐỐI KHÔNG** chỉ nghe thụ động hoặc mock dữ liệu. BẮT BUỘC thiết kế kịch bản kiểm thử E2E:
+     1. Mở kết nối WebSocket và Subscribe kênh lệnh (`orders`, `order_events` hoặc `conditional_orders`) cho tài khoản test (`account_no`).
+     2. Kích hoạt hành động qua REST API (đặt lệnh thường, đặt lệnh điều kiện, sửa lệnh, hủy lệnh, hoặc tạo lệnh đối ứng).
+     3. Đón nhận và xác thực từng event WebSocket bắn về theo đúng máy trạng thái (FSM) và JSON Schema (Pydantic model).
+   - **Bao phủ đầy đủ cả 2 nhóm lệnh:**
+     + **Lệnh Thường (Normal Orders — kênh `order_events`):** `PendingNew` $\rightarrow$ `New`, `PendingReplace` $\rightarrow$ `Replaced`, `PendingCancel` $\rightarrow$ `Cancelled`, `PartiallyFilled` & `Filled` (qua API Bắn Báo Cáo Khớp Lệnh ORS Admin UAT), `Rejected` (15 mã lỗi ORS), `WaitToConfirm` (lệnh thỏa thuận 2F).
+     + **Lệnh Điều Kiện (Conditional Orders — kênh `conditional_orders`):** `NEW` $\rightarrow$ `ACTIVATED` (qua Kỹ thuật Tự Tạo Tick Thị Trường Bằng Lệnh Đối Ứng hoặc In-the-Money Trigger), `CANCELLED`, `CANCELLED_AFTER_TRIGGER`, `REJECTED` khi kích hoạt (rút cạn sức mua), `CANCELLED_BY_RIGHTS_EVENT`, `OCO`.
+   - **📖 Cẩm nang chi tiết & kỹ thuật gọi API:** Xem toàn bộ quy trình và kịch bản gọi API cụ thể tại [order_state_testing.md](order_state_testing.md).
 
 ---
 

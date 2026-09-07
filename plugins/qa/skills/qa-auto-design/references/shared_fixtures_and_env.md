@@ -234,3 +234,27 @@ def valid_order_symbol(market_fixture):
     return {"symbol": "FPT", "reference_price": 72.2, "ceiling_price": 77.2, "floor_price": 67.2}
 ```
 Nhờ cơ chế này, mã test không bao giờ phải hardcode giá hoặc mã cổ phiếu, loại bỏ 100% rủi ro dữ liệu giả.
+
+### 5.3. Fixture Quản Trị ORS Admin Giả Lập Khớp Lệnh (`ors_admin_client`)
+Để kiểm thử các trạng thái `PartiallyFilled` và `Filled` trên UAT mà không phụ thuộc vào matching engine của sàn, `conftest.py` cung cấp fixture `ors_admin_client`:
+
+```python
+@pytest.fixture(scope="session")
+def ors_admin_client(test_log_collector):
+    """
+    Tự động kết nối tới ORS Admin UAT để bắn Execution Reports:
+    - ORS_ADMIN_URL: https://api-uat.dnse.com.vn (Login lấy JWT)
+    - ORS_FO_URL: https://api-fo-uat.dnse.com.vn:
+        + Cơ sở: /ors/accounts/{accountNo}/orders/{orderId}/reports
+        + Phái sinh: /ors-derivative/accounts/{accountNo}/orders/{orderId}/reports
+    """
+    admin_url = os.getenv("ORS_ADMIN_URL", "https://api-uat.dnse.com.vn")
+    fo_url = os.getenv("ORS_FO_URL", "https://api-fo-uat.dnse.com.vn")
+    username = os.getenv("ORS_ADMIN_USERNAME", "dnse.admin@dnse.com.vn")
+    password = os.getenv("ORS_ADMIN_PASSWORD", "@dmin$1234")
+
+    client = OrsAdminClient(admin_url=admin_url, fo_url=fo_url, collector=test_log_collector)
+    client.login(username=username, password=password)
+    return client
+```
+

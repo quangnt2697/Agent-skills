@@ -29,7 +29,24 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 ## 4. Quy Trình QA Toàn Trình (The QA Pipeline)
 1. **Phân tích Yêu cầu (`/ba-spec`)**: Đọc Jira, phỏng vấn user, tổng hợp thành Đặc tả (`final.md`).
 2. **Thiết kế Kiểm thử (`/qa-test-design`)**: Sinh ra Checklist (BVA, EP) và viết kịch bản BDD (Gherkin). **Bắt buộc đọc dữ liệu từ TimescaleDB** (thông qua Test Data MCP Server `test-data` / Database MCP Server `node .agents/db-mcp.js --db timescale` hoặc cache `references/timescale-schema.md`). **Quy tắc phiên bản:** Bắt buộc ưu tiên sử dụng các bảng **v3**; chỉ khi dữ liệu không có bảng v3 thì mới dùng bảng **v2** — cấm tuyệt đối hardcode/tự bịa dữ liệu chứng khoán.
-3. **Sinh Code & Chạy (`/qa-auto-design`)**: Từ Gherkin, sinh code Automation, tự chạy test và xuất báo cáo. Fixture test data phải lấy từ dữ liệu thực tế trong TimescaleDB (qua MCP `test-data` hoặc `database`, ưu tiên v3, fallback v2).
+3. **Sinh Code & Chạy (`/qa-auto-design`)**: Từ Gherkin, sinh code Automation, tự chạy test và xuất báo cáo.
+   - **Tuyệt đối Không Mock trên UAT (Real Base URLs Only):** Bắt buộc kết nối trực tiếp vào `BASE_URL` (`https://openapi-uat.dnse.com.vn` hoặc sandbox) và `WS_URL` (`wss://ws-openapi-uat.dnse.com.vn`) kế thừa từ `.env`. NGHIÊM CẤM dựng mock server, fake client hoặc dùng `unittest.mock`/`respx`.
+   - **Pre-generation Code Recon Gate:** Trước khi viết code, BẮT BUỘC quét mã nguồn codebase để tìm và tái sử dụng trực tiếp module Auth/Login, Token management, HMAC Signature, và WebSocket Client / Channel Subscription helper có sẵn.
+   - **Kiểm Thử Chuyển Trạng Thái Lệnh (Order State Transitions) — Lệnh Thường & Lệnh Điều Kiện:**
+     + **Lệnh thường (Normal Orders):** Khi test event lệnh, bắt buộc thiết kế kịch bản song hành: Gọi API Đặt lệnh (`POST /orders`) $\rightarrow$ Lắng nghe event `New` trên WebSocket $\rightarrow$ Kích hoạt chuyển trạng thái:
+       * `Cancelled`: Gọi `DELETE /orders/{orderId}`.
+       * `Replaced`: Gọi `PUT /orders/{orderId}` (giảm khối lượng hoặc sửa giá hợp lệ).
+       * `PartiallyFilled` & `Filled`: Bắt buộc sử dụng **API Bắn Báo Cáo Khớp Lệnh ORS Admin UAT** — kiểm tra loại lệnh để gọi đúng gateway: **Cơ sở** (`POST https://api-fo-uat.dnse.com.vn/ors/accounts/{accountNo}/orders/{orderId}/reports`) hoặc **Phái sinh** (`POST https://api-fo-uat.dnse.com.vn/ors-derivative/accounts/{accountNo}/orders/{orderId}/reports`). Truyền `lastQuantity < orderQuantity` để kích hoạt `PartiallyFilled`, truyền đủ `lastQuantity == orderQuantity` để kích hoạt `Filled`. (Dự phòng: Cặp tài khoản đối ứng UAT nếu sàn bật auto-match).
+
+       * `Rejected`: Cố tình vi phạm biên độ (vượt trần/sàn) hoặc sai bước giá/lô lẻ để nhận mã lỗi ORS tương ứng.
+
+       * `WaitToConfirm`: Gọi lệnh thỏa thuận 2F (`POST /negotiation-orders`) chỉ định tài khoản đối ứng chờ xác nhận.
+     + **Lệnh điều kiện (Conditional Orders):** Đặt lệnh qua API (`POST /conditional-orders`) $\rightarrow$ Lắng nghe event `NEW` trên channel `conditional_orders` $\rightarrow$ Giả lập chuyển trạng thái:
+       * `CANCELLED`: Gọi `DELETE /conditional-orders/{orderId}` khi còn ở trạng thái `NEW`.
+       * `ACTIVATED`: Tự tạo tick thị trường (Self-Market Tick Generation) qua User B và User C khớp chéo tại mức giá kích hoạt $P_{\text{trigger}}$ (hoặc đặt Stop In-The-Money theo $P_{\text{last}}$) $\implies$ In-memory Evaluator quét tick khớp $\implies$ Bắn event `ACTIVATED` trên `conditional_orders` đồng thời sinh Target Order `New` trên `order_events`.
+       * `CANCELLED_AFTER_TRIGGER`: Sau khi `ACTIVATED`, gọi `DELETE /orders/{targetOrderId}` để hủy lệnh thường trên sàn $\implies$ Lệnh điều kiện đồng bộ sang `CANCELLED_AFTER_TRIGGER`.
+       * `REJECTED`: Đặt lệnh điều kiện Stop Mua, sau đó rút cạn sức mua ($PP0 \rightarrow 0$) bằng lệnh thường khác. Khi tick kích hoạt xuất hiện, ORS từ chối lệnh đích vì thiếu tiền $\implies$ Bắn event `REJECTED`.
+   - Fixture test data phải lấy từ dữ liệu thực tế trong TimescaleDB (qua MCP `test-data` hoặc `database`, ưu tiên v3, fallback v2).
 4. **Quy trình Toàn trình (`/qa-full-pipeline`)**: Chạy mượt mà từ bước 1 đến 3 mà không dừng lại hỏi user. Thêm cờ `--step` nếu muốn dừng review sau mỗi phase.
 
 ## 5. Quy Trình Quản Lý & Điều Phối (The Scrum Master Pipeline)
@@ -41,7 +58,7 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 ## 6. Chuẩn Mực Đầu Ra (Output Standards)
 - **Ngôn ngữ:** Mọi tài liệu (Spec, Checklist, Kịch bản, Báo cáo) BẮT BUỘC viết bằng Tiếng Việt rõ ràng, mạch lạc.
 - **Truy vết (Traceability):** Test case phải map 1-1 với Checklist và Spec. Báo cáo cuối cùng phải có ma trận truy vết (End-to-End Traceability).
-- **Log Lỗi:** Trong báo cáo test API/WebSocket, bắt buộc in ra Request/Response để debug.
+- **Ghi Log Chi Tiết Toàn Bộ (Full Payload & Response Logging):** Trong mọi test run API/WebSocket, BẮT BUỘC ghi nhận đầy đủ Method, URL, Headers, Request Body, Status Code, Latency, và Response Body của **100% test case (CẢ PASSED VÀ FAILED)** vào `test-output.log` và bảng trong `report.md`. NGHIÊM CẤM chỉ log chung chung hoặc chỉ log khi fail.
 - **Dữ liệu Kiểm Thử Chứng Khoán Thật:** Mọi checklist, kịch bản Gherkin (`.feature`) và automation script liên quan đến chứng khoán BẮT BUỘC đọc từ TimescaleDB (DB 644 / `references/timescale-schema.md`). Bắt buộc ưu tiên dùng bảng **v3**, chỉ dùng **v2** khi không có bảng v3 tương ứng. Không dùng mã giả định hoặc giá trần/sàn phi thực tế.
 
 ## 7. Tự Chủ & Chủ Động

@@ -4,9 +4,12 @@ File mẫu: Automation Test cho REST API — 7 Assertions chuẩn
 NGUYÊN TẮC QUAN TRỌNG:
   - File này là VÍ DỤ MINH HOẠ cấu trúc 7 assertions.
   - Khi triển khai thực tế, Agent BẮT BUỘC phải:
-    1. Tái sử dụng class Service/Client đã có trong workspace
-    2. Tạo Pydantic Model từ spec/Jira thực tế, KHÔNG copy model mẫu này
-    3. Đọc credentials từ .env, KHÔNG hardcode
+    1. Pre-generation Code Recon: Quét codebase để tái sử dụng module Auth/Token/Client có sẵn
+    2. TUYỆT ĐỐI KHÔNG MOCK TRÊN UAT: Bắt buộc gọi trực tiếp BASE_URL (https://openapi-uat.dnse.com.vn)
+    3. GHI LOG ĐẦY ĐỦ 100%: Tích hợp LoggingSession để ghi lại toàn bộ Request Payload & Response Body
+       của TẤT CẢ các test case (cả PASSED và FAILED) vào test-output.log và report.md.
+    4. Tạo Pydantic Model từ spec/Jira thực tế, KHÔNG copy model mẫu này
+    5. Đọc credentials từ .env, KHÔNG hardcode
 
 Sơ đồ 7 assertions cho mỗi test case API:
   [1] Request Schema  → validate payload trước khi gửi
@@ -67,27 +70,22 @@ class ExampleErrorResponse(BaseModel):
 
 class ExampleOrderService:
     """
-    Ví dụ Service Object. Trong thực tế Agent BẮT BUỘC tìm và import
+    Ví dụ Service Object tích hợp LoggingSession. Trong thực tế Agent BẮT BUỘC tìm và import
     class Service đã có sẵn trong project thay vì viết lại class này.
 
     Ví dụ:
         from src.services.order_api import OrderAPI   # <- dùng cái này
     """
-    def __init__(self, base_url: str, api_key: str):
-        import requests
-        self._session = requests.Session()
-        self._session.headers.update({
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        })
+    def __init__(self, base_url: str, session):
+        self._session = session
         self._base_url = base_url
 
     def create_order(self, payload: dict) -> tuple:
         """
         Gửi request và trả về (status_code, body, headers, elapsed_ms).
+        Tự động ghi nhận đầy đủ Request Payload & Response Body vào test-output.log qua LoggingSession.
         Service KHÔNG assert.
         """
-        import requests
         start = time.perf_counter()
         resp = self._session.post(f"{self._base_url}/api/v1/orders", json=payload)
         elapsed_ms = (time.perf_counter() - start) * 1000
@@ -96,6 +94,12 @@ class ExampleOrderService:
         except Exception:
             body = {}
         return resp.status_code, body, dict(resp.headers), elapsed_ms
+
+
+@pytest.fixture
+def api_service(base_url, api_session):
+    """Fixture cung cấp service gắn trực tiếp với LoggingSession và Real Base URL UAT."""
+    return ExampleOrderService(base_url=base_url, session=api_session)
 
 
 # ==========================================================
@@ -192,15 +196,16 @@ class TestCreateOrderAPI:
     @pytest.mark.jira("JIRA-123")
     @pytest.mark.security
     @pytest.mark.negative
-    def test_create_order_unauthorized(self, base_url):
+    def test_create_order_unauthorized(self, base_url, test_log_collector):
         """
         Given người dùng không có API Key hợp lệ
         When gọi API tạo lệnh không có header Authorization
         Then hệ thống trả về HTTP 401 Unauthorized
         """
-        import requests
+        from conftest_template import LoggingSession
         start = time.perf_counter()
-        resp = requests.post(f"{base_url}/api/v1/orders", json={
+        unauth_session = LoggingSession(collector=test_log_collector)
+        resp = unauth_session.post(f"{base_url}/api/v1/orders", json={
             "symbol": "VNM", "side": "BUY", "quantity": 100, "price": 50_000.0
         })
         elapsed_ms = (time.perf_counter() - start) * 1000

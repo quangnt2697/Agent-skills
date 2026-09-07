@@ -14,14 +14,19 @@ Tài liệu này là **Single Source of Truth** dùng chung cho toàn bộ 7 Per
    - 1.4. Bảng Bước Giá (Tick Size) & Làm Tròn (Rounding)
    - 1.5. Đơn Vị Giao Dịch & Quy Tắc Lô (Lot Size)
    - 1.6. Chu Kỳ Thanh Toán & Dòng Tiền (Settlement T+2)
-2. [CẤP ĐỘ 2 (TRUNG CẤP): Phiên Giao Dịch, Cờ Phiên & Lệnh Đặt](#2-cấp-độ-2-trung-cấp-phiên-giao-dịch-cờ-phiên--lệnh-đặt)
+2. [CẤP ĐỘ 2 (TRUNG CẤP): Phiên Giao Dịch, Cờ Phiên & Các Loại Lệnh Đặt](#2-cấp-độ-2-trung-cấp-phiên-giao-dịch-cờ-phiên--các-loại-lệnh-đặt)
    - 2.1. Khung Thời Gian & Lịch Trình Các Phiên
    - 2.2. Bảng Mã Cờ Phiên Chuẩn KRX (BoardEventID & SessionID)
-   - 2.3. Các Loại Lệnh Giao Dịch & Ma Trận Hiệu Lực Theo Phiên
-   - 2.4. Quy Tắc Sửa Lệnh & Hủy Lệnh (Amend & Cancel)
-3. [CẤP ĐỘ 3 (TRUNG CẤP): Vòng Đời Lệnh & Lệnh Điều Kiện](#3-cấp-độ-3-trung-cấp-vòng-đời-lệnh--lệnh-điều-kiện)
-   - 3.1. Máy Trạng Thái Vòng Đời Lệnh (Order State Machine)
-   - 3.2. Lệnh Điều Kiện & Quản Lý Rủi Ro (Conditional Orders)
+   - 2.3. Các Loại Lệnh Khớp Lệnh Cơ Sở (LO, ATO, ATC, MP, MTL, MOK, MAK, PLO)
+   - 2.4. Lệnh Giao Dịch Thỏa Thuận (Negotiation Orders - 1F & 2F)
+   - 2.5. Lệnh Phái Sinh & Quản Trị Vị Thế Hợp Đồng Tương Lai (Derivatives Orders)
+   - 2.6. Quy Chuẩn Sửa Lệnh & Hủy Lệnh Chi Tiết (Amend & Cancel Rules)
+3. [CẤP ĐỘ 3 (TRUNG CẤP): Vòng Đời Lệnh, Trạng Thái & Lệnh Điều Kiện](#3-cấp-độ-3-trung-cấp-vòng-đời-lệnh-trạng-thái--lệnh-điều-kiện)
+   - 3.1. Máy Trạng Thái Vòng Đời Lệnh Toàn Trình (Order State Machine)
+   - 3.2. Bảng Ánh Xạ Trạng Thái Lệnh Đa Tầng (Core/ORS, OpenAPI, WS Event & Sổ Lệnh UI)
+   - 3.3. Danh Mục 15 Mã Lỗi Đặt Lệnh ORS & Quy Tắc Xử Lý Frontend/Backend
+   - 3.4. Cơ Chế Tự Động Fallback Lệnh 24/7 (Session-Active & Symbol-Active)
+   - 3.5. Hệ Thống Lệnh Điều Kiện Chuyên Sâu (Conditional Order Engine)
 4. [CẤP ĐỘ 4 (NÂNG CAO): Quản Lý Biến Động & Tạm Ngừng Giao Dịch Khẩn Cấp](#4-cấp-độ-4-nâng-cao-quản-lý-biến-động--tạm-ngừng-giao-dịch-khẩn-cấp)
    - 4.1. Tạm Ngừng Từng Chứng Khoán (Instrument Halt - EI8/EI1/EI9)
    - 4.2. Tạm Ngừng Toàn Thị Trường (Market Halt - AE8/AE1/BE9)
@@ -167,82 +172,235 @@ Hệ thống MDDS của KRX bắn realtime các event thay đổi trạng thái 
 | **CD1** | `PCA Open` | Mở phiên định kỳ nhiều đợt (cho cổ phiếu bị Hạn chế giao dịch) | `80` |
 | **CD3** | `PCA Execution` | Khớp lệnh định kỳ nhiều đợt (15 phút/lần: 09:30, 09:45...) | `80` |
 
-### 2.3. Các Loại Lệnh Giao Dịch & Ma Trận Hiệu Lực Theo Phiên
+### 2.3. Các Loại Lệnh Khớp Lệnh Cơ Sở (LO, ATO, ATC, MP, MTL, MOK, MAK, PLO)
 
-| Loại Lệnh | Định Nghĩa Nghiệp Vụ | Phiên Cho Phép | Đặc Tính Khớp & Hủy |
-|:---|:---|:---|:---|
-| **LO** (Limit Order) | Lệnh giới hạn: Mua với giá $\le$ giá đặt, Bán với giá $\ge$ giá đặt | ATO, Liên tục, ATC | Có hiệu lực cả ngày cho đến khi khớp hết hoặc bị hủy |
-| **ATO** | Lệnh giao dịch tại giá mở cửa | Chỉ phiên ATO | Ưu tiên trước lệnh LO. Khối lượng chưa khớp tự động bị hủy sau phiên |
-| **ATC** | Lệnh giao dịch tại giá đóng cửa | Chỉ phiên ATC | Ưu tiên trước lệnh LO. Khối lượng chưa khớp tự động bị hủy sau phiên |
-| **MP** (Market Price) | Lệnh thị trường trên HoSE: Mua tại giá bán thấp nhất, Bán tại giá mua cao nhất | Khớp lệnh liên tục | Nếu chưa khớp hết, phần còn lại chuyển thành lệnh LO tại mức giá tiếp theo |
-| **MTL** (Market to Limit) | Lệnh thị trường trên HNX | Khớp lệnh liên tục | Phần chưa khớp chuyển thành lệnh LO tại mức giá khớp cuối cùng |
-| **MOK** (Match or Kill) | Lệnh khớp toàn bộ hoặc hủy trên HNX | Khớp lệnh liên tục | Nếu không khớp toàn bộ khối lượng ngay lập tức thì lệnh bị hủy ngay |
-| **MAK** (Match and Kill) | Lệnh khớp và hủy phần còn lại trên HNX | Khớp lệnh liên tục | Khớp một phần, phần còn lại lập tức bị hủy bỏ |
-| **PLO** (Post Limit Order) | Lệnh khớp sau giờ trên HNX | Phiên PLO (14:45-15:00) | Chỉ khớp tại mức giá đóng cửa ATC vừa xác định |
+#### 1. Ma Trận Hiệu Lực Lệnh Theo Sàn & Phiên Giao Dịch
 
-### 2.4. Quy Tắc Sửa Lệnh & Hủy Lệnh (Amend & Cancel)
+| Loại Lệnh | Tên Nghiệp Vụ & Mô Tả | Sàn Áp Dụng | Phiên Cho Phép | Quy Tắc Nhập Giá & Khối Lượng | Đặc Tính Khớp & Hủy |
+|:---|:---|:---:|:---:|:---|:---|
+| **LO** (Limit Order) | Lệnh giới hạn: Mua với giá $\le$ giá đặt, Bán với giá $\ge$ giá đặt | HoSE, HNX, UPCoM | ATO, Liên tục, ATC | **Bắt buộc nhập giá** trong biên độ [Sàn, Trần] và đúng bước giá | Hiệu lực trong suốt ngày giao dịch cho đến khi khớp hết hoặc hết phiên/hủy |
+| **ATO** (At-the-Opening) | Lệnh khớp tại giá mở cửa | HoSE (STO) | 09:00 - 09:15 | **Disable ô giá**, hệ thống tự động gán giá ATO | Ưu tiên khớp trước lệnh LO. Phần chưa khớp tự động hủy khi hết phiên ATO |
+| **ATC** (At-the-Closing) | Lệnh khớp tại giá đóng cửa | HoSE, HNX | 14:30 - 14:45 | **Disable ô giá**, hệ thống tự động gán giá ATC | Ưu tiên khớp trước lệnh LO. Phần chưa khớp tự động hủy khi hết phiên ATC |
+| **MP** (Market Price) | Lệnh thị trường HoSE | HoSE (STO) | Khớp liên tục | **Disable ô giá**, mua tại giá bán thấp nhất, bán tại giá mua cao nhất | Nếu chưa khớp hết, phần còn lại tự động chuyển thành lệnh LO tại mức giá kế tiếp |
+| **MTL** (Market to Limit) | Lệnh thị trường chuyển sang giới hạn | HNX, HoSE (*) | Khớp liên tục | **Disable ô giá**, khớp theo giá tốt nhất của đối ứng | Phần chưa khớp hết chuyển thành lệnh LO tại mức giá khớp cuối cùng |
+| **MOK** (Match or Kill) | Lệnh khớp toàn bộ hoặc hủy | HNX (STX) | Khớp liên tục | **Disable ô giá**, khớp toàn bộ khối lượng ngay tức thì | Nếu không khớp toàn bộ khối lượng ngay lập tức thì hệ thống hủy lệnh tức thì |
+| **MAK** (Match and Kill) | Lệnh khớp và hủy phần còn lại | HNX (STX) | Khớp liên tục | **Disable ô giá**, khớp tối đa khối lượng có thể | Phần khối lượng còn lại chưa khớp lập tức bị hủy bỏ |
+| **PLO** (Post Limit Order) | Lệnh khớp sau giờ | HNX (STX) | 14:45 - 15:00 | **Disable ô giá**, hệ thống tự động lấy Giá đóng cửa ATC | Khớp ngay khi có lệnh đối ứng cùng mức giá đóng cửa. Cấm sửa/hủy |
 
-1. **Quy tắc bất khả xâm phạm tại phiên ATO và ATC (HoSE):**
-   * **TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP SỬA HOẶC HỦY LỆNH** (kể cả lệnh LO hay lệnh ATO/ATC) trong suốt phiên định kỳ mở cửa (`09:00 - 09:15`) và đóng cửa (`14:30 - 14:45`).
-2. **Quy tắc trong phiên khớp lệnh liên tục:**
-   * Chỉ được sửa/hủy khối lượng **chưa khớp**.
-   * **Sửa giảm khối lượng:** Giữ nguyên độ ưu tiên về thời gian.
-   * **Sửa tăng khối lượng hoặc sửa giá:** Mất quyền ưu tiên thời gian cũ, lệnh được xếp lại độ ưu tiên thời gian tại thời điểm sửa.
-3. **Quy tắc phiên PLO:** Không được sửa hoặc hủy lệnh PLO sau khi đã đặt.
+> (*) **Ghi chú chuẩn hóa HoSE:** DNSE đã chuẩn hóa việc hỗ trợ lệnh MTL trên sàn HoSE để thay thế/bổ trợ cho lệnh MP truyền thống, tăng tính nhất quán trên nền tảng giao dịch.
+
+#### 2. Quy Tắc Khối Lượng Tối Đa & Ràng Buộc Form Đặt Lệnh
+* **Khối lượng tối đa 1 lệnh (`maxQuantityPerOrder`):**
+  * Sàn HoSE: Tối đa **500,000 cổ phiếu / lệnh**.
+  * Sàn HNX & UPCoM: Không giới hạn trần khối lượng cho 1 lệnh (chỉ bị giới hạn bởi sức mua / sức bán khả dụng).
+* **Quy tắc Validate Frontend (Form Đặt Lệnh):**
+  * Với các lệnh thị trường (`ATO`, `ATC`, `MP`, `MTL`, `MOK`, `MAK`, `PLO`): Ô nhập giá bị vô hiệu hóa (`disable`), giá trị lệnh tạm tính hiển thị là `-` (do giá khớp phụ thuộc vào khớp lệnh thị trường).
+  * Với lệnh `LO`: Ô nhập giá bắt buộc phải có dữ liệu, nằm trong khoảng $[FloorPrice, CeilingPrice]$ và tuân thủ đúng bước giá (tick size).
 
 ---
 
-## 3. CẤP ĐỘ 3 (TRUNG CẤP): Vòng Đời Lệnh & Lệnh Điều Kiện
+### 2.4. Lệnh Giao Dịch Thỏa Thuận (Negotiation Orders - 1F & 2F)
 
-### 3.1. Máy Trạng Thái Vòng Đời Lệnh (Order State Machine)
+Giao dịch thỏa thuận thực hiện trên bảng T1 (Lô chẵn) hoặc T4 (Lô lẻ), không tham gia vào sổ lệnh khớp liên tục của Sở:
 
+| Loại Lệnh Thỏa Thuận | Tên Gọi & Đặc Điểm | Quy Trình Khởi Tạo & Xác Nhận | Trạng Thái Lệnh Tương Ứng |
+|:---|:---|:---|:---|
+| **Lệnh 1F (1 Firm)** | Thỏa thuận 1 bên (Quảng cáo chào mua / chào bán) | Bên khởi tạo gửi lệnh lên Sở (Mua hoặc Bán). Bên đối ứng quét thấy lệnh, tiến hành chấp thuận (`Accept`) hoặc từ chối (`Reject`). | Khởi tạo: `PendingNew`<br>Xác nhận: `Accepting`<br>Từ chối: `Rejecting`<br>Hủy: `PendingCancel` |
+| **Lệnh 2F (2 Firms)** | Thỏa thuận 2 bên (Đã có sẵn đối tác cụ thể) | Hai bên mua và bán thống nhất trước mã, giá, khối lượng và số tài khoản đối ứng. Cả 2 bên cùng nhập lệnh đối ứng vào hệ thống. | Khởi tạo: `PendingNew`<br>Chờ đối ứng: `WaitToConfirm` (confirmation-request)<br>Khớp: `Filled`<br>Hủy: `Cancelled` |
+
+* **Quy cách lô & biên độ thỏa thuận:**
+  * Khối lượng tối thiểu: HoSE từ **20,000 CP** trở lên; HNX/UPCoM từ **5,000 CP** trở lên.
+  * Mức giá thỏa thuận: Nằm trong biên độ Trần/Sàn của ngày, **không bắt buộc phải chia hết cho bước giá (tick size)**.
+
+---
+
+### 2.5. Lệnh Phái Sinh & Quản Trị Vị Thế Hợp Đồng Tương Lai (Derivatives Orders)
+
+Giao dịch Hợp đồng tương lai Chỉ số (VN30F) trên sàn HNX Derivative (`DVX`):
+
+1. **Loại lệnh áp dụng:** Cho phép `LO`, `MTL`, `MOK`, `MAK`, `ATC`.
+2. **Chiều vị thế:**
+   * Mua (`NB`): Mua mở vị thế Long (nếu chưa có vị thế hoặc đang có vị thế Long) HOẶC Mua đóng vị thế Short (nếu đang Short).
+   * Bán (`NS`): Bán mở vị thế Short HOẶC Bán đóng vị thế Long.
+3. **Các trường cọc quản trị tài sản Phái sinh:**
+   * `orderSecure`: Tiền cọc tạm giữ cho các lệnh đang treo chờ khớp trên sổ lệnh.
+   * `dealSecure`: Tiền cọc thực tế đang sử dụng cho các vị thế (Deal) đang mở.
+   * `holdOvernightSecure`: Tỷ lệ/số tiền cọc bổ sung bắt buộc khi duy trì vị thế phái sinh qua đêm (tránh rủi ro gap giá ATO hôm sau).
+4. **Ràng buộc Ngày Đáo Hạn (`DeListedDate`):** Mọi lệnh phái sinh (kể cả lệnh điều kiện nhiều ngày GTD) không được phép có thời hạn vượt quá ngày thứ Năm của tuần thứ 3 trong tháng đáo hạn của hợp đồng.
+
+---
+
+### 2.6. Quy Chuẩn Sửa Lệnh & Hủy Lệnh Chi Tiết (Amend & Cancel Rules)
+
+#### 1. Ma Trận Điều Kiện Sửa Lệnh (Replace Order Rules - Chuẩn ORS/OpenAPI)
+
+| Tiêu Chí Kiểm Tra | Trường Hợp Cho Phép Sửa (Pass) | Trường Hợp Bị Từ Chối (Reject) |
+|:---|:---|:---|
+| **Trạng Thái Lệnh Hiện Tại** | **CHỈ** khi lệnh đang ở trạng thái `New` hoặc `PartiallyFilled` | Khi lệnh ở trạng thái: `Filled`, `Rejected`, `PendingNew`, `PendingReplace`, `PendingCancel`, `Cancelled`, `Expired` |
+| **Loại Lệnh & Phiên** | **CHỈ** cho phép sửa lệnh **`LO` trong Phiên Khớp Lệnh Liên Tục** | Sửa lệnh LO ngoài phiên liên tục (phiên ATO, ATC, ngoài giờ); Hoặc sửa bất kỳ lệnh thị trường nào (`ATO`, `ATC`, `MP`, `MTL`, `MOK`, `MAK`, `PLO`) |
+| **Khối Lượng Sửa (`newQuantity`)** | Bắt buộc: $\mathbf{newQuantity > filledQuantity}$ (Khối lượng mới phải lớn hơn khối lượng đã khớp) | Khối lượng mới $\le$ khối lượng đã khớp ($\mathbf{newQuantity \le filledQuantity}$) |
+| **Mức Giá Sửa (`newPrice`)** | $\text{FloorPrice} \le newPrice \le \text{CeilingPrice}$ và đúng bước giá sàn | Mức giá nằm ngoài biên độ trần/sàn hoặc sai bước giá (lẻ tick size) |
+| **Ràng Buộc Sức Mua / Sức Bán** | - Mua (NB): $newQuantity \le qmaxBuy$ (tính lại theo giá mới)<br>- Bán (NS): $newQuantity \le tradeQuantity$ (khả dụng) | Khối lượng mới hoặc giá mới làm vượt quá sức mua/bán khả dụng của tài khoản |
+| **Điều Chỉnh Đồng Thời** | Cho phép sửa riêng Giá HOẶC riêng Khối lượng; Nếu sửa cả hai phải đồng thời thỏa mãn sức mua và biên độ | Sửa cả Giá và Khối lượng vượt quá sức mua/bán |
+
+#### 2. Quy Tắc Ưu Tiên Thời Gian Khi Sửa Lệnh
+* **Sửa GIẢM khối lượng:** Khối lượng giảm đi được cắt bớt trực tiếp, **giữ nguyên độ ưu tiên về thời gian** xếp hàng tại SGDCK của phần khối lượng còn lại.
+* **Sửa TĂNG khối lượng HOẶC SỬA GIÁ:** Lệnh cũ bị hủy và phát sinh một lệnh mới với độ ưu tiên thời gian được tính lại tại thời điểm SGDCK tiếp nhận lệnh sửa $\implies$ **Mất toàn bộ quyền ưu tiên thời gian cũ**.
+
+#### 3. Quy Tắc Bất Khả Xâm Phạm Về Hủy Lệnh
+* **Phiên ATO (09:00 - 09:15) và Phiên ATC (14:30 - 14:45) trên HoSE:** **TUYỆT ĐỐI CẤM SỬA VÀ CẤM HỦY** đối với 100% các loại lệnh (kể cả lệnh LO đặt từ trước hoặc lệnh ATO/ATC).
+* **Phiên PLO trên HNX (14:45 - 15:00):** **TUYỆT ĐỐI CẤM HỦY** lệnh PLO sau khi đã được hệ thống tiếp nhận.
+* Chỉ cho phép hủy phần khối lượng **chưa khớp** của lệnh đang ở trạng thái `New` hoặc `PartiallyFilled`.
+
+---
+
+## 3. CẤP ĐỘ 3 (TRUNG CẤP): Vòng Đời Lệnh, Trạng Thái & Lệnh Điều Kiện
+
+### 3.1. Máy Trạng Thái Vòng Đời Lệnh Toàn Trình (Order State Machine)
+
+Hệ thống giao dịch (OMS/ORS, Gateway Sở và OpenAPI) vận hành máy trạng thái hữu hạn (FSM) chặt chẽ cho từng vòng đời lệnh:
+
+```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+flowchart LR
+    Step1["1. Client đặt lệnh (REST/OpenAPI)"] --> Step2["2. Pending (Chờ ORS thẩm định)"]
+    Step2 --> Step3["3. PendingNew (Chờ xác nhận Sở)"]
+    Step3 -->|"Sở chấp nhận"| Step4["4. New (Vào sổ lệnh chờ khớp)"]
+    Step3 -->|"Lỗi validate/Sở reject"| StepRejected["Rejected (Từ chối)"]
+    
+    Step4 -->|"Khớp 1 phần"| StepPartFilled["5. PartiallyFilled (Khớp 1 phần)"]
+    Step4 -->|"Khớp toàn bộ"| StepFilled["Filled (Đã khớp hoàn toàn)"]
+    StepPartFilled -->|"Khớp hết phần còn lại"| StepFilled
+    
+    Step4 -->|"Gửi yêu cầu Sửa"| StepPendRep["PendingReplace (Chờ sửa)"]
+    StepPartFilled -->|"Gửi yêu cầu Sửa"| StepPendRep
+    StepPendRep -->|"Sở xác nhận sửa"| StepReplaced["Replaced (Đã sửa)"]
+    
+    Step4 -->|"Gửi yêu cầu Hủy"| StepPendCan["PendingCancel (Chờ hủy)"]
+    StepPartFilled -->|"Gửi yêu cầu Hủy"| StepPendCan
+    StepPendCan -->|"Sở xác nhận hủy"| StepCancelled["Cancelled (Đã hủy)"]
+    
+    Step4 -->|"Hết phiên 15:00"| StepExpired["Expired (Hết hiệu lực)"]
+    StepPartFilled -->|"Hết phiên 15:00"| StepExpired
+    
+    StepReplaced -.-> Step4
+    StepPendRep -.->|"Sở từ chối sửa"| Step4
+    StepPendCan -.->|"Sở từ chối hủy"| Step4
 ```
-                       [Đặt lệnh từ Client]
-                                 │
-                                 ▼
-                         ┌──────────────┐
-                         │  PendingNew  │
-                         └───────┬──────┘
-                   Thành công    │    Lỗi Validate/Sở từ chối
-               ┌─────────────────┴─────────────────┐
-               ▼                                   ▼
-        ┌──────────────┐                    ┌──────────────┐
-        │     New      │                    │   Rejected   │
-        └──────┬───────┘                    └──────────────┘
-               │
-    ┌──────────┴───────────────────────────┐
-    │ Khớp một phần                        │ Hủy lệnh
-    ▼                                      ▼
-┌──────────────────┐               ┌──────────────┐
-│  PartiallyFilled │               │  Cancelled   │
-└────────┬─────────┘               └──────────────┘
-         │ Khớp hết phần còn lại           ▲
-         ▼                                 │ Hủy phần còn lại
-┌──────────────────┐                       │
-│      Filled      │───────────────────────┘
-└──────────────────┘
+
+* **Nguyên tắc bất biến của các trạng thái kết thúc (Terminal States):**
+  * Các trạng thái `Filled`, `Cancelled`, `Rejected`, `Expired` là **trạng thái cuối cùng (Terminal)**. Một khi lệnh đã chuyển sang một trong các trạng thái này, hệ thống **TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP** chuyển sang bất kỳ trạng thái nào khác.
+  * Mọi yêu cầu sửa hoặc hủy gửi đến lệnh đã ở trạng thái Terminal đều bị từ chối ngay lập tức tại tầng ORS Gateway.
+
+---
+
+### 3.2. Bảng Ánh Xạ Trạng Thái Lệnh Đa Tầng (Multi-Tier Order Status Mapping)
+
+Sự đồng bộ trạng thái xuyên suốt giữa hệ thống Core Brokerage (FIX Protocol), dịch vụ OpenAPI V2, WebSocket Realtime Topic và Giao diện Sổ Lệnh (Web/App UI - Chuẩn hóa theo ticket `G3PTP-7070`, `G3PTP-17152`, `G3PTP-13773`):
+
+| Trạng Thái Core / FIX (Tag 39) | OpenAPI V2 Enum | WebSocket Event Status | Hiển Thị Sổ Lệnh UI | Ý Nghĩa Nghiệp Vụ | Trạng Thái Cuối (Terminal)? |
+|:---:|:---:|:---:|:---:|:---|:---:|
+| `Pending` | `PENDING` | `Pending` | **Chờ gửi** | Lệnh đang được xử lý kiểm tra sức mua, ký số SmartOTP và định tuyến nội bộ | Không |
+| `PendingNew` (A) | `PENDING_NEW` | `PendingNew` | **Chờ khớp** | Lệnh đã gửi sang Gateway của SGDCK, đang chờ bản tin ACK phản hồi | Không |
+| `New` (0) | `NEW` | `New` | **Chờ khớp** | SGDCK đã xác nhận lệnh hợp lệ và xếp vào Sổ lệnh chờ khớp của sàn | Không |
+| `PartiallyFilled` (1) | `PARTIALLY_FILLED` | `PartiallyFilled` | **Khớp 1 phần** | Một phần khối lượng đã khớp thành công, phần còn lại vẫn nằm trên sổ lệnh | Không |
+| `Filled` (2) | `FILLED` | `Filled` | **Đã khớp** | Khớp hoàn toàn $100\%$ khối lượng đặt | **Có** |
+| `PendingReplace` (E) | `PENDING_REPLACE` | `PendingReplace` | **Chờ sửa** | Đang gửi yêu cầu sửa giá/khối lượng lên Sở, chờ xác nhận | Không |
+| `Replaced` (5) | `REPLACED` | `Replaced` | **Chờ khớp** | Sở xác nhận sửa thành công, lệnh mang mức giá hoặc khối lượng mới | Không |
+| `PendingCancel` (6) | `PENDING_CANCEL` | `PendingCancel` | **Chờ hủy** | Đang gửi yêu cầu hủy khối lượng chưa khớp lên Sở, chờ xác nhận | Không |
+| `Cancelled` (4) | `CANCELLED` | `Cancelled` | **Đã hủy** | Sở xác nhận hủy thành công khối lượng chưa khớp | **Có** |
+| `Rejected` (8) | `REJECTED` | `Rejected` | **Bị từ chối** | Lệnh bị từ chối bởi hệ thống quản trị rủi ro ORS hoặc bởi SGDCK (kèm mã lỗi) | **Có** |
+| `Expired` (C) / `DoneForDay` (3) | `EXPIRED` | `Expired` | **Hết hiệu lực** | Lệnh chưa khớp hết thời hạn phiên trong ngày (Gộp chung hiển thị trên UI) | **Có** |
+| `WaitToConfirm` | `WAIT_TO_CONFIRM` | `WaitToConfirm` | **Chờ xác nhận** | Lệnh thỏa thuận 2F đang chờ đối tác nhập lệnh đối ứng xác nhận | Không |
+| `Accepting` | `ACCEPTING` | `Accepting` | **Đang xác nhận** | Bên đối tác đang tiến hành chấp thuận lệnh thỏa thuận 1F | Không |
+| `Rejecting` | `REJECTING` | `Rejecting` | **Đang từ chối** | Bên đối tác từ chối lệnh thỏa thuận 1F | Không |
+
+---
+
+### 3.3. Danh Mục 15 Mã Lỗi Đặt Lệnh ORS & Quy Tắc Xử Lý Frontend/Backend
+
+Khi gọi API Đặt lệnh (`POST /dnse-order-service/v2/orders`), hệ thống ORS (Order Routing System) thực hiện thẩm định và trả về các mã lỗi chuẩn sau (theo tài liệu Confluence `4786356229`):
+
+| Mã Lỗi Backend (ORS Code) | Diễn Giải Nghiệp Vụ Cụ Thể | Thông Báo Toast Web/App | Hành Vi Xử Lý Hệ Thống |
+|:---|:---|:---|:---|
+| `INVALID_INPUT: cash not enough` | Sức mua khả dụng ($PP0$) của tài khoản không đủ để thanh toán giá trị lệnh mua | "Vượt quá khối lượng được giao dịch" | Chặn đặt lệnh, hiển thị Toast đỏ |
+| `TRADE_QUANTITY_NOT_ENOUGH` | Khối lượng chứng khoán khả dụng bán (`tradeQuantity`) nhỏ hơn khối lượng đặt | "Vượt quá khối lượng được giao dịch" | Chặn đặt lệnh, hiển thị Toast đỏ |
+| `PRICE_MUST_GREATER_THAN_OR_EQUAL_TO_FLOOR_PRICE` | Mức giá đặt nhỏ hơn Giá sàn của mã trong ngày | "Giá ngoài biên độ" | Trong phiên: Báo lỗi.<br>Ngoài phiên: Fallback sang lệnh 24/7 |
+| `PRICE_MUST_LESS_THAN_OR_EQUAL_TO_CEILING_PRICE` | Mức giá đặt lớn hơn Giá trần của mã trong ngày | "Giá ngoài biên độ" | Trong phiên: Báo lỗi.<br>Ngoài phiên: Fallback sang lệnh 24/7 |
+| `INVALID_QUANTITY` | Khối lượng $= 0$, âm, lẻ lô hoặc vượt quá $500,000$ CP trên sàn HoSE | "Khối lượng không hợp lệ" | Trong phiên: Báo lỗi.<br>Ngoài phiên: Fallback sang lệnh 24/7 |
+| `CAN_NOT_PLACE_ORDER_ON_THIS_SESSION` | Loại lệnh không tương thích với phiên hiện tại (vd: đặt ATO trong phiên liên tục) | Không hiện lỗi | **Tự động Fallback sang Lệnh 24/7** (`SESSION_ACTIVE`) |
+| `CANNOT_PLACE_ORDER_IN_THE_CLOSED_SESSION` | Đặt lệnh khi thị trường đã đóng cửa (buổi tối, cuối tuần) | Không hiện lỗi | **Tự động Fallback sang Lệnh 24/7** (`SESSION_ACTIVE`) |
+| `CANNOT_PLACE_ORDER_IN_THE_HALT_SESSION` | Đặt lệnh khi toàn thị trường/bảng đang tạm ngưng giao dịch (Halt) | "Phiên giao dịch tạm ngưng" | **Tự động Fallback sang Lệnh 24/7** (`SESSION_ACTIVE`) |
+| `CAN_NOT_PLACE_ORDER_ON_HALTED_SYMBOL` | Mã chứng khoán bị Sở tạm ngừng giao dịch khẩn cấp | "Mã chứng khoán tạm ngưng giao dịch" | **Tự động Fallback sang Lệnh 24/7** (`SYMBOL_ACTIVE`) |
+| `CAN_NOT_PLACE_ORDER_ON_UNLISTED_SYMBOL` | Mã chứng khoán bị hủy niêm yết hoặc mã không tồn tại trên hệ thống | "Mã chứng khoán không hợp lệ" | Chặn đặt lệnh, hiển thị Toast đỏ |
+| `BATCH_IN_PROGRESS` | Hệ thống đang chạy batch quyết toán và đồng bộ dữ liệu cuối ngày (EOD) | "Hệ thống đang xử lý, vui lòng thử lại sau" | **Tự động Fallback sang Lệnh 24/7** (`SESSION_ACTIVE`) |
+| `INVALID_OTP` | Mã SmartOTP hoặc SMS OTP người dùng nhập không chính xác | "Mã OTP không hợp lệ" | Giữ nguyên popup cho phép người dùng nhập lại OTP |
+| `OTP_EXPIRED` | Mã OTP đã quá thời gian hiệu lực quy định | "Mã OTP đã hết hạn, vui lòng lấy mã mới" | Cho phép gửi lại mã OTP mới |
+| `ACCOUNT_LOCKED` | Tài khoản của khách hàng bị khóa giao dịch (theo yêu cầu rủi ro/pháp lý) | "Tài khoản bị khóa giao dịch" | Chặn toàn bộ thao tác đặt lệnh |
+| `INTERNAL_SERVER_ERROR` | Sự cố kết nối cơ sở dữ liệu hoặc lỗi không mong đợi tại backend | "Đã có lỗi xảy ra, vui lòng thử lại" | Ghi log TraceID và bắn cảnh báo Mattermost |
+
+---
+
+### 3.4. Cơ Chế Tự Động Fallback Lệnh 24/7 (Session-Active & Symbol-Active)
+
+Để mang lại trải nghiệm giao dịch liên tục không gián đoạn, DNSE triển khai cơ chế **Tự động Fallback Lệnh 24/7**:
+
+1. **Nguyên lý hoạt động:**
+   * Khi người dùng đặt lệnh thường thông qua Web/App/OpenAPI ngoài giờ giao dịch hoặc khi thị trường tạm ngưng, thay vì từ chối lệnh, Client và ORS tự động bắt các mã lỗi ngoài giờ (`CANNOT_PLACE_ORDER_IN_THE_CLOSED_SESSION`, `CAN_NOT_PLACE_ORDER_ON_THIS_SESSION`, `CANNOT_PLACE_ORDER_IN_THE_HALT_SESSION`, `BATCH_IN_PROGRESS`, `CAN_NOT_PLACE_ORDER_ON_HALTED_SYMBOL`).
+   * Hệ thống tự động chuyển tiếp request sang dịch vụ Lệnh Điều Kiện (`POST /dnse-order-service/conditional-orders`) với `orderCategory = TRADING_EVENT`.
+2. **Phân loại Trigger Type:**
+   * **`SESSION_ACTIVE`:** Áp dụng khi lệnh đặt ngoài giờ, giờ nghỉ trưa hoặc khi sàn Halt. Lệnh được lưu an toàn trong hệ thống; ngay khi thị trường mở cửa phiên giao dịch tiếp theo (09:00 sáng hoặc 13:00 chiều), hệ thống tự động sinh Target Order đẩy thẳng vào Sở.
+   * **`SYMBOL_ACTIVE`:** Áp dụng khi đặt lệnh cho mã chứng khoán đang bị tạm ngưng giao dịch (`EI8`). Ngay khi Sở phát cờ gỡ tạm ngưng (`EI1`/`EI9`), hệ thống tự động kích hoạt lệnh lên sàn.
+3. **Quy tắc biên phiên:**
+   * Trong phiên giao dịch chính thức (sau khi tiến trình BOD hoàn tất), các lỗi về Giá (ngoài trần/sàn) và Khối lượng (lẻ lô, âm) sẽ báo lỗi trực tiếp cho người dùng, **tuyệt đối không fallback sang 24/7** để đảm bảo tính kỷ luật giá trong phiên.
+
+---
+
+### 3.5. Hệ Thống Lệnh Điều Kiện Chuyên Sâu (Conditional Order Engine)
+
+Theo tài liệu đặc tả kiến trúc dịch vụ Lệnh Điều Kiện (`Conditional Order Service` - Confluence `4995416095` & `4875812936`), hệ thống vận hành một Động cơ Đánh giá Realtime (Evaluation Engine) độc lập:
+
+#### 1. Các Nhóm Lệnh Điều Kiện (`orderCategory`):
+
+1. **`STOP` (Lệnh Dừng - Stop-Loss / Stop-Limit):**
+   * Giám sát giá thị trường realtime theo toán tử điều kiện `conditionOperator`:
+     * $\le$: Dùng cho lệnh Cắt lỗ Bán (Stop Sell) khi giá giảm xuống chạm hoặc thủng `stopPrice`.
+     * $\ge$: Dùng cho lệnh Mua Breakout (Stop Buy) khi giá tăng vượt ngưỡng cản `stopPrice`.
+   * Khi thỏa mãn điều kiện: Hệ thống tự động sinh `TargetOrder` (với loại lệnh `LO`, `MP` hoặc `MTL`) đẩy lên sàn.
+2. **`TRAILING_STOP` (Lệnh Dừng Trượt Giá):**
+   * Điểm kích hoạt tự động trượt theo đỉnh cao nhất (đối với vị thế Bán bảo toàn lãi) hoặc đáy thấp nhất (đối với vị thế Mua) theo khoảng trượt `trailingAmount` (VND) hoặc `trailingPercent` (%).
+   * Ngay khi thị trường đảo chiều vượt quá khoảng trượt đã định $\implies$ Tự động kích hoạt lệnh.
+3. **`TRADING_EVENT` (Lệnh Theo Sự Kiện Phiên / Lệnh 24/7):**
+   * Cho phép đặt lệnh bất kỳ lúc nào 24/7. Lệnh tự động kích hoạt khi phiên giao dịch thỏa mãn trạng thái `SESSION_ACTIVE` hoặc cổ phiếu `SYMBOL_ACTIVE`.
+4. **`OCO` (One-Cancels-the-Other - Lệnh Kép Chốt Lời & Cắt Lỗ Phái Sinh):**
+   * Áp dụng chuyên biệt cho thị trường Phái sinh (`DERIVATIVES`) nhằm bảo vệ vị thế đang mở.
+   * Giám sát đồng thời 2 mục tiêu: Chốt lời (`takeProfitPrice`) và Cắt lỗ (`stopPrice` / `stopOrderPrice`).
+   * Hệ thống đặt trước 1 lệnh chờ trên sàn; khi giá biến động chạm ngưỡng cắt lỗ, hệ thống thực hiện lệnh **Sửa/Thay thế (Replace Order)** sang giá cắt lỗ và ngược lại. Khi một vế khớp hoàn toàn, vế kia tự động kết thúc. Bắt buộc áp dụng hiệu lực trong ngày (`DAY`).
+
+#### 2. Hiệu Lực Thời Gian (Time-In-Force - TIF):
+* **`DAY` (Trong ngày):** Có hiệu lực đến hết ngày giao dịch. Nếu chưa kích hoạt, cuối ngày tự động chuyển sang `EXPIRED`.
+* **`GTD` (Good-Till-Date):** Giữ hiệu lực liên tục qua nhiều ngày cho đến mốc thời gian hết hạn (`expireTime`). Đối với Phái sinh, thời gian này không được vượt quá ngày đáo hạn hợp đồng (`DeListedDate`).
+* **`GTC` (Good-Till-Cancelled):** Có hiệu lực vô thời hạn cho đến khi thỏa mãn điều kiện kích hoạt hoặc bị người dùng hủy bỏ.
+
+#### 3. Kiến Trúc Hiệu Năng & Zero-DB Latency:
+* **Đánh giá 100% trên RAM:** Trong giờ giao dịch, dữ liệu tick khớp lệnh tần suất cao được đẩy từ Kafka vào các Goroutine Worker phân tách theo từng mã chứng khoán (`Actor per Symbol`). Không phát sinh truy vấn PostgreSQL trong quá trình so khớp.
+* **Biên Dịch Bytecode VM (`antonmedv/expr`):** Biểu thức điều kiện được biên dịch sẵn sang Bytecode ngay lúc tạo lệnh. Quá trình đánh giá tick giá chỉ mất vài nano-giây.
+* **Khóa phân tán Redis (`Redis Distributed Lock`):** Mọi tác vụ kích hoạt (`TriggerOrder`) bắt buộc giành khóa phân tán theo `orderId` $\implies$ Ngăn chặn triệt để lỗi kích hoạt trùng lặp (`Double Trigger`) khi thị trường giật giá mạnh quanh ngưỡng điều kiện.
+
+#### 4. Máy Trạng Thái Của Lệnh Điều Kiện:
+```
+  [Tạo mới] ──► [NEW] (Theo dõi trên RAM) ──(Thỏa điều kiện)──► [ACTIVATED] ──► [Khớp trên sàn] ──► [FILLED]
+                  │                                                                │
+                  ├─► [CANCELLED] (User chủ động hủy)                               ├─► [PARTIALLY_FILLED]
+                  ├─► [EXPIRED] (Hết hạn DAY/GTD)                                  └─► [CANCELLED_AFTER_TRIGGER]
+                  ├─► [REJECTED] (Lỗi sức mua / sàn từ chối khi gửi TargetOrder)
+                  ├─► [CANCELLED_BY_RIGHTS_EVENT] (Hủy tự động do sự kiện chia cổ tức/quyền mua)
+                  └─► [CANCELLED_BY_DELISTED_EVENT] (Hủy tự động do hủy niêm yết)
 ```
 
-* **Quy tắc chuyển trạng thái (State Transition Rules):**
-  * Không thể chuyển từ `Filled`, `Cancelled`, `Rejected` sang bất kỳ trạng thái nào khác (Terminal States).
-  * Khi sửa lệnh: Hệ thống sinh ra trạng thái trung gian `PendingReplace` trước khi xác nhận `Replaced`.
-  * Hết ngày giao dịch: Lệnh ở trạng thái `New` hoặc `PartiallyFilled` tự động chuyển sang `Expired`.
-
-### 3.2. Lệnh Điều Kiện & Quản Lý Rủi Ro (Conditional Orders)
-
-Lệnh điều kiện được lưu giữ tại hệ thống máy chủ công ty chứng khoán (chưa đẩy vào Sở). Khi thị trường thỏa mãn điều kiện kích hoạt, hệ thống tự động sinh lệnh vào Sở.
-
-1. **Lệnh Dừng (Stop Order):**
-   * *Điều kiện kích hoạt:* $\text{Giá thị trường} \ge \text{Giá kích hoạt}$ (đối với Stop Buy) hoặc $\le \text{Giá kích hoạt}$ (đối với Stop Sell).
-   * *Lệnh sinh ra:* Lệnh LO hoặc MP với giá và khối lượng cấu hình trước.
-2. **Lệnh Xu Hướng (Trailing Stop):**
-   * Đường kích hoạt bám sát giá đỉnh/đáy thị trường theo một khoảng trượt ($\Delta$ step).
-   * Dùng để bảo toàn lợi nhuận tối đa trong một xu hướng tăng hoặc cắt lỗ tự động khi thị trường đảo chiều.
-3. **Lệnh Chốt Lời / Cắt Lỗ Theo Deal (Take Profit / Stop Loss - TP/SL):**
-   * Gắn trực tiếp với từng vị thế (Deal/Position) hoặc tiểu khoản.
-   * Khi tỷ lệ lãi đạt ngưỡng $X\%$ $\rightarrow$ Kích hoạt lệnh Bán chốt lời.
-   * Khi tỷ lệ lỗ chạm ngưỡng $-Y\%$ $\rightarrow$ Kích hoạt lệnh Bán cắt lỗ.
-   * Cấu hình OCO (One-Cancels-the-Other): Khớp nhánh chốt lời thì tự động hủy nhánh cắt lỗ và ngược lại.
+#### 5. Cơ Chế Tự Động Bảo Vệ Vị Thế Khi Có Sự Kiện Quyền / Cổ Tức:
+* **Rủi ro thực tế:** Khi doanh nghiệp thực hiện quyền (chia cổ tức bằng tiền/cổ phiếu, phát hành thêm), giá tham chiếu của cổ phiếu sẽ bị **điều chỉnh giảm kỹ thuật** vào ngày Giao dịch không hưởng quyền (GDKHQ). Nếu giữ nguyên lệnh Cắt lỗ (Stop Sell), việc điều chỉnh giá kỹ thuật sẽ làm lệnh bị **kích hoạt oan** ngoài ý muốn của nhà đầu tư.
+* **Giải pháp tự động của DNSE:** Dịch vụ Lệnh Điều Kiện tự động tiêu thụ sự kiện quyền từ Kafka vào cuối ngày $T-1$. Toàn bộ các lệnh điều kiện của mã chứng khoán đó sẽ được hệ thống tự động hủy và chuyển sang trạng thái **`CANCELLED_BY_RIGHTS_EVENT`**, gửi thông báo cảnh báo đến khách hàng để bảo vệ an toàn tài sản tuyệt đối.
 
 ---
 
@@ -720,10 +878,11 @@ Tất cả các giao dịch nghiệp vụ phát sinh từ hệ thống Core/Back
 
 | Persona | Nhiệm Vụ Cốt Lõi Khi Tham Chiếu Tài Liệu Này |
 |:---|:---|
-| 📋 **BA / PO** | - **Bắt buộc trích xuất đầy đủ các điều kiện Deal** vào file đặc tả `*-final.md`: phân định rõ Deal-based vs Portfolio-based, bộ ba định danh `(accountNo, symbol, loanPackageId)`.<br>- Thiết kế Acceptance Criteria bao phủ đủ các góc khuất: Xử lý lô lẻ chuyển `PENDING_CLOSE` và thu hồi nợ, thứ tự ưu tiên trừ cổ phiếu cổ tức trước khi bán, cơ chế Giá chặn (Cap Price), và logic hoãn bán xử lý (Grace Period). |
-| 💻 **DEV** | - **Tuyệt đối không dùng kiểu số thực (`float`, `double`)** khi tính toán $R_{\text{deal}}$, $P_{\text{liquid}}$, $P_{\text{breakeven}}$ và $Q_{\max}$ $\rightarrow$ Bắt buộc dùng `BigDecimal` với quy tắc làm tròn (`RoundingMode`) chuẩn mực theo tài liệu.<br>- Triển khai đầy đủ Order State Machine và liên kết chặt chẽ giữa Deal Service, Loan Service và Risk Service.<br>- Khóa chặt logic chặn cắt/rút chứng khoán (`2202`, `2204`, `2244`, `2200`) nếu Deal đang có dư nợ margin chưa quyết toán.<br>- Áp dụng thuật toán chia nhỏ lệnh Smart Order ($10,000$ CP/lệnh) và tự động hủy lệnh cùng chiều trước khi đẩy lệnh Force Sell. |
-| 🧪 **QA / SDET** | - **Bắt buộc đọc dữ liệu chứng khoán thực tế từ TimescaleDB (DB ID: 644) — Ưu tiên v3 trước, v2 sau:** Khi thiết kế test checklist, kịch bản BDD Gherkin (`.feature`) hoặc code automation test, BẮT BUỘC tra cứu mã chứng khoán thực tế, giá trần/sàn/tham chiếu, bước giá và cờ phiên từ TimescaleDB (qua DB MCP hoặc `references/timescale-schema.md`). **Bắt buộc ưu tiên dùng các bảng v3** (`krx_mdds_v3_ticks`, `krx_mdds_v3_top_prices`, `security_definition_v3`, `krx_mdds_v3_board_events`); chỉ khi không có bảng v3 mới dùng bảng v2 (`krx_mdds_v2_stock_infos`, `krx_mdds_v2_stock_ohlc`). Tuyệt đối không tự bịa mã hoặc hardcode giá phi thực tế vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$).<br>- **Áp dụng kỹ thuật Phân tích giá trị biên (BVA 3 giá trị)** cho các ngưỡng tỷ lệ: $\{ \text{LiquidRate} - \epsilon, \text{LiquidRate}, \text{LiquidRate} + \epsilon \}$ và $\{ \text{MaintenanceRate} - \epsilon, \text{MaintenanceRate}, \text{MaintenanceRate} + \epsilon \}$.<br>- Kiểm thử kỹ lưỡng công thức tính Giá hòa vốn với 2 biên giá vốn: $costPrice = 10,000$đ, $9,990$đ và $10,010$đ.<br>- Thiết kế kịch bản kiểm thử tự động (Automation Tests) cho case Giá Chặn: Khi thị giá $>$ giá chặn, kiểm tra việc giải ngân bị chặn trần và Deal Rate ban đầu tăng lên.<br>- Kiểm tra kịch bản Race Condition: Đặt đồng thời nhiều lệnh bán/mua hoặc rút sức mua trên cùng một Deal. |
-| 🔍 **Code Reviewer** | - Rà soát toàn bộ code tính lãi vay dồn tích theo ngày ($365$ ngày), logic khấu trừ nợ gốc/lãi khi bán từng phần.<br>- Phát hiện các lỗi tiềm ẩn chia cho 0 (`Divide by Zero`) khi `openQuantity == 0` trong các hàm tính $P_{\text{breakeven}}$ và $R_{\text{deal}}$.<br>- Đảm bảo các lệnh bán Force Sell luôn làm tròn lên (`ROUNDUP`) theo quy cách lô sàn (bội số 100). |
-| 🛡️ **Security Auditor** | - **Kiểm tra lỗ hổng IDOR:** Đảm bảo khách hàng không thể can thiệp sửa đổi `dealId` hoặc gói vay `loanPackageId` để trục lợi hưởng lãi suất thấp hoặc giải ngân vượt hạn mức.<br>- **Quét lỗi Concurrency / Double-spending:** Khi khách hàng vừa đặt lệnh mua vừa thực hiện rút sức mua (Mana) hoặc rút tiền từ Deal tại cùng một mili-giây.<br>- Kiểm toán tính an toàn của các API nhạy cảm: Cấp quyền hoãn bán xử lý (Grace Period) bắt buộc phải có phân quyền RBAC chặt chẽ và ghi log Audit Trail đầy đủ. |
-| ⚡ **Web Performance** | - Đo lường và tối ưu hóa thời gian xử lý sự kiện nạp giá thị trường: Tính toán lại $R_{\text{deal}}$ và $P_{\text{liquid}}$ cho hàng trăm nghìn Deal đang mở phải đạt độ trễ $< 50$ms khi thị trường biến động mạnh.<br>- Tối ưu hóa kênh đẩy dữ liệu Deal qua MQTT/WebSocket tới Client Web/App, áp dụng kỹ thuật Debounce / Throttling để tránh tràn DOM khi có bão giá. |
-| ⏱️ **Scrum Master** | - Hỗ trợ team phân tách các User Story phức tạp xoay quanh Deal thành các Task độc lập theo từng Service: Deal CRUD, Loan Calculator, Risk Triggers, BO Event Consumer.<br>- Đánh giá đúng Story Points cho các tính năng liên quan đến sự kiện quyền và giá chặn (vốn có độ phức tạp thuật toán và rủi ro tài chính cao). |
+| 📋 **BA / PO** | - **Bắt buộc trích xuất đầy đủ các điều kiện Deal & Lệnh Đặt** vào file đặc tả `*-final.md`: phân định rõ Deal-based vs Portfolio-based, bộ ba định danh `(accountNo, symbol, loanPackageId)`.<br>- **Phân loại chính xác các loại lệnh & trạng thái:** Khai báo chi tiết `orderCategory` (`NORMAL`, `STOP`, `TRAILING_STOP`, `TRADING_EVENT`, `OCO`), Time-In-Force (`DAY`, `GTD`, `GTC`), và ma trận hiệu lực lệnh theo sàn/phiên.<br>- **Đặc tả đầy đủ quy chuẩn Sửa/Hủy lệnh:** Điều kiện cho phép sửa (chỉ lệnh LO trong phiên liên tục, $newQuantity > filledQuantity$), cấm sửa/hủy trong ATO/ATC và cấm hủy PLO.<br>- **Bao phủ 15 mã lỗi ORS & cơ chế Fallback 24/7:** Mô tả rõ hành vi fallback tự động khi đặt lệnh ngoài giờ hoặc mã bị tạm ngưng, cơ chế tự động hủy lệnh điều kiện khi có sự kiện chia cổ tức (`CANCELLED_BY_RIGHTS_EVENT`). |
+| 💻 **DEV** | - **Triển khai đầy đủ FSM Order State Machine:** Xử lý chuẩn xác các trạng thái trung gian (`Pending`, `PendingReplace`, `PendingCancel`) và khóa cứng các trạng thái kết thúc Terminal (`Filled`, `Cancelled`, `Rejected`, `Expired`) — tuyệt đối không cho phép chuyển trạng thái sau khi đã kết thúc.<br>- **Thực thi nghiêm ngặt Ma trận Sửa lệnh (Replace Order):** Chặn đứng các yêu cầu sửa khi $newQuantity \le filledQuantity$ hoặc khi lệnh không ở trạng thái `New`/`PartiallyFilled`.<br>- **Đảm bảo tính Idempotency & Concurrency:** Sử dụng Redis Distributed Lock theo `OrderID` khi xử lý kích hoạt lệnh điều kiện (`TriggerOrder`) và các thao tác sửa/hủy lệnh để chống Double Trigger.<br>- **Xây dựng cơ chế Fallback Lệnh 24/7:** Tự động bắt mã lỗi ngoài phiên từ ORS để chuyển tiếp sang `POST /conditional-orders` (type `SESSION_ACTIVE` hoặc `SYMBOL_ACTIVE`).<br>- **Tính toán tài chính:** Tuyệt đối dùng `BigDecimal` với quy tắc làm tròn (`RoundingMode`) chuẩn mực cho $R_{\text{deal}}$, $P_{\text{liquid}}$, $P_{\text{breakeven}}$ và $Q_{\max}$. |
+| 🧪 **QA / SDET** | - **Bắt buộc đọc dữ liệu chứng khoán thực tế từ TimescaleDB (DB ID: 644) — Ưu tiên v3 trước, v2 sau:** Khi thiết kế test checklist, kịch bản BDD Gherkin (`.feature`) hoặc code automation test, BẮT BUỘC tra cứu mã chứng khoán thực tế, giá trần/sàn/tham chiếu, bước giá và cờ phiên từ TimescaleDB (qua DB MCP hoặc `references/timescale-schema.md`). Bắt buộc ưu tiên dùng các bảng v3; chỉ khi không có bảng v3 mới dùng bảng v2.<br>- **Bao phủ kiểm thử 15 mã lỗi ORS:** Thiết kế test case kiểm chứng đầy đủ 15 mã lỗi ORS và xác minh luồng tự động Fallback sang Lệnh 24/7 khi đặt lệnh ngoài phiên/khi thị trường Halt.<br>- **Kiểm thử biên Sửa Lệnh (Replace Order):** Kiểm tra các ca biên $newQuantity = filledQuantity$ (phải bị reject), $newQuantity = filledQuantity + 1$ (pass), sửa lệnh ngoài phiên liên tục, và sửa lệnh thị trường (ATO, ATC, MP, MTL).<br>- **Kiểm thử chuyển trạng thái lệnh E2E (Order State Transitions):** Tạo kịch bản tích hợp API + WebSocket kiểm tra chuỗi chuyển đổi trạng thái: `PendingNew` $\rightarrow$ `New` $\rightarrow$ `PartiallyFilled` $\rightarrow$ `Replaced` $\rightarrow$ `Cancelled` / `Filled`. Trên UAT, bắt buộc sử dụng API Bắn Báo Cáo Khớp Lệnh ORS Admin (`POST https://api-fo-uat.dnse.com.vn/ors/accounts/{accountNo}/orders/{orderId}/reports`) để kích hoạt `PartiallyFilled` và `Filled`.<br>- **Kiểm thử Lệnh Điều Kiện & Quyền:** Kiểm chứng lệnh tự động hủy chuyển sang `CANCELLED_BY_RIGHTS_EVENT` khi mã có sự kiện chốt quyền cổ tức. |
+
+| 🔍 **Code Reviewer** | - **Rà soát ma trận điều kiện Replace Order:** Đảm bảo code kiểm tra đầy đủ các điều kiện tiên quyết trước khi gửi yêu cầu sửa lệnh lên Sở (trạng thái lệnh, loại lệnh LO, phiên liên tục, $newQuantity > filledQuantity$, biên độ giá trần/sàn).<br>- **Kiểm tra đồng bộ trạng thái lệnh đa tầng:** Đảm bảo việc mapping trạng thái từ FIX tag 39 $\rightarrow$ OpenAPI $\rightarrow$ WebSocket $\rightarrow$ UI Sổ lệnh tuân thủ chuẩn thống nhất (gộp `Expired` và `DoneForDay` thành "Hết hiệu lực" theo ticket `G3PTP-7070` & `G3PTP-17152`).<br>- Rà soát code tính lãi vay dồn tích theo ngày ($365$ ngày), logic khấu trừ nợ gốc/lãi khi bán từng phần, và phòng tránh lỗi chia cho 0 (`Divide by Zero`). |
+| 🛡️ **Security Auditor** | - **Xác thực giao dịch đa tầng (Multi-factor Trading Auth):** Kiểm tra cơ chế bắt buộc Trading-Token hoặc SmartOTP hợp lệ cho 100% các API nhạy cảm: Đặt lệnh, Sửa lệnh, Hủy lệnh và Đặt lệnh điều kiện.<br>- **Kiểm tra lỗ hổng IDOR & Tham số hóa:** Đảm bảo khách hàng không thể can thiệp sửa đổi `accountNo`, `orderId`, hoặc gói vay `loanPackageId` để trục lợi hoặc can thiệp vào lệnh của tài khoản khác.<br>- **Quét lỗi Concurrency & Double-triggering:** Đảm bảo Redis Distributed Lock hoạt động an toàn tuyệt đối khi thị trường biến động dữ dội với hàng nghìn tick giá/giây. |
+| ⚡ **Web Performance** | - **Tối ưu hóa hiển thị Sổ Lệnh Realtime:** Sử dụng Virtual Scrolling / Throttling trên Web/App để xử lý mượt mà khi nhận liên tục các WebSocket event cập nhật trạng thái lệnh (`PartiallyFilled`, `New`, `Cancelled`) mà không gây giật lag UI.<br>- **Tối ưu hóa độ trễ đánh giá lệnh điều kiện:** Đảm bảo động cơ Evaluator chạy in-memory RAM bytecode VM đạt độ trễ đánh giá $< 1$ micro-giây/lệnh khi nhận tick data từ Kafka. |
+| ⏱️ **Scrum Master** | - Hỗ trợ team phân tách User Story phức tạp thành các module rõ ràng: Module Đặt/Sửa/Hủy lệnh thông thường, Module Fallback 24/7, Module Động cơ Lệnh điều kiện (Evaluators vs Orders Service).<br>- Ước lượng đúng Story Points cho các nghiệp vụ kiểm thử tích hợp chuyển trạng thái lệnh E2E và cơ chế bảo vệ quyền cổ tức. |

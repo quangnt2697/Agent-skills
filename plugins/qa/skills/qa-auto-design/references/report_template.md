@@ -37,8 +37,9 @@
 
 ## Chi tiết Request & Response (API / WebSocket)
 
-> **Chỉ áp dụng cho Task Type = API hoặc WebSocket.**
-> Mỗi test case hiển thị request đã gửi và response thực tế nhận được.
+> **BẮT BUỘC áp dụng cho Task Type = API hoặc WebSocket.**
+> BẮT BUỘC hiển thị đầy đủ chi tiết Request đã gửi và Response/Event thực tế nhận được cho **100% test case (CẢ ✅ PASSED VÀ ❌ FAILED)**.
+> TUYỆT ĐỐI KHÔNG được chỉ log khi fail hay bỏ qua các case passed.
 > Bỏ qua mục này nếu Task Type = UI.
 
 ### Test Case #{n}: {test_method_name} — {✅ PASSED / ❌ FAILED}
