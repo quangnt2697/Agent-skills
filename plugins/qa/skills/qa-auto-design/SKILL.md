@@ -31,15 +31,30 @@ Người dùng gọi lệnh `/qa-auto-design` hoặc yêu cầu "viết code aut
 2. **Phân tầng nghiêm ngặt:** Tuân thủ POM (UI) hoặc API Object Pattern (API/WS). Assertions chỉ ở tầng Test.
 3. **Smart Waits:** Không hard sleep (`time.sleep`, `wait_for_timeout`). Chỉ dùng auto-waiting/auto-retrying assertions.
 4. **Deterministic & Real Securities Data (V3 > V2):** Test data phải unique + traceable, không hardcode bừa bãi. Đối với các bài test liên quan đến chứng khoán, Agent BẮT BUỘC đọc dữ liệu từ TimescaleDB (DB ID: 644 / cache `../../../../references/timescale-schema.md`). **Quy tắc phiên bản:** Bắt buộc ưu tiên sử dụng các bảng **v3** (như `krx_mdds_v3_ticks`, `krx_mdds_v3_top_prices`, `security_definition_v3`); nếu không có bảng v3 mới fallback sang bảng **v2** (như `krx_mdds_v2_stock_infos`, `krx_mdds_v2_stock_ohlc`). Tuyệt đối không hardcode mã giả hoặc giá vi phạm biên độ thị trường.
-5. **Self-fix Loop:** Agent tự chạy test → nếu script lỗi runtime (ImportError, SyntaxError...) → tự đọc log, sửa script, chạy lại → đến khi script thực thi hoàn tất. KHÔNG sửa code để ép test case FAIL thành PASS.
-6. **Cấu Trúc Chuẩn & Kế Thừa Môi Trường (3-Tier):** Mã automation test bắt buộc tuân theo blueprint thư mục tại `workspace/{issueKey}/test/` (xem [references/folder_structure_blueprint.md](references/folder_structure_blueprint.md)), tuyệt đối không tự nghĩ ra file/thư mục tùy tiện. Tự động kế thừa credentials (`api-key`, `api-secret`, URLs, tokens) từ Root và các task anh em cùng hệ thống (xem [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md)).
-7. **Tuyệt Đối Không Mock Server Trên UAT (Real Base URLs Only):** NGHIÊM CẤM dựng mock server, fake client hoặc dùng `unittest.mock`/`respx` trong auto test API và WebSocket trên môi trường UAT. Mọi request/socket BẮT BUỘC kết nối trực tiếp vào Real Base URLs (`BASE_URL=https://openapi-uat.dnse.com.vn` hoặc sandbox, `WS_URL=wss://ws-openapi-uat.dnse.com.vn`) kế thừa từ `.env`.
-8. **Bắt Buộc Ghi Log Toàn Bộ Các Step Thực Hiện & Full Request/Response Logging (100% Test Case, Cả Passed & Failed):** Mọi test case (UI, API, WebSocket) bắt buộc phải có hệ thống logging ghi nhận:
-   - **Danh sách toàn bộ các step đã thực hiện (Given/When/Then, Actions, Assertions)** kèm trạng thái Pass/Fail và thời gian thực thi của từng step.
-   - **Chi tiết Request & Response:** Method, URL, Headers, Request Body, Status Code, Latency (ms), Response Body (hoặc WebSocket frames) cho **CẢ TEST CASE PASSED LẪN FAILED** vào `test-output.log` và báo cáo `report.md`.
-   CẤM TUYỆT ĐỐI chỉ log chung chung hoặc chỉ log khi test fail.
-9. **Pre-generation Code Recon Gate (Tái Sử Dụng Code Authen & Sub Channel):** Trước khi viết bất kỳ file code test nào cho OpenAPI, Agent BẮT BUỘC phải quét mã nguồn (`grep_search`, `list_dir`) để tìm và import trực tiếp code có sẵn của developer (module auth, signature, token management, WebSocket client, channel subscription helper, enums). TUYỆT ĐỐI CẤM viết lại từ đầu.
-10. **E2E Order & Conditional Order State Transition Testing (Trigger - Listen - Verify):**
+5. **Chỉ Luôn Thiết Kế & Scan Test Trên Metabase UAT (Metabase UAT Strict Policy & Zero-Mutation):**
+   - Agent **BẮT BUỘC CHỈ LUÔN** thiết kế kịch bản, trinh sát dữ liệu (scan/recon) và thực thi kiểm thử trên môi trường **Metabase UAT** (`https://mb-uat.dnse.com.vn`, Database ID: `644`).
+   - **Tuyệt đối Cấm Kết Nối Metabase Production:** NGHIÊM CẤM tuyệt đối kết nối, query hoặc scan test trên Metabase Production (`https://mb.dnse.com.vn` hoặc bất kỳ host prod nào). Code kiểm thử và service bắt buộc phải có chốt chặn bảo mật (Security Gate): nếu phát hiện URL chứa `mb.dnse.com.vn` mà không có `mb-uat` (hoặc `METABASE_ENV != uat`), hệ thống bắt buộc phải raise exception `ValueError` và dừng ngay lập tức trước khi query.
+   - **Zero-Mutation Policy:** Mọi truy vấn qua Metabase UAT là Read-Only (chỉ chạy Native SQL `SELECT` để quan sát, đối chiếu snapshot, price limits, tick event, sessions), tuyệt đối không sửa đổi dữ liệu, không bắn message Kafka giả lập làm nhiễu phiên sàn thật.
+6. **Self-fix Loop:** Agent tự chạy test → nếu script lỗi runtime (ImportError, SyntaxError...) → tự đọc log, sửa script, chạy lại → đến khi script thực thi hoàn tất. KHÔNG sửa code để ép test case FAIL thành PASS.
+7. **Cấu Trúc Chuẩn & Kế Thừa Môi Trường (3-Tier):** Mã automation test bắt buộc tuân theo blueprint thư mục tại `workspace/{issueKey}/test/` (xem [references/folder_structure_blueprint.md](references/folder_structure_blueprint.md)), tuyệt đối không tự nghĩ ra file/thư mục tùy tiện. Tự động kế thừa credentials (`api-key`, `api-secret`, URLs, tokens) từ Root và các task anh em cùng hệ thống (xem [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md)).
+8. **Tuyệt Đối Không Mock Server Trên UAT (Real Base URLs Only):** NGHIÊM CẤM dựng mock server, fake client hoặc dùng `unittest.mock`/`respx` trong auto test API và WebSocket trên môi trường UAT. Mọi request/socket BẮT BUỘC kết nối trực tiếp vào Real Base URLs (`BASE_URL=https://openapi-uat.dnse.com.vn` hoặc sandbox, `WS_URL=wss://ws-openapi-uat.dnse.com.vn`) kế thừa từ `.env`.
+9. **Chuẩn Thiết Kế Log Kiểm Thử Căn Chỉnh Thẳng Hàng & 4 Quy Tắc Vàng (Bắt buộc tuân thủ [references/test_logging_guidelines.md](references/test_logging_guidelines.md)):**
+   - **Cấu Trúc Thống Nhất:** Mọi log của mọi loại test/task (API, WebSocket, DB, UI, Async/State) tuân theo:
+     `[TIMESTAMP] [LEVEL] [SERVICE] [TRACE_ID] - MESSAGE | CONTEXT`
+     Phần tiền tố `[TIMESTAMP] [LEVEL] [SERVICE] [TRACE_ID] - ` được pad độ rộng cố định để luôn thẳng hàng.
+   - **4 Quy Tắc Vàng Khi Viết Log:**
+     1. *Bảo Mật Tuyệt Đối:* Che (masking) password, token, api_secret, cccd, thẻ ngân hàng.
+     2. *Message Cố Định, Data Vào Context:* Không ghép biến động vào message (để dễ thống kê/grep); đưa dữ liệu chi tiết vào Context dạng `key="value"`.
+     3. *Phân Loại Level Nghiêm Ngặt:* `ERROR` (test fail/mất kết nối), `WARN` (chậm/bất thường), `INFO` (luồng chính/kết quả), `DEBUG` (raw query/headers/dump).
+     4. *Chống Trùng Lặp & Setup 1 Dòng:* Không gọi `logging.basicConfig(...)` trong code/conftest. Khởi tạo môi trường chỉ in đúng 1 dòng tóm tắt ở Session Scope.
+   - **Diễn Giải Tiếng Việt Vừa Đủ Trong MESSAGE (Không Dùng Ký Tự Cây):** Sử dụng 4 thẻ tuần tự:
+     `[INFO ] [ORDER_SVC   ] [tr-a1b2c3d4] - [KỊCH BẢN] <Tên kịch bản & mục tiêu> | task="...", type="..."`
+     `[INFO ] [ORDER_SVC   ] [tr-a1b2c3d4] - [ĐẦU VÀO] <Thông số kích hoạt> | method="POST", url="...", params="..."`
+     `[INFO ] [ORDER_SVC   ] [tr-a1b2c3d4] - [HỆ THỐNG TRẢ RA] <Giữ nguyên dữ liệu thực tế> | status=200, payload="..."`
+     `[INFO ] [ORDER_SVC   ] [tr-a1b2c3d4] - [KẾT QUẢ] <Kiểm chứng mong đợi vs thực tế> | verdict="PASSED"`
+   - **Full Audit Trail:** Ghi nhận đầy đủ 100% Request/Response của **CẢ TEST CASE PASSED VÀ FAILED** vào `test-output.log` và bảng trong `report.md`. Chi tiết xem [references/test_logging_guidelines.md](references/test_logging_guidelines.md).
+10. **Pre-generation Code Recon Gate (Tái Sử Dụng Code Authen & Sub Channel):** Trước khi viết bất kỳ file code test nào cho OpenAPI, Agent BẮT BUỘC phải quét mã nguồn (`grep_search`, `list_dir`) để tìm và import trực tiếp code có sẵn của developer (module auth, signature, token management, WebSocket client, channel subscription helper, enums). TUYỆT ĐỐI CẤM viết lại từ đầu.
+11. **E2E Order & Conditional Order State Transition Testing (Trigger - Listen - Verify):**
     - Khi test các task liên quan đến event trạng thái lệnh (`order_events`, `conditional_orders`), Agent BẮT BUỘC thiết kế kịch bản song hành: Mở WebSocket subscribe channel lệnh $\rightarrow$ Gọi REST API kích hoạt $\rightarrow$ Lắng nghe và verify event chuyển trạng thái.
     - **Bao phủ cả 2 nhóm:**
       + **Lệnh Thường (Normal Orders):** `PendingNew` $\rightarrow$ `New`, `PendingReplace` $\rightarrow$ `Replaced`, `PendingCancel` $\rightarrow$ `Cancelled`, `PartiallyFilled` & `Filled` (qua API Bắn Báo Cáo Khớp Lệnh ORS Admin UAT), `Rejected` (15 mã lỗi ORS), `WaitToConfirm` (thỏa thuận 2F).
@@ -189,6 +204,10 @@ Sau khi test chạy xong, Agent **BẮT BUỘC** xuất báo cáo Markdown tại
 
 ## Dấu Hiệu Cảnh Báo (Red Flags)
 
+- Cấu hình hoặc code chứa URL Metabase Production `mb.dnse.com.vn` (không có `mb-uat`) hoặc scan/query dữ liệu ngoài Metabase UAT
+- Gọi `logging.basicConfig(...)` trong `conftest.py` hay file test gây xung đột với Pytest `log_cli` làm nhân đôi dòng log
+- In log setup lê thê từng mã cổ phiếu trên từng test function thay vì gom gọn 1 dòng ở Session Scope
+- Log các step dài dòng văn vở, vi phạm cấu trúc flow text 4 thẻ tiếng Việt ([references/test_logging_guidelines.md](references/test_logging_guidelines.md)) hoặc tự vẽ ký tự cây tùy tiện
 - Xuất hiện mock server, fake adapter, hoặc thư viện mock (`unittest.mock`, `respx`, `responses`, `aioresponses`, `@patch`) trong test API/WS trên UAT
 - File log hoặc báo cáo thiếu danh sách các step thực hiện hoặc thiếu chi tiết Request Payload & Response Body của các test case PASSED
 - Tự viết lại client API/WebSocket, module login/auth/token trong khi workspace đã có sẵn code
@@ -218,6 +237,11 @@ Sau khi hoàn thành, Agent tự kiểm tra:
 - [ ] Đã quét (Code Recon Gate) và tái sử dụng trực tiếp module Auth, Token, HMAC Signature, và WebSocket Client có sẵn trong codebase ([references/recon_guide.md](references/recon_guide.md))
 - [ ] TUYỆT ĐỐI KHÔNG mock server/response trên UAT — toàn bộ request gọi thẳng `BASE_URL` (`openapi-uat`) và `WS_URL` (`ws-openapi-uat`)
 
+### Metabase UAT & Zero-Mutation Policy
+- [ ] 100% thiết kế và scan test chỉ thực hiện trên **Metabase UAT** (`https://mb-uat.dnse.com.vn`, DB 644)
+- [ ] Khóa chặn bảo mật: Code kiểm tra và ném `ValueError` ngay lập tức nếu URL chứa `mb.dnse.com.vn` (Metabase Production)
+- [ ] Mọi câu truy vấn dữ liệu là Native SQL `SELECT` Read-Only, tuyệt đối không sửa đổi DB hay bắn Kafka giả lập làm nhiễu sàn
+
 ### Coverage & Traceability
 - [ ] Mỗi scenario trong file `.feature` đều có test method tương ứng (đủ 100%)
 - [ ] Có test cho cả happy path và negative/edge cases (BVA/EP)
@@ -229,9 +253,12 @@ Sau khi hoàn thành, Agent tự kiểm tra:
 - [ ] Credentials đọc từ `.env` (kế thừa phân tầng theo [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md)), không nằm trong source code
 - [ ] Có fixture teardown dọn dẹp data rác an toàn bằng `try...finally`
 
-### Code Quality
+### Code Quality & Log Design
 - [ ] Không còn `print()`, `console.log()`, code comment rác
 - [ ] Sử dụng auto-retrying assertions (`expect`), TUYỆT ĐỐI KHÔNG hard sleep
+- [ ] **Không có `logging.basicConfig(...)` trong `conftest.py` hay test code**, log Pytest không bị nhân đôi
+- [ ] Setup log gom gọn 1 dòng duy nhất ở Session Scope, không in từng dòng đăng ký mã lê thê
+- [ ] Log từng test case theo chuẩn flow text 4 thẻ tiếng Việt (`[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]`) theo [references/test_logging_guidelines.md](references/test_logging_guidelines.md), không dùng ký tự vẽ cây và giữ nguyên 100% chi tiết dữ liệu thực tế hệ thống trả ra
 - [ ] Đã qua bước Review Code (Bước 6) — không bỏ qua
 
 ### Thực thi & Báo cáo

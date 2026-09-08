@@ -78,8 +78,8 @@ python_functions = test_*
 pythonpath = . steps ../../.. ../../../shared
 log_cli = true
 log_cli_level = INFO
-log_cli_format = %(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)
-log_cli_date_format = %Y-%m-%d %H:%M:%S
+log_cli_format = %(asctime)s [%(levelname)s] %(message)s
+log_cli_date_format = %H:%M:%S
 markers =
     scenario: Tên scenario BDD Gherkin tương ứng
     jira: Jira Issue Key tương ứng

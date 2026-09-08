@@ -211,8 +211,8 @@ pytest "$TEST_DIR" \
   -s \
   -o log_cli=true \
   -o log_cli_level=INFO \
-  -o log_cli_format="%(asctime)s [%(levelname)8s] (%(name)s:%(lineno)s) %(message)s" \
-  -o log_cli_date_format="%Y-%m-%d %H:%M:%S" \
+  -o log_cli_format="%(asctime)s [%(levelname)s] %(message)s" \
+  -o log_cli_date_format="%H:%M:%S" \
   -rA \
   --tb=short \
   --junitxml="$REPORT_DIR/junit.xml" \

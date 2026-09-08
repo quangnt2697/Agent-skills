@@ -28,7 +28,7 @@ $ARGUMENTS có thể chứa Jira issue key (VD: G3PTP-16825), đường dẫn th
    - Kiểm tra `pytest` và các thư viện cần thiết (`pytest-html`, `pytest-asyncio`, `playwright` nếu là UI).
    - Đảm bảo thư mục `$REPORT_DIR` được tạo (`mkdir -p "$REPORT_DIR"`), dọn dẹp các file trùng lặp cũ (`*-test-report.md`, log thừa) nếu có.
    - Thực thi test suite với full log chi tiết:
-     `pytest "$TEST_DIR" -o python_files="test_*.py *_test.py" -v -s -o log_cli=true -o log_cli_level=INFO -rA --tb=short --junitxml="$REPORT_DIR/junit.xml" --html="$REPORT_DIR/report.html" --self-contained-html 2>&1 | tee "$REPORT_DIR/test-output.log"`
+     `pytest "$TEST_DIR" -o python_files="test_*.py *_test.py" -v -s -o log_cli=true -o log_cli_level=INFO -o log_cli_format="%(asctime)s [%(levelname)s] %(message)s" -o log_cli_date_format="%H:%M:%S" -rA --tb=short --junitxml="$REPORT_DIR/junit.xml" --html="$REPORT_DIR/report.html" --self-contained-html 2>&1 | tee "$REPORT_DIR/test-output.log"`
    - File `$REPORT_DIR/test-output.log` ghi lại 100% full log chi tiết (nhờ cờ `-s`, `-o log_cli=true`, `-rA` và chuyển hướng `2>&1 | tee`).
    - **Self-fix Loop (tối đa 3 lần):** Nếu phát sinh lỗi kỹ thuật của script (ImportError, syntax, fixture thiếu, timeout chờ event...) → sửa script/fixture → chạy lại. Tuyệt đối KHÔNG sửa assertion/logic để ép test case FAIL (do bug ứng dụng) thành PASS.
 

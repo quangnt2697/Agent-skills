@@ -66,32 +66,20 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - Self-fix Loop chỉ dùng để sửa **lỗi kỹ thuật của script** (ImportError, SyntaxError, fixture thiếu, timeout config sai, connection refused...).
 - **KHÔNG ĐƯỢC sửa code để ép test case từ FAIL thành PASS.** Nếu test case FAIL vì ứng dụng/API trả kết quả sai so với spec → đó là kết quả hợp lệ, ghi nhận vào báo cáo, KHÔNG can thiệp.
 
-### 1.10. Ghi Log Toàn Bộ Các Step Thực Hiện & Chi Tiết Payload / Response (Passed & Failed)
-- **BẮT BUỘC cho 100% Test Case (Cả Passed & Failed):** Toàn bộ test case (UI, API, WebSocket) — **bất kể kết quả là ✅ PASSED hay ❌ FAILED** — đều phải được hệ thống logging ghi nhận chi tiết đầy đủ 2 phần:
-  1. **Danh sách Toàn bộ các Step Thực hiện (Step Execution Logging):**
-     - Ghi nhận chi tiết từng bước Given / When / Then / And / But đã chạy.
-     - Trạng thái thực thi của từng step (✅ PASSED / ❌ FAILED) và thời gian hoàn thành (latency ms).
-     - Chi tiết lỗi phát sinh tại step cụ thể nếu step đó bị fail.
-     - Triển khai qua fixture context manager `with step("Given..."):` hoặc tự động trích xuất từ docstring của test function.
-  2. **Chi tiết Tương Tác Dữ Liệu & Payload / Response:**
-     - **Với HTTP/REST API:**
-       + Timestamp thực hiện
-       + HTTP Method & Full Request URL (bao gồm path params và query params)
-       + Request Headers (masking sensitive tokens nhưng giữ nguyên định dạng)
-       + Request Payload / Body (JSON formatted)
-       + HTTP Status Code & Status Text (VD: `200 OK`, `400 Bad Request`)
-       + Response Time / Latency (ms)
-       + Response Headers
-       + Full Response Body (JSON formatted)
-     - **Với WebSocket:**
-       + Timestamp kết nối & Full WS URL kèm query/auth params
-       + Outgoing Messages: Action, Channel/Topic, Payload JSON
-       + Inbound Events: Channel/Topic, Timestamp, Full Event Payload JSON
-       + Thời gian chờ/nhận event (ms)
-- **Đầu ra log:**
-  1. Ghi có cấu trúc vào file `workspace/{issueKey}/test/result/test-output.log` với khối `[STEPS EXECUTED]` và khối `[HTTP / WS]` có divider rõ ràng.
-  2. Xuất đầy đủ vào mục **Chi tiết Request & Response và Các Step Thực Hiện** trong báo cáo `workspace/{issueKey}/test/result/report.md` cho từng testcase để QA, BA và Dev có thể audit và debug trực tiếp mà không cần chạy lại test.
-- **CẤM TUYỆT ĐỐI:** Chỉ log khi test failed hoặc chỉ in log chung chung một dòng status code.
+### 1.10. Chuẩn Thiết Kế Log Kiểm Thử (Test Logging Standard)
+- **Cấu trúc Thống nhất & Căn Chỉnh Thẳng Hàng:** Toàn bộ log của mọi loại test (API, WebSocket, Database, Web UI, State Transition) bắt buộc tuân theo mẫu cố định:
+  ```text
+  [TIMESTAMP] [LEVEL] [SERVICE] [TRACE_ID] - MESSAGE | CONTEXT
+  ```
+  Phần tiền tố `[TIMESTAMP] [LEVEL] [SERVICE] [TRACE_ID] - ` bắt buộc được pad độ rộng cố định để luôn thẳng hàng trên mọi dòng log.
+- **4 Quy Tắc Vàng Khi Viết Log:**
+  1. **Không log dữ liệu nhạy cảm:** Bắt buộc che (mask) `password`, `token`, `api_secret`, thẻ tín dụng, `cccd`.
+  2. **Message phải cố định, Data để vào Context:** Không ghép chuỗi biến động vào `MESSAGE` để phục vụ lọc thống kê. Dữ liệu kỹ thuật đưa vào `CONTEXT` dạng `key="value"`.
+  3. **Phân loại Level nghiêm ngặt:** Sử dụng đúng chuẩn `ERROR` (hỏng hóc/test fail), `WARN` (bất thường/chậm), `INFO` (luồng bình thường/kết quả), `DEBUG` (chi tiết nội bộ/raw query).
+  4. **Chống trùng lặp & Khởi tạo gọn gàng:** Cấm tuyệt đối `logging.basicConfig(...)` trong test script/conftest (tránh nhân đôi log Pytest). Khởi tạo môi trường chỉ in đúng 1 dòng tóm tắt ở Session Scope.
+- **Không Dùng Ký Tự Cây:** Tuyệt đối không dùng các ký tự ASCII tree (`▶`, `├─`, `└─`). Log hiển thị theo dạng flow text tuần tự tự nhiên với 4 thẻ tiếng Việt: `[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]`.
+- **Ghi nhận Full Audit Trail:** File `workspace/{issueKey}/test/result/test-output.log` và bảng trong `report.md` vẫn lưu trữ đầy đủ 100% Request/Response của **CẢ TEST CASE PASSED VÀ FAILED**.
+- 📖 **Cẩm nang & Template Chi Tiết Cho Mọi Loại Test/Task:** Bắt buộc tham chiếu và tuân thủ [test_logging_guidelines.md](test_logging_guidelines.md). Không định nghĩa template riêng lẻ trong file này.
 
 ### 1.11. Tuyệt Đối Không Mock Server Trên UAT (Real Base URLs Only)
 - **NGHIÊM CẤM MOCK TRÊN MÔI TRƯỜNG UAT:** Khi viết auto test script cho OpenAPI (REST API) hoặc WebSocket trên môi trường UAT / Sandbox, Agent **TUYỆT ĐỐI KHÔNG** được sử dụng mock server, mock client, hoặc thư viện giả lập (như `unittest.mock`, `pytest-mock`, `respx`, `responses`, `aioresponses`, WireMock, hay local mock websocket server).
@@ -116,6 +104,20 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
   1. Decorator `@pytest.mark.scenario("<Tên scenario chính xác trong .feature>")`
   2. Decorator `@pytest.mark.jira("{issueKey}")`
   3. Docstring trích dẫn nguyên văn kịch bản BDD tương ứng (Given / When / Then) để bảo đảm ma trận truy vết 1-1 giữa code automation và tài liệu Gherkin.
+
+### 1.14. Chỉ Luôn Thiết Kế & Scan Test Trên Metabase UAT (Metabase UAT Strict Policy & Zero-Mutation)
+- **Môi trường Duy nhất:** Agent **BẮT BUỘC CHỈ LUÔN** thiết kế kịch bản kiểm thử, quét dữ liệu thị trường (scan/recon) và thực thi test trên môi trường **Metabase UAT** (`https://mb-uat.dnse.com.vn`, Database ID: `644`).
+- **Khóa Chặn Bảo Mật Tuyệt Đối (Security Gate):**
+  - **NGHIÊM CẤM** kết nối, query hoặc scan test trên **Metabase Production** (`https://mb.dnse.com.vn` hoặc bất kỳ hostname production nào).
+  - Mã nguồn service/test runner BẮT BUỘC phải cài đặt kiểm tra an toàn:
+    ```python
+    if "mb.dnse.com.vn" in metabase_url and "mb-uat" not in metabase_url:
+        raise ValueError("[SECURITY_VIOLATION] Nghiêm cấm kết nối Metabase Production!")
+    ```
+- **Zero-Mutation Policy:**
+  - Mọi câu truy vấn dữ liệu là Native SQL `SELECT` Read-Only để quan sát và đối chiếu.
+  - Tuyệt đối KHÔNG chạy câu lệnh sửa đổi (`INSERT`, `UPDATE`, `DELETE`, `DROP`).
+  - Tuyệt đối KHÔNG publish message Kafka giả lập lên các topic sàn thật (`Board_event`, `Prices`, `Deem_Trade_Price`) làm lệch phiên của môi trường UAT.
 
 ---
 
