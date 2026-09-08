@@ -7,6 +7,9 @@ description: 'Download Jira task có ý tưởng thô/mơ hồ, mài giũa (refi
 
 Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành spec chi tiết rõ ràng → Push lại lên Jira theo cấu trúc chuẩn.
 
+> ⚠️ **BẮT BUỘC ĐỐI VỚI BÀI TOÁN CHỨNG KHOÁN & FINTECH:**
+> Khi mài giũa spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, dữ liệu thị trường KRX (MDDS), chuyển phiên, Random End, hoặc quản trị vị thế ký quỹ (Deal-based Margin), Agent **BẮT BUỘC đọc và đối chiếu nghiêm ngặt [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md)** trong toàn bộ các giai đoạn Phân kỳ, Hội tụ, và Mài sắc spec.
+
 ## Ranh giới: ba-spec vs ba-refine
 
 | Khía cạnh     | ba-spec                             | ba-refine                                |
@@ -302,6 +305,11 @@ Skill này tương tác với Jira/Confluence qua **2 phương thức** (theo th
      - User Flow & UI: Có thay đổi UI không? Flow thao tác như thế nào?
      - Tiêu chí Thành công: Thế nào gọi là thành công? Metrics đo lường?
      - Ghi chú Kỹ thuật: Ràng buộc API, Database? Pháp lý/bảo mật? Hiệu năng?
+   - **Đối chiếu Nghiệp vụ Chứng khoán (nếu thuộc domain chứng khoán):** Bắt buộc tham chiếu `references/securities-domain-rules.md` để làm rõ:
+     - Mô hình tài khoản: Deal-based `(accountNo, symbol, loanPackageId)` hay Portfolio-based?
+     - Loại lệnh & Hiệu lực: Loại lệnh (`NORMAL`, `STOP`, `TRAILING_STOP`, `TRADING_EVENT`, `OCO`), Time-In-Force (`DAY`, `GTD`, `GTC`), các sàn áp dụng (HOSE, HNX, UPCOM)?
+     - Ràng buộc phiên & khớp lệnh: ATO, Liên tục, ATC, PLO, Random End (RE)?
+     - Ràng buộc sửa/hủy: $newQuantity > filledQuantity$, cấm sửa/hủy trong ATO/ATC/Random End?
    - Nếu phát hiện có sự chênh lệch lớn giữa hiện trạng (AS-IS) và mục tiêu (TO-BE), hãy gọi kỹ năng `/ba-gap-analysis`.
    - Nếu task đụng đến nhiều bộ phận/vai trò khác nhau, hãy gọi kỹ năng `/ba-stakeholder-interview`.
 
@@ -357,7 +365,7 @@ Skill này tương tác với Jira/Confluence qua **2 phương thức** (theo th
    - **Giá trị Người dùng:** Ai được lợi? Đến mức nào? Painkiller hay vitamin?
    - **Tính Khả thi:** Chi phí kỹ thuật và tài nguyên? Đoạn khó nhất?
    - **Sự Khác biệt:** Điều gì làm cho khác biệt? Có đủ hấp dẫn để chuyển đổi?
-   - **Rủi ro (Fintech/Banking):** Rủi ro mất tiền, lừa đảo, lộ dữ liệu? ACID compliance?
+   - **Rủi ro (Fintech/Banking/Securities):** Rủi ro mất tiền, lừa đảo, lộ dữ liệu? ACID compliance? Tuân thủ quy chế các Sở giao dịch (HOSE/HNX/UPCOM)? 15 mã lỗi ORS? Quy tắc cấm sửa/hủy trong ATO/ATC/Random End? Rủi ro lệch phiên giữa mã và bảng?
 
 3. **Vạch trần các giả định ẩn (Surface hidden assumptions)**
    
@@ -411,6 +419,7 @@ Trong 🧱 Technical Notes, xoá luôn các sub-heading không có nội dung �
 
 **User Story & Acceptance Criteria:**
 - Giao toàn bộ việc sinh và định dạng User Story cùng Acceptance Criteria cho kỹ năng bổ trợ `/ba-user-story-writing`. Kỹ năng này sẽ đảm bảo tiêu chuẩn INVEST và định dạng phù hợp trước khi điền vào template.
+- **Đối với nghiệp vụ Chứng khoán:** Khai báo rõ ràng mô hình Deal-based `(accountNo, symbol, loanPackageId)`, loại lệnh và Time-In-Force. Trong 🧱 Technical Notes, bắt buộc ghi chú cơ chế tự động Fallback sang Lệnh 24/7 khi ngoài phiên/mã Halt (`EI8`), cơ chế tự động hủy lệnh điều kiện khi có sự kiện chốt quyền cổ tức (`CANCELLED_BY_RIGHTS_EVENT`), và 15 mã lỗi ORS tương ứng.
 
 **Bảng markdown:** chỉ dùng ở Success Metrics và Tracking. Script push dựng bảng ADF thật, nên phải viết đúng cú pháp GFM (có hàng phân cách `|---|`) và mọi hàng phải cùng số cột.
 
@@ -1027,25 +1036,33 @@ Compliance-First (Direction C) sẽ deliver value nhanh hơn."
 
 ---
 
-### 5. Fintech-Specific Checks
+### 5. Fintech & Securities Domain Specific Checks
 
-Với mọi feature liên quan tiền/giao dịch, **BẮT BUỘC** hỏi:
+Với mọi feature liên quan tiền, tài khoản hoặc giao dịch chứng khoán, **BẮT BUỘC** đối chiếu [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md) và kiểm tra:
 
+#### Checklist Fintech Chung:
 - [ ] Có rủi ro mất tiền không? (Fraud, double-charging, errors)
 - [ ] Có rủi ro lộ lọt dữ liệu không? (PII, financial data)
 - [ ] ACID compliance? (Transaction consistency)
 - [ ] Audit trail? (Compliance requirements)
 - [ ] Performance at scale? (Latency, throughput)
 
+#### Checklist Nghiệp vụ Chứng khoán (Bắt buộc nếu đụng tới Lệnh / Giá / Margin):
+- [ ] **Mô hình Quản trị Tài khoản:** Phân định rõ Deal-based `(accountNo, symbol, loanPackageId)` vs Portfolio-based (1 tài khoản đơn nhất, không dùng tiểu khoản .1/.6).
+- [ ] **Phân loại Lệnh & Hiệu lực:** Khai báo chính xác `orderCategory` (`NORMAL`, `STOP`, `TRAILING_STOP`, `TRADING_EVENT`, `OCO`) và `Time-In-Force` (`DAY`, `GTD`, `GTC`).
+- [ ] **Quy chuẩn Sửa/Hủy Lệnh:** Chỉ cho phép sửa lệnh LO trong phiên liên tục với điều kiện $newQuantity > filledQuantity$. Cấm sửa/hủy trong ATO/ATC và thời gian Random End.
+- [ ] **Quy chuẩn Random End (RE):** Điều kiện nhận diện mã RE (`expected_price != 0` ATO; `expected_price != 0 & expected_quantity != 0` ATC), thời gian trễ tối đa 2 phút sau 09:15 / 14:45, chặn lệnh MTL/MP, hiển thị icon RE + tooltip theo thứ tự ưu tiên (`Warning > RE > Event > Tag > Bóng đèn`).
+- [ ] **Mã lỗi ORS & Fallback 24/7:** Bao phủ 15 mã lỗi ORS chuẩn, quy định rõ cơ chế tự động Fallback sang Lệnh 24/7 khi ngoài phiên/mã Halt (`EI8`), và tự động hủy lệnh điều kiện khi có sự kiện chia cổ tức (`CANCELLED_BY_RIGHTS_EVENT`).
+
 Nếu user không mention, **PHẢI HỎI RÕ:**
 
 ```
 [AskUserQuestion triggered]
-Q: "Feature này có chạm vào dữ liệu giao dịch hoặc tài chính không?"
+Q: "Feature này có chạm vào dữ liệu giao dịch hoặc tài chính chứng khoán không?"
 Options:
-- Có, export bao gồm transaction history
-- Có, export bao gồm account balance
-- Không, chỉ là static reports
+- Có, liên quan đến đặt/sửa/hủy lệnh hoặc bảng giá/chuyển phiên
+- Có, liên quan đến quản lý Deal/Margin hoặc sao kê số dư
+- Không, chỉ là giao diện hoặc báo cáo tĩnh
 ```
 
 ---
@@ -1068,13 +1085,14 @@ Xem `plugins/ba-po/skills/ba-refine/examples.md` để có ví dụ đầy đủ
 Trước khi gọi `jira-push-spec.sh`, verify:
 
 - [ ] **User Story:** Có đầy đủ Role + Goal + Value, KHÔNG chung chung
-- [ ] **Acceptance Criteria:** ≥2 scenarios, dạng Given-When-Then, testable
+- [ ] **Acceptance Criteria:** ≥2 scenarios, dạng Given-When-Then, testable (bao gồm Happy Case, Edge Case, Validation Case)
 - [ ] **Success Metrics:** Có baseline + target + measurement method
 - [ ] **Assumptions:** Đã surface ≥3 giả định + risks
 - [ ] **Confidence:** ≥90%
 - [ ] **Tone:** Đã review, không có weasel words ("có lẽ", "có thể", "chắc")
 - [ ] **Sạch template:** 2 lệnh `grep` ở Giai đoạn 4 Bước 1 không in ra gì
 - [ ] **Bảng đúng cú pháp:** `DRY_RUN=1` báo đúng số bảng mong đợi
+- [ ] **Domain Chứng khoán:** Nếu là bài toán chứng khoán, đã đối chiếu và tuân thủ [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md) (Deal-based, loại lệnh, quy chuẩn sửa/hủy, Random End, mã lỗi ORS)
 
 Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
 
@@ -1101,6 +1119,15 @@ Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
    /e2e-delivery {issueKey}
    ```
    → Chạy toàn bộ BA → DEV → QA workflow
+
+---
+
+## Xem thêm
+
+- [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/references/securities-domain-rules.md)
+- [Quy trình Quản lý Tài liệu Atlassian](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/references/atlassian-mcp-strategy.md)
+- [Ví dụ Refine Chất lượng Cao](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-refine/examples.md)
+- [Jira Description Template](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-refine/templates/jira-description-template.md)
 
 ---
 

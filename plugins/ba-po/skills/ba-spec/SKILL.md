@@ -26,6 +26,9 @@ Tự động hoá quy trình import và phân tích tài liệu từ **Jira** v�
 - Bắt đầu bất kỳ pipeline nào cần spec làm đầu vào (`/qa-test-design`, `/tech-spec`, `/e2e-delivery`)
 - Cần tài liệu bàn giao cho QA và DEV cùng đọc, thay vì mỗi bên tự diễn giải Jira theo cách riêng
 
+> ⚠️ **BẮT BUỘC ĐỐI VỚI BÀI TOÁN CHỨNG KHOÁN & FINTECH:**
+> Khi bài toán liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, dữ liệu thị trường KRX (MDDS), chuyển phiên, Random End, hoặc quản trị vị thế ký quỹ (Deal-based Margin), Agent **BẮT BUỘC đọc và đối chiếu nghiêm ngặt [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md)** trong suốt quá trình phân tích và tổng hợp spec.
+
 **KHÔNG sử dụng khi:**
 - Jira chỉ có ý tưởng thô, mơ hồ, cần brainstorm để làm rõ trước → dùng `ba-refine`
 - Không có Jira/Confluence, chỉ có code đang chạy → dùng `qa-code2spec`
@@ -318,6 +321,12 @@ Sau đó đọc file profile tương ứng:
 
 Agent trích xuất thông tin theo **9 chiều phân tích** được định nghĩa trong profile.
 
+### Đối chiếu Cẩm nang Nghiệp vụ Chứng khoán & Fintech (`references/securities-domain-rules.md`)
+Nếu task thuộc domain chứng khoán hoặc giao dịch, trích xuất thêm các thực thể bắt buộc:
+1. **Mô hình Quản trị Tài khoản:** Phân định rõ Deal-based Margin hay Portfolio-based. Nếu là Deal-based, xác định bộ ba định danh Deal `(accountNo, symbol, loanPackageId)`, tài khoản đơn nhất (thay thế mô hình tiểu khoản .1/.6).
+2. **Phân loại Lệnh & Thuộc tính:** Khai báo chi tiết `orderCategory` (`NORMAL`, `STOP`, `TRAILING_STOP`, `TRADING_EVENT`, `OCO`), Time-In-Force (`DAY`, `GTD`, `GTC`).
+3. **Quy tắc Sàn & Phiên:** Xác định sàn giao dịch (HOSE, HNX, UPCOM) và ma trận lệnh hợp lệ theo từng phiên (ATO, Liên tục, ATC, PLO).
+
 ### Đánh dấu trạng thái mỗi chiều
 - ✅ **Rõ ràng** — thông tin đầy đủ, không cần hỏi thêm
 - ⚠️ **Mơ hồ** — có thông tin nhưng chưa rõ chi tiết
@@ -342,6 +351,20 @@ Dựa trên việc đọc **TOÀN BỘ** các Jira task, Confluence page và fil
 | 📱 APP | Behavior khi app background/foreground? Offline mode? Permission denied? Biometric fallback? Deep link format? Push notification payload? |
 | 🌐 WEB | Responsive breakpoint cụ thể? Browser support? SEO impact? URL state khi back/refresh? Real-time hay polling? Export format?              |
 | 🔌 API | Idempotency key? Rate limit rule? Error code mapping? Pagination strategy? Webhook vs polling? Schema versioning?                         |
+
+### Gaps đặc thù Chứng khoán & Fintech (Tham chiếu `references/securities-domain-rules.md`)
+Khi task liên quan đến chứng khoán, đối chiếu và phát hiện các gaps cốt lõi sau:
+1. **Quy chuẩn Sửa/Hủy Lệnh (Replace/Cancel Order):**
+   - Tài liệu gốc có ghi rõ điều kiện sửa lệnh: Chỉ áp dụng cho lệnh LO trong phiên liên tục và bắt buộc $newQuantity > filledQuantity$ không?
+   - Có ghi rõ cấm sửa/hủy trong phiên ATO, ATC và trong giai đoạn Random End không?
+2. **Quy chuẩn Random End (Khớp lệnh Định kỳ Ngẫu nhiên):**
+   - Có đặc tả điều kiện nhận diện mã RE không (`expected_price != 0` tại ATO; `expected_price != 0 & expected_quantity != 0` tại ATC)?
+   - Có nêu rõ thời gian hoãn chuyển phiên tối đa 2 phút sau 09:15 / 14:45 và cơ chế chặn lệnh MTL/MP không?
+   - Trên UI (Web/App), có quy định thứ tự ưu tiên hiển thị Icon RE (`Warning > RE > Event > Tag > Bóng đèn`) và nội dung tooltip giải thích không?
+3. **Mã lỗi ORS & Cơ chế Fallback:**
+   - Đã bao phủ các kịch bản lỗi ORS phổ biến (15 mã lỗi chuẩn) như: sai bước giá, vượt biên độ trần/sàn, vi phạm tỷ lệ margin, sức mua không đủ?
+   - Có quy định cơ chế tự động Fallback sang Lệnh 24/7 khi khách hàng đặt lệnh ngoài phiên hoặc khi mã bị tạm ngưng giao dịch (`EI8`) không?
+   - Đối với lệnh điều kiện, có quy định cơ chế tự động hủy lệnh khi phát sinh sự kiện quyền cổ tức (`CANCELLED_BY_RIGHTS_EVENT`) không?
 
 ### Output Phase 3
 Danh sách câu hỏi cần làm rõ, sắp xếp theo mức độ:
@@ -441,6 +464,13 @@ Nếu file `/project-root/workspace/{issueKey}/spec/final.md` (hoặc `/project-
   - **"📝 Text Flow":** Viết Section 5 dạng danh sách bước có đánh số và mô tả luồng ngoại lệ. Không gọi `/ba-process-modeling`, không render PNG.
   - **"⏭️ Không cần flow":** Ghi "Không áp dụng — [lý do: Bug fix / Task đơn giản / User chọn bỏ qua]" vào Section 5. Không gọi `/ba-process-modeling`.
 
+- **Section 4 (Validation Rules) & Section 8 (Business Rules & Edge Cases) đối với nghiệp vụ Chứng khoán:**
+  Khi tổng hợp hai section này cho bài toán chứng khoán, Agent **BẮT BUỘC đưa vào các quy tắc chuẩn từ `references/securities-domain-rules.md`**:
+  - Biên độ dao động giá ($\pm 7\%$ HOSE, $\pm 10\%$ HNX, $\pm 15\%$ UPCOM), bảng bước giá (10đ, 50đ, 100đ), quy tắc lô chẵn (100) và lô lẻ (1-99).
+  - Điều kiện Sửa lệnh ($newQuantity > filledQuantity$, chỉ LO trong phiên liên tục) và cấm sửa/hủy trong ATO/ATC/Random End.
+  - Quy chuẩn Random End: điều kiện nhận diện, thời gian trễ tối đa 2 phút, quy tắc hiển thị icon và tooltip.
+  - Quản trị vị thế ký quỹ: quy tắc Deal `(accountNo, symbol, loanPackageId)`, giá chặn margin (Cap Price), và tỷ lệ an toàn $R_{\text{deal}}$.
+
 - Để xây dựng nội dung cho **Section 9 (Acceptance Criteria / User Stories)**, hãy gọi kỹ năng `/ba-user-story-writing` để phân tách và chuẩn hóa User Stories.
 - Mọi kết quả sinh ra từ các kỹ năng bổ trợ phải được tổng hợp vào cùng một file `final.md` duy nhất.
 
@@ -532,6 +562,7 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 - Có tài liệu tham chiếu tải về nhưng không đoạn nào trong `final.md` trích dẫn tới
 - Spec chứa API contract, database schema, hoặc test case — vượt ranh giới BA/PO (xem CLAUDE.md)
 - Loại task (APP/WEB/API) không được nhận diện, nên trích xuất theo profile sai
+- **Task liên quan đến chứng khoán/đặt lệnh/bảng giá nhưng không tham chiếu `references/securities-domain-rules.md`, tự bịa quy tắc phiên, thiếu điều kiện Random End, hoặc không bao phủ mã lỗi ORS**
 
 ## Xác minh
 
@@ -547,6 +578,7 @@ Trước khi bàn giao spec cho QA hoặc DEV:
 - [ ] Câu hỏi 🔴 Critical đã được trả lời qua Phase 4, hoặc được nêu rõ là điểm dừng theo trường hợp 3 của `autonomy-contract.md`
 - [ ] Gap chưa giải quyết được ghi vào mục *Giả định & Rủi ro* kèm mức ảnh hưởng
 - [ ] Không chứa Tech-Spec, API contract, database schema, hay test case
+- [ ] **Nếu là bài toán chứng khoán/fintech: Đã đối chiếu và tuân thủ các quy tắc trong `references/securities-domain-rules.md` (Deal-based, loại lệnh, quy tắc sửa/hủy, Random End, 15 mã lỗi ORS)**
 
 ---
 
@@ -573,6 +605,16 @@ Import Jira/Conf         Thiết kế Checklist       Sinh code automation     C
                                                   → Chạy test
 ```
 
+
+---
+
+## Xem thêm
+
+- [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/references/securities-domain-rules.md)
+- [Quy trình Quản lý Tài liệu Atlassian](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/references/atlassian-mcp-strategy.md)
+- [Profile trích xuất APP](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-spec/references/profile-app.md)
+- [Profile trích xuất WEB](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-spec/references/profile-web.md)
+- [Profile trích xuất API](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-spec/references/profile-api.md)
 
 ---
 <CRITICAL_RULE>

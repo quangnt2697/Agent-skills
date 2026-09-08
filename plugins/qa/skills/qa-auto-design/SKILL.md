@@ -34,7 +34,10 @@ Người dùng gọi lệnh `/qa-auto-design` hoặc yêu cầu "viết code aut
 5. **Self-fix Loop:** Agent tự chạy test → nếu script lỗi runtime (ImportError, SyntaxError...) → tự đọc log, sửa script, chạy lại → đến khi script thực thi hoàn tất. KHÔNG sửa code để ép test case FAIL thành PASS.
 6. **Cấu Trúc Chuẩn & Kế Thừa Môi Trường (3-Tier):** Mã automation test bắt buộc tuân theo blueprint thư mục tại `workspace/{issueKey}/test/` (xem [references/folder_structure_blueprint.md](references/folder_structure_blueprint.md)), tuyệt đối không tự nghĩ ra file/thư mục tùy tiện. Tự động kế thừa credentials (`api-key`, `api-secret`, URLs, tokens) từ Root và các task anh em cùng hệ thống (xem [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md)).
 7. **Tuyệt Đối Không Mock Server Trên UAT (Real Base URLs Only):** NGHIÊM CẤM dựng mock server, fake client hoặc dùng `unittest.mock`/`respx` trong auto test API và WebSocket trên môi trường UAT. Mọi request/socket BẮT BUỘC kết nối trực tiếp vào Real Base URLs (`BASE_URL=https://openapi-uat.dnse.com.vn` hoặc sandbox, `WS_URL=wss://ws-openapi-uat.dnse.com.vn`) kế thừa từ `.env`.
-8. **Bắt Buộc Full Request/Response Logging (100% Test Case, Cả Passed & Failed):** Mọi test case API và WebSocket bắt buộc phải có hệ thống logging/interceptor ghi nhận chi tiết: URL, Method, Headers, Request Body, Status Code, Latency (ms), Response Body cho **CẢ TEST CASE PASSED LẪN FAILED** vào `test-output.log` và báo cáo `report.md`. CẤM TUYỆT ĐỐI chỉ log chung chung hoặc chỉ log khi test fail.
+8. **Bắt Buộc Ghi Log Toàn Bộ Các Step Thực Hiện & Full Request/Response Logging (100% Test Case, Cả Passed & Failed):** Mọi test case (UI, API, WebSocket) bắt buộc phải có hệ thống logging ghi nhận:
+   - **Danh sách toàn bộ các step đã thực hiện (Given/When/Then, Actions, Assertions)** kèm trạng thái Pass/Fail và thời gian thực thi của từng step.
+   - **Chi tiết Request & Response:** Method, URL, Headers, Request Body, Status Code, Latency (ms), Response Body (hoặc WebSocket frames) cho **CẢ TEST CASE PASSED LẪN FAILED** vào `test-output.log` và báo cáo `report.md`.
+   CẤM TUYỆT ĐỐI chỉ log chung chung hoặc chỉ log khi test fail.
 9. **Pre-generation Code Recon Gate (Tái Sử Dụng Code Authen & Sub Channel):** Trước khi viết bất kỳ file code test nào cho OpenAPI, Agent BẮT BUỘC phải quét mã nguồn (`grep_search`, `list_dir`) để tìm và import trực tiếp code có sẵn của developer (module auth, signature, token management, WebSocket client, channel subscription helper, enums). TUYỆT ĐỐI CẤM viết lại từ đầu.
 10. **E2E Order & Conditional Order State Transition Testing (Trigger - Listen - Verify):**
     - Khi test các task liên quan đến event trạng thái lệnh (`order_events`, `conditional_orders`), Agent BẮT BUỘC thiết kế kịch bản song hành: Mở WebSocket subscribe channel lệnh $\rightarrow$ Gọi REST API kích hoạt $\rightarrow$ Lắng nghe và verify event chuyển trạng thái.
@@ -124,6 +127,7 @@ Trước khi viết bất kỳ code Page Object hay Service nào, Agent **BẮT 
    - 📖 **Cẩm nang chi tiết & Kỹ thuật gọi API:** Xem [references/order_state_testing.md](references/order_state_testing.md) và code mẫu [examples/test_ws_example.py](examples/test_ws_example.py).
 3. **Quy tắc kỹ thuật cốt lõi:**
    - Cấu trúc chuẩn: Arrange $\rightarrow$ Act $\rightarrow$ Assert.
+   - **Ghi Log Từng Step Thực Hiện (Step Execution Logging):** Trong từng hàm test, BẮT BUỘC ghi nhận danh sách toàn bộ các step (Given/When/Then/And) thông qua context manager `with step("Given..."):` (từ fixture `step`) hoặc gọi `test_log_collector.record_step("...", status="PASSED")`. Toàn bộ các step này sẽ được ghi nhận vào `test-output.log` và bảng trong `report.md` để phản ánh trung thực 100% tiến trình chạy.
    - Tham số hóa & Ánh xạ ranh giới động: Dùng `@pytest.mark.parametrize` kết hợp `EnvConfig.resolve_boundary(...)`.
    - Dữ liệu động: Unique bằng format `[prefix]_[testName]_[timestamp]`.
    - Teardown an toàn: Dùng fixture `yield` với khối `try...finally` đảm bảo luôn dọn dẹp data rác.
@@ -161,9 +165,10 @@ Sau khi test chạy xong, Agent **BẮT BUỘC** xuất báo cáo Markdown tại
 1. **Thông tin chung:** Ngày chạy, môi trường (UAT/Staging), framework, Task Type, đường dẫn file `.feature`.
 2. **Bảng Tổng kết:** Tổng số test cases, Passed, Failed, Skipped, Thời gian chạy.
 3. **Bảng Chi tiết kết quả:** Liệt kê từng test method kèm trạng thái và thời gian.
-4. **Bảng Chi tiết Request & Response (BẮT BUỘC cho API/WS):** Hiển thị đầy đủ Method, URL, Headers, Request Body, Status Code, Latency, Response Body của **100% TEST CASE (CẢ PASSED VÀ FAILED)**.
-5. **Chi tiết lỗi (nếu có):** Stacktrace, error message, và screenshot (cho Web UI).
-6. **Ma trận Truy vết (Traceability Matrix):** Ánh xạ Scenario `.feature` $\leftrightarrow$ Test Method và End-to-End Traceability (Biz-spec $\rightarrow$ Checklist $\rightarrow$ Gherkin $\rightarrow$ Test).
+4. **Danh sách Chi tiết các Step Thực Hiện (Executed Steps):** Ghi nhận toàn bộ các bước Given / When / Then đã chạy kèm trạng thái Pass/Fail và thời gian của từng bước.
+5. **Bảng Chi tiết Request & Response (BẮT BUỘC cho API/WS):** Hiển thị đầy đủ Method, URL, Headers, Request Body, Status Code, Latency, Response Body của **100% TEST CASE (CẢ PASSED VÀ FAILED)**.
+6. **Chi tiết lỗi (nếu có):** Stacktrace, error message, và screenshot (cho Web UI).
+7. **Ma trận Truy vết (Traceability Matrix):** Ánh xạ Scenario `.feature` $\leftrightarrow$ Test Method và End-to-End Traceability (Biz-spec $\rightarrow$ Checklist $\rightarrow$ Gherkin $\rightarrow$ Test).
 
 📖 **Template Báo cáo Chuẩn:** Xem chi tiết tại [references/report_template.md](references/report_template.md).
 
@@ -185,7 +190,7 @@ Sau khi test chạy xong, Agent **BẮT BUỘC** xuất báo cáo Markdown tại
 ## Dấu Hiệu Cảnh Báo (Red Flags)
 
 - Xuất hiện mock server, fake adapter, hoặc thư viện mock (`unittest.mock`, `respx`, `responses`, `aioresponses`, `@patch`) trong test API/WS trên UAT
-- File log hoặc báo cáo thiếu chi tiết Request Payload & Response Body của các test case PASSED
+- File log hoặc báo cáo thiếu danh sách các step thực hiện hoặc thiếu chi tiết Request Payload & Response Body của các test case PASSED
 - Tự viết lại client API/WebSocket, module login/auth/token trong khi workspace đã có sẵn code
 - Test event chuyển trạng thái lệnh nhưng chỉ nghe thụ động hoặc mock data mà không gọi API đặt lệnh kích hoạt
 - Số test case sinh ra ít hơn số `Scenario` + dòng `Examples` trong file `.feature`
@@ -232,7 +237,7 @@ Sau khi hoàn thành, Agent tự kiểm tra:
 ### Thực thi & Báo cáo
 - [ ] Chạy qua toàn bộ các scenario bằng `pytest`
 - [ ] Xuất báo cáo Markdown với bảng tổng kết Pass/Fail
-- [ ] Ghi log chi tiết Request Payload & Response Body của **100% test cases** (CẢ PASSED VÀ FAILED) vào `test-output.log` và bảng trong `report.md` theo [references/report_template.md](references/report_template.md)
+- [ ] Ghi log chi tiết toàn bộ các step thực hiện (Given/When/Then) và Request Payload & Response Body của **100% test cases** (CẢ PASSED VÀ FAILED) vào `test-output.log` và bảng trong `report.md` theo [references/report_template.md](references/report_template.md)
 - [ ] Bảng truy vết Scenario ↔ Test method đầy đủ
 - [ ] Screenshot đính kèm khi UI test fail
 
@@ -267,6 +272,7 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 ## Xem Thêm
 
+- [../../../../references/securities-domain-rules.md](../../../../references/securities-domain-rules.md) — Cẩm nang nghiệp vụ chứng khoán & fintech bắt buộc tham chiếu
 - [references/folder_structure_blueprint.md](references/folder_structure_blueprint.md) — Quy định cấu trúc thư mục chuẩn & ma trận file cho phép theo Task Type
 - [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md) — Cơ chế kế thừa biến môi trường 3 tầng & fixtures dùng chung
 - [references/recon_guide.md](references/recon_guide.md) — Hướng dẫn chuyên sâu quy trình Recon DOM Web, Mobile & Code Recon Gate

@@ -35,16 +35,22 @@
 
 ---
 
-## Chi tiết Request & Response (API / WebSocket)
+## Chi tiết Request & Response và Các Step Thực Hiện (API / WebSocket)
 
-> **BẮT BUỘC áp dụng cho Task Type = API hoặc WebSocket.**
-> BẮT BUỘC hiển thị đầy đủ chi tiết Request đã gửi và Response/Event thực tế nhận được cho **100% test case (CẢ ✅ PASSED VÀ ❌ FAILED)**.
-> TUYỆT ĐỐI KHÔNG được chỉ log khi fail hay bỏ qua các case passed.
-> Bỏ qua mục này nếu Task Type = UI.
+> **BẮT BUỘC áp dụng cho 100% test case (CẢ ✅ PASSED VÀ ❌ FAILED).**
+> - BẮT BUỘC hiển thị danh sách toàn bộ các Step đã thực hiện (Given / When / Then).
+> - Với API / WebSocket: BẮT BUỘC hiển thị đầy đủ chi tiết Request đã gửi và Response/Event thực tế nhận được.
+> - TUYỆT ĐỐI KHÔNG được chỉ log khi fail hay bỏ qua các case passed.
 
 ### Test Case #{n}: {test_method_name} — {✅ PASSED / ❌ FAILED}
 
-**📤 Request:**
+**📋 Các bước thực hiện (Executed Steps):**
+- **Step 1:** `[GIVEN]` {Mô tả Given tiền điều kiện} — {✅ PASSED / ❌ FAILED} ({time}ms)
+- **Step 2:** `[WHEN]` {Mô tả When hành động kích hoạt} — {✅ PASSED / ❌ FAILED} ({time}ms)
+- **Step 3:** `[THEN]` {Mô tả Then xác minh kết quả} — {✅ PASSED / ❌ FAILED} ({time}ms)
+- **Step 4:** `[AND]` {Mô tả And assertions hoặc teardown} — {✅ PASSED / ❌ FAILED} ({time}ms)
+
+**📤 Request (nếu có tương tác mạng):**
 
 | Thuộc tính    | Giá trị                                                 |
 |---------------|---------------------------------------------------------|

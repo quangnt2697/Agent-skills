@@ -66,25 +66,31 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - Self-fix Loop chỉ dùng để sửa **lỗi kỹ thuật của script** (ImportError, SyntaxError, fixture thiếu, timeout config sai, connection refused...).
 - **KHÔNG ĐƯỢC sửa code để ép test case từ FAIL thành PASS.** Nếu test case FAIL vì ứng dụng/API trả kết quả sai so với spec → đó là kết quả hợp lệ, ghi nhận vào báo cáo, KHÔNG can thiệp.
 
-### 1.10. Ghi Log Chi Tiết Toàn Bộ Payload & Response (Passed & Failed)
-- **BẮT BUỘC cho 100% Test Case:** Toàn bộ test case API và WebSocket — **bất kể kết quả là ✅ PASSED hay ❌ FAILED** — đều phải được hệ thống logging/interceptor ghi nhận chi tiết đầy đủ thông tin:
-  - **Với HTTP/REST API:**
-    + Timestamp thực hiện
-    + HTTP Method & Full Request URL (bao gồm path params và query params)
-    + Request Headers (masking sensitive tokens nhưng giữ nguyên định dạng)
-    + Request Payload / Body (JSON formatted)
-    + HTTP Status Code & Status Text (VD: `200 OK`, `400 Bad Request`)
-    + Response Time / Latency (ms)
-    + Response Headers
-    + Full Response Body (JSON formatted)
-  - **Với WebSocket:**
-    + Timestamp kết nối & Full WS URL kèm query/auth params
-    + Outgoing Messages: Action, Channel/Topic, Payload JSON
-    + Inbound Events: Channel/Topic, Timestamp, Full Event Payload JSON
-    + Thời gian chờ/nhận event (ms)
+### 1.10. Ghi Log Toàn Bộ Các Step Thực Hiện & Chi Tiết Payload / Response (Passed & Failed)
+- **BẮT BUỘC cho 100% Test Case (Cả Passed & Failed):** Toàn bộ test case (UI, API, WebSocket) — **bất kể kết quả là ✅ PASSED hay ❌ FAILED** — đều phải được hệ thống logging ghi nhận chi tiết đầy đủ 2 phần:
+  1. **Danh sách Toàn bộ các Step Thực hiện (Step Execution Logging):**
+     - Ghi nhận chi tiết từng bước Given / When / Then / And / But đã chạy.
+     - Trạng thái thực thi của từng step (✅ PASSED / ❌ FAILED) và thời gian hoàn thành (latency ms).
+     - Chi tiết lỗi phát sinh tại step cụ thể nếu step đó bị fail.
+     - Triển khai qua fixture context manager `with step("Given..."):` hoặc tự động trích xuất từ docstring của test function.
+  2. **Chi tiết Tương Tác Dữ Liệu & Payload / Response:**
+     - **Với HTTP/REST API:**
+       + Timestamp thực hiện
+       + HTTP Method & Full Request URL (bao gồm path params và query params)
+       + Request Headers (masking sensitive tokens nhưng giữ nguyên định dạng)
+       + Request Payload / Body (JSON formatted)
+       + HTTP Status Code & Status Text (VD: `200 OK`, `400 Bad Request`)
+       + Response Time / Latency (ms)
+       + Response Headers
+       + Full Response Body (JSON formatted)
+     - **Với WebSocket:**
+       + Timestamp kết nối & Full WS URL kèm query/auth params
+       + Outgoing Messages: Action, Channel/Topic, Payload JSON
+       + Inbound Events: Channel/Topic, Timestamp, Full Event Payload JSON
+       + Thời gian chờ/nhận event (ms)
 - **Đầu ra log:**
-  1. Ghi có cấu trúc vào file `workspace/{issueKey}/test/result/test-output.log` với divider rõ ràng: `================ [TESTCASE: {test_name}] [RESULT: PASSED/FAILED] ===============`.
-  2. Xuất đầy đủ vào mục **Chi tiết Request & Response** trong báo cáo `workspace/{issueKey}/test/result/report.md` cho từng testcase để QA, BA và Dev có thể audit và debug trực tiếp mà không cần chạy lại test.
+  1. Ghi có cấu trúc vào file `workspace/{issueKey}/test/result/test-output.log` với khối `[STEPS EXECUTED]` và khối `[HTTP / WS]` có divider rõ ràng.
+  2. Xuất đầy đủ vào mục **Chi tiết Request & Response và Các Step Thực Hiện** trong báo cáo `workspace/{issueKey}/test/result/report.md` cho từng testcase để QA, BA và Dev có thể audit và debug trực tiếp mà không cần chạy lại test.
 - **CẤM TUYỆT ĐỐI:** Chỉ log khi test failed hoặc chỉ in log chung chung một dòng status code.
 
 ### 1.11. Tuyệt Đối Không Mock Server Trên UAT (Real Base URLs Only)
@@ -213,3 +219,14 @@ Mỗi Test Case API **BẮT BUỘC** thực hiện đủ **7 bước assertions:
    - **Bảo mật Biometrics/PIN:** Mock hoặc test các bước nhập mã PIN xác thực giao dịch tài chính.
 6. **Tự động chụp ảnh lỗi (Screenshot on Failure):**
    - Khi chạy trên Mobile, bắt buộc có fixture/hook lưu ảnh chụp màn hình thiết bị khi test fail để đối chiếu layout và thông báo lỗi.
+
+---
+
+## 6. Quy Chuẩn Nghiệp Vụ Chứng Khoán (Securities Domain Standards)
+
+Khi thiết kế và viết code automation test cho domain chứng khoán, Agent **BẮT BUỘC** tham chiếu và tuân thủ nghiêm ngặt cẩm nang nghiệp vụ tại [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md):
+- **Dữ liệu thật từ TimescaleDB (V3 > V2):** Tra cứu qua MCP `test-data` (DB 644). Tuyệt đối cấm tự bịa mã chứng khoán hoặc giá vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$) và bước giá (tick size).
+- **Kiểm thử 25 kịch bản Random End (RE):** Kiểm chứng nhận diện mã RE tại ATO (`expected_price != 0`) và ATC (`expected_price != 0 & expected_quantity != 0`), mã RE giữ nguyên phiên ATO sau 09:15 cho đến khi nhận tín hiệu kết thúc từ `Prices` (`trading_session_id = 40` hoặc `type = 2 & trading_session_id = 10`), tự động reset `enableRE = false`, chặn lệnh MTL/MP và cấm sửa/hủy lệnh trong khoảng 09:15-09:17.
+- **Bao phủ 15 mã lỗi ORS & Fallback Lệnh 24/7:** Kiểm tra các ca biên sinh đúng 15 mã lỗi ORS và luồng tự động Fallback sang Lệnh 24/7 khi đặt lệnh ngoài phiên hoặc khi thị trường Halt.
+- **Kiểm thử biên Sửa Lệnh (Replace Order):** $newQuantity = filledQuantity$ (bị từ chối), $newQuantity = filledQuantity + 1$ (chấp nhận), sửa lệnh ngoài phiên liên tục, sửa lệnh thị trường.
+- **Quản trị vị thế ký quỹ theo Deal (Deal-based Margin):** Kiểm thử công thức tỷ lệ Deal ($R_{\text{deal}}$), Giá chặn Margin (Loan Price / Cap Price), Call Margin ($<85\%$), Smart Order Force Sell ($<80\%$).

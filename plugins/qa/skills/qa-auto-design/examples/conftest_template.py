@@ -20,6 +20,7 @@ import urllib.request
 from urllib.parse import urlparse
 import glob
 from pathlib import Path
+from contextlib import contextmanager
 import pytest
 from dotenv import load_dotenv, find_dotenv
 
@@ -648,8 +649,21 @@ class TestLogCollector:
     """
     def __init__(self, test_name: str):
         self.test_name = test_name
+        self.step_records = []
         self.http_records = []
         self.ws_records = []
+
+    def record_step(self, step_name: str, status: str = "PASSED", details: any = None, elapsed_ms: float = 0.0):
+        """Ghi nhận thông tin một step kiểm thử đã thực hiện (Given / When / Then / And)."""
+        step_num = len(self.step_records) + 1
+        self.step_records.append({
+            "step_num": step_num,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "name": step_name,
+            "status": status,  # PASSED, FAILED, SKIPPED
+            "details": details,
+            "elapsed_ms": elapsed_ms,
+        })
 
     def record_http(self, method: str, url: str, headers: dict, request_body: any,
                     status_code: int, response_time_ms: float, response_headers: dict, response_body: any):
@@ -691,6 +705,37 @@ def test_log_collector(request):
     collector = TestLogCollector(request.node.name)
     request.node._log_collector = collector
     yield collector
+
+
+@pytest.fixture
+def step(test_log_collector):
+    """
+    Fixture context manager ghi log chi tiết từng step thực hiện (Given / When / Then / And).
+
+    Cách sử dụng:
+        def test_create_order(step, api_service):
+            with step("Given nhà đầu tư đã xác thực với API Key hợp lệ"):
+                # pre-condition code...
+                pass
+
+            with step("When đặt lệnh mua 100 cổ phiếu VNM"):
+                status, body, _, _ = api_service.create_order(...)
+
+            with step("Then hệ thống tạo lệnh thành công và trả về mã 200"):
+                assert status == 200
+    """
+    @contextmanager
+    def _step(step_name: str):
+        start = time.perf_counter()
+        try:
+            yield
+            elapsed_ms = (time.perf_counter() - start) * 1000
+            test_log_collector.record_step(step_name, status="PASSED", elapsed_ms=elapsed_ms)
+        except Exception as e:
+            elapsed_ms = (time.perf_counter() - start) * 1000
+            test_log_collector.record_step(step_name, status="FAILED", details=str(e), elapsed_ms=elapsed_ms)
+            raise
+    return _step
 
 
 class LoggingSession:
@@ -975,6 +1020,42 @@ def pytest_runtest_makereport(item, call):
             f"{'-'*80}",
         ]
 
+        # 1. GHI LOG TOÀN BỘ CÁC STEP THỰC HIỆN (STEPS EXECUTED)
+        steps_to_log = []
+        if collector and collector.step_records:
+            steps_to_log = collector.step_records
+        else:
+            # Fallback: Tự động trích xuất các steps từ docstring của test method (Given/When/Then/And/But)
+            doc = getattr(item.obj, "__doc__", "") or ""
+            parsed_steps = []
+            for line in doc.splitlines():
+                stripped = line.strip()
+                if any(stripped.startswith(kw) for kw in ("Given ", "When ", "Then ", "And ", "But ")):
+                    parsed_steps.append(stripped)
+            if parsed_steps:
+                for idx, step_text in enumerate(parsed_steps, 1):
+                    s_status = status_text if not report.failed or idx < len(parsed_steps) else "FAILED"
+                    steps_to_log.append({
+                        "step_num": idx,
+                        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "name": step_text,
+                        "status": s_status,
+                    })
+
+        if steps_to_log:
+            log_lines.append("  [STEPS EXECUTED]:")
+            for s in steps_to_log:
+                status_icon = "✅ PASSED" if s["status"] == "PASSED" else ("❌ FAILED" if s["status"] == "FAILED" else "⏭️ SKIPPED")
+                elapsed_str = f" ({s['elapsed_ms']:.1f}ms)" if s.get("elapsed_ms") else ""
+                log_lines.append(f"    - Step {s['step_num']}: {s['name']} [{status_icon}]{elapsed_str}")
+                if s.get("details"):
+                    log_lines.append(f"      Details: {s['details']}")
+            log_lines.append(f"  {'-'*40}")
+        else:
+            log_lines.append("  (Không có Step metadata được ghi nhận)")
+            log_lines.append(f"  {'-'*40}")
+
+        # 2. GHI LOG CHI TIẾT REQUEST & RESPONSE CHO TẤT CẢ TEST CASES (PASSED & FAILED)
         if collector and (collector.http_records or collector.ws_records):
             # Log REST HTTP interactions
             for idx, r in enumerate(collector.http_records, 1):
