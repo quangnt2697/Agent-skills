@@ -17,7 +17,9 @@
     "test:unit": "node --test scripts/*-test.js",
     "evals": "node scripts/run-evals.js",
     "setup:plugins": "node scripts/setup-plugins.js",
-    "unlink:plugins": "node scripts/setup-plugins.js --unlink"
+    "unlink:plugins": "node scripts/setup-plugins.js --unlink",
+    "metabase:login": "node scripts/metabase-sso-login.js",
+    "db:recon": "node scripts/db-recon.js"
   },
   "engines": {
     "node": ">=20"

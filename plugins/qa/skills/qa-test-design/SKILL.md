@@ -101,9 +101,9 @@ Khi đầu vào từ ba-spec, output sẽ lưu tại chung một thư mục theo
 
 Trước khi viết bất kỳ item checklist nào, thu thập đầu vào:
 
-#### Nguồn tham chiếu nghiệp vụ bắt buộc: `references/securities-domain-rules.md` (Domain Knowledge Base)
+#### Nguồn tham chiếu nghiệp vụ bắt buộc: `../../../../references/securities-domain-rules.md` (Domain Knowledge Base)
 
-Khi thiết kế checklist và kịch bản BDD Gherkin cho bất kỳ tính năng nào liên quan đến tài chính, chứng khoán, đặt lệnh, bảng giá, margin, phiên giao dịch: Agent **BẮT BUỘC** phải đọc kỹ và tuân thủ toàn diện các quy tắc nghiệp vụ trong `references/securities-domain-rules.md`:
+Khi thiết kế checklist và kịch bản BDD Gherkin cho bất kỳ tính năng nào liên quan đến tài chính, chứng khoán, đặt lệnh, bảng giá, margin, phiên giao dịch: Agent **BẮT BUỘC** phải đọc kỹ và tuân thủ toàn diện các quy tắc nghiệp vụ trong `../../../../references/securities-domain-rules.md`:
 - **Quy tắc thị trường & biên độ sàn:** HOSE ($\pm 7\%$), HNX ($\pm 10\%$), UPCOM ($\pm 15\%$), bảng bước giá (10đ, 50đ, 100đ), quy tắc lô chẵn (100) và lô lẻ (1-99).
 - **Cờ phiên KRX & Lệnh:** Cờ phiên (`AA1`, `BB1`, `BC1`, `AW8`, `AW9`, `AC2`), quy tắc cấm sửa/hủy trong ATO/ATC, ma trận lệnh cho phép (LO, ATO, ATC, MP, MTL, MOK, MAK, PLO).
 - **Quy tắc kiểm thử Random End (RE):** Nhận diện mã RE tại ATO (`expected_price != 0`) và ATC (`expected_price != 0 & expected_quantity != 0`), mã không thuộc HOSE có `enableRE = false`, mã RE giữ nguyên phiên ATO sau 09:15 cho đến khi nhận `Prices.trading_session_id = 40` hoặc `Prices.type = 2 & trading_session_id = 10`, tự động reset `enableRE = false`, chặn lệnh MTL/MP và cấm sửa/hủy lệnh trong khoảng 09:15-09:17, kiểm thử fallback phiên an toàn khi session null.
@@ -722,7 +722,7 @@ Sau khi hoàn thành cả hai giai đoạn:
 - [ ] Các phần tử đối xứng (được bao phủ bằng `Scenario Outline` với đầy đủ biến thể trong `Examples`)
 
 ### Cả hai Giai đoạn
-- [ ] Đã đọc và đối chiếu toàn bộ quy tắc nghiệp vụ trong `references/securities-domain-rules.md` (biên độ giá, bước giá, cờ phiên, Random End, 15 mã lỗi ORS, Deal margin)
+- [ ] Đã đọc và đối chiếu toàn bộ quy tắc nghiệp vụ trong `../../../../references/securities-domain-rules.md` (biên độ giá, bước giá, cờ phiên, Random End, 15 mã lỗi ORS, Deal margin)
 - [ ] Tất cả nội dung output viết bằng tiếng Việt với thuật ngữ domain
 - [ ] Mỗi scenario `.feature` truy vết được về 1 item checklist
 - [ ] Không có cơ chế tự động hoá (selectors, xpaths, SQL) trong text step
@@ -758,8 +758,8 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 
 ## Xem thêm
 
-- [references/securities-domain-rules.md](references/securities-domain-rules.md) — Cẩm nang nghiệp vụ chứng khoán & fintech bắt buộc tham chiếu
-- Tham khảo `references/qa-testing-checklist.md` cho các mẫu validation domain tài chính, bảng BVA, phân vùng tương đương, và quy ước viết
+- [securities-domain-rules.md](../../../../references/securities-domain-rules.md) — Cẩm nang nghiệp vụ chứng khoán & fintech bắt buộc tham chiếu
+- Tham khảo `../../../../references/qa-testing-checklist.md` cho các mẫu validation domain tài chính, bảng BVA, phân vùng tương đương, và quy ước viết
 - Nếu đã có spec, dùng yêu cầu từ `dev-spec-driven-development` làm đầu vào cho Giai đoạn 1
 - Để import và phân tích Jira task trước khi thiết kế test, dùng `ba-spec`
 - Để sinh code automation test từ Gherkin file, dùng `qa-auto-design`

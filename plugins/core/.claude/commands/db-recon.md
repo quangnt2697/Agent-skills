@@ -1,0 +1,45 @@
+---
+description: "Quét và đối chiếu độ lệch dữ liệu TimescaleDB Production giữa các bảng V3, V2 và Raw cho 11 topic MDDS"
+---
+
+/db-recon kích hoạt quy trình quét và đối chiếu độ lệch dữ liệu (Data Reconciliation & Parity Check) trên TimescaleDB Production (Database ID: 644).
+
+## 1. Phạm Vi Áp Dụng
+- **Database:** TimescaleDB Production (DB ID: `644`) qua Metabase Production (`https://mb.dnse.com.vn`).
+- **Phạm vi topic:** 11 topic MDDS theo kiến trúc KRX (Ticks, Trade Extra, TopPrice, Expected Price, OHLC, Indices, Board Events, Symbol Board Events, Foreign Trading, Security Definition, Circuit Breaker / VI).
+- **Tuyệt đối loại trừ:** 100% các bảng OpenAPI (chỉ tập trung vào TimescaleDB).
+- **An toàn tuyệt đối:** 100% Read-Only (chỉ cho phép SELECT/WITH, cấm DDL/DML/LOCK).
+
+## 2. Cách Chạy Lệnh
+Agent hoặc người dùng có thể thực thi thông qua CLI script `node scripts/db-recon.js`:
+
+```bash
+# Xem danh sách tất cả các query đối chiếu có sẵn
+npm run db:recon -- --list
+
+# Chạy Dashboard tổng quan đối chiếu 11 topic cho ngày giao dịch gần nhất
+npm run db:recon -- --query master_reconciliation_summary --date YYYY-MM-DD
+
+# Chạy đối chiếu theo từng topic cụ thể
+npm run db:recon -- --topic ticks --date YYYY-MM-DD --symbol SSI
+npm run db:recon -- --topic topprice --date YYYY-MM-DD --symbol SSI
+npm run db:recon -- --topic expected_price --date YYYY-MM-DD
+npm run db:recon -- --topic ohlc --date YYYY-MM-DD --symbol HPG
+npm run db:recon -- --topic foreign_trading --date YYYY-MM-DD
+npm run db:recon -- --topic missing_symbols_v3_vs_v2 --date YYYY-MM-DD
+
+# Chạy dry-run (chỉ in câu SQL đã thế tham số, không gọi Metabase)
+npm run db:recon -- --query ticks_volume_count_parity --dry-run
+```
+
+## 3. Quy Trình Phân Tích Độ Lệch
+1. **Lấy dữ liệu:** Chạy query đối chiếu tương ứng với topic đang quan tâm.
+2. **Đánh giá Trạng thái Khớp (Status):**
+   - `MATCH` (Khớp hoàn toàn 100%): Dữ liệu V3 và V2/Raw nhất quán.
+   - `MISMATCH` (Lệch số lượng hoặc giá trị): Phân tích nguyên nhân (độ trễ streaming, bộ lọc filter lô lẻ/lô chẵn, cờ hủy lệnh, v.v.).
+   - `MISSING` (Thiếu bản ghi ở 1 bên): Xác định mã chứng khoán hoặc khung giờ bị thiếu.
+3. **Báo cáo:** Trình bày kết quả dưới dạng bảng Markdown so sánh chi tiết, chỉ ra rõ mã chứng khoán hoặc thời điểm xuất hiện độ lệch.
+
+<critical_instruction>
+HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+</critical_instruction>

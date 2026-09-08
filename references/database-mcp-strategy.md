@@ -9,23 +9,33 @@ Database MCP được thiết kế chủ yếu phục vụ tra cứu schema, ki�
 
 ---
 
-## 2. Cơ Chế Bảo Mật & An Toàn 2 Lớp (Defense-in-Depth)
+## 2. Cơ Chế Bảo Mật & An Toàn 4 Lớp (Defense-in-Depth)
 
-Hệ thống bảo vệ dữ liệu được thực thi ở 2 lớp độc lập:
+Chiến lược tuân thủ nguyên tắc **BẤT BIẾN: 100% READ-ONLY (Zero-Mutation Policy)** trên cả 2 Engine: **Metabase API Engine** (Khuyến nghị DNSE) và **PostgreSQL Direct**. Hệ thống bảo vệ được thực thi ở 4 lớp độc lập:
 
-1. **Lớp 1 (Connection / Transaction Level):**
-   - Ngay khi connection pool kết nối tới DB, server tự động thực thi:
+1. **Lớp 1: Phân Quyền Hạ Tầng & Phiên Đăng Nhập (Infrastructure & RBAC Level):**
+   - **Metabase API (UAT & Production):** API Token hoặc Session Token SSO (`metabase.SESSION`) được liên kết với tài khoản có quyền Viewer / Read-Only trên các database TimescaleDB (`644`) và OpenAPI (`535`, `655`). Metabase API `/api/dataset` vốn dĩ phục vụ trích xuất dữ liệu truy vấn phân tích, không phải công cụ DDL/migration.
+   - **PostgreSQL Direct:** Tài khoản kết nối trong `DATABASE_URL` (`read_user`) được phân quyền tối thiểu (Least Privilege), chỉ có quyền `SELECT` trên schema chỉ định.
+
+2. **Lớp 2: Ràng Buộc Phiên Kết Nối & Transaction Guard (Connection Level):**
+   - Khi chạy ở chế độ PostgreSQL trực tiếp, ngay sau khi kết nối, pool tự động thiết lập:
      `SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;`
-   - Gắn `statement_timeout = 5000` (5 giây) để ngăn chặn các truy vấn khóa bảng hoặc treo tài nguyên.
-2. **Lớp 2 (Query Sanitizer Regex):**
-   - Toàn bộ câu lệnh SQL trước khi gửi tới driver `pg` đều được làm sạch (strip comments) và quét qua bộ lọc Regex.
-   - **Chặn đa câu lệnh:** Không cho phép chuỗi SQL chứa dấu chấm phẩy `;` nối nhiều câu lệnh (chống SQL Injection smuggling).
-   - **Chỉ chấp nhận từ khóa đọc:** Bắt buộc bắt đầu bằng `SELECT`, `WITH`, `EXPLAIN`, hoặc `SHOW`.
-   - **Deny-list từ khóa nguy hiểm:** Chặn tuyệt đối:
-     `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `TRUNCATE`, `CREATE`, `GRANT`, `REVOKE`, `REINDEX`, `VACUUM`, `COPY`, `EXECUTE`, `EXEC`.
-3. **Chống tràn Ngữ cảnh (Token Protection):**
-   - Tự động bổ sung mệnh đề `LIMIT 50` vào cuối câu lệnh `SELECT` nếu câu lệnh chưa có `LIMIT`.
-   - Ép trần giới hạn tối đa `HARD_CAP_MAX_ROWS = 200`.
+     Mọi câu lệnh ghi vô tình lọt qua sẽ bị PostgreSQL Kernel từ chối ngay lập tức ở mức transaction.
+   - Gắn `statement_timeout = 5000` (5 giây) để ngăn chặn các truy vấn khóa bảng (table lock) hoặc treo tài nguyên trên Production.
+
+3. **Lớp 3: Bộ Lọc Cú Pháp Đa Tầng (Query Sanitizer & Keyword Guard - Application Level):**
+   - Áp dụng bắt buộc cho **100% truy vấn** qua cả `db_query`, `db_explain_query`, `metabaseQuery`, và `metabaseRunSql`.
+   - **Loại bỏ Comment:** Strip toàn bộ `-- comment` và `/* comment */` để ngăn chặn kỹ thuật chèn mã ẩn (comment smuggling).
+   - **Chặn Đa Câu Lệnh:** Cấm tuyệt đối dấu chấm phẩy `;` phân tách nhiều câu lệnh (chống SQL Injection chaining).
+   - **Allow-list Từ Khóa Mở Đầu:** Bắt buộc bắt đầu bằng: `^(SELECT|WITH|EXPLAIN|SHOW)\b`.
+   - **Lọc Literal String:** Tự động tách chuỗi giá trị `'...'` trước khi kiểm tra từ khóa, tránh false positive khi câu lệnh `SELECT` hợp lệ chứa các giá trị như `action = 'DELETE'` hay `event = 'INSERT'`.
+   - **Deny-list Toàn Diện Từ Khóa Thay Đổi Dữ Liệu (DML/DDL/Proc):** Chặn đứng:
+     `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `TRUNCATE`, `CREATE`, `GRANT`, `REVOKE`, `REINDEX`, `VACUUM`, `COPY`, `EXECUTE`, `EXEC`, `MERGE`, `CALL`, `DO`, `LOCK`, và `INTO` (chặn tuyệt đối cả `SELECT ... INTO` ngụy trang tạo bảng).
+
+4. **Lớp 4: Bảo Vệ Ngữ Cảnh LLM & Tài Nguyên DB (Token & Resource Protection):**
+   - **Auto-Limit:** Tự động bổ sung mệnh đề `LIMIT 50` vào cuối câu lệnh `SELECT` nếu truy vấn chưa khai báo `LIMIT`.
+   - **Hard-Cap 200 dòng:** Bất kể câu lệnh yêu cầu bao nhiêu dòng, hệ thống luôn ép trần tối đa `HARD_CAP_MAX_ROWS = 200` để bảo vệ bộ nhớ Agent và tránh làm tràn context window.
+   - Không tự ý gắn `LIMIT` vào các câu lệnh `EXPLAIN` hoặc `SHOW`.
 
 ---
 
@@ -47,15 +57,36 @@ Hệ thống bảo vệ dữ liệu được thực thi ở 2 lớp độc lập
 Metabase đã kết nối thông suốt tới cụm TimescaleDB và OpenAPI nội bộ K8s, Agent chỉ cần gọi qua HTTPS:
 ```bash
 # === DATABASE (MCP VIA METABASE) ===
-METABASE_URL=https://mb-uat.dnse.com.vn
-METABASE_API_TOKEN=mb_...hoặc_session_token
+# Môi trường hoạt động: uat | prod (mặc định: uat)
+METABASE_ENV=uat
 METABASE_DEFAULT_DATABASE=timescale
 
-# Metabase Database IDs
+# --- 1. Metabase UAT (API Token hoặc Session) ---
+METABASE_UAT_URL=https://mb-uat.dnse.com.vn
+METABASE_UAT_API_TOKEN=mb_...hoặc_session_token
+METABASE_UAT_DB_TIMESCALE_ID=644
+METABASE_UAT_DB_OPENAPI_ID=535
+METABASE_UAT_DB_OPENAPI_SANDBOX_ID=655
+
+# --- 2. Metabase Production (Đăng nhập SSO qua Browser) ---
+METABASE_PROD_URL=https://mb.dnse.com.vn
+METABASE_PROD_SESSION_TOKEN=  # Lấy tự động qua `npm run metabase:login` hoặc copy cookie metabase.SESSION
+METABASE_PROD_DB_TIMESCALE_ID=
+METABASE_PROD_DB_OPENAPI_ID=
+
+# --- 3. Cấu hình Active / Fallback ---
+METABASE_URL=https://mb-uat.dnse.com.vn
+METABASE_API_TOKEN=mb_...
+METABASE_SESSION_TOKEN=
 METABASE_DB_TIMESCALE_ID=644
 METABASE_DB_OPENAPI_ID=535
 METABASE_DB_OPENAPI_SANDBOX_ID=655
 ```
+
+> **Cách lấy Session Token cho Production (`https://mb.dnse.com.vn`):**
+> - **Cách 1 (Tự động - Khuyến nghị):** Chạy lệnh `npm run metabase:login`. Script sẽ mở browser Chromium thực, bạn đăng nhập SSO (Google / Okta), script sẽ tự động bắt cookie `metabase.SESSION`, dò tìm Database IDs và lưu thẳng vào `.env`.
+> - **Cách 2 (Thủ công):** Đăng nhập `https://mb.dnse.com.vn` trên Chrome -> Bấm `F12` -> Tab `Application` -> `Cookies` -> Copy giá trị cookie `metabase.SESSION` và dán vào `METABASE_PROD_SESSION_TOKEN` trong `.env`.
+
 
 ### Cách 2: Sử dụng PostgreSQL Trực Tiếp (Dự phòng / Local)
 ```bash

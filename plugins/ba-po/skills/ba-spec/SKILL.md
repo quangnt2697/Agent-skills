@@ -27,7 +27,7 @@ Tự động hoá quy trình import và phân tích tài liệu từ **Jira** v�
 - Cần tài liệu bàn giao cho QA và DEV cùng đọc, thay vì mỗi bên tự diễn giải Jira theo cách riêng
 
 > ⚠️ **BẮT BUỘC ĐỐI VỚI BÀI TOÁN CHỨNG KHOÁN & FINTECH:**
-> Khi bài toán liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, dữ liệu thị trường KRX (MDDS), chuyển phiên, Random End, hoặc quản trị vị thế ký quỹ (Deal-based Margin), Agent **BẮT BUỘC đọc và đối chiếu nghiêm ngặt [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md)** trong suốt quá trình phân tích và tổng hợp spec.
+> Khi bài toán liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, dữ liệu thị trường KRX (MDDS), chuyển phiên, Random End, hoặc quản trị vị thế ký quỹ (Deal-based Margin), Agent **BẮT BUỘC đọc và đối chiếu nghiêm ngặt [securities-domain-rules.md](../../../../references/securities-domain-rules.md)** trong suốt quá trình phân tích và tổng hợp spec.
 
 **KHÔNG sử dụng khi:**
 - Jira chỉ có ý tưởng thô, mơ hồ, cần brainstorm để làm rõ trước → dùng `ba-refine`
@@ -321,7 +321,7 @@ Sau đó đọc file profile tương ứng:
 
 Agent trích xuất thông tin theo **9 chiều phân tích** được định nghĩa trong profile.
 
-### Đối chiếu Cẩm nang Nghiệp vụ Chứng khoán & Fintech (`references/securities-domain-rules.md`)
+### Đối chiếu Cẩm nang Nghiệp vụ Chứng khoán & Fintech (`../../../../references/securities-domain-rules.md`)
 Nếu task thuộc domain chứng khoán hoặc giao dịch, trích xuất thêm các thực thể bắt buộc:
 1. **Mô hình Quản trị Tài khoản:** Phân định rõ Deal-based Margin hay Portfolio-based. Nếu là Deal-based, xác định bộ ba định danh Deal `(accountNo, symbol, loanPackageId)`, tài khoản đơn nhất (thay thế mô hình tiểu khoản .1/.6).
 2. **Phân loại Lệnh & Thuộc tính:** Khai báo chi tiết `orderCategory` (`NORMAL`, `STOP`, `TRAILING_STOP`, `TRADING_EVENT`, `OCO`), Time-In-Force (`DAY`, `GTD`, `GTC`).
@@ -352,7 +352,7 @@ Dựa trên việc đọc **TOÀN BỘ** các Jira task, Confluence page và fil
 | 🌐 WEB | Responsive breakpoint cụ thể? Browser support? SEO impact? URL state khi back/refresh? Real-time hay polling? Export format?              |
 | 🔌 API | Idempotency key? Rate limit rule? Error code mapping? Pagination strategy? Webhook vs polling? Schema versioning?                         |
 
-### Gaps đặc thù Chứng khoán & Fintech (Tham chiếu `references/securities-domain-rules.md`)
+### Gaps đặc thù Chứng khoán & Fintech (Tham chiếu `../../../../references/securities-domain-rules.md`)
 Khi task liên quan đến chứng khoán, đối chiếu và phát hiện các gaps cốt lõi sau:
 1. **Quy chuẩn Sửa/Hủy Lệnh (Replace/Cancel Order):**
    - Tài liệu gốc có ghi rõ điều kiện sửa lệnh: Chỉ áp dụng cho lệnh LO trong phiên liên tục và bắt buộc $newQuantity > filledQuantity$ không?
@@ -465,7 +465,7 @@ Nếu file `/project-root/workspace/{issueKey}/spec/final.md` (hoặc `/project-
   - **"⏭️ Không cần flow":** Ghi "Không áp dụng — [lý do: Bug fix / Task đơn giản / User chọn bỏ qua]" vào Section 5. Không gọi `/ba-process-modeling`.
 
 - **Section 4 (Validation Rules) & Section 8 (Business Rules & Edge Cases) đối với nghiệp vụ Chứng khoán:**
-  Khi tổng hợp hai section này cho bài toán chứng khoán, Agent **BẮT BUỘC đưa vào các quy tắc chuẩn từ `references/securities-domain-rules.md`**:
+  Khi tổng hợp hai section này cho bài toán chứng khoán, Agent **BẮT BUỘC đưa vào các quy tắc chuẩn từ `../../../../references/securities-domain-rules.md`**:
   - Biên độ dao động giá ($\pm 7\%$ HOSE, $\pm 10\%$ HNX, $\pm 15\%$ UPCOM), bảng bước giá (10đ, 50đ, 100đ), quy tắc lô chẵn (100) và lô lẻ (1-99).
   - Điều kiện Sửa lệnh ($newQuantity > filledQuantity$, chỉ LO trong phiên liên tục) và cấm sửa/hủy trong ATO/ATC/Random End.
   - Quy chuẩn Random End: điều kiện nhận diện, thời gian trễ tối đa 2 phút, quy tắc hiển thị icon và tooltip.
@@ -562,7 +562,7 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi:
 - Có tài liệu tham chiếu tải về nhưng không đoạn nào trong `final.md` trích dẫn tới
 - Spec chứa API contract, database schema, hoặc test case — vượt ranh giới BA/PO (xem CLAUDE.md)
 - Loại task (APP/WEB/API) không được nhận diện, nên trích xuất theo profile sai
-- **Task liên quan đến chứng khoán/đặt lệnh/bảng giá nhưng không tham chiếu `references/securities-domain-rules.md`, tự bịa quy tắc phiên, thiếu điều kiện Random End, hoặc không bao phủ mã lỗi ORS**
+- **Task liên quan đến chứng khoán/đặt lệnh/bảng giá nhưng không tham chiếu `../../../../references/securities-domain-rules.md`, tự bịa quy tắc phiên, thiếu điều kiện Random End, hoặc không bao phủ mã lỗi ORS**
 
 ## Xác minh
 
@@ -578,7 +578,7 @@ Trước khi bàn giao spec cho QA hoặc DEV:
 - [ ] Câu hỏi 🔴 Critical đã được trả lời qua Phase 4, hoặc được nêu rõ là điểm dừng theo trường hợp 3 của `autonomy-contract.md`
 - [ ] Gap chưa giải quyết được ghi vào mục *Giả định & Rủi ro* kèm mức ảnh hưởng
 - [ ] Không chứa Tech-Spec, API contract, database schema, hay test case
-- [ ] **Nếu là bài toán chứng khoán/fintech: Đã đối chiếu và tuân thủ các quy tắc trong `references/securities-domain-rules.md` (Deal-based, loại lệnh, quy tắc sửa/hủy, Random End, 15 mã lỗi ORS)**
+- [ ] **Nếu là bài toán chứng khoán/fintech: Đã đối chiếu và tuân thủ các quy tắc trong `../../../../references/securities-domain-rules.md` (Deal-based, loại lệnh, quy tắc sửa/hủy, Random End, 15 mã lỗi ORS)**
 
 ---
 

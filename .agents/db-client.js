@@ -53,20 +53,69 @@ const METABASE_DB_MAP = {
 };
 
 function isMetabaseMode() {
-    return Boolean(process.env.METABASE_URL || process.env.METABASE_API_TOKEN);
+    return Boolean(
+        process.env.METABASE_URL ||
+        process.env.METABASE_API_TOKEN ||
+        process.env.METABASE_SESSION_TOKEN ||
+        process.env.METABASE_PROD_URL ||
+        process.env.METABASE_PROD_SESSION_TOKEN
+    );
+}
+
+/**
+ * Phân giải cấu hình Metabase đang hoạt động (UAT vs Production)
+ */
+function getMetabaseConfig() {
+    const envVal = (process.env.METABASE_ENV || '').toLowerCase();
+    const isExplicitProd = envVal === 'prod' || envVal === 'production';
+    const isUrlProd = (process.env.METABASE_URL || '').includes('mb.dnse.com.vn') && !(process.env.METABASE_URL || '').includes('mb-uat');
+    const isProd = isExplicitProd || isUrlProd;
+
+    let baseUrl = process.env.METABASE_URL;
+    let token = process.env.METABASE_SESSION_TOKEN || process.env.METABASE_API_TOKEN;
+
+    if (isProd) {
+        baseUrl = (isExplicitProd ? process.env.METABASE_PROD_URL : null) || baseUrl || process.env.METABASE_PROD_URL || 'https://mb.dnse.com.vn';
+        token = process.env.METABASE_PROD_SESSION_TOKEN || token || process.env.METABASE_PROD_API_TOKEN;
+    } else {
+        baseUrl = baseUrl || process.env.METABASE_UAT_URL || 'https://mb-uat.dnse.com.vn';
+        token = token || process.env.METABASE_UAT_API_TOKEN || process.env.METABASE_UAT_SESSION_TOKEN;
+    }
+
+    return {
+        isProd,
+        baseUrl: (baseUrl || 'https://mb-uat.dnse.com.vn').replace(/\/+$/, ''),
+        token: token || ''
+    };
 }
 
 function resolveDatabaseId(dbIdentifier) {
+    const { isProd } = getMetabaseConfig();
+    const timescaleId = isProd
+        ? parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '644', 10)
+        : parseInt(process.env.METABASE_DB_TIMESCALE_ID || '644', 10);
+    const openapiId = isProd
+        ? parseInt(process.env.METABASE_PROD_DB_OPENAPI_ID || process.env.METABASE_DB_OPENAPI_ID || '535', 10)
+        : parseInt(process.env.METABASE_DB_OPENAPI_ID || '535', 10);
+    const openapiSandboxId = parseInt(process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '655', 10);
+
+    const activeDbMap = {
+        'timescale': timescaleId,
+        'openapi': openapiId,
+        'openapi-sandbox': openapiSandboxId,
+        'sandbox': openapiSandboxId,
+    };
+
     if (!dbIdentifier) {
         const defaultDb = (process.env.METABASE_DEFAULT_DATABASE || 'timescale').toLowerCase();
-        return METABASE_DB_MAP[defaultDb] || parseInt(defaultDb, 10) || 644;
+        return activeDbMap[defaultDb] || parseInt(defaultDb, 10) || timescaleId;
     }
     if (typeof dbIdentifier === 'number') return dbIdentifier;
     const key = String(dbIdentifier).trim().toLowerCase();
-    if (METABASE_DB_MAP[key]) return METABASE_DB_MAP[key];
+    if (activeDbMap[key]) return activeDbMap[key];
     const parsed = parseInt(key, 10);
     if (!isNaN(parsed)) return parsed;
-    return METABASE_DB_MAP['timescale'] || 644;
+    return activeDbMap['timescale'] || timescaleId;
 }
 
 function getDatabaseName(dbId) {
@@ -96,11 +145,12 @@ function resolveOpenApiDatabase(targetEnvOrUrl) {
 // ─── 4. Metabase HTTP Client ──────────────────────────────────────────────────
 
 function getMetabaseHeaders() {
-    const token = process.env.METABASE_API_TOKEN || process.env.METABASE_SESSION_TOKEN || '';
+    const { token } = getMetabaseConfig();
     const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
     if (token) {
         headers['X-API-KEY']          = token;
         headers['X-Metabase-Session'] = token;
+        headers['Cookie']             = `metabase.SESSION=${token}`;
     }
     return headers;
 }
@@ -118,7 +168,7 @@ function formatErrorMessage(err) {
 }
 
 async function metabaseFetch(endpoint, options = {}) {
-    const baseUrl = (process.env.METABASE_URL || 'https://mb-uat.dnse.com.vn').replace(/\/+$/, '');
+    const { baseUrl } = getMetabaseConfig();
     const url     = `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     const headers = { ...getMetabaseHeaders(), ...(options.headers || {}) };
     const timeoutMs = options.timeout || (endpoint.includes('/metadata') ? 35000 : DEFAULT_STATEMENT_TIMEOUT_MS);
@@ -135,7 +185,7 @@ async function metabaseFetch(endpoint, options = {}) {
         let errMsg = errText;
         try { const p = JSON.parse(errText); errMsg = p.message || p.error || errText; } catch (_) {}
         if (res.status === 401 || res.status === 403) {
-            throw new Error(`Xác thực Metabase thất bại (${res.status}): Kiểm tra METABASE_API_TOKEN trong .env. Chi tiết: ${errMsg}`);
+            throw new Error(`Xác thực Metabase thất bại (${res.status}): Kiểm tra METABASE_SESSION_TOKEN hoặc METABASE_API_TOKEN trong .env. Nếu dùng SSO trên Production (${baseUrl}), hãy chạy 'npm run metabase:login' để đăng nhập và làm mới session token. Chi tiết: ${errMsg}`);
         }
         throw new Error(`Lỗi Metabase API (${res.status}): ${errMsg}`);
     }
@@ -146,15 +196,20 @@ async function metabaseFetch(endpoint, options = {}) {
 
 /**
  * Gửi câu lệnh SQL đến Metabase /api/dataset và trả về Array<Object>.
- * sql đã được sanitize bên ngoài — hàm này KHÔNG tự sanitize lại.
+ * Luôn quét qua sanitizeQuery để đảm bảo 100% tuân thủ quy tắc Read-Only.
  */
 async function metabaseRunSql(sql, dbIdentifier) {
+    const check = sanitizeQuery(sql);
+    if (!check.valid) {
+        throw new Error(check.error);
+    }
+    const cleanSql = check.cleanSql;
     const dbId  = resolveDatabaseId(dbIdentifier);
     const start = Date.now();
 
     const result = await metabaseFetch('/api/dataset', {
         method: 'POST',
-        body: JSON.stringify({ database: dbId, type: 'native', native: { query: sql } }),
+        body: JSON.stringify({ database: dbId, type: 'native', native: { query: cleanSql } }),
     });
     const durationMs = Date.now() - start;
 
@@ -190,8 +245,13 @@ function sanitizeQuery(sql) {
     if (!/^(SELECT|WITH|EXPLAIN|SHOW)\b/i.test(stmt)) {
         return { valid: false, error: `TRUY VẤN BỊ CHẶN: Chỉ chấp nhận SELECT/WITH/EXPLAIN/SHOW. Nhận: "${stmt.slice(0, 40)}..."` };
     }
-    if (/\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|GRANT|REVOKE|REINDEX|VACUUM|COPY|EXECUTE|EXEC)\b/i.test(stmt)) {
-        const kw = stmt.match(/\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|GRANT|REVOKE|REINDEX|VACUUM|COPY|EXECUTE|EXEC)\b/i)[0];
+
+    // Loại bỏ chuỗi ký tự '...' trước khi kiểm tra từ khóa nguy hiểm để tránh false positive khi chuỗi chứa từ khóa
+    const codeWithoutStrings = stmt.replace(/'(?:''|[^'])*'/g, "''");
+
+    const forbiddenRegex = /\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|GRANT|REVOKE|REINDEX|VACUUM|COPY|EXECUTE|EXEC|MERGE|CALL|DO|LOCK|INTO)\b/i;
+    if (forbiddenRegex.test(codeWithoutStrings)) {
+        const kw = codeWithoutStrings.match(forbiddenRegex)[0];
         return { valid: false, error: `TRUY VẤN BỊ CHẶN: Phát hiện từ khóa nguy hiểm "${kw.toUpperCase()}". Chế độ READ-ONLY.` };
     }
     return { valid: true, cleanSql: stmt };
@@ -236,6 +296,7 @@ module.exports = {
     // db mapping
     METABASE_DB_MAP,
     isMetabaseMode,
+    getMetabaseConfig,
     resolveDatabaseId,
     getDatabaseName,
     resolveOpenApiDatabase,

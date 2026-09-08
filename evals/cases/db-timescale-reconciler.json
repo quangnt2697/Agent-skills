@@ -1,0 +1,41 @@
+{
+  "skill_name": "db-timescale-reconciler",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Quét và đối chiếu độ lệch dữ liệu TimescaleDB Production giữa các bảng v3 v2 và raw",
+        "top_k": 1
+      },
+      {
+        "prompt": "Kiểm tra số lượng bản ghi tick topprice ohlc giữa bảng v3 so với v2 trên TimescaleDB",
+        "top_k": 3
+      },
+      {
+        "prompt": "Chạy đối chiếu reconciliation cho 11 topic MDDS trên TimescaleDB",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Phân tích gap AS-IS vs TO-BE",
+        "owner": "ba-gap-analysis"
+      },
+      {
+        "prompt": "Đo lường và phân tích Core Web Vitals LCP CLS",
+        "owner": "webperf-core-vitals"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Kiểm tra xem dữ liệu khớp lệnh ticks của mã FPT ngày hôm nay giữa bảng v3 và v2 có bị lệch không.",
+      "expected_output": "Đề xuất hoặc thực thi query recon-ticks để so sánh số lượng bản ghi và khối lượng giữa krx_mdds_v3_ticks và krx_mdds_v2_ticks.",
+      "expectations": [
+        "Xác định đúng bảng krx_mdds_v3_ticks và krx_mdds_v2_ticks",
+        "Sử dụng câu query đối chiếu an toàn Read-Only qua runner hoặc catalog"
+      ]
+    }
+  ]
+}

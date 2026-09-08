@@ -23,6 +23,10 @@ test('DB MCP SQL Sanitizer: Cho phép các câu lệnh đọc hợp lệ', () =>
 
     const q5 = sanitizeQuery('SHOW server_version');
     assert.equal(q5.valid, true);
+
+    // 5. Chuỗi ký tự (string literal) chứa từ khóa nhạy cảm không bị chặn nhầm
+    const q6 = sanitizeQuery("SELECT * FROM audit_logs WHERE action = 'DELETE' AND note = 'INSERT into table'");
+    assert.equal(q6.valid, true);
 });
 
 test('DB MCP SQL Sanitizer: Chặn tuyệt đối các câu lệnh thay đổi dữ liệu (DML/DDL)', () => {
@@ -38,7 +42,11 @@ test('DB MCP SQL Sanitizer: Chặn tuyệt đối các câu lệnh thay đổi d
         'VACUUM FULL',
         'REINDEX TABLE orders',
         'EXEC sp_dosomething',
-        'COPY users TO \'/tmp/leak.txt\''
+        'COPY users TO \'/tmp/leak.txt\'',
+        'SELECT * INTO new_table FROM users',
+        'MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE SET name = source.name',
+        'CALL sp_update_balance(100)',
+        'LOCK TABLE users IN ACCESS EXCLUSIVE MODE'
     ];
 
     for (const sql of forbidden) {
@@ -164,5 +172,82 @@ test('DB MCP Metabase: Phân giải chính xác Database IDs (timescale: 644, op
     assert.equal(resolveOpenApiDatabase('https://openapi.dnse.com.vn'), 'openapi');
     assert.equal(resolveOpenApiDatabase(''), 'openapi');
     assert.equal(resolveOpenApiDatabase(null), 'openapi');
+});
+
+test('DB MCP Metabase: Hỗ trợ chuyển đổi môi trường UAT / PROD và SSO Session Token', () => {
+    const { getMetabaseConfig, getMetabaseHeaders, resolveDatabaseId } = require('../.agents/db-client.js');
+
+    const originalEnv = { ...process.env };
+
+    try {
+        // 1. Môi trường UAT mặc định
+        process.env.METABASE_ENV = 'uat';
+        process.env.METABASE_UAT_URL = 'https://mb-uat.dnse.com.vn';
+        process.env.METABASE_UAT_API_TOKEN = 'token-uat-123';
+        delete process.env.METABASE_PROD_SESSION_TOKEN;
+
+        const cfgUat = getMetabaseConfig();
+        assert.equal(cfgUat.isProd, false);
+        assert.equal(cfgUat.baseUrl, 'https://mb-uat.dnse.com.vn');
+
+        // 2. Chuyển sang Production qua METABASE_ENV=prod
+        process.env.METABASE_ENV = 'prod';
+        process.env.METABASE_PROD_URL = 'https://mb.dnse.com.vn';
+        process.env.METABASE_PROD_SESSION_TOKEN = 'session-prod-xyz-999';
+        process.env.METABASE_PROD_DB_TIMESCALE_ID = '700';
+
+        const cfgProd = getMetabaseConfig();
+        assert.equal(cfgProd.isProd, true);
+        assert.equal(cfgProd.baseUrl, 'https://mb.dnse.com.vn');
+        assert.equal(cfgProd.token, 'session-prod-xyz-999');
+
+        // Headers phải có cả X-Metabase-Session và Cookie metabase.SESSION
+        const headers = getMetabaseHeaders();
+        assert.equal(headers['X-Metabase-Session'], 'session-prod-xyz-999');
+        assert.equal(headers['Cookie'], 'metabase.SESSION=session-prod-xyz-999');
+
+        // Database ID ưu tiên PROD DB ID
+        assert.equal(resolveDatabaseId('timescale'), 700);
+
+    } finally {
+        process.env = originalEnv;
+    }
+});
+
+test('Metabase SSO Helper: Đọc và cập nhật file .env an toàn', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const os = require('os');
+    const { parseEnv, updateEnvFile } = require('../scripts/metabase-sso-login.js');
+
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mb-sso-test-'));
+    const tmpEnv = path.join(tmpDir, '.env');
+
+    try {
+        fs.writeFileSync(tmpEnv, [
+            '# Comment ban đầu',
+            'METABASE_ENV=uat',
+            'METABASE_PROD_SESSION_TOKEN=',
+            'OTHER_VAR=keep_me'
+        ].join('\n'), 'utf-8');
+
+        // Cập nhật session token mới
+        updateEnvFile(tmpEnv, {
+            METABASE_PROD_SESSION_TOKEN: 'new-token-abc',
+            METABASE_PROD_DB_TIMESCALE_ID: '888'
+        });
+
+        const parsed = parseEnv(tmpEnv);
+        assert.equal(parsed.METABASE_ENV, 'uat');
+        assert.equal(parsed.OTHER_VAR, 'keep_me');
+        assert.equal(parsed.METABASE_PROD_SESSION_TOKEN, 'new-token-abc');
+        assert.equal(parsed.METABASE_PROD_DB_TIMESCALE_ID, '888');
+
+        // Đảm bảo comment ban đầu không bị xóa
+        const rawContent = fs.readFileSync(tmpEnv, 'utf-8');
+        assert.ok(rawContent.includes('# Comment ban đầu'));
+    } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
 });
 

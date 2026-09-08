@@ -8,7 +8,7 @@ description: 'Download Jira task có ý tưởng thô/mơ hồ, mài giũa (refi
 Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành spec chi tiết rõ ràng → Push lại lên Jira theo cấu trúc chuẩn.
 
 > ⚠️ **BẮT BUỘC ĐỐI VỚI BÀI TOÁN CHỨNG KHOÁN & FINTECH:**
-> Khi mài giũa spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, dữ liệu thị trường KRX (MDDS), chuyển phiên, Random End, hoặc quản trị vị thế ký quỹ (Deal-based Margin), Agent **BẮT BUỘC đọc và đối chiếu nghiêm ngặt [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md)** trong toàn bộ các giai đoạn Phân kỳ, Hội tụ, và Mài sắc spec.
+> Khi mài giũa spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, dữ liệu thị trường KRX (MDDS), chuyển phiên, Random End, hoặc quản trị vị thế ký quỹ (Deal-based Margin), Agent **BẮT BUỘC đọc và đối chiếu nghiêm ngặt [securities-domain-rules.md](../../../../references/securities-domain-rules.md)** trong toàn bộ các giai đoạn Phân kỳ, Hội tụ, và Mài sắc spec.
 
 ## Ranh giới: ba-spec vs ba-refine
 
@@ -305,7 +305,7 @@ Skill này tương tác với Jira/Confluence qua **2 phương thức** (theo th
      - User Flow & UI: Có thay đổi UI không? Flow thao tác như thế nào?
      - Tiêu chí Thành công: Thế nào gọi là thành công? Metrics đo lường?
      - Ghi chú Kỹ thuật: Ràng buộc API, Database? Pháp lý/bảo mật? Hiệu năng?
-   - **Đối chiếu Nghiệp vụ Chứng khoán (nếu thuộc domain chứng khoán):** Bắt buộc tham chiếu `references/securities-domain-rules.md` để làm rõ:
+   - **Đối chiếu Nghiệp vụ Chứng khoán (nếu thuộc domain chứng khoán):** Bắt buộc tham chiếu `../../../../references/securities-domain-rules.md` để làm rõ:
      - Mô hình tài khoản: Deal-based `(accountNo, symbol, loanPackageId)` hay Portfolio-based?
      - Loại lệnh & Hiệu lực: Loại lệnh (`NORMAL`, `STOP`, `TRAILING_STOP`, `TRADING_EVENT`, `OCO`), Time-In-Force (`DAY`, `GTD`, `GTC`), các sàn áp dụng (HOSE, HNX, UPCOM)?
      - Ràng buộc phiên & khớp lệnh: ATO, Liên tục, ATC, PLO, Random End (RE)?
@@ -1038,7 +1038,7 @@ Compliance-First (Direction C) sẽ deliver value nhanh hơn."
 
 ### 5. Fintech & Securities Domain Specific Checks
 
-Với mọi feature liên quan tiền, tài khoản hoặc giao dịch chứng khoán, **BẮT BUỘC** đối chiếu [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md) và kiểm tra:
+Với mọi feature liên quan tiền, tài khoản hoặc giao dịch chứng khoán, **BẮT BUỘC** đối chiếu [securities-domain-rules.md](../../../../references/securities-domain-rules.md) và kiểm tra:
 
 #### Checklist Fintech Chung:
 - [ ] Có rủi ro mất tiền không? (Fraud, double-charging, errors)
@@ -1092,7 +1092,7 @@ Trước khi gọi `jira-push-spec.sh`, verify:
 - [ ] **Tone:** Đã review, không có weasel words ("có lẽ", "có thể", "chắc")
 - [ ] **Sạch template:** 2 lệnh `grep` ở Giai đoạn 4 Bước 1 không in ra gì
 - [ ] **Bảng đúng cú pháp:** `DRY_RUN=1` báo đúng số bảng mong đợi
-- [ ] **Domain Chứng khoán:** Nếu là bài toán chứng khoán, đã đối chiếu và tuân thủ [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md) (Deal-based, loại lệnh, quy chuẩn sửa/hủy, Random End, mã lỗi ORS)
+- [ ] **Domain Chứng khoán:** Nếu là bài toán chứng khoán, đã đối chiếu và tuân thủ [securities-domain-rules.md](../../../../references/securities-domain-rules.md) (Deal-based, loại lệnh, quy chuẩn sửa/hủy, Random End, mã lỗi ORS)
 
 Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
 
