@@ -15,20 +15,23 @@
  *   npm run db:recon                                   # Lệnh npm tiện ích
  */
 
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const fs = require('fs');
-const path = require('path');
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
-const {
+
+import {
     loadEnv,
     metabaseFetch,
     sanitizeQuery,
     applyLimit,
     getMetabaseConfig,
     formatErrorMessage
-} = require(path.join(projectRoot, '.agents', 'db-client.js'));
+} from '../.agents/db-client.js';
+
 
 // Nạp .env
 loadEnv(path.join(projectRoot, '.env'));
@@ -245,17 +248,28 @@ async function main() {
     await runQuery(queryId, cliArgs);
 }
 
-if (require.main === module) {
+function isMain() {
+    if (!process.argv[1]) return false;
+    try {
+        return fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
+    } catch {
+        return process.argv[1] === fileURLToPath(import.meta.url);
+    }
+}
+
+if (isMain()) {
     main().catch(err => {
         console.error(`❌ Lỗi không mong đợi:`, err);
         process.exit(1);
     });
 }
 
-module.exports = {
+
+export {
     loadCatalog,
     replaceParams,
     formatMarkdownTable,
     parseCliArgs,
     catalogPath
 };
+

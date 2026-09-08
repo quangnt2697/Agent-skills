@@ -28,10 +28,15 @@
 
 'use strict';
 
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const { execFileSync } = require('child_process');
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 function parseFrontmatter(content) {
   const match = content.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/);
@@ -661,6 +666,17 @@ function main(args = process.argv.slice(2)) {
   }
 }
 
-if (require.main === module) main();
+function isMain() {
+  if (!process.argv[1]) return false;
+  try {
+    return fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return process.argv[1] === fileURLToPath(import.meta.url);
+  }
+}
 
-module.exports = { materializeWorkspace };
+if (isMain()) main();
+
+export { materializeWorkspace };
+
+

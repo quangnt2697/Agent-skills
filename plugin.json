@@ -1,5 +1,5 @@
 {
   "name": "agent-skills",
   "version": "1.0.0",
-  "description": "Bộ công cụ tự động hóa QA/BA toàn trình cho AI agents."
+  "description": "Bộ sưu tập kỹ năng cấp sản xuất cho AI coding agents — BA, DEV, QA, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor."
 }

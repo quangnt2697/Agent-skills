@@ -1,16 +1,15 @@
-"use strict";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { afterEach, test } from "node:test";
 
-const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const os = require("node:os");
-const path = require("node:path");
-const { afterEach, test } = require("node:test");
-
-const {
+import {
   collectVersions,
   checkVersionConsistency,
   MANIFEST_PATHS,
-} = require("./validate-versions");
+} from "./validate-versions.js";
+
 
 const sandboxes = [];
 

@@ -3,23 +3,21 @@ sprint_settings:
   duration_days: 14               # Độ dài mỗi Sprint (vd: 14 ngày = 2 tuần)
 
 jira_board:
-  id: 61
-  name: "G3.1 - Partners & Open API"
+  id: 123
+  name: "Group ABC"
 
 team:
-  - name: "Phan Hữu Thắng"
+  - name: "Nguyễn Văn A"
     role: "Developer APP"
-  - name: "Lương Tuấn Linh"
+  - name: "Trần Văn B"
     role: "Developer WEB"
-  - name: "Trịnh Quốc Đạt"
+  - name: "Lê Văn C"
     role: "Developer Backend"
-  - name: "Nguyễn Thành Sơn"
+  - name: "Phạm Văn D"
     role: "Developer Backend"
-  - name: "Trịnh Thu Hà"
+  - name: "Hoàng Thị E"
     role: "BA"
-  - name: "Phạm Thị Thảo Linh"
-    role: "BA"
-  - name: "Nguyễn Thanh Quang"
+  - name: "Vũ Thị F"
     role: "QA"
-  - name: "Nguyễn Trung Hiếu"
+  - name: "Đỗ Văn G"
     role: "PO"

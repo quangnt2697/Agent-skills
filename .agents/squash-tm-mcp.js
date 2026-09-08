@@ -1,28 +1,18 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
-const cp = require('child_process');
-const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
-const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
-const { CallToolRequestSchema, ListToolsRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
+import fs from 'node:fs';
+import path from 'node:path';
+import cp from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { loadEnv } from './db-client.js';
 
-function loadEnv(filePath) {
-    if (!fs.existsSync(filePath)) return;
-    const content = fs.readFileSync(filePath, 'utf-8');
-    content.split(/\r?\n/).forEach(line => {
-        const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-        if (match) {
-            let key = match[1];
-            let value = match[2] || '';
-            value = value.replace(/(^['"]|['"]$)/g, '').trim();
-            if (process.env[key] === undefined) {
-                process.env[key] = value;
-            }
-        }
-    });
-}
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
+
 loadEnv(path.join(projectRoot, '.env'));
 
 const server = new Server(

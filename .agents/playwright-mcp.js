@@ -8,33 +8,21 @@
  * 4. Hỗ trợ Smart Actions: tự động login Dashboard và Web Trading Platform
  */
 
-const fs = require('fs');
-const path = require('path');
-const { chromium } = require('playwright');
-const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
-const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
-const { CallToolRequestSchema, ListToolsRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright';
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { loadEnv } from './db-client.js';
 
-// Load .env
-function loadEnv(filePath) {
-    if (!fs.existsSync(filePath)) return;
-    const content = fs.readFileSync(filePath, 'utf-8');
-    content.split(/\r?\n/).forEach(line => {
-        const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-        if (match) {
-            let key = match[1];
-            let value = match[2] || '';
-            value = value.replace(/(^['"]|['"]$)/g, '').trim();
-            if (process.env[key] === undefined) {
-                process.env[key] = value;
-            }
-        }
-    });
-}
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
 loadEnv(path.join(projectRoot, '.env'));
 loadEnv(path.join(projectRoot, 'plugins/qa/skills/qa-auto-design/examples/.env.example'));
+
 
 // Quản lý Browser & Page Singleton
 let browserInstance = null;

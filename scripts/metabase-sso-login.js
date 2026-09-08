@@ -13,14 +13,17 @@
  *   node scripts/metabase-sso-login.js --set-active  # Chuyển thẳng Production làm môi trường active trong .env
  */
 
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright';
 
-const fs = require('fs');
-const path = require('path');
-const { chromium } = require('playwright');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const projectRoot = path.join(__dirname, '..');
 const envPath = path.join(projectRoot, '.env');
+
 
 // ─── 1. Tiện Ích Đọc / Ghi File .env ───────────────────────────────────────────
 
@@ -294,17 +297,27 @@ async function main() {
     process.exit(1);
 }
 
-// Chạy trực tiếp
-if (require.main === module) {
+function isMain() {
+    if (!process.argv[1]) return false;
+    try {
+        return fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
+    } catch {
+        return process.argv[1] === fileURLToPath(import.meta.url);
+    }
+}
+
+if (isMain()) {
     main().catch(err => {
         console.error(`❌ Lỗi không mong đợi:`, err);
         process.exit(1);
     });
 }
 
-module.exports = {
+
+export {
     parseEnv,
     updateEnvFile,
     verifyMetabaseSession,
     fetchDatabases,
 };
+

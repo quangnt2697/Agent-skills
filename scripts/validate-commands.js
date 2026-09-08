@@ -21,10 +21,13 @@
  * Exit codes: 0 = all clear, 1 = one or more errors
  */
 
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parse } from 'smol-toml';
 
-const fs   = require('fs');
-const path = require('path');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -67,12 +70,15 @@ function descriptionFromMd(filePath) {
 }
 
 function descriptionFromToml(filePath) {
-  const content     = fs.readFileSync(filePath, 'utf8');
-  const doubleMatch = content.match(/^description\s*=\s*"((?:[^"\\]|\\.)*)"/m);
-  if (doubleMatch) return doubleMatch[1].replace(/\\"/g, '"');
-  const singleMatch = content.match(/^description\s*=\s*'([^']*)'/m);
-  return singleMatch ? singleMatch[1] : null;
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    const data = parse(content);
+    return typeof data.description === 'string' ? data.description : null;
+  } catch (err) {
+    return null;
+  }
 }
+
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
 

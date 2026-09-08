@@ -20,8 +20,8 @@
  *   - cross-skill references point to known skills
  */
 
-const fs   = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -314,9 +314,10 @@ function lintSkill(dirName, skillsDir, knownSkills) {
 // SECTION_EXEMPT_SKILLS, SKILL_REF_PATTERNS, and the regexes) stay private so a
 // test or future consumer cannot mutate shared state and change lint results for
 // the rest of the process. Exercise the rules through these functions.
-module.exports = {
+export {
   parseFrontmatter,
   extractSkillReferences,
   lintSkillContent,
   lintSkill,
 };
+

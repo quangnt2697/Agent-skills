@@ -19,23 +19,26 @@
  *   - Tuân thủ rule V3 > V2 (ưu tiên bảng v3, fallback v2)
  */
 
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const fs   = require('fs');
-const path = require('path');
-
-const {
+import {
     loadEnv, projectRoot,
     metabaseFetch, metabaseRunSql,
     sanitizeQuery, applyLimit,
     CACHE_DIR, ensureCacheDir,
     DEFAULT_STATEMENT_TIMEOUT_MS,
     resolveOpenApiDatabase,
-} = require('./db-client');
+} from './db-client.js';
 
-const { Server }               = require('@modelcontextprotocol/sdk/server/index.js');
-const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
-const { CallToolRequestSchema, ListToolsRequestSchema } = require('@modelcontextprotocol/sdk/types.js');
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 // Nạp thêm .env example nếu có
 loadEnv(path.join(projectRoot, 'plugins/qa/skills/qa-auto-design/examples/.env.example'));
@@ -973,7 +976,7 @@ async function main() {
 }
 
 // Export các hàm phục vụ Unit Test & Modular imports
-module.exports = {
+export {
     tdGetMarketSnapshot,
     tdGetSecurityInfo,
     tdGetTickSamples,
@@ -990,9 +993,11 @@ module.exports = {
     printHelp,
 };
 
-if (require.main === module) {
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) {
     main().catch(err => {
         process.stderr.write(`[test-data-mcp] FATAL: ${err.message}\n`);
         process.exit(1);
     });
 }
+

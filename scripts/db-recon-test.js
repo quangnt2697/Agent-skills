@@ -1,15 +1,20 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const path = require('path');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
-const { sanitizeQuery } = require(path.join(projectRoot, '.agents', 'db-client.js'));
-const {
+
+import { sanitizeQuery } from '../.agents/db-client.js';
+import {
     loadCatalog,
     replaceParams,
     formatMarkdownTable,
     parseCliArgs
-} = require('./db-recon.js');
+} from './db-recon.js';
+
 
 test('TimescaleDB Reconciler: Đọc catalog và kiểm tra cấu trúc', () => {
     const catalog = loadCatalog();

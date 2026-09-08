@@ -2,8 +2,9 @@
   "name": "agent-skills",
   "version": "1.0.0",
   "private": true,
-  "description": "Bộ sưu tập kỹ năng cấp sản xuất cho AI coding agents — BA/QA/DEV.",
+  "description": "Bộ sưu tập kỹ năng cấp sản xuất cho AI coding agents — BA, DEV, QA, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor.",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "build": "node scripts/build-commands.js",
     "lint": "npm run validate",
@@ -28,6 +29,7 @@
     "@modelcontextprotocol/sdk": "^1.30.0",
     "dotenv": "^17.4.2",
     "pg": "^8.23.0",
-    "playwright": "^1.62.1"
+    "playwright": "^1.62.1",
+    "smol-toml": "^1.8.0"
   }
 }

@@ -31,12 +31,15 @@ def main():
     # repo_root is 5 levels up: scripts -> sm-daily-standup -> skills -> scrum-master -> plugins -> repo_root
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))))
 
-    # 1. Read config: look in project_root first, fallback to repo_root
+    # 1. Read config: look in project_root first, fallback to repo_root, then sm-config.example.yaml
     config_path = os.path.join(project_root, "sm-config.yaml")
     if not os.path.exists(config_path):
         config_path = os.path.join(repo_root, "sm-config.yaml")
+    if not os.path.exists(config_path):
+        config_path = os.path.join(repo_root, "sm-config.example.yaml")
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
+
 
     anchor_start_date_str = config["sprint_settings"]["anchor_start_date"]
     duration_days = config["sprint_settings"]["duration_days"]

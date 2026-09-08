@@ -19,8 +19,9 @@
  *
  * Exit codes: 0 = all manifests agree, 1 = drift detected
  */
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
-const { existsSync, readFileSync } = require("node:fs");
 
 const MANIFEST_PATHS = [
   "plugin.json",
@@ -85,6 +86,19 @@ function main() {
   );
 }
 
-if (require.main === module) main();
+function isMain() {
+  if (!process.argv[1]) return false;
+  try {
+    return existsSync(process.argv[1]) && readFileSync && (process.argv[1] === fileURLToPath(import.meta.url) || fsRealpath(process.argv[1]) === fsRealpath(fileURLToPath(import.meta.url)));
+  } catch {
+    return process.argv[1] === fileURLToPath(import.meta.url);
+  }
+}
 
-module.exports = { collectVersions, checkVersionConsistency, MANIFEST_PATHS };
+import { realpathSync as fsRealpath } from "node:fs";
+
+if (isMain()) main();
+
+export { collectVersions, checkVersionConsistency, MANIFEST_PATHS };
+
+

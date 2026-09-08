@@ -5,15 +5,23 @@
 //   2. md-to-adf nối cả bảng (kể cả hàng |---|) thành một paragraph
 //   3. ngắt dòng "2 khoảng trắng" bị nuốt → User Story thành một dòng dài
 
-const test = require('node:test');
-const assert = require('node:assert');
-const path = require('path');
+import test from 'node:test';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const require = createRequire(import.meta.url);
 
 const {
   normalizeIssueKey,
   markdownToAdf,
   splitBlocks,
 } = require(path.join(__dirname, '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'scripts', 'jira-push-spec.js'));
+
 
 // --- normalizeIssueKey --------------------------------------------------------
 
@@ -166,7 +174,6 @@ test('splits a document into md and table blocks in order', () => {
 // --- Template ------------------------------------------------------------------
 
 test('the shipped template converts with both of its tables intact', () => {
-  const fs = require('fs');
   const templatePath = path.join(
     __dirname, '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'templates', 'jira-description-template.md',
   );
@@ -176,11 +183,11 @@ test('the shipped template converts with both of its tables intact', () => {
 });
 
 test('the shipped template carries no leftover meta text', () => {
-  const fs = require('fs');
   const templatePath = path.join(
     __dirname, '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'templates', 'jira-description-template.md',
   );
   const raw = fs.readFileSync(templatePath, 'utf8');
+
 
   for (const banned of [
     'Jira Description Template',

@@ -28,13 +28,16 @@
  * Exit codes: 0 = all clear, 1 = one or more unresolvable links.
  */
 
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const fs = require('fs');
-const path = require('path');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, '..');
 const PLUGINS_DIR = path.join(ROOT, 'plugins');
+
 
 // Matches a link to a references/ markdown file, with any number of leading
 // `../` segments: `references/x.md`, `../../references/x.md`. Anchored on a

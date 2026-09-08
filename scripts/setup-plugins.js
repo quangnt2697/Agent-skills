@@ -9,15 +9,20 @@
  *   node scripts/setup-plugins.js --unlink # Gỡ bỏ symlinks
  */
 
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const isUnlink = process.argv.includes('--unlink');
 const homeDir = os.homedir();
 const targetPluginsDir = path.join(homeDir, '.gemini', 'config', 'plugins');
 const projectRoot = path.resolve(__dirname, '..');
 const sourcePluginsDir = path.join(projectRoot, 'plugins');
+
 
 console.log('='.repeat(65));
 console.log(isUnlink ? '  GỠ BỎ AGENT-SKILLS PLUGINS' : '  THIẾT LẬP AGENT-SKILLS PLUGINS CHO GEMINI / ANTIGRAVITY');

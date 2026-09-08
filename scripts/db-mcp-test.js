@@ -1,6 +1,32 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { sanitizeQuery, applyLimit, HARD_CAP_MAX_ROWS, DEFAULT_MAX_ROWS } = require('../.agents/db-mcp.js');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+
+import {
+    sanitizeQuery,
+    applyLimit,
+    formatErrorMessage,
+    getPoolConfig,
+    isMetabaseMode,
+    resolveDatabaseId,
+    getDatabaseName,
+    resolveOpenApiDatabase,
+    HARD_CAP_MAX_ROWS,
+    DEFAULT_MAX_ROWS
+} from '../.agents/db-mcp.js';
+
+import {
+    getMetabaseConfig,
+    getMetabaseHeaders
+} from '../.agents/db-client.js';
+
+import {
+    parseEnv,
+    updateEnvFile
+} from '../scripts/metabase-sso-login.js';
+
 
 test('DB MCP SQL Sanitizer: Cho phép các câu lệnh đọc hợp lệ', () => {
     // 1. SELECT đơn giản
@@ -97,8 +123,6 @@ test('DB MCP Auto Limit: Không gắn LIMIT vào EXPLAIN hoặc SHOW', () => {
 });
 
 test('DB MCP Error Formatter: Xử lý AggregateError và lỗi thông thường', () => {
-    const { formatErrorMessage } = require('../.agents/db-mcp.js');
-
     // 1. Lỗi thông thường
     assert.equal(formatErrorMessage(new Error('Syntax error at or near SELECT')), 'Syntax error at or near SELECT');
 
@@ -113,7 +137,6 @@ test('DB MCP Error Formatter: Xử lý AggregateError và lỗi thông thường
 });
 
 test('DB MCP Config: Nạp cấu hình từ DATABASE_URL hoặc các biến DB_*', () => {
-    const { getPoolConfig } = require('../.agents/db-mcp.js');
     const prevUrl = process.env.DATABASE_URL;
 
     process.env.DATABASE_URL = 'postgresql://testuser:testpass@db.local:5432/testdb';
@@ -135,8 +158,6 @@ test('DB MCP Config: Nạp cấu hình từ DATABASE_URL hoặc các biến DB_*
 });
 
 test('DB MCP Metabase: Phân giải chính xác Database IDs (timescale: 644, openapi: 535, openapi-sandbox: 655)', () => {
-    const { resolveDatabaseId, getDatabaseName, isMetabaseMode } = require('../.agents/db-mcp.js');
-
     assert.equal(isMetabaseMode(), true);
 
     // 1. Alias name
@@ -161,7 +182,6 @@ test('DB MCP Metabase: Phân giải chính xác Database IDs (timescale: 644, op
     assert.equal(getDatabaseName(655), 'openapi-sandbox');
 
     // 5. Smart Environment Routing (resolveOpenApiDatabase)
-    const { resolveOpenApiDatabase } = require('../.agents/db-mcp.js');
     assert.equal(resolveOpenApiDatabase('sandbox'), 'openapi-sandbox');
     assert.equal(resolveOpenApiDatabase('openapi-sandbox'), 'openapi-sandbox');
     assert.equal(resolveOpenApiDatabase('https://sb-openapi.dnse.com.vn'), 'openapi-sandbox');
@@ -175,8 +195,6 @@ test('DB MCP Metabase: Phân giải chính xác Database IDs (timescale: 644, op
 });
 
 test('DB MCP Metabase: Hỗ trợ chuyển đổi môi trường UAT / PROD và SSO Session Token', () => {
-    const { getMetabaseConfig, getMetabaseHeaders, resolveDatabaseId } = require('../.agents/db-client.js');
-
     const originalEnv = { ...process.env };
 
     try {
@@ -215,12 +233,8 @@ test('DB MCP Metabase: Hỗ trợ chuyển đổi môi trường UAT / PROD và 
 });
 
 test('Metabase SSO Helper: Đọc và cập nhật file .env an toàn', () => {
-    const fs = require('fs');
-    const path = require('path');
-    const os = require('os');
-    const { parseEnv, updateEnvFile } = require('../scripts/metabase-sso-login.js');
-
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mb-sso-test-'));
+
     const tmpEnv = path.join(tmpDir, '.env');
 
     try {

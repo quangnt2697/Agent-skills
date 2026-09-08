@@ -62,6 +62,11 @@ Phân tích ai nên viết BDD Gherkin scenarios:
 
 Chi tiết tích hợp Phase A (Code Reviewer đọc MR thật, pipeline, threads) và Phase B (Traceability).
 
+### [architecture/mcp-overview.md](architecture/mcp-overview.md)
+**Kiến trúc các MCP Servers (.agents/)**
+
+Tổng hợp thiết kế, vai trò, tiêu chuẩn bảo mật (SQL Sanitizer, Auto-limit, Session/Token) cho 6 MCP servers trong `.agents/`.
+
 ---
 
 ## 🔧 Setup Guides (Multi-Platform)

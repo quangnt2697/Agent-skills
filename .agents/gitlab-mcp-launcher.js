@@ -10,28 +10,17 @@
  * atlassian-mcp-proxy.js hay squash-tm-mcp.js, nên phải bơm env trước khi spawn.
  */
 
-const fs = require('fs');
-const path = require('path');
-const { spawn } = require('child_process');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { spawn } from 'node:child_process';
+import { loadEnv } from './db-client.js';
 
-function loadEnv(filePath) {
-    if (!fs.existsSync(filePath)) return;
-    const content = fs.readFileSync(filePath, 'utf-8');
-    content.split(/\r?\n/).forEach(line => {
-        const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-        if (match) {
-            let key = match[1];
-            let value = match[2] || '';
-            value = value.replace(/(^['"]|['"]$)/g, '').trim();
-            if (process.env[key] === undefined) {
-                process.env[key] = value;
-            }
-        }
-    });
-}
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
 loadEnv(path.join(projectRoot, '.env'));
+
 
 if (!process.env.GITLAB_API_URL || !process.env.GITLAB_PERSONAL_ACCESS_TOKEN) {
     console.error('LỖI: Thiếu GITLAB_API_URL hoặc GITLAB_PERSONAL_ACCESS_TOKEN trong .env');

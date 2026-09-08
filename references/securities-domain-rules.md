@@ -5,54 +5,29 @@ Tài liệu này là **Single Source of Truth** dùng chung cho toàn bộ 7 Per
 
 ---
 
-## MỤC LỤC
+## MỤC LỤC & CÁC MODULES CHUYÊN SÂU
 
-1. [CẤP ĐỘ 1 (CƠ BẢN): Khái Niệm Căn Bản & Cấu Trúc Thị Trường](#1-cấp-độ-1-cơ-bản-khái-niệm-căn-bản--cấu-trúc-thị-trường)
-   - 1.1. Các Sở & Thị Trường (MarketID)
-   - 1.2. Các Bảng Giao Dịch (BoardID)
-   - 1.3. Biên Độ Dao Động Giá (Price Limits)
-   - 1.4. Bảng Bước Giá (Tick Size) & Làm Tròn (Rounding)
-   - 1.5. Đơn Vị Giao Dịch & Quy Tắc Lô (Lot Size)
-   - 1.6. Chu Kỳ Thanh Toán & Dòng Tiền (Settlement T+2)
-2. [CẤP ĐỘ 2 (TRUNG CẤP): Phiên Giao Dịch, Cờ Phiên & Các Loại Lệnh Đặt](#2-cấp-độ-2-trung-cấp-phiên-giao-dịch-cờ-phiên--các-loại-lệnh-đặt)
-   - 2.1. Khung Thời Gian & Lịch Trình Các Phiên
-   - 2.2. Bảng Mã Cờ Phiên Chuẩn KRX (BoardEventID & SessionID)
-   - 2.3. Các Loại Lệnh Khớp Lệnh Cơ Sở (LO, ATO, ATC, MP, MTL, MOK, MAK, PLO)
-   - 2.4. Lệnh Giao Dịch Thỏa Thuận (Negotiation Orders - 1F & 2F)
-   - 2.5. Lệnh Phái Sinh & Quản Trị Vị Thế Hợp Đồng Tương Lai (Derivatives Orders)
-   - 2.6. Quy Chuẩn Sửa Lệnh & Hủy Lệnh Chi Tiết (Amend & Cancel Rules)
-   - 2.7. Cơ Chế Khớp Lệnh Ngẫu Nhiên (Random End - RE) Theo Từng Mã Chứng Khoán
-3. [CẤP ĐỘ 3 (TRUNG CẤP): Vòng Đời Lệnh, Trạng Thái & Lệnh Điều Kiện](#3-cấp-độ-3-trung-cấp-vòng-đời-lệnh-trạng-thái--lệnh-điều-kiện)
-   - 3.1. Máy Trạng Thái Vòng Đời Lệnh Toàn Trình (Order State Machine)
-   - 3.2. Bảng Ánh Xạ Trạng Thái Lệnh Đa Tầng (Core/ORS, OpenAPI, WS Event & Sổ Lệnh UI)
-   - 3.3. Danh Mục 15 Mã Lỗi Đặt Lệnh ORS & Quy Tắc Xử Lý Frontend/Backend
-   - 3.4. Cơ Chế Tự Động Fallback Lệnh 24/7 (Session-Active & Symbol-Active)
-   - 3.5. Hệ Thống Lệnh Điều Kiện Chuyên Sâu (Conditional Order Engine)
-4. [CẤP ĐỘ 4 (NÂNG CAO): Quản Lý Biến Động & Tạm Ngừng Giao Dịch Khẩn Cấp](#4-cấp-độ-4-nâng-cao-quản-lý-biến-động--tạm-ngừng-giao-dịch-khẩn-cấp)
-   - 4.1. Tạm Ngừng Từng Chứng Khoán (Instrument Halt - EI8/EI1/EI9)
-   - 4.2. Tạm Ngừng Toàn Thị Trường (Market Halt - AE8/AE1/BE9)
-   - 4.3. Cơ Chế Ngắt Mạch Thị Trường (Circuit Breaker - CB)
-   - 4.4. Ngắt Biến Động Giá (Volatility Interruption - VI) & Nới Biên Độ (PLE)
-5. [CẤP ĐỘ 5 (NÂNG CAO): Dữ Liệu Thị Trường Real-time (MDDS / KRX Protocols)](#5-cấp-độ-5-nâng-cao-dữ-liệu-thị-trường-real-time-mdds--krx-protocols)
-   - 5.1. Các Bản Tin MDDS Từ Sở (Message Specifications)
-   - 5.2. Các Kênh WebSocket Datafeed Phân Phối Ra Khách Hàng
-   - 5.3. Tiêu Chuẩn Tuần Tự Thời Gian & Đo Lường Độ Trễ (Latency Tracking)
-6. [CẤP ĐỘ 6 (CHUYÊN SÂU): Sức Mua & Ký Quỹ Truyền Thống Theo Tiểu Khoản (.1 và .6)](#6-cấp-độ-6-chuyên-sâu-sức-mua--ký-quỹ-truyền-thống-theo-tiểu-khoản-1-và-6)
-   - 6.1. Mô Hình Tiểu Khoản Truyền Thống (.1 Thường & .6 Ký Quỹ)
-   - 6.2. Công Thức Tính Sức Mua Khả Dụng (Buying Power)
-   - 6.3. Quản Trị Rủi Ro Ký Quỹ Tổng Thể ($R_{tt}$) & Force Sell Toàn Danh Mục
-   - 6.4. Quản Lý Room Chứng Khoán & Khối Ngoại
-7. [CẤP ĐỘ 7 (ĐỘC QUYỀN): Hệ Thống Quản Trị Vị Thế Ký Quỹ Theo Deal (Deal-based Margin System)](#7-cấp-độ-7-độc-quyền-hệ-thống-quản-trị-vị-thế-ký-quỹ-theo-deal-deal-based-margin-system)
-   - 7.1. Khái Niệm Cốt Lõi: Deal Là Gì & So Sánh Với Mô Hình Truyền Thống
-   - 7.2. Cấu Trúc Thực Thể Hệ Thống Deal (Entities & Data Model)
-   - 7.3. Vòng Đời Deal & Các Nghiệp Vụ Giao Dịch Đặc Thù
-   - 7.4. Các Công Thức Toán Học & Tài Chính Chuẩn Xác Theo Deal
-   - 7.5. Cơ Chế Giá Chặn Margin DEAL (Loan Price / Cap Price)
-   - 7.6. Quản Trị Rủi Ro & Xử Lý Vi Phạm Theo Deal (Risk Management per Deal)
-   - 7.7. Quy Tắc Đồng Bộ Sự Kiện Core/Flex Vào Deal (BO Event Sync Matrix)
-8. [MA TRẬN HƯỚNG DẪN THỰC THI CHO TỪNG PERSONA](#8-ma-trận-hướng-dẫn-thực-thi-cho-từng-persona)
+Tài liệu được chia thành các module độc lập trong thư mục [`references/securities/`](securities/) giúp tối ưu token và tra cứu chính xác:
+
+1. **[01-market-structure.md](securities/01-market-structure.md)** — **CẤP ĐỘ 1 (CƠ BẢN): Khái Niệm Căn Bản & Cấu Trúc Thị Trường**
+   - Sở & Thị trường (MarketID), Bảng giao dịch (BoardID), Biên độ dao động giá, Bước giá, Lô chẵn/lẻ, Chu kỳ thanh toán T+2.
+2. **[02-sessions-and-orders.md](securities/02-sessions-and-orders.md)** — **CẤP ĐỘ 2 (TRUNG CẤP): Phiên Giao Dịch, Cờ Phiên & Các Loại Lệnh Đặt**
+   - Khung giờ phiên, Mã cờ phiên KRX (`AA1`, `BB1`, `BC1`, v.v.), Lệnh cơ sở (LO, ATO, ATC, MP, MTL, MOK, MAK, PLO), Lệnh thỏa thuận (1F/2F), Phái sinh, Quy chuẩn Sửa/Hủy lệnh, Cơ chế Random End (RE).
+3. **[03-order-lifecycle-and-ors.md](securities/03-order-lifecycle-and-ors.md)** — **CẤP ĐỘ 3 (TRUNG CẤP): Vòng Đời Lệnh, Trạng Thái & Lệnh Điều Kiện**
+   - Máy trạng thái vòng đời lệnh, Bảng ánh xạ trạng thái đa tầng, Danh mục 15 mã lỗi ORS, Lệnh 24/7 fallback, Động cơ lệnh điều kiện (Stop, TCO, Trailing).
+4. **[04-volatility-and-halts.md](securities/04-volatility-and-halts.md)** — **CẤP ĐỘ 4 (NÂNG CAO): Quản Lý Biến Động & Tạm Ngừng Giao Dịch Khẩn Cấp**
+   - Instrument Halt (`EI8`/`EI1`/`EI9`), Market Halt (`AE8`/`AE1`/`BE9`), Circuit Breaker (CB), Volatility Interruption (VI).
+5. **[05-market-data-mdds.md](securities/05-market-data-mdds.md)** — **CẤP ĐỘ 5 (NÂNG CAO): Dữ Liệu Thị Trường Real-time (MDDS / KRX Protocols)**
+   - Bản tin MDDS từ Sở, Kênh WebSocket datafeed phân phối khách hàng, Tuần tự thời gian & Đo lường độ trễ (latency tracking).
+6. **[06-traditional-margin.md](securities/06-traditional-margin.md)** — **CẤP ĐỘ 6 (CHUYÊN SÂU): Sức Mua & Ký Quỹ Truyền Thống Theo Tiểu Khoản**
+   - Mô hình tiểu khoản .1 và .6, Công thức sức mua (Buying Power), Tỷ lệ $R_{tt}$, Call margin (<85%) & Force sell (<80%), Quản lý room ngoại & room CTCK.
+7. **[07-deal-based-margin.md](securities/07-deal-based-margin.md)** — **CẤP ĐỘ 7 (ĐỘC QUYỀN): Hệ Thống Quản Trị Vị Thế Ký Quỹ Theo Deal**
+   - Định danh Deal, Data model, Vòng đời Deal, Công thức toán học (Giá vốn, Giá hòa vốn, $R_{\text{deal}}$), Giá chặn Margin (Loan/Cap Price), Call margin & Smart Force Sell theo Deal, Ma trận đồng bộ Core/Flex (`txCode`).
+8. **[08-persona-matrix.md](securities/08-persona-matrix.md)** — **MA TRẬN HƯỚNG DẪN THỰC THI CHO TỪNG PERSONA**
+   - Checklists và hướng dẫn hành động cụ thể cho BA, DEV, QA, Code Reviewer, Security Auditor, Web Performance Auditor.
 
 ---
+
 
 ## 1. CẤP ĐỘ 1 (CƠ BẢN): Khái Niệm Căn Bản & Cấu Trúc Thị Trường
 

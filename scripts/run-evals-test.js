@@ -1,14 +1,15 @@
-#!/usr/bin/env node
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { materializeWorkspace } from './run-evals.js';
 
-'use strict';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const os = require('node:os');
-const path = require('node:path');
-const { spawnSync } = require('node:child_process');
-const test = require('node:test');
-const { materializeWorkspace } = require('./run-evals');
 
 const RUNNER = path.join(__dirname, 'run-evals.js');
 
@@ -57,8 +58,10 @@ function makeSandbox() {
   fs.mkdirSync(path.join(root, 'evals', 'fixtures', 'project'), { recursive: true });
   fs.copyFileSync(RUNNER, path.join(root, 'scripts', 'run-evals.js'));
   fs.writeFileSync(path.join(root, 'evals', 'fixtures', 'project', 'context.txt'), 'fixture\n');
+  fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ type: 'module' }));
   return root;
 }
+
 
 function run(root, args = []) {
   return spawnSync(process.execPath, [path.join(root, 'scripts', 'run-evals.js'), ...args], {

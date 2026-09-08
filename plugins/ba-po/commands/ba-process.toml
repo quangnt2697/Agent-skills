@@ -58,8 +58,9 @@ flowchart TD
     
     Start --> A --> B --> C
     C -->|Yes| D --> End
-\```
 ```
+```
+
 
 ### Type 2: Swim Lane (Multi-Actor)
 ```markdown
@@ -78,8 +79,9 @@ flowchart TD
     end
     
     Start -.-> B1 -.-> C1 --> End([✅ Success])
-\```
 ```
+```
+
 
 ### Type 3: BPMN Elements
 - Start Event: Circle

@@ -1,14 +1,24 @@
+# IDE & System
 .DS_Store
+.idea/
+*.log
+__pycache__/
+
+# Dependencies & Secrets
 node_modules/
 .env
 .env.*
-*.log
+sm-config.yaml
+
+# Caches & Temp data
 .claude/.simplify-ignore-cache/
 .claude/sdd-cache/
+.agents/cache/
+.agents/plans/
+.agents/sdd-cache/
+.agents/workspace_state.md
 evals/results/
-__pycache__/
 
 # Artifact sinh ra bởi skill — chạy lại được, không commit
 workspace/
-.agents/workspace_state.md  
-.agents/sdd-cache/
+

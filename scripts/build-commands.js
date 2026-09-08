@@ -6,41 +6,26 @@
  * Reads `description` and `prompt` from the TOML file and creates a markdown file.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parse } from 'smol-toml';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const PLUGINS_DIR = path.resolve(__dirname, '..', 'plugins');
 
 function parseToml(content) {
-  // Simple TOML parser for this specific use case
-  const result = {
-    description: '',
-    prompt: ''
-  };
-  
-  const doubleMatch = content.match(/^description\s*=\s*"((?:[^"\\]|\\.)*)"/m);
-  if (doubleMatch) {
-    result.description = doubleMatch[1].replace(/\\"/g, '"');
-  } else {
-    const singleMatch = content.match(/^description\s*=\s*'([^']*)'/m);
-    if (singleMatch) {
-      result.description = singleMatch[1];
-    }
+  try {
+    const data = parse(content);
+    return {
+      description: typeof data.description === 'string' ? data.description : '',
+      prompt: typeof data.prompt === 'string' ? data.prompt.trim() : ''
+    };
+  } catch (err) {
+    console.error(`Error parsing TOML: ${err.message}`);
+    return { description: '', prompt: '' };
   }
-  
-  // Try to find prompt as a multi-line string ''' or """
-  const promptMultiMatch = content.match(/prompt\s*=\s*('''|""")([\s\S]*?)\1/);
-  if (promptMultiMatch) {
-    result.prompt = promptMultiMatch[2].trim();
-  } else {
-    // Try single line string
-    const promptSingleMatch = content.match(/prompt\s*=\s*(['"])(.*?)\1/);
-    if (promptSingleMatch) {
-      result.prompt = promptSingleMatch[2];
-    }
-  }
-  
-  return result;
 }
 
 function processPlugin(pluginDir) {

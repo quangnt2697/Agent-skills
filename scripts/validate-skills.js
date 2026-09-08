@@ -13,12 +13,16 @@
 
 'use strict';
 
-const fs   = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const { lintSkill } = require('./lib/skill-lint');
+import { lintSkill } from './lib/skill-lint.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const PLUGINS_DIR = path.resolve(__dirname, '..', 'plugins');
+
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 

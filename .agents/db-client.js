@@ -10,14 +10,14 @@
  * Không export bất kỳ hàm ghi dữ liệu nào lên DB.
  */
 
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const fs   = require('fs');
-const path = require('path');
-
-// ─── 1. Load .env ────────────────────────────────────────────────────────────
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
+
 
 function loadEnv(filePath) {
     if (!fs.existsSync(filePath)) return;
@@ -285,7 +285,7 @@ function getDiskCachePath(dbId) {
 
 // ─── Exports ─────────────────────────────────────────────────────────────────
 
-module.exports = {
+export {
     // env
     loadEnv,
     projectRoot,
@@ -313,3 +313,4 @@ module.exports = {
     ensureCacheDir,
     getDiskCachePath,
 };
+

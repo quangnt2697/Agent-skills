@@ -5,31 +5,18 @@
  * Tự động đọc xác thực từ file `.env` (không lộ Token vào hệ thống Git).
  */
 
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
+import https from 'node:https';
+import fs from 'node:fs';
+import path from 'node:path';
+import readline from 'node:readline';
+import { fileURLToPath } from 'node:url';
+import { loadEnv } from './db-client.js';
 
-// 1. Đọc file .env một cách an toàn
-function loadEnv(filePath) {
-    if (!fs.existsSync(filePath)) return;
-    const content = fs.readFileSync(filePath, 'utf-8');
-    content.split(/\r?\n/).forEach(line => {
-        const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-        if (match) {
-            let key = match[1];
-            let value = match[2] || '';
-            value = value.replace(/(^['"]|['"]$)/g, '').trim();
-            if (process.env[key] === undefined) {
-                process.env[key] = value;
-            }
-        }
-    });
-}
-
-// Vì script nằm trong `.agents/`, root là thư mục cha
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
 loadEnv(path.join(projectRoot, '.env'));
+
 
 const email = process.env.ATLASSIAN_EMAIL;
 const token = process.env.ATLASSIAN_API_TOKEN;

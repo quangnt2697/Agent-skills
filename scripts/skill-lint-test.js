@@ -11,10 +11,11 @@
  * reported 164 false-positive errors, which buried the genuine ones.
  */
 
-const assert = require('node:assert/strict');
-const { test } = require('node:test');
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
 
-const { lintSkillContent, parseFrontmatter } = require('./lib/skill-lint');
+import { lintSkillContent, parseFrontmatter } from './lib/skill-lint.js';
+
 
 const KNOWN = new Set(['demo-skill', 'other-skill']);
 

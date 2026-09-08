@@ -71,31 +71,18 @@ Khi hoạt động dưới vai trò Developer, quy trình công việc chuẩn c
 ## 7.1. Git Workflow — Branch-based Development
 
 **BẮT BUỘC:** ❌ KHÔNG commit trực tiếp vào `main`/`master`
-
-**Workflow:** Tạo feature branch → Code & verify → Trình bày user → Commit sau khi approve → Merge vào main
-
-**Branch naming:**
-- `feature/{issueKey}` hoặc `feature/{feature-name}` — Tính năng mới
-- `fix/{issueKey}` — Sửa bug
-- `refactor/{description}` — Refactor code
-
-**Commit timing:** CHỈ commit SAU KHI user approve và verify nhiều lần (test + build). Một task = một commit duy nhất khi hoàn thành.
-
-**📖 Chi tiết:** `.claude/rules/git-workflow.md`
+- Workflow: Tạo feature branch → Code & verify → Trình bày user → Commit sau khi approve → Merge vào main
+- Branch naming: `feature/{issueKey}`, `fix/{issueKey}`, `refactor/{description}`
+- Commit timing: CHỈ commit SAU KHI user approve và verify (test + build). Một task = một commit duy nhất khi hoàn thành.
+- **📖 Chi tiết:** [references/agent-rules-shared.md](references/agent-rules-shared.md) & `.claude/rules/git-workflow.md`
 
 ## 7.2. Confidence Level System
 
-Mỗi skill output có **Confidence Level** (90-100% = High, 70-89% = Medium, <70% = Low) để đánh giá chất lượng, tính theo công thức:
+Mỗi skill output có **Confidence Level** (90-100% = High, 70-89% = Medium, <70% = Low) để đánh giá chất lượng theo công thức:
+`confidence = (completeness * 0.6) + (certainty * 0.4)`
+Mọi artifact phải có section `## 📊 Confidence Assessment` ở cuối với confidence level, factors, và blockers.
+- **📖 Chi tiết:** [references/agent-rules-shared.md](references/agent-rules-shared.md) & `.claude/rules/confidence-level.md`
 
-```
-confidence = (completeness * 0.6) + (certainty * 0.4)
-```
-
-**Output format:** Mọi artifact phải có section `## 📊 Confidence Assessment` ở cuối với confidence level, factors, và blockers.
-
-**QUAN TRỌNG:** Confidence chỉ dùng **báo cáo chất lượng**, KHÔNG dùng chặn luồng. Dừng/chạy tiếp do `.claude/rules/autonomy-contract.md` quyết định.
-
-**📖 Chi tiết:** `.claude/rules/confidence-level.md`
 
 ## 8. Quy Tắc Thiết Kế Sơ Đồ (Mermaid Rules)
 Khi tạo bất kỳ sơ đồ Mermaid nào (flowchart, v.v.), bắt buộc tuân thủ các quy tắc thiết kế sau:

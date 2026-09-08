@@ -18,20 +18,26 @@
  * - Cung cấp 5 tools: db_ping, db_list_tables, db_describe_table, db_query, db_explain_query.
  */
 
-const fs = require('fs');
-const path = require('path');
-const { Pool } = require('pg');
-const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
-const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
-const { CallToolRequestSchema, ListToolsRequestSchema } = require('@modelcontextprotocol/sdk/types.js');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import pg from 'pg';
+const { Pool } = pg;
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 // --- CÁC HÀM TIỆN ÍCH DÙNG CHUNG (TỪ db-client.js) ---
-const {
+import {
     loadEnv, projectRoot, DEFAULT_MAX_ROWS, HARD_CAP_MAX_ROWS, DEFAULT_STATEMENT_TIMEOUT_MS,
     METABASE_DB_MAP, isMetabaseMode, resolveDatabaseId, getDatabaseName, resolveOpenApiDatabase,
     getMetabaseHeaders, formatErrorMessage, metabaseFetch,
     sanitizeQuery, applyLimit, CACHE_DIR, ensureCacheDir, getDiskCachePath
-} = require('./db-client');
+} from './db-client.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 async function getDatabaseMetadata(dbId, forceRefresh = false) {
     if (!forceRefresh) {
@@ -579,8 +585,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // 7. Chế độ thực thi CLI Trực tiếp
-if (require.main === module) {
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) {
     const getArg = (flag) => {
+
         const idx = process.argv.indexOf(flag);
         return idx !== -1 ? process.argv[idx + 1] : null;
     };
@@ -703,7 +711,7 @@ if (require.main === module) {
 }
 
 // Xuất module phục vụ unit test
-module.exports = {
+export {
     sanitizeQuery,
     applyLimit,
     formatErrorMessage,
@@ -716,3 +724,4 @@ module.exports = {
     HARD_CAP_MAX_ROWS,
     DEFAULT_MAX_ROWS
 };
+

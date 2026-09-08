@@ -2,24 +2,25 @@
  * Unit Test Suite for Test Data MCP Server (.agents/test-data-mcp.js)
  */
 
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('fs');
-const path = require('path');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const {
+import {
     TOOLS_SCHEMA,
     handleToolCall,
     safeJsonParse,
     printHelp,
     tdExportFixture,
-} = require('../.agents/test-data-mcp.js');
+} from '../.agents/test-data-mcp.js';
 
-const {
+import {
     resolveOpenApiDatabase,
     METABASE_DB_MAP,
     resolveDatabaseId,
-} = require('../.agents/db-client.js');
+} from '../.agents/db-client.js';
+
 
 test('test-data-mcp: Định nghĩa đầy đủ 10 MCP tools với schema chuẩn', () => {
     assert.equal(Array.isArray(TOOLS_SCHEMA), true);
