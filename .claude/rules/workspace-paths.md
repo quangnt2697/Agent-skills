@@ -159,14 +159,12 @@ vai trò issueKey** — không bao giờ được rơi về gốc repo:
 
 ## Kiểm chứng
 
-`npm run validate:paths` soi mọi SKILL.md, command, và agent file: bất kỳ nhắc đến một
+`npm run validate:paths` quét mọi SKILL.md, command, và agent file: bất kỳ nhắc đến một
 artifact root per-issue nào (`source/`, `spec/`, `tech/`, `test/`, `trace/`) mà thiếu tiền
-tố `/project-root/workspace/{issueKey}/` đều làm CI đỏ. Validator cũng chặn mọi tên thư mục của layout cũ
-(`specs/imports`, `specs/refine`, `tests/qa-test-design`, `docs/user-stories`…) để không ai
-vô tình quay lại cấu trúc phân tầng.
+tố `/project-root/workspace/{issueKey}/` đều bị phát hiện. Validator cũng chặn mọi tên thư mục
+của layout cũ (`specs/imports`, `specs/refine`, `tests/qa-test-design`, `docs/user-stories`…).
 
-Đổi quy ước = sửa `scripts/validate-artifact-paths.js` **và** mọi file bị chặn trong cùng
-một commit.
+Đổi quy ước = sửa `scripts/validate-artifact-paths.js` **và** mọi file bị chặn trong cùng một commit.
 
 ## Xem thêm
 

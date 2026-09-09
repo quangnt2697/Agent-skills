@@ -230,3 +230,242 @@ Scenario Outline: Hiển thị dữ liệu theo thị trường <thị_trường
 | `@JIRA-XXXX`         | Liên kết ticket                        | -             |
 | `@domain-securities` | Domain chứng khoán                     | -             |
 | `@domain-banking`    | Domain ngân hàng                       | -             |
+
+---
+
+## 7. BVA cho Trường Chuỗi & Ngày Tháng
+
+### 7.1. Trường Chuỗi (String Fields)
+
+| Điều kiện | Giá trị | Mong đợi |
+|-----------|---------|----------|
+| Chuỗi rỗng | `""` | ❌ Từ chối (nếu bắt buộc) |
+| Chỉ có khoảng trắng | `"   "` | ❌ Từ chối |
+| Đúng độ dài tối thiểu | `"a"` × minLength | ✅ Chấp nhận |
+| Đúng độ dài tối đa | `"a"` × maxLength | ✅ Chấp nhận |
+| Vượt độ dài tối đa | `"a"` × (maxLength + 1) | ❌ Từ chối |
+| Ký tự đặc biệt | `"<script>alert(1)</script>"` | ❌ Từ chối / Sanitize |
+| Unicode / Tiếng Việt | `"Nguyễn Văn A"` | ✅ Chấp nhận |
+| SQL Injection | `"'; DROP TABLE--"` | ❌ Từ chối / Sanitize |
+
+### 7.2. Trường Ngày Tháng (Date/Time Fields)
+
+| Điều kiện | Giá trị | Mong đợi |
+|-----------|---------|----------|
+| Ngày trong quá khứ | Hôm qua | Tùy quy tắc nghiệp vụ |
+| Ngày hiện tại | Hôm nay | ✅ Chấp nhận |
+| Ngày trong tương lai | Ngày mai | Tùy quy tắc nghiệp vụ |
+| Ngày không hợp lệ | 30/02, 31/04 | ❌ Từ chối |
+| Năm nhuận | 29/02/2024 vs 29/02/2023 | ✅ / ❌ |
+| Sai định dạng | `DD-MM-YYYY` khi cần ISO 8601 | ❌ Từ chối |
+| Xử lý timezone | Có/không có `Z` hoặc `+07:00` | Phân tích đúng timezone |
+
+---
+
+## 8. Mẫu Kiểm thử API Phổ biến
+
+### 8.1. Ma Trận Xác thực & Phân quyền
+
+| Kịch bản | Request | Kết quả mong đợi |
+|----------|---------|-----------------|
+| Không có API key | Bỏ header `x-api-key` | 401 Unauthorized |
+| API key không hợp lệ | `x-api-key: invalid_key_123` | 401 Unauthorized |
+| API key đã hết hạn | Dùng key đã thu hồi | 401 Unauthorized |
+| Thiếu chữ ký | Bỏ header `signature` | 401 Unauthorized |
+| Chữ ký bị giả mạo | Sửa payload sau khi ký | 401 Unauthorized |
+| Sai tài khoản | `accountNo` không thuộc API key | 403 Forbidden |
+| Credentials hợp lệ | Đầy đủ headers đúng | 200 OK |
+
+### 8.2. Kiểm tra HTTP Method
+
+| Kịch bản | Request | Kết quả mong đợi |
+|----------|---------|-----------------|
+| Sai method | `GET` trên endpoint `POST` | 405 Method Not Allowed |
+| URL không tồn tại | `POST /api/v1/nonexistent` | 404 Not Found |
+| Method đúng | `POST /api/v1/orders` | 200 OK |
+
+### 8.3. Kiểm tra Payload
+
+| Kịch bản | Request body | Kết quả mong đợi |
+|----------|-------------|-----------------|
+| Body rỗng | `{}` | 400 Bad Request |
+| Thiếu field bắt buộc | Bỏ một field bắt buộc | 400 + tên field trong lỗi |
+| Sai kiểu dữ liệu | Chuỗi khi cần số | 400 + lỗi type mismatch |
+| Field lạ không xác định | Thêm `"unknown_field": "value"` | Bỏ qua hoặc 400 (tùy strict) |
+| Field bắt buộc là null | `"price": null` | 400 Bad Request |
+
+### 8.4. Concurrency, Rate Limiting & Idempotency
+
+| Kịch bản | Hành động | Kết quả mong đợi |
+|----------|-----------|-----------------|
+| Rate Limiting | Gửi request vượt ngưỡng (vd: 100 req/s) | 429 Too Many Requests |
+| Race Condition | Gửi N request cùng lúc sửa cùng resource | Xử lý 1, còn lại từ chối an toàn |
+| Idempotency | Gửi 2 request cùng `idempotency-key` | Xử lý lần 1, lần 2 trả response đã cache |
+| Payload quá lớn | Gửi JSON payload cực lớn | 413 Payload Too Large |
+
+---
+
+## 9. Từ Vựng Step Gherkin Chuẩn
+
+Từ vựng tiếng Việt chuẩn cho Gherkin trong domain tài chính:
+
+### Given (Tiền điều kiện)
+
+```gherkin
+Given người dùng đã đăng nhập với quyền "<role>"
+Given hệ thống đang trong giờ giao dịch
+Given tài khoản "<account>" có sức mua khả dụng "<amount>"
+Given mã chứng khoán "<symbol>" có giá tham chiếu "<ref_price>"
+Given khách hàng có thông tin xác thực hợp lệ
+Given hệ thống đang hoạt động bình thường
+```
+
+### When (Hành động)
+
+```gherkin
+When đặt lệnh "<side>" "<quantity>" cổ phiếu "<symbol>" tại giá "<price>"
+When gửi request POST tới endpoint "<endpoint>"
+When trường "<field>" được gán giá trị "<value>"
+When thực hiện chuyển tiền "<amount>" từ "<from>" sang "<to>"
+When xác nhận giao dịch bằng OTP "<otp>"
+When gửi request không có header "<header_name>"
+```
+
+### Then (Kiểm tra)
+
+```gherkin
+Then hệ thống trả về mã HTTP "<status_code>"
+Then hệ thống từ chối request
+Then hệ thống ghi nhận lệnh thành công với orderId hợp lệ
+Then trả về thông báo lỗi "<error_message>"
+Then số dư tài khoản giảm "<amount>"
+Then response chứa trường "<field>" với giá trị "<value>"
+Then hệ thống không xử lý giao dịch trùng lặp
+```
+
+---
+
+## 10. Mẫu Kiểm thử WebSocket
+
+WebSocket là giao thức real-time hai chiều giữa client và server. Test WebSocket cần verify connection lifecycle, message flow, và error handling.
+
+### 10.1. Vòng đời Kết nối
+
+| Kịch bản | Hành động | Kết quả mong đợi | Ưu tiên |
+|----------|-----------|-----------------|---------|
+| Kết nối thành công | Connect tới `ws://server/channel` | Connection OPEN, nhận welcome message | P0 |
+| Kết nối có Auth | Connect với valid token | Connection OPEN với user context | P0 |
+| URL không hợp lệ | Connect tới `ws://invalid` | Connection CLOSED với error | P1 |
+| Không có Auth | Connect không có token | Connection REJECTED, status 401 | P0 |
+| Token hết hạn | Connect với expired token | Connection REJECTED, status 403 | P1 |
+
+### 10.2. Subscribe & Unsubscribe
+
+| Kịch bản | Hành động | Kết quả mong đợi | Ưu tiên |
+|----------|-----------|-----------------|---------|
+| Subscribe channel | Send `{"action":"subscribe","channel":"VNINDEX"}` | Nhận `{"status":"subscribed","channel":"VNINDEX"}` | P0 |
+| Subscribe nhiều channel | Subscribe "VNM", "SSI", "VCB" | Nhận data từ cả 3 channels | P0 |
+| Unsubscribe channel | Send `{"action":"unsubscribe","channel":"VNINDEX"}` | Stop nhận events từ channel đó | P0 |
+| Subscribe channel không tồn tại | Subscribe channel lạ | Nhận `{"error":"INVALID_CHANNEL"}` | P1 |
+| Subscribe trùng | Subscribe cùng channel 2 lần | Chỉ subscribe 1 lần (idempotent) | P2 |
+
+### 10.3. Nhận Dữ liệu Real-time
+
+| Kịch bản | Hành động | Kết quả mong đợi | Ưu tiên |
+|----------|-----------|-----------------|---------|
+| Nhận market data | Subscribe "VNM" | Nhận price updates đúng định dạng | P0 |
+| Định dạng message | Parse message JSON | Đủ fields: `symbol`, `price`, `volume`, `timestamp` | P0 |
+| Thứ tự message | Nhận 100 messages liên tiếp | Messages đúng thứ tự (timestamp tăng dần) | P1 |
+| Tần suất cao | Server gửi 1000 msg/sec | Client xử lý không bị drop message | P1 |
+
+### 10.4. Reconnect & Resilience
+
+| Kịch bản | Hành động | Kết quả mong đợi | Ưu tiên |
+|----------|-----------|-----------------|---------|
+| Auto Reconnect | Server close connection | Client tự động reconnect sau 2-5s | P0 |
+| Resubscribe sau Reconnect | Reconnect thành công | Client tự động resubscribe channels cũ | P0 |
+| Exponential Backoff | Server reject 3 lần liên tiếp | Client retry với backoff 2s → 4s → 8s | P1 |
+| Max Retry | Server down 10 phút | Client stop retry sau N attempts, show error | P1 |
+
+### 10.5. Error Handling
+
+| Kịch bản | Hành động | Kết quả mong đợi | Ưu tiên |
+|----------|-----------|-----------------|---------|
+| Server Error | Server gửi `{"error":"INTERNAL_ERROR"}` | Client hiển thị notification, ghi log | P0 |
+| Message không hợp lệ | Server gửi JSON invalid | Client log warning, bỏ qua message đó | P1 |
+| Timeout | Server không respond trong 30s | Client close connection, show timeout error | P1 |
+| Rate Limit | Client gửi > 100 msg/sec | Server từ chối `{"error":"RATE_LIMIT"}` | P2 |
+
+### 10.6. Cross-Channel Isolation
+
+| Kịch bản | Hành động | Kết quả mong đợi | Ưu tiên |
+|----------|-----------|-----------------|---------|
+| Channel Isolation | Subscribe "VNM" và "SSI" | VNM events không xuất hiện trong SSI handler | P0 |
+| Unsubscribe một channel | Unsubscribe "VNM", giữ "SSI" | Chỉ stop nhận VNM, vẫn nhận SSI | P0 |
+| Lỗi ở một channel | Error xảy ra ở channel A | Channel B vẫn hoạt động bình thường | P1 |
+
+### 10.7. Ping/Pong Heartbeat
+
+| Kịch bản | Hành động | Kết quả mong đợi | Ưu tiên |
+|----------|-----------|-----------------|---------|
+| Heartbeat | Client gửi ping frame | Server respond pong frame trong 5s | P1 |
+| Kết nối không hoạt động | Server không respond pong 3 lần | Client close connection, reconnect | P1 |
+| Client idle | Client không gửi message 5 phút | Server không close (server-initiated ping) | P2 |
+
+### 10.8. Phân Tầng Bậc Tài Khoản & Rate Limiting
+
+*(Áp dụng mô hình BVA: TAI_HAN_MUC, VUOT_HAN_MUC theo cấu hình môi trường)*
+
+| Kịch bản | Hành động | Kết quả mong đợi | Ưu tiên |
+|----------|-----------|-----------------|---------|
+| Handshake Auth theo Tier | Connect với credentials của tier `normal`/`vip`/`ultimate` | Server xác thực và gán đúng quyền/quota | P0 |
+| Max connections theo Tier | Mở kết nối tại/vượt hạn mức | Tại hạn mức: thành công; vượt: từ chối | P0 |
+| Quyền hạn topic theo Tier | User `normal` subscribe VIP topic | Server từ chối với thông báo không đủ quyền | P0 |
+| Quota subscribe theo Tier | Subscribe số mã/kênh tại/vượt hạn mức | Tại hạn mức: thành công; vượt: `TIER_QUOTA_EXCEEDED` | P1 |
+| Rate limit gửi theo Tier | Gửi message trong/vượt ngưỡng | Trong ngưỡng: xử lý; vượt: `RATE_LIMIT_EXCEEDED` + `retry_after` | P1 |
+| Spam / DoS Protection | Client spam liên tục vượt ngưỡng cực hạn | Server chủ động ngắt kết nối | P2 |
+| Cooldown & Recovery | Đợi hết `retry_after` rồi gửi lại | Server chấp nhận và xử lý bình thường | P1 |
+
+### 10.9. Mẫu Gherkin cho WebSocket
+
+```gherkin
+Scenario: Subscribe kênh dữ liệu thị trường thành công
+  Given WebSocket connection đã được thiết lập tới ws
+  When client gửi message subscribe channel "VNINDEX"
+    """
+    {"action": "subscribe", "channel": "VNINDEX"}
+    """
+  Then client nhận được confirmation message
+    """
+    {"status": "subscribed", "channel": "VNINDEX"}
+    """
+  And client bắt đầu nhận real-time market data từ channel "VNINDEX"
+
+Scenario: Tự động reconnect sau khi mất kết nối
+  Given client đã subscribe channel "SSI"
+  And client đang nhận real-time data
+  When server đóng connection (simulate: network interruption)
+  Then client phát hiện connection closed
+  And client tự động reconnect trong vòng 5 giây
+  And client tự động resubscribe channel "SSI"
+  And client tiếp tục nhận data sau khi reconnect
+
+Scenario: Retry với exponential backoff khi server từ chối liên tiếp
+  Given client đang cố gắng connect
+  When server reject connection lần 1
+  Then client retry sau 2 giây
+  When server reject connection lần 2
+  Then client retry sau 4 giây
+  When server reject connection lần 3
+  Then client retry sau 8 giây
+```
+
+### 10.10. Các Vấn Đề WebSocket Thường Gặp
+
+| Vấn đề | Triệu chứng | Nguyên nhân | Cách sửa |
+|--------|-------------|-------------|---------|
+| Mất message | Client bỏ sót events | Network congestion | Thêm buffer, batch messages |
+| Duplicate subscribe | Nhận data trùng lặp | Không track subscription state | Idempotent subscribe |
+| Reconnect loop | Connect/disconnect liên tục | Server reject, client retry ngay | Exponential backoff |
+| Memory leak | Client memory tăng dần | Event listeners không cleanup | Unsubscribe on unmount |
+| Stale connection | Không nhận data | Connection idle quá lâu | Ping/pong heartbeat |

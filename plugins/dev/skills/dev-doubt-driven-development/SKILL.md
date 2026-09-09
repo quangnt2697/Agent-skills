@@ -43,7 +43,7 @@ Nếu bạn nghi ngờ từng lần gõ phím, bạn sẽ không thể làm ra �
 
 Kỹ năng này được thiết kế cho **agent điều phối ở phiên làm việc chính (main-session orchestrator)**, nơi Bước 3 (HOÀI NGHI, chi tiết bên dưới) có thể sinh ra một người đánh giá fresh-context.
 
-- **KHÔNG thêm kỹ năng này vào `skills:` frontmatter của bất kỳ persona nào.** Một persona tuân theo Bước 3 sẽ lại sinh ra một persona khác — đây là anti-pattern điều phối bị nghiêm cấm rõ ràng trong `../../../../references/orchestration-patterns.md` ("persona không được gọi persona khác").
+- **KHÔNG thêm kỹ năng này vào `skills:` frontmatter của bất kỳ persona nào.** Một persona tuân theo Bước 3 sẽ lại sinh ra một persona khác — đây là anti-pattern điều phối bị nghiêm cấm rõ ràng trong `../../../../../docs/architecture/orchestration-patterns.md` ("persona không được gọi persona khác").
 - **Nếu bạn thấy mình đang áp dụng kỹ năng này từ bên trong ngữ cảnh subagent** (nơi Claude Code chặn việc sinh subagent lồng nhau): cách tốt nhất là báo cáo với người dùng rằng "hoài nghi" không thể chạy lồng nhau và để phiên chính xử lý. Chỉ trong trường hợp vạn bất đắc dĩ, có một biện pháp tự vấn xuống cấp (degraded self-questioning fallback) — viết lại ARTIFACT + CONTRACT dưới dạng một self-prompt mới với một vách ngăn tinh thần cứng ngắc khỏi những lý luận trước đó của bạn, và đi theo Bước 1–5. Đây **không phải là fresh-context review** (bạn vẫn mang theo bối cảnh cũ của mình), vì vậy hãy đánh dấu kết quả là "bị xuống cấp" (degraded) và ưu tiên leo thang (escalation) bất cứ khi nào có thể tiếp cận được người dùng.
 
 ## Quy trình
@@ -224,7 +224,7 @@ Nếu 3 chu kỳ là "hiển nhiên không đủ" vì artifact quá lớn: nghĩ
 - **`source-driven-development`**: SDD kiểm chứng *các sự kiện về framework* dựa trên tài liệu chính thức. Doubt-driven kiểm chứng *suy luận của bạn về artifact*. SDD kiểm tra API có tồn tại không; doubt-driven kiểm tra xem bạn dùng nó có đúng hợp đồng không.
 - **`dev-test-driven-development`**: Bước RED của TDD chính là sự hoài nghi được cụ thể hóa — một bài test fail chính là nỗ lực bác bỏ (disproof attempt). Khi áp dụng TDD, chính bài test fail đó *là* bước hoài nghi (doubt step) cho những lời khẳng định về hành vi (behavioral claims).
 - **`dev-debugging`**: khi reviewer phát hiện ra một dạng lỗi có thật, chuyển sang kỹ năng gỡ lỗi để khoanh vùng và sửa.
-- **Luật điều phối (Repo orchestration rules)** (`../../../../references/orchestration-patterns.md`): kỹ năng này hoạt động từ session chính. Việc một persona gọi một persona khác là anti-pattern B — xem mục Ràng buộc Tải ở trên.
+- **Luật điều phối (Repo orchestration rules)** (`../../../../../docs/architecture/orchestration-patterns.md`): kỹ năng này hoạt động từ session chính. Việc một persona gọi một persona khác là anti-pattern B — xem mục Ràng buộc Tải ở trên.
 
 ## Xác minh
 

@@ -598,7 +598,7 @@ Các triệu chứng cho thấy kết quả chạy test không đáng tin cậy:
 - `qa-test-design` — Thiết kế Checklist và Gherkin Feature (giai đoạn trước)
 - `qa-full-pipeline` — Pipeline kiểm thử toàn trình tự động
 - `dev-debugging` — Phân tích gỡ lỗi khi phát hiện bug ứng dụng
-- `../../../../references/qa-testing-checklist.md` — Baseline test coverage
+- `../qa-test-design/references/qa-testing-checklist.md` — Baseline test coverage
 
 ---
 <CRITICAL_RULE>

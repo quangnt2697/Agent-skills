@@ -97,7 +97,7 @@ Công việc của bạn là phẫu thuật chính xác, không phải là đậ
 
 Mỗi kỹ năng đều bao gồm một bước xác minh. Một task chưa hoàn thành cho đến khi vượt qua được bước xác minh. "Có vẻ đúng" không bao giờ là đủ — phải có bằng chứng (test pass, output của build, dữ liệu runtime).
 
-Xác minh trên từng kỹ năng là khâu kiểm tra cục bộ. Tiêu chuẩn toàn dự án áp dụng cho *mọi* sự thay đổi, bất kể kỹ năng nào đang hoạt động, chính là Định nghĩa Hoàn thành (Definition of Done): test phải pass, không có bug regression, hành vi được xác minh lúc chạy thực tế, docs được cập nhật. Xem `../../../../references/definition-of-done.md`. Nó bổ trợ cho tiêu chí chấp thuận (acceptance criteria) của từng task chứ không phải thay thế chúng.
+Xác minh trên từng kỹ năng là khâu kiểm tra cục bộ. Tiêu chuẩn toàn dự án áp dụng cho *mọi* sự thay đổi, bất kể kỹ năng nào đang hoạt động, chính là Định nghĩa Hoàn thành (Definition of Done): test phải pass, không có bug regression, hành vi được xác minh lúc chạy thực tế, docs được cập nhật. Xem `../../../../../docs/guides/definition-of-done.md`. Nó bổ trợ cho tiêu chí chấp thuận (acceptance criteria) của từng task chứ không phải thay thế chúng.
 
 ### 7. Tôn trọng Ràng buộc Nền tảng & Domain
 

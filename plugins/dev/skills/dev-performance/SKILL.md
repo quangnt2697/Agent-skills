@@ -349,7 +349,7 @@ npx lhci autorun
 
 ## Xem thêm
 
-Để xem danh sách chi tiết các công việc, các câu lệnh, và tài liệu tham khảo về anti-pattern hiệu năng, xem `../../../../references/performance-checklist.md`.
+Để xem danh sách chi tiết các công việc, các câu lệnh, và tài liệu tham khảo về anti-pattern hiệu năng, xem `references/performance-checklist.md`.
 
 ## Các Biện hộ Thường gặp
 

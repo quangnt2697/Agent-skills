@@ -250,7 +250,7 @@ Sau khi hoàn thành tất cả increments cho một task:
 
 ## Xem thêm
 
-Kiểm tra theo từng increment chỉ là bước check cục bộ (local check). Trước khi tuyên bố một task đã "Xong" (done), hãy áp dụng Definition of Done (Định nghĩa Hoàn thành) của dự án làm bài test cuối cùng, đây là tiêu chuẩn cao nhất mà mọi increment đều phải vượt qua. Hãy xem `../../../../references/definition-of-done.md`.
+Kiểm tra theo từng increment chỉ là bước check cục bộ (local check). Trước khi tuyên bố một task đã "Xong" (done), hãy áp dụng Definition of Done (Định nghĩa Hoàn thành) của dự án làm bài test cuối cùng, đây là tiêu chuẩn cao nhất mà mọi increment đều phải vượt qua. Hãy xem `../../../../../docs/guides/definition-of-done.md`.
 
 
 ---

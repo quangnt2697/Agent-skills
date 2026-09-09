@@ -294,7 +294,7 @@ function useToggleTask() {
 
 ## Xem thêm
 
-Để biết chi tiết các yêu cầu accessibility và các công cụ test, hãy xem `../../../../references/accessibility-checklist.md`.
+Để biết chi tiết các yêu cầu accessibility và các công cụ test, hãy xem `references/accessibility-checklist.md`.
 
 ## Các Biện hộ Thường gặp
 

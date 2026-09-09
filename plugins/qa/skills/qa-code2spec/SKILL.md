@@ -50,7 +50,7 @@ Trước khi phân tích code, BẮT BUỘC xác minh phiên bản mã nguồn �
      - Nếu working tree sạch (clean): Chạy `git pull --ff-only` để đồng bộ code mới nhất.
      - Nếu có thay đổi dở dang: Dừng lại cảnh báo user hoặc sử dụng GitLab MCP tool để đọc bản remote thay vì pull đè.
 3. **Đọc trực tiếp từ GitLab qua GitLab MCP (khi input là Merge Request hoặc Branch từ xa):**
-   - Tuân thủ nguyên tắc chỉ đọc trong `../../../../references/gitlab-mcp-strategy.md`.
+   - Tuân thủ nguyên tắc chỉ đọc trong `../../../../../docs/architecture/gitlab-mcp-strategy.md`.
    - Dùng `list_merge_request_changed_files` để xác định các file code thay đổi trong MR.
    - Dùng `get_file_contents` với `ref: <branch/tag/sha>` để đọc nội dung code mới nhất từ GitLab.
 4. **Ghi nhận Metadata nguồn:** Lưu lại `GitLab Project / Repo`, `Branch`, `Commit SHA`, và `Timestamp`.

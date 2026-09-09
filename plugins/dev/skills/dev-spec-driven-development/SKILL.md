@@ -1072,7 +1072,7 @@ Các triệu chứng cho thấy Tech-Spec chưa sẵn sàng bàn giao cho `/plan
 - `ba-spec` — Import và phân tích Business-Spec (giai đoạn trước)
 - `dev-planning-and-task-breakdown` — Chia nhỏ Tech-Spec thành tasks (giai đoạn sau)
 - `/build` — Code implementation từ tasks (giai đoạn sau)
-- `../../../../references/definition-of-done.md` — Tiêu chuẩn hoàn thành
+- `../../../../../docs/guides/definition-of-done.md` — Tiêu chuẩn hoàn thành
 
 
 ---

@@ -759,7 +759,7 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 ## Xem thêm
 
 - [securities-domain-rules.md](../../../../references/securities-domain-rules.md) — Cẩm nang nghiệp vụ chứng khoán & fintech bắt buộc tham chiếu
-- Tham khảo `../../../../references/qa-testing-checklist.md` cho các mẫu validation domain tài chính, bảng BVA, phân vùng tương đương, và quy ước viết
+- Tham khảo `references/qa-testing-checklist.md` cho các mẫu validation domain tài chính, bảng BVA, phân vùng tương đương, và quy ước viết
 - Nếu đã có spec, dùng yêu cầu từ `dev-spec-driven-development` làm đầu vào cho Giai đoạn 1
 - Để import và phân tích Jira task trước khi thiết kế test, dùng `ba-spec`
 - Để sinh code automation test từ Gherkin file, dùng `qa-auto-design`

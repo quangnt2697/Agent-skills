@@ -19,7 +19,7 @@ description: Kỹ năng xử lý sự cố. Lấy danh sách ticket bị treo qu
 
 ## Chiến lược Truy cập Jira/Confluence
 
-> **Tham chiếu đầy đủ:** `../../../../references/atlassian-mcp-strategy.md`
+> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/atlassian-mcp-strategy.md`
 
 Skill này ưu tiên dùng **MCP Tool** (`searchJiraIssuesUsingJql`) nếu Atlassian MCP khả dụng.
 Nếu MCP không khả dụng, fallback về `curl` gọi REST API.

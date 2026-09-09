@@ -68,7 +68,7 @@ Chỉ báo lỗi khi không tìm thấy `.env` ở cả plugin dir lẫn project
 
 ## Chiến lược Truy cập Jira/Confluence
 
-> **Tham chiếu đầy đủ:** `../../../../references/atlassian-mcp-strategy.md`
+> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/atlassian-mcp-strategy.md`
 
 Skill này tương tác với Jira/Confluence qua **2 phương thức** (theo thứ tự ưu tiên):
 

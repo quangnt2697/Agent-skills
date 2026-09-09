@@ -358,7 +358,7 @@ Sự tách biệt này đảm bảo bài test được viết ra khi chưa hề 
 
 ## Xem thêm
 
-Để xem các mẫu test JavaScript/TypeScript minh họa cho những nguyên tắc này — Jest, React Testing Library, Supertest, Playwright — xem `../../../../references/testing-patterns.md`. Những nguyên tắc này có thể áp dụng cho bất kỳ hệ sinh thái nào; chỉ có cú pháp và công cụ ở file đó là dành riêng cho JS/TS.
+Để xem các mẫu code test Python minh họa cho những nguyên tắc này — Pytest, Playwright Python, API testing, WebSocket testing — xem `../../../qa/skills/qa-auto-design/references/testing-patterns.md`. Các nguyên tắc thiết kế (Arrange-Act-Assert, naming conventions) áp dụng chung cho mọi ngôn ngữ.
 
 ## Các Biện hộ Thường gặp
 

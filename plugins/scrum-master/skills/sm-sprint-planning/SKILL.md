@@ -66,7 +66,7 @@ Lập kế hoạch cho Sprint tiếp theo dựa trên dữ liệu từ Jira.
 
 ## Chiến lược Truy cập Jira/Confluence
 
-> **Tham chiếu đầy đủ:** `../../../../references/atlassian-mcp-strategy.md`
+> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/atlassian-mcp-strategy.md`
 
 Skill này ưu tiên dùng **MCP Tool** (`searchJiraIssuesUsingJql`) nếu Atlassian MCP khả dụng.
 Do MCP không có Agile API (`getSprint`, `getBoard`), ta dùng JQL để lấy dữ liệu thay thế.
