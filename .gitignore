@@ -8,6 +8,7 @@ __pycache__/
 node_modules/
 .env
 .env.*
+!.env.example
 sm-config.yaml
 
 # Caches & Temp data

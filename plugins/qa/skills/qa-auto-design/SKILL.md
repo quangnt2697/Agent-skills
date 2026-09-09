@@ -312,7 +312,7 @@ Import Jira              Thiết kế Checklist       Sinh code automation     C
 - [examples/web_ui_pom.py](examples/web_ui_pom.py) — Code mẫu Page Object Model cho Web UI
 - [examples/mobile_app_pom.py](examples/mobile_app_pom.py) — Code mẫu Screen Object Model cho Mobile App
 - [examples/api_ws_service.py](examples/api_ws_service.py) — Code mẫu Service/Client tích hợp Logging Interceptor
-- [examples/.env.example](examples/.env.example) — Template biến môi trường test (Single Source of Truth)
+- [../../../../.env.example](../../../../.env.example) — Template biến môi trường toàn cục (Single Source of Truth)
 
 ---
 <CRITICAL_RULE>

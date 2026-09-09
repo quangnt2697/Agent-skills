@@ -73,10 +73,28 @@ claude
 # Hoặc gõ `/` trong chat để xem danh sách 35 slash commands
 ```
 
+### Điều khiển Từ Xa qua Discord (Discord Bot Bridge)
+
+Dự án tích hợp sẵn module điều khiển Agent từ xa qua Discord (hỗ trợ mobile/desktop, gợi ý lệnh autocomplete và chat đa lượt trong Thread):
+
+```bash
+# 1. Cài đặt thư viện Discord
+npm run setup:discord
+
+# 2. Tạo file cấu hình và điền Token
+cp .env.example .env
+
+# 3. Khởi chạy Bot
+npm run bridge:discord
+```
+
+> 📖 Hướng dẫn chi tiết tạo Bot, cấp quyền Intent và sử dụng Slash Command xem tại: **[tools/discord-bridge/README.md](tools/discord-bridge/README.md)**.
+
 **Xem tài liệu chi tiết:** 
 - [docs/guides/antigravity-setup.md](docs/guides/antigravity-setup.md) — Antigravity CLI
 - [docs/guides/gemini-cli-setup.md](docs/guides/gemini-cli-setup.md) — Gemini CLI
 - [docs/guides/adoption-guide.md](docs/guides/adoption-guide.md) — Cẩm nang áp dụng theo quy trình Agile/Scrum
+- [tools/discord-bridge/README.md](tools/discord-bridge/README.md) — Hướng dẫn Discord Bot Bridge
 
 ### Workflow cơ bản
 

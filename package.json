@@ -20,7 +20,9 @@
     "setup:plugins": "node scripts/setup-plugins.js",
     "unlink:plugins": "node scripts/setup-plugins.js --unlink",
     "metabase:login": "node scripts/metabase-sso-login.js",
-    "db:recon": "node scripts/db-recon.js"
+    "db:recon": "node scripts/db-recon.js",
+    "setup:discord": "pip3 install -r tools/discord-bridge/requirements.txt",
+    "bridge:discord": "python3 tools/discord-bridge/discord_bot.py"
   },
   "engines": {
     "node": ">=20"
