@@ -10,6 +10,8 @@ node_modules/
 .env.*
 !.env.example
 sm-config.yaml
+tools/discord-bridge/projects.json
+!tools/discord-bridge/projects.json.example
 
 # Caches & Temp data
 .claude/.simplify-ignore-cache/

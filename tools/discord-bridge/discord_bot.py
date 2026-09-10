@@ -45,9 +45,14 @@ BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 ALLOWED_USER_IDS_RAW = os.getenv("DISCORD_ALLOWED_USER_ID", "")
 WORKSPACE_DIR = os.getenv("AGENT_WORKSPACE_DIR", str(ROOT_DIR))
 
+# Khởi tạo ProjectManager (Auto-discovery & Registry)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from project_manager import ProjectManager
+project_manager = ProjectManager(workspace_root=ROOT_DIR)
+
 # Đường dẫn các CLI Agent
-CLAUDE_CLI = shutil.which("claude") or "/Users/qa-quangnt/.local/bin/claude"
-AGY_CLI = shutil.which("agy") or "/Users/qa-quangnt/.local/bin/agy"
+CLAUDE_CLI = shutil.which("claude") or str(Path.home() / ".local/bin/claude")
+AGY_CLI = shutil.which("agy") or str(Path.home() / ".local/bin/agy")
 
 # Tìm CLI Agent mặc định (ưu tiên agy, fallback sang claude)
 DEFAULT_CLI = os.getenv("AGENT_CLI_PATH")
@@ -119,6 +124,7 @@ async def on_ready():
     print(f"🤖 Discord Agent Bridge đã online!", flush=True)
     print(f"👤 Bot: {bot.user.name} (ID: {bot.user.id})", flush=True)
     print(f"📂 Workspace: {WORKSPACE_DIR}", flush=True)
+    print(f"📁 Projects Detected: {len(project_manager.list_projects())} projects", flush=True)
     print(f"⚡ CLI Executable: {DEFAULT_CLI}", flush=True)
     print(f"🔒 Allowed User IDs: {list(ALLOWED_USER_IDS) if ALLOWED_USER_IDS else 'CHƯA CẤU HÌNH (Sẽ chặn mọi lệnh)'}", flush=True)
     
@@ -129,6 +135,326 @@ async def on_ready():
     except Exception as e:
         print(f"⚠️ Lỗi đồng bộ Slash Commands: {e}", flush=True)
     print(f"=================================================", flush=True)
+
+
+def build_help_embed(bot_name: str = "Agent Assistant") -> discord.Embed:
+    """Tạo Embed hướng dẫn sử dụng bot trực quan, đầy đủ"""
+    embed = discord.Embed(
+        title="🤖 HƯỚNG DẪN ĐIỀU KHIỂN AGENT SKILLS BRIDGE",
+        description=(
+            "Chào mừng bạn đến với **Agent Skills Bridge**! Bot cho phép bạn điều khiển và giao tiếp "
+            "với Kỹ sư AI Toàn năng (BA, DEV, QA, Scrum Master, Code Reviewer, Security Auditor) "
+            "trực tiếp từ xa qua Discord.\n\n"
+            "Dưới đây là các lệnh sẵn sàng để bạn sử dụng:"
+        ),
+        color=0x1ABC9C
+    )
+
+    embed.add_field(
+        name="🎯 1. Slash Command (Khuyên dùng — Tự động gợi ý)",
+        value=(
+            "• Gõ `/agent` trên thanh chat để Discord tự động gợi ý toàn bộ kỹ năng và dự án.\n"
+            "• **Cú pháp:** `/agent skill: <kỹ_năng> project: <tên_project> des: <mô_tả>`\n"
+            "• **Ví dụ:** `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`"
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name="⚡ 2. Bộ 5 Lệnh Prefix Tối Giản",
+        value=(
+            "• `!run <kỹ_năng> [-p project] [-d des]` : Kích hoạt Agent thực thi\n"
+            "  ↳ *Ví dụ:* `!run /cr-review-code-and-quality -p my-project -d review auth`\n"
+            "• `!skills [từ_khóa]` : Xem danh sách 36+ kỹ năng hoặc tìm kiếm (VD: `!skills qa`)\n"
+            "• `!projects [reload]` : Xem danh sách dự án trên máy hoặc quét lại khi vừa clone repo\n"
+            "• `!status` : Kiểm tra trạng thái Agent đang bận hay rảnh\n"
+            "• `!help` : Xem lại bảng hướng dẫn này"
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name="💬 3. Hội Thoại Đa Lượt Trong Thread",
+        value=(
+            "• Khi chạy lệnh, bot sẽ **tự tạo một Thread riêng** để giữ kênh chat chính luôn sạch sẽ.\n"
+            "• Nếu Agent hỏi làm rõ, bạn chỉ cần **chat trả lời trực tiếp trong Thread**.\n"
+            "• Khi hoàn thành, gõ **`!done`** để đóng và lưu trữ Thread."
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name="🔒 4. Phân Quyền & Bảo Mật",
+        value=(
+            "• Chỉ những User ID được cấu hình trong `DISCORD_ALLOWED_USER_ID` mới có thể ra lệnh.\n"
+            "• Để lấy ID của bạn: Cài đặt (User Settings) $\\rightarrow$ Advanced $\\rightarrow$ Bật Developer Mode $\\rightarrow$ Chuột phải Avatar $\\rightarrow$ Copy User ID."
+        ),
+        inline=False
+    )
+
+    embed.set_footer(text=f"Bot: {bot_name} | Gõ !help <tên_lệnh> (VD: !help run) để xem chi tiết!")
+    return embed
+
+
+def build_command_help_embed(command_name: str, bot_name: str = "Agent Assistant") -> discord.Embed | None:
+    """Tạo Embed hướng dẫn chi tiết cho từng lệnh cụ thể"""
+    cmd = command_name.lower().lstrip("!/").strip()
+
+    if cmd in ["run", "agent"]:
+        embed = discord.Embed(
+            title="📖 Hướng Dẫn Chi Tiết: Lệnh !run & /agent",
+            description="Kích hoạt Agent thực thi một kỹ năng trên dự án chỉ định.",
+            color=0x3498DB
+        )
+        embed.add_field(
+            name="🎯 Cú pháp Slash Command",
+            value="`/agent skill: <kỹ_năng> project: <tên_project> des: <mô_tả>`",
+            inline=False
+        )
+        embed.add_field(
+            name="⚡ Cú pháp Prefix Command",
+            value="`!run <kỹ_năng> [-p <project>] [-d <mô_tả>]`",
+            inline=False
+        )
+        embed.add_field(
+            name="🚩 Các cờ hỗ trợ",
+            value=(
+                "• `-p`, `--project`, `project:` : Tên dự án trên máy (gõ `!projects` để xem danh sách)\n"
+                "• `-d`, `--des`, `des:` : Mô tả nhiệm vụ, phạm vi scan hoặc issue key Jira"
+            ),
+            inline=False
+        )
+        embed.add_field(
+            name="💡 Ví dụ thực tế",
+            value=(
+                "• `!run /cr-review-code-and-quality -p my-project -d review auth logic`\n"
+                "• `!run /qa-full-pipeline -p my-project -d G3PTP-17093`\n"
+                "• `!run /dev-audit -d tối ưu hiệu năng login`\n"
+                "• `/agent skill: /dev-api-design project: my-project des: thiết kế auth API`"
+            ),
+            inline=False
+        )
+        embed.set_footer(text=f"Bot: {bot_name} | Gõ !help để xem toàn bộ danh sách lệnh")
+        return embed
+
+    elif cmd in ["skills", "commands", "skill"]:
+        embed = discord.Embed(
+            title="📖 Hướng Dẫn Chi Tiết: Lệnh !skills",
+            description="Xem danh sách 36+ kỹ năng của Agent hoặc tìm kiếm kỹ năng theo từ khóa.",
+            color=0x9B59B6
+        )
+        embed.add_field(
+            name="⚡ Cú pháp",
+            value="`!skills [từ_khóa]`",
+            inline=False
+        )
+        embed.add_field(
+            name="💡 Ví dụ thực tế",
+            value=(
+                "• `!skills` : Xem toàn bộ danh sách kỹ năng phân loại theo nhóm (BA, DEV, QA, SM...)\n"
+                "• `!skills qa` : Tìm các kỹ năng liên quan đến QA/Automation\n"
+                "• `!skills dev` : Tìm các kỹ năng lập trình, kiểm toán, refactoring\n"
+                "• `!skills review` : Tìm kỹ năng Code Review"
+            ),
+            inline=False
+        )
+        embed.set_footer(text=f"Bot: {bot_name} | Gõ !help để xem toàn bộ danh sách lệnh")
+        return embed
+
+    elif cmd in ["projects", "project"]:
+        embed = discord.Embed(
+            title="📖 Hướng Dẫn Chi Tiết: Lệnh !projects",
+            description="Quản lý và tra cứu danh sách các dự án trên máy tính mà Bot phát hiện được.",
+            color=0xE67E22
+        )
+        embed.add_field(
+            name="⚡ Cú pháp",
+            value=(
+                "• `!projects` : Liệt kê tất cả dự án hiện tại\n"
+                "• `!projects reload` : Quét lại thư mục máy tính (dùng khi bạn vừa clone repo mới)"
+            ),
+            inline=False
+        )
+        embed.add_field(
+            name="⚙️ Cấu hình Alias riêng (Tùy chọn)",
+            value=(
+                "Bạn có thể tạo file `tools/discord-bridge/projects.json` từ file mẫu `projects.json.example` "
+                "để gán tên viết tắt tùy ý cho các đường dẫn dự án."
+            ),
+            inline=False
+        )
+        embed.set_footer(text=f"Bot: {bot_name} | Gõ !help để xem toàn bộ danh sách lệnh")
+        return embed
+
+    elif cmd == "status":
+        embed = discord.Embed(
+            title="📖 Hướng Dẫn Chi Tiết: Lệnh !status",
+            description="Kiểm tra trạng thái sẵn sàng của Agent.",
+            color=0x2ECC71
+        )
+        embed.add_field(
+            name="⚡ Cú pháp",
+            value="`!status`",
+            inline=False
+        )
+        embed.add_field(
+            name="📊 Các trạng thái",
+            value=(
+                "• `🟢 Rảnh rỗi` : Agent sẵn sàng nhận lệnh mới ngay lập tức.\n"
+                "• `🔴 Đang bận` : Agent đang xử lý tác vụ khác. Lệnh mới sẽ được tự động xếp hàng đợi."
+            ),
+            inline=False
+        )
+        embed.set_footer(text=f"Bot: {bot_name} | Gõ !help để xem toàn bộ danh sách lệnh")
+        return embed
+
+    elif cmd == "done":
+        embed = discord.Embed(
+            title="📖 Hướng Dẫn Chi Tiết: Lệnh !done",
+            description="Đóng và lưu trữ Thread làm việc khi tác vụ đã hoàn thành.",
+            color=0x95A5A6
+        )
+        embed.add_field(
+            name="⚡ Cú pháp",
+            value="`!done` *(chỉ gõ bên trong Thread do bot tạo ra)*",
+            inline=False
+        )
+        embed.add_field(
+            name="💡 Tác dụng",
+            value=(
+                "• Đóng (Archive) Thread để giữ kênh chat chính luôn sạch sẽ.\n"
+                "• Toàn bộ lịch sử trò chuyện và kết quả vẫn được Discord lưu lại để tra cứu sau này."
+            ),
+            inline=False
+        )
+        embed.set_footer(text=f"Bot: {bot_name} | Gõ !help để xem toàn bộ danh sách lệnh")
+        return embed
+
+    return None
+
+
+def build_command_help_text(command_name: str, bot_name: str = "Agent Assistant") -> str:
+    """Phiên bản text markdown thuần cho hướng dẫn từng lệnh khi không có quyền embed"""
+    cmd = command_name.lower().lstrip("!/").strip()
+    if cmd in ["run", "agent"]:
+        return (
+            "📖 **Hướng Dẫn Lệnh: !run & /agent**\n\n"
+            "• **Slash Command:** `/agent skill: <kỹ_năng> project: <tên_project> des: <mô_tả>`\n"
+            "• **Prefix Command:** `!run <kỹ_năng> [-p <project>] [-d <mô_tả>]`\n"
+            "• **Các cờ:** `-p` (chọn dự án), `-d` (mô tả task/issue)\n"
+            "• **Ví dụ:** `!run /cr-review-code-and-quality -p my-project -d review auth`"
+        )
+    elif cmd in ["skills", "commands", "skill"]:
+        return (
+            "📖 **Hướng Dẫn Lệnh: !skills**\n\n"
+            "• **Cú pháp:** `!skills [từ_khóa]`\n"
+            "• **Ví dụ:** `!skills` (xem tất cả), `!skills qa` (lọc QA), `!skills dev` (lọc Dev)"
+        )
+    elif cmd in ["projects", "project"]:
+        return (
+            "📖 **Hướng Dẫn Lệnh: !projects**\n\n"
+            "• `!projects` : Xem toàn bộ dự án trên máy\n"
+            "• `!projects reload` : Quét lại thư mục khi vừa clone repo mới"
+        )
+    elif cmd == "status":
+        return (
+            "📖 **Hướng Dẫn Lệnh: !status**\n\n"
+            "• `!status` : Kiểm tra Agent đang rảnh hay bận."
+        )
+    elif cmd == "done":
+        return (
+            "📖 **Hướng Dẫn Lệnh: !done**\n\n"
+            "• `!done` : Đóng và lưu trữ Thread sau khi hoàn thành tác vụ (gõ trong Thread)."
+        )
+    return build_help_text(bot_name=bot_name)
+
+
+def build_help_text(bot_name: str = "Agent Assistant") -> str:
+    """Phiên bản text markdown thuần phòng trường hợp kênh chat không cho gửi Embed"""
+    return (
+        f"👋 **Xin chào!** Cảm ơn bạn đã thêm **{bot_name}** vào server.\n\n"
+        "🤖 **HƯỚNG DẪN ĐIỀU KHIỂN AGENT SKILLS BRIDGE**\n\n"
+        "🎯 **1. Slash Command (Khuyên dùng — Tự động gợi ý):**\n"
+        "• `/agent skill: <kỹ_năng> project: <tên_project> des: <mô_tả>`\n"
+        "  ↳ *Ví dụ:* `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`\n\n"
+        "⚡ **2. Bộ 5 Lệnh Prefix Tối Giản:**\n"
+        "• `!run <kỹ_năng> [-p project] [-d des]` : Kích hoạt Agent thực thi\n"
+        "  ↳ *Ví dụ:* `!run /cr-review-code-and-quality -p my-project -d review auth`\n"
+        "• `!skills [từ_khóa]` : Xem danh sách 36+ kỹ năng hoặc tìm kiếm (VD: `!skills qa`)\n"
+        "• `!projects [reload]` : Xem danh sách dự án trên máy hoặc quét lại\n"
+        "• `!status` : Kiểm tra trạng thái Agent đang bận hay rảnh\n"
+        "• `!help [lệnh]` : Xem lại bảng hướng dẫn này (hoặc chi tiết: `!help run`)\n\n"
+        "💬 **3. Hội Thoại Đa Lượt Trong Thread:**\n"
+        "• Bot sẽ tự tạo Thread riêng cho mỗi tác vụ. Bạn chỉ cần chat trả lời trực tiếp trong Thread.\n"
+        "• Gõ `!done` để đóng Thread khi hoàn thành.\n\n"
+        "🔒 **4. Phân Quyền & Bảo Mật:**\n"
+        "• Chỉ User ID cấu hình trong `DISCORD_ALLOWED_USER_ID` mới có quyền chạy lệnh.\n"
+        f"*(Gõ `/agent` hoặc `!help` bất kỳ lúc nào để xem lại hướng dẫn)*"
+    )
+
+
+@bot.event
+async def on_guild_join(guild: discord.Guild):
+    """
+    Tự động gửi tin nhắn hướng dẫn các lệnh khả dụng khi bot được thêm vào một Server mới
+    """
+    print(f"🎉 Bot vừa được thêm vào Server: {guild.name} (ID: {guild.id})", flush=True)
+
+    me = guild.me
+    if not me and bot.user:
+        me = guild.get_member(bot.user.id)
+
+    def can_send(channel) -> bool:
+        if not channel:
+            return False
+        if not me:
+            return True
+        perms = channel.permissions_for(me)
+        return getattr(perms, 'send_messages', False) and getattr(perms, 'view_channel', True)
+
+    target_channel = None
+
+    # 1. Thử system channel nếu có quyền gửi
+    if guild.system_channel and can_send(guild.system_channel):
+        target_channel = guild.system_channel
+
+    # 2. Thử tìm các channel tên phổ biến: general, chung, bot, commands, agent, chat, welcome, main
+    if not target_channel:
+        preferred_names = ["general", "chung", "bot", "bots", "commands", "agent", "chat", "welcome", "main"]
+        for ch in guild.text_channels:
+            if ch.name.lower() in preferred_names and can_send(ch):
+                target_channel = ch
+                break
+
+    # 3. Fallback sang text channel đầu tiên có quyền gửi
+    if not target_channel:
+        for ch in guild.text_channels:
+            if can_send(ch):
+                target_channel = ch
+                break
+
+    if target_channel:
+        bot_name = bot.user.name if bot.user else "Agent Assistant"
+        embed = build_help_embed(bot_name=bot_name)
+        welcome_header = (
+            "👋 **Xin chào!** Cảm ơn bạn đã thêm Agent Assistant vào server.\n"
+            "Dưới đây là cẩm nang toàn bộ các lệnh sẵn sàng để bạn điều khiển Agent từ Discord:"
+        )
+        try:
+            await target_channel.send(content=welcome_header, embed=embed)
+            print(f"✅ Đã tự động gửi tin nhắn hướng dẫn (embed) tới #{target_channel.name} ({guild.name})", flush=True)
+        except discord.Forbidden:
+            # Fallback sang plain-text nếu channel chặn Embed Links
+            try:
+                fallback_msg = build_help_text(bot_name=bot_name)
+                await target_channel.send(content=fallback_msg)
+                print(f"✅ Đã tự động gửi tin nhắn hướng dẫn (text fallback) tới #{target_channel.name} ({guild.name})", flush=True)
+            except Exception as e:
+                print(f"⚠️ Lỗi gửi fallback tới #{target_channel.name}: {e}", flush=True)
+        except Exception as e:
+            print(f"⚠️ Không thể gửi tin nhắn hướng dẫn tới #{target_channel.name}: {e}", flush=True)
+    else:
+        print(f"⚠️ Không tìm thấy channel nào có quyền gửi tin nhắn trong Server {guild.name}", flush=True)
 
 
 # ================= XỬ LÝ CHẠY AGENT =================
@@ -176,11 +502,11 @@ async def run_agent_turn(channel_or_thread, prompt: str, cli_path: str, is_conti
             await channel_or_thread.send(
                 f"🚀 **Đã kích hoạt Agent!**\n"
                 f"• **Lệnh:** `{prompt}`\n"
-                f"• **Engine:** `{engine_name}` (`{cli_path}`)\n"
+                f"• **Engine:** `{engine_name}`\n"
                 f"• **Thời gian bắt đầu:** {start_time.strftime('%H:%M:%S')}\n"
                 f"⏳ *Đang xử lý, bot sẽ thông báo ngay khi hoàn tất...*\n\n"
-                f"💡 _Mẹo: Nếu Agent có câu hỏi làm rõ, bạn chỉ cần **chat trả lời trực tiếp trong Thread này**._\n"
-                f"🔒 _Khi xong việc, gõ `!done` để đóng thread hoặc `!delete` để xóa._"
+                f"💡 _Mẹo: Nếu Agent hỏi làm rõ, bạn chỉ cần **chat trả lời trực tiếp trong Thread này**._\n"
+                f"🔒 _Khi xong việc, gõ `!done` để đóng thread._"
             )
 
         def run_cli_subprocess():
@@ -293,21 +619,31 @@ async def on_message(message: discord.Message):
 
 # ================= SLASH COMMANDS (VỚI AUTOCOMPLETE) =================
 
-@bot.tree.command(name="agent", description="Kích hoạt Agent thực thi một skill hoặc câu lệnh")
+@bot.tree.command(name="agent", description="Kích hoạt Agent thực thi một skill với Project trên máy")
 @app_commands.describe(
     skill="Chọn skill bạn muốn gọi (gõ ký tự để gợi ý)",
-    args="Tham số bổ sung nếu có (ví dụ: issueKey như G3PTP-17093)"
+    project="Tên Project trên máy để Agent tự động scan code (gõ để gợi ý)",
+    des="Mô tả nhiệm vụ, phạm vi scan code hoặc tham số (VD: review auth, G3PTP-17093)"
 )
-async def slash_agent(interaction: discord.Interaction, skill: str, args: str = ""):
+async def slash_agent(interaction: discord.Interaction, skill: str, project: str = "", des: str = ""):
     if not is_authorized(interaction.user.id):
         return await interaction.response.send_message("⛔ Bạn không có quyền điều khiển Agent này.", ephemeral=True)
 
-    full_prompt = f"{skill} {args}".strip()
-    await interaction.response.send_message(f"🎯 Đang khởi tạo session cho: `{full_prompt}`...")
+    # Xử lý directive cho Project nếu người dùng cung cấp
+    resolved_proj = project_manager.resolve_project(project) if project and project.strip() else None
+    if resolved_proj:
+        proj_name, proj_path = resolved_proj
+        full_prompt = project_manager.build_project_directive(skill, proj_name, proj_path, des)
+        title_summary = f"{skill} [{proj_name}] {des}".strip()
+    else:
+        full_prompt = f"{skill} {des}".strip()
+        title_summary = full_prompt
+
+    await interaction.response.send_message(f"🎯 Đang khởi tạo session cho: `{title_summary}`...")
 
     # Tạo thread từ message phản hồi
     msg = await interaction.original_response()
-    clean_title = full_prompt.replace("\n", " ")[:50]
+    clean_title = title_summary.replace("\n", " ")[:50]
     engine_name = Path(DEFAULT_CLI).name.upper()
     thread_name = f"[{engine_name}] {clean_title}..."
 
@@ -348,28 +684,39 @@ async def skill_autocomplete(interaction: discord.Interaction, current: str) -> 
     return choices
 
 
+@slash_agent.autocomplete("project")
+async def project_autocomplete(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    choices = []
+    results = project_manager.search_projects(current, limit=25)
+    for label, proj_name, _path_str in results:
+        choices.append(app_commands.Choice(name=label, value=proj_name))
+    return choices
+
+
 # ================= CÁC LỆNH TEXT PREFIX TRUYỀN THỐNG =================
 
-@bot.command(name="help", aliases=["help_agent"])
-async def show_help(ctx):
-    help_text = (
-        "🛠️ **CÁC LỆNH ĐIỀU KHIỂN AGENT:**\n\n"
-        "• `/agent`: **Gõ `/agent` trên Discord** để hiện bảng gợi ý (Autocomplete) toàn bộ danh sách skill!\n"
-        "• `!skills` hoặc `!commands`: Xem danh sách tất cả skill theo vai trò.\n"
-        "• `!skills <từ khóa>`: Tìm kiếm skill (VD: `!skills qa`, `!skills dev`, `!skills standup`).\n"
-        "• `!agent <lệnh>` hoặc `!run <lệnh>`: Chạy bằng Engine mặc định (AGY).\n"
-        "• `!claude <lệnh>`: Ép chạy bằng **Claude Code CLI**.\n"
-        "• `!agy <lệnh>`: Ép chạy bằng **Google Antigravity CLI**.\n\n"
-        "💬 **Hội thoại đa lượt trong Thread:**\n"
-        "• Khi Agent hỏi làm rõ, bạn chỉ cần **chat trả lời trực tiếp trong Thread**.\n"
-        "• Khi hoàn thành, gõ `!done` để lưu trữ thread hoặc `!delete` để xóa thread.\n\n"
-        "• `!status`: Kiểm tra trạng thái Agent và Engine đang dùng.\n"
-        "• `!help`: Xem hướng dẫn này."
-    )
-    await ctx.send(help_text)
+@bot.command(name="help")
+async def show_help(ctx, *, command_name: str = None):
+    """Hiển thị bảng hướng dẫn sử dụng bot tổng quan hoặc chi tiết từng lệnh"""
+    bot_name = bot.user.name if bot.user else "Agent Assistant"
+    if command_name:
+        cmd_embed = build_command_help_embed(command_name, bot_name=bot_name)
+        if cmd_embed:
+            try:
+                return await ctx.send(embed=cmd_embed)
+            except discord.Forbidden:
+                return await ctx.send(content=build_command_help_text(command_name, bot_name=bot_name))
+        else:
+            await ctx.send(f"❓ Không tìm thấy hướng dẫn cho `{command_name}`. Dưới đây là bảng hướng dẫn tổng quan:")
+
+    embed = build_help_embed(bot_name=bot_name)
+    try:
+        await ctx.send(embed=embed)
+    except discord.Forbidden:
+        await ctx.send(content=build_help_text(bot_name=bot_name))
 
 
-@bot.command(name="skills", aliases=["commands", "list"])
+@bot.command(name="skills", aliases=["commands"])
 async def list_skills(ctx, *, filter_query: str = None):
     if not is_authorized(ctx.author.id):
         return await ctx.send("⛔ Bạn không có quyền truy cập bot này.")
@@ -378,7 +725,7 @@ async def list_skills(ctx, *, filter_query: str = None):
 
     if not filter_query:
         embed = discord.Embed(
-            title="📋 Danh Sách Commands & Skills Của Agent",
+            title="📋 Danh Sách Kỹ Năng Của Agent",
             description=(
                 "Dưới đây là các kỹ năng sẵn sàng phục vụ bạn:\n"
                 "💡 _Mẹo: Bạn có thể gõ `/agent` để Discord tự gợi ý khi gõ phím!_"
@@ -394,7 +741,7 @@ async def list_skills(ctx, *, filter_query: str = None):
                 value=cmd_list or "*(Trống)*",
                 inline=False
             )
-        embed.set_footer(text=f"Tổng cộng: {total_cmds} lệnh. Gọi: /agent hoặc !agent <tên_lệnh>")
+        embed.set_footer(text=f"Tổng cộng: {total_cmds} kỹ năng. Gọi: /agent hoặc !run <tên_lệnh>")
         return await ctx.send(embed=embed)
 
     q = filter_query.lower().strip()
@@ -408,11 +755,11 @@ async def list_skills(ctx, *, filter_query: str = None):
                 matched.append((cat_title, cmd))
 
     if not matched:
-        return await ctx.send(f"🔍 Không tìm thấy skill hoặc command nào khớp với từ khóa: `{filter_query}`.")
+        return await ctx.send(f"🔍 Không tìm thấy kỹ năng nào khớp với từ khóa: `{filter_query}`.")
 
     embed = discord.Embed(
-        title=f"🔍 Kết Quả Tìm Kiếm: `{filter_query}` ({len(matched)} lệnh)",
-        description="Copy lệnh và gọi qua `/agent` hoặc `!agent <lệnh>`:",
+        title=f"🔍 Kết Quả Tìm Kiếm Kỹ Năng: `{filter_query}` ({len(matched)} lệnh)",
+        description="Gọi nhanh bằng `/agent` hoặc `!run <lệnh>`:",
         color=0x2ECC71
     )
 
@@ -420,7 +767,7 @@ async def list_skills(ctx, *, filter_query: str = None):
         short_desc = (cmd["desc"][:140] + "...") if len(cmd["desc"]) > 140 else (cmd["desc"] or "Không có mô tả")
         embed.add_field(
             name=f"`{cmd['name']}` — {cmd['plugin'].upper()}",
-            value=f"{short_desc}\n↳ Gọi: `!agent {cmd['name']}`",
+            value=f"{short_desc}\n↳ Gọi: `!run {cmd['name']}`",
             inline=False
         )
 
@@ -454,9 +801,59 @@ async def check_status(ctx):
             f"• Claude CLI: `{CLAUDE_CLI}` ({claude_status})\n"
             f"• Antigravity (AGY) CLI: `{AGY_CLI}` ({agy_status})\n"
             f"• Workspace: `{WORKSPACE_DIR}`\n"
+            f"• Projects trên máy: `{len(project_manager.list_projects())}` projects (gõ `!projects` để xem)\n"
             f"• Số session Thread đang mở: {len(ACTIVE_THREADS)}"
         )
     await ctx.send(msg)
+
+
+@bot.command(name="projects")
+async def list_projects_cmd(ctx, *, filter_query: str = None):
+    if not is_authorized(ctx.author.id):
+        return await ctx.send("⛔ Bạn không có quyền truy cập bot này.")
+
+    if filter_query and filter_query.strip().lower() in ["reload", "refresh", "scan"]:
+        project_manager.reload()
+        total = len(project_manager.list_projects())
+        return await ctx.send(f"🔄 **Đã quét lại hệ thống tệp!** Phát hiện `{total}` projects trên máy.")
+
+    all_projects = project_manager.list_projects()
+    if not all_projects:
+        return await ctx.send("⚠️ Chưa phát hiện project nào trên máy. Bạn có thể kiểm tra cấu hình `PROJECT_SCAN_DIRS` trong `.env`.")
+
+    if filter_query:
+        q = filter_query.strip().lower()
+        matched = {k: v for k, v in all_projects.items() if q in k or q in str(v).lower()}
+    else:
+        matched = all_projects
+
+    if not matched:
+        return await ctx.send(f"🔍 Không tìm thấy project nào khớp với từ khóa: `{filter_query}`.")
+
+    embed = discord.Embed(
+        title=f"📂 Danh Sách Project Trên Máy ({len(matched)}/{len(all_projects)})",
+        description=(
+            "Gõ `/agent` trên Discord và chọn ô **project** để Agent tự động scan code!\n"
+            "Hoặc dùng cú pháp: `!run <kỹ_năng> -p <tên_project> [args]`\n"
+            "💡 _Gõ `!projects reload` để quét lại khi vừa clone repo mới._"
+        ),
+        color=0x1ABC9C
+    )
+
+    items = list(matched.items())[:15]
+    for name, path in items:
+        embed.add_field(
+            name=f"📁 `{name}`",
+            value=f"↳ `{path}`",
+            inline=False
+        )
+
+    if len(matched) > 15:
+        embed.set_footer(text=f"Và còn {len(matched) - 15} projects khác. Gõ '!projects <từ_khóa>' để tìm kiếm.")
+    else:
+        embed.set_footer(text=f"Tổng cộng: {len(matched)} projects khả dụng.")
+
+    await ctx.send(embed=embed)
 
 
 async def execute_from_prefix(ctx, prompt: str, cli_path: str):
@@ -464,10 +861,24 @@ async def execute_from_prefix(ctx, prompt: str, cli_path: str):
         return await ctx.send("⛔ Bạn không có quyền điều khiển Agent này.")
 
     if not prompt or not prompt.strip():
-        return await ctx.send("⚠️ Vui lòng cung cấp lệnh cần chạy. Ví dụ: `!agent /qa-run-test` hoặc `!agent /sm-daily-standup`")
+        return await ctx.send("⚠️ Vui lòng cung cấp kỹ năng cần chạy.\nVí dụ: `!run /cr-review-code-and-quality -p dnse-trading -d review auth`")
 
     prompt = prompt.strip()
-    clean_title = prompt.replace("\n", " ")[:50]
+
+    # Phân tích cú pháp: skill, project (-p) và des (-d)
+    skill, proj_query, des = project_manager.parse_command_args(prompt)
+    if not skill:
+        skill = prompt.split()[0] if prompt else ""
+
+    resolved_proj = project_manager.resolve_project(proj_query) if proj_query else None
+    if resolved_proj:
+        proj_name, proj_path = resolved_proj
+        full_prompt = project_manager.build_project_directive(skill, proj_name, proj_path, des)
+        clean_title = f"{skill} [{proj_name}] {des}".strip()[:50]
+    else:
+        full_prompt = f"{skill} {des}".strip() if des else skill
+        clean_title = full_prompt.replace("\n", " ")[:50]
+
     engine_name = Path(cli_path).name.upper()
     thread_name = f"[{engine_name}] {clean_title}..."
 
@@ -480,25 +891,21 @@ async def execute_from_prefix(ctx, prompt: str, cli_path: str):
         ACTIVE_THREADS[thread.id] = {
             "cli": cli_path,
             "user_id": ctx.author.id,
-            "prompt": prompt
+            "prompt": full_prompt
         }
 
-    await run_agent_turn(thread, prompt, cli_path, is_continue=False, author=ctx.author)
+    await run_agent_turn(thread, full_prompt, cli_path, is_continue=False, author=ctx.author)
 
 
-@bot.command(name="agent", aliases=["run"])
-async def execute_agent(ctx, *, prompt: str = None):
+@bot.command(name="run", aliases=["agent"])
+async def execute_run(ctx, *, prompt: str = None):
+    """
+    Lệnh duy nhất để chạy Agent từ Discord.
+    Ví dụ:
+      !run /qa-run-test
+      !run /cr-review-code-and-quality -p dnse-trading review auth
+    """
     await execute_from_prefix(ctx, prompt, DEFAULT_CLI)
-
-
-@bot.command(name="claude")
-async def execute_claude(ctx, *, prompt: str = None):
-    await execute_from_prefix(ctx, prompt, CLAUDE_CLI)
-
-
-@bot.command(name="agy")
-async def execute_agy(ctx, *, prompt: str = None):
-    await execute_from_prefix(ctx, prompt, AGY_CLI)
 
 
 def main():

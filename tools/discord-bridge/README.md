@@ -40,7 +40,7 @@ npm run bridge:discord
 Khi thấy dòng thông báo:
 ```text
 🤖 Discord Agent Bridge đã online!
-⚡ CLI Executable: /Users/.../.local/bin/agy
+⚡ CLI Executable: ~/.local/bin/agy
 ✨ Đã đồng bộ 1 Slash Commands (/agent) với Discord!
 ```
 $\rightarrow$ Bot đã sẵn sàng nhận lệnh từ Discord!
@@ -62,11 +62,13 @@ Nếu bạn chưa có Bot trên Discord, làm theo các bước sau (~3 phút):
    * Mục **Scopes**: Tích chọn `bot` và `applications.commands`.
    * Mục **Bot Permissions**: Tích chọn:
      * `Send Messages`
+     * `Embed Links` *(Khuyên dùng để hiển thị giao diện Embed đẹp mắt)*
      * `Create Public Threads`
      * `Send Messages in Threads`
      * `Attach Files`
      * `Read Message History`
-   * Copy đường link ở dưới cùng $\rightarrow$ Dán vào trình duyệt $\rightarrow$ Chọn server riêng của bạn để mời bot vào.
+   * Copy đường link ở dưới cùng $\rightarrow$ Dán vào trình duyệt $\rightarrow$ Chọn server của bạn để mời bot vào.
+   * 🎉 **Tự động gửi hướng dẫn lệnh:** Ngay khi bot gia nhập server, bot sẽ **luôn tự động gửi ngay 1 tin nhắn kèm bảng Embed hướng dẫn chi tiết các lệnh** (`/agent`, `!run`, `!skills`, `!projects`, `!status`, `!help`) vào kênh hệ thống (System Channel) hoặc kênh `#general` / `#bot` để bạn và thành viên bắt đầu sử dụng được ngay lập tức!
 4. **Lấy User ID của bạn:**
    * Trong Discord: Vào **Cài đặt (User Settings)** $\rightarrow$ **Advanced** $\rightarrow$ Bật **Developer Mode**.
    * Chuột phải vào Avatar của bạn ở khung chat $\rightarrow$ Chọn **Copy User ID** $\rightarrow$ Dán vào `DISCORD_ALLOWED_USER_ID` trong `.env`.
@@ -80,22 +82,56 @@ Gõ trên thanh chat Discord:
 ```text
 /agent
 ```
-* Discord sẽ lập tức **bật lên menu gợi ý danh sách toàn bộ 36+ skill**.
-* Bạn chỉ cần gõ vài chữ (VD: `sm`, `qa`, `dev`, `ba`), menu sẽ tự động lọc ngay lập tức. Nhấn **Tab** hoặc chạm tay để chọn lệnh.
-* Điền thêm tham số (như mã Jira `G3PTP-17093`) vào ô `args` nếu có.
+* **Ô `skill`:** Discord sẽ lập tức **bật lên menu gợi ý 36+ skill**. Gõ ký tự (VD: `cr`, `qa`, `dev`, `ba`) để lọc nhanh.
+* **Ô `project`:** Tự động gợi ý **toàn bộ dự án trên máy của bạn** (quét tự động từ thư mục cấu hình trong `PROJECT_SCAN_DIRS` hoặc khai báo trong `projects.json`). Bạn chỉ cần chọn tên project mà không cần nhớ đường dẫn!
+* **Ô `des`:** Nhập mô tả nhiệm vụ, phạm vi cần quét hoặc từ khóa (ví dụ: `review auth`, `order module`, `G3PTP-17093`...).
 
-### 2. Các lệnh Prefix truyền thống
+> 🎯 **Ví dụ Slash Command hoàn chỉnh:**
+> ```text
+> /agent skill: /cr-review-code-and-quality project: my-project des: review auth
+> ```
 
-| Lệnh | Mô tả | Ví dụ |
+> 💡 **Cơ chế tự động:** Khi bạn truyền `project`, Bot sẽ tự động tìm đường dẫn tuyệt đối của project trên máy và chỉ đạo Agent:
+> 1. Tự mở thư mục dự án đó ra và quét cấu trúc bằng `list_dir`, `grep_search`, `git status`.
+> 2. Tự định vị các folder/file liên quan đến nhiệm vụ mà không bắt bạn phải chỉ định từng file.
+> 3. Xuất toàn bộ artifact chuẩn hóa về workspace theo quy định.
+
+### 2. Bộ 5 Lệnh Prefix Tối Giản (Dễ Nhớ — 1 Lệnh Cho Mỗi Tác Vụ)
+
+| Lệnh | Ý nghĩa | Ví dụ thực tế |
 | :--- | :--- | :--- |
-| `/agent` *(Khuyên dùng)* | **Slash command với gợi ý tự động (Autocomplete)** khi gõ | `/agent skill: sm-daily-standup` |
-| `!skills` | Xem toàn bộ danh sách kỹ năng phân loại theo vai trò | `!skills` |
-| `!skills <từ khóa>` | Tìm kiếm skill/command theo vai trò hoặc từ khóa | `!skills qa` hoặc `!skills dev` |
-| `!agent <lệnh>` | Chạy skill/command của Agent bằng AGY mặc định | `!agent /ba-spec G3PTP-17093` |
-| `!claude <lệnh>` | Ép chạy bằng Claude Code CLI | `!claude /qa-run-test` |
-| `!agy <lệnh>` | Ép chạy bằng Google Antigravity CLI | `!agy /sm-daily-standup` |
-| `!status` | Kiểm tra trạng thái Agent và Engine đang dùng | `!status` |
-| `!help` | Xem hướng dẫn sử dụng | `!help` |
+| `!run <kỹ_năng>` | **Chạy Agent** (hỗ trợ `-p <project>` và `-d <des>`) | `!run /cr-review-code-and-quality -p my-project -d review auth` |
+| `!skills [từ_khóa]` | **Xem danh sách kỹ năng** (hoặc tìm theo từ khóa) | `!skills` hoặc `!skills qa` |
+| `!projects [reload]` | **Xem danh sách dự án trên máy** (hoặc quét lại thư mục) | `!projects` hoặc `!projects reload` |
+| `!status` | **Kiểm tra trạng thái Agent** (đang rảnh hay bận) | `!status` |
+| `!help [lệnh]` | **Xem hướng dẫn tổng quan hoặc chi tiết từng lệnh** | `!help` hoặc `!help run` |
+
+> 📖 **Tính năng nâng cao của `!help`:**
+> * Gõ **`!help`**: Hiển thị bảng cẩm nang Embed tổng quan (hướng dẫn Slash Command, 5 lệnh Prefix, cơ chế Thread và phân quyền).
+> * Gõ **`!help <tên_lệnh>`** để xem cú pháp, các cờ và ví dụ chi tiết cho lệnh đó:
+>   * `!help run` (hoặc `!help agent`): Xem hướng dẫn chuyên sâu cách chạy kỹ năng, các cờ `-p`, `-d` và ví dụ.
+>   * `!help skills`: Xem cách tra cứu và lọc 36+ kỹ năng.
+>   * `!help projects`: Xem cách tra cứu dự án, quét lại và cấu hình alias.
+>   * `!help status`: Xem các trạng thái rảnh/bận và hàng đợi của Agent.
+>   * `!help done`: Xem cách kết thúc và lưu trữ Thread.
+
+---
+
+### ⚙️ Cấu Hình Alias Dự Án Tùy Chọn (`projects.json`)
+
+Mặc định Bot tự động phát hiện các dự án trong thư mục cha. Nếu bạn muốn đặt tên viết tắt (alias) riêng:
+1. Tạo file `projects.json` từ file mẫu:
+   ```bash
+   cp tools/discord-bridge/projects.json.example tools/discord-bridge/projects.json
+   ```
+2. Thêm alias và đường dẫn tương ứng:
+   ```json
+   {
+     "my-project": "/path/to/my-project",
+     "backend-service": "/path/to/backend-service"
+   }
+   ```
+*(Lưu ý: File `projects.json` đã được cấu hình trong `.gitignore` để bảo mật thông tin cá nhân, không bị commit hay đẩy lên Git).*
 
 ---
 
@@ -105,8 +141,7 @@ Gõ trên thanh chat Discord:
    * Bạn **chỉ cần chat trả lời trực tiếp trong Thread** do bot tạo ra (không cần gõ lại bất kỳ cú pháp nào).
    * Bot sẽ tự động nối tiếp ngữ cảnh (`--continue`) để Agent xử lý tiếp câu trả lời của bạn.
 2. **Khi công việc hoàn tất:**
-   * Gõ `!done` hoặc `!close` trong Thread: Bot sẽ **đóng và lưu trữ (archive)** Thread lại, giúp kênh chat chính luôn sạch sẽ nhưng vẫn giữ trọn vẹn log để tra cứu sau này.
-   * Gõ `!delete`: Xóa vĩnh viễn Thread nếu không muốn giữ lại.
+   * Gõ `!done` trong Thread: Bot sẽ **đóng và lưu trữ (archive)** Thread lại, giúp kênh chat chính luôn sạch sẽ nhưng vẫn giữ trọn vẹn log để tra cứu sau này.
 
 ---
 

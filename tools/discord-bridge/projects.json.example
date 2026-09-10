@@ -1,0 +1,5 @@
+{
+  "my-project": "/path/to/my-project",
+  "frontend-app": "/path/to/frontend-app",
+  "backend-service": "/path/to/backend-service"
+}

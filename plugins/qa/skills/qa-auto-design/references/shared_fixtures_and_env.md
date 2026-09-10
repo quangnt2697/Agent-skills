@@ -83,7 +83,6 @@ def load_hierarchical_env():
     agent_env_candidates = [
         os.getenv("AGENT_SKILLS_ENV_PATH"),
         os.getenv("AGENT_SKILLS_PATH", "") + "/.env" if os.getenv("AGENT_SKILLS_PATH") else None,
-        Path.home() / "Desktop" / "Project" / "Test" / "agent-skills" / ".env",
         project_root.parent / "agent-skills" / ".env",
         project_root / ".env" if project_root.name == "agent-skills" else None,
     ]

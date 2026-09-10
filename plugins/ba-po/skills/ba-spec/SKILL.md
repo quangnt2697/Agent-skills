@@ -610,11 +610,11 @@ Import Jira/Conf         Thiết kế Checklist       Sinh code automation     C
 
 ## Xem thêm
 
-- [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/references/securities-domain-rules.md)
-- [Quy trình Quản lý Tài liệu Atlassian](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/references/atlassian-mcp-strategy.md)
-- [Profile trích xuất APP](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-spec/references/profile-app.md)
-- [Profile trích xuất WEB](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-spec/references/profile-web.md)
-- [Profile trích xuất API](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-spec/references/profile-api.md)
+- [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](../../../../references/securities-domain-rules.md)
+- [Quy trình Quản lý Tài liệu Atlassian](../../../../docs/architecture/atlassian-mcp-strategy.md)
+- [Profile trích xuất APP](references/profile-app.md)
+- [Profile trích xuất WEB](references/profile-web.md)
+- [Profile trích xuất API](references/profile-api.md)
 
 ---
 <CRITICAL_RULE>

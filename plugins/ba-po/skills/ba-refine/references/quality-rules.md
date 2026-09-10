@@ -227,10 +227,10 @@ Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
 
 ## Xem thêm
 
-- [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/references/securities-domain-rules.md)
-- [Quy trình Quản lý Tài liệu Atlassian](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/references/atlassian-mcp-strategy.md)
-- [Ví dụ Refine Chất lượng Cao](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-refine/examples.md)
-- [Jira Description Template](file:///Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/ba-po/skills/ba-refine/templates/jira-description-template.md)
+- [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](../../../../references/securities-domain-rules.md)
+- [Quy trình Quản lý Tài liệu Atlassian](../../../../../docs/architecture/atlassian-mcp-strategy.md)
+- [Ví dụ Refine Chất lượng Cao](../examples.md)
+- [Jira Description Template](../templates/jira-description-template.md)
 
 ---
 
