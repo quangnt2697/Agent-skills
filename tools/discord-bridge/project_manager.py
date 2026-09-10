@@ -181,7 +181,12 @@ class ProjectManager:
             p = self.projects_cache[lower_q]
             return (p.name, p)
 
-        # 3. Khớp substring (ví dụ gõ 'order' tìm thấy 'order-service' hoặc 'dnse-trading')
+        # 3. Khớp prefix (ví dụ gõ 'openapi' tìm thấy 'openapi-tyk' trước 'my-openapi-lib')
+        for k, p in self.projects_cache.items():
+            if k.startswith(lower_q) or p.name.lower().startswith(lower_q):
+                return (p.name, p)
+
+        # 4. Khớp substring (ví dụ gõ 'order' tìm thấy 'order-service' hoặc 'dnse-trading')
         for k, p in self.projects_cache.items():
             if lower_q in k or lower_q in p.name.lower():
                 return (p.name, p)
