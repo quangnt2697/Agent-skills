@@ -8,171 +8,148 @@ description: >
   Trigger: "/qa-squash-push {issueKey}"
 ---
 
-# Skill: qa-squash-push
+# Kỹ năng Đẩy Test Case Lên Squash TM (qa-squash-push)
 
-## Mục đích
-Tự động đẩy tài liệu Test Case (định dạng Gherkin) đã thiết kế trong dự án lên hệ thống quản lý test Squash TM, rồi **gán test case đó vào requirement tương ứng bên Campaign Workspace** để sẵn sàng execute.
+## Tổng quan
 
-Skill gồm 2 phase:
+Skill này đóng vai trò là **Cầu Nối Vận Chuyển & Đồng Bộ Test Case (Transport & Synchronization Layer)** giữa workspace kiểm thử cục bộ và hệ thống quản lý kiểm thử Squash TM. Mục tiêu duy nhất: tiếp nhận kịch bản Gherkin chuẩn mực (`{issueKey}.feature`), đẩy vào đúng thư mục Sprint bên Test Case Workspace (Phase A - REST API công khai), và gán test case vào requirement tương ứng bên Campaign Workspace (Phase B - Backend API session-based).
 
-| Phase                     | Workspace           | API                                     | Auth                                  | Fail thì sao?        |
-|---------------------------|---------------------|-----------------------------------------|---------------------------------------|----------------------|
-| **A** — Đẩy Gherkin       | Test Case Workspace | `/api/rest/latest/...` (REST công khai) | `Bearer SQUASH_API_TOKEN`             | Dừng, exit ≠ 0       |
-| **B** — Gán vào test plan | Campaign Workspace  | `/backend/...` (API nội bộ của UI)      | Session `JSESSIONID` + `X-XSRF-TOKEN` | Cảnh báo, vẫn exit 0 |
+Skill này **TẬP TRUNG 100% VÀO NHIỆM VỤ ĐỒNG BỘ VÀ TÍCH HỢP HỆ THỐNG**, tuyệt đối không can thiệp sửa đổi nội dung Gherkin hay thực thi kiểm thử.
 
-Phase A tự động quét **Requirement Workspace** để tìm "EnTrade Sprint xxx" mới nhất, đồng bộ thư mục sang **Test Case Workspace** rồi đẩy script (overwrite).
+### 4 Nguyên Tắc Vàng Khi Đồng Bộ:
+1. **Phân Định Trách Nhiệm (Transport Layer Only):** Mọi kịch bản Gherkin đầu vào BẮT BUỘC đã được kiểm định và validate 100% từ `qa-test-design`. Skill này KHÔNG validate lại nội dung hay sửa đổi file `.feature`.
+2. **Phase B Best-Effort Policy:** Phase A (REST API đẩy Gherkin) bắt buộc thành công (lỗi sẽ dừng, exit $\ne$ 0). Phase B (gán vào Campaign Workspace) dùng API nội bộ UI nên được thiết kế best-effort: nếu lỗi sẽ cảnh báo nhưng không đánh rớt kết quả Phase A.
+3. **Cơ Chế Clean-Before-Add:** Trước khi ghi đè kịch bản mới, hệ thống tự động kiểm tra và xóa sạch toàn bộ execution rác cũ và test-plan-items cũ gắn với Test Case để đảm bảo tính toàn vẹn của dữ liệu kiểm thử.
+4. **Truy Vết Độc Bản (Metadata Traceability):** Sau khi hoàn tất, lưu thông tin đồng bộ vào duy nhất một file metadata `workspace/{issueKey}/test/squash_sync.json`.
 
-Phase B đăng nhập bằng session, dò node Sprint tương ứng trong campaign-tree, tìm requirement có `reference == {issueKey}` và gán test case vào test plan của nó.
+---
 
-> **Lưu ý kiến trúc:** Phase B dùng API nội bộ `/backend` mà UI Squash gọi, không phải REST API công khai. Nhóm endpoint này **không có cam kết ổn định** và có thể đổi khi Squash TM nâng version. Đó là lý do Phase B được thiết kế best-effort: hỏng thì cảnh báo chứ không đánh hỏng kết quả Phase A.
+## 📚 Chỉ Mục Tham Chiếu Chi Tiết (Reference Index)
+
+Để tối ưu hóa ngữ cảnh và tra cứu chuyên sâu theo nhu cầu, Agent tra cứu các tài liệu kỹ thuật chi tiết theo bảng chỉ mục sau:
+
+| Nghiệp vụ kỹ thuật | Tài liệu tham chiếu chi tiết | Nội dung tra cứu cốt lõi |
+|---|---|---|
+| **Cấu Hình Biến Môi Trường .env** | [references/squash_api_and_sync_guide.md](references/squash_api_and_sync_guide.md#1-cấu-hình-biến-môi-trường-env) | Cấu hình credentials Phase A (`SQUASH_API_TOKEN`, Folder IDs) & Phase B (`SQUASH_USERNAME`, `SQUASH_PASSWORD`) |
+| **Quy Trình Đồng Bộ Phase A (REST API)** | [references/squash_api_and_sync_guide.md](references/squash_api_and_sync_guide.md#2-chi-tiết-quy-trình-phase-a-test-case-workspace--rest-api-công-khai) | Tìm Sprint mới nhất qua regex `EnTrade Sprint xxx`, đồng bộ thư mục, xóa execution cũ, PATCH script Gherkin |
+| **Quy Trình Đồng Bộ Phase B (Campaign)** | [references/squash_api_and_sync_guide.md](references/squash_api_and_sync_guide.md#3-chi-tiết-quy-trình-phase-b-campaign-workspace--internal-api-session-based) | Xác thực session XSRF, duyệt cây `campaign-tree`, tìm requirement `{issueKey}`, gán test plan, lưu metadata |
+| **An Toàn Thông Tin & Quản Lý Cookie** | [references/squash_api_and_sync_guide.md](references/squash_api_and_sync_guide.md#4-quy-chuẩn-an-toàn--bảo-mật-security-standards) | Masking credentials, quyền `chmod 600` cho cookie tạm và dọn dẹp bằng `trap EXIT` |
+| **Ma Trận Chẩn Đoán Lỗi Phổ Biến** | [references/troubleshooting_and_edge_cases.md](references/troubleshooting_and_edge_cases.md#1-ma-trận-chẩn-đoán-sự-cố-thường-gặp-failure-matrix) | Khắc phục lỗi HTTP 401/403, không tìm thấy thư mục, lệch tên Sprint, requirement chưa điền Reference |
+| **Chế Độ Debug Nâng Cao (SQUASH_DEBUG)** | [references/troubleshooting_and_edge_cases.md](references/troubleshooting_and_edge_cases.md#2-hướng-dẫn-kích-hoạt-debug-nâng-cao-squash_debug1) | Kích hoạt `SQUASH_DEBUG=1` để soi raw response JSON của `/backend/campaign-tree` và `/backend/sprint-view` |
+| **Đọc Output Console & Báo Cáo Chuẩn** | [references/troubleshooting_and_edge_cases.md](references/troubleshooting_and_edge_cases.md#3-tiêu-chuẩn-đọc-output-console--báo-cáo-người-dùng) | Phân tích log 2 phase và mẫu báo cáo kết quả cho người dùng khi Phase B thành công hoặc bị bỏ qua |
+| **Script Thực Thi Đồng Bộ Duy Nhất** | [scripts/squash-push.sh](scripts/squash-push.sh) | Script bash tự động hóa toàn bộ luồng Phase A và Phase B trong 1 lệnh duy nhất |
 
 ---
 
 ## Khi nào sử dụng
 
-- Đã hoàn thành Giai đoạn 2 của `qa-test-design` và có file `{issueKey}.feature` hợp lệ
-- Cần đồng bộ test case lên Squash TM để team QA thủ công thực thi
-- Chạy lại sau khi sửa Gherkin — script tự động ghi đè bản cũ trên Squash
+- Đã hoàn thành thiết kế kịch bản BDD và có file kịch bản hợp lệ tại `workspace/{issueKey}/test/{issueKey}.feature` (từ `qa-test-design`).
+- Cần đồng bộ test case lên hệ thống Squash TM để đội ngũ QA thủ công thực thi hoặc theo dõi tiến độ trong Sprint.
+- Chạy lại sau khi cập nhật file `.feature` — script tự động ghi đè bản mới nhất lên Squash TM.
+- Chạy tự động như Phase 1.5 trong quy trình tích hợp toàn trình `qa-full-pipeline`.
 
-**KHÔNG sử dụng khi:**
-- File `.feature` chưa được thiết kế và kiểm thử cú pháp bởi `qa-test-design` (thiếu file `{issueKey}.feature`)
-- Chưa có `.env` khai báo đủ biến Phase A (xem Điều kiện Tiên quyết)
-- Chỉ muốn chạy test automation — đó là `qa-run-test`, không liên quan Squash
-
-> **Nguyên tắc Phân định Trách nhiệm (Separation of Concerns):** Kỹ năng `qa-squash-push` đóng vai trò là Transport/Sync Layer. Mọi kịch bản Gherkin đầu vào **BẮT BUỘC ĐÃ ĐƯỢC CHẠY SCRIPT VALIDATE & SELF-FIX 100% TỪ BƯỚC 11 CỦA `qa-test-design`**. Kỹ năng này TUYỆT ĐỐI KHÔNG làm nhiệm vụ validate hay sửa đổi nội dung Gherkin của phase trước.
-
----
-
-## Điều kiện Tiên quyết
-Agent **BẮT BUỘC TỰ ĐỘNG** đọc file `.env` từ thư mục plugin `agent-skills` (`PLUGIN_DIR`) mà **KHÔNG CẦN HỎI** ý kiến người dùng. Nếu project hiện tại (`PROJECT_ROOT`) cũng có file `.env` → các biến trùng tên sẽ ghi đè. File `.env` phải khai báo đủ:
-
-**Phase A (bắt buộc):**
-- `SQUASH_BASE_URL` (VD: https://squash.company.com/squash)
-- `SQUASH_API_TOKEN`
-- `SQUASH_PROJECT_ID` (ID của Project open-api)
-- `SQUASH_REQ_G31_FOLDER_ID` (ID thư mục G.3.1 bên Requirement Workspace)
-- `SQUASH_TC_G31_FOLDER_ID` (ID thư mục G.3.1 bên Test Case Workspace)
-
-**Phase B (tuỳ chọn — thiếu thì bỏ qua bước gán, không lỗi):**
-- `SQUASH_USERNAME` — tài khoản đăng nhập Squash TM (dạng `ten.nguoidung`)
-- `SQUASH_PASSWORD` — mật khẩu tương ứng
-
-**Khác:**
-- File Gherkin phải tồn tại tại: `/project-root/workspace/{issueKey}/test/{issueKey}.feature`
-- (Tuỳ chọn) File `*-final.md` để lấy tiêu đề Jira task (`namejira`).
-- (Debug) Đặt `SQUASH_DEBUG=1` để in raw response của các API nội bộ khi cần soi cấu trúc.
-
-> ⚠️ **Bảo mật:** `SQUASH_PASSWORD` là mật khẩu thật của tài khoản Squash, không phải API token thu hồi được. Bắt buộc kiểm tra `.env` đã nằm trong `.gitignore`. Không bao giờ commit `.env`, không dán cookie/token/password vào issue, PR hay chat log.
+**Khi KHÔNG sử dụng:**
+- File `.feature` chưa được tạo hoặc chưa kiểm tra cú pháp $\rightarrow$ Dùng `qa-test-design` trước.
+- Cần sinh mã kiểm thử automation (Python/Playwright) $\rightarrow$ Dùng `qa-auto-design`.
+- Cần chạy automation test và xuất báo cáo thực thi $\rightarrow$ Dùng `qa-run-test`.
+- Cần phân tích nghiệp vụ Jira task $\rightarrow$ Dùng `ba-spec`.
 
 ---
 
-## Quy trình Thực hiện (Workflow)
+## Quy trình Thực hiện Tinh gọn (Execution Protocol)
 
-Agent CHỈ CẦN gọi công cụ MCP đã được xây dựng sẵn để xử lý toàn bộ thao tác giao tiếp với Squash TM (cả REST API và Internal API). 
-Lưu ý đặc biệt: Phải chạy luồng này một cách liền mạch mà KHÔNG dừng lại hỏi ý kiến người dùng hay yêu cầu xác nhận trung gian.
-
-### Bước 1: Thu thập Tham số
-- Lấy `issueKey` từ tham số truyền vào hoặc bối cảnh hiện tại.
-- Lấy `namejira` (Tiêu đề task Jira) bằng cách quét file `/project-root/workspace/{issueKey}/spec/final.md`. Nếu không có, dùng chung tên là `{issueKey}`.
-- Lấy nội dung file Gherkin tại: `/project-root/workspace/{issueKey}/test/{issueKey}.feature` để truyền vào tham số `gherkinContent`.
-
-### Bước 2: Gọi Squash TM MCP 
-- Sử dụng tool `call_mcp_tool` với `ServerName` là `squash-tm` và `ToolName` là `squash_push_full_pipeline`.
-- Tham số truyền vào:
-  - `issueKey`: Mã JIRA (VD: G3PTP-17145)
-  - `nameJira`: Tiêu đề task Jira
-  - `gherkinContent`: Toàn bộ nội dung text của file Gherkin
-- Chờ MCP trả về danh sách các log thực thi (Phase A & Phase B).
-
-### Logic bên trong Script (Để Agent nắm bắt)
-
-**PHASE A — Test Case Workspace (REST công khai, Bearer token)**
-
-1. **Tìm Sprint Mới Nhất:** Gọi GET list các thư mục trong `SQUASH_REQ_G31_FOLDER_ID` (Requirement Workspace). Dùng regex tìm `EnTrade Sprint xxx`, chọn số `xxx` lớn nhất để lấy tên thư mục (vd: `EnTrade Sprint 046`).
-2. **Đồng bộ Thư mục Target:** Tìm trong `SQUASH_TC_G31_FOLDER_ID` (Test Case Workspace) xem đã có thư mục `EnTrade Sprint 046` chưa.
-   - Nếu chưa: Tự động POST tạo mới thư mục này bên Test Case. Lấy ra ID của thư mục vừa tạo.
-   - Nếu có: Lấy ID thư mục hiện tại.
-3. **Kiểm tra & Tạo Test Case:** Đặt tên test case là `{issueKey}-{namejira}`. Tìm test case trong thư mục Target.
-   - Nếu chưa có: Tạo mới (POST, format: `GHERKIN`).
-   - Nếu đã có: Lấy Test Case ID hiện tại. **Tự động kiểm tra và xóa toàn bộ execution cũ** đang gắn với Test Case này để tránh dính kết quả rác cũ.
-4. **Cập nhật Gherkin Script:** Gọi PATCH update toàn bộ nội dung file `.feature` vào trường `script` của Test Case ID, dán đè dữ liệu cũ.
-
-**PHASE B — Campaign Workspace (API nội bộ `/backend`, session-based)**
-
-Bỏ qua toàn bộ phase nếu thiếu `SQUASH_USERNAME`/`SQUASH_PASSWORD`.
-
-5. **Đăng nhập:** `GET {BASE}/login` để Spring Security phát hành cookie `XSRF-TOKEN`, rồi `POST {BASE}/backend/login` (form-urlencoded: `username`, `password`) kèm header `X-XSRF-TOKEN`. Cookie lưu trong file tạm `chmod 600`, xoá bằng `trap EXIT`. Token XSRF được đọc lại sau đăng nhập vì Spring xoay vòng token.
-6. **Dò node Sprint:** `POST {BASE}/backend/campaign-tree` hai lượt — lượt 1 với `openedNodes: []` để lấy các node gốc (`CampaignLibrary-*`, `SprintGroup-*`), lượt 2 mở chính các node đó để lộ danh sách `Sprint-*`. Chọn sprint theo 3 mức ưu tiên:
-   1. Tên node trùng khớp tuyệt đối `EnTrade Sprint 046`
-   2. Tên node chứa cùng số hiệu sprint (`046`)
-   3. Node có số ID lớn nhất
-7. **Tìm Requirement:** `GET {BASE}/backend/sprint-view/{sprintId}?frontEndErrorIsHandled=true`. Duyệt đệ quy toàn bộ response tìm object có `reference` khớp `{issueKey}` (không phân biệt hoa thường), lấy `id` (fallback `sprintReqVersionId`, `sprintReqVersionBindingId`).
-7.5. **Xóa Test Plan Items Cũ (Clean before add):** Quét `GET /backend/sprint-req-version/{sprintReqVersionId}/test-plan-items`. Nếu đã có test plan item (hoặc execution cũ gắn với item), **tự động xóa execution rồi gọi DELETE xóa toàn bộ test plan item cũ** để làm sạch test plan.
-8. **Gán Mới Test Case:** `POST {BASE}/backend/sprint-req-version/{sprintReqVersionId}/test-plan-items` với body `{"testCaseIds":[{TC_ID}]}` để thêm mới lại.
-9. **Lưu Truy Vết:** Ghi file `workspace/{issueKey}/test/squash_sync.json` chứa `testCaseId`, `sprintName`, `sprintReqVersionId`, `syncedAt`.
-
-Bất kỳ bước nào từ 5–8 hỏng: in cảnh báo, giữ nguyên exit code 0.
-
-### Bước 3: Trình bày Kết quả
-Nếu bash script chạy thành công (Exit code 0), Agent báo cáo lại cho người dùng bằng format:
-
-```markdown
-✅ **Đã push thành công lên Squash TM:**
-
-- **Sprint:** EnTrade Sprint xxx (Lấy chuẩn từ Requirement)
-- **Test Case:** `{issueKey}-{namejira}`
-- **Hành động:** Đã đồng bộ thư mục / Đã tạo mới (hoặc Overwrite) test case
-- **Campaign Workspace:** Đã gán vào requirement `{issueKey}` / Bỏ qua (kèm lý do)
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ Bước 1: Thu thập Tham số & Kiểm tra Đầu vào                            │
+│ - Xác định issueKey từ tham số người dùng truyền vào                   │
+│ - Lấy tiêu đề task (namejira) từ workspace/{issueKey}/spec/final.md    │
+│ - Xác nhận file kịch bản: workspace/{issueKey}/test/{issueKey}.feature │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ Bước 2: Thực thi Script Đồng bộ Toàn diện (squash-push.sh)             │
+│ - Chạy 1 lệnh bash duy nhất thực hiện cả Phase A và Phase B            │
+│ - Tự động nạp .env, làm sạch execution và test plan items cũ           │
+│ - Đồng bộ Gherkin script và gán vào requirement bên Campaign           │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ Bước 3: Phân tích Output Console & Báo cáo Kết quả                     │
+│ - Đọc kết quả cả 2 dòng: - Test Case Workspace: và - Campaign Workspace:│
+│ - Thông báo rõ ràng: đã gán thành công hay bị bỏ qua kèm lý do cụ thể  │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-Exit code 0 **không** đảm bảo Phase B thành công. Agent phải đọc dòng `- Campaign Workspace:` trong output để biết bước gán có chạy được hay không, và nếu bỏ qua thì báo lại lý do cho người dùng thay vì im lặng.
+### Chi tiết các bước thực hiện:
+1. **Bước 1: Thu thập Tham số:**
+   - Trích xuất `{issueKey}` (VD: `G3PTP-17145`).
+   - Đọc tiêu đề Jira từ `workspace/{issueKey}/spec/final.md` để slug hóa thành `namejira` (ví dụ: `Thiet-ke-luong-thanh-toan`). Nếu không có spec, dùng `{issueKey}`.
+   - Kiểm tra file `workspace/{issueKey}/test/{issueKey}.feature` có tồn tại hay không.
 
-Nếu script thất bại (Thiếu env, không tìm thấy file, lỗi API Phase A), Agent in ra lỗi chi tiết.
+2. **Bước 2: Thực thi Script Đồng Bộ:**
+   Chạy lệnh bash duy nhất (xem hướng dẫn chi tiết tại [references/squash_api_and_sync_guide.md](references/squash_api_and_sync_guide.md)):
+   ```bash
+   bash plugins/qa/skills/qa-squash-push/scripts/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
+   ```
+
+3. **Bước 3: Báo cáo Kết quả Cho Người Dùng:**
+   - Bắt buộc phân tích kết quả Phase B từ output console (không chỉ dựa vào exit code 0).
+   - Báo cáo kết quả theo mẫu chuẩn tại [references/troubleshooting_and_edge_cases.md](references/troubleshooting_and_edge_cases.md#3-tiêu-chuẩn-đọc-output-console--báo-cáo-người-dùng).
 
 ---
 
-## Xử lý sự cố (Phase B)
+## Các Biện hộ Thường gặp (Rationalizations)
 
-| Cảnh báo                                                   | Nguyên nhân thường gặp                                                                | Cách xử lý                                         |
-|------------------------------------------------------------|---------------------------------------------------------------------------------------|----------------------------------------------------|
-| `Chưa cấu hình SQUASH_USERNAME / SQUASH_PASSWORD`          | Thiếu biến trong `.env`                                                               | Bổ sung 2 biến, kiểm tra `.env` đã gitignore       |
-| `Đăng nhập thất bại (HTTP 401/403)`                        | Sai mật khẩu, hoặc tài khoản bị khoá                                                  | Đăng nhập thủ công trên UI để xác nhận             |
-| `Không tìm thấy node Sprint nào trong campaign-tree`       | Cấu trúc cây khác dự đoán, hoặc user không có quyền xem Campaign Workspace            | Chạy lại với `SQUASH_DEBUG=1` để xem raw response  |
-| `Không khớp được node Sprint`                              | Tên sprint bên Campaign khác bên Requirement (vd `Sprint 46` vs `EnTrade Sprint 046`) | Kiểm tra và đồng bộ lại quy ước đặt tên            |
-| `Không tìm thấy requirement nào có reference '{issueKey}'` | Requirement chưa được thêm vào Sprint, hoặc field Reference bỏ trống                  | Vào Campaign Workspace điền Reference = issueKey   |
-| `Gán test case thất bại (HTTP 4xx)`                        | Endpoint `/backend` đã đổi ở version Squash mới                                       | Capture lại request từ DevTools và cập nhật script |
+| Lý do biện hộ | Thực tế |
+|---|---|
+| "Exit code 0 rồi, coi như toàn bộ đã xong" | Exit code 0 chỉ bảo đảm Phase A thành công. Phase B là best-effort — bắt buộc phải đọc dòng `- Campaign Workspace:` mới biết test case đã được gán vào requirement hay chưa. |
+| "Đẩy lên Squash trước rồi sửa kịch bản Gherkin sau" | Squash ghi đè theo tên file. Đẩy bản lỗi lên sẽ làm đội QA thủ công nhìn thấy kịch bản sai và tốn công dọn dẹp trên UI. Bắt buộc validate Gherkin bằng `qa-validate.sh` trước khi đẩy. |
+| "Chạy từng lệnh curl rời rạc cho dễ quan sát" | Chạy lệnh rời rạc gây chậm trễ và dễ làm thất thoát session cookie tạm. Toàn bộ quy trình đã được gói gọn an toàn trong file `squash-push.sh`. |
+| "Hardcode token hoặc mật khẩu vào câu lệnh cho nhanh" | Dữ liệu nhạy cảm sẽ bị lưu vào shell history và transcript. Bắt buộc đọc từ `.env`. |
+| "Phase B lỗi chắc do script sai, sửa script ngay" | API `/backend` là API nội bộ. Phần lớn lỗi là do cấu hình môi trường hoặc quy ước đặt tên Sprint/Requirement chưa khớp. Tra cứu bảng sự cố trước khi can thiệp script. |
 
 ---
-
-## Các Biện hộ Thường gặp
-
-| Lý do biện hộ                                      | Thực tế                                                                                                                                                    |
-|----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| "Exit code 0 rồi, coi như xong"                    | Exit 0 chỉ xác nhận Phase A. Phase B là best-effort — phải đọc dòng `- Campaign Workspace:` mới biết test case đã gán vào requirement hay chưa.            |
-| "Đẩy trước, validate Gherkin sau cũng được"        | Squash ghi đè theo tên file. Đẩy bản sai lên rồi thì bản sai là thứ QA thủ công nhìn thấy, và phải dọn tay trên UI.                                        |
-| "Chạy từng lệnh curl một cho dễ debug"             | Mỗi lệnh bash là một lần xin quyền. Skill được thiết kế chạy một lệnh script duy nhất — xem mục Workflow.                                                  |
-| "Hardcode token vào lệnh cho nhanh, lát xoá"       | Token vào shell history và có thể lọt vào transcript. Luôn đọc từ `.env`.                                                                                  |
-| "Phase B hỏng chắc do script sai, sửa script luôn" | Nhóm `/backend` là API nội bộ không có cam kết ổn định. Kiểm tra bảng Xử lý sự cố trước — phần lớn là do cấu hình hoặc quy ước đặt tên, không phải script. |
 
 ## Dấu hiệu Cảnh báo (Red Flags)
- 
-- Đẩy file `.feature` rỗng hoặc file chưa được hoàn thiện từ `qa-test-design`
-- Bỏ qua dòng `- Campaign Workspace:` trong output rồi báo với user là "đã xong"
-- In token, cookie `JSESSIONID`, hoặc `SQUASH_PASSWORD` ra log/chat
-- `.env` chưa nằm trong `.gitignore`
-- Sửa script Phase B trước khi loại trừ các nguyên nhân cấu hình ở bảng Xử lý sự cố
-- Chạy nhiều lệnh bash rời rạc thay vì một lệnh script duy nhất
-- Đẩy lên Squash khi `{issueKey}` trong tên file không khớp issueKey được truyền vào
 
-## Xác minh
+- Đẩy file `.feature` rỗng, file chưa hoàn thiện hoặc chưa vượt qua script `qa-validate.sh`.
+- Bỏ qua dòng `- Campaign Workspace:` trong output rồi vội vàng báo với user là "đã hoàn tất toàn bộ".
+- Làm lộ `SQUASH_API_TOKEN`, cookie `JSESSIONID`, hoặc `SQUASH_PASSWORD` ra console hoặc tin nhắn chat.
+- File cấu hình `.env` chưa được đưa vào `.gitignore`.
+- Chạy nhiều lệnh curl/bash thủ công thay vì sử dụng file script chuẩn `squash-push.sh`.
+- Đẩy lên Squash khi mã `{issueKey}` trong tên file không khớp với mã issueKey được yêu cầu.
 
-- [ ] Script exit code = 0
-- [ ] Output ghi rõ số test case đã đẩy, khớp số `Scenario` + `Scenario Outline` trong file `.feature`
-- [ ] Dòng `- Test Case Workspace:` xác nhận đã tạo/ghi đè đúng thư mục Sprint
-- [ ] Dòng `- Campaign Workspace:` cho biết rõ **đã gán** hay **bỏ qua kèm lý do** — và lý do đó đã được báo lại cho user
-- [ ] Không có token, cookie, hay mật khẩu nào xuất hiện trong output hiển thị cho user
-- [ ] Mở Squash TM kiểm tra test case hiện đúng ở Sprint mới nhất (kiểm tra thủ công một lần sau mỗi lần đổi cấu hình)
+---
 
+## Xác minh (Verification)
+
+Checklist kiểm chứng sau khi hoàn thành:
+- [ ] File kịch bản `workspace/{issueKey}/test/{issueKey}.feature` tồn tại và hợp lệ trước khi đẩy.
+- [ ] Script `squash-push.sh` kết thúc với exit code = 0.
+- [ ] Dòng `- Test Case Workspace:` xác nhận đã tạo mới hoặc ghi đè đúng thư mục Sprint mới nhất.
+- [ ] Dòng `- Campaign Workspace:` cho biết rõ trạng thái: đã gán thành công hoặc bị bỏ qua (kèm lý do cụ thể đã báo lại cho user).
+- [ ] File metadata `workspace/{issueKey}/test/squash_sync.json` được tạo thành công chứa thông tin truy vết.
+- [ ] Tuyệt đối không có token, cookie hay mật khẩu nào bị lộ trong output hiển thị.
+
+---
+
+## 📊 Đánh giá Độ tin cậy (Confidence Assessment)
+
+Sau khi thực hiện đẩy test case:
+- **High (90-100%):** Cả Phase A và Phase B đều thành công mỹ mãn, test case đã được liên kết trực tiếp vào requirement bên Campaign Workspace và file `squash_sync.json` đã lưu đầy đủ.
+- **Medium (70-89%):** Phase A thành công (Gherkin đã nằm trên Test Case Workspace) nhưng Phase B bị bỏ qua do thiếu tài khoản session hoặc requirement chưa được tạo trong Sprint bên Campaign Workspace.
+- **Low (<70%):** Lỗi kết nối Squash TM, token hết hạn (HTTP 401/403), ID thư mục sai hoặc file `.feature` không tồn tại.
+
+---
+
+## Xem thêm
+
+- [references/squash_api_and_sync_guide.md](references/squash_api_and_sync_guide.md) — Hướng dẫn chuyên sâu cấu hình .env, REST API Phase A và Internal API Phase B
+- [references/troubleshooting_and_edge_cases.md](references/troubleshooting_and_edge_cases.md) — Ma trận chẩn đoán sự cố, hướng dẫn debug nâng cao và mẫu báo cáo
+- [scripts/squash-push.sh](scripts/squash-push.sh) — Script bash tự động hóa toàn bộ quy trình đồng bộ lên Squash TM
+- `qa-test-design` — Kỹ năng thiết kế Checklist kiểm thử và kịch bản BDD (giai đoạn trước)
+- `qa-auto-design` — Kỹ năng sinh mã kiểm thử tự động từ kịch bản Gherkin
+- `qa-run-test` — Kỹ năng thực thi automation test và xuất báo cáo kết quả
 
 ---
 <CRITICAL_RULE>

@@ -21,7 +21,7 @@ $ARGUMENTS chứa Issue Key (VD: PROJ-123).
    - Vì vậy KHÔNG được suy ra "mọi thứ thành công" chỉ từ exit code 0. Bắt buộc đọc dòng
      `- Campaign Workspace:` trong output cuối để biết bước gán có chạy được không, và báo lại
      lý do bỏ qua (nếu có) cho người dùng.
-   - Nếu Phase B bị bỏ qua, tra bảng "Xử lý sự cố (Phase B)" trong SKILL.md để gợi ý cách khắc phục.
+   - Nếu Phase B bị bỏ qua, tra bảng chẩn đoán sự cố trong `references/troubleshooting_and_edge_cases.md` để gợi ý cách khắc phục.
 
 <critical_instruction>
 HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
