@@ -192,7 +192,7 @@ Hệ thống MDDS Engine của DNSE xác định trạng thái Random End (`enab
 #### 4. Máy Trạng Thái Chuyển Phiên Theo Từng Mã (`Symbol_Trading_Session` FSM)
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
     S1["1. Phiên Định Kỳ (ATO/ATC)<br>enableRE = true"] --> S2{"09:15 / 14:45<br>Sàn kết thúc định kỳ?"}
     S2 -- "enableRE = false (Mã Thường)" --> S3["3. Chuyển phiên ngay<br>(CONTINUOUS / CLOSED)"]

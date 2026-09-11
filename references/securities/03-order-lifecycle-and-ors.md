@@ -9,7 +9,7 @@
 Hệ thống giao dịch (OMS/ORS, Gateway Sở và OpenAPI) vận hành máy trạng thái hữu hạn (FSM) chặt chẽ cho từng vòng đời lệnh:
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
     Step1["1. Client đặt lệnh (REST/OpenAPI)"] --> Step2["2. Pending (Chờ ORS thẩm định)"]
     Step2 --> Step3["3. PendingNew (Chờ xác nhận Sở)"]

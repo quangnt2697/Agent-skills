@@ -35,7 +35,7 @@ Thay vì chỉ lắng nghe thụ động trên WebSocket hoặc mock dữ liệu
 ## 2. Phần A: Kỹ Thuật Giả Lập Trạng Thái Cho LỆNH THƯỜNG (Channel `order_events`)
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
     A["1. Đặt Lệnh (OpenAPI)"] --> B["WS Event: PendingNew / New"]
     B --> C1["DELETE /orders/{orderId}"]
@@ -156,7 +156,7 @@ Trên môi trường UAT, do lệnh thường đưa lên sàn không có cơ ch�
 Lệnh điều kiện được quản lý bởi **Động Cơ Evaluator In-Memory** (quét theo stream tick khớp lệnh thị trường realtime).
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
     A["1. POST /conditional-orders (Stop Buy tại P_trigger)"] --> B["WS Event: NEW"]
     B --> C1["DELETE /conditional-orders/{id}"]

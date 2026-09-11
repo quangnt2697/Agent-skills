@@ -86,13 +86,24 @@ Mọi artifact phải có section `## 📊 Confidence Assessment` ở cuối v�
 
 ## 6. Quy Tắc Thiết Kế Sơ Đồ (Mermaid Rules)
 Khi tạo bất kỳ sơ đồ Mermaid nào (flowchart, v.v.), bắt buộc tuân thủ các quy tắc thiết kế sau:
-1. **Engine ELK (Bắt buộc):** Luôn khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%` ở dòng đầu tiên của file để ép các đường nối vuông góc 90 độ, các node xếp thành hàng ngang thẳng tắp và mũi tên chĩa đúng vào tâm hộp.
+1. **Engine ELK (Bắt buộc):** Luôn khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%` ở dòng đầu tiên của file để ép các đường nối vuông góc 90 độ, các node xếp thẳng hàng ngang cùng trục Y (tránh lệch trục gây bẻ cong mũi tên) và mũi tên chĩa đúng vào tâm hộp.
 2. **Hướng luồng ngang (Horizontal Flow):** Bắt buộc sử dụng hướng đi từ trái sang phải (`flowchart LR` thay vì `TD`) để tiết kiệm không gian dọc. **Hạn chế tối đa dùng `subgraph`** vì ELK có xu hướng tách subgraph xuống dòng làm mất cấu trúc thẳng hàng ngang.
-3. **Node bắt đầu là Bước 1:** KHÔNG sử dụng node "Start" hoặc "Bắt đầu" riêng biệt. Sơ đồ phải bắt đầu trực tiếp bằng "Bước 1" (Step 1). Khi render, **TUYỆT ĐỐI KHÔNG** được có bất kỳ node nào nằm ở phía bên trái của node 1.
-4. **Màu sắc cơ bản:** Chỉ sử dụng màu sắc cơ bản khi render (nền trắng, chữ đen). Tuyệt đối không thêm code màu sắc (như `style fill:#f9f...`) vào trong mã Mermaid.
-5. **Luồng quay lại (Loop/Backward edges):** Khi có quy trình lặp lại/thử lại ở node trước, bắt buộc tạo đường mũi tên nét đứt (`.->`) quay lại node đó (không được đảo chiều cú pháp thành `<-.-` để tránh lỗi mất đầu mũi tên). Phải khai báo tất cả mũi tên quay lại này **ở dưới cùng của file** mã nguồn.
-6. **Neo vị trí bằng liên kết vô hình (Anchor):** Để thuật toán ELK không kéo "Bước 1" rời khỏi mép trái khi có mũi tên nét đứt quay ngược lại nó, **bắt buộc** dùng liên kết vô hình `~~~` để neo Bước 1 với các node có luồng quay lại. Cú pháp: `Bước1 ~~~ Node_Có_Mũi_Tên_Quay_Lại`. Khai báo các neo này ngay dưới thẻ `flowchart LR`.
-7. **Sử dụng công cụ hiện đại:** Mặc định, dùng skill `ba-design-flowchart` với engine **`mmdc` (Mermaid chuẩn)** — đây là engine mặc định của skill:
+3. **Chuẩn hóa hình dạng Node (Node Shape Taxonomy):** Bắt buộc dùng đúng ký hiệu:
+   - **Start / End:** `([Stadium])` — ví dụ: `START(["🟢 Nhận lệnh"])`, `END(["🔴 Hoàn tất"])`. Node bắt đầu luôn nằm ở góc ngoài cùng bên trái.
+   - **Task / Xử lý:** `[Rectangle]` — ví dụ: `VALIDATE["Kiểm tra lệnh"]`.
+   - **Quyết định:** `{Diamond}` — ví dụ: `CHECK{"Lệnh hợp lệ?"}`.
+   - **Sub-process:** `[[Double Border]]` — ví dụ: `[[Kiểm tra ký quỹ]]`.
+   - **Database / Cache:** `[(Cylinder)]` — ví dụ: `[(TimescaleDB)]`.
+   - **External System:** `>Asymmetric]` — ví dụ: `>OpenAPI Gateway]`.
+4. **2 Mẫu Bố Cục Chuẩn (Standard Layout Patterns):**
+   - **Mẫu 1: Straight Spine (Chuẩn BPMN / Sơ đồ có rẽ nhánh):** Trục xương sống chính (`Start ➔ Task ➔ Decision ➔ Success ➔ End`) đi thẳng tắp trên một hàng ngang. Nhánh ngoại lệ/Lỗi rẽ xuống tầng dưới, và vòng lặp thử lại nét đứt chạy vòng đáy hình chữ U vuông góc 90° thoáng mắt.
+   - **Mẫu 2: Sequential Pipeline (Chuẩn chuỗi tuần tự):** Dành cho chuỗi xử lý liên hoàn / microservices không rẽ nhánh. 100% mũi tên đi thẳng tuyệt đối từ tâm node này sang tâm node tiếp theo.
+5. **Màu sắc cơ bản:** Nền trắng, chữ đen khi render (`--bg '#ffffff' --fg '#000000'`). Chỉ dùng semantic classes nếu cần thiết (`ok`: xanh lá, `err`: đỏ, `sys`: xanh dương). Tuyệt đối không hardcode `style fill:#...`.
+6. **Quy tắc mũi tên & Luồng quay lại:**
+   - Mọi nhánh ra từ `{Decision}` **bắt buộc** có label (tối đa 20 ký tự, cặp đối lập rõ ràng: `Hợp lệ / Lỗi`, `Pass / Fail`).
+   - Khi có quy trình lặp lại/thử lại ở node trước, bắt buộc tạo đường mũi tên nét đứt (`.->`) quay lại node đó (không dùng `<-.-`). Khai báo tất cả mũi tên quay lại này **ở dưới cùng của file** mã nguồn.
+7. **Neo vị trí bằng liên kết vô hình (Anchor):** Nếu cần cố định vị trí node bắt đầu hoặc ngăn ELK xáo trộn thứ tự cột khi có backward edge, dùng liên kết vô hình `~~~`. Khai báo ngay dưới thẻ `flowchart LR`.
+8. **Sử dụng công cụ hiện đại:** Mặc định, dùng skill `ba-design-flowchart` với engine **`mmdc` (Mermaid chuẩn)** — đây là engine mặc định của skill:
     ```bash
     node plugins/ba-po/skills/ba-design-flowchart/scripts/render.mjs \
       --input flow.mmd --output flow.png --format png \

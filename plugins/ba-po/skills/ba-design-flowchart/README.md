@@ -82,14 +82,13 @@ không được tải lúc `npm install` — đây là lý do engine tự dò Ch
 | solarized-light   | github-dark       |            |
 |                   | solarized-dark    |            |
 
-## 🎨 Bộ sưu tập Theme
+## 📐 Mẫu Flowchart Chuẩn (Standard Layouts)
 
-So sánh cùng một flowchart trên mọi theme có sẵn trong [bộ sưu tập 15 theme đầy đủ](references/THEMES.md).
+Quy tắc thiết kế flowchart chuẩn với ELK `ORTHOGONAL` và `BRANDES_KOEPF`:
 
-<p align="center">
-  <img src="assets/theme_gallery/tokyo-night.svg" alt="Tokyo Night theme preview" width="49%">
-  <img src="assets/theme_gallery/github-light.svg" alt="GitHub Light theme preview" width="49%">
-</p>
+- **Mẫu 1: Straight Spine Layout (Demo B):** Dành cho sơ đồ có rẽ nhánh / điều kiện. Trục chính đi thẳng tắp trên 1 hàng ngang, nhánh lỗi tách xuống dưới kèm luồng thử lại hình chữ U vuông góc 90°. Xem [`assets/example_diagrams/flowchart.mmd`](assets/example_diagrams/flowchart.mmd).
+- **Mẫu 2: Sequential Pipeline Layout (Demo C):** Dành cho quy trình tuần tự liên hoàn (Microservices / các bước nghiệp vụ). 100% mũi tên nối thẳng tắp từ tâm node này sang tâm node kia. Xem [`assets/example_diagrams/pipeline.mmd`](assets/example_diagrams/pipeline.mmd).
+- Chi tiết hướng dẫn phân loại hình dạng node (7 loại) và loại cạnh (4 loại) xem tại [`references/DIAGRAM_TYPES.md`](references/DIAGRAM_TYPES.md).
 
 ## 🤖 Tích hợp AI Assistant
 

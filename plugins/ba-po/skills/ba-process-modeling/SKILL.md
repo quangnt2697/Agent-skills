@@ -164,32 +164,37 @@ Dựa trên complexity, chọn diagram type:
 
 ### Bước 4: Create Diagram (Mermaid Syntax)
 
-> **⚠️ TUÂN THỦ RULE 7 (AGENTS.md):** Tất cả sơ đồ Mermaid phải:
-> - Khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%` ở đầu file.
+> **⚠️ TUÂN THỦ RULE 6 (AGENTS.md):** Tất cả sơ đồ Mermaid phải:
+> - Khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%` ở đầu file.
 > - Dùng `flowchart LR` (KHÔNG dùng TD) và hạn chế dùng `subgraph` nếu muốn các bước thẳng một hàng.
-> - Bắt đầu bằng Bước 1 trực tiếp (KHÔNG có node "Start")
-> - Dùng neo tàng hình (`Bước1 ~~~ NodeX`) ở ngay dưới khai báo flowchart để ghim Bước 1 vào lề trái nếu có vòng lặp.
+> - Tuân thủ Node Shape Taxonomy: `([Stadium])` cho Start/End, `{Diamond}` cho Decision, `[Rectangle]` cho Task.
+> - Áp dụng cấu trúc **Straight Spine Layout** (trục chính thẳng tắp, nhánh lỗi tách xuống dưới) hoặc **Sequential Pipeline Layout** (100% thẳng hàng).
+> - Mọi nhánh rẽ Decision phải có label (tối đa 20 ký tự, cặp đối lập: `Hợp lệ / Lỗi`, `Pass / Fail`).
+> - Mũi tên quay lại (`-.->`) bắt buộc dùng nét đứt và khai báo **ở cuối file** mã nguồn.
 > - KHÔNG hardcode `style fill:#...` — render bằng `--bg '#ffffff' --fg '#000000'`
-> - Mũi tên quay lại (`-.->`) bắt buộc dùng nét đứt và khai báo **ở cuối file** mã nguồn
 
-#### Option 1: Flowchart (Simple)
+#### Option 1: Flowchart (Simple — Straight Spine Layout)
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
-    A["Bước 1: KH gọi điện cho broker"]
-    B["Bước 2: Broker ghi lệnh vào sổ tay"]
-    C["Bước 3: Broker nhập vào HO"]
+    A(["🟢 Bước 1: KH gọi điện"])
+    B["Bước 2: Ghi sổ tay"]
+    C["Bước 3: Nhập HO"]
     D{"Đủ margin?"}
-    E["Bước 4: HO gửi lệnh lên sàn"]
-    F["Bước 4b: Broker gọi lại KH - Reject"]
+    E["Bước 4: Gửi lên sàn"]
+    F["Bước 4b: Reject + Gọi lại"]
+    END(["🔴 Hoàn tất"])
 
+    %% Trục xương sống chính (thẳng hàng 100%)
     A --> B --> C --> D
-    D -->|Yes| E
-    D -->|No| F
+    D -->|"✅ Đủ"| E --> END
+
+    %% Nhánh lỗi tách xuống dưới
+    D -->|"❌ Thiếu"| F
 ```
 
-**Pros:** Đơn giản, dễ hiểu  
+**Pros:** Đơn giản, trực quan, luồng chính thẳng tắp 100%  
 **Cons:** Không thấy rõ actor nào làm gì
 
 ---
@@ -197,7 +202,7 @@ flowchart LR
 #### Option 2: Swim Lane Diagram (Multi-Actor)
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
     subgraph KH["🧑 Khách hàng"]
         A1["Bước 1: Gọi điện cho broker"]
@@ -255,7 +260,7 @@ flowchart LR
 #### Option 3: BPMN-style (Formal)
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
     T1["Bước 1: Gọi broker"]
     T2["Bước 2: Ghi sổ tay"]
@@ -286,7 +291,7 @@ flowchart LR
 Nếu đây là AS-IS diagram, dùng emoji/text để ghi chú pain points trực tiếp trong nhãn node:
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
     subgraph KH["🧑 Khách hàng"]
         A1["Bước 1: Gọi điện — ⏱️ Chờ 2 phút"]
@@ -322,7 +327,7 @@ flowchart LR
 Vẽ TO-BE diagram với improvements (dùng emoji trong nhãn để highlight):
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
     subgraph KH["📱 Khách hàng (Mobile App)"]
         A1["Bước 1: Nhập mã CK + SL + Giá — ✅ 1 màn hình — ⏱️ 10 giây"]
@@ -425,7 +430,7 @@ flowchart LR
 ### AS-IS (Current State)
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 [... Swim Lane diagram với pain points highlighted ...]
 ```
 
@@ -444,7 +449,7 @@ flowchart LR
 ### TO-BE (Target State)
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 [... Swim Lane diagram với improvements highlighted ...]
 ```
 
@@ -479,7 +484,7 @@ flowchart LR
 ### Appendix A: Mermaid Source Code
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 [... full source code để edit/regenerate ...]
 ```
 

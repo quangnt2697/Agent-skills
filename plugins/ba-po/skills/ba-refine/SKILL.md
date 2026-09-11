@@ -519,12 +519,13 @@ Sau khi tạo xong `refined-draft.md`, agent **BẮT BUỘC** phải:
 
      **Xử lý theo lựa chọn của user:**
 
-     - **Nếu chọn "📐 Mermaid Diagram":** Gọi kỹ năng `/ba-process-modeling` để thiết kế flowchart. **Flowchart BẮT BUỘC tuân thủ Rule 7** (xem `AGENTS.md`):
-       - Bắt buộc khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%`
+     - **Nếu chọn "📐 Mermaid Diagram":** Gọi kỹ năng `/ba-process-modeling` để thiết kế flowchart. **Flowchart BẮT BUỘC tuân thủ Rule 6 trong `AGENTS.md`:**
+       - Bắt buộc khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%`
        - Dùng `flowchart LR` (KHÔNG dùng TD), hạn chế `subgraph`.
-       - Dùng neo vị trí (`~~~`) để ghim Bước 1 vào lề trái.
-       - Bắt đầu bằng "Bước 1", KHÔNG hardcode `style fill:#...`
-       - Mũi tên quay lại (`-.->`) dùng nét đứt và khai báo ở cuối file mã nguồn
+       - Tuân thủ Node Shape Taxonomy (`([Stadium])` cho Start/End, `{Diamond}` cho Decision, `[Rectangle]` cho Task).
+       - Áp dụng cấu trúc **Straight Spine Layout** (trục chính thẳng tắp, nhánh lỗi tách xuống dưới).
+       - Mọi nhánh rẽ Decision phải có label (tối đa 20 ký tự, cặp đối lập).
+       - Mũi tên quay lại (`-.->`) dùng nét đứt và khai báo ở cuối file mã nguồn.
        
        Sau đó render sơ đồ Mermaid thành ảnh PNG:
        ```bash
