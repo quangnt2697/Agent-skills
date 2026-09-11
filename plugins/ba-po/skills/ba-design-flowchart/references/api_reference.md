@@ -24,17 +24,14 @@ Các alias cũ như `renderMermaid` và `renderMermaidAscii` vẫn tồn tại t
 
 ## Các tùy chọn SVG (SVG Options)
 
-| Tùy chọn                                       | Mặc định       | Mục đích                                      |
-|------------------------------------------------|----------------|-----------------------------------------------|
-| `bg`, `fg`                                     | màu zinc light | Màu nền và màu chữ cơ bản                     |
-| `line`, `accent`, `muted`, `surface`, `border` | tự động tính   | Các màu mở rộng tùy chọn cho theme            |
-| `font`                                         | `Inter`        | Font chữ                                      |
-| `transparent`                                  | `false`        | Làm trong suốt nền SVG                        |
-| `padding`                                      | `40`           | Padding của canvas (pixel)                    |
-| `nodeSpacing`                                  | `24`           | Khoảng cách ngang giữa các node ngang hàng    |
-| `layerSpacing`                                 | `40`           | Khoảng cách dọc giữa các lớp (layer)          |
-| `componentSpacing`                             | `24`           | Khoảng cách giữa các component không kết nối  |
-| `interactive`                                  | `false`        | Bật tooltip hover cho cột/điểm trong XY chart |
+| Tùy chọn | Mặc định | Mục đích |
+|---|---|---|
+| `bg`, `fg` | trắng / đen | Màu nền và màu chữ — dùng preset: `--bg '#ffffff' --fg '#1a1a1a'` |
+| `font` | `Inter` | Font chữ |
+| `transparent` | `false` | Làm trong suốt nền SVG |
+| `padding` | `40` | Padding canvas (pixel) |
+| `nodeSpacing` | `24` | Khoảng cách ngang giữa node |
+| `layerSpacing` | `40` | Khoảng cách dọc giữa layer |
 
 ## Các tùy chọn ASCII (ASCII Options)
 

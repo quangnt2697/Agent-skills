@@ -1,16 +1,25 @@
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
-    A ~~~ Input
-    A["Bước 1: Input Data"]
-    Process["Bước 2: Process Data"]
-    Decision{"Valid?"}
-    Success["Bước 3: Success"]
-    Error["Bước 3b: Error Handler"]
-    
-    A --> Process
-    Process --> Decision
-    Decision -->|Yes| Success
-    Decision -->|No| Error
-    
-    %% Backward edges
-    Error -.->|"Thử lại"| A
+
+    %% Semantic classes (dùng khi cần phân biệt happy/error/system path)
+    classDef ok  fill:#d1fae5,stroke:#059669,color:#065f46
+    classDef err fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef sys fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+
+    %% Nodes — đúng theo Node Shape Taxonomy
+    START(["🟢 Nhận lệnh"])
+    VALIDATE["Kiểm tra lệnh"]:::sys
+    CHECK{"Lệnh hợp lệ?"}
+    MATCH["Khớp lệnh"]:::ok
+    END(["🔴 Hoàn tất"])
+    ERROR["Trả lỗi"]:::err
+
+    %% Luồng chính (Straight Spine — trục xương sống thẳng hàng)
+    START --> VALIDATE
+    VALIDATE --> CHECK
+    CHECK -->|"✅ Hợp lệ"| MATCH
+    MATCH --> END
+
+    %% Nhánh lỗi tách xuống dưới và vòng lặp quay lại (khai báo cuối file)
+    CHECK -->|"❌ Lỗi"| ERROR
+    ERROR -.->|"⟳ Thử lại"| VALIDATE

@@ -8,67 +8,117 @@
 - [Class Diagram (Sơ đồ lớp)](#class-diagram)
 - [ER Diagram (Sơ đồ thực thể)](#er-diagram)
 - [XY Chart (Biểu đồ XY)](#xy-chart)
-- [Thực hành tốt nhất chung](#thực-hành-tốt-nhất-chung)
 
 ## Flowchart / Graph (Sơ đồ luồng)
 
-### Cú pháp cơ bản
+### Header bắt buộc
+
+Mọi file `.mmd` loại flowchart PHẢI bắt đầu bằng header sau:
+
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
-    A[Node] --> B[Another Node]
-    B --> C{Decision}
-    C -->|Yes| D[Result 1]
-    C -->|No| E[Result 2]
 ```
 
-### Các hình dạng Node
-- `[Text]` - Hình chữ nhật (Rectangle)
-- `([Text])` - Hình chữ nhật bo góc tròn (Stadium)
-- `[[Text]]` - Quy trình con (Subroutine - viền kép)
-- `[(Text)]` - Hình trụ / Cơ sở dữ liệu (Cylindrical)
-- `((Text))` - Hình tròn (Circle)
-- `>Text]` - Hình bất đối xứng
-- `{Text}` - Hình thoi / Quyết định (Rhombus)
-- `{{Text}}` - Hình lục giác (Hexagon)
-- `[/Text/]` - Hình bình hành (Parallelogram)
-- `[\Text\]` - Hình thang (Trapezoid)
+- `defaultRenderer: "elk"` — dùng ELK layout thay vì dagre mặc định
+- `edgeRouting: "ORTHOGONAL"` — mũi tên đi vuông góc 90°, không xiên
+- `mergeEdges: false` — giữ các nhánh tách biệt tại Decision node
+- `nodePlacementStrategy: "BRANDES_KOEPF"` — căn gióng các node trên luồng chính cùng một trục ngang Y, giúp các mũi tên đi thẳng tắp 100%
+- `flowchart LR` — hướng trái → phải, **bắt buộc** (cấm `TB`, `TD`, `RL`, `BT`)
 
-### Đường nối (Connections)
-- `-->` - Mũi tên (Arrow)
-- `---` - Đường thẳng (Line)
-- `-.->` - Mũi tên đứt nét (Dotted arrow)
-- `==>` - Mũi tên đậm (Thick arrow)
-- `--text-->` - Mũi tên kèm chữ
-- `-->|text|` - Mũi tên kèm chữ (cú pháp thay thế)
-- `A --> B --> C` - Khai báo chuỗi liên tiếp (Chaining links)
-- `A ~~~ B ~~~ C` - Chuỗi liên kết vô hình (Invisible anchors)
+---
 
-### Tùy chỉnh đường nối (Edge Styling)
+### Node Shape Taxonomy (Bảng phân loại hình dạng — BẮT BUỘC)
+
+| Vai trò node | Ký hiệu Mermaid | Hình dạng | Ví dụ |
+|---|---|---|---|
+| **Start / End / Trigger** | `([Text])` | Stadium (pill) | `([Bắt đầu])`, `([Kết thúc])` |
+| **Process / Task / Action** | `[Text]` | Rectangle | `[Xử lý lệnh]` |
+| **Decision / Gateway** | `{Text}` | Diamond | `{Lệnh hợp lệ?}` |
+| **Sub-process** (gọi diagram khác) | `[[Text]]` | Double border | `[[Kiểm tra margin]]` |
+| **Database / Queue / Storage** | `[(Text)]` | Cylinder | `[(Redis Cache)]` |
+| **External System / Input** | `>Text]` | Asymmetric | `>OpenAPI Gateway]` |
+| **Fork / Join / Merge** | `((Text))` | Circle | `((Merge))` |
+
+**Quy tắc bắt buộc:**
+- `([Stadium])` cho điểm Start và End — không dùng `[Rectangle]` cho vai trò này
+- `{Diamond}` **chỉ** dùng cho quyết định — không dùng cho process/task
+- Mỗi diagram: **1 Start** và **tối đa 2 End**
+- Node ID: camelCase không dấu — `checkMargin`, `placeOrder`, `handleError`
+
+---
+
+### Arrow Type Rules (Bảng loại mũi tên — BẮT BUỘC)
+
+| Loại cạnh | Ký hiệu | Dùng cho |
+|---|---|---|
+| **Normal flow** | `-->` | Luồng chính, bước tiếp theo |
+| **Retry / Fallback** | `-.->`  | Vòng lặp thử lại, quay lui |
+| **Critical / Forced** | `==>` | Bắt buộc, không thể bỏ qua |
+| **Invisible anchor** | `~~~` | Neo node khi cần cố định vị trí |
+
+**Quy tắc bắt buộc về label:**
+- Mọi nhánh ra từ `{Decision}` **PHẢI** có label — không được để trống
+- Label tối đa **20 ký tự**
+- Dùng cặp đối lập rõ ràng: `Hợp lệ / Lỗi`, `Có / Không`, `Pass / Fail`
+- Backward edge `-.->`  **LUÔN** khai báo ở cuối file, sau tất cả forward edge
+
+---
+
+### Mẫu 1: Straight Spine Layout — Sơ đồ có rẽ nhánh (Chuẩn BPMN / Enterprise)
+
+Áp dụng cho quy trình có kiểm tra điều kiện. Trục xương sống chính (`Start` ➔ `Task` ➔ `Decision` ➔ `Success` ➔ `End`) đi thẳng tắp trên một hàng ngang. Nhánh lỗi tách xuống tầng dưới và vòng lặp nét đứt quay lại dưới đáy:
+
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
 flowchart LR
-    A --> B
-    B --> C
-    linkStyle 0 stroke:#7aa2f7,stroke-width:3px
+
+    %% Semantic classes
+    classDef ok  fill:#d1fae5,stroke:#059669,color:#065f46
+    classDef err fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef sys fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+
+    %% Nodes
+    START(["🟢 Nhận lệnh"])
+    VALIDATE["Kiểm tra lệnh"]:::sys
+    CHECK{"Lệnh hợp lệ?"}
+    MATCH["Khớp lệnh"]:::ok
+    END(["🔴 Hoàn tất"])
+    ERROR["Trả lỗi"]:::err
+
+    %% Trục xương sống chính (thẳng hàng 100%)
+    START --> VALIDATE
+    VALIDATE --> CHECK
+    CHECK -->|"✅ Hợp lệ"| MATCH
+    MATCH --> END
+
+    %% Nhánh lỗi tách xuống dưới & vòng lặp quay lại (khai báo cuối file)
+    CHECK -->|"❌ Lỗi"| ERROR
+    ERROR -.->|"⟳ Thử lại"| VALIDATE
 ```
 
-`linkStyle` hoạt động trong Flowchart và State Diagram. Chọn một đường nối bằng thứ tự khai báo bắt đầu từ 0, hoặc dùng `linkStyle default` cho tất cả các đường nối.
+---
 
-### Hướng (Direction)
-- `LR` - Trái sang Phải (Left to Right) - **Bắt buộc** theo chuẩn AGENTS.md
-- `RL` - Phải sang Trái (Right to Left)
-- `TB` / `TD` - Trên xuống Dưới (Top to Bottom / Top Down) - **Cấm sử dụng**
-- `BT` - Dưới lên Trên (Bottom to Top)
+### Mẫu 2: Sequential Pipeline Layout — Sơ đồ tuần tự 100% thẳng hàng
 
-### Thực hành tốt nhất
-- **Luôn dùng ELK:** Khai báo `%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%` đầu file.
-- **Neo Bước 1:** Nếu có mũi tên quay ngược (`-.->`), dùng liên kết vô hình `Bước1 ~~~ NodeX` để ghim Bước 1 không bị đẩy vào giữa đồ thị.
-- Dùng hướng `LR` cho màn hình rộng.
-- Giữ các node quyết định dễ phân biệt bằng hình dạng `{}`.
-- Dùng hình `([])` cho điểm bắt đầu / kết thúc.
-- Giới hạn độ sâu lồng nhau tối đa 3 cấp.
-- Nhóm các node liên quan lại với nhau bằng hình ảnh (subgraph).
+Áp dụng cho chuỗi xử lý qua các microservices hoặc các bước xử lý liên hoàn không rẽ nhánh:
+
+```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}, "elk": {"edgeRouting": "ORTHOGONAL", "mergeEdges": false, "nodePlacementStrategy": "BRANDES_KOEPF"}}}%%
+flowchart LR
+
+    classDef step fill:#f8fafc,stroke:#334155,color:#0f172a
+    classDef ok   fill:#d1fae5,stroke:#059669,color:#065f46
+
+    START(["🟢 Khởi tạo"])
+    STEP1["1. Xác thực người dùng"]:::step
+    STEP2["2. Kiểm tra số dư"]:::step
+    STEP3["3. Ghi nhận giao dịch"]:::step
+    STEP4["4. Khớp lệnh sàn"]:::ok
+    END(["🔴 Hoàn tất"])
+
+    START --> STEP1 --> STEP2 --> STEP3 --> STEP4 --> END
+```
 
 ---
 

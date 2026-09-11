@@ -209,51 +209,42 @@ Sử dụng batch render cho 3 sơ đồ trở lên hoặc khi cần áp dụng 
 `--workers` chỉ có tác dụng với engine `beautiful`; engine `mmdc` render tuần tự vì mỗi file
 phải khởi động Chrome.
 
-## Lựa chọn Theme
+## Màu sắc
 
-Engine `mmdc` chỉ có 5 theme dựng sẵn của Mermaid (`default`, `base`, `dark`, `forest`,
-`neutral`), mặc định là `base` với nền trắng chữ đen. Tên theme của engine `beautiful` truyền
-vào `mmdc` sẽ được ánh xạ sang sáng/tối kèm cảnh báo — dùng `--engine beautiful` nếu cần đúng
-theme đó.
+Dùng một trong hai preset:
 
-15 theme dưới đây thuộc engine `beautiful`:
+| Preset | Lệnh | Dùng khi |
+|---|---|---|
+| **Light** *(mặc định)* | `--bg '#ffffff' --fg '#1a1a1a'` | In ấn, Confluence, Word/PDF |
+| **Dark** | `--engine beautiful --theme tokyo-night` | Presentation, dashboard |
 
-- Tài liệu tối (General dark): `tokyo-night`
-- GitHub dark hoặc light: `github-dark`, `github-light`
-- In ấn và thuyết trình: `zinc-light`
-- Màu tương phản cao: `dracula`
-- Tông màu lạnh: `nord`, `nord-light`
-
-Đọc `references/THEMES.md` khi việc lựa chọn giao diện trực quan quan trọng. Một theme có sẵn có thể được tùy chỉnh thêm bằng các cờ màu cụ thể.
 
 ## Các tùy chọn hữu ích (Useful options)
 
 ### Chọn engine
 
-| Tùy chọn            | Mục đích                                                  |
-|---------------------|-----------------------------------------------------------|
-| `--engine <name>`   | `mmdc` (mặc định) hoặc `beautiful`                        |
+| Tùy chọn | Mục đích |
+|---|---|
+| `--engine mmdc` | Mermaid chuẩn, cần Chrome, bố cục đúng (mặc định) |
+| `--engine beautiful` | Không cần Chrome, ASCII, theme dark |
 
-### Shared styling
+### Màu sắc & Font
 
-| Tùy chọn                        | Mục đích                                 | Engine        |
-|---------------------------------|------------------------------------------|---------------|
-| `--theme <name>`                | Áp dụng theme                            | cả hai        |
-| `--bg`, `--fg`                  | Chỉnh màu nền và màu chữ chính           | cả hai        |
-| `--font <name>`                 | Chỉnh font chữ                           | cả hai        |
-| `--line`, `--accent`, `--muted` | Chỉnh màu đường nối, màu nhấn và màu phụ | chỉ beautiful |
-| `--surface`, `--border`         | Chỉnh màu nền và viền của box            | chỉ beautiful |
+| Tùy chọn | Mục đích |
+|---|---|
+| `--bg <hex>` | Màu nền |
+| `--fg <hex>` | Màu chữ |
+| `--font <name>` | Font chữ (mặc định: Inter) |
+| `--transparent` | Nền trong suốt (SVG và PNG) |
 
-### SVG
+### Kích thước & Spacing
 
-| Tùy chọn                  | Mục đích                              | Engine        |
-|---------------------------|---------------------------------------|---------------|
-| `--transparent`           | Xóa hình nền SVG                      | cả hai        |
-| `--padding <n>`           | Đặt lề canvas                         | chỉ beautiful |
-| `--node-spacing <n>`      | Đặt khoảng cách ngang giữa các node   | chỉ beautiful |
-| `--layer-spacing <n>`     | Đặt khoảng cách dọc giữa các lớp      | chỉ beautiful |
-| `--component-spacing <n>` | Tách biệt các component không kết nối | chỉ beautiful |
-| `--interactive`           | Bật tooltip khi hover cho XY chart    | chỉ beautiful |
+| Tùy chọn | Mục đích |
+|---|---|
+| `--width <n>` | Chiều rộng PNG (100–10000px, mặc định: 800) |
+| `--padding <n>` | Lề canvas SVG |
+| `--node-spacing <n>` | Khoảng cách ngang giữa node |
+| `--layer-spacing <n>` | Khoảng cách dọc giữa layer |
 
 ### PNG
 
@@ -344,8 +335,7 @@ Sau khi render:
 
 | Tài nguyên                    | Đọc hoặc dùng khi                                                    |
 |-------------------------------|----------------------------------------------------------------------|
-| `references/DIAGRAM_TYPES.md` | Viết hoặc debug mã Mermaid                                           |
-| `references/THEMES.md`        | Chọn theme trực quan, so sánh themes hoặc định nghĩa màu tùy chỉnh   |
+| `references/DIAGRAM_TYPES.md` | Viết hoặc debug mã Mermaid — node shapes, arrow rules, template      |
 | `references/api_reference.md` | Mở rộng scripts hoặc gọi API `beautiful-mermaid` / `mmdc-engine.mjs` |
 
 

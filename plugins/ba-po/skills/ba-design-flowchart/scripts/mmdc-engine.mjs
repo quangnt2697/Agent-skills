@@ -225,6 +225,13 @@ export function renderWithMmdc({ input, output, format, width, bg, fg, transpare
         ...(font && { fontFamily: `${font}, Helvetica, Arial, sans-serif` }),
       },
       flowchart: { htmlLabels: true, useMaxWidth: false },
+      // ELK layout: buộc cạnh đi vuông góc 90° và thẳng hàng trục ngang (BRANDES_KOEPF).
+      // Chỉ có tác dụng khi file .mmd khai báo defaultRenderer: "elk".
+      elk: {
+        mergeEdges: false,
+        nodePlacementStrategy: 'BRANDES_KOEPF',
+        edgeRouting: 'ORTHOGONAL',
+      },
     }));
 
     const args = ['-i', input, '-o', output, '-c', mermaidConfig, '-p', puppeteerConfig];

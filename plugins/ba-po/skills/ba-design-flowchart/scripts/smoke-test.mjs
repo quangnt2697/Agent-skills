@@ -20,7 +20,7 @@ const files = readdirSync(examplesDir).filter(file => file.endsWith('.mmd')).sor
 const inheritedThemeNames = ['toString', 'constructor', '__proto__'];
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
-assert.equal(files.length, 6, 'Expected six example diagrams');
+assert.equal(files.length, 7, 'Expected seven example diagrams');
 assert.equal(Object.keys(THEMES).length, 15, 'Expected 15 built-in themes');
 
 for (const file of files) {
