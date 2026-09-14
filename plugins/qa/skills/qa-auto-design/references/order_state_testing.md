@@ -226,6 +226,6 @@ flowchart LR
 ## 4. Tham Chiếu Mã Nguồn Mẫu (Blueprint Examples)
 
 Toàn bộ các test case cho cả Lệnh Thường và Lệnh Điều Kiện đã được triển khai hoàn chỉnh trong:
-- **Pydantic Model Schema:** [`ExampleOrderEvent`](../examples/test_ws_example.py) & [`ExampleConditionalOrderEvent`](../examples/test_ws_example.py)
-- **Test Suite Lệnh Thường:** [`TestOrderEventsWebSocket`](../examples/test_ws_example.py)
-- **Test Suite Lệnh Điều Kiện:** [`TestConditionalOrderEventsWebSocket`](../examples/test_ws_example.py)
+- **Pydantic Model Schema:** [`ExampleOrderEvent`](../assets/test_ws_example.py) & [`ExampleConditionalOrderEvent`](../assets/test_ws_example.py)
+- **Test Suite Lệnh Thường:** [`TestOrderEventsWebSocket`](../assets/test_ws_example.py)
+- **Test Suite Lệnh Điều Kiện:** [`TestConditionalOrderEventsWebSocket`](../assets/test_ws_example.py)

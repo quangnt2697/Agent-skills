@@ -1,6 +1,7 @@
 ---
 name: dev-source-driven-development
-description: Đặt nền tảng cho mọi quyết định triển khai code dựa trên tài liệu chính thức (official documentation). Sử dụng khi bạn muốn code được viết ra có nguồn tham chiếu uy tín, hoàn toàn miễn nhiễm với các pattern lỗi thời. Sử dụng khi xây dựng tính năng với bất kỳ framework hay thư viện nào mà tính chính xác là quan trọng.
+description: Đặt nền tảng cho mọi quyết định triển khai code dựa trên tài liệu chính thức (official documentation).
+trigger: Sử dụng khi bạn muốn code được viết ra có nguồn tham chiếu uy tín, hoàn toàn miễn nhiễm với các pattern lỗi thời. Sử dụng khi xây dựng tính năng với bất kỳ framework hay thư viện nào mà tính chính xác là quan trọng.
 ---
 
 # Phát triển Dựa trên Nguồn gốc (Source-Driven Development)

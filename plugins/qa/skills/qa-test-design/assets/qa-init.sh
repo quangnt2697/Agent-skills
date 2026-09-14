@@ -2,7 +2,7 @@
 set -e
 
 # qa-init.sh — Initialize directory structure for QA test artifacts.
-# Usage: bash skills/qa-test-design/scripts/qa-init.sh <issueKey> [workspace-root]
+# Usage: bash skills/qa-test-design/assets/qa-init.sh <issueKey> [workspace-root]
 #
 # Creates /project-root/workspace/<issueKey>/test/{steps,result}/ per the canonical layout in
 # .claude/rules/workspace-paths.md. checklist.md and <issueKey>.feature are

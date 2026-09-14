@@ -1,7 +1,7 @@
 ---
 name: ba-refine
-description: 'Phân kỳ-Hội tụ (refine) Jira task thô thành spec chi tiết chuẩn.'
-trigger: '"/ba-refine {issueKey}", "refine jira task", "clarify requirements"'
+description: Phân kỳ-Hội tụ (refine) Jira task thô thành spec chi tiết chuẩn.
+trigger: /ba-refine {issueKey}", "refine jira task", "clarify requirements
 ---
 
 # Kỹ năng Mài giũa Spec (ba-refine)

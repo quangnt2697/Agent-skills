@@ -54,12 +54,9 @@
 
 ### Phân bổ theo Thành viên
 
-| Thành viên       | Role              | Số ticket   | Tổng Points   |
-|------------------|-------------------|-------------|---------------|
-| Developer APP   | Developer APP     | {n}         | {pts}         |
-| Developer WEB  | Developer WEB     | {n}         | {pts}         |
-| Developer Backend 1   | Developer Backend | {n}         | {pts}         |
-| Developer Backend 2 | Developer Backend | {n}         | {pts}         |
+| Thành viên | Role | Số ticket | Tổng Points |
+|---|---|---|---|
+| {member_name} | {role} | {n} | {pts} |
 
 ### Tổng hợp Capacity
 

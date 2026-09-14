@@ -1,6 +1,7 @@
 ---
 name: dev-audit-and-fix
-description: Kiểm toán (audit) toàn diện kiến trúc, techstack, tìm bug và đề xuất tối ưu. Sau khi người dùng đồng ý (OK), tự động chạy quy trình sửa lỗi/code từ đầu đến cuối (tương đương build auto). Sử dụng khi cần rà soát một chức năng đã có và tự động sửa các vấn đề tìm được trong một lượt.
+description: Kiểm toán (audit) toàn diện kiến trúc, techstack, tìm bug và đề xuất tối ưu. Sau khi người dùng đồng ý (OK), tự động chạy quy trình sửa lỗi/code từ đầu đến cuối (tương đương build auto).
+trigger: Sử dụng khi cần rà soát một chức năng đã có và tự động sửa các vấn đề tìm được trong một lượt.
 ---
 
 # Kỹ năng: Kiểm toán & Tự động Sửa (Dev Audit & Auto-Fix)

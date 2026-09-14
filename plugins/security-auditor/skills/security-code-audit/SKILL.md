@@ -1,6 +1,7 @@
 ---
 name: security-code-audit
-description: Quét mã nguồn để phát hiện lỗ hổng bảo mật theo chuẩn OWASP Top 10 và các best practices. Sử dụng khi cần audit bảo mật trước khi deploy production hoặc sau khi thêm tính năng liên quan đến auth, payment, hoặc xử lý dữ liệu nhạy cảm.
+description: Quét mã nguồn để phát hiện lỗ hổng bảo mật theo chuẩn OWASP Top 10 và các best practices.
+trigger: Sử dụng khi cần audit bảo mật trước khi deploy production hoặc sau khi thêm tính năng liên quan đến auth, payment, hoặc xử lý dữ liệu nhạy cảm.
 ---
 
 # Kỹ năng: Security Code Audit

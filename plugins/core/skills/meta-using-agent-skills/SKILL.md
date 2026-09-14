@@ -1,6 +1,7 @@
 ---
 name: meta-using-agent-skills
-description: Khám phá và gọi các kỹ năng (skills) của agent. Sử dụng khi bắt đầu một phiên làm việc hoặc khi bạn cần tìm xem kỹ năng nào áp dụng cho task hiện tại. Đây là kỹ năng siêu cấp (meta-skill) chi phối cách tất cả các kỹ năng khác được phát hiện và sử dụng.
+description: Khám phá và gọi các kỹ năng (skills) của agent.
+trigger: Sử dụng khi bắt đầu một phiên làm việc hoặc khi bạn cần tìm xem kỹ năng nào áp dụng cho task hiện tại. Đây là kỹ năng siêu cấp (meta-skill) chi phối cách tất cả các kỹ năng khác được phát hiện và sử dụng.
 ---
 
 # Kỹ năng: Sử dụng các Kỹ năng của Agent (Using Agent Skills)

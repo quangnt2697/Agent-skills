@@ -1,6 +1,7 @@
 ---
 name: dev-planning-and-task-breakdown
-description: Chia nhỏ công việc thành các task theo thứ tự. Sử dụng khi bạn có một đặc tả (spec) hoặc yêu cầu rõ ràng và cần chia công việc thành các task có thể thực thi được. Sử dụng khi một task có vẻ quá lớn để bắt đầu, khi bạn cần ước lượng khối lượng công việc, hoặc khi có thể làm việc song song.
+description: Chia nhỏ công việc thành các task theo thứ tự.
+trigger: Sử dụng khi bạn có một đặc tả (spec) hoặc yêu cầu rõ ràng và cần chia công việc thành các task có thể thực thi được. Sử dụng khi một task có vẻ quá lớn để bắt đầu, khi bạn cần ước lượng khối lượng công việc, hoặc khi có thể làm việc song song.
 ---
 
 # Lên Kế hoạch và Chia nhỏ Task

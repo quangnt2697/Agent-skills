@@ -1,6 +1,7 @@
 ---
 name: meta-continuous-learning
-description: "Kỹ năng Siêu cấp giúp Agent tự động đúc kết bài học, sai lầm, và cách giải quyết từ một phiên làm việc dài để tạo thành Rule lưu trữ cho tương lai. Sử dụng khi vừa hoàn thành một task khó, vừa sửa xong một bug tốn nhiều vòng thử-sai, hoặc khi người dùng gọi `/learn` / `/save-session`."
+description: Kỹ năng Siêu cấp giúp Agent tự động đúc kết bài học, sai lầm, và cách giải quyết từ một phiên làm việc dài để tạo thành Rule lưu trữ cho tương lai.
+trigger: Sử dụng khi vừa hoàn thành một task khó, vừa sửa xong một bug tốn nhiều vòng thử-sai, hoặc khi người dùng gọi `/learn` / `/save-session`.
 ---
 
 # Kỹ năng Tự Học & Đúc Kết Kinh Nghiệm (Continuous Learning)

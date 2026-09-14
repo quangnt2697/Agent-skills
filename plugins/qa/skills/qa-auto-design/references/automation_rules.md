@@ -36,7 +36,7 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 ### 1.5. Dọn dẹp dữ liệu (Teardown An Toàn)
 - Phải xoá data rác đã tạo ra trong quá trình test thông qua pytest fixture (`yield` pattern).
 - **BẮT BUỘC dùng khối `try...finally`:** Toàn bộ logic teardown sau `yield` phải nằm trong khối `finally` hoặc bọc `try/except` từng phần tử để đảm bảo dữ liệu luôn được dọn dẹp kể cả khi test case raise exception hoặc assertion thất bại.
-- Ví dụ: Test tạo order/user → fixture phải gọi API DELETE/Cancel ở khối teardown.
+- Ví dụ: Test tạo order/user → fixture phải gọi API DELETE/Cancel ở khối teardown. *(Tham khảo [test_api_example.py](../assets/test_api_example.py))*
 
 ### 1.6. Authentication & Kế Thừa Cấu Hình Môi Trường (3-Tier Env)
 - **KHÔNG hardcode** passwords, secret keys, API tokens trực tiếp trong source code hoặc file test data.
@@ -228,7 +228,7 @@ Mỗi Test Case API **BẮT BUỘC** thực hiện đủ **7 bước assertions:
 
 ## 6. Quy Chuẩn Nghiệp Vụ Chứng Khoán (Securities Domain Standards)
 
-Khi thiết kế và viết code automation test cho domain chứng khoán, Agent **BẮT BUỘC** tham chiếu và tuân thủ nghiêm ngặt cẩm nang nghiệp vụ tại [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md):
+Khi thiết kế và viết code automation test cho domain chứng khoán, Agent **BẮT BUỘC** tham chiếu và tuân thủ nghiêm ngặt cẩm nang nghiệp vụ tại [references/securities-domain-rules.md](../../../../../references/securities-domain-rules.md):
 - **Dữ liệu thật từ TimescaleDB (V3 > V2):** Tra cứu qua MCP `test-data` (DB 644). Tuyệt đối cấm tự bịa mã chứng khoán hoặc giá vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$) và bước giá (tick size).
 - **Kiểm thử 25 kịch bản Random End (RE):** Kiểm chứng nhận diện mã RE tại ATO (`expected_price != 0`) và ATC (`expected_price != 0 & expected_quantity != 0`), mã RE giữ nguyên phiên ATO sau 09:15 cho đến khi nhận tín hiệu kết thúc từ `Prices` (`trading_session_id = 40` hoặc `type = 2 & trading_session_id = 10`), tự động reset `enableRE = false`, chặn lệnh MTL/MP và cấm sửa/hủy lệnh trong khoảng 09:15-09:17.
 - **Bao phủ 15 mã lỗi ORS & Fallback Lệnh 24/7:** Kiểm tra các ca biên sinh đúng 15 mã lỗi ORS và luồng tự động Fallback sang Lệnh 24/7 khi đặt lệnh ngoài phiên hoặc khi thị trường Halt.

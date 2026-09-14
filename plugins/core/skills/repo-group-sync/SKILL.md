@@ -1,6 +1,7 @@
 ---
 name: repo-group-sync
-description: Đồng bộ, fetch và pull mã nguồn mới nhất của các dự án hoặc microservices trong group về máy cục bộ. Hỗ trợ tra cứu theo alias projects.json, cờ chuẩn discord-bridge (-p, --project, project:), an toàn working tree (--ff-only, auto-stash). Sử dụng khi cần cập nhật code trước khi phân tích spec, viết test, review code hoặc chạy pipeline e2e-delivery.
+description: Đồng bộ, fetch và pull mã nguồn mới nhất của các dự án hoặc microservices trong group về máy cục bộ. Hỗ trợ tra cứu theo alias projects.json, cờ chuẩn discord-bridge (-p, --project, project:), an toàn working tree (--ff-only, auto-stash).
+trigger: Sử dụng khi cần cập nhật code trước khi phân tích spec, viết test, review code hoặc chạy pipeline e2e-delivery.
 ---
 
 # Kỹ Năng: Đồng Bộ Mã Nguồn Dự Án (repo-group-sync)

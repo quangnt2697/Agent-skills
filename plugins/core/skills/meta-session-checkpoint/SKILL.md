@@ -1,6 +1,7 @@
 ---
 name: meta-session-checkpoint
-description: "Kỹ năng Siêu cấp giúp Agent nén lại toàn bộ ngữ cảnh (context) từ một phiên làm việc dài thành Checkpoint nhỏ gọn, hoặc khôi phục lại trạng thái từ Checkpoint đó. Sử dụng khi chat history đã quá dài, khi muốn tạm dừng công việc để hôm sau làm tiếp, hoặc khi người dùng gọi `/save-checkpoint` / `/load-checkpoint`."
+description: Kỹ năng Siêu cấp giúp Agent nén lại toàn bộ ngữ cảnh (context) từ một phiên làm việc dài thành Checkpoint nhỏ gọn, hoặc khôi phục lại trạng thái từ Checkpoint đó.
+trigger: Sử dụng khi chat history đã quá dài, khi muốn tạm dừng công việc để hôm sau làm tiếp, hoặc khi người dùng gọi `/save-checkpoint` / `/load-checkpoint`.
 ---
 
 # Kỹ năng Nén & Khôi phục Ngữ cảnh (Session Checkpoint)

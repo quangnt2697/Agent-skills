@@ -25,7 +25,7 @@ Tài liệu này tổng hợp ma trận các lỗi phổ biến khi đồng bộ
 Khi gặp các sự cố phức tạp liên quan đến cây thư mục hoặc API nội bộ Phase B, Agent có thể chạy script với cờ debug để in ra toàn bộ payload HTTP request và raw response JSON:
 
 ```bash
-SQUASH_DEBUG=1 bash plugins/qa/skills/qa-squash-push/scripts/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
+SQUASH_DEBUG=1 bash plugins/qa/skills/qa-squash-push/assets/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
 ```
 
 ### Các thông tin hữu ích khi soi debug:

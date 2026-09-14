@@ -141,7 +141,7 @@ Compliance-First (Direction C) sẽ deliver value nhanh hơn."
 
 ### 5. Fintech & Securities Domain Specific Checks
 
-Với mọi feature liên quan tiền, tài khoản hoặc giao dịch chứng khoán, **BẮT BUỘC** đối chiếu [securities-domain-rules.md](../../../../references/securities-domain-rules.md) và kiểm tra:
+Với mọi feature liên quan tiền, tài khoản hoặc giao dịch chứng khoán, **BẮT BUỘC** đối chiếu [securities-domain-rules.md](../../../../../references/securities-domain-rules.md) và kiểm tra:
 
 #### Checklist Fintech Chung:
 - [ ] Có rủi ro mất tiền không? (Fraud, double-charging, errors)
@@ -195,7 +195,7 @@ Trước khi gọi `jira-push-spec.sh`, verify:
 - [ ] **Tone:** Đã review, không có weasel words ("có lẽ", "có thể", "chắc")
 - [ ] **Sạch template:** 2 lệnh `grep` ở Giai đoạn 4 Bước 1 không in ra gì
 - [ ] **Bảng đúng cú pháp:** `DRY_RUN=1` báo đúng số bảng mong đợi
-- [ ] **Domain Chứng khoán:** Nếu là bài toán chứng khoán, đã đối chiếu và tuân thủ [securities-domain-rules.md](../../../../references/securities-domain-rules.md) (Deal-based, loại lệnh, quy chuẩn sửa/hủy, Random End, mã lỗi ORS)
+- [ ] **Domain Chứng khoán:** Nếu là bài toán chứng khoán, đã đối chiếu và tuân thủ [securities-domain-rules.md](../../../../../references/securities-domain-rules.md) (Deal-based, loại lệnh, quy chuẩn sửa/hủy, Random End, mã lỗi ORS)
 
 Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
 
@@ -227,10 +227,10 @@ Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
 
 ## Xem thêm
 
-- [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](../../../../references/securities-domain-rules.md)
+- [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](../../../../../references/securities-domain-rules.md)
 - [Quy trình Quản lý Tài liệu Atlassian](../../../../../docs/architecture/atlassian-mcp-strategy.md)
-- [Ví dụ Refine Chất lượng Cao](../examples.md)
-- [Jira Description Template](../templates/jira-description-template.md)
+- [Ví dụ Refine Chất lượng Cao](examples.md)
+- [Jira Description Template](../assets/jira-description-template.md)
 
 ---
 

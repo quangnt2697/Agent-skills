@@ -1,6 +1,7 @@
 ---
 name: cr-review-code-and-quality
-description: "Thực hiện đánh giá code đa chiều (multi-axis code review) kết hợp kiểm soát chất lượng. Kỹ năng này phân chia nhiệm vụ review rõ ràng theo persona: Dev (tập trung vào kiến trúc, logic, hiệu năng, clean code) và QA (tập trung vào độ bao phủ test, edge cases, automation). Sử dụng trước khi merge bất kỳ thay đổi nào vào nhánh chính."
+description: 'Thực hiện đánh giá code đa chiều (multi-axis code review) kết hợp kiểm soát chất lượng. Kỹ năng này phân chia nhiệm vụ review rõ ràng theo persona: Dev (tập trung vào kiến trúc, logic, hiệu năng, clean code) và QA (tập trung vào độ bao phủ test, edge cases, automation). Sử dụng trước khi merge bất kỳ thay đổi nào vào nhánh chính.'
+trigger: Khi cần thực hiện tác vụ cr-review-code-and-quality
 ---
 
 # Kỹ năng: Đánh giá Code và Chất lượng (Review Code and Quality)

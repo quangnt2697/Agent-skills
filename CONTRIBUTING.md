@@ -9,39 +9,31 @@ Cung cấp một hệ sinh thái kỹ năng (skills) và lệnh (commands) cho A
 
 Hệ thống được chia thành các plugin (trong thư mục `plugins/`) tương ứng với các vai trò (personas) khác nhau để người dùng dễ dàng tùy chỉnh và cài đặt theo nhu cầu.
 
-## 2. Quy Trình Tạo Mới (Persona & Skill)
+## 2. Quy Trình Tạo Mới Plugin & Kỹ Năng (Progressive Disclosure)
 
-Dưới đây là luồng quy trình (workflow) hướng dẫn từng bước để tạo một **Persona (Subagent)** hoặc một **Skill** mới, giúp bạn dễ dàng đọc và theo dõi trực tiếp bằng văn bản thuần túy.
+Mọi đóng góp Plugin và Skill mới trong repository này **BẮT BUỘC** tuân thủ nguyên lý **Progressive Disclosure (Lazy Loading 3 tầng)** nhằm tối ưu hóa chi phí token và tốc độ phản hồi của AI Agent.
 
-### Luồng Quy Trình Tổng Thể (End-to-End Flow)
+> 📖 **Xem hướng dẫn chi tiết từng bước tại:** [docs/guides/create-new-plugin.md](docs/guides/create-new-plugin.md)
 
-**Text Flow:**
-`[1. Tạo Persona]` ➔ `[2. Thêm Skills]` ➔ `[3. Tạo Command]` ➔ `[4. Cập Nhật Tài Liệu]`
+### Luồng Quy Trình Tổng Thể
+`[1. Tạo Plugin & Persona]` ➔ `[2. Thêm Skills chuẩn 3 Tầng]` ➔ `[3. Tạo Slash Command]` ➔ `[4. Đăng Ký & Kiểm Định]`
 
-**Chi tiết từng bước:**
+1. **Bước 1: Khởi tạo Plugin (`plugin.json`) & Persona Subagent (`agents/<role>.md`):**
+   - Định nghĩa metadata plugin và thiết lập ranh giới (boundaries), danh sách kỹ năng sở hữu cho Persona.
+2. **Bước 2: Xây dựng Kỹ Năng theo Chuẩn 3 Tầng (`skills/<skill-name>/`):**
+   - **Level 1 (Metadata):** Frontmatter trong `SKILL.md` gồm `name`, `description` (1-2 câu) và trường `trigger:` riêng biệt.
+   - **Level 2 (Body):** Phần thân `SKILL.md` tinh gọn (50–100 dòng), gồm *Khi nào dùng*, *Quy trình tóm tắt*, liên kết tới Level 3 và bắt buộc có ít nhất 1 *Ví dụ mẫu Few-shot*.
+   - **Level 3 (Thực thi):** Phân định rạch ròi:
+     - `assets/`: Chứa file mẫu (templates), script thực thi (.py, .js, .sh), mock data copy-paste chạy trực tiếp.
+     - `references/`: Chứa tài liệu nghiên cứu, quy chuẩn nghiệp vụ, cẩm nang chi tiết và checklist nghiệm thu.
+     - *Tuyệt đối không dùng các thư mục phi chuẩn như `templates/`, `scripts/`, `examples/`.*
+3. **Bước 3: Tạo Slash Command:**
+   - Tạo file command tại `plugins/<plugin-name>/commands/<cmd>.toml` (Gemini) và `.claude/commands/<cmd>.md` (Claude).
+4. **Bước 4: Đăng ký & Kiểm định Toàn vẹn:**
+   - Cập nhật danh sách vai trò và kỹ năng vào `AGENTS.md`, `CLAUDE.md`, `README.md`.
+   - Chạy script kiểm tra không có liên kết markdown nào bị gãy (Zero broken links).
 
-**Bước 1: Tạo Persona (Subagent)**
-- **Mục đích:** Xác định một vai trò duy nhất với góc nhìn chuyên biệt (vd: `security-auditor`).
-- **Thực thi:** Tạo file `plugins/<plugin-name>/agents/<role-name>.md`.
-- **Nội dung:** Viết YAML frontmatter (chứa `role`, `description`). Định nghĩa rõ ràng nhiệm vụ cốt lõi, ranh giới (boundaries), định dạng đầu ra mong muốn và phần **Composition** ở cuối file.
-
-**Bước 2: Thêm Kỹ Năng (Skills) cho Persona**
-- **Kiểm tra:** Xem kỹ năng đã tồn tại hay chưa, ưu tiên tái sử dụng.
-- **Thực thi:** Tạo thư mục `plugins/<plugin-name>/skills/<ten-ky-nang>/`.
-- **Nội dung:** Bắt buộc tạo file `SKILL.md` chuẩn YAML frontmatter (chứa `name` và `description`). Khai báo hành động cụ thể, quy trình từng bước, cờ đỏ (red flags) và tiêu chí đầu ra.
-- **Tùy chọn:** Thêm các script hỗ trợ vào thư mục `scripts/` và viết test trong `evals/cases/` để kiểm tra độ chính xác.
-
-**Bước 3: Tạo Lệnh (Slash Command)**
-- **Mục đích:** Bọc Persona và Skill lại thành một lệnh dễ nhớ cho người dùng (ví dụ: `/dev-audit`).
-- **Thực thi:** Tạo file command tại `plugins/<plugin-name>/.claude/commands/<command-name>.md`.
-- **Nội dung:** Khai báo mô tả lệnh, hướng dẫn agent cách phối hợp các persona và gọi các skill tương ứng khi người dùng gõ lệnh. (Với Gemini, thiết lập file `.toml` tương ứng trong thư mục `commands/`).
-
-**Bước 4: Cập Nhật Tài Liệu (Docs & Quy Trình Tổng)**
-- Bổ sung Persona, Skills và Commands mới vào các bảng thống kê tại `README.md`.
-- Cập nhật ranh giới và danh sách kỹ năng vào `AGENTS.md` và `CLAUDE.md`.
-- Bổ sung mô tả Persona mới vào file hướng dẫn chi tiết `docs/guides/agents.md`.
-
-*Lưu ý: Bạn có thể tham khảo [docs/guides/skill-anatomy.md](docs/guides/skill-anatomy.md) để biết chi tiết cách thiết kế cấu trúc bên trong một kỹ năng.*
+*Xem thêm: [docs/guides/skill-anatomy.md](docs/guides/skill-anatomy.md) để nắm rõ cấu phẫu chuẩn của tệp `SKILL.md`.*
 
 ## 3. Chỉnh sửa Kỹ năng hiện có
 

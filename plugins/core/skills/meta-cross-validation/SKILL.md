@@ -1,6 +1,7 @@
 ---
 name: meta-cross-validation
-description: Xác thực truy vết (traceability) giữa Business-Spec, Tech-Spec, và Test Cases. Tạo ma trận ánh xạ Business Rule → Spec Section → Test Case, phát hiện gaps. Sử dụng khi cần kiểm tra độ bao phủ của test cases so với yêu cầu nghiệp vụ.
+description: Xác thực truy vết (traceability) giữa Business-Spec, Tech-Spec, và Test Cases. Tạo ma trận ánh xạ Business Rule → Spec Section → Test Case, phát hiện gaps.
+trigger: Sử dụng khi cần kiểm tra độ bao phủ của test cases so với yêu cầu nghiệp vụ.
 ---
 
 # Cross-Validation — Xác thực Truy vết (Meta)

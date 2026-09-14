@@ -1,6 +1,7 @@
 ---
 name: sm-sprint-planning
-description: Kỹ năng lập kế hoạch Sprint. Tự động tính toán chu kỳ Sprint hiện tại, pull backlog và sprint tới (hoặc hiện tại) từ Jira. Use when cần lập kế hoạch (planning) cho Sprint mới hoặc phân bổ công việc.
+description: Kỹ năng lập kế hoạch Sprint. Tự động tính toán chu kỳ Sprint hiện tại, pull backlog và sprint tới (hoặc hiện tại) từ Jira.
+trigger: Use when cần lập kế hoạch (planning) cho Sprint mới hoặc phân bổ công việc.
 ---
 
 # sm-sprint-planning
@@ -14,7 +15,7 @@ Lập kế hoạch cho Sprint tiếp theo dựa trên dữ liệu từ Jira.
 3. Dữ liệu từ Jira (Sprint & Backlog) lấy qua REST API.
 
 ## Template báo cáo
-- File template: `templates/sprint-plan.md` (nằm trong thư mục skill này).
+- File template: `assets/sprint-plan.md` (nằm trong thư mục skill này).
 - Khi xuất kế hoạch, bạn **PHẢI** sử dụng template trên làm khung, thay thế các placeholder `{...}` bằng dữ liệu thực tế từ Jira.
 
 ## Hướng dẫn thực thi (Instructions)
@@ -140,19 +141,31 @@ Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
 - Chọn lọc các User Stories/Tickets phù hợp từ Backlog (ưu tiên Priority High trước).
 - Xác định Sprint Goal dựa trên những task được chọn.
 - Phân bổ Ticket đề xuất cho từng member dựa trên role trong `sm-config.yaml`:
-  - Ticket APP → **Developer APP** (Developer APP).
-  - Ticket WEB → **Developer WEB** (Developer WEB).
-  - Ticket Backend/General → Chia đều giữa **Developer Backend 1** và **Developer Backend 2** (Developer Backend).
-- Nếu Backlog chưa rõ ràng (thiếu Acceptance Criteria), ghi vào section "Rủi ro & Lưu ý" và đề xuất BA (**BA 1** / **BA 2**) bổ sung.
-- Nếu có quyết định quan trọng (scope, priority), ghi vào section "Quyết định cần PO phê duyệt" để PO (**PO 1**) xác nhận.
+  - Ticket chuyên biệt theo nền tảng (APP, WEB, Mobile...) → Phân bổ cho member tương ứng theo role.
+  - Ticket Backend hoặc dùng chung → Chia đều giữa các thành viên cùng role Backend/Developer.
+- Nếu Backlog chưa rõ ràng (thiếu Acceptance Criteria), ghi vào section "Rủi ro & Lưu ý" và đề xuất BA bổ sung.
+- Nếu có quyết định quan trọng (scope, priority), ghi vào section "Quyết định cần PO phê duyệt" để PO xác nhận.
 
 ### Bước 4: Xuất file
 - Nếu thư mục `{PROJECT_ROOT}/workspace/sprint/` chưa tồn tại, chạy `mkdir -p` để tạo.
 - Tạo hoặc ghi đè file **`{PROJECT_ROOT}/workspace/sprint/tech/sprint-plan.md`**.
   - ⚠️ Lưu ý: `workspace` ở đây là **tên thư mục con** bên trong PROJECT_ROOT, KHÔNG phải "workspace root" của IDE.
-- Sử dụng **template** tại `templates/sprint-plan.md` (trong thư mục skill này) làm khung.
+- Sử dụng **template** tại `assets/sprint-plan.md` (trong thư mục skill này) làm khung.
 - Thay thế toàn bộ placeholder `{...}` bằng dữ liệu thực tế.
 - Nếu một section không có dữ liệu, ghi: "Không có."
+
+## Ví dụ mẫu (Few-shot Example)
+- **Input:** Khởi tạo Sprint 35 với Backlog 42 Story Points.
+- **Output:** File `workspace/sprint/tech/sprint-plan.md` chuẩn:
+  ```markdown
+  # Sprint 35 Planning
+  - **Mục tiêu Sprint:** Hoàn thiện luồng xác thực Smart OTP và đặt lệnh phái sinh.
+  - **Thời gian:** 2026-09-15 đến 2026-09-29 (10 ngày làm việc).
+  - **Tổng Story Points:** 42 SP (DEV 1: 20 SP, DEV 2: 22 SP).
+  - **Danh sách Tickets:**
+    - [PROD-101] (8 SP) Smart OTP Mobile Client -> Assignee: DEV 1
+    - [PROD-102] (14 SP) Khớp lệnh điều kiện phái sinh -> Assignee: DEV 2
+  ```
 
 
 ## When to Use

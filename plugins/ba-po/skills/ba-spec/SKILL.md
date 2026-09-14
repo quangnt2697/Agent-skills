@@ -1,7 +1,7 @@
 ---
 name: ba-spec
 description: Nhập và phân tích yêu cầu từ Jira/Confluence thành Business-Spec (*-final.md) chuẩn.
-trigger: "import jira", "/ba-spec {issueKey}", "/ba-spec confluence {keyword}"
+trigger: import jira", "/ba-spec {issueKey}", "/ba-spec confluence {keyword}
 ---
 
 # Kỹ năng Phân Tích & Viết Spec (ba-spec)

@@ -56,22 +56,7 @@
 
 ## 4. ⚖️ Phân tích Cân bằng Tải (Workload Balancing)
 
-### Phân bổ theo vai trò chuyên trách
-| Thành viên      | Role          | Số ticket   | Tổng Points   | Ghi chú                           |
-|-----------------|---------------|-------------|---------------|-----------------------------------|
-| Developer APP  | Developer APP | {n}         | {pts}         | Chuyên trách APP – Không cân bằng |
-| Developer WEB | Developer WEB | {n}         | {pts}         | Chuyên trách WEB – Không cân bằng |
-
-### 🔍 So sánh khối lượng Backend DEV (Trọng tâm cân bằng)
-| Thành viên       | Số ticket          | Tổng Points     | % khối lượng         |
-|------------------|--------------------|-----------------|----------------------|
-| Developer Backend 1   | {n}                | {pts}           | {percent}%           |
-| Developer Backend 2 | {n}                | {pts}           | {percent}%           |
-| **Chênh lệch**   | **{delta_ticket}** | **{delta_pts}** | **{delta_percent}%** |
-
-### Kết luận Cân bằng Tải
-> - ✅ **Cân bằng** (chênh lệch ≤ 20%): Phân bổ hợp lý, không cần điều chỉnh.
-> - ⚠️ **Mất cân bằng** (chênh lệch > 20%): *Đề xuất chuyển ticket {KEY-Y} ({pts} pts) từ {người_quá_tải} sang {người_rảnh_hơn} để cân bằng khối lượng.*
+{workload_balancing_section}
 
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: dev-frontend-engineering
-description: Xây dựng các UI hướng người dùng đạt chất lượng production, dễ tiếp cận (accessible) và responsive. Sử dụng khi xây dựng hoặc sửa đổi giao diện và trang web, tạo component, triển khai bố cục (layout), đáp ứng yêu cầu WCAG, quản lý trạng thái, hoặc khi đầu ra cần có giao diện chất lượng cao thay vì trông như do AI tạo ra.
+description: Xây dựng các UI hướng người dùng đạt chất lượng production, dễ tiếp cận (accessible) và responsive.
+trigger: Sử dụng khi xây dựng hoặc sửa đổi giao diện và trang web, tạo component, triển khai bố cục (layout), đáp ứng yêu cầu WCAG, quản lý trạng thái, hoặc khi đầu ra cần có giao diện chất lượng cao thay vì trông như do AI tạo ra.
 ---
 
 # Kỹ thuật Giao diện Người dùng (Frontend UI Engineering)

@@ -1,6 +1,7 @@
 ---
 name: dev-doubt-driven-development
-description: Đưa mọi quyết định không hề đơn giản vào một quá trình đánh giá đối kháng với bối cảnh mới mẻ (fresh-context) trước khi nó được chấp nhận. Sử dụng khi độ chính xác quan trọng hơn tốc độ, khi làm việc với code lạ, khi mức độ rủi ro cao (production, logic nhạy cảm về bảo mật, các thao tác không thể đảo ngược), hoặc bất cứ khi nào một kết quả tuy tự tin nhưng thà kiểm chứng ngay bây giờ còn rẻ hơn là debug sau này.
+description: Đưa mọi quyết định không hề đơn giản vào một quá trình đánh giá đối kháng với bối cảnh mới mẻ (fresh-context) trước khi nó được chấp nhận.
+trigger: Sử dụng khi độ chính xác quan trọng hơn tốc độ, khi làm việc với code lạ, khi mức độ rủi ro cao (production, logic nhạy cảm về bảo mật, các thao tác không thể đảo ngược), hoặc bất cứ khi nào một kết quả tuy tự tin nhưng thà kiểm chứng ngay bây giờ còn rẻ hơn là debug sau này.
 ---
 
 # Phát triển Hướng Hoài nghi (Doubt-Driven Development)

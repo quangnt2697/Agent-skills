@@ -1,6 +1,7 @@
 ---
 name: db-timescale-reconciler
-description: Sử dụng khi cần quét, đối chiếu hoặc kiểm tra độ lệch dữ liệu TimescaleDB Production giữa các bảng V3 so với V2 hoặc giữa bảng raw của Sở (MDDS feeds) với bảng đã xử lý cho 11 topic thị trường KRX. Kích hoạt khi chạy lệnh /db-recon hoặc nhận yêu cầu đối chiếu dữ liệu thị trường.
+description: .
+trigger: Sử dụng khi cần quét, đối chiếu hoặc kiểm tra độ lệch dữ liệu TimescaleDB Production giữa các bảng V3 so với V2 hoặc giữa bảng raw của Sở (MDDS feeds) với bảng đã xử lý cho 11 topic thị trường KRX. Kích hoạt khi chạy lệnh /db-recon hoặc nhận yêu cầu đối chiếu dữ liệu thị trường.
 ---
 
 # db-timescale-reconciler: Đối Chiếu & Kiểm Tra Độ Lệch Dữ Liệu TimescaleDB Production
@@ -30,7 +31,7 @@ Sử dụng kỹ năng này trong các tình huống sau:
 
 ## Danh Mục 11 Topic Nghiệp Vụ MDDS
 
-Kỹ năng quản lý thư viện câu query mẫu tại `resources/reconciliation-queries.json` bao phủ 11 topic:
+Kỹ năng quản lý thư viện câu query mẫu tại `assets/reconciliation-queries.json` bao phủ 11 topic:
 
 1. **Trade / Khớp lệnh Ticks (Msg `Price - X`):** `krx_mdds_v3_ticks` vs `krx_mdds_v2_ticks` vs `ticks` (raw).
 2. **Trade Extra (BE tính toán `side`, `avgprice`):** `krx_mdds_v3_ticks_extra` vs `krx_mdds_v3_ticks`.
@@ -65,7 +66,7 @@ node scripts/db-recon.js --list
 ```
 
 ### Cách 2: Gọi qua DB MCP Tool trong chat
-Agent có thể gọi tool `db_query` trên TimescaleDB (`database: "timescale"`) với template SQL tương ứng trong `resources/reconciliation-queries.json`.
+Agent có thể gọi tool `db_query` trên TimescaleDB (`database: "timescale"`) với template SQL tương ứng trong `assets/reconciliation-queries.json`.
 
 ---
 

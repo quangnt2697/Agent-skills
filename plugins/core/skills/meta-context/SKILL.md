@@ -1,6 +1,7 @@
 ---
 name: meta-context
-description: Tối ưu hóa việc thiết lập ngữ cảnh (context) cho agent. Sử dụng khi bắt đầu một phiên làm việc mới, khi chất lượng đầu ra của agent giảm sút, khi chuyển đổi giữa các tác vụ, hoặc khi bạn cần cấu hình các file quy tắc (rules) và ngữ cảnh cho một dự án.
+description: Tối ưu hóa việc thiết lập ngữ cảnh (context) cho agent.
+trigger: Sử dụng khi bắt đầu một phiên làm việc mới, khi chất lượng đầu ra của agent giảm sút, khi chuyển đổi giữa các tác vụ, hoặc khi bạn cần cấu hình các file quy tắc (rules) và ngữ cảnh cho một dự án.
 ---
 
 # Kỹ Thuật Kéo Ngữ Cảnh (Context Engineering)

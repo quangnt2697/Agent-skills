@@ -1,6 +1,7 @@
 ---
 name: sm-sprint-retrospective
-description: Kỹ năng tổng kết Sprint. Phân tích Velocity, rút ra bài học cải tiến (What went well, What to improve) từ dữ liệu Jira. Use when kết thúc Sprint và cần đánh giá để cải tiến tiến trình.
+description: Kỹ năng tổng kết Sprint. Phân tích Velocity, rút ra bài học cải tiến (What went well, What to improve) từ dữ liệu Jira.
+trigger: Use when kết thúc Sprint và cần đánh giá để cải tiến tiến trình.
 ---
 
 # sm-sprint-retrospective

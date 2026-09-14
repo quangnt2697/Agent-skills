@@ -5,6 +5,7 @@ import math
 import argparse
 import datetime
 from datetime import timezone, timedelta
+from collections import defaultdict
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -218,7 +219,9 @@ def main():
             open_issues.append(issue_data)
             
         if status_category != "Done":
-            if assignee_name in dev_stats:
+            if assignee_name != "Unassigned":
+                if assignee_name not in dev_stats:
+                    dev_stats[assignee_name] = {"tickets": 0, "points": 0.0, "role": "Chưa phân vai trò"}
                 dev_stats[assignee_name]["tickets"] += 1
                 dev_stats[assignee_name]["points"] += pts
 
@@ -226,7 +229,9 @@ def main():
     completed_points_percent = round((completed_points / committed_points * 100) if committed_points else 0, 1)
     
     # Read template
-    template_path = os.path.join(os.path.dirname(script_dir), "templates", "daily-standup-report.md")
+    template_path = os.path.join(script_dir, "daily-standup-report.md")
+    if not os.path.exists(template_path):
+        template_path = os.path.join(os.path.dirname(script_dir), "templates", "daily-standup-report.md")
     with open(template_path, "r", encoding="utf-8") as f:
         template = f.read()
         
@@ -273,79 +278,148 @@ def main():
             stuck_lines.append(f"| {i} | {iss['key']} | {iss['title']} | {iss['status']} | {iss['priority']} | {iss['assignee']} | {iss['days']} ngày | {iss['level']} |")
         template = template.replace("| 1 | {KEY-X}  | {title}   | {status}             | {prio}  | {assignee} | {X ngày}            | 🔴 Nghiêm trọng / 🟡 Cảnh báo |", "\n".join(stuck_lines))
         
-    # Remove proposals table if not generated
-    proposals_text = "✅ Không có vấn đề hoặc rủi ro nào được ghi nhận."
+    # -------------------------------------------------------------
+    # 4. Phân tích Cân bằng Tải Động (Dynamic Workload Balancing)
+    # -------------------------------------------------------------
+    # Gom nhóm theo vai trò (role) từ cấu hình team và dev_stats
+    role_groups = defaultdict(list)
+    for member in team:
+        m_name = member["name"]
+        m_role = member.get("role", "Developer")
+        stats = dev_stats.get(m_name, {"tickets": 0, "points": 0.0, "role": m_role})
+        role_groups[m_role].append({"name": m_name, **stats})
+
+    # Thêm các thành viên có phát sinh ticket trong Sprint nhưng chưa nằm trong danh sách team
+    for m_name, stats in dev_stats.items():
+        if not any(m["name"] == m_name for m in team):
+            m_role = stats.get("role", "Khác")
+            role_groups[m_role].append({"name": m_name, **stats})
+
+    # Phân loại nhóm đồng cấp (peer groups >= 2 thành viên) và vai trò độc lập (solo roles = 1 thành viên)
+    peer_groups = {role: members for role, members in role_groups.items() if len(members) >= 2}
+    solo_roles = [m for members in role_groups.values() if len(members) == 1 for m in members]
+
+    balancing_sections = []
+    rebalance_proposals = []
+
+    if peer_groups:
+        balancing_sections.append("### 👥 Phân bổ theo Nhóm chuyên môn (Peer Groups)\n> Dành cho các vai trò có từ 2 thành viên trở lên để đối chiếu mức độ cân bằng tải.")
+        for role_name, members in peer_groups.items():
+            member_count = len(members)
+            total_role_pts = sum(m["points"] for m in members)
+            total_role_tickets = sum(m["tickets"] for m in members)
+            ideal_pct = round(100.0 / member_count, 1)
+
+            table_lines = [
+                f"#### 🔹 Nhóm {role_name} ({member_count} thành viên)",
+                "| Thành viên | Số ticket | % Ticket | Story Points | % Story Points | Đánh giá |",
+                "|---|---|---|---|---|---|"
+            ]
+
+            member_metrics = []
+            for m in members:
+                tk_pct = round((m["tickets"] / total_role_tickets * 100), 1) if total_role_tickets > 0 else ideal_pct
+                pt_pct = round((m["points"] / total_role_pts * 100), 1) if total_role_pts > 0 else ideal_pct
+
+                if total_role_pts > 0:
+                    diff = pt_pct - ideal_pct
+                    if diff > 15.0:
+                        status_tag = "🔴 Tải cao"
+                    elif diff < -15.0:
+                        status_tag = "🟢 Tải nhẹ"
+                    else:
+                        status_tag = "✅ Cân bằng"
+                elif total_role_tickets > 0:
+                    diff = tk_pct - ideal_pct
+                    if diff > 20.0:
+                        status_tag = "🔴 Tải cao"
+                    elif diff < -20.0:
+                        status_tag = "🟢 Tải nhẹ"
+                    else:
+                        status_tag = "✅ Cân bằng"
+                else:
+                    status_tag = "✅ Cân bằng"
+
+                member_metrics.append({
+                    "name": m["name"],
+                    "tickets": m["tickets"],
+                    "tk_pct": tk_pct,
+                    "points": m["points"],
+                    "pt_pct": pt_pct,
+                    "status": status_tag
+                })
+                table_lines.append(f"| {m['name']} | {m['tickets']} | {tk_pct}% | {m['points']} | {pt_pct}% | {status_tag} |")
+
+            table_lines.append(f"| **Tổng cộng** | **{total_role_tickets}** | **100%** | **{total_role_pts}** | **100%** | Chuẩn lý tưởng: ~{ideal_pct}%/người |")
+            balancing_sections.append("\n".join(table_lines))
+
+            # Xác định mức độ lệch tải trong nhóm
+            sorted_by_load = sorted(members, key=lambda x: (x["points"], x["tickets"]), reverse=True)
+            max_loaded_member = sorted_by_load[0]
+            min_loaded_member = sorted_by_load[-1]
+
+            max_metric = next(item for item in member_metrics if item["name"] == max_loaded_member["name"])
+            min_metric = next(item for item in member_metrics if item["name"] == min_loaded_member["name"])
+
+            spread_pts = max_metric["pt_pct"] - min_metric["pt_pct"]
+            spread_tks = abs(max_loaded_member["tickets"] - min_loaded_member["tickets"])
+            is_imbalanced = (spread_pts > 20.0 and total_role_pts > 0) or (spread_tks >= 3)
+
+            if is_imbalanced and max_loaded_member["name"] != min_loaded_member["name"]:
+                transfer_issue = None
+                for iss in (in_progress_issues + open_issues):
+                    if iss.get("assignee") == max_loaded_member["name"]:
+                        transfer_issue = iss
+                        break
+
+                if transfer_issue:
+                    proposal = f"⚠️ **Mất cân bằng trong nhóm {role_name}** (Độ lệch tải {spread_pts:.1f}%): *Đề xuất chuyển ticket {transfer_issue['key']} ({transfer_issue['pts']} pts) từ {max_loaded_member['name']} sang {min_loaded_member['name']} để cân bằng khối lượng.*"
+                else:
+                    proposal = f"⚠️ **Mất cân bằng trong nhóm {role_name}** (Độ lệch tải {spread_pts:.1f}%): *Khối lượng tập trung vào {max_loaded_member['name']}. Cần rà soát chuyển bớt ticket mới sang {min_loaded_member['name']}.*"
+                balancing_sections.append(f"> {proposal}\n")
+                rebalance_proposals.append(proposal)
+            else:
+                balancing_sections.append(f"> ✅ **Cân bằng trong nhóm {role_name}**: Phân bổ hợp lý (độ lệch ≤ 20%), không cần điều chỉnh.\n")
+
+    if solo_roles:
+        balancing_sections.append("### 📌 Phân bổ theo Vai trò độc lập / Chuyên trách\n> Dành cho các vai trò chỉ có 1 nhân sự phụ trách trong Sprint.\n")
+        solo_lines = [
+            "| Thành viên | Vai trò | Số ticket | Story Points | Ghi chú |",
+            "|---|---|---|---|---|"
+        ]
+        for m in solo_roles:
+            solo_lines.append(f"| {m['name']} | {m['role']} | {m['tickets']} | {m['points']} | Chuyên trách {m['role']} – Không đối chiếu tải chéo |")
+        balancing_sections.append("\n".join(solo_lines))
+
+    if not balancing_sections:
+        workload_md = "✅ Không có dữ liệu phân bổ tải cho team."
+    else:
+        workload_md = "\n\n".join(balancing_sections)
+
+    if "{workload_balancing_section}" in template:
+        template = template.replace("{workload_balancing_section}", workload_md)
+    else:
+        template = template.replace("## 4. ⚖️ Phân tích Cân bằng Tải (Workload Balancing)", f"## 4. ⚖️ Phân tích Cân bằng Tải (Workload Balancing)\n\n{workload_md}")
+
+    # -------------------------------------------------------------
+    # 5. Tổng hợp Đề xuất & Hành động (Proposals & Action Items)
+    # -------------------------------------------------------------
+    proposals_list = []
+    if stuck_issues:
+        stuck_keys = [iss["key"] for iss in stuck_issues[:3]]
+        stuck_summary = ", ".join(stuck_keys) + ("..." if len(stuck_issues) > 3 else "")
+        proposals_list.append(f"🚨 **Ticket bị treo:** Có {len(stuck_issues)} ticket bị treo quá hạn ({stuck_summary}). Đề xuất Scrum Master hoặc Dev Lead làm việc trực tiếp với assignee để tháo gỡ điểm nghẽn.")
+
+    for prop in rebalance_proposals:
+        clean_prop = prop.replace("> ", "").strip()
+        proposals_list.append(f"⚖️ {clean_prop}")
+
+    if not proposals_list:
+        proposals_text = "✅ **Sprint đang vận hành ổn định:** Không có ticket bị treo quá hạn và khối lượng công việc được phân bổ hợp lý giữa các thành viên."
+    else:
+        proposals_text = "\n\n".join([f"- {item}" for item in proposals_list])
+
     template = template.replace("{proposals}", proposals_text)
-
-    app_dev = {"name": "Developer APP", "tickets": 0, "points": 0.0}
-    web_dev = {"name": "Developer WEB", "tickets": 0, "points": 0.0}
-    be_devs = []
-
-    for name, stat in dev_stats.items():
-        if stat.get("role") == "Developer APP":
-            app_dev = {"name": name, **stat}
-        elif stat.get("role") == "Developer WEB":
-            web_dev = {"name": name, **stat}
-        elif stat.get("role") == "Developer Backend":
-            be_devs.append({"name": name, **stat})
-            
-    if len(be_devs) >= 2:
-        dat = be_devs[0]
-        son = be_devs[1]
-    elif len(be_devs) == 1:
-        dat = be_devs[0]
-        son = {"name": "Developer Backend 2", "tickets": 0, "points": 0.0}
-    else:
-        dat = {"name": "Developer Backend 1", "tickets": 0, "points": 0.0}
-        son = {"name": "Developer Backend 2", "tickets": 0, "points": 0.0}
-    
-    template = template.replace("| Developer APP  | Developer APP | {n}         | {pts}         | Chuyên trách APP – Không cân bằng |", 
-                                f"| {app_dev['name']} | Developer APP | {app_dev['tickets']} | {app_dev['points']} | Chuyên trách APP – Không cân bằng |")
-    template = template.replace("| Developer WEB | Developer WEB | {n}         | {pts}         | Chuyên trách WEB – Không cân bằng |", 
-                                f"| {web_dev['name']} | Developer WEB | {web_dev['tickets']} | {web_dev['points']} | Chuyên trách WEB – Không cân bằng |")
-                                
-    total_be_pts = dat["points"] + son["points"]
-    total_be_tickets = dat["tickets"] + son["tickets"]
-    
-    dat_pt_pct = round(dat["points"] / total_be_pts * 100) if total_be_pts else 50
-    son_pt_pct = round(son["points"] / total_be_pts * 100) if total_be_pts else 50
-    
-    dat_tk_pct = round(dat["tickets"] / total_be_tickets * 100) if total_be_tickets else 50
-    son_tk_pct = round(son["tickets"] / total_be_tickets * 100) if total_be_tickets else 50
-    
-    diff_pt = abs(dat_pt_pct - son_pt_pct)
-    diff_tk = abs(dat_tk_pct - son_tk_pct)
-    
-    is_imbalanced = diff_pt > 20 or diff_tk > 20
-    delta_ticket = abs(dat["tickets"] - son["tickets"])
-    delta_pts = abs(dat["points"] - son["points"])
-    delta_pct = max(diff_pt, diff_tk)
-    
-    template = template.replace("| Developer Backend 1   | {n}                | {pts}           | {percent}%           |",
-                                f"| {dat['name']} | {dat['tickets']} | {dat['points']} | {dat_tk_pct}% (TK) / {dat_pt_pct}% (Pts) |")
-    template = template.replace("| Developer Backend 2 | {n}                | {pts}           | {percent}%           |",
-                                f"| {son['name']} | {son['tickets']} | {son['points']} | {son_tk_pct}% (TK) / {son_pt_pct}% (Pts) |")
-    template = template.replace("| **Chênh lệch**   | **{delta_ticket}** | **{delta_pts}** | **{delta_percent}%** |",
-                                f"| **Chênh lệch** | **{delta_ticket}** | **{delta_pts}** | **{delta_pct}%** |")
-                                
-    if is_imbalanced:
-        overloaded = dat["name"] if dat["points"] > son["points"] else son["name"]
-        underloaded = son["name"] if overloaded == dat["name"] else dat["name"]
-        
-        transfer_issue = None
-        for iss in (in_progress_issues + open_issues):
-            if iss["assignee"] == overloaded:
-                transfer_issue = iss
-                break
-                
-        if transfer_issue:
-            suggestion = f"⚠️ **Mất cân bằng** (chênh lệch > 20%): *Đề xuất chuyển ticket {transfer_issue['key']} ({transfer_issue['pts']} pts) từ {overloaded} sang {underloaded} để cân bằng khối lượng.*"
-        else:
-            suggestion = f"⚠️ **Mất cân bằng** (chênh lệch > 20%): *Cần rà soát chuyển ticket từ {overloaded} sang {underloaded} để cân bằng khối lượng.*"
-            
-        template = template.replace("> - ✅ **Cân bằng** (chênh lệch ≤ 20%): Phân bổ hợp lý, không cần điều chỉnh.\n> - ⚠️ **Mất cân bằng** (chênh lệch > 20%): *Đề xuất chuyển ticket {KEY-Y} ({pts} pts) từ {người_quá_tải} sang {người_rảnh_hơn} để cân bằng khối lượng.*", suggestion)
-    else:
-        template = template.replace("> - ✅ **Cân bằng** (chênh lệch ≤ 20%): Phân bổ hợp lý, không cần điều chỉnh.\n> - ⚠️ **Mất cân bằng** (chênh lệch > 20%): *Đề xuất chuyển ticket {KEY-Y} ({pts} pts) từ {người_quá_tải} sang {người_rảnh_hơn} để cân bằng khối lượng.*", "> - ✅ **Cân bằng** (chênh lệch ≤ 20%): Phân bổ hợp lý, không cần điều chỉnh.")
 
     template = template.replace("{timestamp}", today_dt.strftime("%Y-%m-%d %H:%M:%S"))
     

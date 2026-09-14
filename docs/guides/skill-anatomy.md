@@ -1,77 +1,73 @@
 # Cấu Phẫu Kỹ Năng (Skill Anatomy)
 
-Tài liệu này mô tả cấu trúc và định dạng của các file kỹ năng (skill files) trong `agent-skills`. Hãy sử dụng tài liệu này như một bản hướng dẫn khi bạn muốn đóng góp thêm kỹ năng mới hoặc muốn hiểu các kỹ năng hiện có.
+Tài liệu này mô tả cấu trúc và định dạng chuẩn mực của các file kỹ năng (skill files) trong `agent-skills` theo nguyên lý **Progressive Disclosure (Lazy Loading 3 tầng)**.
 
-## Vị Trí Lưu Trữ File
+## Vị Trí Lưu Trữ & Cấu Trúc Thư Mục
 
-Mỗi skill nằm trong một thư mục riêng biệt bên trong thư mục `plugins/<plugin-name>/skills/`:
+Mỗi skill nằm trong một thư mục riêng biệt bên trong `plugins/<plugin-name>/skills/<skill-name>/`:
 
-```
-plugins/
-  <plugin-name>/
-    skills/
-      skill-name/
-        SKILL.md           # Bắt buộc: Định nghĩa cốt lõi của skill
-        scripts/           # Tùy chọn: Các script thực thi hỗ trợ cho workflow
-        references/        # Tùy chọn: Các tài liệu tham khảo riêng của skill
-        supporting-file.md # Tùy chọn: Tài liệu hỗ trợ được load khi cần
+```text
+plugins/<plugin-name>/skills/<skill-name>/
+  ├── SKILL.md       # Bắt buộc: Level 1 (Metadata) & Level 2 (Body tinh gọn 50–100 dòng)
+  ├── assets/        # Tùy chọn: Level 3 (Templates khung sườn, script thực thi, dữ liệu mẫu)
+  └── references/    # Tùy chọn: Level 3 (Tài liệu logic, cẩm nang nghiệp vụ, checklist kiểm định)
 ```
 
-`SKILL.md` là file duy nhất bắt buộc phải có. Chỉ thêm `scripts/` hoặc `references/` khi skill thực sự cần chúng, và bỏ qua hoàn toàn đối với các skill đơn giản.
+- **`assets/` (Công cụ dùng ngay):** Chứa file mẫu (`.md`, `.json`, `.yaml`), script tự động (`.py`, `.js`, `.sh`), dữ liệu mock. Agent nạp vào để copy-paste hoặc chạy trực tiếp mà không cần phân tích tri thức.
+- **`references/` (Tài liệu nghiên cứu):** Chứa kiến thức nền tảng, cẩm nang chi tiết, checklist kiểm định, quy chuẩn nghiệp vụ (`.md`, `.txt`). Agent đọc để suy luận logic.
+- **Quy tắc vàng:** Tuyệt đối không để tài liệu tham chiếu dài hàng trăm dòng trong `SKILL.md`. Luôn tách sang `references/` để giữ `SKILL.md` dưới 120 dòng.
+
+---
 
 ## Định Dạng Của SKILL.md
 
-### Frontmatter (Bắt Buộc)
+### Level 1: Frontmatter (Bắt Buộc)
 
 ```yaml
 ---
 name: skill-name-with-hyphens
-description: Hướng dẫn agent cách [thực hiện task/workflow]. Sử dụng khi [điều kiện kích hoạt cụ thể].
+description: 1-2 câu ngắn gọn mô tả skill làm gì ở ngôi thứ ba. Không viết quy trình vào đây.
+trigger: Điều kiện kích hoạt cụ thể (khi user yêu cầu X, chạy lệnh /cmd, hoặc cung cấp tệp Y).
 ---
 ```
 
 **Quy tắc:**
-- `name`: Viết thường, phân tách bằng dấu gạch ngang (hyphen-separated). Phải khớp với tên thư mục.
-- `description`: Bắt đầu bằng việc mô tả skill làm gì ở ngôi thứ ba, sau đó liệt kê một hoặc nhiều điều kiện "Sử dụng khi" rõ ràng. Phải bao gồm cả *làm gì* (what) và *khi nào* (when). Độ dài tối đa 1024 ký tự.
+- `name`: Kebab-case tiếng Anh viết thường, trùng khớp với tên thư mục.
+- `description`: Ngắn gọn 1-2 câu, nêu rõ *Làm cái gì* và *Giải quyết bài toán gì*.
+- `trigger`: Khai báo tách biệt điều kiện kích hoạt cụ thể để Router của hệ thống nhận diện nhanh và chuẩn xác.
 
-**Tại sao điều này quan trọng:** Các agents khám phá các skills bằng cách đọc phần description. Description này được tiêm (injected) vào system prompt, vì vậy nó phải nói cho agent biết cả hai thứ: skill này cung cấp cái gì và khi nào nên kích hoạt nó. Tuyệt đối không tóm tắt workflow vào đây — nếu phần description có chứa các bước quy trình, agent có thể sẽ chỉ làm theo bản tóm tắt đó mà không thèm đọc nội dung chi tiết của skill.
+### Level 2: Body Tinh Gọn (Recommended Pattern)
 
-### Các Phần Tiêu Chuẩn (Recommended Pattern)
-
-Phần frontmatter ở trên là hợp đồng bắt buộc. Bố cục các phần (sections) dưới đây là mẫu khuyên dùng, không phải một template cứng nhắc: các tiêu đề tương đương đều có thể chấp nhận được miễn là chúng phục vụ cùng một mục đích một cách rõ ràng.
+Phần thân bài của `SKILL.md` chỉ tải khi Agent đã nhận diện khớp Skill. Độ dài lý tưởng từ **50 đến 100 dòng**:
 
 ```markdown
-# Tên Skill
+# [Tên Kỹ Năng]
 
-## Tổng Quan (Overview)
-Một đến hai câu giải thích skill này làm gì và tại sao nó quan trọng.
+## 1. Khi nào dùng?
+- Danh sách các trường hợp áp dụng.
+- **Khi KHÔNG sử dụng:** Các ngoại lệ và chỉ dẫn trỏ sang skill khác phù hợp hơn.
 
-## Khi Nào Sử Dụng (When to Use)
-- Danh sách (bullet list) các điều kiện kích hoạt (dấu hiệu nhận biết, loại task)
-- Khi nào KHÔNG nên sử dụng (ngoại lệ)
+## 2. Quy trình thực hiện từng bước
+Tóm tắt ngắn gọn 3 - 5 bước hành động chính:
+- **Bước 1 (Khảo sát/Đầu vào):** Tiếp nhận dữ liệu, kiểm tra điều kiện tiên quyết.
+- **Bước 2 (Xử lý cốt lõi):** Các bước xử lý chính.
+- **Bước 3 (Định dạng & Thẩm định):** Tiêu chuẩn nghiệm thu trước khi bàn giao.
 
-## [Quy Trình Cốt Lõi / The Workflow / Steps]
-Luồng công việc chính, được chia thành các bước hoặc các giai đoạn được đánh số.
-Bao gồm code ví dụ ở những chỗ cần thiết.
-Sử dụng lưu đồ (flowcharts bằng ASCII) ở những điểm cần đưa ra quyết định.
+## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
+- 🛠️ **Công cụ & Mẫu thực thi (assets/):**
+  - `assets/template_output.md`: Khung mẫu chuẩn.
+  - `assets/helper_script.py`: Script hỗ trợ.
+- 📖 **Tài liệu nghiên cứu & Hướng dẫn (references/):**
+  - `references/detailed_guide.md`: Cẩm nang hướng dẫn chuyên sâu.
+  - `references/verification_checklist.md`: Checklist xác minh.
 
-## [Các Kỹ Thuật Cụ Thể / Patterns]
-Hướng dẫn chi tiết cho từng kịch bản cụ thể.
-Code ví dụ, templates, cấu hình.
-
-## Những Sự Ngụy Biện Phổ Biến (Common Rationalizations)
-| Sự Ngụy Biện                            | Thực Tế                        |
-|-----------------------------------------|--------------------------------|
-| Lời bào chữa mà agent dùng để lách bước | Tại sao lời bào chữa đó là sai |
-
-## Cờ Đỏ (Red Flags)
-- Các hành vi cho thấy skill đang bị vi phạm
-- Những điều cần chú ý khi review
-
-## Xác Minh (Verification)
-Sau khi hoàn thành quy trình của skill, cần xác nhận:
-- [ ] Checklist các tiêu chí hoàn thành
-- [ ] Các yêu cầu về bằng chứng (evidence)
+## 4. Ví dụ mẫu (Few-shot Example)
+Bắt buộc có ít nhất 1 ví dụ định dạng chuẩn mong đợi:
+- **Input:** `<Yêu cầu mẫu>`
+- **Output:**
+  ```markdown
+  <Kết quả chuẩn mực mong đợi>
+  ```
 ```
 
 ## Mục Đích Của Các Phần
