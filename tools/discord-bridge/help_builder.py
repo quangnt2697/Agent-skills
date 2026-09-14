@@ -22,17 +22,19 @@ def build_help_embed(bot_name: str = "Agent Assistant") -> discord.Embed:
     embed.add_field(
         name="🎯 1. Slash Command (Khuyên dùng — Tự động gợi ý)",
         value=(
-            "• Gõ `/agent` trên thanh chat để Discord tự động gợi ý toàn bộ kỹ năng và dự án.\n"
-            "• **Cú pháp:** `/agent skill: <kỹ_năng> project: <tên_project> des: <mô_tả>`\n"
-            "• **Ví dụ:** `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`"
+            "• Gõ `/agent` : Điều khiển Agent thực thi kỹ năng với đầy đủ tham số.\n"
+            "  ↳ *Ví dụ:* `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`\n"
+            "• Gõ `/sync` : Fetch & pull mã nguồn mới nhất của dự án về máy local an toàn.\n"
+            "  ↳ *Ví dụ:* `/sync project: openapi-tyk` hoặc `/sync project: openapi`"
         ),
         inline=False
     )
 
     embed.add_field(
-        name="⚡ 2. Bộ 6 Lệnh Prefix Tối Giản",
+        name="⚡ 2. Bộ Lệnh Prefix Tối Giản",
         value=(
-            "• `!run <kỹ_năng> [-p project] [-d des]` : Kích hoạt Agent thực thi\n"
+            "• `!sync -p <project> [--stash]` : Kéo code mới nhất về local (VD: `!sync -p openapi-tyk`)\n"
+            "• `!run <kỹ_năng> [-p project] [-d des]` : Kích hoạt Agent thực thi kỹ năng\n"
             "  ↳ *Ví dụ:* `!run /cr-review-code-and-quality -p my-project -d review auth`\n"
             "• `!cancel` : Hủy tác vụ Agent đang chạy (hoặc `!abort`, `!stop`)\n"
             "• `!skills [từ_khóa]` : Xem danh sách 36+ kỹ năng hoặc tìm kiếm (VD: `!skills qa`)\n"
@@ -228,12 +230,62 @@ def build_command_help_embed(command_name: str, bot_name: str = "Agent Assistant
         embed.set_footer(text=f"Bot: {bot_name} | Gõ !help để xem toàn bộ danh sách lệnh")
         return embed
 
+    elif cmd in ["sync", "reposync", "pull"]:
+        embed = discord.Embed(
+            title="📖 Hướng Dẫn Chi Tiết: Lệnh !sync & /sync",
+            description="Fetch và pull code mới nhất của các dự án hoặc microservices về máy local an toàn.",
+            color=0x1ABC9C
+        )
+        embed.add_field(
+            name="🎯 Cú pháp Slash Command",
+            value="`/sync project: <tên_project> [branch: <nhánh>] [des: <cờ_bổ_sung>]`",
+            inline=False
+        )
+        embed.add_field(
+            name="⚡ Cú pháp Prefix Command",
+            value="`!sync -p <project> [-b <nhánh>] [--stash] [--dry-run]`",
+            inline=False
+        )
+        embed.add_field(
+            name="🚩 Các cờ hỗ trợ",
+            value=(
+                "• `-p`, `--project`, `project:` : Tên dự án trong `projects.json` hoặc thư mục trên máy\n"
+                "• `-b`, `--branch`, `branch:` : Nhánh cần pull (mặc định giữ nguyên nhánh hiện tại)\n"
+                "• `--stash` : Tự động stash thay đổi chưa lưu trước khi pull và pop lại\n"
+                "• `--dry-run` : Chỉ kiểm tra số commit lệch với remote mà không pull thật"
+            ),
+            inline=False
+        )
+        embed.add_field(
+            name="💡 Ví dụ thực tế",
+            value=(
+                "• `!sync -p openapi-tyk` : Kéo code mới cho đúng repo `openapi-tyk`\n"
+                "• `!sync -p openapi` : Kéo code cho toàn bộ 34 microservices trong folder 3.1\n"
+                "• `!sync -p openapi-tyk --stash` : Kéo code an toàn kể cả khi đang có file sửa dở\n"
+                "• `/sync project: openapi-tyk` : Kéo code qua Slash Command có autocomplete"
+            ),
+            inline=False
+        )
+        embed.set_footer(text=f"Bot: {bot_name} | Gõ !help để xem toàn bộ danh sách lệnh")
+        return embed
+
     return None
 
 
 def build_command_help_text(command_name: str, bot_name: str = "Agent Assistant") -> str:
     """Phiên bản text markdown thuần cho hướng dẫn từng lệnh khi không có quyền embed"""
     cmd = command_name.lower().lstrip("!/").strip()
+    if cmd in ["sync", "reposync", "pull"]:
+        return (
+            "📖 **Hướng Dẫn Lệnh: !sync & /sync**\n\n"
+            "• **Slash Command:** `/sync project: <tên_project> [branch: <nhánh>] [des: <cờ>]`\n"
+            "• **Prefix Command:** `!sync -p <project> [-b <nhánh>] [--stash] [--dry-run]`\n"
+            "• **Các cờ:** `-p` (chọn dự án/thư mục), `-b` (nhánh), `--stash` (auto-stash), `--dry-run` (kiểm tra)\n"
+            "• **Ví dụ:**\n"
+            "  ↳ `!sync -p openapi-tyk` (chỉ pull đúng repo openapi-tyk)\n"
+            "  ↳ `!sync -p openapi` (pull cả cụm microservices trong folder 3.1)\n"
+            "  ↳ `!sync -p openapi --stash` (tự stash code chưa commit)"
+        )
     if cmd in ["run", "agent"]:
         return (
             "📖 **Hướng Dẫn Lệnh: !run & /agent**\n\n"
@@ -280,8 +332,11 @@ def build_help_text(bot_name: str = "Agent Assistant") -> str:
         "🤖 **HƯỚNG DẪN ĐIỀU KHIỂN AGENT SKILLS BRIDGE**\n\n"
         "🎯 **1. Slash Command (Khuyên dùng — Tự động gợi ý):**\n"
         "• `/agent skill: <kỹ_năng> project: <tên_project> des: <mô_tả>`\n"
-        "  ↳ *Ví dụ:* `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`\n\n"
-        "⚡ **2. Bộ 6 Lệnh Prefix Tối Giản:**\n"
+        "  ↳ *Ví dụ:* `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`\n"
+        "• `/sync project: <tên_project>` : Đồng bộ code mới nhất của dự án về máy local\n"
+        "  ↳ *Ví dụ:* `/sync project: openapi-tyk`\n\n"
+        "⚡ **2. Bộ Lệnh Prefix Tối Giản:**\n"
+        "• `!sync -p <project> [--stash]` : Kéo code mới nhất về local (VD: `!sync -p openapi-tyk`)\n"
         "• `!run <kỹ_năng> [-p project] [-d des]` : Kích hoạt Agent thực thi (cooldown: 30s/user)\n"
         "  ↳ *Ví dụ:* `!run /cr-review-code-and-quality -p my-project -d review auth`\n"
         "• `!cancel` : Hủy tác vụ Agent đang chạy (alias: `!abort`, `!stop`)\n"

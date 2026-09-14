@@ -160,6 +160,91 @@ class AgentCog(commands.Cog):
         await run_agent_turn(thread, full_prompt, cli_path, is_continue=False, author=ctx.author)
 
 
+    # ── DIRECT SYNC COMMANDS (CHỈ TẬP TRUNG PULL CODE, KHÔNG QUA LLM) ─────────
+
+    async def _execute_direct_sync(self, prompt_args: str) -> str:
+        """Thực thi trực tiếp node scripts/repo-sync.js mà không cần tạo Thread hay gọi LLM"""
+        import asyncio
+        import shlex
+
+        cmd = ["node", "scripts/repo-sync.js"]
+        if prompt_args and prompt_args.strip():
+            try:
+                cmd.extend(shlex.split(prompt_args.strip()))
+            except Exception:
+                cmd.extend(prompt_args.strip().split())
+
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                cwd=str(config.WORKSPACE_DIR),
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await proc.communicate()
+            out = stdout.decode("utf-8", errors="replace").strip()
+            err = stderr.decode("utf-8", errors="replace").strip()
+            if proc.returncode != 0:
+                return f"❌ **Lỗi thực thi repo-sync (mã {proc.returncode}):**\n```\n{err or out}\n```"
+            return out or err or "ℹ️ Hoàn tất đồng bộ (không có output)."
+        except Exception as e:
+            return f"❌ **Không thể khởi chạy scripts/repo-sync.js:** {e}"
+
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command(name="sync", aliases=["reposync", "pull"])
+    async def execute_sync(self, ctx, *, prompt: str = ""):
+        """Kéo code mới nhất trực tiếp về máy local (phản hồi tức thì trong kênh chat, không qua LLM)"""
+        if not is_authorized(ctx.author.id):
+            return await ctx.send("⛔ Bạn không có quyền điều khiển Agent này.")
+
+        status_msg = await ctx.send("⏳ Đang kéo code mới nhất về máy...")
+        output = await self._execute_direct_sync(prompt)
+
+        if len(output) <= 1950:
+            await status_msg.edit(content=output)
+        else:
+            import io
+            file = discord.File(io.BytesIO(output.encode("utf-8")), filename="repo-sync-report.md")
+            summary = output[:1800] + "\n\n*(Báo cáo chi tiết xem tệp đính kèm)*"
+            await status_msg.edit(content=summary, attachments=[file])
+
+    @app_commands.command(name="sync", description="Kéo code mới nhất trực tiếp về máy local (phản hồi tức thì, không qua LLM)")
+    @app_commands.describe(
+        project="Tên Project trên máy (gõ để gợi ý)",
+        branch="Nhánh cần pull (tùy chọn)",
+        des="Cờ bổ sung như --stash, --dry-run"
+    )
+    async def slash_sync(self, interaction: discord.Interaction, project: str = "", branch: str = "", des: str = ""):
+        if not is_authorized(interaction.user.id):
+            return await interaction.response.send_message("⛔ Bạn không có quyền điều khiển Agent này.", ephemeral=True)
+
+        await interaction.response.defer(thinking=True)
+        flags = []
+        if project and project.strip():
+            flags.append(f"-p {project.strip()}")
+        if branch and branch.strip():
+            flags.append(f"-b {branch.strip()}")
+        if des and des.strip():
+            flags.append(des.strip())
+        prompt_str = " ".join(flags)
+
+        output = await self._execute_direct_sync(prompt_str)
+        if len(output) <= 1950:
+            await interaction.followup.send(output)
+        else:
+            import io
+            file = discord.File(io.BytesIO(output.encode("utf-8")), filename="repo-sync-report.md")
+            summary = output[:1800] + "\n\n*(Báo cáo chi tiết xem tệp đính kèm)*"
+            await interaction.followup.send(summary, file=file)
+
+    @slash_sync.autocomplete("project")
+    async def sync_project_autocomplete(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        return await self.project_autocomplete(interaction, current)
+
+
 async def setup(bot: commands.Bot):
-    await bot.add_cog(AgentCog(bot))
-    bot.tree.add_command(AgentCog(bot).slash_agent)
+    cog = AgentCog(bot)
+    await bot.add_cog(cog)
+    bot.tree.add_command(cog.slash_agent)
+    bot.tree.add_command(cog.slash_sync)
+

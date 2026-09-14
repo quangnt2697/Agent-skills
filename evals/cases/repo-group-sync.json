@@ -1,0 +1,41 @@
+{
+  "skill_name": "repo-group-sync",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Đồng bộ và pull code mới nhất của các dự án trong group về local",
+        "top_k": 1
+      },
+      {
+        "prompt": "Fetch và pull code mới nhất cho project openapi-tyk từ GitLab",
+        "top_k": 1
+      },
+      {
+        "prompt": "Chạy sync cập nhật mã nguồn cho toàn bộ microservices trong thư mục 3.1",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Dịch ngược mã nguồn thành tài liệu đặc tả spec từ code controller",
+        "owner": "qa-code2spec"
+      },
+      {
+        "prompt": "Viết checklist kiểm thử thực thi và test case Gherkin cho chức năng đặt lệnh",
+        "owner": "qa-test-design"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Tôi muốn fetch và pull code mới nhất của openapi-tyk về local",
+      "expected_output": "Kích hoạt repo-group-sync với project openapi-tyk hoặc thực thi script repo-sync với cờ -p openapi-tyk.",
+      "expectations": [
+        "Nhận diện đúng project alias openapi-tyk",
+        "Thực hiện kiểm tra an toàn working tree và pull bằng --ff-only"
+      ]
+    }
+  ]
+}

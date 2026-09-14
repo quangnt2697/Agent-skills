@@ -32,7 +32,22 @@ DISCORD_BOT_TOKEN=your_bot_token_here
 DISCORD_ALLOWED_USER_ID=your_discord_user_id_here
 ```
 
-### Bước 3: Khởi động Bot
+### Bước 3: Cấu hình Alias Dự Án Mục Tiêu (`projects.json`)
+Để Bot nhận diện nhanh các dự án/thư mục trên máy và hỗ trợ tự động gợi ý (autocomplete) khi chạy `/agent` hoặc `/sync`:
+```bash
+cp tools/discord-bridge/projects.json.example tools/discord-bridge/projects.json
+```
+Mở file `tools/discord-bridge/projects.json` và cấu hình các đường dẫn tương ứng trên máy bạn:
+```json
+{
+  "openapi-tyk": "/Users/qa-quangnt/Desktop/Project/3.1/openapi-tyk",
+  "openapi": "/Users/qa-quangnt/Desktop/Project/3.1",
+  "agent-skills": "/Users/qa-quangnt/Desktop/Project/Test/agent-skills"
+}
+```
+> 💡 *Nếu trỏ vào một repo đơn lẻ (chứa `.git`), bot sẽ chỉ thao tác trên repo đó. Nếu trỏ vào thư mục mẹ (như `openapi` -> `3.1`), bot sẽ tự động nhận diện và quét tất cả các microservices bên trong!*
+
+### Bước 4: Khởi động Bot
 ```bash
 npm run bridge:discord
 ```
@@ -40,7 +55,7 @@ Khi thấy thông báo:
 ```
 🤖 Discord Agent Bridge đã online!
 ⚡ CLI Executable: ~/.local/bin/agy
-✨ Đã đồng bộ 1 Slash Commands (/agent) với Discord!
+✨ Đã đồng bộ 2 Slash Commands (/agent, /sync) với Discord!
 ```
 → Bot đã sẵn sàng nhận lệnh!
 
@@ -71,30 +86,68 @@ Khi thấy thông báo:
 ## 💬 Hướng dẫn Sử dụng trên Discord
 
 ### 1. Slash Command với Autocomplete (Khuyên dùng)
-```text
-/agent
-```
-* **Ô `skill`**: Gợi ý 36+ skill — gõ `cr`, `qa`, `dev`, `ba`... để lọc nhanh.
-* **Ô `project`**: Tự động gợi ý toàn bộ dự án trên máy. Chỉ cần chọn, không cần nhớ đường dẫn.
-* **Ô `des`**: Mô tả nhiệm vụ, phạm vi scan hoặc issue key Jira.
 
-> **Ví dụ:**
-> ```
-> /agent skill: /cr-review-code-and-quality project: my-project des: review auth
-> ```
+* **`/agent`** — Kích hoạt Agent thực thi kỹ năng:
+  * **Ô `skill`**: Gợi ý 44+ skill — gõ `cr`, `qa`, `dev`, `ba`... để lọc nhanh.
+  * **Ô `project`**: Tự động gợi ý toàn bộ dự án trên máy từ `projects.json`.
+  * **Ô `des`**: Mô tả nhiệm vụ, phạm vi scan hoặc issue key Jira.
+  > *Ví dụ:* `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`
 
-### 2. Bộ 6 Lệnh Prefix (Prefix Commands)
+* **`/sync`** — Kéo mã nguồn mới nhất của dự án về máy local an toàn:
+  * **Ô `project`**: Tự động gợi ý danh sách dự án (ví dụ `openapi-tyk`, `openapi`...).
+  * **Ô `branch`**: Nhánh cần pull (tùy chọn, mặc định giữ nguyên nhánh hiện tại).
+  * **Ô `des`**: Cờ bổ sung như `--stash` (auto-stash) hoặc `--dry-run` (kiểm tra trước).
+  > *Ví dụ:* `/sync project: openapi-tyk` hoặc `/sync project: openapi des: --stash`
+
+---
+
+### 2. Bộ Lệnh Prefix (Prefix Commands)
 
 | Lệnh | Ý nghĩa | Ví dụ |
 |:-----|:--------|:------|
+| `!sync -p <project>` | Kéo code mới nhất về local (hỗ trợ `--stash`, `--dry-run`) — cooldown: 10s/user | `!sync -p openapi-tyk`<br>`!sync -p openapi --stash` |
 | `!run <kỹ_năng>` | Chạy Agent (hỗ trợ `-p <project>` và `-d <des>`) — cooldown: 30s/user | `!run /cr-review-code-and-quality -p my-project -d review auth` |
 | `!cancel` | Hủy tác vụ đang chạy (alias: `!abort`, `!stop`) | `!cancel` |
 | `!skills [từ_khóa]` | Xem danh sách kỹ năng hoặc tìm theo từ khóa | `!skills` / `!skills qa` |
 | `!projects [reload]` | Xem danh sách dự án hoặc quét lại thư mục | `!projects` / `!projects reload` |
 | `!status` | Kiểm tra trạng thái Agent (rảnh/bận) | `!status` |
-| `!help [lệnh]` | Xem hướng dẫn tổng quan hoặc chi tiết từng lệnh | `!help` / `!help run` |
+| `!help [lệnh]` | Xem hướng dẫn tổng quan hoặc chi tiết từng lệnh | `!help` / `!help sync` / `!help run` |
 
-> **`!help <tên_lệnh>`** hỗ trợ: `run`, `cancel`, `skills`, `projects`, `status`, `done`.
+> **`!help <tên_lệnh>`** hỗ trợ: `sync`, `run`, `cancel`, `skills`, `projects`, `status`, `done`.
+
+---
+
+### 3. Kéo Code Trực Tiếp Về Local (!sync & /sync)
+
+> ⚡ **Tập trung 100% vào chức năng Pull Code:** Khác với các tác vụ AI phức tạp (`!run` / `/agent`), lệnh `!sync` và `/sync` được thiết kế để **kéo code trực tiếp siêu tốc** — thực thi thẳng lệnh Git trên máy trong 1-2 giây và gửi bảng báo cáo ngay tại kênh chat, **tuyệt đối không tạo Thread và không tiêu tốn token LLM**.
+
+* **Kéo đúng 1 repository đơn lẻ:**
+  ```text
+  !sync -p openapi-tyk
+  ```
+  *(Bot tra cứu trong `projects.json` và chỉ fetch & pull duy nhất repo `openapi-tyk`, hoàn tất trong ~0.5s).*
+
+* **Kéo toàn bộ cụm microservices trong thư mục cha:**
+  ```text
+  !sync -p openapi
+  ```
+  *(Bot nhận diện `openapi` là folder mẹ `3.1`, tự động quét và kéo song song 34 microservices bên trong).*
+
+* **Tự động stash khi có file đang sửa dở:**
+  ```text
+  !sync -p openapi --stash
+  ```
+  *(Tự động `git stash` trước khi pull và `git stash pop` trả lại code cho bạn sau khi kéo xong).*
+
+* **Kiểm tra trước mà không pull:**
+  ```text
+  !sync -p openapi --dry-run
+  ```
+
+* **Cơ chế an toàn tuyệt đối (Zero Data Loss):**
+  * Luôn kiểm tra `git status`: Nếu repo dirty mà không có cờ `--stash` ➔ Tự động **SKIP** an toàn.
+  * Luôn pull bằng **`git pull --ff-only`** ➔ Không bao giờ sinh merge commit rác.
+
 
 ---
 

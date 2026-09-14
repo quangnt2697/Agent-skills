@@ -64,7 +64,7 @@ BA/PO creates *-final.md
 **Xác minh (Verify — DEV):** `dev-browser-testing-with-devtools`, `dev-debugging`
 **Đánh giá (Review — DEV+QA+CR):** `cr-review-code-and-quality`, `cr-code-simplification`, `dev-security`, `dev-performance`, `dev-audit-and-fix`
 **Kiểm thử (Test — QA):** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-code2spec`, `qa-squash-push`, `qa-full-pipeline`
-**Quản lý Phiên (Session Management - ALL):** `meta-continuous-learning`, `meta-session-checkpoint`, `meta-cross-validation`, `meta-context`, `meta-using-agent-skills`
+**Quản lý Phiên & Đồng bộ (Session & Sync - ALL):** `repo-group-sync`, `meta-continuous-learning`, `meta-session-checkpoint`, `meta-cross-validation`, `meta-context`, `meta-using-agent-skills`
 
 ## Quy ước
 
