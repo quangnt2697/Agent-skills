@@ -10,7 +10,7 @@ Do `agent-skills` được tổ chức theo kiến trúc modular gồm 8 plugins
 
 1. Clone repository về máy của bạn:
    ```bash
-   git clone https://gitlab.dnse.com.vn/my-project/agent-skills.git
+   git clone https://gitlab.example.com/org/agent-skills.git
    cd agent-skills
    npm install
    ```

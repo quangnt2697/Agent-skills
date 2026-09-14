@@ -67,7 +67,7 @@ Sự đồng bộ trạng thái xuyên suốt giữa hệ thống Core Brokerage
 
 ### 3.3. Danh Mục 15 Mã Lỗi Đặt Lệnh ORS & Quy Tắc Xử Lý Frontend/Backend
 
-Khi gọi API Đặt lệnh (`POST /dnse-order-service/v2/orders`), hệ thống ORS (Order Routing System) thực hiện thẩm định và trả về các mã lỗi chuẩn sau (theo tài liệu Confluence `4786356229`):
+Khi gọi API Đặt lệnh (`POST /order-service/v2/orders`), hệ thống ORS (Order Routing System) thực hiện thẩm định và trả về các mã lỗi chuẩn sau (theo tài liệu Confluence `4786356229`):
 
 | Mã Lỗi Backend (ORS Code) | Diễn Giải Nghiệp Vụ Cụ Thể | Thông Báo Toast Web/App | Hành Vi Xử Lý Hệ Thống |
 |:---|:---|:---|:---|
@@ -91,11 +91,11 @@ Khi gọi API Đặt lệnh (`POST /dnse-order-service/v2/orders`), hệ thống
 
 ### 3.4. Cơ Chế Tự Động Fallback Lệnh 24/7 (Session-Active & Symbol-Active)
 
-Để mang lại trải nghiệm giao dịch liên tục không gián đoạn, DNSE triển khai cơ chế **Tự động Fallback Lệnh 24/7**:
+Để mang lại trải nghiệm giao dịch liên tục không gián đoạn, hệ thống triển khai cơ chế **Tự động Fallback Lệnh 24/7**:
 
 1. **Nguyên lý hoạt động:**
    * Khi người dùng đặt lệnh thường thông qua Web/App/OpenAPI ngoài giờ giao dịch hoặc khi thị trường tạm ngưng, thay vì từ chối lệnh, Client và ORS tự động bắt các mã lỗi ngoài giờ (`CANNOT_PLACE_ORDER_IN_THE_CLOSED_SESSION`, `CAN_NOT_PLACE_ORDER_ON_THIS_SESSION`, `CANNOT_PLACE_ORDER_IN_THE_HALT_SESSION`, `BATCH_IN_PROGRESS`, `CAN_NOT_PLACE_ORDER_ON_HALTED_SYMBOL`).
-   * Hệ thống tự động chuyển tiếp request sang dịch vụ Lệnh Điều Kiện (`POST /dnse-order-service/conditional-orders`) với `orderCategory = TRADING_EVENT`.
+   * Hệ thống tự động chuyển tiếp request sang dịch vụ Lệnh Điều Kiện (`POST /order-service/conditional-orders`) với `orderCategory = TRADING_EVENT`.
 2. **Phân loại Trigger Type:**
    * **`SESSION_ACTIVE`:** Áp dụng khi lệnh đặt ngoài giờ, giờ nghỉ trưa hoặc khi sàn Halt. Lệnh được lưu an toàn trong hệ thống; ngay khi thị trường mở cửa phiên giao dịch tiếp theo (09:00 sáng hoặc 13:00 chiều), hệ thống tự động sinh Target Order đẩy thẳng vào Sở.
    * **`SYMBOL_ACTIVE`:** Áp dụng khi đặt lệnh cho mã chứng khoán đang bị tạm ngưng giao dịch (`EI8`). Ngay khi Sở phát cờ gỡ tạm ngưng (`EI1`/`EI9`), hệ thống tự động kích hoạt lệnh lên sàn.
@@ -148,7 +148,7 @@ Theo tài liệu đặc tả kiến trúc dịch vụ Lệnh Điều Kiện (`Co
 
 #### 5. Cơ Chế Tự Động Bảo Vệ Vị Thế Khi Có Sự Kiện Quyền / Cổ Tức:
 * **Rủi ro thực tế:** Khi doanh nghiệp thực hiện quyền (chia cổ tức bằng tiền/cổ phiếu, phát hành thêm), giá tham chiếu của cổ phiếu sẽ bị **điều chỉnh giảm kỹ thuật** vào ngày Giao dịch không hưởng quyền (GDKHQ). Nếu giữ nguyên lệnh Cắt lỗ (Stop Sell), việc điều chỉnh giá kỹ thuật sẽ làm lệnh bị **kích hoạt oan** ngoài ý muốn của nhà đầu tư.
-* **Giải pháp tự động của DNSE:** Dịch vụ Lệnh Điều Kiện tự động tiêu thụ sự kiện quyền từ Kafka vào cuối ngày $T-1$. Toàn bộ các lệnh điều kiện của mã chứng khoán đó sẽ được hệ thống tự động hủy và chuyển sang trạng thái **`CANCELLED_BY_RIGHTS_EVENT`**, gửi thông báo cảnh báo đến khách hàng để bảo vệ an toàn tài sản tuyệt đối.
+* **Giải pháp tự động:** Dịch vụ Lệnh Điều Kiện tự động tiêu thụ sự kiện quyền từ Kafka vào cuối ngày $T-1$. Toàn bộ các lệnh điều kiện của mã chứng khoán đó sẽ được hệ thống tự động hủy và chuyển sang trạng thái **`CANCELLED_BY_RIGHTS_EVENT`**, gửi thông báo cảnh báo đến khách hàng để bảo vệ an toàn tài sản tuyệt đối.
 
 ---
 

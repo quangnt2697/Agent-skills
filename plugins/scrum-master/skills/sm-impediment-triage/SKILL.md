@@ -36,7 +36,7 @@ Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
 3. **Phát hiện nút thắt**:
    - Lọc ra các ticket có thời gian nằm ở một trạng thái (`Open`, `In Progress`, `Ready to test`, v.v.) **vượt quá 3 ngày**.
 4. **Phân loại**:
-   - Tra cứu danh sách `team` trong `sm-config.yaml` để xác định ticket đó thuộc domain của ai đang giữ (ví dụ assign cho Thắng -> APP, Đạt -> Backend) để nắm ngữ cảnh.
+   - Tra cứu danh sách `team` trong `sm-config.yaml` để xác định ticket đó thuộc domain của ai đang giữ (ví dụ assign cho Developer APP -> APP, Developer Backend -> Backend) để nắm ngữ cảnh.
 5. **Chiến lược xử lý (Triage Strategy)**:
    - Viết chiến lược xử lý cụ thể cho từng ticket bị treo:
    - Nguyên nhân có thể là gì? (Thiếu tài liệu từ BA? Đang chờ QA? Đang chờ bên thứ 3?).

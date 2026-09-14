@@ -40,7 +40,7 @@ Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
      - Số lượng bug phát sinh trong Sprint.
    - **Fallback (REST API):** Dùng `curl` gọi REST API để lấy dữ liệu tương tự.
 4. **Đánh giá & Insight**:
-   - **What went well**: Điểm sáng của Sprint này (chẳng hạn không có blocker quá hạn lâu, hoặc Đạt/Sơn chia việc đều).
+   - **What went well**: Điểm sáng của Sprint này (chẳng hạn không có blocker quá hạn lâu, hoặc nhóm Backend chia việc đều).
    - **What needs improvement**: Các vấn đề kẹt ticket, mất cân bằng tải, scope creep. Tham khảo lại dữ liệu từ `{PROJECT_ROOT}/workspace/sprint/trace/blockers-triage.md` nếu có.
    - **Action Items**: Nhiệm vụ cải tiến cụ thể cho Sprint sau (Ví dụ: Yêu cầu QA test sớm hơn, BA viết doc rõ hơn, v.v.).
 5. **Xuất file**:

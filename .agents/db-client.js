@@ -68,23 +68,25 @@ function isMetabaseMode() {
 function getMetabaseConfig() {
     const envVal = (process.env.METABASE_ENV || '').toLowerCase();
     const isExplicitProd = envVal === 'prod' || envVal === 'production';
-    const isUrlProd = (process.env.METABASE_URL || '').includes('mb.dnse.com.vn') && !(process.env.METABASE_URL || '').includes('mb-uat');
+    const prodUrl = process.env.METABASE_PROD_URL || '';
+    const currentUrl = process.env.METABASE_URL || '';
+    const isUrlProd = Boolean(prodUrl && currentUrl && currentUrl.replace(/\/+$/, '') === prodUrl.replace(/\/+$/, ''));
     const isProd = isExplicitProd || isUrlProd;
 
     let baseUrl = process.env.METABASE_URL;
     let token = process.env.METABASE_SESSION_TOKEN || process.env.METABASE_API_TOKEN;
 
     if (isProd) {
-        baseUrl = (isExplicitProd ? process.env.METABASE_PROD_URL : null) || baseUrl || process.env.METABASE_PROD_URL || 'https://mb.dnse.com.vn';
+        baseUrl = (isExplicitProd ? process.env.METABASE_PROD_URL : null) || baseUrl || process.env.METABASE_PROD_URL || '';
         token = process.env.METABASE_PROD_SESSION_TOKEN || token || process.env.METABASE_PROD_API_TOKEN;
     } else {
-        baseUrl = baseUrl || process.env.METABASE_UAT_URL || 'https://mb-uat.dnse.com.vn';
+        baseUrl = baseUrl || process.env.METABASE_UAT_URL || '';
         token = token || process.env.METABASE_UAT_API_TOKEN || process.env.METABASE_UAT_SESSION_TOKEN;
     }
 
     return {
         isProd,
-        baseUrl: (baseUrl || 'https://mb-uat.dnse.com.vn').replace(/\/+$/, ''),
+        baseUrl: (baseUrl || '').replace(/\/+$/, ''),
         token: token || ''
     };
 }
@@ -92,12 +94,12 @@ function getMetabaseConfig() {
 function resolveDatabaseId(dbIdentifier) {
     const { isProd } = getMetabaseConfig();
     const timescaleId = isProd
-        ? parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '644', 10)
-        : parseInt(process.env.METABASE_DB_TIMESCALE_ID || '644', 10);
+        ? parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '7', 10)
+        : parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '644', 10);
     const openapiId = isProd
-        ? parseInt(process.env.METABASE_PROD_DB_OPENAPI_ID || process.env.METABASE_DB_OPENAPI_ID || '535', 10)
-        : parseInt(process.env.METABASE_DB_OPENAPI_ID || '535', 10);
-    const openapiSandboxId = parseInt(process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '655', 10);
+        ? parseInt(process.env.METABASE_PROD_DB_OPENAPI_ID || '266', 10)
+        : parseInt(process.env.METABASE_UAT_DB_OPENAPI_ID || process.env.METABASE_DB_OPENAPI_ID || '535', 10);
+    const openapiSandboxId = parseInt(process.env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '655', 10);
 
     const activeDbMap = {
         'timescale': timescaleId,
@@ -119,16 +121,23 @@ function resolveDatabaseId(dbIdentifier) {
 }
 
 function getDatabaseName(dbId) {
-    for (const [name, id] of Object.entries(METABASE_DB_MAP)) {
-        if (id === dbId && name !== 'sandbox') return name;
-    }
+    const parsed = parseInt(dbId, 10);
+    const uatTimescale = parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '644', 10);
+    const prodTimescale = parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '7', 10);
+    const uatOpenApi = parseInt(process.env.METABASE_UAT_DB_OPENAPI_ID || process.env.METABASE_DB_OPENAPI_ID || '535', 10);
+    const prodOpenApi = parseInt(process.env.METABASE_PROD_DB_OPENAPI_ID || '266', 10);
+    const sandboxId = parseInt(process.env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '655', 10);
+
+    if (parsed === uatTimescale || parsed === prodTimescale || parsed === 644 || parsed === 7) return 'timescale';
+    if (parsed === uatOpenApi || parsed === prodOpenApi || parsed === 535 || parsed === 266) return 'openapi';
+    if (parsed === sandboxId || parsed === 655) return 'openapi-sandbox';
     return `db-${dbId}`;
 }
 
 /**
  * Tự động phân giải database OpenAPI dựa trên URL hoặc tên môi trường:
- * - Nếu chứa 'sandbox' hoặc 'sb-openapi' (sb-openapi.dnse.com.vn, sb-openapi-uat.dnse.com.vn) -> openapi-sandbox (ID: 655)
- * - Mặc định, rỗng, null, hoặc chứa 'openapi-uat' / 'openapi' -> openapi (ID: 535)
+ * - Nếu chứa 'sandbox' hoặc 'sb-openapi' -> openapi-sandbox
+ * - Mặc định, rỗng, null, hoặc chứa 'openapi-uat' / 'openapi' -> openapi
  */
 function resolveOpenApiDatabase(targetEnvOrUrl) {
     if (targetEnvOrUrl === null || targetEnvOrUrl === '') {
@@ -280,7 +289,9 @@ function ensureCacheDir() {
 }
 
 function getDiskCachePath(dbId) {
-    return path.join(CACHE_DIR, `schema-${dbId}.json`);
+    const { isProd } = getMetabaseConfig();
+    const envPrefix = isProd ? 'prod' : 'uat';
+    return path.join(CACHE_DIR, `schema-${envPrefix}-${dbId}.json`);
 }
 
 // ─── Exports ─────────────────────────────────────────────────────────────────

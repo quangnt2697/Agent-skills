@@ -15,7 +15,7 @@ Skill này **TẬP TRUNG VÀO THIẾT KẾ VÀ CHẤT LƯỢNG CODE**, không ô
 1. **Khảo sát Thực tế (Recon First):** Với Web UI, bắt buộc soi DOM thật qua browser MCP, tuyệt đối không đoán locator. Với API/WebSocket, bắt buộc quét codebase để **tái sử dụng code có sẵn** của developer (module auth, signature, token, websocket client).
 2. **Phân Tầng Nghiêm Ngặt (Separation of Concerns):** Page Objects (UI) và Service Clients (API/WS) chỉ chứa tương tác và schemas. **Toàn bộ Assertions BẮT BUỘC nằm ở tầng Test (`steps/test_*.py`)**.
 3. **No-Mock Policy trên UAT (Real Base URLs Only):** Tuyệt đối không mock server hay giả lập client khi test API/WebSocket trên UAT. Toàn bộ request kết nối trực tiếp vào `BASE_URL` (`openapi-uat`) và `WS_URL` kế thừa từ `.env`.
-4. **Metabase UAT & Zero-Mutation Policy (Chứng khoán):** Mọi dữ liệu chứng khoán phải tra cứu qua Metabase UAT (DB 644, TimescaleDB, ưu tiên bảng **V3 > V2**). Nghiêm cấm kết nối Metabase Production và nghiêm cấm mutation làm nhiễu sàn.
+4. **Metabase UAT & Zero-Mutation Policy (Chứng khoán):** Mọi dữ liệu chứng khoán phải tra cứu qua Metabase UAT (`${METABASE_UAT_DB_TIMESCALE_ID}`, TimescaleDB, ưu tiên bảng **V3 > V2**). Nghiêm cấm chạy automation test trên Metabase Production và nghiêm cấm mutation làm nhiễu sàn.
 5. **Chuẩn Thiết Kế Log Căn Chỉnh & 4 Thẻ Tiếng Việt:** Log test phải căn chỉnh độ rộng cố định và tuân thủ flow text 4 thẻ tiếng Việt: `[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]` (chi tiết xem [references/test_logging_guidelines.md](references/test_logging_guidelines.md)).
 6. **Thẩm Định Cú Pháp & Bàn Giao:** Sau khi sinh mã, bắt buộc xác minh bằng `pytest --collect-only` để đảm bảo 100% test cases được pytest nhận diện hợp lệ (0 lỗi cú pháp, 0 lỗi import) trước khi bàn giao cho `qa-run-test`.
 
@@ -61,7 +61,7 @@ Skill này **TẬP TRUNG VÀO THIẾT KẾ VÀ CHẤT LƯỢNG CODE**, không ô
 │ - Xác định Task Type (Web, API, WS, Mobile) & Áp dụng Blueprint        │
 │ - Kế thừa .env 3 tầng (Root → Sibling → Local)                         │
 │ - Code Recon Gate: Quét codebase tái sử dụng Auth, Token, Clients      │
-│ - Với Chứng khoán: Metabase UAT Strict Policy (DB 644, V3 > V2)        │
+│ - Với Chứng khoán: Metabase UAT Strict Policy (TimescaleDB, V3 > V2)   │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -89,7 +89,7 @@ Skill này **TẬP TRUNG VÀO THIẾT KẾ VÀ CHẤT LƯỢNG CODE**, không ô
 ```
 
 ### Chi tiết các giai đoạn:
-1. **Giai đoạn 1: Khảo sát & Kế thừa:** Thiết lập cấu trúc thư mục tại `workspace/{issueKey}/test/` theo [references/folder_structure_blueprint.md](references/folder_structure_blueprint.md), nạp biến môi trường phân tầng theo [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md), và thực hiện Code Recon Gate theo [references/recon_guide.md](references/recon_guide.md) (tái sử dụng module auth/clients có sẵn; tra cứu DB 644 qua Metabase UAT V3 > V2).
+1. **Giai đoạn 1: Khảo sát & Kế thừa:** Thiết lập cấu trúc thư mục tại `workspace/{issueKey}/test/` theo [references/folder_structure_blueprint.md](references/folder_structure_blueprint.md), nạp biến môi trường phân tầng theo [references/shared_fixtures_and_env.md](references/shared_fixtures_and_env.md), và thực hiện Code Recon Gate theo [references/recon_guide.md](references/recon_guide.md) (tái sử dụng module auth/clients có sẵn; tra cứu TimescaleDB qua Metabase UAT V3 > V2).
 2. **Giai đoạn 2: Thiết kế Kiến trúc & Tầng Đối tượng:** Tách bạch tương tác và assertion. Khởi tạo fixtures theo [examples/conftest_template.py](examples/conftest_template.py). Xây dựng Page Object theo [examples/web_ui_pom.py](examples/web_ui_pom.py) (UI) hoặc Service Client theo [examples/api_ws_service.py](examples/api_ws_service.py) (API/WS) tích hợp log 4 thẻ [references/test_logging_guidelines.md](references/test_logging_guidelines.md).
 3. **Giai đoạn 3: Sinh Mã Kiểm thử:** Ánh xạ 100% scenario từ `{issueKey}.feature` sang các hàm test trong `steps/test_*.py`. Áp dụng đủ 7 tiêu chí assertions API hoặc 8 tiêu chí WebSocket theo [references/automation_rules.md](references/automation_rules.md). Áp dụng mô hình Trigger - Listen - Verify cho lệnh chứng khoán theo [references/order_state_testing.md](references/order_state_testing.md).
 4. **Giai đoạn 4: Thẩm Định Cú Pháp & Bàn Giao:** Kiểm tra static code hygiene và chạy lệnh xác minh:
@@ -118,7 +118,7 @@ Skill này **TẬP TRUNG VÀO THIẾT KẾ VÀ CHẤT LƯỢNG CODE**, không ô
 ## Dấu Hiệu Cảnh Báo (Red Flags)
 
 - Cố tình chạy full test suite và tự sinh file báo cáo `report.md` thay vì bàn giao cho `qa-run-test`.
-- Cấu hình hoặc code chứa URL Metabase Production `mb.dnse.com.vn` (không có `mb-uat`) hoặc scan/query dữ liệu ngoài Metabase UAT.
+- Cấu hình hoặc code trỏ tới `METABASE_PROD_URL` hoặc môi trường `prod` trong khi chạy automation test.
 - Tự viết lại client API/WebSocket, module login/auth/token trong khi workspace đã có sẵn code của dev.
 - Gọi `logging.basicConfig(...)` trong `conftest.py` hay file test gây xung đột với Pytest `log_cli` làm nhân đôi dòng log.
 - Xuất hiện mock server, fake adapter, hoặc thư viện mock (`unittest.mock`, `respx`, `responses`, `@patch`) trong test API/WS trên UAT.
@@ -138,7 +138,7 @@ Trước khi bàn giao mã nguồn:
 - [ ] Assertions chỉ nằm trong tầng Tests, KHÔNG ở Page/Service.
 - [ ] Đã quét (Code Recon Gate) và tái sử dụng trực tiếp module Auth, Token, HMAC Signature, và WebSocket Client có sẵn trong codebase.
 - [ ] TUYỆT ĐỐI KHÔNG mock server/response trên UAT — toàn bộ request gọi thẳng `BASE_URL` (`openapi-uat`) và `WS_URL` (`ws-openapi-uat`).
-- [ ] 100% dữ liệu chứng khoán tra cứu qua Metabase UAT (DB 644, V3 > V2, Zero-Mutation Policy).
+- [ ] 100% dữ liệu chứng khoán tra cứu qua Metabase UAT (`${METABASE_UAT_DB_TIMESCALE_ID}`, V3 > V2, Zero-Mutation Policy).
 - [ ] Mỗi scenario trong file `.feature` đều có test method tương ứng (đủ 100% coverage).
 - [ ] Mọi hàm test đều có `@pytest.mark.scenario` và `@pytest.mark.jira` cùng docstring Given/When/Then.
 - [ ] Credentials đọc từ `.env` (kế thừa 3 tầng), không hardcode trong mã nguồn.

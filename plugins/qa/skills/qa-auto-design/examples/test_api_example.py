@@ -5,7 +5,7 @@ NGUYÊN TẮC QUAN TRỌNG:
   - File này là VÍ DỤ MINH HOẠ cấu trúc 7 assertions.
   - Khi triển khai thực tế, Agent BẮT BUỘC phải:
     1. Pre-generation Code Recon: Quét codebase để tái sử dụng module Auth/Token/Client có sẵn
-    2. TUYỆT ĐỐI KHÔNG MOCK TRÊN UAT: Bắt buộc gọi trực tiếp BASE_URL (https://openapi-uat.dnse.com.vn)
+    2. TUYỆT ĐỐI KHÔNG MOCK TRÊN UAT: Bắt buộc gọi trực tiếp BASE_URL từ .env
     3. GHI LOG ĐẦY ĐỦ 100%: Tích hợp LoggingSession để ghi lại toàn bộ Request Payload & Response Body
        của TẤT CẢ các test case (cả PASSED và FAILED) vào test-output.log và report.md.
     4. Tạo Pydantic Model từ spec/Jira thực tế, KHÔNG copy model mẫu này

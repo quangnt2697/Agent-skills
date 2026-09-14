@@ -85,8 +85,8 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - **NGHIÊM CẤM MOCK TRÊN MÔI TRƯỜNG UAT:** Khi viết auto test script cho OpenAPI (REST API) hoặc WebSocket trên môi trường UAT / Sandbox, Agent **TUYỆT ĐỐI KHÔNG** được sử dụng mock server, mock client, hoặc thư viện giả lập (như `unittest.mock`, `pytest-mock`, `respx`, `responses`, `aioresponses`, WireMock, hay local mock websocket server).
 - **Mục tiêu của Automation Test:** Xác thực tính tương thích, độ trễ, handshake SSL và nghiệp vụ thực tế trên hệ thống backend UAT thật. Việc mock server làm mất hoàn toàn giá trị kiểm thử hệ thống (System Integration Testing).
 - **Ép buộc trỏ Real Base URLs:**
-  - REST API: Bắt buộc gọi trực tiếp `BASE_URL` (`https://openapi-uat.dnse.com.vn` hoặc sandbox) từ `.env`.
-  - WebSocket: Bắt buộc kết nối trực tiếp `WS_URL` (`wss://ws-openapi-uat.dnse.com.vn`) từ `.env`.
+  - REST API: Bắt buộc gọi trực tiếp `BASE_URL` từ `.env`.
+  - WebSocket: Bắt buộc kết nối trực tiếp `WS_URL` từ `.env`.
 - **Quality Gate:** Mọi test script chứa mock adapter, decorator `@patch` vào tầng HTTP client, hoặc dựng fake server sẽ bị đánh trượt Quality Gate ngay lập tức.
 
 ### 1.12. Pre-generation Code Reconnaissance Gate (Quét Tận Dụng Code Có Sẵn)
@@ -106,13 +106,15 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
   3. Docstring trích dẫn nguyên văn kịch bản BDD tương ứng (Given / When / Then) để bảo đảm ma trận truy vết 1-1 giữa code automation và tài liệu Gherkin.
 
 ### 1.14. Chỉ Luôn Thiết Kế & Scan Test Trên Metabase UAT (Metabase UAT Strict Policy & Zero-Mutation)
-- **Môi trường Duy nhất:** Agent **BẮT BUỘC CHỈ LUÔN** thiết kế kịch bản kiểm thử, quét dữ liệu thị trường (scan/recon) và thực thi test trên môi trường **Metabase UAT** (`https://mb-uat.dnse.com.vn`, Database ID: `644`).
+- **Môi trường Duy nhất:** Agent **BẮT BUỘC CHỈ LUÔN** thiết kế kịch bản kiểm thử, quét dữ liệu thị trường (scan/recon) và thực thi test trên môi trường **Metabase UAT** (`${METABASE_UAT_URL}`, Database ID: `${METABASE_UAT_DB_TIMESCALE_ID}`).
 - **Khóa Chặn Bảo Mật Tuyệt Đối (Security Gate):**
-  - **NGHIÊM CẤM** kết nối, query hoặc scan test trên **Metabase Production** (`https://mb.dnse.com.vn` hoặc bất kỳ hostname production nào).
+  - **NGHIÊM CẤM** chạy automation test trên **Metabase Production** (`${METABASE_PROD_URL}`).
   - Mã nguồn service/test runner BẮT BUỘC phải cài đặt kiểm tra an toàn:
     ```python
-    if "mb.dnse.com.vn" in metabase_url and "mb-uat" not in metabase_url:
-        raise ValueError("[SECURITY_VIOLATION] Nghiêm cấm kết nối Metabase Production!")
+    prod_url = os.getenv("METABASE_PROD_URL", "")
+    current_env = os.getenv("METABASE_ENV", "uat").lower()
+    if current_env in ["prod", "production"] or (prod_url and prod_url in metabase_url):
+        raise ValueError("[SECURITY_VIOLATION] Nghiêm cấm chạy automation test trên Metabase Production!")
     ```
 - **Zero-Mutation Policy:**
   - Mọi câu truy vấn dữ liệu là Native SQL `SELECT` Read-Only để quan sát và đối chiếu.

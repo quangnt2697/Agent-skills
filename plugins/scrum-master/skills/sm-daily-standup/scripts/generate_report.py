@@ -277,17 +277,33 @@ def main():
     proposals_text = "✅ Không có vấn đề hoặc rủi ro nào được ghi nhận."
     template = template.replace("{proposals}", proposals_text)
 
-    app_dev = dev_stats.get("Phan Hữu Thắng", {"tickets": 0, "points": 0.0})
-    web_dev = dev_stats.get("Lương Tuấn Linh", {"tickets": 0, "points": 0.0})
+    app_dev = {"name": "Developer APP", "tickets": 0, "points": 0.0}
+    web_dev = {"name": "Developer WEB", "tickets": 0, "points": 0.0}
+    be_devs = []
+
+    for name, stat in dev_stats.items():
+        if stat.get("role") == "Developer APP":
+            app_dev = {"name": name, **stat}
+        elif stat.get("role") == "Developer WEB":
+            web_dev = {"name": name, **stat}
+        elif stat.get("role") == "Developer Backend":
+            be_devs.append({"name": name, **stat})
+            
+    if len(be_devs) >= 2:
+        dat = be_devs[0]
+        son = be_devs[1]
+    elif len(be_devs) == 1:
+        dat = be_devs[0]
+        son = {"name": "Developer Backend 2", "tickets": 0, "points": 0.0}
+    else:
+        dat = {"name": "Developer Backend 1", "tickets": 0, "points": 0.0}
+        son = {"name": "Developer Backend 2", "tickets": 0, "points": 0.0}
     
-    template = template.replace("| Phan Hữu Thắng  | Developer APP | {n}         | {pts}         | Chuyên trách APP – Không cân bằng |", 
-                                f"| Phan Hữu Thắng  | Developer APP | {app_dev['tickets']} | {app_dev['points']} | Chuyên trách APP – Không cân bằng |")
-    template = template.replace("| Lương Tuấn Linh | Developer WEB | {n}         | {pts}         | Chuyên trách WEB – Không cân bằng |", 
-                                f"| Lương Tuấn Linh | Developer WEB | {web_dev['tickets']} | {web_dev['points']} | Chuyên trách WEB – Không cân bằng |")
+    template = template.replace("| Developer APP  | Developer APP | {n}         | {pts}         | Chuyên trách APP – Không cân bằng |", 
+                                f"| {app_dev['name']} | Developer APP | {app_dev['tickets']} | {app_dev['points']} | Chuyên trách APP – Không cân bằng |")
+    template = template.replace("| Developer WEB | Developer WEB | {n}         | {pts}         | Chuyên trách WEB – Không cân bằng |", 
+                                f"| {web_dev['name']} | Developer WEB | {web_dev['tickets']} | {web_dev['points']} | Chuyên trách WEB – Không cân bằng |")
                                 
-    dat = dev_stats.get("Trịnh Quốc Đạt", {"tickets": 0, "points": 0.0})
-    son = dev_stats.get("Nguyễn Thành Sơn", {"tickets": 0, "points": 0.0})
-    
     total_be_pts = dat["points"] + son["points"]
     total_be_tickets = dat["tickets"] + son["tickets"]
     
@@ -305,16 +321,16 @@ def main():
     delta_pts = abs(dat["points"] - son["points"])
     delta_pct = max(diff_pt, diff_tk)
     
-    template = template.replace("| Trịnh Quốc Đạt   | {n}                | {pts}           | {percent}%           |",
-                                f"| Trịnh Quốc Đạt | {dat['tickets']} | {dat['points']} | {dat_tk_pct}% (TK) / {dat_pt_pct}% (Pts) |")
-    template = template.replace("| Nguyễn Thành Sơn | {n}                | {pts}           | {percent}%           |",
-                                f"| Nguyễn Thành Sơn | {son['tickets']} | {son['points']} | {son_tk_pct}% (TK) / {son_pt_pct}% (Pts) |")
+    template = template.replace("| Developer Backend 1   | {n}                | {pts}           | {percent}%           |",
+                                f"| {dat['name']} | {dat['tickets']} | {dat['points']} | {dat_tk_pct}% (TK) / {dat_pt_pct}% (Pts) |")
+    template = template.replace("| Developer Backend 2 | {n}                | {pts}           | {percent}%           |",
+                                f"| {son['name']} | {son['tickets']} | {son['points']} | {son_tk_pct}% (TK) / {son_pt_pct}% (Pts) |")
     template = template.replace("| **Chênh lệch**   | **{delta_ticket}** | **{delta_pts}** | **{delta_percent}%** |",
                                 f"| **Chênh lệch** | **{delta_ticket}** | **{delta_pts}** | **{delta_pct}%** |")
                                 
     if is_imbalanced:
-        overloaded = "Trịnh Quốc Đạt" if dat["points"] > son["points"] else "Nguyễn Thành Sơn"
-        underloaded = "Nguyễn Thành Sơn" if overloaded == "Trịnh Quốc Đạt" else "Trịnh Quốc Đạt"
+        overloaded = dat["name"] if dat["points"] > son["points"] else son["name"]
+        underloaded = son["name"] if overloaded == dat["name"] else dat["name"]
         
         transfer_issue = None
         for iss in (in_progress_issues + open_issues):

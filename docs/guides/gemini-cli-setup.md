@@ -8,7 +8,7 @@ Do `agent-skills` được phân chia thành 8 sub-plugins modular theo từng p
 
 1. Clone repository về máy:
    ```bash
-   git clone https://gitlab.dnse.com.vn/my-project/agent-skills.git
+   git clone https://gitlab.example.com/org/agent-skills.git
    cd agent-skills
    npm install
    ```

@@ -131,7 +131,7 @@ pythonpath = . steps ../../.. ../../../shared ../../../sdk
 ### 3.2. Ưu tiên Sử Dụng Client/SDK Có Sẵn
 Khi viết code kiểm thử cho API/WebSocket:
 1. **Kiểm tra SDK có sẵn:**
-   - Quét workspace để tìm SDK do dev team cung cấp (ví dụ: `openapi-tyk/sdk/python`, `services/`, `client/`).
+   - Quét workspace để tìm SDK do dev team cung cấp (ví dụ: `shared/sdk/python`, `services/client/`).
    - Nếu đã có SDK, trong `steps/services/` chỉ cần tạo một wrapper đơn giản kế thừa client đó hoặc import trực tiếp vào `conftest.py` / `test_*.py`.
 2. **Không viết lại từ đầu:**
    - Việc tự viết lại client HTTP/WebSocket làm phát sinh lỗi duplicate code và lệch chuẩn giao thức với hệ thống thật.
@@ -196,8 +196,8 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 
 ### 5.1. Cơ Chế Điều Hướng Môi Trường Chuẩn Xác (OpenAPI UAT vs Sandbox)
 Hệ thống kiểm thử hỗ trợ 2 môi trường độc lập với Database tương ứng:
-- **Môi trường OpenAPI UAT:** `BASE_URL=https://openapi-uat.dnse.com.vn` $\rightarrow$ Database `openapi` (Metabase DB ID: **535**).
-- **Môi trường Sandbox:** `BASE_URL=https://sb-openapi.dnse.com.vn` $\rightarrow$ Database `openapi-sandbox` (Metabase DB ID: **655**).
+- **Môi trường OpenAPI UAT:** `BASE_URL` trỏ tới UAT $\rightarrow$ Database `openapi` (Metabase DB ID: `${METABASE_UAT_DB_OPENAPI_ID}`).
+- **Môi trường Sandbox:** `BASE_URL` chứa `sandbox` $\rightarrow$ Database `openapi-sandbox` (Metabase DB ID: `${METABASE_UAT_DB_OPENAPI_SANDBOX_ID}`).
 
 Trong `conftest.py`, fixture `target_environment` tự động nhận diện môi trường từ `BASE_URL`:
 ```python
@@ -205,8 +205,18 @@ Trong `conftest.py`, fixture `target_environment` tự động nhận diện mô
 def target_environment():
     base_url = os.getenv("BASE_URL", "")
     if "sandbox" in base_url.lower() or "sb-openapi" in base_url.lower():
-        return {"name": "sandbox", "db_id": 655, "db_name": "openapi-sandbox", "base_url": base_url}
-    return {"name": "openapi", "db_id": 535, "db_name": "openapi", "base_url": base_url}
+        return {
+            "name": "sandbox",
+            "db_id": int(os.getenv("METABASE_DB_OPENAPI_SANDBOX_ID", "655")),
+            "db_name": "openapi-sandbox",
+            "base_url": base_url
+        }
+    return {
+        "name": "openapi",
+        "db_id": int(os.getenv("METABASE_DB_OPENAPI_ID", "535")),
+        "db_name": "openapi",
+        "base_url": base_url
+    }
 ```
 
 ### 5.2. Nạp Dữ Liệu Thị Trường Thật Từ `fixtures/market_data.json`
@@ -242,15 +252,16 @@ Nhờ cơ chế này, mã test không bao giờ phải hardcode giá hoặc mã 
 def ors_admin_client(test_log_collector):
     """
     Tự động kết nối tới ORS Admin UAT để bắn Execution Reports:
-    - ORS_ADMIN_URL: https://api-uat.dnse.com.vn (Login lấy JWT)
-    - ORS_FO_URL: https://api-fo-uat.dnse.com.vn:
-        + Cơ sở: /ors/accounts/{accountNo}/orders/{orderId}/reports
-        + Phái sinh: /ors-derivative/accounts/{accountNo}/orders/{orderId}/reports
+    - ORS_ADMIN_URL: Đọc từ .env (Login lấy JWT)
+    - ORS_FO_URL: Đọc từ .env (Gateway Cơ sở và Phái sinh)
     """
-    admin_url = os.getenv("ORS_ADMIN_URL", "https://api-uat.dnse.com.vn")
-    fo_url = os.getenv("ORS_FO_URL", "https://api-fo-uat.dnse.com.vn")
-    username = os.getenv("ORS_ADMIN_USERNAME", "dnse.admin@dnse.com.vn")
-    password = os.getenv("ORS_ADMIN_PASSWORD", "@dmin$1234")
+    admin_url = os.getenv("ORS_ADMIN_URL")
+    fo_url = os.getenv("ORS_FO_URL")
+    username = os.getenv("ORS_ADMIN_USERNAME")
+    password = os.getenv("ORS_ADMIN_PASSWORD")
+
+    if not all([admin_url, fo_url, username, password]):
+        pytest.skip("Chưa cấu hình đầy đủ ORS Admin credentials trong .env")
 
     client = OrsAdminClient(admin_url=admin_url, fo_url=fo_url, collector=test_log_collector)
     client.login(username=username, password=password)

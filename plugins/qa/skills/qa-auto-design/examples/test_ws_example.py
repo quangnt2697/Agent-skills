@@ -5,7 +5,7 @@ NGUYÊN TẮC QUAN TRỌNG:
   - File này là VÍ DỤ MINH HOẠ cấu trúc 8 assertions WebSocket và luồng chuyển trạng thái lệnh.
   - Khi triển khai thực tế, Agent BẮT BUỘC phải:
     1. Pre-generation Code Recon: Quét codebase để tái sử dụng module WebSocket client, channel helpers có sẵn
-    2. TUYỆT ĐỐI KHÔNG MOCK TRÊN UAT: Bắt buộc kết nối trực tiếp vào WS_URL (wss://ws-openapi-uat.dnse.com.vn)
+    2. TUYỆT ĐỐI KHÔNG MOCK TRÊN UAT: Bắt buộc kết nối trực tiếp vào WS_URL từ .env
     3. GHI LOG ĐẦY ĐỦ 100%: Tự động ghi lại toàn bộ Outgoing Action và Inbound Event của TẤT CẢ các test case
        (cả PASSED và FAILED) vào test-output.log và report.md qua TestLogCollector.
     4. E2E Order State Transition Testing: Khi test event lệnh, bắt buộc thiết kế song hành:
@@ -25,6 +25,7 @@ Sơ đồ 8 assertions cho mỗi test case WebSocket:
 
 import asyncio
 import json
+import os
 import time
 import uuid
 import pytest
@@ -190,10 +191,11 @@ class OrsAdminClient:
     từ Sở Giao dịch về Core ORS cho cả CƠ SỞ (/ors) và PHÁI SINH (/ors-derivative).
     Tự động ghi nhận interaction vào TestLogCollector.
     """
-    def __init__(self, admin_url: str = "https://api-uat.dnse.com.vn", fo_url: str = "https://api-fo-uat.dnse.com.vn", collector=None):
+    def __init__(self, admin_url: str = None, fo_url: str = None, collector=None):
+        import os
         import requests
-        self._admin_url = admin_url.rstrip("/")
-        self._fo_url = fo_url.rstrip("/")
+        self._admin_url = (admin_url or os.getenv("ORS_ADMIN_URL", "")).rstrip("/")
+        self._fo_url = (fo_url or os.getenv("ORS_FO_URL", "")).rstrip("/")
         self._session = requests.Session()
         self._token = None
         self._collector = collector
@@ -216,8 +218,13 @@ class OrsAdminClient:
                 return "/ors-derivative"
         return "/ors"
 
-    def login(self, username: str = "dnse.admin@dnse.com.vn", password: str = "@dmin$1234") -> str:
+    def login(self, username: str = None, password: str = None) -> str:
         """Đăng nhập lấy Bearer token của ORS Admin."""
+        import os
+        username = username or os.getenv("ORS_ADMIN_USERNAME", "")
+        password = password or os.getenv("ORS_ADMIN_PASSWORD", "")
+        if not username or not password:
+            raise ValueError("ORS Admin login yêu cầu ORS_ADMIN_USERNAME và ORS_ADMIN_PASSWORD trong .env")
         resp = self._session.post(
             f"{self._admin_url}/admin-service/login",
             json={"username": username, "password": password},
@@ -384,10 +391,14 @@ def ors_admin_client(test_log_collector):
     Dùng để bắn Execution Reports giả lập khớp lệnh trên UAT.
     """
     import os
-    admin_url = os.getenv("ORS_ADMIN_URL", "https://api-uat.dnse.com.vn")
-    fo_url = os.getenv("ORS_FO_URL", "https://api-fo-uat.dnse.com.vn")
-    username = os.getenv("ORS_ADMIN_USERNAME", "dnse.admin@dnse.com.vn")
-    password = os.getenv("ORS_ADMIN_PASSWORD", "@dmin$1234")
+    import pytest
+    admin_url = os.getenv("ORS_ADMIN_URL")
+    fo_url = os.getenv("ORS_FO_URL")
+    username = os.getenv("ORS_ADMIN_USERNAME")
+    password = os.getenv("ORS_ADMIN_PASSWORD")
+
+    if not all([admin_url, fo_url, username, password]):
+        pytest.skip("Chưa cấu hình đầy đủ ORS Admin credentials trong .env")
 
     client = OrsAdminClient(admin_url=admin_url, fo_url=fo_url, collector=test_log_collector)
     client.login(username=username, password=password)
@@ -565,7 +576,7 @@ class TestOrderEventsWebSocket:
         """
         sym = valid_order_symbol["symbol"]
         floor_price = float(valid_order_symbol["floor_price"])
-        test_account = "064CJJH8UF"
+        test_account = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         # 1. Subscribe kênh order_event của tài khoản
         ack = await ws_client.subscribe(channel="order_events", account_no=test_account)
@@ -615,7 +626,7 @@ class TestOrderEventsWebSocket:
         sym = valid_order_symbol["symbol"]
         ceil_price = float(valid_order_symbol["ceiling_price"])
         invalid_price = ceil_price + 2000.0  # Vượt trần -> kích hoạt reject
-        test_account = "064CJJH8UF"
+        test_account = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         await ws_client.subscribe(channel="order_events", account_no=test_account)
 
@@ -655,7 +666,7 @@ class TestOrderEventsWebSocket:
         """
         sym = valid_order_symbol["symbol"]
         floor_price = float(valid_order_symbol["floor_price"])
-        test_account = "064CJJH8UF"
+        test_account = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         await ws_client.subscribe(channel="order_events", account_no=test_account)
 
@@ -716,7 +727,7 @@ class TestOrderEventsWebSocket:
         """
         sym = valid_order_symbol["symbol"]
         floor_price = float(valid_order_symbol["floor_price"])
-        test_account = "064CJJH8UF"
+        test_account = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         await ws_client.subscribe(channel="order_events", account_no=test_account)
 
@@ -839,7 +850,7 @@ class TestOrderEventsWebSocket:
         """
         sym = valid_order_symbol["symbol"]
         price = float(valid_order_symbol["reference_price"])
-        test_account_a = "064CJJH8UF"
+        test_account_a = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         await ws_client.subscribe(channel="order_events", account_no=test_account_a)
 
@@ -884,7 +895,7 @@ class TestOrderEventsWebSocket:
         """
         sym = valid_order_symbol["symbol"]
         floor_price = float(valid_order_symbol["floor_price"])
-        test_account = "064CJJH8UF"
+        test_account = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         await ws_client.subscribe(channel="order_events", account_no=test_account)
 
@@ -947,7 +958,7 @@ class TestConditionalOrderEventsWebSocket:
         """
         sym = valid_order_symbol["symbol"]
         ceil_price = float(valid_order_symbol["ceiling_price"])
-        test_account = "064CJJH8UF"
+        test_account = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         await ws_client.subscribe(channel="conditional_orders", account_no=test_account)
 
@@ -963,7 +974,7 @@ class TestConditionalOrderEventsWebSocket:
             "price": ceil_price,
             "client_ref": f"{unique_id}_COND_NEW",
         }
-        resp = api_session.post(f"{base_url}/dnse-order-service/conditional-orders", json=cond_payload)
+        resp = api_session.post(f"{base_url}/order-service/conditional-orders", json=cond_payload)
         assert resp.status_code in (200, 201), f"Đặt lệnh điều kiện thất bại: {resp.text}"
         cond_id = resp.json().get("order_id", f"COND_{unique_id}")
 
@@ -974,7 +985,7 @@ class TestConditionalOrderEventsWebSocket:
         assert cond_event.order_category == "STOP"
 
         # 3. Hủy lệnh điều kiện
-        del_resp = api_session.delete(f"{base_url}/dnse-order-service/conditional-orders/{cond_id}")
+        del_resp = api_session.delete(f"{base_url}/order-service/conditional-orders/{cond_id}")
         assert del_resp.status_code in (200, 204), f"Hủy lệnh điều kiện thất bại: {del_resp.text}"
 
         # 4. Đón nhận event CANCELLED
@@ -997,7 +1008,7 @@ class TestConditionalOrderEventsWebSocket:
         """
         sym = valid_order_symbol["symbol"]
         ref_price = float(valid_order_symbol["reference_price"])
-        test_account_a = "064CJJH8UF"
+        test_account_a = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         await ws_client.subscribe(channel="conditional_orders", account_no=test_account_a)
 
@@ -1013,7 +1024,7 @@ class TestConditionalOrderEventsWebSocket:
             "price": ref_price,
             "client_ref": f"{unique_id}_COND_ACT",
         }
-        resp = api_session.post(f"{base_url}/dnse-order-service/conditional-orders", json=cond_payload)
+        resp = api_session.post(f"{base_url}/order-service/conditional-orders", json=cond_payload)
         assert resp.status_code in (200, 201), f"Đặt lệnh điều kiện thất bại: {resp.text}"
 
         # Đón NEW
@@ -1047,7 +1058,7 @@ class TestConditionalOrderEventsWebSocket:
         """
         sym = valid_order_symbol["symbol"]
         ref_price = float(valid_order_symbol["reference_price"])
-        test_account_a = "064CJJH8UF"
+        test_account_a = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         await ws_client.subscribe(channel="conditional_orders", account_no=test_account_a)
 
@@ -1057,7 +1068,7 @@ class TestConditionalOrderEventsWebSocket:
             "order_category": "STOP", "stop_price": ref_price, "order_type": "LO", "price": ref_price,
             "client_ref": f"{unique_id}_COND_CAT",
         }
-        resp = api_session.post(f"{base_url}/dnse-order-service/conditional-orders", json=cond_payload)
+        resp = api_session.post(f"{base_url}/order-service/conditional-orders", json=cond_payload)
         await ws_client.receive_event(timeout=5.0)  # NEW
 
         # 2. Tạo tick kích hoạt
@@ -1095,7 +1106,7 @@ class TestConditionalOrderEventsWebSocket:
         """
         sym = valid_order_symbol["symbol"]
         ref_price = float(valid_order_symbol["reference_price"])
-        test_account_a = "064CJJH8UF"
+        test_account_a = os.getenv("ACCOUNT_NO", "SAMPLE_ACCOUNT_01")
 
         await ws_client.subscribe(channel="conditional_orders", account_no=test_account_a)
 
@@ -1105,7 +1116,7 @@ class TestConditionalOrderEventsWebSocket:
             "order_category": "STOP", "stop_price": ref_price, "order_type": "LO", "price": ref_price,
             "client_ref": f"{unique_id}_COND_REJ",
         }
-        resp = api_session.post(f"{base_url}/dnse-order-service/conditional-orders", json=cond_payload)
+        resp = api_session.post(f"{base_url}/order-service/conditional-orders", json=cond_payload)
         await ws_client.receive_event(timeout=5.0)  # NEW
 
         # 2. Rút cạn sức mua (PP0 -> 0)

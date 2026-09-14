@@ -113,7 +113,7 @@ markers =
 
 ### 3.4. Thư mục `steps/services/` (Dành cho API & WebSocket)
 - Chứa các class giao tiếp mạng (HTTP Client, WebSocket Client).
-- **Quy tắc tái sử dụng:** Nếu trong workspace/repo đã có sẵn SDK hoặc client do dev viết (ví dụ: `openapi-tyk/sdk/python`), Agent **BẮT BUỘC** tái sử dụng bằng cách import hoặc tạo wrapper kế thừa mỏng thay vì tự viết lại toàn bộ giao thức.
+- **Quy tắc tái sử dụng:** Nếu trong workspace/repo đã có sẵn SDK hoặc client do dev viết (ví dụ: `shared/sdk/python`, `services/client/`), Agent **BẮT BUỘC** tái sử dụng bằng cách import hoặc tạo wrapper kế thừa mỏng thay vì tự viết lại toàn bộ giao thức.
 - **TUYỆT ĐỐI KHÔNG** chứa assertions (`assert`, `expect`) trong Service class.
 
 ### 3.5. Thư mục `steps/pages/` (Dành cho Web UI & Mobile)

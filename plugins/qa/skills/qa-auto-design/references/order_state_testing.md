@@ -71,16 +71,16 @@ Trên môi trường UAT, do lệnh thường đưa lên sàn không có cơ ch�
 #### A. Ma Trận Endpoint ORS UAT Theo Loại Lệnh:
 | Thao Tác | Gateway Cơ Sở (Equities) | Gateway Phái Sinh (Derivatives) | Ghi Chú |
 |---|---|---|---|
-| **1. Login Admin** | `POST https://api-uat.dnse.com.vn/admin-service/login` | `POST https://api-uat.dnse.com.vn/admin-service/login` | Dùng chung token JWT quyền `ADMIN` |
-| **2. Tra cứu Sổ Lệnh** | `GET https://api-fo-uat.dnse.com.vn/ors/orders?_start=0&_end=100` | `GET https://api-fo-uat.dnse.com.vn/ors-derivative/orders?_start=0&_end=100` | Lấy đúng `id` và `accountNo` |
-| **3. Chi Tiết Lệnh** | `GET https://api-fo-uat.dnse.com.vn/ors/accounts/{accountNo}/orders/{orderId}` | `GET https://api-fo-uat.dnse.com.vn/ors-derivative/accounts/{accountNo}/orders/{orderId}` | Kiểm tra trạng thái core của lệnh |
-| **4. Bắn Báo Cáo Khớp (Report)** | `POST https://api-fo-uat.dnse.com.vn/ors/accounts/{accountNo}/orders/{orderId}/reports` | `POST https://api-fo-uat.dnse.com.vn/ors-derivative/accounts/{accountNo}/orders/{orderId}/reports` | Kích hoạt `PartiallyFilled` hoặc `Filled` |
+| **1. Login Admin** | `POST ${ORS_ADMIN_URL}/admin-service/login` | `POST ${ORS_ADMIN_URL}/admin-service/login` | Dùng chung token JWT quyền `ADMIN` |
+| **2. Tra cứu Sổ Lệnh** | `GET ${ORS_FO_URL}/ors/orders?_start=0&_end=100` | `GET ${ORS_FO_URL}/ors-derivative/orders?_start=0&_end=100` | Lấy đúng `id` và `accountNo` |
+| **3. Chi Tiết Lệnh** | `GET ${ORS_FO_URL}/ors/accounts/{accountNo}/orders/{orderId}` | `GET ${ORS_FO_URL}/ors-derivative/accounts/{accountNo}/orders/{orderId}` | Kiểm tra trạng thái core của lệnh |
+| **4. Bắn Báo Cáo Khớp (Report)** | `POST ${ORS_FO_URL}/ors/accounts/{accountNo}/orders/{orderId}/reports` | `POST ${ORS_FO_URL}/ors-derivative/accounts/{accountNo}/orders/{orderId}/reports` | Kích hoạt `PartiallyFilled` hoặc `Filled` |
 
 #### B. Quy trình 3 bước tự động hóa và cơ chế phân loại lệnh:
 1. **Bước 1 — Login ORS Admin lấy Token:**
-   - **Endpoint:** `POST https://api-uat.dnse.com.vn/admin-service/login`
-   - **Headers:** `Content-Type: application/json`, `Origin: https://ors-admin-uat.dnse.com.vn` (hoặc `https://ors-derivative-admin-uat.dnse.com.vn`)
-   - **Payload:** `{"username": "dnse.admin@dnse.com.vn", "password": "@dmin$1234"}`
+   - **Endpoint:** `POST ${ORS_ADMIN_URL}/admin-service/login`
+   - **Headers:** `Content-Type: application/json`
+   - **Payload:** `{"username": "${ORS_ADMIN_USERNAME}", "password": "${ORS_ADMIN_PASSWORD}"}` (nạp từ `.env`)
    - **Output:** Trích xuất JWT Bearer Token để xác thực cho các thao tác ORS tiếp theo.
 
 2. **Bước 2 — Tra cứu Lệnh trên ORS & Tự động điều hướng Gateway:**
@@ -88,11 +88,11 @@ Trên môi trường UAT, do lệnh thường đưa lên sàn không có cơ ch�
      + **Phái sinh (`/ors-derivative`):** Khi `is_derivative=True` HOẶC `symbol` bắt đầu bằng `VN30F`, `GB05`, `GB10`, hoặc mã hợp đồng tương lai KRX 8-10 ký tự (ví dụ: `41I1G9000`).
      + **Cơ sở (`/ors`):** Mặc định cho các mã cổ phiếu 3 ký tự (ví dụ: `VNM`, `VIX`, `HPG`).
    - Khi đặt lệnh với `client_ref`, ORS lưu vào trường `clOrdId`.
-   - Helper `ors_admin_client.find_order(client_ref=..., symbol=..., is_derivative=...)` tự động gọi đúng sổ lệnh để trích xuất `id` (chuỗi ký tự hoặc số nguyên) và `accountNo` tương ứng (ví dụ phái sinh: `0335001078`, orderId `896`).
+   - Helper `ors_admin_client.find_order(client_ref=..., symbol=..., is_derivative=...)` tự động gọi đúng sổ lệnh để trích xuất `id` (chuỗi ký tự hoặc số nguyên) và `accountNo` tương ứng.
 
 3. **Bước 3 — Bắn Báo Cáo Khớp Lệnh (Execution Report Injection):**
-   - **Endpoint Cơ sở:** `POST https://api-fo-uat.dnse.com.vn/ors/accounts/{accountNo}/orders/{orderId}/reports`
-   - **Endpoint Phái sinh:** `POST https://api-fo-uat.dnse.com.vn/ors-derivative/accounts/{accountNo}/orders/{orderId}/reports`
+   - **Endpoint Cơ sở:** `POST ${ORS_FO_URL}/ors/accounts/{accountNo}/orders/{orderId}/reports`
+   - **Endpoint Phái sinh:** `POST ${ORS_FO_URL}/ors-derivative/accounts/{accountNo}/orders/{orderId}/reports`
    - **Headers:** `Authorization: Bearer <ADMIN_TOKEN>`, `Content-Type: application/json`
    - **Payload mẫu Phái sinh:**
      ```json
@@ -170,7 +170,7 @@ flowchart LR
 ```
 
 ### 3.1. `NEW` (Lệnh điều kiện chờ kích hoạt)
-- **Kỹ thuật:** Gọi API `POST /dnse-order-service/conditional-orders` (hoặc `POST /accounts/{accountNo}/orders` với `orderCategory: STOP`):
+- **Kỹ thuật:** Gọi API `POST /order-service/conditional-orders` (hoặc `POST /accounts/{accountNo}/orders` với `orderCategory: STOP`):
   + Đặt `symbol = X`, `side = BUY`, `orderType = LO`, `price = P`, `stopPrice = P_trigger`.
   + Đặt `stopPrice` vượt xa giá thị trường hiện tại (chưa thể chạm tới).
 - **Event WS:** Kênh `conditional_orders` đẩy event xác nhận `status = NEW` kèm `order_id`.
@@ -195,7 +195,7 @@ flowchart LR
   3. Khi có bất kỳ giao dịch tick tiếp theo xuất hiện $\implies$ Evaluator kích hoạt ngay lập tức.
 
 ### 3.3. `CANCELLED` (Hủy lệnh điều kiện chủ động)
-- **Kỹ thuật:** Khi lệnh điều kiện đang ở trạng thái `NEW`, gọi API `DELETE /dnse-order-service/conditional-orders/{orderId}`.
+- **Kỹ thuật:** Khi lệnh điều kiện đang ở trạng thái `NEW`, gọi API `DELETE /order-service/conditional-orders/{orderId}`.
 - **Event WS:** Kênh `conditional_orders` đẩy event xác nhận `status = CANCELLED`.
 
 ### 3.4. `CANCELLED_AFTER_TRIGGER` (Hủy lệnh thường sau khi lệnh điều kiện đã kích hoạt)

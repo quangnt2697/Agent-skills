@@ -14,7 +14,7 @@ Tài liệu này tổng hợp ma trận các lỗi phổ biến khi đồng bộ
 | ⚠️ **Lỗi Phase B: Chưa cấu hình Username / Password** | Thiếu biến `SQUASH_USERNAME` hoặc `SQUASH_PASSWORD` trong `.env`. | Đây là cảnh báo bình thường khi chỉ muốn chạy Phase A. Nếu cần gán vào Campaign, bổ sung 2 biến này vào `.env`. |
 | ⚠️ **Lỗi Phase B: Đăng nhập session thất bại (HTTP 401)** | Sai mật khẩu hoặc tài khoản bị khóa đăng nhập trên giao diện web. | Thử đăng nhập thủ công trên giao diện web Squash TM để xác nhận mật khẩu và mở khóa tài khoản nếu cần. |
 | ⚠️ **Lỗi Phase B: Không tìm thấy node Sprint nào** | Cấu trúc cây Campaign khác thường, hoặc tài khoản không có quyền xem Campaign Workspace. | Bật `SQUASH_DEBUG=1` để soi raw response JSON của `/backend/campaign-tree`. Kiểm tra quyền của tài khoản trong Campaign Workspace. |
-| ⚠️ **Lỗi Phase B: Không khớp được node Sprint** | Tên Sprint bên Campaign khác bên Requirement (ví dụ: bên Req là `EnTrade Sprint 046` nhưng bên Campaign đặt là `Sprint 46`). | Kiểm tra trên UI và đồng bộ lại quy ước đặt tên Sprint giữa 2 workspace cho đồng nhất. |
+| ⚠️ **Lỗi Phase B: Không khớp được node Sprint** | Tên Sprint bên Campaign khác bên Requirement (ví dụ: bên Req là `Sprint 046` nhưng bên Campaign đặt là `Sprint 46`). | Kiểm tra trên UI và đồng bộ lại quy ước đặt tên Sprint giữa 2 workspace cho đồng nhất. |
 | ⚠️ **Lỗi Phase B: Không tìm thấy requirement `{issueKey}`** | Requirement chưa được đưa vào Sprint bên Campaign Workspace, hoặc trường Reference trên Squash bị để trống. | Vào Campaign Workspace $\rightarrow$ Chọn Sprint $\rightarrow$ Đảm bảo Requirement đã được kéo vào Sprint và trường Reference điền đúng mã `{issueKey}`. |
 | ⚠️ **Lỗi Phase B: Endpoint `/backend` trả về lỗi HTTP 4xx/5xx** | Giao diện Squash TM nâng cấp phiên bản khiến endpoint nội bộ thay đổi cấu trúc payload hoặc URL. | Bật `SQUASH_DEBUG=1`, mở Chrome DevTools (F12) trên UI Squash để bắt request khi gán test plan item thủ công, sau đó cập nhật lại script `squash-push.sh`. |
 
@@ -44,7 +44,7 @@ Do đó, Agent **TUYỆT ĐỐI KHÔNG** chỉ dựa vào exit code 0 để kế
 
 ```
 [MẪU LOG ĐẦU RA CỦA SCRIPT]
-- Sprint Target: EnTrade Sprint 046
+- Sprint Target: Sprint 046
 - Test Case Workspace: Đã tạo mới (hoặc Ghi đè) Test Case 'G3PTP-17145-Thiet-ke-luong-thanh-toan' (ID: 12540)
 - Campaign Workspace: Đã gán vào requirement 'G3PTP-17145' (sprintReqVersionId: 4321)
 ```
@@ -54,7 +54,7 @@ Do đó, Agent **TUYỆT ĐỐI KHÔNG** chỉ dựa vào exit code 0 để kế
 #### Trường hợp 1: Cả Phase A và Phase B đều thành công
 ```markdown
 ✅ **Đã push thành công lên Squash TM:**
-- **Sprint:** EnTrade Sprint 046 (Đồng bộ từ Requirement Workspace)
+- **Sprint:** Sprint 046 (Đồng bộ từ Requirement Workspace)
 - **Test Case:** `G3PTP-17145-Thiet-ke-luong-thanh-toan` (ID: 12540)
 - **Hành động:** Đã đồng bộ thư mục và ghi đè nội dung kịch bản Gherkin mới
 - **Campaign Workspace:** Đã gán thành công vào requirement `G3PTP-17145` (sẵn sàng thực thi kiểm thử)
@@ -63,7 +63,7 @@ Do đó, Agent **TUYỆT ĐỐI KHÔNG** chỉ dựa vào exit code 0 để kế
 #### Trường hợp 2: Phase A thành công, Phase B bị bỏ qua
 ```markdown
 ✅ **Đã push Test Case lên Squash TM (Phase A thành công):**
-- **Sprint:** EnTrade Sprint 046
+- **Sprint:** Sprint 046
 - **Test Case:** `G3PTP-17145-Thiet-ke-luong-thanh-toan` (ID: 12540)
 - **Hành động:** Đã ghi đè kịch bản Gherkin thành công trên Test Case Workspace
 

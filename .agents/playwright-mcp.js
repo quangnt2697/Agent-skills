@@ -69,7 +69,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 inputSchema: {
                     type: "object",
                     properties: {
-                        url: { type: "string", description: "URL cần mở (ví dụ: https://dev.trading-test.dnse.com.vn/)" }
+                        url: { type: "string", description: "URL cần mở (ví dụ: https://trading-test.example.com/)" }
                     },
                     required: ["url"]
                 }
@@ -156,7 +156,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             {
                 name: "playwright_login_trading",
-                description: "Tự động mở và đăng nhập vào Web Trading Platform DNSE sử dụng thông tin cấu hình từ .env.",
+                description: "Tự động mở và đăng nhập vào Web Trading Platform sử dụng thông tin cấu hình từ .env.",
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -293,9 +293,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             }
 
             case "playwright_login_dashboard": {
-                const dashboardUrl = args.url || process.env.DASHBOARD_URL || "https://dashboard-openapi-uat.dnse.com.vn/#/dashboard/overview";
-                const username = args.username || process.env.DASHBOARD_USERNAME || "dnse.admin@dnse.com.vn";
-                const password = args.password || process.env.DASHBOARD_PASSWORD || "@dmin$1234";
+                const dashboardUrl = args.url || process.env.DASHBOARD_URL;
+                if (!dashboardUrl) throw new Error("DASHBOARD_URL chưa được thiết lập trong .env hoặc đối số");
+                const username = args.username || process.env.DASHBOARD_USERNAME;
+                const password = args.password || process.env.DASHBOARD_PASSWORD;
+                if (!username || !password) throw new Error("Thiếu DASHBOARD_USERNAME hoặc DASHBOARD_PASSWORD trong .env");
 
                 await page.goto(dashboardUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
                 await page.waitForTimeout(1000);
@@ -329,9 +331,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             }
 
             case "playwright_login_trading": {
-                const tradingUrl = args.url || process.env.WEB_BASE_URL || "https://dev.trading-test.dnse.com.vn/";
-                const username = args.username || process.env.TRADING_USERNAME || "064CJJH8UF";
-                const password = args.password || process.env.TRADING_PASSWORD || "ENCAP@1234";
+                const tradingUrl = args.url || process.env.WEB_BASE_URL;
+                if (!tradingUrl) throw new Error("WEB_BASE_URL chưa được thiết lập trong .env hoặc đối số");
+                const username = args.username || process.env.TRADING_USERNAME || "";
+                const password = args.password || process.env.TRADING_PASSWORD || "";
 
                 await page.goto(tradingUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
                 await page.waitForTimeout(1000);

@@ -1,13 +1,13 @@
 ---
 name: db-timescale-reconciler
-description: Sử dụng khi cần quét, đối chiếu hoặc kiểm tra độ lệch dữ liệu TimescaleDB Production (DB 644) giữa các bảng V3 so với V2 hoặc giữa bảng raw của Sở (MDDS feeds) với bảng đã xử lý cho 11 topic thị trường KRX. Kích hoạt khi chạy lệnh /db-recon hoặc nhận yêu cầu đối chiếu dữ liệu thị trường.
+description: Sử dụng khi cần quét, đối chiếu hoặc kiểm tra độ lệch dữ liệu TimescaleDB Production giữa các bảng V3 so với V2 hoặc giữa bảng raw của Sở (MDDS feeds) với bảng đã xử lý cho 11 topic thị trường KRX. Kích hoạt khi chạy lệnh /db-recon hoặc nhận yêu cầu đối chiếu dữ liệu thị trường.
 ---
 
 # db-timescale-reconciler: Đối Chiếu & Kiểm Tra Độ Lệch Dữ Liệu TimescaleDB Production
 
 ## Tổng quan (Overview)
 
-Kỹ năng `db-timescale-reconciler` chuyên trách quét, đối chiếu và kiểm tra tính nhất quán (Data Parity & Reconciliation) của dữ liệu thị trường chứng khoán KRX MDDS trên **TimescaleDB Production (DB ID: 644)** thông qua Metabase API (`https://mb.dnse.com.vn`).
+Kỹ năng `db-timescale-reconciler` chuyên trách quét, đối chiếu và kiểm tra tính nhất quán (Data Parity & Reconciliation) của dữ liệu thị trường chứng khoán KRX MDDS trên **TimescaleDB Production (DB ID: `${METABASE_PROD_DB_TIMESCALE_ID}`)** thông qua Metabase API (`${METABASE_PROD_URL}`).
 
 Hệ thống dựa trên tài liệu đặc tả kiến trúc **[KRX] Xử lý dữ liệu thị trường MDDS**, đối chiếu hai chiều:
 1. **Pipeline v3 so với v2:** Kiểm tra sự chuyển đổi từ mô hình cũ (gộp topic Stock Info) sang mô hình mới (phân tách thành các stream chuyên biệt v3).
@@ -65,7 +65,7 @@ node scripts/db-recon.js --list
 ```
 
 ### Cách 2: Gọi qua DB MCP Tool trong chat
-Agent có thể gọi tool `db_query` trên TimescaleDB (`database: "timescale"` [644]) với template SQL tương ứng trong `resources/reconciliation-queries.json`.
+Agent có thể gọi tool `db_query` trên TimescaleDB (`database: "timescale"`) với template SQL tương ứng trong `resources/reconciliation-queries.json`.
 
 ---
 
@@ -94,4 +94,4 @@ Agent có thể gọi tool `db_query` trên TimescaleDB (`database: "timescale"`
 Sau khi chạy đối chiếu, Agent cần xác minh:
 1. **Kiểm tra trạng thái đối chiếu:** Toàn bộ các topic chính phải hiển thị `🟢 MATCH`. Nếu có `🔴 DISCREPANCY`, phải xuất bảng chi tiết danh sách mã bị lệch và số lượng cụ thể.
 2. **Kiểm tra tính an toàn Read-Only:** Câu query phải được thực thi qua `sanitizeQuery` và giới hạn tối đa 200 dòng (`applyLimit`).
-3. **Traceability:** Báo cáo kết quả phải ghi rõ: Thời gian truy vấn, database ID (`644`), ngày giao dịch đối chiếu, và độ trễ phản hồi (latency tính bằng ms).
+3. **Traceability:** Báo cáo kết quả phải ghi rõ: Thời gian truy vấn, database ID (từ `.env`), ngày giao dịch đối chiếu, và độ trễ phản hồi (latency tính bằng ms).

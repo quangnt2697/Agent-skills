@@ -40,7 +40,7 @@ Phase A giao tiếp thông qua REST API chính thức của Squash TM (`/api/res
 ┌────────────────────────────────────────────────────────────────────────┐
 │ Bước 1: Quét Sprint Mới Nhất từ Requirement Workspace                  │
 │ GET /api/rest/latest/requirement-folders/{SQUASH_REQ_G31_FOLDER_ID}    │
-│ ➔ Dùng regex "EnTrade Sprint [0-9]+" tìm số hiệu xxx lớn nhất          │
+│ ➔ Dùng regex "Sprint [0-9]+" tìm số hiệu xxx lớn nhất          │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -70,7 +70,7 @@ Phase A giao tiếp thông qua REST API chính thức của Squash TM (`/api/res
    `GET /api/rest/latest/requirement-folders/{id}/content`
 2. **Tạo thư mục Test Case mới:**
    `POST /api/rest/latest/test-case-folders`
-   Payload: `{"_type": "test-case-folder", "name": "EnTrade Sprint xxx", "parent": {"id": SQUASH_TC_G31_FOLDER_ID}}`
+   Payload: `{"_type": "test-case-folder", "name": "Sprint xxx", "parent": {"id": SQUASH_TC_G31_FOLDER_ID}}`
 3. **Tạo Test Case định dạng Gherkin:**
    `POST /api/rest/latest/test-cases`
    Payload: `{"_type": "test-case", "name": "{issueKey}-{namejira}", "parent": {"id": targetFolderId}, "script": {"_type": "script", "scriptType": "GHERKIN"}}`
@@ -121,7 +121,7 @@ Sau khi gán thành công, script tự động xuất file truy vết độc b�
   "issueKey": "G3PTP-17145",
   "nameJira": "Thiet-ke-luong-thanh-toan",
   "testCaseId": 12540,
-  "sprintName": "EnTrade Sprint 046",
+  "sprintName": "Sprint 046",
   "sprintId": "852",
   "sprintReqVersionId": "4321",
   "phaseAStatus": "SUCCESS",

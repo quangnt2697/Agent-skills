@@ -130,8 +130,8 @@ Tạo token tại **Avatar → Edit profile → Access Tokens** trên GitLab ins
 ### Bước 2 — `.env`
 
 ```
-GITLAB_API_URL=https://<domain-gitlab-của-bạn>/api/v4
-GITLAB_PERSONAL_ACCESS_TOKEN=<token-vừa-tạo>
+GITLAB_API_URL=https://gitlab.example.com/api/v4
+GITLAB_PERSONAL_ACCESS_TOKEN=<your-access-token>
 ```
 
 `GITLAB_PERMISSION_MODE` trong `.env` **không còn có tác dụng** — launcher ép cứng `readonly`

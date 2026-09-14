@@ -64,7 +64,7 @@ Hệ thống MDDS của KRX bắn realtime các event thay đổi trạng thái 
 | **MAK** (Match and Kill) | Lệnh khớp và hủy phần còn lại | HNX (STX) | Khớp liên tục | **Disable ô giá**, khớp tối đa khối lượng có thể | Phần khối lượng còn lại chưa khớp lập tức bị hủy bỏ |
 | **PLO** (Post Limit Order) | Lệnh khớp sau giờ | HNX (STX) | 14:45 - 15:00 | **Disable ô giá**, hệ thống tự động lấy Giá đóng cửa ATC | Khớp ngay khi có lệnh đối ứng cùng mức giá đóng cửa. Cấm sửa/hủy |
 
-> (*) **Ghi chú chuẩn hóa HoSE:** DNSE đã chuẩn hóa việc hỗ trợ lệnh MTL trên sàn HoSE để thay thế/bổ trợ cho lệnh MP truyền thống, tăng tính nhất quán trên nền tảng giao dịch.
+> (*) **Ghi chú chuẩn hóa HoSE:** Nền tảng giao dịch hỗ trợ lệnh MTL trên sàn HoSE để thay thế/bổ trợ cho lệnh MP truyền thống, tăng tính nhất quán trên nền tảng giao dịch.
 
 #### 2. Quy Tắc Khối Lượng Tối Đa & Ràng Buộc Form Đặt Lệnh
 * **Khối lượng tối đa 1 lệnh (`maxQuantityPerOrder`):**
@@ -176,8 +176,8 @@ Bắn realtime khi sự kiện Random End bắt đầu hoặc kết thúc:
 
 ---
 
-#### 3. Tiêu Chí Nhận Diện Mã Có Random End Tại Backend DNSE
-Hệ thống MDDS Engine của DNSE xác định trạng thái Random End (`enableRE = true/false`) theo ma trận quy tắc:
+#### 3. Tiêu Chí Nhận Diện Mã Có Random End Tại Backend CTCK
+Hệ thống MDDS Engine xác định trạng thái Random End (`enableRE = true/false`) theo ma trận quy tắc:
 
 1. **Phạm vi sàn áp dụng:**
    - **HOSE (STO, `marketId = 6`):** Áp dụng đầy đủ cơ chế Random End.
@@ -264,7 +264,7 @@ $\implies$ Khi đồng thời thỏa mãn: Đang trong phiên định kỳ VÀ `
 
 ---
 
-#### 7. Kiến Trúc Data Model & WebSocket Datafeed DNSE
+#### 7. Kiến Trúc Data Model & WebSocket Datafeed
 
 ##### A. Cấu Trúc Kafka & WebSocket Topic Mới
 * **Thay thế topic cũ cấp sàn:** `quotes/krx/mdds/boardevent/v1/...`

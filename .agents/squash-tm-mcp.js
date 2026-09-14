@@ -99,8 +99,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     '-c', cookieJar,
                     '-X', method,
                     url,
-                    '-H', 'Origin: https://tm.dnse.com.vn',
-                    '-H', `${process.env.SQUASH_BASE_URL}/campaign-workspace`,
+                    '-H', `Origin: ${process.env.SQUASH_BASE_URL}`,
+                    '-H', `Referer: ${process.env.SQUASH_BASE_URL}/campaign-workspace`,
                     '-H', 'User-Agent: Mozilla/5.0',
                     '-H', 'Accept: application/json, text/plain, */*',
                     '-H', `X-XSRF-TOKEN: ${xsrf}`
@@ -128,7 +128,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     execCurl([
                         '-s', '-b', cookieJar, '-c', cookieJar,
                         '-X', 'POST', `${process.env.SQUASH_BASE_URL}/backend/login`,
-                        '-H', 'Origin: https://tm.dnse.com.vn',
+                        '-H', `Origin: ${process.env.SQUASH_BASE_URL}`,
                         '-H', `Referer: ${process.env.SQUASH_BASE_URL}/login`,
                         '-H', 'User-Agent: Mozilla/5.0',
                         '-H', 'Accept: application/json, text/plain, */*',
@@ -145,7 +145,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             // PHASE A: Test Case Workspace
             logs.push("1. Tìm Sprint mới nhất từ Test Case Workspace (Folder G.3.1)...");
             const tcFolders = callApi("GET", `/api/rest/latest/test-case-folders/${process.env.SQUASH_TC_G31_FOLDER_ID}/content?size=100`);
-            const sprintFolders = (tcFolders?._embedded?.content || []).filter(f => /^EnTrade Sprint \d+$/.test(f.name));
+            const sprintFolders = (tcFolders?._embedded?.content || []).filter(f => /Sprint \d+$/i.test(f.name));
             sprintFolders.sort((a, b) => {
                 const nA = parseInt(a.name.match(/\d+/)[0]);
                 const nB = parseInt(b.name.match(/\d+/)[0]);
@@ -156,12 +156,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             if (!latestSprint && process.env.SQUASH_REQ_G31_FOLDER_ID) {
                 logs.push("Chưa thấy Sprint bên Test Case, quét Requirement Workspace...");
                 const reqFolders = callApi("GET", `/api/rest/latest/requirement-folders/${process.env.SQUASH_REQ_G31_FOLDER_ID}/content?size=100`);
-                const reqSprints = (reqFolders?._embedded?.content || []).filter(f => /^EnTrade Sprint \d+$/.test(f.name));
+                const reqSprints = (reqFolders?._embedded?.content || []).filter(f => /Sprint \d+$/i.test(f.name));
                 reqSprints.sort((a, b) => parseInt(a.name.match(/\d+/)[0]) - parseInt(b.name.match(/\d+/)[0]));
                 latestSprint = reqSprints.pop();
             }
 
-            if (!latestSprint) throw new Error("Không tìm thấy thư mục 'EnTrade Sprint xxx'");
+            if (!latestSprint) throw new Error("Không tìm thấy thư mục 'Sprint xxx'");
             logs.push(`Tìm thấy Sprint: ${latestSprint.name}`);
             const sprintNumber = latestSprint.name.match(/\d+/)[0];
 

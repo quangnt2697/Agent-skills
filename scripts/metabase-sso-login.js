@@ -2,7 +2,7 @@
 /**
  * Metabase SSO Login Helper (`scripts/metabase-sso-login.js`)
  *
- * Mở trình duyệt Chromium để người dùng đăng nhập SSO (Google / SAML) vào Metabase Production (https://mb.dnse.com.vn),
+ * Mở trình duyệt Chromium để người dùng đăng nhập SSO (Google / SAML) vào Metabase Production (từ ${METABASE_PROD_URL} trong .env),
  * tự động bắt Cookie `metabase.SESSION`, xác thực với API, dò tìm danh sách Database IDs và lưu trực tiếp vào file `.env`.
  *
  * Cách dùng:
@@ -124,13 +124,17 @@ async function main() {
     const env = parseEnv(envPath);
 
     // Xác định URL mục tiêu
-    let targetUrl = env.METABASE_PROD_URL || 'https://mb.dnse.com.vn';
+    let targetUrl = env.METABASE_PROD_URL;
     if (isUat) {
-        targetUrl = env.METABASE_UAT_URL || env.METABASE_URL || 'https://mb-uat.dnse.com.vn';
+        targetUrl = env.METABASE_UAT_URL || env.METABASE_URL;
     }
     const customUrlIdx = args.indexOf('--url');
     if (customUrlIdx !== -1 && args[customUrlIdx + 1]) {
         targetUrl = args[customUrlIdx + 1];
+    }
+    if (!targetUrl) {
+        console.error(`❌ Lỗi: Chưa cấu hình ${isUat ? 'METABASE_UAT_URL' : 'METABASE_PROD_URL'} trong file .env.`);
+        process.exit(1);
     }
     targetUrl = targetUrl.replace(/\/+$/, '');
 

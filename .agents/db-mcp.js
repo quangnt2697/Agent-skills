@@ -89,11 +89,11 @@ async function metabasePing() {
     return {
         status: 'CONNECTED',
         engine: 'metabase-api',
-        url: process.env.METABASE_URL || 'https://mb-uat.dnse.com.vn',
+        url: process.env.METABASE_URL || process.env.METABASE_UAT_URL || '',
         latencyMs,
         user: currentUser,
         configuredDatabases: {
-            timescale: { id: METABASE_DB_MAP.timescale, target: 'encapital-timescaledb' },
+            timescale: { id: METABASE_DB_MAP.timescale, target: 'timescale' },
             openapi: { id: METABASE_DB_MAP.openapi, target: 'openapi' },
             'openapi-sandbox': { id: METABASE_DB_MAP['openapi-sandbox'], target: 'openapi-sandbox' }
         },
@@ -596,7 +596,7 @@ if (isMain) {
     if (process.argv.includes('--test')) {
         console.log('[db-mcp] Đang kiểm tra kết nối cơ sở dữ liệu...');
         if (isMetabaseMode()) {
-            console.log(`[db-mcp] Chế độ: Metabase API Engine (${process.env.METABASE_URL || 'https://mb-uat.dnse.com.vn'})`);
+            console.log(`[db-mcp] Chế độ: Metabase API Engine (${process.env.METABASE_URL || process.env.METABASE_UAT_URL || 'configured in .env'})`);
             metabasePing()
                 .then(info => {
                     console.log('[db-mcp] KẾT NỐI METABASE THÀNH CÔNG:');

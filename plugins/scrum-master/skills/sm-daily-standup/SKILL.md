@@ -1,6 +1,6 @@
 ---
 name: sm-daily-standup
-description: Kỹ năng điều hành Daily Standup. Báo cáo tiến độ hằng ngày, tính thời gian tồn tại của ticket, và phân tích cân bằng tải cho DEV (Trịnh Quốc Đạt và Nguyễn Thành Sơn). Use when cần tạo báo cáo daily standup tự động cho team.
+description: Kỹ năng điều hành Daily Standup. Báo cáo tiến độ hằng ngày, tính thời gian tồn tại của ticket, và phân tích cân bằng tải cho DEV (Developer Backend 1 và Developer Backend 2). Use when cần tạo báo cáo daily standup tự động cho team.
 ---
 
 # sm-daily-standup

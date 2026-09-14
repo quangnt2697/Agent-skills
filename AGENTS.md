@@ -42,13 +42,13 @@ Skills áp dụng theo thứ tự: `dev-spec-driven-development` → `dev-planni
 `(Nhận *-final.md) → /qa-test-design → /qa-auto-design → /qa-run-test` (hoặc `/qa-full-pipeline` cho toàn trình)
 
 **Quy tắc bắt buộc cho QA:**
-- **Metabase UAT Strict Policy:** CHỈ scan/query trên Metabase UAT (`https://mb-uat.dnse.com.vn`, DB 644). NGHIÊM CẤM kết nối Metabase Production. Code phải có Security Gate: raise `ValueError` nếu URL chứa `mb.dnse.com.vn` mà không có `mb-uat`.
-- **Zero-Mutation Policy:** Mọi truy vấn Metabase UAT là Read-Only (chỉ `SELECT`).
-- **Real Base URLs Only:** Bắt buộc kết nối `BASE_URL` (`https://openapi-uat.dnse.com.vn`) và `WS_URL` (`wss://ws-openapi-uat.dnse.com.vn`) từ `.env`. NGHIÊM CẤM mock server.
+- **Metabase UAT Strict Policy:** QA pipeline CHỈ scan/query trên Metabase UAT (`${METABASE_UAT_URL}`, DB Timescale: `${METABASE_UAT_DB_TIMESCALE_ID}`). NGHIÊM CẤM chạy automation test trên Metabase Production (`${METABASE_PROD_URL}`). Code phải có Security Gate: raise `ValueError` nếu phát hiện môi trường là `prod` hoặc trỏ tới `METABASE_PROD_URL`.
+- **Zero-Mutation Policy:** Mọi truy vấn Metabase là Read-Only (chỉ `SELECT`). Tuyệt đối cấm các lệnh DDL/DML.
+- **Real Base URLs Only:** Bắt buộc kết nối `BASE_URL` và `WS_URL` cấu hình trong `.env`. NGHIÊM CẤM mock server.
 - **Pre-generation Code Recon Gate:** Trước khi viết code, BẮT BUỘC quét codebase để tái sử dụng module Auth, Token, HMAC, WebSocket Client có sẵn.
 - **Log chuẩn:** Tuân thủ [test_logging_guidelines.md](plugins/qa/skills/qa-auto-design/references/test_logging_guidelines.md) — format `[TIMESTAMP] [LEVEL] [SERVICE] [TRACE_ID] - MESSAGE | CONTEXT`, 4 quy tắc vàng, 4 thẻ tiếng Việt.
 - **Order State Transitions:** Chi tiết trong [order_state_testing.md](plugins/qa/skills/qa-auto-design/references/order_state_testing.md).
-- **TimescaleDB:** Ưu tiên bảng v3, fallback v2. Chi tiết bảng xem `references/timescale-schema.md`.
+- **TimescaleDB:** Ưu tiên bảng v3, fallback v2. Chi tiết bảng xem `references/timescale-schema.md`. Mọi câu truy vấn bắt buộc dùng Tên Bảng (Table Name), không dùng Metabase Table ID.
 
 ### BA Pipeline
 `/ba-spec {issueKey} → Scan references → Extract → Gap detection → ba-interview-me → *-final.md`
@@ -60,7 +60,7 @@ Skills áp dụng theo thứ tự: `dev-spec-driven-development` → `dev-planni
 - **Ngôn ngữ:** Mọi tài liệu (Spec, Checklist, Kịch bản, Báo cáo) BẮT BUỘC viết bằng Tiếng Việt rõ ràng, mạch lạc.
 - **Truy vết (Traceability):** Test case phải map 1-1 với Checklist và Spec. Báo cáo cuối cùng phải có ma trận truy vết.
 - **Ghi Log:** BẮT BUỘC ghi nhận Method, URL, Headers, Request Body, Status Code, Latency, Response Body của **100% test case (CẢ PASSED VÀ FAILED)** vào `test-output.log` và bảng trong `report.md`.
-- **Dữ liệu Kiểm Thử Chứng Khoán:** BẮT BUỘC đọc từ Metabase UAT / TimescaleDB (DB 644). Ưu tiên bảng v3, fallback v2. NGHIÊM CẤM tự bịa mã chứng khoán hoặc hardcode giá vi phạm biên độ.
+- **Dữ liệu Kiểm Thử Chứng Khoán:** BẮT BUỘC đọc từ Metabase UAT / TimescaleDB (`${METABASE_UAT_DB_TIMESCALE_ID}`). Ưu tiên bảng v3, fallback v2. NGHIÊM CẤM tự bịa mã chứng khoán hoặc hardcode giá vi phạm biên độ.
 - **Đường dẫn artifact:** Nằm dưới `workspace/{issueKey}/` trong 5 thư mục: `source/`, `spec/`, `tech/`, `test/`, `trace/`. Chi tiết: `.claude/rules/workspace-paths.md`.
 
 ## 5. Tự Chủ & Chủ Động
@@ -124,5 +124,5 @@ Engine `beautiful` (`beautiful-mermaid`) chỉ dùng khi cần `--format ascii`,
 Trong mọi tác vụ liên quan đến phân tích spec (BA), thiết kế kỹ thuật/API (DEV), thiết kế kiểm thử/automation (QA), review code hay audit bảo mật:
 - **BẮT BUỘC** đọc mục lục [references/securities-domain-rules.md](references/securities-domain-rules.md), sau đó mở đọc module phù hợp với task trong thư mục `references/securities/`.
 - **Phạm vi bao phủ:** Quy tắc thị trường (HOSE/HNX/UPCOM/phái sinh), Cờ phiên & Lệnh, Quản lý biến động khẩn cấp, Dữ liệu thị trường MDDS/KRX, Tài chính & Ký quỹ truyền thống, Deal-based Margin, Ma trận persona.
-- **TimescaleDB (DB ID: 644):** Ưu tiên bảng v3 > v2. Tra cứu qua MCP `test-data` hoặc `database`, cache tại `references/timescale-schema.md`.
+- **TimescaleDB (DB ID: `${METABASE_UAT_DB_TIMESCALE_ID}` [UAT] / `${METABASE_PROD_DB_TIMESCALE_ID}` [PROD]):** Ưu tiên bảng v3 > v2. Tra cứu qua MCP `test-data` hoặc `database`, cache tại `references/timescale-schema.md`. Luôn truy vấn bằng Tên Bảng (Table Name), không dùng Metabase Table ID.
 - **NGHIÊM CẤM:** Tự bịa mã chứng khoán không có thật, hoặc hardcode giá vi phạm biên độ/bước giá.

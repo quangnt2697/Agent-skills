@@ -2,10 +2,10 @@
 description: "Quét và đối chiếu độ lệch dữ liệu TimescaleDB Production giữa các bảng V3, V2 và Raw cho 11 topic MDDS"
 ---
 
-/db-recon kích hoạt quy trình quét và đối chiếu độ lệch dữ liệu (Data Reconciliation & Parity Check) trên TimescaleDB Production (Database ID: 644).
+/db-recon kích hoạt quy trình quét và đối chiếu độ lệch dữ liệu (Data Reconciliation & Parity Check) trên TimescaleDB Production (Database ID: `${METABASE_PROD_DB_TIMESCALE_ID}` từ `.env`, mặc định `7`).
 
 ## 1. Phạm Vi Áp Dụng
-- **Database:** TimescaleDB Production (DB ID: `644`) qua Metabase Production (`https://mb.dnse.com.vn`).
+- **Database:** TimescaleDB Production (DB ID: `${METABASE_PROD_DB_TIMESCALE_ID}`) qua Metabase Production (`${METABASE_PROD_URL}`).
 - **Phạm vi topic:** 11 topic MDDS theo kiến trúc KRX (Ticks, Trade Extra, TopPrice, Expected Price, OHLC, Indices, Board Events, Symbol Board Events, Foreign Trading, Security Definition, Circuit Breaker / VI).
 - **Tuyệt đối loại trừ:** 100% các bảng OpenAPI (chỉ tập trung vào TimescaleDB).
 - **An toàn tuyệt đối:** 100% Read-Only (chỉ cho phép SELECT/WITH, cấm DDL/DML/LOCK).

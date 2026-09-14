@@ -40,12 +40,12 @@ cp tools/discord-bridge/projects.json.example tools/discord-bridge/projects.json
 Mở file `tools/discord-bridge/projects.json` và cấu hình các đường dẫn tương ứng trên máy bạn:
 ```json
 {
-  "openapi-tyk": "/Users/qa-quangnt/Desktop/Project/3.1/openapi-tyk",
-  "openapi": "/Users/qa-quangnt/Desktop/Project/3.1",
-  "agent-skills": "/Users/qa-quangnt/Desktop/Project/Test/agent-skills"
+  "order-service": "/path/to/order-service",
+  "backend-services": "/path/to/backend-services",
+  "agent-skills": "/path/to/agent-skills"
 }
 ```
-> 💡 *Nếu trỏ vào một repo đơn lẻ (chứa `.git`), bot sẽ chỉ thao tác trên repo đó. Nếu trỏ vào thư mục mẹ (như `openapi` -> `3.1`), bot sẽ tự động nhận diện và quét tất cả các microservices bên trong!*
+> 💡 *Nếu trỏ vào một repo đơn lẻ (chứa `.git`), bot sẽ chỉ thao tác trên repo đó. Nếu trỏ vào thư mục mẹ (như `backend-services`), bot sẽ tự động nhận diện và quét tất cả các microservices bên trong!*
 
 ### Bước 4: Khởi động Bot
 ```bash
@@ -94,10 +94,10 @@ Khi thấy thông báo:
   > *Ví dụ:* `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`
 
 * **`/sync`** — Kéo mã nguồn mới nhất của dự án về máy local an toàn:
-  * **Ô `project`**: Tự động gợi ý danh sách dự án (ví dụ `openapi-tyk`, `openapi`...).
+  * **Ô `project`**: Tự động gợi ý danh sách dự án (ví dụ `order-service`, `backend-services`...).
   * **Ô `branch`**: Nhánh cần pull (tùy chọn, mặc định giữ nguyên nhánh hiện tại).
   * **Ô `des`**: Cờ bổ sung như `--stash` (auto-stash) hoặc `--dry-run` (kiểm tra trước).
-  > *Ví dụ:* `/sync project: openapi-tyk` hoặc `/sync project: openapi des: --stash`
+  > *Ví dụ:* `/sync project: order-service` hoặc `/sync project: backend-services des: --stash`
 
 ---
 
@@ -105,7 +105,7 @@ Khi thấy thông báo:
 
 | Lệnh | Ý nghĩa | Ví dụ |
 |:-----|:--------|:------|
-| `!sync -p <project>` | Kéo code mới nhất về local (hỗ trợ `--stash`, `--dry-run`) — cooldown: 10s/user | `!sync -p openapi-tyk`<br>`!sync -p openapi --stash` |
+| `!sync -p <project>` | Kéo code mới nhất về local (hỗ trợ `--stash`, `--dry-run`) — cooldown: 10s/user | `!sync -p order-service`<br>`!sync -p backend-services --stash` |
 | `!run <kỹ_năng>` | Chạy Agent (hỗ trợ `-p <project>` và `-d <des>`) — cooldown: 30s/user | `!run /cr-review-code-and-quality -p my-project -d review auth` |
 | `!cancel` | Hủy tác vụ đang chạy (alias: `!abort`, `!stop`) | `!cancel` |
 | `!skills [từ_khóa]` | Xem danh sách kỹ năng hoặc tìm theo từ khóa | `!skills` / `!skills qa` |
@@ -123,19 +123,19 @@ Khi thấy thông báo:
 
 * **Kéo đúng 1 repository đơn lẻ:**
   ```text
-  !sync -p openapi-tyk
+  !sync -p order-service
   ```
-  *(Bot tra cứu trong `projects.json` và chỉ fetch & pull duy nhất repo `openapi-tyk`, hoàn tất trong ~0.5s).*
+  *(Bot tra cứu trong `projects.json` và chỉ fetch & pull duy nhất repo `order-service`, hoàn tất trong ~0.5s).*
 
 * **Kéo toàn bộ cụm microservices trong thư mục cha:**
   ```text
-  !sync -p openapi
+  !sync -p backend-services
   ```
-  *(Bot nhận diện `openapi` là folder mẹ `3.1`, tự động quét và kéo song song 34 microservices bên trong).*
+  *(Bot nhận diện `backend-services` là folder mẹ, tự động quét và kéo song song các microservices bên trong).*
 
 * **Tự động stash khi có file đang sửa dở:**
   ```text
-  !sync -p openapi --stash
+  !sync -p backend-services --stash
   ```
   *(Tự động `git stash` trước khi pull và `git stash pop` trả lại code cho bạn sau khi kéo xong).*
 

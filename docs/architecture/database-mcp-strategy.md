@@ -11,10 +11,10 @@ Database MCP được thiết kế chủ yếu phục vụ tra cứu schema, ki�
 
 ## 2. Cơ Chế Bảo Mật & An Toàn 4 Lớp (Defense-in-Depth)
 
-Chiến lược tuân thủ nguyên tắc **BẤT BIẾN: 100% READ-ONLY (Zero-Mutation Policy)** trên cả 2 Engine: **Metabase API Engine** (Khuyến nghị DNSE) và **PostgreSQL Direct**. Hệ thống bảo vệ được thực thi ở 4 lớp độc lập:
+Chiến lược tuân thủ nguyên tắc **BẤT BIẾN: 100% READ-ONLY (Zero-Mutation Policy)** trên cả 2 Engine: **Metabase API Engine** (Khuyến nghị cho hạ tầng) và **PostgreSQL Direct**. Hệ thống bảo vệ được thực thi ở 4 lớp độc lập:
 
 1. **Lớp 1: Phân Quyền Hạ Tầng & Phiên Đăng Nhập (Infrastructure & RBAC Level):**
-   - **Metabase API (UAT & Production):** API Token hoặc Session Token SSO (`metabase.SESSION`) được liên kết với tài khoản có quyền Viewer / Read-Only trên các database TimescaleDB (`644`) và OpenAPI (`535`, `655`). Metabase API `/api/dataset` vốn dĩ phục vụ trích xuất dữ liệu truy vấn phân tích, không phải công cụ DDL/migration.
+   - **Metabase API (UAT & Production):** API Token hoặc Session Token SSO (`metabase.SESSION`) được liên kết với tài khoản có quyền Viewer / Read-Only trên các database TimescaleDB và OpenAPI. Metabase API `/api/dataset` vốn dĩ phục vụ trích xuất dữ liệu truy vấn phân tích, không phải công cụ DDL/migration.
    - **PostgreSQL Direct:** Tài khoản kết nối trong `DATABASE_URL` (`read_user`) được phân quyền tối thiểu (Least Privilege), chỉ có quyền `SELECT` trên schema chỉ định.
 
 2. **Lớp 2: Ràng Buộc Phiên Kết Nối & Transaction Guard (Connection Level):**
@@ -44,17 +44,17 @@ Chiến lược tuân thủ nguyên tắc **BẤT BIẾN: 100% READ-ONLY (Zero-M
 | Tool Name | Tham số | Mô tả & Chức năng |
 | :--- | :--- | :--- |
 | `db_ping` | *(Không có)* | Kiểm tra kết nối DB (qua Metabase API hoặc PostgreSQL), đo latency, lấy danh sách database. |
-| `db_list_tables` | `schema` *(string, default: "public")*,<br>`database` *(string, default: "timescale")* | Liệt kê danh sách bảng và view. Hỗ trợ chọn database (`timescale` [644], `openapi` [535], `openapi-sandbox` [655]). |
+| `db_list_tables` | `schema` *(string, default: "public")*,<br>`database` *(string, default: "timescale")* | Liệt kê danh sách bảng và view. Hỗ trợ chọn database (`timescale`, `openapi`, `openapi-sandbox`). |
 | `db_describe_table` | `tableName` *(string, required)*,<br>`schema` *(string, default: "public")*,<br>`database` *(string, default: "timescale")* | Lấy chi tiết metadata: danh sách cột, kiểu dữ liệu, Primary Key, Foreign Key. |
-| `db_query` | `sql` *(string, required)*,<br>`maxRows` *(number, default: 50, max: 200)*,<br>`database` *(string, default: "timescale")* | Thực thi câu lệnh `SELECT` an toàn qua Metabase dataset API hoặc PostgreSQL. |
+| `db_query` | `sql` *(string, required)*,<br>`maxRows` *(number, default: 50, max: 200)*,<br>`database` *(string, default: "timescale")* | Thực thi câu lệnh `SELECT` an toàn qua Metabase dataset API hoặc PostgreSQL. Luôn dùng Tên Bảng (Table Name). |
 | `db_explain_query` | `sql` *(string, required)*,<br>`analyze` *(boolean, default: false)*,<br>`database` *(string, default: "timescale")* | Phân tích kế hoạch thực thi câu lệnh truy vấn. |
 
 ---
 
 ## 4. Hướng Dẫn Cấu Hình Biến Môi Trường (`.env`)
 
-### Cách 1: Sử dụng Metabase API Engine (Khuyến nghị cho hạ tầng DNSE)
-Metabase đã kết nối thông suốt tới cụm TimescaleDB và OpenAPI nội bộ K8s, Agent chỉ cần gọi qua HTTPS:
+### Cách 1: Sử dụng Metabase API Engine (Khuyến nghị)
+Metabase đã kết nối thông suốt tới cụm TimescaleDB và OpenAPI, Agent chỉ cần gọi qua HTTPS:
 ```bash
 # === DATABASE (MCP VIA METABASE) ===
 # Môi trường hoạt động: uat | prod (mặc định: uat)
@@ -62,20 +62,20 @@ METABASE_ENV=uat
 METABASE_DEFAULT_DATABASE=timescale
 
 # --- 1. Metabase UAT (API Token hoặc Session) ---
-METABASE_UAT_URL=https://mb-uat.dnse.com.vn
+METABASE_UAT_URL=https://mb-uat.example.com
 METABASE_UAT_API_TOKEN=mb_...hoặc_session_token
 METABASE_UAT_DB_TIMESCALE_ID=644
 METABASE_UAT_DB_OPENAPI_ID=535
 METABASE_UAT_DB_OPENAPI_SANDBOX_ID=655
 
 # --- 2. Metabase Production (Đăng nhập SSO qua Browser) ---
-METABASE_PROD_URL=https://mb.dnse.com.vn
+METABASE_PROD_URL=https://mb.example.com
 METABASE_PROD_SESSION_TOKEN=  # Lấy tự động qua `npm run metabase:login` hoặc copy cookie metabase.SESSION
-METABASE_PROD_DB_TIMESCALE_ID=
-METABASE_PROD_DB_OPENAPI_ID=
+METABASE_PROD_DB_TIMESCALE_ID=7
+METABASE_PROD_DB_OPENAPI_ID=266
 
 # --- 3. Cấu hình Active / Fallback ---
-METABASE_URL=https://mb-uat.dnse.com.vn
+METABASE_URL=https://mb-uat.example.com
 METABASE_API_TOKEN=mb_...
 METABASE_SESSION_TOKEN=
 METABASE_DB_TIMESCALE_ID=644
@@ -83,9 +83,9 @@ METABASE_DB_OPENAPI_ID=535
 METABASE_DB_OPENAPI_SANDBOX_ID=655
 ```
 
-> **Cách lấy Session Token cho Production (`https://mb.dnse.com.vn`):**
+> **Cách lấy Session Token cho Production (`${METABASE_PROD_URL}`):**
 > - **Cách 1 (Tự động - Khuyến nghị):** Chạy lệnh `npm run metabase:login`. Script sẽ mở browser Chromium thực, bạn đăng nhập SSO (Google / Okta), script sẽ tự động bắt cookie `metabase.SESSION`, dò tìm Database IDs và lưu thẳng vào `.env`.
-> - **Cách 2 (Thủ công):** Đăng nhập `https://mb.dnse.com.vn` trên Chrome -> Bấm `F12` -> Tab `Application` -> `Cookies` -> Copy giá trị cookie `metabase.SESSION` và dán vào `METABASE_PROD_SESSION_TOKEN` trong `.env`.
+> - **Cách 2 (Thủ công):** Đăng nhập `${METABASE_PROD_URL}` trên Chrome -> Bấm `F12` -> Tab `Application` -> `Cookies` -> Copy giá trị cookie `metabase.SESSION` và dán vào `METABASE_PROD_SESSION_TOKEN` trong `.env`.
 
 
 ### Cách 2: Sử dụng PostgreSQL Trực Tiếp (Dự phòng / Local)
@@ -144,20 +144,20 @@ Song song với `db-mcp.js` phục vụ truy vấn DB tổng quát, dự án cun
 
 ### 7.2. Cơ Chế Điều Hướng Môi Trường (Smart Environment Routing)
 Hệ thống tự động phân giải database OpenAPI dựa trên URL hoặc tham số môi trường (`resolveOpenApiDatabase`):
-- **OpenAPI Sandbox (DB ID: 655 - `openapi-sandbox`):** Khi tham số hoặc `BASE_URL` là:
+- **OpenAPI Sandbox (DB ID: `${METABASE_UAT_DB_OPENAPI_SANDBOX_ID}` [655] - `openapi-sandbox`):** Khi tham số hoặc `BASE_URL` là:
   - Tên môi trường: `'sandbox'`, `'openapi-sandbox'`
-  - URL Sandbox: `'https://sb-openapi.dnse.com.vn'`, `'https://sb-openapi-uat.dnse.com.vn'` (hoặc bất kỳ URL nào chứa `sb-openapi` / `sandbox`).
-- **OpenAPI UAT / Production (DB ID: 535 - `openapi`):** Khi tham số hoặc `BASE_URL` là:
+  - URL Sandbox: Chứa `'sb-openapi'` hoặc `'sandbox'`.
+- **OpenAPI UAT / Production (DB ID: `${METABASE_UAT_DB_OPENAPI_ID}` [535] / `${METABASE_PROD_DB_OPENAPI_ID}` [266]):** Khi tham số hoặc `BASE_URL` là:
   - Tên môi trường: `'openapi'`
-  - URL UAT / Production: `'https://openapi-uat.dnse.com.vn'`, `'https://openapi.dnse.com.vn'`
-  - Khi không truyền, truyền rỗng `''` hoặc `null` $\rightarrow$ Tự động fallback về **`openapi` (ID: 535)**.
+  - URL UAT / Production: Trỏ tới OpenAPI UAT hoặc Production.
+  - Khi không truyền, truyền rỗng `''` hoặc `null` $\rightarrow$ Tự động fallback về **`openapi`**.
 
 ### 7.3. Kiểm Tra Nhanh Qua CLI
 ```bash
 # In hướng dẫn trợ giúp CLI đầy đủ
 node .agents/test-data-mcp.js --help
 
-# Chạy dry-run kiểm tra kết nối TimescaleDB (644) và OpenAPI
+# Chạy dry-run kiểm tra kết nối TimescaleDB và OpenAPI
 node .agents/test-data-mcp.js --test
 
 # Kiểm tra chi tiết giá và sổ lệnh của 1 mã cụ thể (VD: FPT)

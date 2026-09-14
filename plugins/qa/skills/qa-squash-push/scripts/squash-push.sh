@@ -3,7 +3,7 @@
 # squash-push.sh — Tự động đẩy Gherkin file lên Squash TM (V5)
 # ==============================================================================
 # PHASE A — Test Case Workspace
-#   1. Tìm thư mục "EnTrade Sprint xxx" mới nhất trong Test Case Workspace (G.3.1).
+#   1. Tìm thư mục Sprint mới nhất (định dạng 'Sprint xxx') trong Test Case Workspace (G.3.1).
 #   2. Kiểm tra/Tạo test case dạng Gherkin trong thư mục Sprint đó.
 #   3. XÓA SẠCH EXECUTION CŨ: Quét executions của test case và xóa sạch (nếu có).
 #   4. Cập nhật script Gherkin mới (PATCH).
@@ -125,7 +125,7 @@ login_backend() {
     local LOGIN_RES
     LOGIN_RES=$(curl -s -w '\n%{http_code}' -X POST "${SQUASH_BASE_URL}/backend/login" \
         -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
-        -H "Origin: https://tm.dnse.com.vn" \
+        -H "Origin: ${SQUASH_BASE_URL}" \
         -H "Referer: ${SQUASH_BASE_URL}/login" \
         -H "User-Agent: Mozilla/5.0" \
         -H "Accept: application/json, text/plain, */*" \
@@ -177,7 +177,7 @@ call_backend() {
     if [[ -z "$payload" ]]; then
         curl -s -X "$method" "${SQUASH_BASE_URL}${endpoint}" \
             -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
-            -H "Origin: https://tm.dnse.com.vn" \
+            -H "Origin: ${SQUASH_BASE_URL}" \
             -H "Referer: ${SQUASH_BASE_URL}/campaign-workspace" \
             -H "User-Agent: Mozilla/5.0" \
             -H "Accept: application/json, text/plain, */*" \
@@ -185,7 +185,7 @@ call_backend() {
     else
         curl -s -X "$method" "${SQUASH_BASE_URL}${endpoint}" \
             -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
-            -H "Origin: https://tm.dnse.com.vn" \
+            -H "Origin: ${SQUASH_BASE_URL}" \
             -H "Referer: ${SQUASH_BASE_URL}/campaign-workspace" \
             -H "User-Agent: Mozilla/5.0" \
             -H "Accept: application/json, text/plain, */*" \
@@ -212,9 +212,9 @@ TC_FOLDERS_JSON=$(call_api "GET" "/api/rest/latest/test-case-folders/${SQUASH_TC
 
 TARGET_SPRINT_NAME=$(echo "$TC_FOLDERS_JSON" | jq -r '
   ._embedded.content[]?
-  | select(.name | test("EnTrade Sprint [0-9]+"))
+  | select(.name | test("Sprint [0-9]+"; "i"))
   | .name as $name
-  | ($name | capture("EnTrade Sprint (?<num>[0-9]+)") | .num | tonumber) as $num
+  | ($name | capture("(?<num>[0-9]+)$") | .num | tonumber) as $num
   | {name: $name, num: $num}
 ' | jq -r -s 'sort_by(.num) | last | .name // empty')
 
@@ -224,15 +224,15 @@ if [[ -z "$TARGET_SPRINT_NAME" && -n "${SQUASH_REQ_G31_FOLDER_ID:-}" ]]; then
     REQ_FOLDERS_JSON=$(call_api "GET" "/api/rest/latest/requirement-folders/${SQUASH_REQ_G31_FOLDER_ID}/content?size=100")
     TARGET_SPRINT_NAME=$(echo "$REQ_FOLDERS_JSON" | jq -r '
       ._embedded.content[]?
-      | select(.name | test("EnTrade Sprint [0-9]+"))
+      | select(.name | test("Sprint [0-9]+"; "i"))
       | .name as $name
-      | ($name | capture("EnTrade Sprint (?<num>[0-9]+)") | .num | tonumber) as $num
+      | ($name | capture("(?<num>[0-9]+)$") | .num | tonumber) as $num
       | {name: $name, num: $num}
     ' | jq -r -s 'sort_by(.num) | last | .name // empty')
 fi
 
 if [[ -z "$TARGET_SPRINT_NAME" || "$TARGET_SPRINT_NAME" == "null" ]]; then
-    log_error "Không tìm thấy thư mục nào có định dạng 'EnTrade Sprint xxx'!"
+    log_error "Không tìm thấy thư mục nào có định dạng 'Sprint xxx'!"
     exit 1
 fi
 
@@ -319,7 +319,7 @@ else
         
         EXEC_RES=$(curl -s -X POST "${SQUASH_BASE_URL}/backend/test-case/${TC_ID}/executions" \
             -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
-            -H "Origin: https://tm.dnse.com.vn" \
+            -H "Origin: ${SQUASH_BASE_URL}" \
             -H "Referer: ${SQUASH_BASE_URL}/test-case-workspace/test-case/${TC_ID}/executions?anchor=executions" \
             -H "User-Agent: Mozilla/5.0" \
             -H "Content-Type: application/json" \
@@ -335,7 +335,7 @@ else
                 refresh_xsrf
                 curl -s -X DELETE "${SQUASH_BASE_URL}/backend/executions/${OLD_EXEC_ID}" \
                     -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
-                    -H "Origin: https://tm.dnse.com.vn" \
+                    -H "Origin: ${SQUASH_BASE_URL}" \
                     -H "Referer: ${SQUASH_BASE_URL}/test-case-workspace" \
                     -H "User-Agent: Mozilla/5.0" \
                     -H "X-XSRF-TOKEN: ${XSRF_TOKEN}" > /dev/null 2>&1 || true
@@ -451,7 +451,7 @@ assign_test_case_to_campaign() {
             curl -s -X DELETE \
                 "${SQUASH_BASE_URL}/backend/sprint-req-version/${SPRINT_REQ_VERSION_ID}/test-plan-items/${OLD_ITEM_ID}" \
                 -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
-                -H "Origin: https://tm.dnse.com.vn" \
+                -H "Origin: ${SQUASH_BASE_URL}" \
                 -H "Referer: ${SQUASH_BASE_URL}/campaign-workspace" \
                 -H "User-Agent: Mozilla/5.0" \
                 -H "Accept: application/json, text/plain, */*" \
@@ -469,7 +469,7 @@ assign_test_case_to_campaign() {
     ASSIGN_RES=$(curl -s -w '\n%{http_code}' -X POST \
         "${SQUASH_BASE_URL}/backend/sprint-req-version/${SPRINT_REQ_VERSION_ID}/test-plan-items" \
         -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
-        -H "Origin: https://tm.dnse.com.vn" \
+        -H "Origin: ${SQUASH_BASE_URL}" \
         -H "Referer: ${SQUASH_BASE_URL}/campaign-workspace" \
         -H "User-Agent: Mozilla/5.0" \
         -H "Accept: application/json, text/plain, */*" \

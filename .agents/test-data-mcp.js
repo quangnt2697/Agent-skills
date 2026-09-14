@@ -769,7 +769,7 @@ const TOOLS_SCHEMA = [
     },
     {
         name: 'td_get_order_book',
-        description: 'Lấy tất cả các bước giá chào mua (bid) và chào bán (offer) đang có của mã trên thị trường từ krx_mdds_v3_top_prices (DB 644).',
+        description: 'Lấy tất cả các bước giá chào mua (bid) và chào bán (offer) đang có của mã trên thị trường từ krx_mdds_v3_top_prices (TimescaleDB).',
         inputSchema: {
             type: 'object',
             required: ['symbol'],
@@ -782,7 +782,7 @@ const TOOLS_SCHEMA = [
     },
     {
         name: 'td_get_personal_orders',
-        description: 'Lấy sổ lệnh cá nhân (danh sách lệnh đặt thực tế của tài khoản) từ database openapi (535) hoặc openapi-sandbox (655).',
+        description: 'Lấy sổ lệnh cá nhân (danh sách lệnh đặt thực tế của tài khoản) từ database openapi hoặc openapi-sandbox.',
         inputSchema: {
             type: 'object',
             properties: {
@@ -796,7 +796,7 @@ const TOOLS_SCHEMA = [
     },
     {
         name: 'td_get_api_key_sample',
-        description: 'Lấy mẫu API Key / Credential kiểm thử từ database openapi (535) hoặc openapi-sandbox (655).',
+        description: 'Lấy mẫu API Key / Credential kiểm thử từ database openapi hoặc openapi-sandbox.',
         inputSchema: {
             type: 'object',
             properties: {
@@ -807,7 +807,7 @@ const TOOLS_SCHEMA = [
     },
     {
         name: 'td_get_market_indices',
-        description: 'Lấy chỉ số thị trường (VNINDEX, VN30, UPCOM...) từ krx_mdds_v3_market_indices (DB 644).',
+        description: 'Lấy chỉ số thị trường (VNINDEX, VN30, UPCOM...) từ krx_mdds_v3_market_indices (TimescaleDB).',
         inputSchema: {
             type: 'object',
             properties: {
@@ -819,14 +819,14 @@ const TOOLS_SCHEMA = [
     },
     {
         name: 'td_export_fixture',
-        description: 'Ghi dữ liệu fixture ra file workspace/{issueKey}/test/fixtures/{filename}.json để conftest.py load.',
+        description: 'Xuất dữ liệu thị trường đã lấy thành file fixture JSON chuẩn hóa lưu tại workspace/{issueKey}/test/fixtures/ để phục vụ pytest.',
         inputSchema: {
             type: 'object',
             required: ['issueKey', 'data'],
             properties: {
-                issueKey: { type: 'string', description: 'Mã Jira issue (VD: JIRA-123)' },
-                data:     { description: 'Dữ liệu cần ghi ra file (object hoặc array)' },
-                filename: { type: 'string', description: 'Tên file (không cần .json). Mặc định: market_data' },
+                issueKey: { type: 'string', description: 'Mã issue Jira (VD: G3PTP-17093)' },
+                data:     { description: 'Dữ liệu fixture JSON cần ghi (từ snapshot hoặc các tool td_*)' },
+                filename: { type: 'string', description: 'Tên file (không cần đuôi .json). Mặc định: market_data' },
             },
         },
     },

@@ -137,7 +137,7 @@ async function runQuery(queryId, cliArgs) {
 
     const config = getMetabaseConfig();
     const targetUrl = config.baseUrl;
-    const dbId = parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '644', 10);
+    const dbId = parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || (config.isProd ? '7' : (process.env.METABASE_UAT_DB_TIMESCALE_ID || '644')), 10);
 
     console.log(`\n==============================================================`);
     console.log(`🔍 TIMESCALEDB RECONCILIATION RUNNER`);

@@ -31,7 +31,7 @@ test('accepts a bare issue key unchanged', () => {
 
 test('extracts the key from a browse URL with an anchor', () => {
   assert.strictEqual(
-    normalizeIssueKey('https://entrade.atlassian.net/browse/G3PTP-17057#icft=G3PTP-17057'),
+    normalizeIssueKey('https://your-domain.atlassian.net/browse/G3PTP-17057#icft=G3PTP-17057'),
     'G3PTP-17057',
   );
 });

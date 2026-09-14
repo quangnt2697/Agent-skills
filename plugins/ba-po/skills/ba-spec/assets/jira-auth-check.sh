@@ -6,7 +6,7 @@
 # Sử dụng: bash jira-auth-check.sh
 #
 # Env vars yêu cầu:
-#   JIRA_BASE_URL   - URL Jira (VD: https://your-company.atlassian.net)
+#   JIRA_BASE_URL   - URL Jira (VD: https://example.atlassian.net)
 #   JIRA_EMAIL      - Email đăng nhập Jira
 #   JIRA_API_TOKEN  - API token
 #

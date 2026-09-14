@@ -34,8 +34,8 @@ Kỹ năng `repo-group-sync` tự động hóa việc rà soát, kiểm tra tr�
             │
             ▼
 [BƯỚC 1: TRA CỨU ALIAS & ĐỊNH VỊ REPO]
-  ├── Alias đơn: /Project/3.1/openapi-tyk
-  └── Alias cụm: /Project/3.1 (chứa nhiều repos con)
+  ├── Alias đơn: /path/to/services/order-service
+  └── Alias cụm: /path/to/services (chứa nhiều repos con)
             │
             ▼
 [BƯỚC 2: PRE-FLIGHT SAFETY GATE]
@@ -103,11 +103,11 @@ Kỹ năng hỗ trợ trọn bộ cú pháp cờ tương thích với `discord-b
 | **Danh sách** | `--list` | Liệt kê danh sách các dự án có trong cấu hình |
 
 **Ví dụ thực tế:**
-- `/sync -p openapi-tyk`
-- `/repo-sync project: openapi-tyk`
-- `/sync -p openapi --stash`
-- CLI: `npm run repo:sync -- -p openapi-tyk`
-- Discord: `!sync -p openapi-tyk` hoặc `!run /sync -p openapi-tyk`
+- `/sync -p order-service`
+- `/repo-sync project: order-service`
+- `/sync -p backend --stash`
+- CLI: `npm run repo:sync -- -p order-service`
+- Discord: `!sync -p order-service` hoặc `!run /sync -p order-service`
 
 ## Những lời Biện minh Thường gặp
 

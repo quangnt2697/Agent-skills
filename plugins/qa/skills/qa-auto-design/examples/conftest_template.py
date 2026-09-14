@@ -172,19 +172,19 @@ def pytest_addoption(parser):
     parser.addoption(
         "--base-url",
         action="store",
-        default=os.getenv("BASE_URL", "https://openapi-uat.dnse.com.vn"),
+        default=os.getenv("BASE_URL", ""),
         help="Base URL của OpenAPI Trading REST"
     )
     parser.addoption(
         "--api-key",
         action="store",
-        default=os.getenv("API_KEY", "eyJvcmciOiJkbnNlIiwiaWQiOiI3YTRiN2FkNjNkZTQ0YTRiOTEyMjA5NDMwNjA5MDQ5YiIsImgiOiJtdXJtdXIxMjgifQ=="),
+        default=os.getenv("API_KEY", ""),
         help="API Key cho OpenAPI / WebSocket"
     )
     parser.addoption(
         "--api-secret",
         action="store",
-        default=os.getenv("API_SECRET", "dEZI939ujODBZ5k_KnlD_fDUasGhsAfVFeED_RuXM7m-73g6BNgTk1O1p8IdKMAZrt9QM836H1BCvbcnzYUTdQ"),
+        default=os.getenv("API_SECRET", ""),
         help="API Secret cho OpenAPI / WebSocket"
     )
     parser.addoption(
@@ -204,19 +204,19 @@ def pytest_addoption(parser):
     parser.addoption(
         "--ws-url",
         action="store",
-        default=os.getenv("WS_URL", "wss://ws-openapi-uat.dnse.com.vn"),
+        default=os.getenv("WS_URL", ""),
         help="WebSocket URL của hệ thống giao dịch/datafeed"
     )
     parser.addoption(
         "--ws-admin-url",
         action="store",
-        default=os.getenv("WS_ADMIN_URL", "http://localhost:8080"),
+        default=os.getenv("WS_ADMIN_URL", ""),
         help="WebSocket Admin API URL (/monitor_current, v.v.)"
     )
     parser.addoption(
         "--ws-encoding",
         action="store",
-        default=os.getenv("WS_ENCODING", "msgpack"),
+        default=os.getenv("WS_ENCODING", "json"),
         help="Định dạng mã hóa tin nhắn WebSocket (msgpack | json)"
     )
 
@@ -224,19 +224,19 @@ def pytest_addoption(parser):
     parser.addoption(
         "--dashboard-url",
         action="store",
-        default=os.getenv("DASHBOARD_URL", "https://dashboard-openapi-uat.dnse.com.vn/#/dashboard/overview"),
+        default=os.getenv("DASHBOARD_URL", ""),
         help="Dashboard BFF URL"
     )
     parser.addoption(
         "--dashboard-username",
         action="store",
-        default=os.getenv("DASHBOARD_USERNAME", "dnse.admin@dnse.com.vn"),
+        default=os.getenv("DASHBOARD_USERNAME", ""),
         help="Tài khoản đăng nhập Dashboard"
     )
     parser.addoption(
         "--dashboard-password",
         action="store",
-        default=os.getenv("DASHBOARD_PASSWORD", "@dmin$1234"),
+        default=os.getenv("DASHBOARD_PASSWORD", ""),
         help="Mật khẩu đăng nhập Dashboard"
     )
 
@@ -244,19 +244,19 @@ def pytest_addoption(parser):
     parser.addoption(
         "--web-base-url",
         action="store",
-        default=os.getenv("WEB_BASE_URL", "https://dev.trading-test.dnse.com.vn/"),
+        default=os.getenv("WEB_BASE_URL", ""),
         help="Base URL của Web Trading"
     )
     parser.addoption(
         "--trading-username",
         action="store",
-        default=os.getenv("TRADING_USERNAME", "064CJJH8UF"),
+        default=os.getenv("TRADING_USERNAME", ""),
         help="Tài khoản đăng nhập Trading"
     )
     parser.addoption(
         "--trading-password",
         action="store",
-        default=os.getenv("TRADING_PASSWORD", "ENCAP@1234"),
+        default=os.getenv("TRADING_PASSWORD", ""),
         help="Mật khẩu đăng nhập Trading"
     )
 
@@ -264,25 +264,25 @@ def pytest_addoption(parser):
     parser.addoption(
         "--ors-admin-url",
         action="store",
-        default=os.getenv("ORS_ADMIN_URL", "https://api-uat.dnse.com.vn"),
+        default=os.getenv("ORS_ADMIN_URL", ""),
         help="Base URL của ORS Admin Service (Login lấy JWT)"
     )
     parser.addoption(
         "--ors-fo-url",
         action="store",
-        default=os.getenv("ORS_FO_URL", "https://api-fo-uat.dnse.com.vn"),
+        default=os.getenv("ORS_FO_URL", ""),
         help="Base URL của ORS FO (Bắn Execution Report, tra cứu orders)"
     )
     parser.addoption(
         "--ors-admin-username",
         action="store",
-        default=os.getenv("ORS_ADMIN_USERNAME", "dnse.admin@dnse.com.vn"),
+        default=os.getenv("ORS_ADMIN_USERNAME", ""),
         help="Username đăng nhập ORS Admin"
     )
     parser.addoption(
         "--ors-admin-password",
         action="store",
-        default=os.getenv("ORS_ADMIN_PASSWORD", "@dmin$1234"),
+        default=os.getenv("ORS_ADMIN_PASSWORD", ""),
         help="Mật khẩu đăng nhập ORS Admin"
     )
 
@@ -610,7 +610,7 @@ def appium_driver():
     Đọc cấu hình server và package từ biến môi trường.
     """
     appium_server_url = os.getenv("APPIUM_SERVER_URL", "http://127.0.0.1:4723")
-    app_package = os.getenv("APP_PACKAGE", "com.dnse.trading")
+    app_package = os.getenv("APP_PACKAGE", "com.example.trading")
     app_activity = os.getenv("APP_ACTIVITY", ".MainActivity")
 
     capabilities = {
@@ -812,10 +812,10 @@ class OrsAdminClient:
     từ Sở Giao dịch về Core ORS cho cả CƠ SỞ (/ors) và PHÁI SINH (/ors-derivative).
     Tự động ghi nhận interaction vào TestLogCollector.
     """
-    def __init__(self, admin_url: str = "https://api-uat.dnse.com.vn", fo_url: str = "https://api-fo-uat.dnse.com.vn", collector=None):
+    def __init__(self, admin_url: str = None, fo_url: str = None, collector=None):
         import requests
-        self._admin_url = admin_url.rstrip("/")
-        self._fo_url = fo_url.rstrip("/")
+        self._admin_url = (admin_url or os.getenv("ORS_ADMIN_URL", "")).rstrip("/")
+        self._fo_url = (fo_url or os.getenv("ORS_FO_URL", "")).rstrip("/")
         self._session = requests.Session()
         self._token = None
         self._collector = collector
@@ -838,8 +838,12 @@ class OrsAdminClient:
                 return "/ors-derivative"
         return "/ors"
 
-    def login(self, username: str = "dnse.admin@dnse.com.vn", password: str = "@dmin$1234") -> str:
+    def login(self, username: str = None, password: str = None) -> str:
         """Đăng nhập lấy Bearer token của ORS Admin."""
+        username = username or os.getenv("ORS_ADMIN_USERNAME", "")
+        password = password or os.getenv("ORS_ADMIN_PASSWORD", "")
+        if not username or not password:
+            raise ValueError("ORS Admin login yêu cầu ORS_ADMIN_USERNAME và ORS_ADMIN_PASSWORD trong .env")
         resp = self._session.post(
             f"{self._admin_url}/admin-service/login",
             json={"username": username, "password": password},

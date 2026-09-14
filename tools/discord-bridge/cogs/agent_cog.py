@@ -125,7 +125,7 @@ class AgentCog(commands.Cog):
             return await ctx.send("⛔ Bạn không có quyền điều khiển Agent này.")
 
         if not prompt or not prompt.strip():
-            return await ctx.send("⚠️ Vui lòng cung cấp kỹ năng cần chạy.\nVí dụ: `!run /cr-review-code-and-quality -p dnse-trading -d review auth`")
+            return await ctx.send("⚠️ Vui lòng cung cấp kỹ năng cần chạy.\nVí dụ: `!run /cr-review-code-and-quality -p order-service -d review auth`")
 
         prompt = prompt.strip()
         skill, proj_query, des = project_manager.parse_command_args(prompt)

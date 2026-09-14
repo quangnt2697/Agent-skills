@@ -56,10 +56,10 @@
 
 | Thành viên       | Role              | Số ticket   | Tổng Points   |
 |------------------|-------------------|-------------|---------------|
-| Phan Hữu Thắng   | Developer APP     | {n}         | {pts}         |
-| Lương Tuấn Linh  | Developer WEB     | {n}         | {pts}         |
-| Trịnh Quốc Đạt   | Developer Backend | {n}         | {pts}         |
-| Nguyễn Thành Sơn | Developer Backend | {n}         | {pts}         |
+| Developer APP   | Developer APP     | {n}         | {pts}         |
+| Developer WEB  | Developer WEB     | {n}         | {pts}         |
+| Developer Backend 1   | Developer Backend | {n}         | {pts}         |
+| Developer Backend 2 | Developer Backend | {n}         | {pts}         |
 
 ### Tổng hợp Capacity
 

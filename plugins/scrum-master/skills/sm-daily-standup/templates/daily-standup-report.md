@@ -59,14 +59,14 @@
 ### Phân bổ theo vai trò chuyên trách
 | Thành viên      | Role          | Số ticket   | Tổng Points   | Ghi chú                           |
 |-----------------|---------------|-------------|---------------|-----------------------------------|
-| Phan Hữu Thắng  | Developer APP | {n}         | {pts}         | Chuyên trách APP – Không cân bằng |
-| Lương Tuấn Linh | Developer WEB | {n}         | {pts}         | Chuyên trách WEB – Không cân bằng |
+| Developer APP  | Developer APP | {n}         | {pts}         | Chuyên trách APP – Không cân bằng |
+| Developer WEB | Developer WEB | {n}         | {pts}         | Chuyên trách WEB – Không cân bằng |
 
 ### 🔍 So sánh khối lượng Backend DEV (Trọng tâm cân bằng)
 | Thành viên       | Số ticket          | Tổng Points     | % khối lượng         |
 |------------------|--------------------|-----------------|----------------------|
-| Trịnh Quốc Đạt   | {n}                | {pts}           | {percent}%           |
-| Nguyễn Thành Sơn | {n}                | {pts}           | {percent}%           |
+| Developer Backend 1   | {n}                | {pts}           | {percent}%           |
+| Developer Backend 2 | {n}                | {pts}           | {percent}%           |
 | **Chênh lệch**   | **{delta_ticket}** | **{delta_pts}** | **{delta_percent}%** |
 
 ### Kết luận Cân bằng Tải

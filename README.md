@@ -51,11 +51,11 @@ Kỹ sư chuyên trách đánh giá hiệu năng web, Core Web Vitals (LCP, FID,
 
 ### Cài đặt Toàn Cục cho Gemini CLI & Antigravity (Khuyên dùng)
 
-Để tất cả các dự án trên máy tự động nhận diện và gọi được toàn bộ 42 skills và 7 personas của `agent-skills`, bạn chỉ cần:
+Để tất cả các dự án trên máy tự động nhận diện và gọi được toàn bộ 44 skills và 7 personas của `agent-skills`, bạn chỉ cần:
 
 ```bash
 # 1. Clone repository
-git clone https://gitlab.dnse.com.vn/my-project/agent-skills.git
+git clone https://gitlab.example.com/org/agent-skills.git
 cd agent-skills
 npm install
 
@@ -378,7 +378,7 @@ Xem chi tiết: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 - **8 Plugins** (core, ba-po, qa, dev, scrum-master, code-reviewer, security-auditor, web-performance-auditor)
 - **7 Personas** (BA/PO, QA, DEV, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor)
-- **42 Skills** (9 BA + 6 QA + 14 DEV + 4 SM + 2 CR + 1 Security + 1 WebPerf + 5 Meta)
+- **44 Skills** (9 BA + 6 QA + 14 DEV + 4 SM + 2 CR + 1 Security + 1 WebPerf + 7 Meta)
 - **35 Slash Commands**
 - **40+ Reference Documents**
 - **Production-Ready** — Dùng trong real projects (Finance/Trading domain)

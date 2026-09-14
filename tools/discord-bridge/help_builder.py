@@ -25,7 +25,7 @@ def build_help_embed(bot_name: str = "Agent Assistant") -> discord.Embed:
             "• Gõ `/agent` : Điều khiển Agent thực thi kỹ năng với đầy đủ tham số.\n"
             "  ↳ *Ví dụ:* `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`\n"
             "• Gõ `/sync` : Fetch & pull mã nguồn mới nhất của dự án về máy local an toàn.\n"
-            "  ↳ *Ví dụ:* `/sync project: openapi-tyk` hoặc `/sync project: openapi`"
+            "  ↳ *Ví dụ:* `/sync project: order-service` hoặc `/sync project: backend-services`"
         ),
         inline=False
     )
@@ -33,7 +33,7 @@ def build_help_embed(bot_name: str = "Agent Assistant") -> discord.Embed:
     embed.add_field(
         name="⚡ 2. Bộ Lệnh Prefix Tối Giản",
         value=(
-            "• `!sync -p <project> [--stash]` : Kéo code mới nhất về local (VD: `!sync -p openapi-tyk`)\n"
+            "• `!sync -p <project> [--stash]` : Kéo code mới nhất về local (VD: `!sync -p order-service`)\n"
             "• `!run <kỹ_năng> [-p project] [-d des]` : Kích hoạt Agent thực thi kỹ năng\n"
             "  ↳ *Ví dụ:* `!run /cr-review-code-and-quality -p my-project -d review auth`\n"
             "• `!cancel` : Hủy tác vụ Agent đang chạy (hoặc `!abort`, `!stop`)\n"
@@ -259,10 +259,10 @@ def build_command_help_embed(command_name: str, bot_name: str = "Agent Assistant
         embed.add_field(
             name="💡 Ví dụ thực tế",
             value=(
-                "• `!sync -p openapi-tyk` : Kéo code mới cho đúng repo `openapi-tyk`\n"
-                "• `!sync -p openapi` : Kéo code cho toàn bộ 34 microservices trong folder 3.1\n"
-                "• `!sync -p openapi-tyk --stash` : Kéo code an toàn kể cả khi đang có file sửa dở\n"
-                "• `/sync project: openapi-tyk` : Kéo code qua Slash Command có autocomplete"
+                "• `!sync -p order-service` : Kéo code mới cho đúng repo `order-service`\n"
+                "• `!sync -p backend-services` : Kéo code cho toàn bộ các microservices trong folder\n"
+                "• `!sync -p order-service --stash` : Kéo code an toàn kể cả khi đang có file sửa dở\n"
+                "• `/sync project: order-service` : Kéo code qua Slash Command có autocomplete"
             ),
             inline=False
         )
@@ -282,9 +282,9 @@ def build_command_help_text(command_name: str, bot_name: str = "Agent Assistant"
             "• **Prefix Command:** `!sync -p <project> [-b <nhánh>] [--stash] [--dry-run]`\n"
             "• **Các cờ:** `-p` (chọn dự án/thư mục), `-b` (nhánh), `--stash` (auto-stash), `--dry-run` (kiểm tra)\n"
             "• **Ví dụ:**\n"
-            "  ↳ `!sync -p openapi-tyk` (chỉ pull đúng repo openapi-tyk)\n"
-            "  ↳ `!sync -p openapi` (pull cả cụm microservices trong folder 3.1)\n"
-            "  ↳ `!sync -p openapi --stash` (tự stash code chưa commit)"
+            "  ↳ `!sync -p order-service` (chỉ pull đúng repo order-service)\n"
+            "  ↳ `!sync -p backend-services` (pull cả cụm microservices)\n"
+            "  ↳ `!sync -p backend-services --stash` (tự stash code chưa commit)"
         )
     if cmd in ["run", "agent"]:
         return (
@@ -334,9 +334,9 @@ def build_help_text(bot_name: str = "Agent Assistant") -> str:
         "• `/agent skill: <kỹ_năng> project: <tên_project> des: <mô_tả>`\n"
         "  ↳ *Ví dụ:* `/agent skill: /cr-review-code-and-quality project: my-project des: review auth`\n"
         "• `/sync project: <tên_project>` : Đồng bộ code mới nhất của dự án về máy local\n"
-        "  ↳ *Ví dụ:* `/sync project: openapi-tyk`\n\n"
+        "  ↳ *Ví dụ:* `/sync project: order-service`\n\n"
         "⚡ **2. Bộ Lệnh Prefix Tối Giản:**\n"
-        "• `!sync -p <project> [--stash]` : Kéo code mới nhất về local (VD: `!sync -p openapi-tyk`)\n"
+        "• `!sync -p <project> [--stash]` : Kéo code mới nhất về local (VD: `!sync -p order-service`)\n"
         "• `!run <kỹ_năng> [-p project] [-d des]` : Kích hoạt Agent thực thi (cooldown: 30s/user)\n"
         "  ↳ *Ví dụ:* `!run /cr-review-code-and-quality -p my-project -d review auth`\n"
         "• `!cancel` : Hủy tác vụ Agent đang chạy (alias: `!abort`, `!stop`)\n"

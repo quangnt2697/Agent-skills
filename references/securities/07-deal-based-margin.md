@@ -6,7 +6,7 @@
 
 ### 7.1. Khái Niệm Cốt Lõi: Deal Là Gì & So Sánh Với Mô Hình Truyền Thống
 
-Khái niệm **DEAL** (tiên phong bởi DNSE) là giải pháp quản trị tài sản và giao dịch ký quỹ theo từng vị thế độc lập, khắc phục triệt để các nhược điểm của mô hình tiểu khoản `.1`/`.6` truyền thống:
+Khái niệm **DEAL** là giải pháp quản trị tài sản và giao dịch ký quỹ theo từng vị thế độc lập, khắc phục triệt để các nhược điểm của mô hình tiểu khoản `.1`/`.6` truyền thống:
 
 1. **Tài khoản đơn nhất (Single Account View):** Khách hàng chỉ sở hữu **một tài khoản giao dịch duy nhất**. Không cần mở nhiều tiểu khoản, không cần chuyển tiền qua lại.
 2. **Định danh Deal độc lập (Composite Key):** Mỗi Deal được định danh duy nhất trên hệ thống bởi bộ ba thông tin:
@@ -19,7 +19,7 @@ Khái niệm **DEAL** (tiên phong bởi DNSE) là giải pháp quản trị tà
 4. **Cách ly rủi ro tuyệt đối (Ring-fenced Positions):** Quản trị rủi ro, theo dõi lãi lỗ, tính giá hòa vốn và xử lý giải chấp được thực hiện độc lập trên từng Deal:
    * Nếu Deal `SSI` bị lỗ và chạm ngưỡng giải chấp, hệ thống **CHỈ BÁN XỬ LÝ CỔ PHIẾU `SSI` THUỘC ĐÚNG DEAL ĐÓ**, hoàn toàn **KHÔNG ẢNH HƯỞNG HAY BÁN CHÉO SANG DEAL `ACB`**.
 
-#### Bảng So Sánh Toàn Diện: Portfolio-based (.1/.6) vs Deal-based (DNSE)
+#### Bảng So Sánh Toàn Diện: Portfolio-based (.1/.6) vs Deal-based
 
 | Tiêu Chí | Quản Lý Truyền Thống (.1 và .6) | Quản Lý Theo DEAL (Thế Hệ Mới) |
 |:---|:---|:---|
@@ -71,7 +71,7 @@ Rổ vay 2.0 là tập hợp các mã chứng khoán đủ tiêu chuẩn nghiệ
 * `id`: Số hiệu gói vay.
 * `name`: Tên gói vay (vd: "Gói Lãi Suất Ưu Đãi T0", "Margin Chuẩn 50%").
 * `loanType`: Loại vay (`M`: Margin thường, `C`: Thấu chi/Cash).
-* `source`: Nguồn vốn (`C`: CTCK DNSE, `B`: Ngân hàng, đối tác P2P).
+* `source`: Nguồn vốn (`C`: CTCK, `B`: Ngân hàng, đối tác P2P).
 * `initialRate`: Tỷ lệ ký quỹ (cọc) ban đầu của gói vay (vd: $0.5$ tương ứng tỷ lệ cho vay $50\%$).
 * `initialRateForWithdraw`: Tỷ lệ ký quỹ áp dụng khi ứng/rút sức mua dôi ra từ Deal.
 * `maintenanceRate`: Tỷ lệ duy trì (ngưỡng Call Margin, vd: $0.4$).

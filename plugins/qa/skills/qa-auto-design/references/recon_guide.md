@@ -147,6 +147,6 @@ Tài liệu này hướng dẫn chi tiết quy trình khảo sát thực tế (R
 
 Trong quá trình Recon và thiết kế API/WS client:
 - Mọi cấu hình kết nối BẮT BUỘC trỏ vào Real Base URLs từ `.env`:
-  + `BASE_URL=https://openapi-uat.dnse.com.vn` (hoặc sandbox).
-  + `WS_URL=wss://ws-openapi-uat.dnse.com.vn`.
+  + `BASE_URL` cấu hình trong `.env` (UAT hoặc Sandbox).
+  + `WS_URL` cấu hình trong `.env`.
 - **CẤM TUYỆT ĐỐI:** Sử dụng mock server cục bộ, `unittest.mock`, `respx`, `responses`, `@patch` để giả lập response trên UAT. Test phải phản ánh 100% dữ liệu và phản hồi thực từ hệ thống.

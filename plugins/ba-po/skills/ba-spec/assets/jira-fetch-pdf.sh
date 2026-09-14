@@ -10,7 +10,7 @@
 #   bash jira-fetch-pdf.sh G3PTP-16584 ./workspace
 #
 # Env vars yêu cầu:
-#   JIRA_BASE_URL   - URL Jira (VD: https://your-company.atlassian.net)
+#   JIRA_BASE_URL   - URL Jira (VD: https://example.atlassian.net)
 #   JIRA_EMAIL      - Email đăng nhập Jira
 #   JIRA_API_TOKEN  - API token
 #

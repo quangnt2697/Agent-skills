@@ -64,12 +64,12 @@ test('test-data-mcp: Smart Environment Routing giữa openapi (535) và sandbox 
     // 1. Phân giải database name
     assert.equal(resolveOpenApiDatabase('sandbox'), 'openapi-sandbox');
     assert.equal(resolveOpenApiDatabase('openapi-sandbox'), 'openapi-sandbox');
-    assert.equal(resolveOpenApiDatabase('https://sb-openapi.dnse.com.vn'), 'openapi-sandbox');
-    assert.equal(resolveOpenApiDatabase('https://sb-openapi-uat.dnse.com.vn'), 'openapi-sandbox');
+    assert.equal(resolveOpenApiDatabase('https://sb-openapi.example.com'), 'openapi-sandbox');
+    assert.equal(resolveOpenApiDatabase('https://sb-openapi-uat.example.com'), 'openapi-sandbox');
 
     assert.equal(resolveOpenApiDatabase('openapi'), 'openapi');
-    assert.equal(resolveOpenApiDatabase('https://openapi-uat.dnse.com.vn'), 'openapi');
-    assert.equal(resolveOpenApiDatabase('https://openapi.dnse.com.vn'), 'openapi');
+    assert.equal(resolveOpenApiDatabase('https://openapi-uat.example.com'), 'openapi');
+    assert.equal(resolveOpenApiDatabase('https://openapi.example.com'), 'openapi');
     assert.equal(resolveOpenApiDatabase(''), 'openapi');
     assert.equal(resolveOpenApiDatabase(null), 'openapi');
 

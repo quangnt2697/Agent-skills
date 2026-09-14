@@ -47,7 +47,7 @@ Khi review một Merge Request trên GitLab, Code Reviewer áp dụng nguyên t�
 
 ### 1. Cơ Chế Nhận Diện Group & Project (Multi-Group / Multi-Project Resolution)
 Agent xác định `project_id` theo 3 tầng ưu tiên tự động:
-1. **Tự động từ Git Remote (Zero-Config — Khuyến nghị):** Agent chạy `git config --get remote.origin.url`. Phân tích URL remote (ví dụ: `git@gitlab.dnse.com.vn:trading-platform/entrade-web.git` hoặc `https://gitlab.dnse.com.vn/core-banking/payment-service.git`) để tự động trích xuất `project_id = "trading-platform/entrade-web"` hoặc `"core-banking/payment-service"`.
+1. **Tự động từ Git Remote (Zero-Config — Khuyến nghị):** Agent chạy `git config --get remote.origin.url`. Phân tích URL remote (ví dụ: `git@gitlab.example.com:core-team/core-service.git` hoặc `https://gitlab.example.com/backend/order-service.git`) để tự động trích xuất `project_id = "core-team/core-service"` hoặc `"backend/order-service"`.
 2. **Nhận diện từ URL hoặc Cú pháp ngắn của User:** Nếu user cung cấp trực tiếp URL (`https://gitlab.../group/project/-/merge_requests/145`) hoặc cú pháp `group/project!145`, Agent bóc tách chính xác `project_id` và `merge_request_iid`.
 3. **Cấu hình Mặc định (Fallback):** Đọc `GITLAB_DEFAULT_PROJECT` từ file `.env` nếu không phát hiện được qua 2 cách trên.
 

@@ -1,12 +1,18 @@
-# Từ Điển Schema TimescaleDB (Database ID: 644 — Market Info / KRX)
+# Từ Điển Schema TimescaleDB (Market Info / KRX)
 
 ## 1. Tổng Quan
-- **Database ID trên Metabase:** `644`
+- **Database ID trên Metabase UAT:** `${METABASE_UAT_DB_TIMESCALE_ID}` (Mặc định: `644`)
+- **Database ID trên Metabase PROD:** `${METABASE_PROD_DB_TIMESCALE_ID}` (Mặc định: `7`)
 - **Hệ quản trị CSDL:** TimescaleDB (PostgreSQL Extension)
-- **Hạ tầng nội bộ:** `encapital-timescaledb.market-info:5432/market`
 - **Tổng số bảng trong schema public:** `114` bảng
-- **Vị trí file Cache dữ liệu máy (Zero-Latency):** [`.agents/cache/schema-644.json`](../.agents/cache/schema-644.json)
+- **Vị trí file Cache dữ liệu máy (Zero-Latency):** [`.agents/cache/`](../.agents/cache/)
 - **Tài liệu tham chiếu chuẩn:** [`references/securities-domain-rules.md`](./securities-domain-rules.md)
+
+> [!CAUTION]
+> **QUY TẮC BẤT BIẾN VỀ TÊN BẢNG VS ID METABASE:**
+> - Cột `ID Metabase` trong tài liệu này chỉ là ID nội bộ của môi trường Metabase UAT để tiện tra cứu GUI.
+> - **ID của các bảng trên Metabase Production KHÁC HOÀN TOÀN với UAT** (do Metabase tự sinh ID sequence độc lập khi scan schema).
+> - **TUYỆT ĐỐI KHÔNG** dùng Metabase Table ID trong code query. Mọi truy vấn SQL Native qua `/api/dataset` **BẮT BUỘC dùng Tên Bảng (Table Name)** (ví dụ: `FROM security_definition_v3`, `FROM krx_mdds_v3_ticks`). Tên bảng trong PostgreSQL là hằng số đồng nhất 100% giữa UAT và PROD.
 
 ---
 
@@ -43,7 +49,7 @@ node .agents/db-mcp.js --list-tables --db timescale --refresh
 | **Chỉ số Thị Trường** | `krx_mdds_v3_market_indices` | `krx_mdds_v2_market_indices` | VN-Index, VN30, HNX-Index... |
 | **Giao Dịch Khối Ngoại** | `krx_mdds_v3_trading_foreign_investors` | `trading_result_of_foreign_investors` | Mua/bán ròng và room ngoại real-time |
 | **Giá Dự Kiến ATO/ATC** | `expected_price_v3` | *(Không có)* | Giá khớp dự kiến trong phiên định kỳ |
-| **Giá Trần / Sàn / Tham Chiếu** | *(Chưa có v3)* | `krx_mdds_v2_stock_infos` | **Dùng v2** để lấy `ceiling_price`, `floor_price`, `ref_price` |
+| **Giá Trần / Sàn / Tham Chiếu** | `security_definition_v3` | `krx_mdds_v2_stock_infos` | **Bảng v3** có `ceiling_price`, `floor_price`, `basic_price` (=ref) |
 | **Biểu đồ Nến (OHLC)** | *(Chưa có v3)* | `krx_mdds_v2_stock_ohlc` | **Dùng v2** cho nến cổ phiếu, index và phái sinh |
 | **Phiên giao dịch theo mã** | *(Chưa có v3)* | `krx_mdds_v2_symbol_trading_sessions` | **Dùng v2** để kiểm tra session theo symbol |
 

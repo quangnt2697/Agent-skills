@@ -42,8 +42,8 @@ Lập kế hoạch cho Sprint tiếp theo dựa trên dữ liệu từ Jira.
   ```
 - Trích xuất 3 biến bắt buộc:
   ```
-  ATLASSIAN_BASE_URL   # VD: https://entrade.atlassian.net
-  ATLASSIAN_EMAIL      # VD: quang.nguyen3@dnse.com.vn
+  ATLASSIAN_BASE_URL   # VD: https://example.atlassian.net
+  ATLASSIAN_EMAIL      # VD: user@example.com
   ATLASSIAN_API_TOKEN  # Token xác thực
   ```
 - Nếu **thiếu bất kỳ biến nào** trong 3 biến trên → Dừng lại, báo lỗi cho user, KHÔNG tiếp tục.
@@ -140,11 +140,11 @@ Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
 - Chọn lọc các User Stories/Tickets phù hợp từ Backlog (ưu tiên Priority High trước).
 - Xác định Sprint Goal dựa trên những task được chọn.
 - Phân bổ Ticket đề xuất cho từng member dựa trên role trong `sm-config.yaml`:
-  - Ticket APP → **Phan Hữu Thắng** (Developer APP).
-  - Ticket WEB → **Lương Tuấn Linh** (Developer WEB).
-  - Ticket Backend/General → Chia đều giữa **Trịnh Quốc Đạt** và **Nguyễn Thành Sơn** (Developer Backend).
-- Nếu Backlog chưa rõ ràng (thiếu Acceptance Criteria), ghi vào section "Rủi ro & Lưu ý" và đề xuất BA (**Trịnh Thu Hà** / **Phạm Thị Thảo Linh**) bổ sung.
-- Nếu có quyết định quan trọng (scope, priority), ghi vào section "Quyết định cần PO phê duyệt" để PO (**Nguyễn Trung Hiếu**) xác nhận.
+  - Ticket APP → **Developer APP** (Developer APP).
+  - Ticket WEB → **Developer WEB** (Developer WEB).
+  - Ticket Backend/General → Chia đều giữa **Developer Backend 1** và **Developer Backend 2** (Developer Backend).
+- Nếu Backlog chưa rõ ràng (thiếu Acceptance Criteria), ghi vào section "Rủi ro & Lưu ý" và đề xuất BA (**BA 1** / **BA 2**) bổ sung.
+- Nếu có quyết định quan trọng (scope, priority), ghi vào section "Quyết định cần PO phê duyệt" để PO (**PO 1**) xác nhận.
 
 ### Bước 4: Xuất file
 - Nếu thư mục `{PROJECT_ROOT}/workspace/sprint/` chưa tồn tại, chạy `mkdir -p` để tạo.

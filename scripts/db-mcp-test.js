@@ -184,12 +184,12 @@ test('DB MCP Metabase: Phân giải chính xác Database IDs (timescale: 644, op
     // 5. Smart Environment Routing (resolveOpenApiDatabase)
     assert.equal(resolveOpenApiDatabase('sandbox'), 'openapi-sandbox');
     assert.equal(resolveOpenApiDatabase('openapi-sandbox'), 'openapi-sandbox');
-    assert.equal(resolveOpenApiDatabase('https://sb-openapi.dnse.com.vn'), 'openapi-sandbox');
-    assert.equal(resolveOpenApiDatabase('https://sb-openapi-uat.dnse.com.vn'), 'openapi-sandbox');
+    assert.equal(resolveOpenApiDatabase('https://sb-openapi.example.com'), 'openapi-sandbox');
+    assert.equal(resolveOpenApiDatabase('https://sb-openapi-uat.example.com'), 'openapi-sandbox');
 
     assert.equal(resolveOpenApiDatabase('openapi'), 'openapi');
-    assert.equal(resolveOpenApiDatabase('https://openapi-uat.dnse.com.vn'), 'openapi');
-    assert.equal(resolveOpenApiDatabase('https://openapi.dnse.com.vn'), 'openapi');
+    assert.equal(resolveOpenApiDatabase('https://openapi-uat.example.com'), 'openapi');
+    assert.equal(resolveOpenApiDatabase('https://openapi.example.com'), 'openapi');
     assert.equal(resolveOpenApiDatabase(''), 'openapi');
     assert.equal(resolveOpenApiDatabase(null), 'openapi');
 });
@@ -199,24 +199,25 @@ test('DB MCP Metabase: Hỗ trợ chuyển đổi môi trường UAT / PROD và 
 
     try {
         // 1. Môi trường UAT mặc định
+        delete process.env.METABASE_URL;
         process.env.METABASE_ENV = 'uat';
-        process.env.METABASE_UAT_URL = 'https://mb-uat.dnse.com.vn';
+        process.env.METABASE_UAT_URL = 'https://mb-uat.example.com';
         process.env.METABASE_UAT_API_TOKEN = 'token-uat-123';
         delete process.env.METABASE_PROD_SESSION_TOKEN;
 
         const cfgUat = getMetabaseConfig();
         assert.equal(cfgUat.isProd, false);
-        assert.equal(cfgUat.baseUrl, 'https://mb-uat.dnse.com.vn');
+        assert.equal(cfgUat.baseUrl, 'https://mb-uat.example.com');
 
         // 2. Chuyển sang Production qua METABASE_ENV=prod
         process.env.METABASE_ENV = 'prod';
-        process.env.METABASE_PROD_URL = 'https://mb.dnse.com.vn';
+        process.env.METABASE_PROD_URL = 'https://mb.example.com';
         process.env.METABASE_PROD_SESSION_TOKEN = 'session-prod-xyz-999';
         process.env.METABASE_PROD_DB_TIMESCALE_ID = '700';
 
         const cfgProd = getMetabaseConfig();
         assert.equal(cfgProd.isProd, true);
-        assert.equal(cfgProd.baseUrl, 'https://mb.dnse.com.vn');
+        assert.equal(cfgProd.baseUrl, 'https://mb.example.com');
         assert.equal(cfgProd.token, 'session-prod-xyz-999');
 
         // Headers phải có cả X-Metabase-Session và Cookie metabase.SESSION

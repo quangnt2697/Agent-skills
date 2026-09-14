@@ -21,8 +21,8 @@ test('repo-sync parseArgs: Bóc tách chính xác cờ -p, --project, project:',
   const t2 = parseArgs('--project openapi-websocket');
   assert.equal(t2.project, 'openapi-websocket');
 
-  const t3 = parseArgs('project: dnse-trading');
-  assert.equal(t3.project, 'dnse-trading');
+  const t3 = parseArgs('project: trading-service');
+  assert.equal(t3.project, 'trading-service');
 
   const t4 = parseArgs(['-p', 'openapi']);
   assert.equal(t4.project, 'openapi');
