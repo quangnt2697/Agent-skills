@@ -51,6 +51,14 @@ class InfoCog(commands.Cog):
         if not is_authorized(ctx.author.id):
             return await ctx.send("⛔ Bạn không có quyền truy cập bot này.")
 
+        if filter_query and filter_query.strip().lower() in ["reload", "refresh"]:
+            import config
+            config._commands_cache["data"] = None
+            config._commands_cache["timestamp"] = 0
+            new_cats = load_all_commands()
+            total = sum(len(items) for items in new_cats.values())
+            return await ctx.send(f"🔄 **Đã làm mới bộ nhớ cache kỹ năng!** Đã nạp thành công `{total}` skills từ các plugins.")
+
         categories = load_all_commands()
 
         if not filter_query:
@@ -174,6 +182,26 @@ class InfoCog(commands.Cog):
             embed.set_footer(text=f"Tổng cộng: {len(matched)} projects khả dụng.")
 
         await ctx.send(embed=embed)
+
+    @commands.command(name="sync-slash", aliases=["sync-commands"])
+    async def sync_slash(self, ctx):
+        """Đồng bộ cưỡng bức toàn bộ Slash Commands với Discord"""
+        if not is_authorized(ctx.author.id):
+            return await ctx.send("⛔ Bạn không có quyền truy cập bot này.")
+
+        status_msg = await ctx.send("⏳ Đang đồng bộ Slash Commands với Discord...")
+        try:
+            for guild in self.bot.guilds:
+                try:
+                    self.bot.tree.copy_global_to(guild=guild)
+                    await self.bot.tree.sync(guild=guild)
+                except Exception:
+                    pass
+            synced = await self.bot.tree.sync()
+            cmd_names = ", ".join(f"/{c.name}" for c in synced)
+            await status_msg.edit(content=f"✨ **Đã đồng bộ thành công {len(synced)} Slash Commands ({cmd_names})!** Gợi ý đã sẵn sàng trên Discord.")
+        except Exception as e:
+            await status_msg.edit(content=f"⚠️ Lỗi đồng bộ Slash Commands: {e}")
 
 
 async def setup(bot: commands.Bot):

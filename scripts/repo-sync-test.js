@@ -57,6 +57,9 @@ test('repo-sync parseArgs: Nhận diện đúng các cờ boolean (--stash, --dr
 
   const t4 = parseArgs('--all');
   assert.equal(t4.all, true);
+
+  const t5 = parseArgs('-p openapi-tyk --no-reset');
+  assert.equal(t5.noReset, true);
 });
 
 test('repo-sync loadProjectsConfig: Đọc và phân giải danh sách alias từ projects.json', () => {
@@ -116,4 +119,36 @@ test('repo-sync formatReport: Render bảng Markdown tổng kết trực quan', 
   assert.ok(md.includes('🟢 Pulled'));
   assert.ok(md.includes('⚪ Up-to-date'));
   assert.ok(md.includes('**Tổng kết:** 2 repos'));
+});
+
+test('repo-sync formatReport: Hiển thị đầy đủ thông tin đa nhánh và trạng thái reset', () => {
+  const multiBranchResults = [
+    {
+      name: 'openapi-tyk',
+      path: '/path/openapi-tyk',
+      currentBranch: 'master',
+      initialBranch: 'master',
+      status: 'PULLED',
+      behind: 7,
+      ahead: 0,
+      latestSha: 'a1b2c3d',
+      wasReset: true,
+      resetMessage: 'Đã reset 5 file modified/untracked',
+      message: '🔄 Đã reset 5 file modified/untracked | Nhánh: master (+3), dev (+4), uat (OK)',
+      durationMs: 1200,
+      branches: [
+        { name: 'master', status: 'PULLED', behind: 3, ahead: 0, latestSha: 'a1b2c3d', message: 'Đã kéo +3 commit' },
+        { name: 'dev', status: 'PULLED', behind: 4, ahead: 0, latestSha: 'e4f5g6h', message: 'Đã kéo +4 commit' },
+        { name: 'uat', status: 'UP_TO_DATE', behind: 0, ahead: 0, latestSha: 'i7j8k9l', message: 'Đã ở bản mới nhất' }
+      ]
+    }
+  ];
+
+  const md = formatReport(multiBranchResults);
+  assert.ok(md.includes('openapi-tyk'));
+  assert.ok(md.includes('`master`, `dev`, `uat`'));
+  assert.ok(md.includes('🔄 Đã reset 5 file modified/untracked'));
+  assert.ok(md.includes('master (+3)'));
+  assert.ok(md.includes('dev (+4)'));
+  assert.ok(md.includes('🔄 Đã reset: 1'));
 });

@@ -7,8 +7,9 @@ Kích hoạt kỹ năng repo-group-sync: TẬP TRUNG DUY NHẤT VÀO CHỨC NĂN
 ## 1. Phân Tích Cờ Tham Số
 Trích xuất các cờ từ câu lệnh:
 - `-p <tên>`, `--project <tên>`, `project: <tên>`: Tên alias dự án trong `tools/discord-bridge/projects.json` hoặc đường dẫn thư mục.
-- `-b <nhánh>`, `--branch <nhánh>`, `branch: <nhánh>`: Nhánh cần pull (mặc định giữ nguyên nhánh hiện tại).
-- `--stash`: Tự động stash thay đổi dở dang trước khi pull và pop lại.
+- `-b <nhánh>`, `--branch <nhánh>`, `branch: <nhánh>`: Nhánh cần pull bổ sung.
+- `--no-reset`: Tắt tính năng tự động reset working tree khi phát hiện thay đổi chưa commit.
+- `--stash`: Tự động stash thay đổi dở dang trước khi pull và pop lại (khi dùng kèm `--no-reset`).
 - `--dry-run`: Chỉ kiểm tra độ lệch commit mà không pull thật.
 - `--all`: Đồng bộ toàn bộ các dự án trong cấu hình.
 - `--list`: Liệt kê danh sách các dự án có trong cấu hình.

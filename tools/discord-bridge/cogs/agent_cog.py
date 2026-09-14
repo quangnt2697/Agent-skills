@@ -243,8 +243,5 @@ class AgentCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    cog = AgentCog(bot)
-    await bot.add_cog(cog)
-    bot.tree.add_command(cog.slash_agent)
-    bot.tree.add_command(cog.slash_sync)
+    await bot.add_cog(AgentCog(bot))
 

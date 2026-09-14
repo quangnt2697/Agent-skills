@@ -81,8 +81,17 @@ async def on_ready():
     print(f"🔒 Allowed User IDs: {list(ALLOWED_USER_IDS) if ALLOWED_USER_IDS else 'CHƯA CẤU HÌNH (Sẽ chặn mọi lệnh)'}", flush=True)
 
     try:
+        # Đồng bộ nhanh cho các Guild hiện tại để hiển thị gợi ý ngay lập tức trên Discord client
+        for guild in bot.guilds:
+            try:
+                bot.tree.copy_global_to(guild=guild)
+                await bot.tree.sync(guild=guild)
+            except Exception as ge:
+                logger.warning(f"Không thể sync guild {guild.name}: {ge}")
+
         synced = await bot.tree.sync()
-        print(f"✨ Đã đồng bộ {len(synced)} Slash Commands (/agent) với Discord!", flush=True)
+        cmd_names = ", ".join(f"/{c.name}" for c in synced)
+        print(f"✨ Đã đồng bộ {len(synced)} Slash Commands ({cmd_names}) với Discord!", flush=True)
     except Exception as e:
         print(f"⚠️ Lỗi đồng bộ Slash Commands: {e}", flush=True)
     print("=================================================", flush=True)
