@@ -20,7 +20,7 @@ const {
   normalizeIssueKey,
   markdownToAdf,
   splitBlocks,
-} = require(path.join(__dirname, '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'scripts', 'jira-push-spec.js'));
+} = require(path.join(__dirname, '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'assets', 'jira-push-spec.js'));
 
 
 // --- normalizeIssueKey --------------------------------------------------------
@@ -175,7 +175,7 @@ test('splits a document into md and table blocks in order', () => {
 
 test('the shipped template converts with both of its tables intact', () => {
   const templatePath = path.join(
-    __dirname, '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'templates', 'jira-description-template.md',
+    __dirname, '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'assets', 'jira-description-template.md',
   );
   const doc = markdownToAdf(fs.readFileSync(templatePath, 'utf8'));
 
@@ -184,7 +184,7 @@ test('the shipped template converts with both of its tables intact', () => {
 
 test('the shipped template carries no leftover meta text', () => {
   const templatePath = path.join(
-    __dirname, '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'templates', 'jira-description-template.md',
+    __dirname, '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'assets', 'jira-description-template.md',
   );
   const raw = fs.readFileSync(templatePath, 'utf8');
 

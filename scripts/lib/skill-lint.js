@@ -234,13 +234,14 @@ function lintSkillContent(dirName, content, knownSkills) {
         ` (agents inject this into the system prompt)`
       );
     }
-    const hasTrigger       = DESCRIPTION_TRIGGER.test(fm.description);
-    const onlyNegated      = hasTrigger && DESCRIPTION_TRIGGER_NEGATE.test(fm.description)
+    const hasTriggerField  = typeof fm.trigger === 'string' && fm.trigger.trim().length > 0;
+    const hasTriggerDesc   = DESCRIPTION_TRIGGER.test(fm.description);
+    const onlyNegated      = hasTriggerDesc && DESCRIPTION_TRIGGER_NEGATE.test(fm.description)
       && !fm.description.replace(DESCRIPTION_TRIGGER_NEGATE, '').match(DESCRIPTION_TRIGGER);
-    if (!hasTrigger || onlyNegated) {
+    if (!hasTriggerField && (!hasTriggerDesc || onlyNegated)) {
       errors.push(
-        `Description has no 'when to use' trigger — add a "Use when …" clause ` +
-        `(skill-anatomy.md: Required — the description must say both what the skill does and when to use it)`
+        `Description has no 'when to use' trigger — add a 'trigger:' field in frontmatter or a "Use when …" clause in description ` +
+        `(skill-anatomy.md: Required — the skill must declare when to use it)`
       );
     }
   }
@@ -270,9 +271,18 @@ function lintSkillContent(dirName, content, knownSkills) {
       .split(/\r?\n/)
       .filter(line => /^##\s/.test(line));
 
-    for (const { label, pattern } of REQUIRED_SECTIONS) {
-      if (!headings.some(h => pattern.test(h))) {
-        errors.push(`Missing required section: ${label}`);
+    // Support both Progressive Disclosure (3-tier) structure and Classic 5-section structure
+    const hasWhenToUse = headings.some(h => /^##\s+.*(when\s+to\s+use|khi\s+nào\s+(cần\s+)?(sử\s+dụng|dùng|áp\s+dụng)|mục\s+đích|overview|tổng\s+quan)/i.test(h));
+    const hasProcess = headings.some(h => /^##\s+.*(quy\s+trình|chu\s+trình|các\s+bước|hướng\s+dẫn|thực\s+hiện|nguyên\s+tắc|workflow|process|giai\s+đoạn|phase|đầu\s+vào)/i.test(h));
+    const hasResourcesOrFewShot = headings.some(h => /^##\s+.*(tài\s+nguyên|assets|references|mở\s+rộng|ví\s+dụ|few-shot|mẫu|xác\s+minh|verification)/i.test(h));
+
+    const isProgressiveDisclosure = hasWhenToUse && hasProcess && hasResourcesOrFewShot;
+
+    if (!isProgressiveDisclosure) {
+      for (const { label, pattern } of REQUIRED_SECTIONS) {
+        if (!headings.some(h => pattern.test(h))) {
+          errors.push(`Missing required section: ${label}`);
+        }
       }
     }
   }

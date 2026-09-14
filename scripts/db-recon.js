@@ -42,7 +42,7 @@ const catalogPath = path.join(
     'core',
     'skills',
     'db-timescale-reconciler',
-    'resources',
+    'assets',
     'reconciliation-queries.json'
 );
 

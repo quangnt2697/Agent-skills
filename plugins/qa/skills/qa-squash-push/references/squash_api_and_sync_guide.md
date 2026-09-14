@@ -32,15 +32,17 @@ SQUASH_DEBUG="0"                                     # Đặt = 1 để in raw r
 
 ---
 
-## 2. Chi Tiết Quy Trình Phase A (Test Case Workspace — REST API Công Khai)
+## 2. Chi Tiết Quy Trình Phase A (Dò Sprint Đa Workspace & Xóa Sạch Test Case Cũ Toàn Dự Án)
 
-Phase A giao tiếp thông qua REST API chính thức của Squash TM (`/api/rest/latest/...`) với header `Authorization: Bearer ${SQUASH_API_TOKEN}`.
+Phase A kết hợp REST API chính thức của Squash TM (`/api/rest/latest/...`) với header `Authorization: Bearer ${SQUASH_API_TOKEN}` và session backend để đảm bảo đồng bộ hoàn hảo:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│ Bước 1: Quét Sprint Mới Nhất từ Requirement Workspace                  │
-│ GET /api/rest/latest/requirement-folders/{SQUASH_REQ_G31_FOLDER_ID}    │
-│ ➔ Dùng regex "Sprint [0-9]+" tìm số hiệu xxx lớn nhất          │
+│ Bước 1: Quét Sprint Mới Nhất trên Đa Workspace (Multi-Workspace)       │
+│ GET /test-case-folders/{id}/content + /requirement-folders/{id}/content│
+│ + POST /backend/campaign-tree (đọc các node Sprint trong Campaign)     │
+│ ➔ Duyệt Pagination đầy đủ (size=100)                                   │
+│ ➔ Dùng regex (?i)sprint[\s_\-]*0*([0-9]+) trích xuất MAX_SPRINT_NUM    │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -51,32 +53,38 @@ Phase A giao tiếp thông qua REST API chính thức của Squash TM (`/api/res
 └───────────────────────────────────┬────────────────────────────────────┘
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│ Bước 3: Cơ Chế Clean-Before-Add (Xóa Sạch Execution Cũ)                │
-│ GET /api/rest/latest/test-cases trong targetFolderId                   │
-│ ➔ Nếu Test Case đã tồn tại: quét toàn bộ executions gắn kèm            │
-│ ➔ DELETE từng execution cũ để tránh lẫn lộn dữ liệu kiểm thử           │
+│ Bước 3: Cơ Chế Clean-Old-Anywhere (Quét Xóa Test Case Cũ Toàn Dự Án)   │
+│ GET /api/rest/latest/projects/{projectId}/test-cases (pagination loop) │
+│ ➔ Quét mọi thư mục/Sprint cũ để tìm test case của {issueKey}           │
+│ ➔ Xóa sạch executions cũ của từng test case tìm thấy                   │
+│ ➔ DELETE /test-cases/{old_id} xóa hoàn toàn test case cũ khỏi hệ thống │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│ Bước 4: Khởi Tạo hoặc Ghi Đè Kịch Bản Gherkin (PATCH Script)           │
-│ ➔ Nếu chưa có: POST tạo mới test-case dạng GHERKIN                     │
+│ Bước 4: Khởi Tạo Mới & Nạp Kịch Bản Gherkin (POST + PATCH Script)      │
+│ ➔ POST /api/rest/latest/test-cases tạo mới test-case dạng GHERKIN      │
 │ ➔ PATCH /api/rest/latest/test-cases/{id} cập nhật trường "script"      │
 │ ➔ Dán đè 100% nội dung file .feature mới vào Test Case                 │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Các Endpoint Phase A Cốt Lõi:
-1. **Lấy danh sách thư mục con:**
-   `GET /api/rest/latest/requirement-folders/{id}/content`
-2. **Tạo thư mục Test Case mới:**
+1. **Lấy danh sách thư mục con (có phân trang):**
+   `GET /api/rest/latest/test-case-folders/{id}/content?page={page}&size=100`
+   `GET /api/rest/latest/requirement-folders/{id}/content?page={page}&size=100`
+2. **Quét test case toàn dự án:**
+   `GET /api/rest/latest/projects/{projectId}/test-cases?page={page}&size=100`
+3. **Xóa test case cũ:**
+   `DELETE /api/rest/latest/test-cases/{id}`
+4. **Tạo thư mục Test Case mới:**
    `POST /api/rest/latest/test-case-folders`
    Payload: `{"_type": "test-case-folder", "name": "Sprint xxx", "parent": {"id": SQUASH_TC_G31_FOLDER_ID}}`
-3. **Tạo Test Case định dạng Gherkin:**
+5. **Tạo Test Case định dạng Gherkin mới:**
    `POST /api/rest/latest/test-cases`
-   Payload: `{"_type": "test-case", "name": "{issueKey}-{namejira}", "parent": {"id": targetFolderId}, "script": {"_type": "script", "scriptType": "GHERKIN"}}`
-4. **Cập nhật nội dung Gherkin:**
+   Payload: `{"_type": "scripted-test-case", "name": "{issueKey}-{namejira}", "parent": {"id": targetFolderId}}`
+6. **Cập nhật nội dung Gherkin:**
    `PATCH /api/rest/latest/test-cases/{id}`
-   Payload: `{"script": {"_type": "script", "scriptType": "GHERKIN", "content": "...gherkin text..."}}`
+   Payload: `{"_type": "scripted-test-case", "script": "...gherkin text..."}`
 
 ---
 

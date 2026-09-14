@@ -1,19 +1,21 @@
 #!/bin/bash
 # ==============================================================================
-# squash-push.sh — Tự động đẩy Gherkin file lên Squash TM (V5)
+# squash-push.sh — Tự động đẩy Gherkin file lên Squash TM (V6)
 # ==============================================================================
-# PHASE A — Test Case Workspace
-#   1. Tìm thư mục Sprint mới nhất (định dạng 'Sprint xxx') trong Test Case Workspace (G.3.1).
-#   2. Kiểm tra/Tạo test case dạng Gherkin trong thư mục Sprint đó.
-#   3. XÓA SẠCH EXECUTION CŨ: Quét executions của test case và xóa sạch (nếu có).
-#   4. Cập nhật script Gherkin mới (PATCH).
+# PHASE A — Dò Sprint Mới Nhất & Tạo Mới Test Case Sạch Sẽ
+#   1. Quét tìm Sprint mới nhất trên ĐA WORKSPACE (Test Case, Requirement, Campaign).
+#   2. Tự động khởi tạo thư mục Sprint mới nhất bên Test Case Workspace (nếu chưa có).
+#   3. QUÉT & XÓA TEST CASE CŨ Ở BẤT KỲ ĐÂU: Quét toàn project, xóa executions & xóa
+#      hoàn toàn test case cũ liên quan đến ISSUE_KEY trước khi push mới.
+#   4. Khởi tạo Test Case mới tinh tại thư mục Sprint mới nhất.
+#   5. Nạp nội dung kịch bản Gherkin (.feature) qua PATCH.
 #
 # PHASE B — Campaign Workspace
-#   5. Dò node Sprint tương ứng trong Campaign Workspace (tự động mở SprintGroup/Folder).
-#   6. Đọc sprint-view, tìm requirement có reference == ISSUE_KEY.
-#   7. XÓA SẠCH TEST PLAN ITEM CŨ: Quét test-plan-items và xóa sạch (nếu có).
-#   8. Gán Test Case mới vào test plan của sprint-req-version đó.
-#   9. Lưu thông tin đồng bộ vào workspace/{ISSUE_KEY}/test/squash_sync.json.
+#   6. Dò node Sprint tương ứng trong Campaign Workspace.
+#   7. Đọc sprint-view, tìm requirement có reference == ISSUE_KEY.
+#   8. XÓA SẠCH TEST PLAN ITEM CŨ: Quét test-plan-items và xóa sạch (nếu có).
+#   9. Gán Test Case mới vào test plan của sprint-req-version đó.
+#  10. Lưu thông tin đồng bộ vào workspace/{ISSUE_KEY}/test/squash_sync.json.
 #
 # Sử dụng: bash squash-push.sh <ISSUE_KEY> <NAME_JIRA> <GHERKIN_FILE_PATH>
 # ==============================================================================
@@ -201,49 +203,231 @@ if login_backend; then
     HAS_BACKEND_SESSION=1
 fi
 
+fetch_all_folder_contents() {
+    local type="$1"
+    local folder_id="$2"
+    local page=0
+    local all_items="[]"
+
+    while true; do
+        local res
+        res=$(call_api "GET" "/api/rest/latest/${type}/${folder_id}/content?page=${page}&size=100" 2>/dev/null || echo "{}")
+        local items
+        items=$(echo "$res" | jq -c '._embedded.content // []' 2>/dev/null || echo "[]")
+        if [[ "$items" == "[]" || "$items" == "null" ]]; then
+            break
+        fi
+
+        all_items=$(jq -c -s '.[0] + .[1]' <(echo "$all_items") <(echo "$items"))
+
+        local total_pages
+        total_pages=$(echo "$res" | jq -r '.page.totalPages // 1' 2>/dev/null || echo "1")
+        page=$((page + 1))
+        if [[ "$page" -ge "$total_pages" ]]; then
+            break
+        fi
+    done
+
+    echo "$all_items"
+}
+
+fetch_campaign_sprints() {
+    if [[ "$HAS_BACKEND_SESSION" -ne 1 ]]; then
+        echo "[]"
+        return 0
+    fi
+
+    local OPENED_NODES="[\"CampaignLibrary-${SQUASH_PROJECT_ID}\"]"
+    local TREE_JSON
+    TREE_JSON=$(call_backend "POST" "/backend/campaign-tree" "{\"openedNodes\":${OPENED_NODES},\"selectedNodes\":[]}")
+
+    local CHILD_GROUPS
+    CHILD_GROUPS=$(echo "$TREE_JSON" | jq -c --arg pid "$SQUASH_PROJECT_ID" '
+      [ .dataRows[]? | select(.parentRowId == "CampaignLibrary-\($pid)") | .id ] | unique
+    ' 2>/dev/null || echo "[]")
+
+    if [[ "$CHILD_GROUPS" != "[]" && -n "$CHILD_GROUPS" ]]; then
+        local COMBINED_OPENED
+        COMBINED_OPENED=$(jq -c -n --argjson cg "$CHILD_GROUPS" --arg pid "$SQUASH_PROJECT_ID" '
+          $cg + ["CampaignLibrary-" + $pid] | unique
+        ')
+        TREE_JSON=$(call_backend "POST" "/backend/campaign-tree" "{\"openedNodes\":${COMBINED_OPENED},\"selectedNodes\":[]}")
+    fi
+
+    echo "$TREE_JSON" | jq -c '
+      [ .dataRows[]?
+        | select((.id? // "" | tostring) | test("^Sprint-[0-9]+$"))
+        | {id: .id, name: (.data.NAME? // ""), source: "Campaign"}
+      ]
+    ' 2>/dev/null || echo "[]"
+}
+
+delete_test_case_executions() {
+    local tc_id="$1"
+    if [[ "$HAS_BACKEND_SESSION" -ne 1 ]]; then
+        return 0
+    fi
+
+    refresh_xsrf
+    local EXEC_GRID_PAYLOAD='{"gridRequest":1,"size":100,"page":0,"allowedPageSizes":[10,25,50,100],"active":true,"fixedPaginationSize":false,"showAll":false,"sort":[{"property":"lastExecutedOn","direction":"DESC"}],"filterValues":[],"scope":[],"extendedHighLvlReqScope":true,"simplifiedColumnDisplayGridIds":[],"gridId":"test-case-view-execution","searchOnMultiColumns":false}'
+
+    local EXEC_RES
+    EXEC_RES=$(curl -s -X POST "${SQUASH_BASE_URL}/backend/test-case/${tc_id}/executions" \
+        -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
+        -H "Origin: ${SQUASH_BASE_URL}" \
+        -H "Referer: ${SQUASH_BASE_URL}/test-case-workspace/test-case/${tc_id}/executions?anchor=executions" \
+        -H "User-Agent: Mozilla/5.0" \
+        -H "Content-Type: application/json" \
+        -H "Accept: application/json, text/plain, */*" \
+        -H "X-XSRF-TOKEN: ${XSRF_TOKEN}" \
+        --data-raw "$EXEC_GRID_PAYLOAD" 2>/dev/null || echo "{}")
+
+    local OLD_EXEC_IDS
+    OLD_EXEC_IDS=$(echo "$EXEC_RES" | jq -r '.dataRows[]?.id // empty' 2>/dev/null || true)
+    if [[ -n "$OLD_EXEC_IDS" ]]; then
+        for OLD_EXEC_ID in $OLD_EXEC_IDS; do
+            call_api "DELETE" "/api/rest/latest/executions/${OLD_EXEC_ID}" > /dev/null 2>&1 || true
+            refresh_xsrf
+            curl -s -X DELETE "${SQUASH_BASE_URL}/backend/executions/${OLD_EXEC_ID}" \
+                -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
+                -H "Origin: ${SQUASH_BASE_URL}" \
+                -H "Referer: ${SQUASH_BASE_URL}/test-case-workspace" \
+                -H "User-Agent: Mozilla/5.0" \
+                -H "X-XSRF-TOKEN: ${XSRF_TOKEN}" > /dev/null 2>&1 || true
+            log_ok "Đã xoá execution cũ: $OLD_EXEC_ID của Test Case #${tc_id}"
+        done
+    fi
+}
+
+purge_old_test_cases_anywhere() {
+    local issue_key="$1"
+    local proj_id="$2"
+
+    log_info "2. Kiểm tra Test Case cũ của '${issue_key}' trên toàn bộ dự án (để dọn sạch)..."
+
+    local page=0
+    local found_tcs="[]"
+
+    while true; do
+        local res
+        res=$(call_api "GET" "/api/rest/latest/projects/${proj_id}/test-cases?page=${page}&size=100" 2>/dev/null || echo "{}")
+        local tcs
+        tcs=$(echo "$res" | jq -c '._embedded["test-cases"] // []' 2>/dev/null || echo "[]")
+        if [[ "$tcs" == "[]" || "$tcs" == "null" ]]; then
+            break
+        fi
+
+        local matched
+        matched=$(echo "$tcs" | jq -c --arg key "$issue_key" '
+          [ .[]? | select(
+              (.name? // "") as $n
+              | ($n == $key)
+                or ($n | startswith($key + "-"))
+                or ($n | test("(^|[^A-Za-z0-9])" + $key + "([^A-Za-z0-9]|$)"; "i"))
+            )
+            | {id: .id, name: .name}
+          ]
+        ' 2>/dev/null || echo "[]")
+
+        found_tcs=$(jq -c -s '.[0] + .[1]' <(echo "$found_tcs") <(echo "$matched"))
+
+        local total_pages
+        total_pages=$(echo "$res" | jq -r '.page.totalPages // 1' 2>/dev/null || echo "1")
+        page=$((page + 1))
+        if [[ "$page" -ge "$total_pages" ]]; then
+            break
+        fi
+    done
+
+    local count
+    count=$(echo "$found_tcs" | jq 'length')
+
+    if [[ "$count" -gt 0 ]]; then
+        log_warn "Phát hiện $count test case cũ liên quan đến '${issue_key}' trên dự án:"
+        local tc_ids
+        tc_ids=$(echo "$found_tcs" | jq -r '.[].id')
+        for old_id in $tc_ids; do
+            local old_name
+            old_name=$(echo "$found_tcs" | jq -r --argjson oid "$old_id" '.[] | select(.id == $oid) | .name')
+            log_info "-> Dọn dẹp executions của Test Case cũ #${old_id} ('${old_name}')..."
+            delete_test_case_executions "$old_id"
+
+            log_info "-> Xóa bỏ Test Case cũ #${old_id} ('${old_name}')..."
+            call_api "DELETE" "/api/rest/latest/test-cases/${old_id}" > /dev/null 2>&1 || true
+            log_ok "Đã xóa hoàn toàn Test Case cũ #${old_id} ('${old_name}')"
+        done
+    else
+        log_info "Không tìm thấy Test Case cũ nào của '${issue_key}' trên dự án. Sẵn sàng tạo mới."
+    fi
+}
+
 # ==============================================================================
 # PHASE A — Đẩy Gherkin lên Test Case Workspace
 # ==============================================================================
 
-log_info "1. Tìm Sprint mới nhất từ Test Case Workspace (Folder G.3.1)..."
+log_info "1. Quét tìm Sprint mới nhất trên đa Workspace (Test Case, Requirement, Campaign)..."
 
-# Ưu tiên lấy trực tiếp từ Test Case Workspace
-TC_FOLDERS_JSON=$(call_api "GET" "/api/rest/latest/test-case-folders/${SQUASH_TC_G31_FOLDER_ID}/content?size=100")
+# 1.1 Quét Test Case Workspace
+TC_ITEMS_JSON=$(fetch_all_folder_contents "test-case-folders" "$SQUASH_TC_G31_FOLDER_ID")
+TC_CANDIDATES=$(echo "$TC_ITEMS_JSON" | jq -c '
+  [ .[]?
+    | select(.name? and (.name | test("sprint[\\s_\\-]*[0-9]+"; "i")))
+    | .name as $name
+    | ($name | capture("sprint[\\s_\\-]*0*(?<num>[0-9]+)"; "i") | .num | tonumber) as $num
+    | {id: .id, name: $name, num: $num, source: "Test Case Workspace"}
+  ]
+' 2>/dev/null || echo "[]")
 
-TARGET_SPRINT_NAME=$(echo "$TC_FOLDERS_JSON" | jq -r '
-  ._embedded.content[]?
-  | select(.name | test("Sprint [0-9]+"; "i"))
-  | .name as $name
-  | ($name | capture("(?<num>[0-9]+)$") | .num | tonumber) as $num
-  | {name: $name, num: $num}
-' | jq -r -s 'sort_by(.num) | last | .name // empty')
-
-# Fallback sang Requirement Workspace nếu Test Case chưa có Sprint nào
-if [[ -z "$TARGET_SPRINT_NAME" && -n "${SQUASH_REQ_G31_FOLDER_ID:-}" ]]; then
-    log_info "Chưa tìm thấy Sprint bên Test Case, quét Requirement Workspace..."
-    REQ_FOLDERS_JSON=$(call_api "GET" "/api/rest/latest/requirement-folders/${SQUASH_REQ_G31_FOLDER_ID}/content?size=100")
-    TARGET_SPRINT_NAME=$(echo "$REQ_FOLDERS_JSON" | jq -r '
-      ._embedded.content[]?
-      | select(.name | test("Sprint [0-9]+"; "i"))
-      | .name as $name
-      | ($name | capture("(?<num>[0-9]+)$") | .num | tonumber) as $num
-      | {name: $name, num: $num}
-    ' | jq -r -s 'sort_by(.num) | last | .name // empty')
+# 1.2 Quét Requirement Workspace
+REQ_CANDIDATES="[]"
+if [[ -n "${SQUASH_REQ_G31_FOLDER_ID:-}" ]]; then
+    REQ_ITEMS_JSON=$(fetch_all_folder_contents "requirement-folders" "$SQUASH_REQ_G31_FOLDER_ID")
+    REQ_CANDIDATES=$(echo "$REQ_ITEMS_JSON" | jq -c '
+      [ .[]?
+        | select(.name? and (.name | test("sprint[\\s_\\-]*[0-9]+"; "i")))
+        | .name as $name
+        | ($name | capture("sprint[\\s_\\-]*0*(?<num>[0-9]+)"; "i") | .num | tonumber) as $num
+        | {id: .id, name: $name, num: $num, source: "Requirement Workspace"}
+      ]
+    ' 2>/dev/null || echo "[]")
 fi
 
-if [[ -z "$TARGET_SPRINT_NAME" || "$TARGET_SPRINT_NAME" == "null" ]]; then
-    log_error "Không tìm thấy thư mục nào có định dạng 'Sprint xxx'!"
+# 1.3 Quét Campaign Workspace
+CAMP_CANDIDATES="[]"
+if [[ "$HAS_BACKEND_SESSION" -eq 1 ]]; then
+    CAMP_SPRINTS_JSON=$(fetch_campaign_sprints)
+    CAMP_CANDIDATES=$(echo "$CAMP_SPRINTS_JSON" | jq -c '
+      [ .[]?
+        | select(.name? and (.name | test("sprint[\\s_\\-]*[0-9]+"; "i")))
+        | .name as $name
+        | ($name | capture("sprint[\\s_\\-]*0*(?<num>[0-9]+)"; "i") | .num | tonumber) as $num
+        | {id: .id, name: $name, num: $num, source: "Campaign Workspace"}
+      ]
+    ' 2>/dev/null || echo "[]")
+fi
+
+# 1.4 Tổng hợp ứng viên từ cả 3 Workspace và lấy Sprint lớn nhất (mới nhất)
+ALL_CANDIDATES=$(jq -c -s '.[0] + .[1] + .[2]' <(echo "$TC_CANDIDATES") <(echo "$REQ_CANDIDATES") <(echo "$CAMP_CANDIDATES"))
+LATEST_CANDIDATE=$(echo "$ALL_CANDIDATES" | jq -c 'sort_by(.num) | last // empty' 2>/dev/null || echo "")
+
+if [[ -z "$LATEST_CANDIDATE" || "$LATEST_CANDIDATE" == "null" || "$LATEST_CANDIDATE" == "{}" ]]; then
+    log_error "Không tìm thấy bất kỳ thư mục hay node nào chứa định dạng 'Sprint xxx' trên cả 3 Workspace!"
     exit 1
 fi
 
-log_ok "Tìm thấy Sprint mới nhất: $TARGET_SPRINT_NAME"
-SPRINT_NUMBER=$(echo "$TARGET_SPRINT_NAME" | grep -oE '[0-9]+' | tail -n 1)
+TARGET_SPRINT_NAME=$(echo "$LATEST_CANDIDATE" | jq -r '.name')
+SPRINT_NUMBER=$(echo "$LATEST_CANDIDATE" | jq -r '.num')
+SPRINT_SOURCE=$(echo "$LATEST_CANDIDATE" | jq -r '.source')
 
-# Lấy ID thư mục Sprint bên Test Case
-TARGET_TC_FOLDER_ID=$(echo "$TC_FOLDERS_JSON" | jq -r "._embedded.content[]? | select(.name == \"$TARGET_SPRINT_NAME\") | .id" | head -n 1)
+log_ok "Đã xác định Sprint mới nhất: '$TARGET_SPRINT_NAME' (#${SPRINT_NUMBER}) — phát hiện từ: ${SPRINT_SOURCE}"
+
+# 1.5 Kiểm tra / Tạo thư mục Sprint bên Test Case Workspace
+TARGET_TC_FOLDER_ID=$(echo "$TC_CANDIDATES" | jq -r --argjson num "$SPRINT_NUMBER" '
+  .[] | select(.num == $num) | .id
+' | head -n 1)
 
 if [[ -z "$TARGET_TC_FOLDER_ID" || "$TARGET_TC_FOLDER_ID" == "null" ]]; then
-    log_info "Thư mục '$TARGET_SPRINT_NAME' chưa tồn tại bên Test Case. Khởi tạo thư mục mới..."
+    log_info "Thư mục Sprint #${SPRINT_NUMBER} chưa tồn tại trong Test Case Workspace. Khởi tạo thư mục '${TARGET_SPRINT_NAME}'..."
     CREATE_FOLDER_PAYLOAD=$(cat <<EOF
 {
   "_type": "test-case-folder",
@@ -263,31 +447,17 @@ EOF
         echo "$CREATE_FOLDER_RES"
         exit 1
     fi
-    log_ok "Khởi tạo thư mục thành công (ID: $TARGET_TC_FOLDER_ID)"
+    log_ok "Khởi tạo thư mục Test Case thành công (ID: $TARGET_TC_FOLDER_ID)"
 else
-    log_ok "Thư mục đã tồn tại bên Test Case (ID: $TARGET_TC_FOLDER_ID)"
+    log_ok "Đã có sẵn thư mục trong Test Case Workspace (ID: $TARGET_TC_FOLDER_ID)"
 fi
 
-log_info "2. Kiểm tra Test Case: $TEST_CASE_NAME"
+# 2. Xóa sạch Test Case cũ ở bất kỳ nơi nào trên toàn dự án trước khi tạo mới
+purge_old_test_cases_anywhere "$ISSUE_KEY" "$SQUASH_PROJECT_ID"
 
-PAGE=0
-TC_ID=""
-while true; do
-    FOLDER_RES=$(call_api "GET" "/api/rest/latest/test-case-folders/${TARGET_TC_FOLDER_ID}/content?page=${PAGE}&size=100")
-    TC_ID=$(echo "$FOLDER_RES" | jq -r "._embedded.content[]? | select(.name == \"${TEST_CASE_NAME}\" or (.name | startswith(\"${ISSUE_KEY}-\"))) | .id" | head -n 1)
-    if [[ -n "$TC_ID" && "$TC_ID" != "null" ]]; then
-        break
-    fi
-    TOTAL_PAGES=$(echo "$FOLDER_RES" | jq -r '.page.totalPages // 0')
-    PAGE=$((PAGE + 1))
-    if [[ "$PAGE" -ge "$TOTAL_PAGES" ]]; then
-        break
-    fi
-done
-
-if [[ -z "$TC_ID" || "$TC_ID" == "null" ]]; then
-    log_info "Test case chưa tồn tại. Tạo mới..."
-    CREATE_TC_PAYLOAD=$(cat <<EOF
+# 3. Tạo mới Test Case tại thư mục Sprint mới nhất
+log_info "3. Khởi tạo Test Case mới: '${TEST_CASE_NAME}' tại thư mục '${TARGET_SPRINT_NAME}'..."
+CREATE_TC_PAYLOAD=$(cat <<EOF
 {
   "_type": "scripted-test-case",
   "name": "${TEST_CASE_NAME}",
@@ -299,56 +469,18 @@ if [[ -z "$TC_ID" || "$TC_ID" == "null" ]]; then
 }
 EOF
 )
-    CREATE_TC_RES=$(call_api "POST" "/api/rest/latest/test-cases" "$CREATE_TC_PAYLOAD")
-    TC_ID=$(echo "$CREATE_TC_RES" | jq -r '.id')
+CREATE_TC_RES=$(call_api "POST" "/api/rest/latest/test-cases" "$CREATE_TC_PAYLOAD")
+TC_ID=$(echo "$CREATE_TC_RES" | jq -r '.id')
 
-    if [[ -z "$TC_ID" || "$TC_ID" == "null" ]]; then
-        log_error "Tạo test case thất bại!"
-        echo "$CREATE_TC_RES"
-        exit 1
-    fi
-    log_ok "Tạo test case thành công (ID: $TC_ID)"
-else
-    log_warn "Test case đã tồn tại (ID: $TC_ID)."
-
-    # --- XÓA SẠCH EXECUTION CŨ CỦA TEST CASE (THEO YÊU CẦU USER) ---
-    if [[ "$HAS_BACKEND_SESSION" -eq 1 ]]; then
-        log_info "Kiểm tra executions cũ của Test Case ${TC_ID}..."
-        refresh_xsrf
-        EXEC_GRID_PAYLOAD='{"gridRequest":1,"size":50,"page":0,"allowedPageSizes":[10,25,50,100],"active":true,"fixedPaginationSize":false,"showAll":false,"sort":[{"property":"lastExecutedOn","direction":"DESC"}],"filterValues":[],"scope":[],"extendedHighLvlReqScope":true,"simplifiedColumnDisplayGridIds":[],"gridId":"test-case-view-execution","searchOnMultiColumns":false}'
-        
-        EXEC_RES=$(curl -s -X POST "${SQUASH_BASE_URL}/backend/test-case/${TC_ID}/executions" \
-            -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
-            -H "Origin: ${SQUASH_BASE_URL}" \
-            -H "Referer: ${SQUASH_BASE_URL}/test-case-workspace/test-case/${TC_ID}/executions?anchor=executions" \
-            -H "User-Agent: Mozilla/5.0" \
-            -H "Content-Type: application/json" \
-            -H "Accept: application/json, text/plain, */*" \
-            -H "X-XSRF-TOKEN: ${XSRF_TOKEN}" \
-            --data-raw "$EXEC_GRID_PAYLOAD" 2>/dev/null || echo "{}")
-
-        OLD_EXEC_IDS=$(echo "$EXEC_RES" | jq -r '.dataRows[]?.id // empty' 2>/dev/null || true)
-        if [[ -n "$OLD_EXEC_IDS" ]]; then
-            for OLD_EXEC_ID in $OLD_EXEC_IDS; do
-                log_info "Xoá execution cũ (ID: $OLD_EXEC_ID) của Test Case ${TC_ID}..."
-                call_api "DELETE" "/api/rest/latest/executions/${OLD_EXEC_ID}" > /dev/null 2>&1 || true
-                refresh_xsrf
-                curl -s -X DELETE "${SQUASH_BASE_URL}/backend/executions/${OLD_EXEC_ID}" \
-                    -b "$COOKIE_JAR" -c "$COOKIE_JAR" \
-                    -H "Origin: ${SQUASH_BASE_URL}" \
-                    -H "Referer: ${SQUASH_BASE_URL}/test-case-workspace" \
-                    -H "User-Agent: Mozilla/5.0" \
-                    -H "X-XSRF-TOKEN: ${XSRF_TOKEN}" > /dev/null 2>&1 || true
-                log_ok "Đã xoá execution cũ: $OLD_EXEC_ID"
-            done
-        else
-            log_info "Không có execution cũ nào cần xoá."
-        fi
-    fi
+if [[ -z "$TC_ID" || "$TC_ID" == "null" ]]; then
+    log_error "Tạo test case mới thất bại!"
+    echo "$CREATE_TC_RES"
+    exit 1
 fi
+log_ok "Khởi tạo test case mới thành công (ID: $TC_ID)"
 
-log_info "3. Cập nhật script Gherkin..."
-
+# 4. Nạp script Gherkin vào Test Case mới
+log_info "4. Cập nhật kịch bản Gherkin vào Test Case #${TC_ID}..."
 GHERKIN_CONTENT=$(cat "$GHERKIN_FILE" | jq -Rs .)
 PATCH_PAYLOAD=$(cat <<EOF
 {
@@ -357,9 +489,8 @@ PATCH_PAYLOAD=$(cat <<EOF
 }
 EOF
 )
-
 PATCH_RES=$(call_api "PATCH" "/api/rest/latest/test-cases/${TC_ID}" "$PATCH_PAYLOAD")
-log_ok "Cập nhật script thành công!"
+log_ok "Cập nhật script Gherkin thành công!"
 
 # ==============================================================================
 # PHASE B — Gán Test Case vào Campaign Workspace (Clean & Add New)
@@ -398,7 +529,8 @@ assign_test_case_to_campaign() {
         --arg num "$SPRINT_NUMBER" '
         [ .dataRows[]? | select((.id? // "" | tostring) | test("^Sprint-[0-9]+$")) ]
         | ( [ .[] | select(.data.NAME == $exact) ] | first )
-        // ( [ .[] | select(.data.NAME | test("(^|[^0-9])" + $num + "([^0-9]|$)")) ] | first )
+        // ( [ .[] | select((.data.NAME // "") | test("sprint[\\s_\\-]*0*" + $num + "([^0-9]|$)"; "i")) ] | first )
+        // ( [ .[] | select((.data.NAME // "") | test("(^|[^0-9])" + $num + "([^0-9]|$)")) ] | first )
         | .id // empty
     ' 2>/dev/null || echo "")
 
