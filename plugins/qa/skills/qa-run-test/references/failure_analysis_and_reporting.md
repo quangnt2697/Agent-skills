@@ -1,46 +1,27 @@
-# Cẩm Nang Phân Tích Thất Bại & Chuẩn Hóa Báo Cáo Kiểm Thử (Failure Analysis & Reporting)
+# Cẩm Nang Báo Cáo Kết Quả Kiểm Thử & Chuyển Giao Xử Lý (Failure Analysis & Reporting)
 
-Tài liệu này hướng dẫn chi tiết quy trình bóc tách log lỗi, phân loại nguyên nhân thất bại, trích xuất Request/Response và định dạng chuẩn của file báo cáo độc bản `report.md`.
-
----
-
-## 1. Ma Trận Phân Loại Thất Bại (Failure Categorization)
-
-Mỗi test case FAILED bắt buộc phải được phân loại chính xác vào 1 trong 4 nhóm sau:
-
-| Nhóm Lỗi | Mức độ | Dấu hiệu nhận diện | Hành động xử lý |
-|---|---|---|---|
-| 🔴 **Application Bug** | **P0 / P1** | API hoặc UI trả về kết quả sai lệch so với spec (`final.md`) hoặc kịch bản BDD (`.feature`). Ví dụ: HTTP 200 khi gửi số lượng = 0, tính sai phí/thuế, response thiếu field bắt buộc. | **Giữ nguyên kết quả FAIL.** Trích xuất đầy đủ Request/Response payload, chỉ rõ nguyên nhân và đề xuất fix cho Developer. |
-| 🟡 **Script Issue** | **P2** | Lỗi do test script: locator bị lệch sau khi UI cập nhật, assertion sai format kiểu dữ liệu (chuỗi vs số), helper gọi sai method. | Kích hoạt Self-fix loop: sửa code test trong `steps/` hoặc Page Object và chạy lại. |
-| 🔵 **Environment Issue** | **P2** | Môi trường UAT sập, mất kết nối DB/Network, token hết hạn, `.env` trỏ sai host, connection refused. | Cập nhật cấu hình môi trường/credentials và chạy lại. |
-| 🟠 **Flaky Test** | **P2** | Test chạy đơn lẻ thì pass nhưng chạy cả suite thì fail; hoặc chập chờn do race condition, timeout mạng UAT giật lag. | Điều chỉnh smart wait, polling hợp lý hoặc tăng timeout kết nối. |
+Tài liệu này hướng dẫn định dạng chuẩn của file báo cáo độc bản `report.md`, cách trích xuất lỗi trực tiếp từ output Pytest và quy chuẩn đề xuất các kỹ năng/vai trò chuyên trách để xử lý lỗi sau khi test kết thúc.
 
 ---
 
-## 2. Tiêu Chuẩn Bóc Tách Request & Response (Bắt Buộc Cho API/WebSocket)
+## 1. Nguyên Tắc Báo Cáo: Ghi Nhận Khách Quan — Không Suy Diễn Mã Nguồn
 
-Khi test case API hoặc WebSocket bị FAILED, Agent **BẮT BUỘC** trích xuất từ `test-output.log` các thông tin chi tiết sau:
-
-```
-[THÔNG TIN TRÍCH XUẤT BẮT BUỘC]
-1. Endpoint: HTTP Method + Full URL (hoặc WebSocket URL + Channel)
-2. Request Headers: Authorization (masked), Content-Type, Client info
-3. Request Payload: Toàn bộ body JSON gửi lên
-4. Response Status: HTTP Status Code (thực tế vs kỳ vọng)
-5. Response Body: Toàn bộ JSON payload server trả về
-6. Stack Trace: Dòng code phát sinh AssertionError hoặc Exception
-7. Root Cause: Phân tích ngắn gọn nguyên nhân gốc rễ
-8. Fix Recommendation: Hướng dẫn khắc phục cụ thể cho DEV
-```
+- **Nhiệm vụ của QA:** Ghi nhận trung thực, đầy đủ và khách quan kết quả thực thi (Pass / Fail / Error).
+- **Trích xuất trực tiếp từ log:** Mọi thông tin lỗi (AssertionError, HTTP Status, Exception stack trace) phải được lấy trực tiếp từ `test-output.log` do Pytest sinh ra.
+- **Ranh giới trách nhiệm (Strict Boundary):**
+  - ❌ **KHÔNG** mở file mã nguồn backend hoặc database để tự truy tìm "Root Cause" tầng service.
+  - ❌ **KHÔNG** tự đưa ra giải pháp sửa mã nguồn ứng dụng (việc này thuộc về DEV).
+  - ❌ **KHÔNG** tự chạy thêm các lệnh curl/urllib ngoài luồng kiểm thử.
+  - ✅ **BẮT BUỘC:** Đề xuất kỹ năng xử lý phù hợp (`dev-debugging`, `cr-review-code-and-quality`, `qa-auto-design`) để các persona tương ứng tiếp quản điều tra.
 
 ---
 
-## 3. Quy Chuẩn Độc Bản Output (Single File Per Format)
+## 2. Quy Chuẩn Độc Bản Output (Single File Per Format)
 
-Trong thư mục kết quả `/project-root/workspace/{issueKey}/test/result/`, **BẮT BUỘC CHỈ TỒN TẠI DUY NHẤT 1 FILE CHO MỖI LOẠI ĐỊNH DẠNG**:
+Trong thư mục kết quả `workspace/{issueKey}/test/result/`, **BẮT BUỘC CHỈ TỒN TẠI DUY NHẤT 1 FILE CHO MỖI LOẠI ĐỊNH DẠNG**:
 
 ```
-/project-root/workspace/{issueKey}/test/result/
+workspace/{issueKey}/test/result/
 ├── junit.xml                    # Duy nhất 1 file XML chuẩn JUnit (dùng cho CI/CD)
 ├── report.html                  # Duy nhất 1 file HTML trực quan (kèm pytest-html nếu có)
 ├── test-output.log              # Duy nhất 1 file LOG (toàn bộ console stdout/stderr qua tee)
@@ -54,15 +35,15 @@ Trong thư mục kết quả `/project-root/workspace/{issueKey}/test/result/`, 
 
 ---
 
-## 4. Mẫu Báo Cáo Chuẩn (`report.md`)
+## 3. Mẫu Báo Cáo Chuẩn (`report.md`)
 
 ```markdown
 # Báo cáo Thực thi Automation Test — [Issue Key / Module]
 
 **Thời gian:** YYYY-MM-DD HH:MM:SS  
-**Mục tiêu:** `/project-root/workspace/{issueKey}/test/steps/`  
+**Mục tiêu:** `workspace/{issueKey}/test/steps/`  
 **Môi trường:** UAT / Staging  
-**Framework:** Pytest (Playwright / Requests)  
+**Framework:** Pytest  
 
 ---
 
@@ -77,48 +58,34 @@ Trong thư mục kết quả `/project-root/workspace/{issueKey}/test/result/`, 
 | **⏱️ Thời gian** | 1m 12s | — |
 | **Tỷ lệ Pass** | **92.0%** | — |
 
-**Trạng thái chung:** ⚠️ FAILED (Phát hiện 2 lỗi cần khắc phục)
+**Trạng thái chung:** ⚠️ FAILED (Phát hiện 2 test cases thất bại)
 
 ---
 
 ## ❌ 2. Chi tiết Test Case Thất bại (Failed Tests Breakdown)
 
-### 2.1. `test_order.py::test_order_invalid_qty` — 🔴 APPLICATION BUG (P0)
+### 2.1. `test_order.py::test_order_invalid_qty`
 - **File:** `workspace/{issueKey}/test/steps/test_order.py:45`
-- **Thông báo lỗi:** `AssertionError: Expected HTTP 400, got 200`
-- **Chi tiết Request:**
-  ```http
-  POST /api/v1/orders
-  Content-Type: application/json
-  Authorization: Bearer eyJhbGci...
-  
-  {
-    "symbol": "TCB",
-    "quantity": 0,
-    "price": 25500,
-    "side": "BUY"
-  }
+- **Thông báo lỗi từ Pytest:** `AssertionError: Expected HTTP 400, got 200`
+- **Dữ liệu ghi nhận từ Log (nếu có):**
+  - **Request:** `POST /api/v1/orders` — Body: `{"symbol": "TCB", "quantity": 0, "side": "BUY"}`
+  - **Response:** HTTP 200 OK — Body: `{"orderId": "ORD-9988", "status": "PENDING"}`
+- **Dòng code gây lỗi (Traceback snippet):**
+  ```python
+  > assert response.status_code == 400
+  E AssertionError: Expected HTTP 400, got 200
   ```
-- **Chi tiết Response:**
-  ```json
-  HTTP 200 OK
-  
-  {
-    "orderId": "ORD-9988",
-    "status": "PENDING",
-    "message": "Order placed successfully"
-  }
-  ```
-- **Nguyên nhân gốc rễ (Root Cause):** Backend thiếu validation rule kiểm tra `quantity > 0` tại tầng Service trước khi lưu DB.
-- **Đề xuất khắc phục:** DEV bổ sung validation `quantity > 0` và trả về mã lỗi HTTP 400 Bad Request.
 
 ---
 
-### 2.2. `test_ws.py::test_ws_reconnect` — 🟠 FLAKY TEST (P2)
+### 2.2. `test_ws.py::test_ws_reconnect`
 - **File:** `workspace/{issueKey}/test/steps/test_ws.py:82`
-- **Thông báo lỗi:** `asyncio.exceptions.TimeoutError: Timeout waiting for WebSocket reconnect event after 2.0s`
-- **Nguyên nhân gốc rễ:** Mạng test UAT có độ trễ kết nối lại dao động từ 2.5s – 3.2s, test script hardcode timeout 2.0s.
-- **Đề xuất khắc phục:** Tăng timeout lên 5.0s kèm cơ chế smart poll trong test script.
+- **Thông báo lỗi từ Pytest:** `asyncio.exceptions.TimeoutError: Timeout waiting for WebSocket reconnect event after 5.0s`
+- **Dòng code gây lỗi (Traceback snippet):**
+  ```python
+  > await asyncio.wait_for(ws_client.wait_for_reconnect(), timeout=5.0)
+  E asyncio.exceptions.TimeoutError
+  ```
 
 ---
 
@@ -135,9 +102,11 @@ Trong thư mục kết quả `/project-root/workspace/{issueKey}/test/result/`, 
 
 ---
 
-## 🎯 4. Khuyến Nghị & Đề Xuất Hành Động (Action Items)
+## 🎯 4. Đề Xuất Kỹ Năng Tiếp Theo (Next Step Recommendations)
 
-- **DEV (P0):** Bổ sung validation `quantity > 0` trong `OrderService` và deploy lại UAT.
-- **QA (P2):** Tăng timeout reconnect trong `test_ws.py` lên 5s và re-run test.
-- **QA (P0):** Chạy lại `/qa-run-test {issueKey}` sau khi DEV xác nhận đã deploy bản vá.
+Phát hiện test case thất bại. Đề xuất các kỹ năng/vai trò chuyên trách để xử lý tiếp:
+
+1. 🛠️ **Gỡ lỗi Backend / Điều tra nguyên nhân:** Sử dụng skill `dev-debugging` hoặc gọi subagent `dev` để kiểm tra mã nguồn backend, reproduce và sửa lỗi xử lý dữ liệu.
+2. 🔍 **Review Mã nguồn:** Sử dụng skill `cr-review-code-and-quality` hoặc gọi subagent `code-reviewer` để rà soát toàn diện implementation mã nguồn.
+3. ⚙️ **Cập nhật Kịch bản Test:** Sử dụng skill `qa-auto-design` nếu các tham số test cần được đồng bộ lại theo đặc tả mới nhất.
 ```

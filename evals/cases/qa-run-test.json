@@ -44,11 +44,11 @@
         "qa-run-test"
       ],
       "expectations": [
-        "Pre-flight check detects test framework and dependencies",
+        "Resolves test target and prepares result directory without unnecessary pre-reviews",
         "Test suite runs to completion without interruption",
         "Report includes total/passed/failed/skipped metrics with percentages",
-        "Each failed test has detailed error message, stack trace, and root cause analysis",
-        "Report provides actionable recommendations with priority (P0/P1/P2)",
+        "Each failed test has detailed error message and stack trace extracted directly from test output",
+        "Report provides actionable next-step skill recommendations (dev-debugging, cr-review-code-and-quality)",
         "Report file is generated at correct output path"
       ]
     },

@@ -1,47 +1,69 @@
-# Quy trình Thực thi Test (qa-run-test)
+# Quy trình Thực thi Test Tinh Gọn (qa-run-test)
 
-## 1. Quy trình Thực thi Tinh Gọn (Execution Protocol)
+## 1. Quy trình Thực thi 3 Bước Siêu Tốc (Lean Execution Protocol)
 
-### Bước 1: Phân giải Mục tiêu & Pre-flight Check
-- Xác định thư mục chạy test (mặc định: `workspace/{issueKey}/test/steps/`).
-- Nhận diện cả 2 chuẩn file: `test_*.py` và `*_test.py`.
-- Dọn dẹp file rác cũ trong thư mục kết quả (`result/`).
+### Bước 1: Định vị Target Trực Tiếp & Dọn Dẹp
+- Xác định mục tiêu chạy từ tham số người dùng truyền vào hoặc mặc định:
+  - File test cụ thể: `workspace/{issueKey}/test/steps/test_xxx.py` ➔ Chạy ngay file đó.
+  - Thư mục test cụ thể: `workspace/{issueKey}/test/steps/` ➔ Quét mọi test file trong thư mục.
+  - Nhận diện cả 2 chuẩn file: `test_*.py` và `*_test.py`.
+- Chuẩn bị thư mục kết quả `workspace/{issueKey}/test/result/` và dọn dẹp kết quả cũ (nếu có).
+- **CHẠY NGAY:** Tuyệt đối KHÔNG đọc spec (`final.md`), không đọc checklist, không kiểm tra lan man trước khi chạy.
 
-### Bước 2: Thực thi Test Suite
-- Chạy lệnh Pytest chuẩn (cờ `-s`, live logging `-o log_cli`, `-rA`, `junit.xml`).
-- Lưu toàn bộ log ra `test-output.log` thông qua `2>&1 | tee`.
+### Bước 2: Thực thi Test Suite Ngay Lập Tức
+- Chạy lệnh Pytest tiêu chuẩn với cờ `-s` (không nuốt log), `-v` (chi tiết), `-rA` (tổng kết mọi test), `--tb=short`:
+  ```bash
+  pytest "$TEST_TARGET" \
+    -o python_files="test_*.py *_test.py" \
+    -s -v -rA --tb=short \
+    -o log_cli=true -o log_cli_level=INFO \
+    --junitxml="workspace/{issueKey}/test/result/junit.xml" \
+    2>&1 | tee "workspace/{issueKey}/test/result/test-output.log"
+  ```
+- Toàn bộ stdout/stderr được ghi nguyên vẹn vào duy nhất 1 file `test-output.log`.
+- **Tuyệt đối KHÔNG lấn sân:** Không mở file backend, không grep codebase ứng dụng, không gửi curl/urllib ngoài luồng trong quá trình này.
 
-### Bước 3: Self-fix Loop Kỹ thuật Script (Tối đa 3 vòng)
-- Tự động sửa lỗi cú pháp, import, thiếu fixture (Script Issue).
-- **Anti-cheating:** Tuyệt đối KHÔNG sửa assertion hoặc skip test để biến FAILED thành PASS khi hệ thống trả lỗi nghiệp vụ.
-
-### Bước 4: Bóc tách Lỗi & Phân loại Thất bại
-- Phân loại lỗi thành 4 nhóm: Application Bug, Script Issue, Environment, Flaky.
-- **BẮT BUỘC với API/WS:** Trích xuất Endpoint, Request payload, Response status & body.
-
-### Bước 5: Xuất Báo cáo Độc bản & Tóm tắt
+### Bước 3: Trả Kết Quả Tức Thì & Đề Xuất Kỹ Năng Tiếp Theo
+- Đọc kết quả trực tiếp từ console output / `test-output.log` và `junit.xml`:
+  - Tổng số test, số Passed, số Failed, số Skipped, thời gian thực thi.
+  - Trích xuất ngắn gọn các test bị FAIL (tên hàm test, dòng lỗi, thông báo lỗi AssertionError / Exception từ log).
 - Ghi báo cáo chính thức vào DUY NHẤT một file `result/report.md`.
-- Ghi log DUY NHẤT vào 1 file `test-output.log`.
-- Báo cáo ngắn gọn Pass/Fail metrics cho người dùng.
+- Trả kết quả tóm tắt cho người dùng trên console.
+- **NẾU CÓ TEST BỊ FAIL ➔ ĐỀ XUẤT NGAY KỸ NĂNG XỬ LÝ CHUYÊN TRÁCH:**
+  - 🛠️ **Gỡ lỗi Backend / Trace log:** Đề xuất dùng skill `dev-debugging` hoặc subagent `dev` để đào sâu mã nguồn backend và khắc phục lỗi.
+  - 🔍 **Review Chất lượng & Logic Code:** Đề xuất dùng skill `cr-review-code-and-quality` hoặc subagent `code-reviewer` để review mã nguồn ứng dụng.
+  - ⚙️ **Cập nhật Test Script:** Đề xuất dùng skill `qa-auto-design` nếu các tham số test cần đồng bộ lại với yêu cầu nghiệp vụ mới.
 
-## 2. Anti-patterns (Cấm kỵ)
-❌ **Đọc lan man:** Không đọc lại toàn bộ `final.md` hay Checklist trước khi gõ lệnh chạy. Việc này phí token.
-❌ **Sinh code mới:** Skill này CHỈ CHẠY, tuyệt đối không tự sinh mã test mới.
-❌ **Sửa assertion (Cheating):** Thấy test fail do bug nghiệp vụ liền tự ý sửa test code thành PASS.
-❌ **Thừa thãi file báo cáo:** Tạo 2 file markdown song song hoặc làm mất log vì thiếu cờ `-s`.
+---
+
+## 2. Anti-patterns (Cấm Kỵ Tuyệt Đối)
+
+❌ **CẤM đọc lan man:** Không đọc lại toàn bộ `final.md` hay Checklist trước/sau khi chạy test. QA chỉ nhận lệnh là chạy ngay.  
+❌ **CẤM điều tra mã nguồn backend:** Không dùng `view_file`, `grep_search` để soi code backend (Go, Java, Python service...). Việc tìm nguyên nhân gốc rễ và sửa code là của DEV/CR.  
+❌ **CẤM tự chế request ngoài luồng:** Tuyệt đối không tự viết script Python `urllib` hay lệnh cURL để gửi request lên server nhằm "kiểm tra lại" endpoint bị fail.  
+❌ **CẤM sửa assertion (Cheating):** Thấy test fail do lỗi hệ thống liền tự ý sửa test code hoặc nới lỏng assertion để biến FAIL thành PASS.  
+❌ **CẤM sinh code mới:** Skill này CHỈ CHẠY test đã có sẵn, tuyệt đối không tự sinh test case mới.  
+❌ **CẤM thừa thãi file báo cáo:** Tuân thủ quy tắc độc bản output (đúng 1 file `.xml`, 1 file `.html`, 1 file `.log`, 1 file `.md`).
+
+---
 
 ## 3. Cờ Đỏ Cảnh Báo (Red Flags)
-- Báo cáo test API thất bại nhưng không đính kèm Request/Response body.
-- Sửa code test để che đậy lỗi hệ thống.
-- Bỏ qua các file `*_test.py` chỉ chạy `test_*.py`.
+
+🚩 Agent bắt đầu grep tìm kiếm file mã nguồn ngoài thư mục test.  
+🚩 Agent tạo file Python tạm hoặc chạy lệnh curl ngoài terminal để test API.  
+🚩 Agent mở file spec đọc đi đọc lại khi thấy test fail.  
+🚩 Sửa code test để che đậy lỗi hệ thống.  
+
+---
 
 ## 4. Verification Checklist (Sau khi chạy)
-- [ ] Xác định đúng thư mục target.
-- [ ] Chạy đủ 100% file test hợp lệ.
-- [ ] `test-output.log` có đủ full log (không bị nuốt log).
-- [ ] Mọi test case FAILED đều được phân loại và bóc tách dữ liệu Request/Response.
-- [ ] Tuyệt đối không gian lận kết quả.
-- [ ] Thư mục `result/` tuân thủ độc bản: đúng 1 file `.xml`, `.html`, `.log`, `.md`.
+
+- [ ] Xác định đúng thư mục target và chạy ngay không chần chừ.
+- [ ] Chạy đủ 100% file test hợp lệ (`test_*.py` và `*_test.py`).
+- [ ] `test-output.log` có đủ full log (cờ `-s`).
+- [ ] Trả kết quả trung thực, không sửa assertion gian lận.
+- [ ] Xuất báo cáo độc bản tại `workspace/{issueKey}/test/result/report.md`.
+- [ ] Đã đề xuất kỹ năng `dev-debugging` / `cr-review-code-and-quality` nếu phát hiện lỗi.
 
 ---
 <CRITICAL_RULE>

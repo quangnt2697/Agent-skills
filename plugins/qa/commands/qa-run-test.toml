@@ -1,21 +1,22 @@
-description = "Chỉ chạy test automation đã có sẵn và xuất báo cáo kết quả. Không sinh code mới."
+description = "Chạy test automation hiện có (Pytest/Playwright) và xuất báo cáo kết quả kiểm thử ngay lập tức. Không review lan man hay điều tra mã nguồn backend. Đề xuất kỹ năng debug hoặc code review khi có lỗi."
 
 prompt = """
-CHỈ thực thi test scripts đã có sẵn và xuất báo cáo. KHÔNG sinh code automation mới.
+CHỈ thực thi test scripts đã có sẵn và xuất báo cáo. KHÔNG sinh code automation mới. KHÔNG review thêm bất cứ mã nguồn hay tài liệu nào.
 
 $ARGUMENTS có thể chứa Jira issue key (VD: G3PTP-16825), đường dẫn thư mục, file test cụ thể, hoặc marker pytest.
 
-## Quy trình Thực thi
+## Nguyên Tắc Cốt Lõi: Chạy Ngay — Báo Cáo Ngay — Không Lan Man
 
-1. **Phân giải Mục tiêu Chạy & Pre-flight Check:**
+1. **Định vị Target Trực Tiếp & Chuẩn Bị:**
    - **Xác định target:**
-     - Nếu $ARGUMENTS chỉ định file hoặc thư mục cụ thể → Chạy trực tiếp target đó.
-     - Nếu có `{issueKey}` → Target mặc định: `/project-root/workspace/{issueKey}/test/steps/`.
+     - Nếu $ARGUMENTS chỉ định file hoặc thư mục cụ thể → Trỏ thẳng target đó để chạy ngay.
+     - Nếu có `{issueKey}` → Target mặc định: `workspace/{issueKey}/test/steps/`.
      - Nếu không có → Quét tìm thư mục `steps` hoặc `tests` gần nhất trong workspace.
    - **Nhận diện test files:** Khớp cả hai chuẩn `test_*.py` và `*_test.py`.
-   - **Pre-flight Check:** Kiểm tra `pytest`, file cấu hình runtime (`.env`), đảm bảo thư mục kết quả `/project-root/workspace/{issueKey}/test/result/` được tạo sẵn và dọn dẹp các file rác cũ.
+   - Tạo thư mục kết quả `workspace/{issueKey}/test/result/` và dọn dẹp kết quả cũ (nếu có).
+   - **TUYỆT ĐỐI KHÔNG** đọc file spec, checklist, hay review bất kỳ tài liệu nào trước khi chạy.
 
-2. **Thực thi Test Suite:**
+2. **Thực Thi Test Suite Ngay Lập Tức:**
    - Chạy test suite với cấu hình ghi Full Log và hỗ trợ cả 2 chuẩn file:
      ```bash
      HTML_FLAG=""
@@ -32,33 +33,30 @@ $ARGUMENTS có thể chứa Jira issue key (VD: G3PTP-16825), đường dẫn th
      ```
    - **Cờ cốt lõi:** `-s` (không nuốt log), live logging, `-rA` (tổng kết mọi test), và chuyển hướng `2>&1 | tee` vào DUY NHẤT 1 file `test-output.log`.
 
-3. **Self-fix Loop Kỹ thuật Script (Tối đa 3 vòng):**
-   - Nếu pytest crash hoặc test fail do lỗi kỹ thuật script (`ImportError`, `SyntaxError`, thiếu fixture, timeout chờ mạng quá ngắn) → Tự sửa script/fixture → Chạy lại (tối đa 3 lần).
-   - **Anti-cheating Rules:** Tuyệt đối KHÔNG sửa assertion, KHÔNG skip/comment test case, KHÔNG làm sai lệch mock data để ép test pass.
-
-4. **Phân tích Kết quả & Bóc tách Lỗi:**
-   - Đọc kết quả từ `test-output.log` và `junit.xml`.
-   - Phân loại lỗi: Application Bug (P0/P1) vs Script Error (P2) vs Environment (P2) vs Flaky (P2).
-   - Với test API/WebSocket thất bại: BẮT BUỘC trích xuất Request (Method, URL, Headers, Payload) và Response (Status Code, Body) kèm Root Cause.
-
-5. **Xuất Báo cáo Độc bản & Trình bày cho User:**
-   - Ghi báo cáo chính thức vào DUY NHẤT một file `/project-root/workspace/{issueKey}/test/result/report.md` gồm:
-     - Bảng tổng kết: Total / Passed / Failed / Skipped / Thời gian / Pass Rate.
-     - Chi tiết từng test case Failed (kèm Request/Response API/WS, Root Cause và Đề xuất Fix).
+3. **Trả Kết Quả Tức Thì & Xuất Báo Cáo Độc Bản:**
+   - Đọc kết quả từ console output / `test-output.log` và `junit.xml`.
+   - Ghi báo cáo chính thức vào DUY NHẤT một file `workspace/{issueKey}/test/result/report.md` gồm:
+     - Bảng tổng kết: Total / Passed / Failed / Skipped / Thời gian / Tỷ lệ Pass.
+     - Danh sách test cases Failed (trích xuất trực tiếp tên hàm test, file, dòng lỗi, thông báo lỗi AssertionError/Exception từ log).
      - Danh sách test cases Passed (rút gọn).
-     - Action Items theo độ ưu tiên (P0/P1/P2) cho DEV và QA.
    - Trình bày tóm tắt kết quả Pass/Fail và link file báo cáo cho user.
 
-## Quy tắc Bắt buộc
+4. **Đề Xuất Kỹ Năng Xử Lý Tiếp Theo (Nếu Có Test Thất Bại):**
+   - **Tuyệt đối KHÔNG tự điều tra backend code, KHÔNG tự chạy script curl/urllib ngoài luồng.**
+   - Ngay sau bảng kết quả, đề xuất các kỹ năng/vai trò chuyên trách để xử lý lỗi:
+     - 🛠️ **Gỡ lỗi mã nguồn backend / Tìm nguyên nhân:** Đề xuất dùng skill `dev-debugging` hoặc gọi subagent `dev` để trace code và kiểm tra log backend.
+     - 🔍 **Review mã nguồn:** Đề xuất dùng skill `cr-review-code-and-quality` hoặc gọi subagent `code-reviewer` để đánh giá chất lượng và logic implementation.
+     - ⚙️ **Cập nhật kịch bản kiểm thử:** Đề xuất dùng skill `qa-auto-design` nếu các tham số kiểm thử cần được cập nhật theo spec mới.
 
-1. KHÔNG sinh code test mới — chỉ tìm và chạy code đã có.
-2. KHÔNG đọc lan man toàn bộ tài liệu spec/checklist/POM trước khi chạy. Chỉ đọc ngược spec khi test fail để phân tích bug.
-3. KHÔNG sửa assertion/logic để ép FAIL→PASS — test FAIL do bug ứng dụng là kết quả hợp lệ cần báo cáo.
-4. CHỈ sửa lỗi kỹ thuật script (import sai, fixture thiếu, syntax error, timeout chờ...).
-5. Output báo cáo bằng TIẾNG VIỆT.
-6. Test API/WebSocket BẮT BUỘC in Request và Response trong báo cáo.
-7. **ĐỘC BẢN OUTPUT (BẮT BUỘC):** Sau khi chạy xong, trong thư mục kết quả chỉ sinh ra DUY NHẤT 1 file mỗi loại: đúng 1 file XML (`junit.xml`), 1 file HTML (`report.html` nếu có pytest-html), 1 file LOG (`test-output.log`), 1 file MD (`report.md`). Tuyệt đối KHÔNG sinh trùng 2 file cùng loại (cấm sinh đồng thời `{issueKey}-test-report.md` và `report.md`).
-8. **FULL CHI TIẾT LOG:** File `test-output.log` BẮT BUỘC ghi lại chi tiết full log toàn bộ console stdout/stderr (không nuốt log, đầy đủ request/response payloads, logs từ test methods).
+## Quy Tắc Bắt Buộc
+
+1. **KHÔNG đọc lan man:** Không đọc lại spec (`final.md`), checklist, hay POM trước/sau khi chạy.
+2. **KHÔNG điều tra mã nguồn backend:** CẤM dùng `grep_search`, `view_file` hay bất kỳ công cụ nào để lục lọi source code backend/service.
+3. **KHÔNG chạy API ngoài luồng:** CẤM tự viết script Python hoặc gọi lệnh cURL để test lại API bên ngoài test suite.
+4. **KHÔNG sửa code gian lận:** Tuyệt đối KHÔNG sửa assertion/logic để ép FAIL→PASS — test FAIL do bug ứng dụng là kết quả hợp lệ cần báo cáo.
+5. **Output báo cáo bằng TIẾNG VIỆT.**
+6. **ĐỘC BẢN OUTPUT (BẮT BUỘC):** Sau khi chạy xong, trong thư mục kết quả chỉ sinh ra DUY NHẤT 1 file mỗi loại: đúng 1 file XML (`junit.xml`), 1 file HTML (`report.html` nếu có pytest-html), 1 file LOG (`test-output.log`), 1 file MD (`report.md`).
+7. **FULL CHI TIẾT LOG:** File `test-output.log` BẮT BUỘC ghi lại chi tiết full log toàn bộ console stdout/stderr qua cờ `-s`.
 
 <critical_instruction>
 HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
