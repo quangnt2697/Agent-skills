@@ -11,12 +11,15 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - Logic xác minh (Assertions) bắt buộc để ở tầng `tests/`. **KHÔNG assert trong Page/Service class.**
 - Tầng **Model / DTO Layer** (`models/`): Định nghĩa các lớp Request/Response/Event schema chuẩn **Pydantic v2** (`BaseModel`, `Field`, `@field_validator(..., mode="after")` + `@classmethod`). Dùng `model_validate()` và `model_dump()`. **TUYỆT ĐỐI KHÔNG dùng cú pháp Pydantic v1** (`@validator` đã bị deprecated).
 
-### 1.2. Tái sử dụng Code có sẵn (API/WebSocket)
-- **Ưu tiên tái sử dụng:** Khi project đã có sẵn code gọi API hoặc kết nối WebSocket do developer tạo ra, Agent BẮT BUỘC phải tìm và import lại các file đó thay vì viết mới từ đầu.
-- **Cách tìm code có sẵn:**
+### 1.2. Tái sử dụng Code có sẵn & SDK OpenAPI (API/WebSocket)
+- **Ưu tiên tái sử dụng tối đa:** Khi gặp task liên quan đến API hoặc WebSocket, Agent BẮT BUỘC phải tìm và import lại các module client có sẵn thay vì viết mới từ đầu.
+- **Quét Bắt Buộc Thư Mục SDK `openapi-tyk/sdk/python/`:**
+  - Đối với các dịch vụ OpenAPI (Entrade / DNSE), Agent bắt buộc dò quét thư mục `openapi-tyk/sdk/python/` (thông qua `tools/discord-bridge/projects.json`, biến môi trường `OPENAPI_TYK_PATH`, hoặc đường dẫn tương đối).
+  - Tái sử dụng `DNSEClient` (`dnse/`), các module `trading-api/`, `marketdata-api/`, `broker-api/`, `websocket-trading/`, `websocket-marketdata/` và tham khảo `examples/`.
+- **Cách tìm code có sẵn khác của Dev:**
   - Quét các file `.py` chứa thư viện `requests`, `httpx`, `APIRequestContext`, `websockets`, `websocket-client`.
   - Tìm các file có tên file api giống với tên api trong jira task (VD: task `G3PTP-16810` chứa websocket `event order` → tìm folder chứa `*websocket*` và file `*event order*` hoặc `*order*` trong folder đó).
-- **Chỉ viết tầng Test** (`test_*.py`): Import class/function đã có → gọi hàm → thực hiện Assertions.
+- **Chỉ viết tầng Test** (`test_*.py`): Import class/function đã có từ SDK hoặc dev code → gọi hàm → thực hiện Assertions.
 - **Bổ sung nhỏ nếu cần:** Chỉ thêm wrapper/helper khi code có sẵn thiếu method cụ thể. KHÔNG viết lại toàn bộ client class.
 
 ### 1.3. Dữ liệu động (Dynamic Test Data)
@@ -38,12 +41,19 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - **BẮT BUỘC dùng khối `try...finally`:** Toàn bộ logic teardown sau `yield` phải nằm trong khối `finally` hoặc bọc `try/except` từng phần tử để đảm bảo dữ liệu luôn được dọn dẹp kể cả khi test case raise exception hoặc assertion thất bại.
 - Ví dụ: Test tạo order/user → fixture phải gọi API DELETE/Cancel ở khối teardown. *(Tham khảo [test_api_example.py](../assets/test_api_example.py))*
 
-### 1.6. Authentication & Kế Thừa Cấu Hình Môi Trường (3-Tier Env)
-- **KHÔNG hardcode** passwords, secret keys, API tokens trực tiếp trong source code hoặc file test data.
-- **Kế thừa cấu hình 3 tầng (3-Tier Auto-Discovery):** Tự động dò quét Root `.env` và các task anh em cùng hệ thống (`workspace/*/test/.env`) để kế thừa các credentials (`API_KEY`, `API_SECRET`, `BASE_URL`, `WS_URL`, `API_TOKEN`) mà không cần hỏi lại user.
+### 1.6. Quy Tắc Quản Lý Biến Môi Trường & Tuyệt Đối Không Hardcode (.env Mandatory & Zero-Hardcode Rule)
+- **TẠO VÀ LƯU GIỮ BIẾN TRONG `.env`:**
+  - Toàn bộ các giá trị cấu hình, kết nối, thông tin xác thực và biến kiểm thử (Base URLs, WS URLs, API keys, secrets, tokens, account numbers, test symbols, prices, quantities, timeouts, threshold metrics, broker codes) **BẮT BUỘC** phải được tạo và lưu giữ trong file `.env` (theo mô hình phân tầng: task-local `workspace/{issueKey}/test/.env` hoặc central `agent-skills/.env`).
+- **CHỈ ĐƯỢC GỌI TỪ `.env` TRONG TEST SCRIPT:**
+  - Trong toàn bộ test script (`test_*.py`, `conftest.py`, `services/`, `pages/`), mã nguồn **CHỈ ĐƯỢC PHÉP** đọc/gọi giá trị từ file `.env` thông qua `os.getenv("VARIABLE_NAME", default_val)` hoặc qua fixture/config loader.
+- **TUYỆT ĐỐI NGHIÊM CẤM HARDCODE:**
+  - Cấm tuyệt đối việc hardcode trực tiếp vào mã nguồn test: URLs (`https://...`, `wss://...`), credentials, số tài khoản test, mã chứng khoán (nếu không lấy từ market fixture), khối lượng, mức giá, API versions.
+- **Quy Trình "Environment First, Script Second":**
+  - Khi thiết kế kịch bản test phát hiện cần tham số mới: Agent **BẮT BUỘC** phải thêm biến đó vào file `.env` trước (kèm giá trị mặc định rõ ràng và comment giải thích), sau đó mới viết code gọi biến đó từ test script.
 - **Quản lý Token Lifecycle & Caching:**
   - Lấy Auth Token ở session-scoped fixture (`@pytest.fixture(scope="session")`).
   - Hỗ trợ cache file cục bộ để tái sử dụng token giữa các session chạy test khác nhau trong ngày, tránh spam API Login.
+- **Quality Gate:** Test script chứa giá trị hardcode thay vì gọi từ `.env` sẽ bị đánh trượt cú pháp và nghiệm thu ngay tại Giai đoạn 4.
 - Chi tiết cơ chế xem [shared_fixtures_and_env.md](shared_fixtures_and_env.md).
 
 ### 1.7. Quản lý Cấu Trúc Thư Mục Chuẩn (Blueprint)
@@ -89,15 +99,16 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
   - WebSocket: Bắt buộc kết nối trực tiếp `WS_URL` từ `.env`.
 - **Quality Gate:** Mọi test script chứa mock adapter, decorator `@patch` vào tầng HTTP client, hoặc dựng fake server sẽ bị đánh trượt Quality Gate ngay lập tức.
 
-### 1.12. Pre-generation Code Reconnaissance Gate (Quét Tận Dụng Code Có Sẵn)
+### 1.12. Pre-generation Code Reconnaissance Gate (Quét Tận Dụng Code Có Sẵn & SDK openapi-tyk)
 - Đối với các task OpenAPI (REST API hoặc WebSocket), trước khi sinh bất kỳ code test nào, Agent **BẮT BUỘC** phải thực hiện bước quét mã nguồn (Code Recon) trong toàn bộ workspace/repository:
-  1. **Quét Auth & Token:** Tìm các file chứa logic đăng nhập, tạo token, quản lý refresh token, hàm ký HMAC/SHA256 signature (`auth`, `token`, `login`, `sign`, `signature`).
-  2. **Quét WebSocket Client & Channels:** Tìm WebSocket client, connection manager, helper `subscribe`/`unsubscribe`, hàm decode/unpack msgpack (`websocket`, `ws_client`, `subscribe`, `channel`).
-  3. **Quét Enums & Constants:** Tìm các file định nghĩa tên channel, topic, loại lệnh, error code (`channels.py`, `constants.py`, `enums.py`).
+  1. **Quét SDK `openapi-tyk/sdk/python/`:** Quét toàn bộ thư mục SDK chính thức (thông qua `projects.json`, biến môi trường `OPENAPI_TYK_PATH` hoặc đường dẫn tương đối), trích xuất `DNSEClient`, `trading-api`, `marketdata-api`, `broker-api`, `websocket-trading`, `websocket-marketdata`.
+  2. **Quét Auth & Token:** Tìm các file chứa logic đăng nhập, tạo token, quản lý refresh token, hàm ký HMAC/SHA256 signature (`auth`, `token`, `login`, `sign`, `signature`).
+  3. **Quét WebSocket Client & Channels:** Tìm WebSocket client, connection manager, helper `subscribe`/`unsubscribe`, hàm decode/unpack msgpack (`websocket`, `ws_client`, `subscribe`, `channel`).
+  4. **Quét Enums & Constants:** Tìm các file định nghĩa tên channel, topic, loại lệnh, error code (`channels.py`, `constants.py`, `enums.py`).
 - **Quy tắc tái sử dụng bắt buộc:**
-  - Import và sử dụng trực tiếp các class, helper, function đã tìm thấy.
+  - Import và sử dụng trực tiếp các class, helper, function đã tìm thấy từ SDK hoặc codebase DEV.
   - Chỉ viết thêm class con kế thừa hoặc wrapper method nhỏ khi code có sẵn thiếu chức năng cụ thể.
-  - **TUYỆT ĐỐI CẤM** tự viết lại từ đầu các module client/auth mà codebase đã có.
+  - **TUYỆT ĐỐI CẤM** tự viết lại từ đầu các module client/auth mà SDK và codebase đã có.
 
 ### 1.13. Liên kết Kịch bản Gherkin Chặt chẽ (Gherkin Traceability Binding)
 - Mỗi test function trong file `test_*.py` **BẮT BUỘC** phải có:

@@ -24,27 +24,32 @@
 #
 # Trước khi viết bất kỳ class nào, Agent BẮT BUỘC thực hiện:
 #
-# Bước 1: Quét workspace bằng tool grep_search / list_dir
+# Bước 1: Quét thư mục SDK Python chính thức: openapi-tyk/sdk/python/
+#   - Tra cứu qua projects.json (key "openapi-tyk") hoặc biến OPENAPI_TYK_PATH hoặc đường dẫn tương đối
+#   - Khảo sát:
+#     + dnse/: DNSEClient (xác thực API Key/Secret, auto signing HMAC SHA256, version header)
+#     + trading-api/: post_order, cancel_order, replace_order, get_ppse, get_balances
+#     + marketdata-api/: get_security_definition, get_trades, get_ohlc
+#     + websocket-trading/: TradingClient.subscribe_order_event()
+#     + websocket-marketdata/: quote, trade, ohlc, expected_price
+#     + examples/: Mẫu gọi thực tế
+#   - Bổ sung vào pytest.ini: pythonpath = . steps ../../../openapi-tyk/sdk/python
+#
+# Bước 2: Quét codebase của Developer trong workspace
 #   - Quét Auth & Signature: tìm các hàm login, get_token, HMAC SHA256 signer
 #   - Quét API Client: tìm file `.py` chứa `requests`, `httpx`
 #   - Quét WebSocket Client: tìm file chứa `websockets`, `websocket-client`, hàm `subscribe`, `msgpack`
 #   - Tìm file có tên liên quan đến task Jira:
-#     VD: task G3PTP-16810 về "event order" → tìm folder *websocket*,
-#         file *order*, *event_order*...
+#     VD: task G3PTP-16810 về "event order" → tìm folder *websocket*, file *order*, *event_order*...
 #
-# Bước 2: Đọc code tìm được
-#   - Xác định class/function nào gọi API hoặc kết nối WS
-#   - Xác định interface: tên method, tham số, kiểu trả về
-#
-# Bước 3: Import trực tiếp
+# Bước 3: Import và Kế thừa trực tiếp (CẤM viết lại từ đầu)
+#   - from dnse import DNSEClient
 #   - from src.services.order_api import OrderAPI
 #   - from src.services.ws_client import WSClient
-#   - KHÔNG viết lại class mới nếu đã có sẵn
 #
-# Bước 4: Chỉ bổ sung khi cần
-#   - Chỉ thêm wrapper/helper nếu code có sẵn thiếu method cụ thể
-#   - VD: developer có hàm connect() nhưng thiếu subscribe_channel()
-#         → Agent thêm 1 method nhỏ, KHÔNG viết lại toàn bộ class
+# Bước 4: Zero-Hardcode & .env Mandatory Rule
+#   - Toàn bộ URLs, token, secret, account, symbol, price, quantity, timeouts BẮT BUỘC lưu ở .env
+#   - Test script CHỈ gọi qua os.getenv(), TUYỆT ĐỐI KHÔNG hardcode trong script.
 
 
 # ============================
@@ -159,9 +164,13 @@ def test_api_happy_path(api_service, cleanup):
       Then hệ thống phản hồi mã trạng thái HTTP "201"
       And thông tin lệnh trả về có trạng thái "PendingNew"
     """
-    # Arrange: Sinh dữ liệu động
+    # Arrange: Đọc tham số từ .env hoặc fixture (TUYỆT ĐỐI KHÔNG hardcode)
+    import os
     unique = f"auto_api_test_{int(time.time())}_{uuid.uuid4().hex[:6]}"
-    payload = {"symbol": "VNM", "side": "BUY", "quantity": 100, "price": 50000.0}
+    symbol = os.getenv("TEST_ORDER_SYMBOL", "VNM")
+    quantity = int(os.getenv("TEST_ORDER_QTY", "100"))
+    price = float(os.getenv("TEST_ORDER_PRICE", "50000.0"))
+    payload = {"symbol": symbol, "side": "BUY", "quantity": quantity, "price": price}
 
     # Assert 1: REQUEST SCHEMA — Pydantic v2 validate payload trước khi gửi
     request_model = ExampleRequestModel.model_validate(payload)

@@ -122,19 +122,23 @@ load_hierarchical_env()
 ## 3. Tái Sử Dụng Fixtures & SDK Dùng Chung (Shared SDK / Fixtures)
 
 ### 3.1. Thiết lập `pythonpath` trong `pytest.ini`
-Để các task có thể import trực tiếp SDK dùng chung mà không phải copy code:
+Để các task có thể import trực tiếp SDK dùng chung và thư viện `openapi-tyk/sdk/python` mà không phải copy code:
 ```ini
 [pytest]
-pythonpath = . steps ../../.. ../../../shared ../../../sdk
+pythonpath = . steps ../../.. ../../../shared ../../../sdk ../../../openapi-tyk/sdk/python /Users/qa-quangnt/Desktop/Project/3.1/openapi-tyk/sdk/python
 ```
 
-### 3.2. Ưu tiên Sử Dụng Client/SDK Có Sẵn
+### 3.2. Ưu tiên Sử Dụng SDK OpenAPI Sẵn Có (`openapi-tyk/sdk/python/`)
 Khi viết code kiểm thử cho API/WebSocket:
-1. **Kiểm tra SDK có sẵn:**
-   - Quét workspace để tìm SDK do dev team cung cấp (ví dụ: `shared/sdk/python`, `services/client/`).
-   - Nếu đã có SDK, trong `steps/services/` chỉ cần tạo một wrapper đơn giản kế thừa client đó hoặc import trực tiếp vào `conftest.py` / `test_*.py`.
+1. **Kiểm tra và nạp SDK `openapi-tyk/sdk/python`:**
+   - Quét tìm SDK `openapi-tyk/sdk/python/` (qua `tools/discord-bridge/projects.json`, biến môi trường `OPENAPI_TYK_PATH`, hoặc thư mục tương đối).
+   - Sử dụng trực tiếp:
+     - `from dnse import DNSEClient` để tương tác REST API và ký số tự động.
+     - Các client từ `trading-api`, `marketdata-api`, `broker-api`.
+     - Lắng nghe event qua `TradingClient.subscribe_order_event()` từ `websocket-trading` hoặc streaming từ `websocket-marketdata`.
+     - Tham khảo mẫu gọi thực tế tại `openapi-tyk/sdk/python/examples/`.
 2. **Không viết lại từ đầu:**
-   - Việc tự viết lại client HTTP/WebSocket làm phát sinh lỗi duplicate code và lệch chuẩn giao thức với hệ thống thật.
+   - Việc tự viết lại client HTTP/WebSocket làm phát sinh lỗi duplicate code, sai lệch định dạng chữ ký HMAC SHA256 hoặc protocol framing.
 
 ### 3.3. Cơ Chế Cache Token Tránh Spam Login Giữa Các Session
 Để tránh việc mỗi lần chạy test hoặc mỗi session mới lại gọi API đăng nhập lấy token nhiều lần, `conftest.py` hỗ trợ cơ chế lưu cache token cục bộ:
@@ -183,12 +187,44 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 
 ---
 
-## 4. Tóm Tắt Quy Trình Khi Khởi Tạo Session Mới
+## 4. Quy Chuẩn Quản Lý Biến Môi Trường & Zero-Hardcode
+
+### 4.1. Quy Tắc "Environment First, Script Second"
+- **BẮT BUỘC LƯU MỌI BIẾN TRONG `.env`:** Toàn bộ tham số cấu hình, endpoints, thông tin bảo mật, số tài khoản, mã chứng khoán kiểm thử (nếu không lấy từ market fixture), khối lượng, mức giá và timeouts BẮT BUỘC phải được tạo và lưu trữ trong file `.env`.
+- **TEST SCRIPT CHỈ ĐƯỢC GỌI QUA `os.getenv()`:** Trong file `test_*.py`, `conftest.py` và `services/`, tuyệt đối không hardcode chuỗi hoặc số học mang tính cấu hình hay dữ liệu kiểm thử.
+- **Quy trình khi cần biến mới:**
+  1. Thêm key-value vào `workspace/{issueKey}/test/.env` hoặc root `.env`.
+  2. Trong test script, đọc biến qua `os.getenv("KEY_NAME", default_fallback)`.
+
+### 4.2. Bảng Danh Mục Biến `.env` Chuẩn Hóa Cho API & WebSocket
+
+| Nhóm Biến | Tên Biến Môi Trường | Mô Tả & Ví Dụ |
+| :--- | :--- | :--- |
+| **Kết nối Gateway** | `BASE_URL` | Endpoint REST API (ví dụ: `https://services.entrade.com.vn` hoặc UAT) |
+| | `WS_URL` | Endpoint WebSocket (ví dụ: `wss://services.entrade.com.vn/ws` hoặc UAT) |
+| | `DNSE_API_VERSION` | Header version gọi API (mặc định: `2026-05-07`) |
+| **Xác thực SDK** | `API_KEY` | Khóa xác thực OpenAPI do DNSE cấp |
+| | `API_SECRET` | Khóa bí mật dùng tạo HMAC SHA256 signature |
+| | `API_TOKEN` | Bearer/JWT token sau khi đăng nhập |
+| **Tài khoản & Nghiệp vụ** | `TRADING_ACCOUNT_NO` | Số tiểu khoản giao dịch UAT (ví dụ: `086C123456`) |
+| | `TRADING_PIN` | Mã PIN hoặc OTP giao dịch |
+| | `TEST_ORDER_SYMBOL` | Mã chứng khoán dùng đặt lệnh (ví dụ: `HPG`, `VNM`) |
+| | `TEST_ORDER_PRICE` | Mức giá đặt lệnh kiểm thử (ví dụ: `28500`) |
+| | `TEST_ORDER_QTY` | Khối lượng đặt lệnh kiểm thử (ví dụ: `100`) |
+| **Kênh WebSocket** | `WS_CHANNEL_ORDERS` | Kênh nhận sự kiện lệnh (`order_events` hoặc `conditional_orders`) |
+| | `WS_CHANNEL_MARKET` | Kênh nhận dữ liệu thị trường (`tick`, `quote`, `ohlc`) |
+| **Thời gian & Timeout** | `API_TIMEOUT_MS` | Giới hạn thời gian phản hồi API (ví dụ: `2000`) |
+| | `WS_TIMEOUT_SECONDS` | Giới hạn thời gian chờ nhận message WebSocket (ví dụ: `5.0`) |
+
+---
+
+## 5. Tóm Tắt Quy Trình Khi Khởi Tạo Session Mới
 
 1. **Bước 1:** Quét tìm file `.env` ở Root và các task anh em (`workspace/*/test/.env`).
-2. **Bước 2:** Khởi tạo `workspace/{issueKey}/test/.env` từ template, tự động điền sẵn các credentials đã tìm thấy.
+2. **Bước 2:** Khởi tạo `workspace/{issueKey}/test/.env` từ template, tự động điền sẵn các credentials và tham số đã tìm thấy.
 3. **Bước 3:** Sử dụng `conftest.py` có hàm `load_hierarchical_env()` để bảo đảm mọi fixture đều nhận đúng cấu hình.
 4. **Bước 4:** Tận dụng token caching trong `conftest.py` để tiết kiệm thời gian xác thực giữa các lần chạy.
+5. **Bước 5:** Bổ sung đường dẫn `openapi-tyk/sdk/python/` vào `pytest.ini` và kế thừa client SDK.
 
 ---
 

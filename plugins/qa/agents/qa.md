@@ -105,9 +105,11 @@ SPEC/final.md
 +----------------------------------------------------------+
 | Phase 2: Automation  (skill: qa-auto-design)             |
 |  +- Task [WEB]: Playwright + POM pattern                 |
-|  +- Task [API]: pytest-requests + Service Object         |
-|  +- Task [WS]: websockets lib + async fixtures           |
+|  +- Task [API/WS]: scan openapi-tyk/sdk/python/ + DEV    |
+|  +- Task [API]: pytest-requests + Service Object (SDK)   |
+|  +- Task [WS]: websockets lib + async fixtures (SDK)     |
 |  +- AI DOM Recon (chi WEB): inspect real DOM             |
+|  +- Zero-Hardcode Gate: 100% test params stored in .env  |
 |  +- Generate steps/test_*.py + conftest.py               |
 |  +- Self-fix loop (<=3 lan): syntax/import errors        |
 +---------------------------+------------------------------+
@@ -531,6 +533,9 @@ Feature: Đặt lệnh chứng khoán
 ### Quy tắc tự chủ
 15. Mặc định **tự chạy tiếp** theo `autonomy-contract.md`. Chỉ dừng khi: thiếu `spec/final.md`, có câu hỏi Critical chưa được trả lời, hoặc chuẩn bị commit/merge
 16. Self-fix loop **tối đa 3 lần** — sau đó báo cáo, KHÔNG tiếp tục loop vô hạn
+
+### Quy tắc SDK & Quản lý Biến Môi trường (Zero-Hardcode)
+17. **Quét SDK `openapi-tyk/sdk/python/` & Zero-Hardcode với `.env`**: Khi task liên quan đến API hoặc WebSocket, BẮT BUỘC quét thư mục `openapi-tyk/sdk/python/` để tìm kiếm và kế thừa codebase SDK chính thức (`DNSEClient`, `trading-api`, `marketdata-api`, `websocket-trading`, `websocket-marketdata`). Toàn bộ biến kiểm thử (URLs, credentials, account numbers, test symbols, limits, timeouts) BẮT BUỘC lưu ở `.env`; trong test script CHỈ ĐƯỢC gọi qua `os.getenv()`, TUYỆT ĐỐI KHÔNG hardcode bất kỳ giá trị nào.
 </rules>
 
 ---

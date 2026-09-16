@@ -63,7 +63,8 @@
         "Error scenario tests (timeout, 4xx, 5xx)",
         "Logging added for failed requests (request + response)",
         "Retry logic for flaky endpoints (if needed)",
-        "Test data externalized (not hardcoded)"
+        "Scanned openapi-tyk/sdk/python/ and reused official SDK",
+        "All test variables, endpoints, and credentials externalized to .env (zero hardcoding in test scripts)"
       ]
     }
   ]

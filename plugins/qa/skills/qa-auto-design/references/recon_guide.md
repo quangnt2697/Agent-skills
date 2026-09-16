@@ -143,7 +143,62 @@ Tài liệu này hướng dẫn chi tiết quy trình khảo sát thực tế (R
    - **Thiếu method nhỏ $\rightarrow$ Viết Wrapper:** Kế thừa class có sẵn và bổ sung thêm đúng method còn thiếu.
    - **CẤM:** Viết lại một client class hoàn toàn mới từ số không khi codebase đã có client chuẩn.
 
-### 3.2. Chính Sách Tuyệt Đối Không Mock Trên UAT (Real Base URLs Only)
+### 3.2. Quét Bắt Buộc Thư Mục SDK `openapi-tyk/sdk/python/` (API & WebSocket)
+
+Đối với toàn bộ task liên quan đến API hoặc WebSocket (đặc biệt là hệ sinh thái Entrade / DNSE OpenAPI), Agent **BẮT BUỘC** phải quét thư mục SDK Python chính thức tại:
+`openapi-tyk/sdk/python/`
+
+#### 3.2.1. Cơ Chế Tự Động Định Vị Thư Mục SDK
+Agent tiến hành dò tìm thư mục `openapi-tyk/sdk/python/` theo thứ tự ưu tiên:
+1. **Tra cứu Alias từ `tools/discord-bridge/projects.json`:**
+   - Đọc key `"openapi-tyk"` (ví dụ: `/path/to/openapi-tyk`) ➔ Nối thêm `/sdk/python/`.
+2. **Biến môi trường trong `.env`:**
+   - Kiểm tra `OPENAPI_TYK_PATH` hoặc `OPENAPI_SDK_PATH` (nếu có chỉ định cụ thể).
+3. **Quét thư mục tương đối quanh Workspace:**
+   - `./openapi-tyk/sdk/python/` (nếu đang ở thư mục cha chứa các services).
+   - `../openapi-tyk/sdk/python/` (thư mục anh em trong cùng cụm dự án 3.1).
+   - `../../3.1/openapi-tyk/sdk/python/` hoặc tìm kiếm thư mục `openapi-tyk` trên máy (`find /Users/... -maxdepth 4 -name "openapi-tyk"`).
+
+#### 3.2.2. Khảo Sát & Bóc Tách Codebase SDK Có Sẵn
+Bên trong `openapi-tyk/sdk/python/`, Agent cần khảo sát các phân hệ:
+- **`dnse/` (`DNSEClient`):**
+  - Khởi tạo client trung tâm với xác thực API Key/Secret:
+    ```python
+    from dnse import DNSEClient
+    client = DNSEClient(
+        api_key=os.getenv("API_KEY"),
+        api_secret=os.getenv("API_SECRET"),
+        base_url=os.getenv("BASE_URL"),
+        api_version=os.getenv("DNSE_API_VERSION", "2026-05-07")
+    )
+    ```
+  - Hỗ trợ cơ chế `dry_run=True/False` và tự động gắn version header.
+- **`trading-api/`:**
+  - Chứa toàn bộ nghiệp vụ giao dịch: `post_order`, `cancel_order`, `replace_order`, `get_orders`, `get_order_detail`, `get_ppse` (sức mua/bán), `get_balances`, `get_loan_packages`, `create_trading_token`, `send_email_otp`.
+- **`marketdata-api/`:**
+  - Dữ liệu thị trường: `get_security_definition`, `get_instruments`, `get_trades`, `get_latest_trade`, `get_ohlc`, `get_close_price`, `get_working_dates`.
+- **`websocket-trading/`:**
+  - `TradingClient.subscribe_order_event()`: Hỗ trợ lắng nghe luồng sự kiện lệnh thường (`order_events`) và lệnh điều kiện (`conditional_orders`) đồng nhất.
+- **`websocket-marketdata/`:**
+  - Streaming dữ liệu bảng giá: `sec_def`, `quote` (giá bid/ask tốt nhất), `trade` (khớp lệnh/tick), `ohlc`, `expected_price` (phiên ATO/ATC), `market_index`.
+- **`examples/`:**
+  - Thư mục chứa các script chạy mẫu hoàn chỉnh cho từng API và kênh WebSocket (`get_accounts.py`, `post_order.py`, `trade.py`, `quote.py`...). Agent cần đọc các file này để nắm vững mẫu gọi hàm thực tế.
+
+#### 3.2.3. Quy Tắc Tái Sử Dụng & Thiết Kế Service Test
+1. **Thêm SDK vào đường dẫn nạp module (`pythonpath`):**
+   Trong file `pytest.ini` của task test, bổ sung đường dẫn tới `openapi-tyk/sdk/python`:
+   ```ini
+   [pytest]
+   pythonpath = . steps ../../../openapi-tyk/sdk/python /Users/qa-quangnt/Desktop/Project/3.1/openapi-tyk/sdk/python
+   ```
+2. **Kế thừa Service Client:**
+   Trong `workspace/{issueKey}/test/steps/services/`, tạo Service Wrapper kế thừa hoặc bọc `DNSEClient` hoặc các class từ `trading-api`, `websocket-trading`:
+   - Không tự code lại request signing HMAC SHA256 hay logic WebSocket framing.
+   - Tái sử dụng 100% client có sẵn từ SDK.
+3. **Tuyệt đối không hardcode:**
+   Mọi tham số đầu vào của SDK (`api_key`, `api_secret`, `base_url`, `account_no`, `symbol`, `price`, `quantity`, `otp`) BẮT BUỘC nạp từ `.env` qua `os.getenv()`.
+
+### 3.3. Chính Sách Tuyệt Đối Không Mock Trên UAT (Real Base URLs Only)
 
 Trong quá trình Recon và thiết kế API/WS client:
 - Mọi cấu hình kết nối BẮT BUỘC trỏ vào Real Base URLs từ `.env`:

@@ -1,32 +1,34 @@
 # Quy trình Sinh Mã Automation Test (qa-auto-design)
 
 ## 1. 6 Nguyên Tắc Vàng Khi Sinh Mã
-1. **Khảo sát Thực tế (Recon First):** Web UI bắt buộc soi DOM thật qua MCP; API/WS bắt buộc quét codebase tái sử dụng code dev (auth, token).
+1. **Khảo sát Thực tế (Recon First):** Web UI bắt buộc soi DOM thật qua MCP; API/WS bắt buộc quét folder `openapi-tyk/sdk/python/` và codebase DEV để tái sử dụng SDK (`DNSEClient`, `trading-api`, `websocket-trading`, v.v.) và module auth/token.
 2. **Phân Tầng Nghiêm Ngặt:** Toàn bộ Assertions BẮT BUỘC nằm ở tầng Test (`steps/test_*.py`). Tầng Page/Service chỉ chứa tương tác.
-3. **No-Mock Policy trên UAT:** Tuyệt đối không mock server, gọi trực tiếp `BASE_URL` và `WS_URL` từ `.env`.
+3. **No-Mock & Zero-Hardcode Policy trên UAT:** Tuyệt đối không mock server, gọi trực tiếp `BASE_URL` và `WS_URL` từ `.env`. Toàn bộ giá trị biến (URLs, credentials, account numbers, symbols, amounts, timeouts) BẮT BUỘC tạo và lưu trong `.env`; test script chỉ gọi từ `.env`, CẤM hardcode.
 4. **Metabase UAT & Zero-Mutation Policy:** Tra cứu dữ liệu qua Metabase UAT (TimescaleDB V3 > V2). Cấm chạy auto trên Prod.
 5. **Chuẩn Thiết Kế Log Căn Chỉnh:** Tuân thủ 4 thẻ tiếng Việt (`[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]`).
-6. **Thẩm Định Cú Pháp:** Bắt buộc chạy `pytest --collect-only` (0 lỗi) trước khi bàn giao cho `qa-run-test`.
+6. **Thẩm Định Cú Pháp & Zero-Hardcode Gate:** Bắt buộc chạy `pytest --collect-only` (0 lỗi) và xác nhận 0 hardcode trước khi bàn giao cho `qa-run-test`.
 
 ## 2. Quy Trình 4 Giai Đoạn Thực Thi
 
 ### Giai đoạn 1: Khảo sát & Kế thừa
 - Setup thư mục theo Blueprint.
-- Đọc biến môi trường 3 tầng (`.env`).
-- Code Recon Gate: Tìm và import module Auth/Clients có sẵn của Dev.
+- Đọc biến môi trường 3 tầng (`.env`). Nếu kịch bản cần tham số mới, BẮT BUỘC bổ sung biến vào `.env` trước.
+- Code Recon Gate: Quét thư mục `openapi-tyk/sdk/python/` và codebase DEV để import module SDK/Auth/Clients có sẵn.
 
 ### Giai đoạn 2: Thiết kế Kiến trúc (POM/Service)
-- Cấu hình `conftest.py` với Logging Interceptor.
-- Xây dựng Page Object (UI) hoặc Service Client (API/WS).
+- Cấu hình `conftest.py` với Logging Interceptor và hàm nạp `.env` phân tầng.
+- Bổ sung SDK vào `pythonpath` trong `pytest.ini`.
+- Xây dựng Page Object (UI) hoặc Service Client (API/WS) kế thừa/wrap từ `openapi-tyk/sdk/python/`.
 - Không để Assertion lọt vào tầng này.
 
 ### Giai đoạn 3: Sinh Mã Kiểm thử (`test_*.py`)
 - Ánh xạ 100% scenario từ `.feature`.
+- Toàn bộ tham số kiểm thử (account, symbol, price, quantity) gọi từ `.env` hoặc fixture động (`valid_order_symbol`), TUYỆT ĐỐI KHÔNG hardcode.
 - Gắn decorator `@pytest.mark.scenario` và `@pytest.mark.jira`.
 - Áp dụng các Testing Patterns: Smart waits, Trigger-Listen-Verify.
 
 ### Giai đoạn 4: Thẩm định Cú pháp & Bàn giao
-- Static review: Xóa `print()`, xóa comment rác.
+- Static review: Xóa `print()`, xóa comment rác, rà soát quét sạch hardcoded values.
 - Chạy lệnh thu thập test:
   ```bash
   pytest "workspace/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only
@@ -36,13 +38,16 @@
 ## 3. Các Biện Hộ Thường Gặp (Anti-patterns)
 ❌ "Đoán locator cho nhanh" $\rightarrow$ Cấm, phải soi DOM thật.
 ❌ "Dùng sleep(2) chờ trang load" $\rightarrow$ Phải dùng wait động (Smart wait).
-❌ "Tự viết lại client API cho sạch" $\rightarrow$ Bắt buộc dùng lại code của Dev.
+❌ "Tự viết lại client API cho sạch thay vì đọc SDK" $\rightarrow$ Bắt buộc quét `openapi-tyk/sdk/python/` và dùng lại SDK của dự án.
+❌ "Hardcode account hay symbol trong script test cho tiện" $\rightarrow$ CẤM tuyệt đối. Mọi biến phải khai báo trong `.env`, script chỉ dùng `os.getenv()`.
 ❌ "Chạy full test suite và xuất report luôn" $\rightarrow$ Lấn sân `qa-run-test`, chỉ được verify `--collect-only`.
 ❌ "Hardcode token trên UAT" $\rightarrow$ Vẫn phải đọc từ `.env`.
 
 ## 4. Cờ Đỏ Cảnh Báo (Red Flags)
 - Cấu hình vô tình trỏ tới `METABASE_PROD_URL`.
 - Xuất hiện thư viện mock (`respx`, `responses`, `@patch`).
+- Xuất hiện hardcode URL (`http...`), token, mật khẩu, tài khoản test, hoặc mã chứng khoán/giá trong test script.
+- Bỏ qua việc quét `openapi-tyk/sdk/python/` khi gặp task API/WebSocket.
 - Số test case sinh ra ít hơn số Scenario trong file Gherkin.
 - Có `time.sleep()` trong mã nguồn.
 - Assertions nằm trong POM/Service.
@@ -50,9 +55,9 @@
 
 ## 5. Verification Checklist (Trước khi bàn giao)
 - [ ] Tuân thủ cấu trúc thư mục Blueprint.
-- [ ] Tái sử dụng module Auth/Client của Dev.
-- [ ] Không mock server, không hardcode credentials.
-- [ ] Dữ liệu chứng khoán tra cứu qua Metabase UAT (Timescale V3).
+- [ ] Quét và kế thừa SDK từ `openapi-tyk/sdk/python/` và module DEV.
+- [ ] Không mock server, 100% biến kiểm thử lưu trong `.env`, 0 giá trị hardcode trong test script.
+- [ ] Dữ liệu chứng khoán tra cứu qua Metabase UAT (Timescale V3) hoặc fixture động.
 - [ ] 100% Scenario được ánh xạ thành test case.
 - [ ] Assertions đặt ĐÚNG tầng test.
 - [ ] Có `try...finally` dọn dẹp dữ liệu (Teardown).
