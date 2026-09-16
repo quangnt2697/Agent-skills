@@ -1,6 +1,6 @@
 ---
 name: ba-refine
-description: Phân kỳ-Hội tụ (refine) Jira task thô thành spec chi tiết chuẩn.
+description: Phân kỳ-Hội tụ (refine) Jira task thô/mơ hồ thành spec chi tiết chuẩn, push lại lên Jira. Chỉ phân tích và viết spec — KHÔNG làm QA, KHÔNG viết code.
 trigger: /ba-refine {issueKey}", "refine jira task", "clarify requirements
 ---
 
@@ -8,29 +8,88 @@ trigger: /ba-refine {issueKey}", "refine jira task", "clarify requirements
 
 Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành spec chi tiết rõ ràng → Push lại lên Jira theo cấu trúc chuẩn.
 
-## 1. Ranh giới: ba-spec vs ba-refine
+## ⚠️ RANH GIỚI NHIỆM VỤ (Bắt buộc đọc trước)
 
-- **ba-spec**: Yêu cầu đã rõ ràng, chỉ cần tổng hợp và phát hiện gap. (Handoff file `.md`)
-- **ba-refine**: Yêu cầu thô/mơ hồ, cần phân kỳ-hội tụ (brainstorm) để chốt hướng đi. (Cập nhật Jira)
+| ✅ ba-refine LÀM | ❌ ba-refine KHÔNG LÀM |
+|---|---|
+| Tải và phân tích Jira task, Confluence, attachments | Viết code, test script, SQL |
+| Phân kỳ ý tưởng → Hội tụ → Mài sắc spec | Chạy test hoặc deploy |
+| Viết `refined.md` và push ADF lên Jira | Thiết kế kiến trúc kỹ thuật chi tiết |
+| Gọi sub-skills: ba-interview-me, ba-user-story-writing | Tự ý push Jira trước khi user duyệt |
+| Bàn giao `refined.md` cho `qa-test-design` và `dev` | Tiếp tục sang qa-test-design khi chưa push xong |
 
-> ⚠️ **BẮT BUỘC ĐỐI VỚI BÀI TOÁN CHỨNG KHOÁN & FINTECH:**
-> Khi mài giũa spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, dữ liệu thị trường KRX (MDDS), chuyển phiên, Random End, hoặc quản trị vị thế ký quỹ (Deal-based Margin), Agent **BẮT BUỘC đọc và đối chiếu nghiêm ngặt [securities-domain-rules.md](../../../../references/securities-domain-rules.md)** trong toàn bộ các giai đoạn Phân kỳ, Hội tụ, và Mài sắc spec.
+**Ranh giới với ba-spec:**
+- **ba-spec**: Yêu cầu đã rõ ràng → tổng hợp + phát hiện gap → handoff `final.md`
+- **ba-refine**: Yêu cầu thô/mơ hồ → brainstorm + hội tụ → cập nhật Jira + handoff `refined.md`
 
-## 2. Quy trình thực hiện từng bước
+> ⚠️ **DOMAIN CHỨNG KHOÁN & FINTECH:**
+> Khi spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, KRX/MDDS, ký quỹ — **BẮT BUỘC** đọc `references/securities-domain-rules.md` trong suốt Phase 1-3.
 
-Agent cần tuân thủ cấu trúc phân tầng kiến thức (Progressive Disclosure). Khi chạy, hãy lần lượt mở và đọc các tài liệu sau để nắm được chi tiết:
+## 1. Các Approval Gates Bắt buộc
 
-- **Bước 1 (Quy tắc & Chuẩn bị):** Đọc [references/rules-and-guidelines.md](references/rules-and-guidelines.md) để biết cách đọc `.env`, lấy credentials, cấu trúc thư mục, triết lý thiết kế và Verification Checklist.
-- **Bước 2 (Thực thi luồng):** Đọc [references/workflow-and-phases.md](references/workflow-and-phases.md) để hiểu chi tiết cách chạy từ Phase 0 (Quét danh sách), Phase 1 (Phân kỳ), Phase 2 (Hội tụ), Phase 3 (Mài sắc & Review với User), và Phase 4 (Push Jira bằng `assets/jira-push-spec.sh`).
-- **Bước 3 (Tham khảo ví dụ):** Đọc [references/examples.md](references/examples.md) để xem cách tương tác thực tế với user qua các giai đoạn (Few-shot learning).
-- **Bước 4 (Đánh giá chất lượng):** Đọc [references/quality-rules.md](references/quality-rules.md) (nếu có) để tính Confidence Score. Sau khi đẩy thành công lên Jira, bắt buộc gọi `/qa-test-design` để chạy tiếp luồng.
+> 📌 **ĐÂY LÀ 2 CỔNG CHẶN — vi phạm = lỗi nghiêm trọng.**
 
-## 3. Cấu trúc thư mục
+| Gate | Vị trí | Hành động bắt buộc |
+|---|---|---|
+| **Gate 1** | Cuối Phase 0 | Trình bảng tài liệu → **DỪNG chờ user gõ OK** |
+| **Gate 2** | Bước 3.2 | Trình toàn bộ draft → **DỪNG chờ user approve** trước khi lưu `refined.md` |
 
-Level 3 Assets & References:
-- `assets/` (Chứa script `jira-push-spec.sh` để đẩy ADF lên Jira)
-- `references/` (Chứa hướng dẫn chi tiết)
-- `templates/` (Chứa `jira-description-template.md`)
+## 2. Quy trình 4 Giai đoạn
+
+> 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng.
+
+- **Giai đoạn 0 (Scan & Tổng hợp — Gate 1):**
+  Chuẩn hóa `{issueKey}`, đọc `.env`, tải metadata Jira, quét Confluence + attachments, trình bảng cho user duyệt, tải file thiếu.
+
+- **Giai đoạn 1 (Phân kỳ — Thấu hiểu & Mở rộng):**
+  HMW statement, chất vấn user qua `ba-interview-me` (đạt ≥90% confidence), sinh 5-8 idea variations.
+  > 📖 Chi tiết lăng kính ideation: [frameworks.md](references/frameworks.md)
+
+- **Giai đoạn 2 (Hội tụ — Đánh giá & Chốt):**
+  Gom 2-3 hướng đi khác biệt, stress-test, surface hidden assumptions.
+  > 📖 Rubric chấm điểm: [refinement-criteria.md](references/refinement-criteria.md)
+
+- **Giai đoạn 3 (Mài sắc — Draft → Review → Chốt — Gate 2):**
+  Tạo `refined-draft.md` từ template → Trình toàn bộ nội dung cho user → Revision loop (≤5 vòng) → Copy thành `refined.md` → Làm giàu (User Story, AC Gherkin, Flow diagram).
+  > 📖 Template: [assets/jira-description-template.md](assets/jira-description-template.md)
+
+- **Giai đoạn 4 (Push Jira):**
+  Dry-run preview ADF → Push description → Ghi `push-log.json` → Tự động chuyển sang `/qa-test-design`.
+
+## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
+
+- 🚀 **BẮT BUỘC ĐỌC TRƯỚC:**
+  - [quick-start-checklist.md](references/quick-start-checklist.md): Tờ nhắc 5 bước ≤ 50 dòng.
+
+- 🛠️ **Công cụ & Assets:**
+  - [jira-push-spec.sh](assets/jira-push-spec.sh): Script push ADF lên Jira.
+  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton `refined.md`.
+
+- 📖 **Tài liệu chi tiết (references/):**
+  - [workflow-and-phases.md](references/workflow-and-phases.md): Chi tiết 4 phase, curl commands, metadata.json schema.
+  - [rules-and-guidelines.md](references/rules-and-guidelines.md): Auth, file filter, anti-patterns, verification checklist.
+  - [quality-rules.md](references/quality-rules.md): Công thức Confidence Score (ngưỡng ≥90%).
+  - [refinement-criteria.md](references/refinement-criteria.md): Rubric 4 tiêu chí stress-test.
+  - [frameworks.md](references/frameworks.md): 7 lăng kính sinh idea (HMW, Inversion, 10x...).
+  - [examples.md](references/examples.md): Few-shot tương tác thực tế với user.
+
+## 4. Ví dụ mẫu Đầu Ra
+
+**Input:** Jira task "Cải thiện báo cáo giao dịch"
+
+**Output `refined.md` (trích):**
+```markdown
+## 🧩 User Story
+**As a** Nhà đầu tư cá nhân sử dụng tài khoản margin
+**I want** xem báo cáo giao dịch tổng hợp theo ngày/tuần/tháng với lọc theo mã CK
+**So that** tôi có thể phân tích hiệu quả danh mục và quyết định tái cơ cấu kịp thời
+
+## ✅ Acceptance Criteria
+  Scenario: Happy - Xuất báo cáo ngày có dữ liệu giao dịch
+    Given Nhà đầu tư đã đăng nhập và có lệnh giao dịch trong ngày
+    When chọn khoảng thời gian "Hôm nay" và nhấn "Xuất báo cáo"
+    Then hệ thống trả về file PDF/Excel chứa đầy đủ lệnh Mua/Bán trong ngày
+```
 
 ---
 <CRITICAL_RULE>
