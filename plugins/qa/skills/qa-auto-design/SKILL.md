@@ -33,7 +33,7 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng cho toàn bộ quy trình.
 
 - **Giai đoạn 1 (Khảo sát & Kế thừa - Recon Gate):**
-  - Đọc `workspace/sdk-map.json` để xác định class Auth/Client có sẵn — KHÔNG grep toàn repo.
+  - Đọc `plugins/qa/skills/qa-auto-design/references/sdk-map.json` để xác định class Auth/Client có sẵn — KHÔNG grep toàn repo.
   - Copy template `.env` phù hợp từ `references/env-templates/{api|ws|web-ui}.env.example`.
   - Xác định task type (API / WebSocket / Web UI) từ `.feature`.
 
@@ -54,9 +54,9 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 
-- 🚀 **BẮT BUỘC ĐỌC TRƯỚC:**
+- 🚀 **BẮT BUỘC ĐỌC TRƯỚC (task API/WS):**
   - [quick-start-checklist.md](references/quick-start-checklist.md): Tờ nhắc quy trình ≤ 50 dòng.
-  - [workspace/sdk-map.json](../../../workspace/sdk-map.json): SDK Index — đọc thay vì grep toàn repo.
+  - [sdk-map.json](references/sdk-map.json): SDK Index — đọc ngay trước khi recon, tránh grep toàn repo.
 
 - 🛠️ **Công cụ & Mã nguồn mẫu (assets/):**
   - [conftest_template.py](assets/conftest_template.py): Template đầy đủ mọi loại task.

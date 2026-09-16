@@ -101,17 +101,26 @@ Tài liệu này hướng dẫn chi tiết quy trình khảo sát thực tế (R
 
 Đối với các task kiểm thử Backend (`🔌 API`, `⚡ WebSocket`), Agent **BẮT BUỘC** thực hiện **Code Recon Gate** trước khi bắt tay vào viết code test.
 
+> [!IMPORTANT]
+> **BẮT BUỘC ĐỌC NGAY — Bước 0:** Trước khi grep bất cứ thứ gì, đọc file SDK Index:
+> ```
+> plugins/qa/skills/qa-auto-design/references/sdk-map.json
+> ```
+> File này chứa đường dẫn và `usage` sẵn cho tất cả class Auth, Trading API, MarketData API, WS Client. Đọc file này tiết kiệm 10-15 phút grep thủ công.
+
 > [!WARNING]
 > **Anti-Pattern Phổ Biến:** Tự động viết lại toàn bộ class HTTP Client, tự viết hàm HMAC signature, tự dựng kết nối WebSocket từ đầu trong khi dự án đã có sẵn code của Developer. Hành vi này tạo ra 2 nguồn sự thật (two sources of truth) và khiến code test khó bảo trì.
 
 ### 3.1. Các Bước Thực Hiện Code Recon Gate
 
 ```
-[BƯỚC 1: Quét Codebase] ──> [BƯỚC 2: Đối Chiếu Spec] ──> [BƯỚC 3: Tái Sử Dụng & Wrap]
-(grep_search / list_dir)     (Swagger / Jira / Final.md)   (Import Service, cấm viết lại)
+[BƯỚC 0: Đọc sdk-map.json] ──> [BƯỚC 1: Quét Codebase] ──> [BƯỚC 2: Đối Chiếu Spec] ──> [BƯỚC 3: Tái Sử Dụng & Wrap]
+(references/sdk-map.json)      (grep_search / list_dir)     (Swagger / Jira / Final.md)   (Import Service, cấm viết lại)
 ```
 
-1. **Bước 1: Quét tìm code có sẵn trong workspace bằng `grep_search` & `list_dir`:**
+1. **Bước 0 (BẮT BUỘC TRƯỚC TIÊN): Đọc `references/sdk-map.json`** để lấy đường dẫn và `usage` của các class/module đã biết. Chỉ grep codebase thêm khi cần tìm module KHÔNG có trong sdk-map.
+
+2. **Bước 1: Quét tìm code có sẵn trong workspace bằng `grep_search` & `list_dir` (khi cần bổ sung):**
    - **Xác thực & Ký số (Auth & HMAC):** Tìm các hàm tạo signature, tạo SHA256/HMAC, hàm lấy Access Token từ API Key/Secret.
      ```bash
      grep_search(Query="api_key", SearchPath="/project-root")

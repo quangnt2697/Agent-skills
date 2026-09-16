@@ -1,0 +1,52 @@
+{
+  "_doc": "SDK Index — đọc file này thay vì grep toàn repo. Cập nhật sau khi thay đổi SDK hoặc cấu trúc dự án.",
+  "_updated": "2026-09-16",
+  "auth": {
+    "class": "DNSEClient",
+    "module": "dnse",
+    "file": "openapi-tyk/sdk/python/dnse/client.py",
+    "note": "Handles API Key/Secret + HMAC SHA256 auto-signing, version header injection",
+    "usage": "from dnse import DNSEClient; client = DNSEClient(api_key=..., api_secret=...)"
+  },
+  "trading_api": {
+    "module": "trading-api",
+    "base_path": "openapi-tyk/sdk/python/trading-api/",
+    "key_methods": ["post_order", "cancel_order", "replace_order", "get_ppse", "get_balances", "get_orders"],
+    "usage": "from trading_api import OrderAPI"
+  },
+  "marketdata_api": {
+    "module": "marketdata-api",
+    "base_path": "openapi-tyk/sdk/python/marketdata-api/",
+    "key_methods": ["get_security_definition", "get_trades", "get_ohlc", "get_price_board"],
+    "usage": "from marketdata_api import MarketDataAPI"
+  },
+  "ws_trading": {
+    "class": "TradingClient",
+    "base_path": "openapi-tyk/sdk/python/websocket-trading/",
+    "key_methods": ["connect", "subscribe_order_event", "subscribe_account_event", "disconnect"],
+    "encoding": "msgpack",
+    "usage": "from websocket_trading import TradingClient"
+  },
+  "ws_marketdata": {
+    "class": "MarketDataClient",
+    "base_path": "openapi-tyk/sdk/python/websocket-marketdata/",
+    "key_channels": ["quote", "trade", "ohlc", "expected_price", "price_board"],
+    "encoding": "msgpack",
+    "usage": "from websocket_marketdata import MarketDataClient"
+  },
+  "examples_path": "openapi-tyk/sdk/python/examples/",
+  "env_path": {
+    "central": "agent-skills/.env",
+    "project_root": "{project}/.env",
+    "task_local": "workspace/{issueKey}/test/.env"
+  },
+  "lookup_hints": {
+    "API_KEY": "API_KEY / DNSE_API_KEY",
+    "API_SECRET": "API_SECRET / DNSE_API_SECRET",
+    "BASE_URL": "BASE_URL (REST OpenAPI)",
+    "WS_URL": "WS_URL (WebSocket Trading)",
+    "WS_MARKET_URL": "WS_MARKET_URL (WebSocket MarketData)",
+    "ACCOUNT_NO": "TEST_ACCOUNT_NO / UAT_ACCOUNT_NO",
+    "TEST_SYMBOL": "TEST_ORDER_SYMBOL"
+  }
+}

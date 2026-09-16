@@ -43,6 +43,11 @@ Skills áp dụng theo thứ tự: `dev-spec-driven-development` → `dev-planni
 
 **Quy tắc bắt buộc cho QA:** 
 - Xem toàn văn tại `plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md`
+- **Khi task liên quan đến API hoặc WebSocket:** BẮT BUỘC đọc SDK Index trước khi viết bất kỳ dòng code nào:
+  ```
+  plugins/qa/skills/qa-auto-design/references/sdk-map.json
+  ```
+  File này chứa đường dẫn đến class Auth, Trading API, MarketData API, WS Client đã có sẵn. Đọc trước để tránh viết lại code đã tồn tại.
 
 ### BA Pipeline
 `/ba-spec {issueKey} → Scan references → Extract → Gap detection → ba-interview-me → *-final.md`

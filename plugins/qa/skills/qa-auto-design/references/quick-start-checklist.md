@@ -32,8 +32,8 @@
 ## BƯỚC 2 — Recon Gate (2 phút)
 
 ```bash
-# Đọc SDK Index thay vì grep toàn repo
-cat workspace/sdk-map.json
+# Đọc SDK Index — nằm cùng skill, tracked bởi git, có ở mọi dự án dùng agent-skills
+cat plugins/qa/skills/qa-auto-design/references/sdk-map.json
 ```
 
 - Xác định class Auth/Client cần import
