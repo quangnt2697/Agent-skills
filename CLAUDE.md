@@ -58,13 +58,7 @@ BA/PO creates *-final.md
 
 ## Kỹ năng theo Giai đoạn
 
-**Xác định (Define — BA/PO):** `ba-spec`, `ba-interview-me`, `ba-refine`, `ba-gap-analysis`, `ba-process-modeling`, `ba-user-story-writing`, `ba-backlog-prioritization`, `ba-design-flowchart`
-**Lên kế hoạch (Plan — ALL):** `dev-planning-and-task-breakdown`
-**Xây dựng (Build — DEV):** `dev-incremental-implementation`, `dev-spec-driven-development`, `dev-test-driven-development`, `dev-source-driven-development`, `dev-doubt-driven-development`, `dev-frontend-engineering`, `dev-api-design`
-**Xác minh (Verify — DEV):** `dev-browser-testing-with-devtools`, `dev-debugging`
-**Đánh giá (Review — DEV+QA+CR):** `cr-review-code-and-quality`, `cr-code-simplification`, `dev-security`, `dev-performance`, `dev-audit-and-fix`
-**Kiểm thử (Test — QA):** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-code2spec`, `qa-squash-push`, `qa-full-pipeline`
-**Quản lý Phiên & Đồng bộ (Session & Sync - ALL):** `repo-group-sync`, `meta-continuous-learning`, `meta-session-checkpoint`, `meta-cross-validation`, `meta-context`, `meta-using-agent-skills`, `db-timescale-reconciler`
+> 📖 **Xem toàn bộ danh sách kỹ năng theo Persona tại:** **[AGENTS.md#1-vai-tro-cot-loi-core-persona](AGENTS.md)**
 
 ## Quy ước
 

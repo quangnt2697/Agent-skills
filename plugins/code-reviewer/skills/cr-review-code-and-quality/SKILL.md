@@ -42,25 +42,7 @@ Trọng tâm: **Tính chính xác, Độ bao phủ kiểm thử, và Automation.
 - **Chất lượng Test Code:** Nếu PR có bao gồm code Automation Test, hãy review xem test có độc lập không, dọn dẹp dữ liệu (teardown) có sạch không, mock data có hợp lệ không.
 - **Rủi ro hồi quy (Regression Risks):** Thay đổi này có khả năng làm vỡ tính năng ở khu vực nào khác không? Cần thêm test E2E/Integration nào không?
 
-## Bước 0 (Tuỳ chọn): Nạp Ngữ Cảnh MR từ GitLab qua GitLab MCP (Remote-First)
-
-Khi review một Merge Request trên GitLab, Code Reviewer áp dụng nguyên tắc **Remote-First** (luôn đọc code mới nhất trên server GitLab, không phụ thuộc vào việc máy local đã pull commit mới hay chưa) và tự động nhận diện Project trong môi trường đa Group / đa Project.
-
-### 1. Cơ Chế Nhận Diện Group & Project (Multi-Group / Multi-Project Resolution)
-Agent xác định `project_id` theo 3 tầng ưu tiên tự động:
-1. **Tự động từ Git Remote (Zero-Config — Khuyến nghị):** Agent chạy `git config --get remote.origin.url`. Phân tích URL remote (ví dụ: `git@gitlab.example.com:core-team/core-service.git` hoặc `https://gitlab.example.com/backend/order-service.git`) để tự động trích xuất `project_id = "core-team/core-service"` hoặc `"backend/order-service"`.
-2. **Nhận diện từ URL hoặc Cú pháp ngắn của User:** Nếu user cung cấp trực tiếp URL (`https://gitlab.../group/project/-/merge_requests/145`) hoặc cú pháp `group/project!145`, Agent bóc tách chính xác `project_id` và `merge_request_iid`.
-3. **Cấu hình Mặc định (Fallback):** Đọc `GITLAB_DEFAULT_PROJECT` từ file `.env` nếu không phát hiện được qua 2 cách trên.
-
-### 2. Luôn Đọc Code MỚI NHẤT & Quản Lý Context Các Lần Push
-- **Kiểm tra lịch sử Version của MR:** Gọi `list_merge_request_versions(project_id, merge_request_iid)` để xem toàn bộ timeline các lần push code của lập trình viên (Version 1 -> Version 2 -> Version N mới nhất).
-- **Lấy Diff Mới Nhất:** Gọi `get_merge_request_version(project_id, merge_request_iid, version_id: latest_id, unidiff: true)` hoặc `list_merge_request_changed_files` + `get_merge_request_file_diff`. Dữ liệu trả về là diff mới nhất trên server GitLab.
-- **Xem toàn bộ nội dung file mới nhất khi cần:** Gọi `get_file_contents(project_id, file_path, ref: mr.source_branch)` để đọc code đầy đủ trực tiếp từ remote branch.
-- **So sánh giữa các lần push (Incremental Review):** Khi tác giả vừa push commit sửa lỗi, so sánh Version mới nhất với Version liền trước để kiểm tra chính xác những gì đã sửa, không cần đọc lại toàn bộ code không liên quan.
-- **Kiểm tra CI Pipeline:** Gọi `list_merge_request_pipelines` để xác nhận commit mới nhất có PASS CI (lint/build/test) trên GitLab hay chưa.
-- **Kiểm tra Threads Thảo luận:** Gọi `get_merge_request_notes` để rà soát các thread chưa giải quyết (Unresolved discussions), đối soát xem code mới đã giải quyết hết các băn khoăn của reviewers trước đó chưa.
-
-> **Lưu ý Fallback:** Nếu không có kết nối GitLab hoặc review một branch local chưa mở MR, Agent tự động bỏ qua Bước 0 và fallback về `git diff` cục bộ như bình thường.
+> 📖 **[CHỈ ĐỌC KHI REVIEW TRÊN GITLAB]:** Hướng dẫn nạp ngữ cảnh MR qua MCP, tự động lấy diff và pipeline CI tại: **[gitlab-mcp-integration.md](references/gitlab-mcp-integration.md)**
 
 ## 5 Trục Đánh giá Cốt lõi (The Five-Axis Review)
 
@@ -97,41 +79,8 @@ Dù ở persona nào, bạn cũng cần quét qua các trục sau:
 - Có vòng lặp vô tận hay lấy dữ liệu không giới hạn nào không?
 - Endpoint lấy danh sách có quên phân trang (pagination) không?
 
-## Phân loại Các Ghi chú (Categorize Findings)
+> 📖 **BẮT BUỘC ĐỌC:** Để biết cách phân loại Severity, sử dụng Checklist Đánh giá và định dạng Output chuẩn, xem tại: **[review-templates.md](references/review-templates.md)**
 
-Dán nhãn cho mọi comment với mức độ nghiêm trọng (severity) để tác giả biết đâu là bắt buộc vs tùy chọn:
-
-| Tiền tố (Prefix)              | Ý nghĩa                          | Hành động của Tác giả (Author Action)              |
-|-------------------------------|----------------------------------|----------------------------------------------------|
-| *(Không có tiền tố)*          | Bắt buộc phải thay đổi           | Bắt buộc phải sửa trước khi merge                  |
-| **Critical:**                 | Chặn không cho merge             | Lỗ hổng bảo mật, mất data, tính năng hỏng          |
-| **Nit:**                      | Lặt vặt, tùy chọn                | Tác giả có thể kệ (ignore) — format, style cá nhân |
-| **Optional:** / **Consider:** | Gợi ý                            | Đáng để cân nhắc nhưng không bắt buộc              |
-| **FYI**                       | Chỉ mang tính cung cấp thông tin | Không cần làm gì — chỉ để tham khảo sau này        |
-
-## Checklist cho việc Đánh giá (Review Checklist)
-
-```markdown
-## Đánh giá Chất lượng Code: [Tên PR/Thay đổi]
-
-### Góc nhìn (Persona) áp dụng: [Dev / QA]
-
-### Bối cảnh (Context)
-- [ ] Tôi hiểu thay đổi này làm gì và tại sao cần làm
-
-### Các vấn đề Nghiêm trọng (Critical & Required)
-- [Liệt kê các vấn đề bắt buộc phải sửa - Phân loại theo Trục Đánh giá]
-
-### Đề xuất Cải thiện (Optional & Nit)
-- [Liệt kê các gợi ý]
-
-### Những Điểm Làm Tốt (What's Done Well)
-- [Lời khen ngợi cụ thể]
-
-### Phán quyết cuối cùng (Verdict)
-- [ ] **Approve** — Đã sẵn sàng để Merge
-- [ ] **Yêu cầu thay đổi (Request changes)** — Bắt buộc phải giải quyết các issues
-```
 
 ## Các Biện hộ Thường gặp
 
@@ -169,48 +118,6 @@ Một lượt review chỉ coi là xong khi:
 ## Kết hợp
 - **Kích hoạt trực tiếp khi:** user yêu cầu đánh giá chất lượng (review code) của một đoạn mã, file, hoặc một Pull Request cụ thể.
 - **Lệnh tương tác:** Gọi thông qua lệnh `/review`. Lệnh này sẽ định tuyến prompt dựa trên persona hiện tại (Dev hoặc QA) để đưa ra lăng kính đánh giá phù hợp nhất.
-
-## Output Format
-
-Skill này **CHỈ REPORT findings**, KHÔNG tự động apply fixes. Output format:
-
-```markdown
-## 🔍 Code Review: [File/PR Name]
-
-**Persona:** [Dev / QA]  
-**Reviewed:** [File paths or PR #]
-
-### ❌ Critical Issues (Must Fix)
-1. **[File:Line]** [Category] — [Issue description]
-   - **Impact:** [Consequences]
-   - **Fix:** [Suggested solution]
-
-### ⚠️ Required Changes
-2. **[File:Line]** [Category] — [Issue description]
-   - **Fix:** [Suggested solution]
-
-### 💡 Optional Improvements
-3. **Nit:** [File:Line] — [Suggestion]
-
-### ✅ What's Done Well
-- [Positive feedback]
-
-### 📊 Verdict
-- [ ] **Approve** — Ready to merge
-- [x] **Request Changes** — Must address 2 critical + 3 required issues
-
----
-
-**Next Steps:**
-Bạn có muốn tôi tự động sửa các issues này không? 
-→ Dùng `/dev-audit` để tự động fix (với approval gate)
-```
-
-**QUAN TRỌNG:**
-- ❌ **KHÔNG** tự động apply fixes trong skill này
-- ❌ **KHÔNG** show diff/code blocks với lời "copy vào file X"
-- ✅ **CHỈ** report findings với suggested solutions
-- ✅ **GỢI Ý** dùng `/dev-audit` nếu user muốn auto-fix
 
 
 ---

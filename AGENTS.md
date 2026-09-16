@@ -41,15 +41,8 @@ Skills áp dụng theo thứ tự: `dev-spec-driven-development` → `dev-planni
 ### QA Pipeline
 `(Nhận *-final.md) → /qa-test-design → /qa-auto-design → /qa-run-test` (hoặc `/qa-full-pipeline` cho toàn trình)
 
-**Quy tắc bắt buộc cho QA:**
-- **Metabase UAT Strict Policy:** QA pipeline CHỈ scan/query trên Metabase UAT (`${METABASE_UAT_URL}`, DB Timescale: `${METABASE_UAT_DB_TIMESCALE_ID}`). NGHIÊM CẤM chạy automation test trên Metabase Production (`${METABASE_PROD_URL}`). Code phải có Security Gate: raise `ValueError` nếu phát hiện môi trường là `prod` hoặc trỏ tới `METABASE_PROD_URL`.
-- **Zero-Mutation Policy:** Mọi truy vấn Metabase là Read-Only (chỉ `SELECT`). Tuyệt đối cấm các lệnh DDL/DML.
-- **Real Base URLs Only:** Bắt buộc kết nối `BASE_URL` và `WS_URL` cấu hình trong `.env`. NGHIÊM CẤM mock server.
-- **Pre-generation Code Recon Gate:** Trước khi viết code, BẮT BUỘC quét codebase để tái sử dụng module Auth, Token, HMAC, WebSocket Client có sẵn. Khi gặp task liên quan đến API/WS, BẮT BUỘC quét thêm folder `openapi-tyk/sdk/python/` (qua `projects.json`, biến `OPENAPI_TYK_PATH`, hoặc đường dẫn tương đối) để kế thừa codebase SDK Python (`DNSEClient`, `trading-api`, `marketdata-api`, `websocket-trading`, `websocket-marketdata`, `examples`).
-- **Zero-Hardcode & .env Mandatory Rule:** Toàn bộ biến kiểm thử, endpoints, credentials, tài khoản test, mã chứng khoán, mức giá, khối lượng, tham số biên và timeouts BẮT BUỘC tạo và lưu giữ trong file `.env`. Trong toàn bộ test script, CHỈ ĐƯỢC PHÉP gọi/đọc giá trị từ `.env` (qua `os.getenv()`, `EnvConfig`, fixtures), TUYỆT ĐỐI KHÔNG hardcode bất kỳ giá trị nào.
-- **Log chuẩn:** Tuân thủ [test_logging_guidelines.md](plugins/qa/skills/qa-auto-design/references/test_logging_guidelines.md) — format `[TIMESTAMP] [LEVEL] [SERVICE] [TRACE_ID] - MESSAGE | CONTEXT`, 4 quy tắc vàng, 4 thẻ tiếng Việt.
-- **Order State Transitions:** Chi tiết trong [order_state_testing.md](plugins/qa/skills/qa-auto-design/references/order_state_testing.md).
-- **TimescaleDB:** Ưu tiên bảng v3, fallback v2. Chi tiết bảng xem `references/timescale-schema.md`. Mọi câu truy vấn bắt buộc dùng Tên Bảng (Table Name), không dùng Metabase Table ID.
+**Quy tắc bắt buộc cho QA:** 
+- Xem toàn văn tại `plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md`
 
 ### BA Pipeline
 `/ba-spec {issueKey} → Scan references → Extract → Gap detection → ba-interview-me → *-final.md`
@@ -86,14 +79,7 @@ Mọi artifact phải có section `## 📊 Confidence Assessment` ở cuối v�
 - **📖 Chi tiết:** `.claude/rules/confidence-level.md`
 
 ## 6. Quy Tắc Thiết Kế Sơ Đồ (Mermaid Rules)
-Khi tạo hoặc chỉnh sửa bất kỳ sơ đồ Mermaid nào (flowchart, sequence, BPMN, architecture diagram), **BẮT BUỘC** kích hoạt skill `ba-design-flowchart` và tuân thủ các quy chuẩn thiết kế:
-- **Engine chuẩn:** Mặc định dùng engine ELK (`BRANDES_KOEPF`, `ORTHOGONAL`) qua script `render.mjs` (CLI `mmdc`).
-- **Bố cục & Ký hiệu:** Luồng ngang `flowchart LR`, tuân thủ 2 Mẫu Bố cục chuẩn (Straight Spine, Sequential Pipeline) và Node Shape Taxonomy.
-- **📖 Hướng dẫn chi tiết & Cấu hình:** Xem toàn văn tại [mermaid_rules.md](plugins/ba-po/skills/ba-design-flowchart/references/mermaid_rules.md).
+Khi tạo sơ đồ (flowchart, sequence, BPMN, kiến trúc), **BẮT BUỘC** gọi skill `ba-design-flowchart` và xem hướng dẫn chi tiết tại [mermaid_rules.md](plugins/ba-po/skills/ba-design-flowchart/references/mermaid_rules.md).
 
 ## 7. Cẩm Nang Nghiệp Vụ Chứng Khoán & Fintech (Domain Knowledge Base)
-Trong mọi tác vụ liên quan đến phân tích spec (BA), thiết kế kỹ thuật/API (DEV), thiết kế kiểm thử/automation (QA), review code hay audit bảo mật:
-- **BẮT BUỘC** đọc mục lục [references/securities-domain-rules.md](references/securities-domain-rules.md), sau đó mở đọc module phù hợp với task trong thư mục `references/securities/`.
-- **Phạm vi bao phủ:** Quy tắc thị trường (HOSE/HNX/UPCOM/phái sinh), Cờ phiên & Lệnh, Quản lý biến động khẩn cấp, Dữ liệu thị trường MDDS/KRX, Tài chính & Ký quỹ truyền thống, Deal-based Margin, Ma trận persona.
-- **TimescaleDB (DB ID: `${METABASE_UAT_DB_TIMESCALE_ID}` [UAT] / `${METABASE_PROD_DB_TIMESCALE_ID}` [PROD]):** Ưu tiên bảng v3 > v2. Tra cứu qua MCP `test-data` hoặc `database`, cache tại `references/timescale-schema.md`. Luôn truy vấn bằng Tên Bảng (Table Name), không dùng Metabase Table ID.
-- **NGHIÊM CẤM:** Tự bịa mã chứng khoán không có thật, hoặc hardcode giá vi phạm biên độ/bước giá.
+Khi làm task liên quan đến fintech/chứng khoán, **BẮT BUỘC** mở [references/securities-domain-rules.md](references/securities-domain-rules.md) để tra cứu tài liệu chuyên sâu.

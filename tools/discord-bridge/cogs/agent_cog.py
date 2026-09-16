@@ -25,13 +25,7 @@ class AgentCog(commands.Cog):
 
     # ── SLASH COMMAND ──────────────────────────────────────────────────────────
 
-    @app_commands.command(name="agent", description="Kích hoạt Agent thực thi một skill với Project trên máy")
-    @app_commands.describe(
-        skill="Chọn skill bạn muốn gọi (gõ ký tự để gợi ý)",
-        project="Tên Project trên máy để Agent tự động scan code (gõ để gợi ý)",
-        des="Mô tả nhiệm vụ, phạm vi scan code hoặc tham số (VD: review auth, G3PTP-17093)"
-    )
-    async def slash_agent(self, interaction: discord.Interaction, skill: str, project: str = "", des: str = ""):
+    async def _execute_slash_skill(self, interaction: discord.Interaction, skill: str, project: str = "", des: str = ""):
         if not is_authorized(interaction.user.id):
             return await interaction.response.send_message("⛔ Bạn không có quyền điều khiển Agent này.", ephemeral=True)
 
@@ -65,6 +59,15 @@ class AgentCog(commands.Cog):
             }
 
         await run_agent_turn(thread, full_prompt, DEFAULT_CLI, is_continue=False, author=interaction.user)
+
+    @app_commands.command(name="agent", description="Kích hoạt Agent thực thi một skill với Project trên máy")
+    @app_commands.describe(
+        skill="Chọn skill bạn muốn gọi (gõ ký tự để gợi ý)",
+        project="Tên Project trên máy để Agent tự động scan code (gõ để gợi ý)",
+        des="Mô tả nhiệm vụ, phạm vi scan code hoặc tham số (VD: review auth, G3PTP-17093)"
+    )
+    async def slash_agent(self, interaction: discord.Interaction, skill: str, project: str = "", des: str = ""):
+        await self._execute_slash_skill(interaction, skill, project, des)
 
     @slash_agent.autocomplete("skill")
     async def skill_autocomplete(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
@@ -243,5 +246,43 @@ class AgentCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(AgentCog(bot))
+    cog = AgentCog(bot)
+    await bot.add_cog(cog)
+
+    # Đăng ký động các slash commands cho từng skill
+    try:
+        from engine import load_all_commands
+        cmds = load_all_commands()
+        for cat_name, items in cmds.items():
+            for skill in items:
+                skill_name = skill["name"].lstrip("/") # e.g. qa-run-test
+                desc = (skill.get("desc") or f"Thực thi {skill_name}")[:100]
+
+                def make_cmd(s_name, s_desc):
+                    @app_commands.describe(
+                        project="Tên Project trên máy (gõ để gợi ý)",
+                        des="Mô tả nhiệm vụ hoặc tham số bổ sung"
+                    )
+                    async def callback(interaction: discord.Interaction, project: str = "", des: str = ""):
+                        await cog._execute_slash_skill(interaction, "/" + s_name, project, des)
+
+                    async def autocomplete(interaction: discord.Interaction, current: str):
+                        return await cog.project_autocomplete(interaction, current)
+
+                    cmd = app_commands.Command(
+                        name=s_name,
+                        description=s_desc,
+                        callback=callback
+                    )
+                    cmd.autocomplete("project")(autocomplete)
+                    return cmd
+
+                # Tránh lỗi duplicate hoặc tên không hợp lệ
+                if 1 <= len(skill_name) <= 32:
+                    try:
+                        bot.tree.add_command(make_cmd(skill_name, desc))
+                    except Exception as e:
+                        print(f"⚠️ Bỏ qua command '{skill_name}': {e}")
+    except Exception as e:
+        print(f"⚠️ Lỗi nghiêm trọng khi đăng ký commands: {e}")
 

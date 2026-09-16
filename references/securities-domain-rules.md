@@ -44,13 +44,13 @@ Tài liệu được chia thành các module độc lập trong thư mục [`ref
 
 ## Tra Cứu Nhanh Theo Task
 
-| Task đang làm | Module cần đọc |
-|---------------|---------------|
-| Validate giá / biên độ / bước giá | [01-market-structure](securities/01-market-structure.md) |
-| Phiên giao dịch, loại lệnh, sửa/hủy lệnh | [02-sessions-and-orders](securities/02-sessions-and-orders.md) |
-| Vòng đời lệnh, trạng thái, mã lỗi ORS, lệnh điều kiện | [03-order-lifecycle-and-ors](securities/03-order-lifecycle-and-ors.md) |
-| Halt / Circuit Breaker / Volatility | [04-volatility-and-halts](securities/04-volatility-and-halts.md) |
-| WebSocket datafeed, MDDS, latency | [05-market-data-mdds](securities/05-market-data-mdds.md) |
-| Sức mua, ký quỹ truyền thống, tiểu khoản | [06-traditional-margin](securities/06-traditional-margin.md) |
-| Deal-based margin, giá chặn, force sell theo Deal | [07-deal-based-margin](securities/07-deal-based-margin.md) |
-| Checklist hành động cho từng persona (BA/DEV/QA/CR/SA) | [08-persona-matrix](securities/08-persona-matrix.md) |
+| Task đang làm | Module cần đọc | Persona Gợi Ý |
+|---------------|---------------|---------------|
+| Validate giá / biên độ / bước giá | [01-market-structure](securities/01-market-structure.md) | BA, DEV, QA |
+| Phiên giao dịch, loại lệnh, sửa/hủy lệnh | [02-sessions-and-orders](securities/02-sessions-and-orders.md) | BA, DEV, QA |
+| Vòng đời lệnh, trạng thái, mã lỗi ORS, lệnh điều kiện | [03-order-lifecycle-and-ors](securities/03-order-lifecycle-and-ors.md) | BA, DEV, QA, CR |
+| Halt / Circuit Breaker / Volatility | [04-volatility-and-halts](securities/04-volatility-and-halts.md) | DEV, QA |
+| WebSocket datafeed, MDDS, latency | [05-market-data-mdds](securities/05-market-data-mdds.md) | DEV, Perf Auditor |
+| Sức mua, ký quỹ truyền thống, tiểu khoản | [06-traditional-margin](securities/06-traditional-margin.md) | BA, DEV, QA |
+| Deal-based margin, giá chặn, force sell theo Deal | [07-deal-based-margin](securities/07-deal-based-margin.md) | BA, DEV, QA, CR |
+| Checklist hành động cho từng persona (BA/DEV/QA/CR/SA) | [08-persona-matrix](securities/08-persona-matrix.md) | TẤT CẢ |

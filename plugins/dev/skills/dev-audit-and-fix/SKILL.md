@@ -72,15 +72,7 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 - Verification: [Test results if any]
 ```
 
-**KHÔNG BAO GIỜ:**
-- ❌ In ra Markdown code block và bảo người dùng "Hãy dán đoạn code này vào file X".
-- ❌ In ra toàn bộ nội dung file mới trên màn hình chat và bảo "Cập nhật file X bằng đoạn code trên".
-- ❌ Hỏi "Bạn có muốn tôi apply đoạn code này không?" sau khi đã được approve ở Bước 3.
-
-**LUÔN LUÔN:**
-- ✅ Edit file trực tiếp
-- ✅ Verify bằng tests
-- ✅ Report kết quả ngắn gọn
+> 📖 **LƯU Ý QUAN TRỌNG:** Tuân thủ quy định Action Over Chat và giới hạn Autonomy tại **[AGENTS.md](../../../../../AGENTS.md#ranh-gioi)**
 
 ## Các Biện hộ Thường gặp
 

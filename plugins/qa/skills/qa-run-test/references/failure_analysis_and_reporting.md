@@ -110,3 +110,28 @@ Phát hiện test case thất bại. Đề xuất các kỹ năng/vai trò chuy�
 2. 🔍 **Review Mã nguồn:** Sử dụng skill `cr-review-code-and-quality` hoặc gọi subagent `code-reviewer` để rà soát toàn diện implementation mã nguồn.
 3. ⚙️ **Cập nhật Kịch bản Test:** Sử dụng skill `qa-auto-design` nếu các tham số test cần được đồng bộ lại theo đặc tả mới nhất.
 ```
+
+## 4. Ví Dụ Mẫu (Few-shot Example)
+
+```markdown
+### 📊 Kết Quả Thực Thi Kiểm Thử: G3PTP-17061
+
+- **Mục tiêu:** `workspace/G3PTP-17061/test/steps/test_volume_profile_and_stream.py`
+- **Tổng số tests:** 30 | ✅ **Passed:** 14 | ❌ **Failed:** 16 | ⏱️ **Thời gian:** 12.8s
+- **Artifacts:**
+  - 📄 Log chi tiết: `workspace/G3PTP-17061/test/result/test-output.log`
+  - 📋 Báo cáo tổng hợp: `workspace/G3PTP-17061/test/result/report.md`
+
+#### ❌ Tóm tắt các lỗi phát hiện (Trích xuất từ Pytest Output):
+1. `test_volume_profile_valid_symbol`: AssertionError: Expected status 200, got 400. Response: `{"error": "Invalid boardId"}`
+2. `test_stream_ticks_reconnect`: TimeoutError: Connection timed out after 5.0s.
+...(chi tiết toàn bộ 16 lỗi đã ghi nhận trong report.md)
+
+---
+
+### 🎯 Đề Xuất Hành Động Tiếp Theo:
+Phát hiện 16 test case thất bại do hệ thống trả về mã lỗi hoặc timeout. Đề xuất lựa chọn kỹ năng xử lý:
+1. 🛠️ **Gỡ lỗi & Sửa mã nguồn:** Sử dụng skill `dev-debugging` hoặc gọi subagent `dev` để trace mã nguồn backend và kiểm tra mapping tham số.
+2. 🔍 **Review mã nguồn:** Sử dụng skill `cr-review-code-and-quality` hoặc gọi subagent `code-reviewer` để rà soát toàn diện implementation.
+3. ⚙️ **Cập nhật kịch bản test:** Sử dụng skill `qa-auto-design` nếu các tham số kiểm thử cần được cập nhật lại theo spec mới nhất.
+```
