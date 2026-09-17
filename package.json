@@ -21,6 +21,7 @@
     "unlink:plugins": "node scripts/setup-plugins.js --unlink",
     "metabase:login": "node scripts/metabase-sso-login.js",
     "db:recon": "node scripts/db-recon.js",
+    "db:recon:prod": "node scripts/db-recon-prod.js",
     "repo:sync": "node scripts/repo-sync.js",
     "sync": "node scripts/repo-sync.js",
     "setup:discord": "pip3 install -r tools/discord-bridge/requirements.txt",

@@ -75,6 +75,11 @@ Gọi tool `db_query` với:
 - `sql`: nội dung SQL từ `assets/reconciliation-queries.json` với `{{date}}` đã được thay thế.
 - Ghi nhận: timestamp bắt đầu, DB ID, latency (ms).
 
+> [!IMPORTANT]
+> **Skill này LUÔN truy vấn môi trường PRODUCTION.**
+> Dùng script chuyên dụng: `node scripts/db-recon-prod.js <query_id>` hoặc `npm run db:recon:prod`.
+> **KHÔNG** dùng `npm run db:recon` (script chung, phụ thuộc vào `METABASE_ENV` trong `.env`, có thể trỏ sang UAT).
+
 ### Bước 4 — Đánh giá kết quả
 
 **Ngưỡng cờ đỏ:**
@@ -264,24 +269,43 @@ Trong đó `{date}` có định dạng `YYYYMMDD`. Ví dụ: `workspace/database
 
 ## Xử Lý Lỗi
 
-| Lỗi | Hành động |
-|---|---|
-| HTTP 401/403 | Chạy `npm run metabase:login` để làm mới token SSO, sau đó thử lại |
-| Query timeout | Thêm filter hẹp hơn (symbol cụ thể, time range ngắn hơn) |
-| `Seq Scan` trên bảng lớn | Kiểm tra lại thứ tự WHERE clause — đảm bảo partition key đứng trước |
-| Kết quả rỗng | Xác nhận ngày có phiên giao dịch (không phải cuối tuần/lễ) |
+> [!CAUTION]
+> **QUY TẮC BẮT BUỘC — KHÔNG TỰ SỬA SCRIPT KHI GẶP LỖI DB**
+>
+> Khi query DB trả về **bất kỳ lỗi nào** (dù là syntax error, timeout, column not found, permission denied, hay bất kỳ HTTP error code nào), agent phải:
+> 1. **DỪNG NGAY** — không thử lại, không tự sửa SQL, không tự thêm/bớt field.
+> 2. **TRẢ KẾT QUẢ LỖI VỀ** nguyên văn cho người dùng (error code + error message + query đã chạy).
+> 3. **ĐỀ XUẤT** (không tự thực hiện) hướng khắc phục để người dùng phê duyệt trước khi chạy lại.
+>
+> **Lý do:** Tự sửa SQL khi gặp lỗi có thể thay đổi business logic của query, gây ra kết quả sai lệch mà không ai biết.
+
+### Bảng Lỗi Thường Gặp & Cách Xử Lý Đề Xuất
+
+| Lỗi | Kết quả trả về | Đề xuất (KHÔNG tự thực hiện) |
+|---|---|---|
+| HTTP 401/403 | ❌ `Error 401: Unauthenticated` | Chạy `npm run metabase:login` để làm mới token SSO, sau đó thử lại |
+| Query timeout (504/timeout) | ❌ `Error: Query timeout after Xs` | Thêm filter hẹp hơn (symbol cụ thể, time range ngắn hơn) — cần user confirm trước khi chạy lại |
+| Column not found | ❌ `Error: column "xxx" does not exist` | Xác nhận tên cột thực tế trong DB (dùng `\d table_name`), cập nhật param `{{xxx_field}}` — cần user confirm |
+| Table not found | ❌ `Error: relation "xxx" does not exist` | Báo ngay, KHÔNG tự đổi tên bảng trong query |
+| `Seq Scan` toàn bảng | ❌ Trả về EXPLAIN output + cảnh báo | Kiểm tra thứ tự WHERE — đảm bảo partition key đứng trước `created_at` |
+| Kết quả rỗng (0 rows) | ✅ Trả về bảng rỗng + ghi chú | Xác nhận ngày có phiên giao dịch (không phải cuối tuần/lễ) |
+| Syntax error | ❌ `Error: syntax error at or near "xxx"` | Hiển thị query lỗi + vị trí lỗi, KHÔNG tự sửa SQL |
+| 503 / Server overload | ❌ `Error 503: No capacity` | Thử lại sau 30s — nếu vẫn lỗi, báo cáo và dừng |
 
 ---
 
 ## Tham Chiếu Query Catalog
 
-File: `assets/reconciliation-queries.json`
+File: `assets/reconciliation-queries.json` — tổng cộng **26 queries**
 
 **Nhóm Count Parity (đối chiếu số lượng):**
 `master-dashboard` | `recon-ticks` | `recon-ticks-raw` | `recon-topprice` | `recon-expected-price` | `recon-ohlc` | `recon-indices` | `recon-board-events` | `recon-symbol-board-events` | `recon-foreign-trading` | `recon-missing-symbols` | `recon-ticks-extra`
 
+**Nhóm Session Breakdown (phân tích theo phiên ATO/ATC/Continuous):**
+`recon-ticks-by-session`
+
 **Nhóm Value Drift (sai lệch giá trị thực):**
-`audit-tick-price-drift` | `audit-topprice-value-drift`
+`audit-tick-price-drift` | `audit-topprice-value-drift` | `audit-tick-value-fields-drift` | `audit-foreign-value-drift`
 
 **Nhóm NULL / Invalid Scan:**
 `audit-null-invalid-ticks` | `audit-null-security-def`
@@ -294,3 +318,74 @@ File: `assets/reconciliation-queries.json`
 
 **Nhóm Gap Detection:**
 `audit-ohlc-gap`
+
+---
+
+## Bảng Tên Bảng DB (Cập Nhật)
+
+| Layer | Bảng | Msg Sở | Partition Key |
+|-------|------|--------|---------------|
+| **RAW** | `prices` | Price (X) — map 1-1 | `sending_time` |
+| **RAW** | `security_definition_snapshot` | Security Definition (d) | — |
+| **V3** | `krx_mdds_v3_ticks` | Price (X) + enrich side/avgprice | `sending_time` |
+| **V3** | `krx_mdds_v3_ticks_extra` | Price (X) + side computed | `sending_time` |
+| **V3** | `krx_mdds_v3_top_prices` | Price (X) bid/ask | `sending_time` |
+| **V3** | `krx_mdds_v3_market_indices` | Index (M1) | `transact_time` |
+| **V3** | `krx_mdds_v3_board_events` | Security Status (f) — board_id đã gộp | `sending_time` |
+| **V3** | `krx_mdds_v3_symbol_board_events` | Symbol Event | `sending_time` |
+| **V3** | `krx_mdds_v3_trading_foreign_investors` | Trading Foreign (MT) | `sending_time` |
+| **V3** | `security_definition_v3` | Security Definition (d) | — |
+| **V3** | `expected_price_v3` | Deem Trade Price (ME) | `sending_time` |
+| **V3** | `expected_price_v3_snapshots` | Deem Trade Price snapshot | `sending_time` |
+| **V2** | `krx_mdds_v2_ticks` | Price (X) legacy | `sending_time` |
+| **V2** | `krx_mdds_v2_top_prices` | Price (X) legacy | `sending_time` |
+| **V2** | `krx_mdds_v2_stock_ohlc` | OHLC source | `time` |
+| **V2** | `krx_mdds_v2_market_indices` | Index legacy | `transact_time` |
+| **V2** | `krx_mdds_v2_board_events` | Security Status legacy | `sending_time` |
+| **V2** | `krx_mdds_v2_symbol_board_events` | Symbol Event legacy | `sending_time` |
+| **V2** | `trading_result_of_foreign_investors` | Foreign legacy | `sending_time` |
+| **V2** | `security_definitions` | Security Def legacy | — |
+| **Derived** | `stock_ohlc` | Aggregated từ V2 OHLC | `time` |
+
+> [!NOTE]
+> `ticks` và `top_prices` (không có prefix) là bảng **DEPRECATED** — không còn nhận msg từ Sở.
+> Bảng RAW hiện tại cho msg Price (X) là **`prices`** với partition key `sending_time`.
+
+---
+
+## trading_session_id — Enum Integer (DB lưu dạng INT)
+
+| Giá trị DB (int) | Code Sở (string) | Tên phiên |
+|---|---|---|
+| 1 | "01" | GT Order Load |
+| **2** | **"10"** | **ATO — Opening Call Auction** |
+| 3 | "11" | ATO Extension |
+| 4 | "20" | Call Auction after Halt |
+| 5 | "21" | CA after Halt Extension |
+| **6** | **"30"** | **ATC — Closing Call Auction** |
+| **7** | **"40"** | **Continuous Auction** |
+| 8 | "50" | VI Call Auction |
+| 9 | "51" | VI CA Extension |
+| 10 | "60" | Order Accept Only |
+| 12 | "80" | PCA (Periodic Call Auction) |
+| 13 | "90" | Trading Halt |
+| 14 | "99" | Board Closing |
+
+> [!IMPORTANT]
+> Khi filter phiên: dùng **integer** (ví dụ: `trading_session_id IN (2, 6, 7)`), **KHÔNG** dùng string ('10', '30', '40').
+
+---
+
+## board_id — Quy Tắc Gộp (V3)
+
+Bảng `krx_mdds_v3_ticks` lưu `board_id` đã gộp (không phải raw từ Sở):
+
+| board_id trong V3 | Gộp từ board Sở |
+|---|---|
+| `G1` | G1 + G7 + G3 (lô chẵn + buy-in + post-closing) |
+| `T1` | T1 + T2 + T3 (thỏa thuận lô chẵn regular/pre/post) |
+| `T4` | T4 + T6 (thỏa thuận lô lẻ regular/post) |
+| `G4` | G4 only (lô lẻ) |
+
+> [!NOTE]
+> Query đối chiếu theo board_id dùng giá trị đã gộp (G1, T1, T4, G4) — KHÔNG filter theo board raw của Sở (G7, G3, T2, T3, T6).

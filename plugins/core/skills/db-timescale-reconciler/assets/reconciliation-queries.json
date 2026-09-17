@@ -12,7 +12,7 @@
         "description": "Ngày giao dịch cần đối chiếu (định dạng YYYY-MM-DD hoặc CURRENT_DATE)"
       }
     },
-    "sql": "WITH t_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), t_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), t_raw AS (SELECT COUNT(*) as cnt FROM ticks WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day'), tp_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), tp_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), tp_raw AS (SELECT COUNT(*) as cnt FROM top_prices WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day'), exp_v3 AS (SELECT COUNT(*) as cnt FROM expected_price_v3 WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), exp_snap AS (SELECT COUNT(*) as cnt FROM expected_price_v3_snapshots WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), ohlc_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day'), ohlc_agg AS (SELECT COUNT(*) as cnt FROM stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day'), idx_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_market_indices WHERE transact_time >= '{{date}}'::date AND transact_time < '{{date}}'::date + INTERVAL '1 day'), idx_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_market_indices WHERE transact_time >= '{{date}}'::date AND transact_time < '{{date}}'::date + INTERVAL '1 day'), bev_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), bev_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), sbev_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_symbol_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), sbev_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_symbol_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), ftr_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_trading_foreign_investors WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), ftr_v2 AS (SELECT COUNT(*) as cnt FROM trading_result_of_foreign_investors WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), sec_v3 AS (SELECT COUNT(*) as cnt FROM security_definition_v3), sec_v2 AS (SELECT COUNT(*) as cnt FROM security_definitions) SELECT '1. Ticks (V3 vs V2)' as topic, 'krx_mdds_v3_ticks' as table_a, t_v3.cnt as count_a, 'krx_mdds_v2_ticks' as table_b, t_v2.cnt as count_b, (t_v3.cnt - t_v2.cnt) as diff, ROUND(ABS(t_v3.cnt - t_v2.cnt)::numeric * 100.0 / NULLIF(t_v3.cnt, 0), 2) as pct_diff, CASE WHEN t_v3.cnt = t_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM t_v3, t_v2 UNION ALL SELECT '2. Ticks (V3 vs Raw)', 'krx_mdds_v3_ticks', t_v3.cnt, 'ticks', t_raw.cnt, (t_v3.cnt - t_raw.cnt), ROUND(ABS(t_v3.cnt - t_raw.cnt)::numeric * 100.0 / NULLIF(t_v3.cnt, 0), 2), CASE WHEN t_v3.cnt = t_raw.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM t_v3, t_raw UNION ALL SELECT '3. Top Prices (V3 vs V2)', 'krx_mdds_v3_top_prices', tp_v3.cnt, 'krx_mdds_v2_top_prices', tp_v2.cnt, (tp_v3.cnt - tp_v2.cnt), ROUND(ABS(tp_v3.cnt - tp_v2.cnt)::numeric * 100.0 / NULLIF(tp_v3.cnt, 0), 2), CASE WHEN tp_v3.cnt = tp_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM tp_v3, tp_v2 UNION ALL SELECT '4. Top Prices (V3 vs Raw)', 'krx_mdds_v3_top_prices', tp_v3.cnt, 'top_prices', tp_raw.cnt, (tp_v3.cnt - tp_raw.cnt), ROUND(ABS(tp_v3.cnt - tp_raw.cnt)::numeric * 100.0 / NULLIF(tp_v3.cnt, 0), 2), CASE WHEN tp_v3.cnt = tp_raw.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM tp_v3, tp_raw UNION ALL SELECT '5. Expected Price (Live vs Snap)', 'expected_price_v3', exp_v3.cnt, 'expected_price_v3_snapshots', exp_snap.cnt, (exp_v3.cnt - exp_snap.cnt), ROUND(ABS(exp_v3.cnt - exp_snap.cnt)::numeric * 100.0 / NULLIF(exp_v3.cnt, 0), 2), CASE WHEN exp_v3.cnt = exp_snap.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM exp_v3, exp_snap UNION ALL SELECT '6. OHLC (V2 vs Aggregated)', 'krx_mdds_v2_stock_ohlc', ohlc_v2.cnt, 'stock_ohlc', ohlc_agg.cnt, (ohlc_v2.cnt - ohlc_agg.cnt), ROUND(ABS(ohlc_v2.cnt - ohlc_agg.cnt)::numeric * 100.0 / NULLIF(ohlc_v2.cnt, 0), 2), CASE WHEN ohlc_v2.cnt = ohlc_agg.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM ohlc_v2, ohlc_agg UNION ALL SELECT '7. Market Indices (V3 vs V2)', 'krx_mdds_v3_market_indices', idx_v3.cnt, 'krx_mdds_v2_market_indices', idx_v2.cnt, (idx_v3.cnt - idx_v2.cnt), ROUND(ABS(idx_v3.cnt - idx_v2.cnt)::numeric * 100.0 / NULLIF(idx_v3.cnt, 0), 2), CASE WHEN idx_v3.cnt = idx_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM idx_v3, idx_v2 UNION ALL SELECT '8. Board Events (V3 vs V2)', 'krx_mdds_v3_board_events', bev_v3.cnt, 'krx_mdds_v2_board_events', bev_v2.cnt, (bev_v3.cnt - bev_v2.cnt), ROUND(ABS(bev_v3.cnt - bev_v2.cnt)::numeric * 100.0 / NULLIF(bev_v3.cnt, 0), 2), CASE WHEN bev_v3.cnt = bev_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM bev_v3, bev_v2 UNION ALL SELECT '9. Symbol Board Events (V3 vs V2)', 'krx_mdds_v3_symbol_board_events', sbev_v3.cnt, 'krx_mdds_v2_symbol_board_events', sbev_v2.cnt, (sbev_v3.cnt - sbev_v2.cnt), ROUND(ABS(sbev_v3.cnt - sbev_v2.cnt)::numeric * 100.0 / NULLIF(sbev_v3.cnt, 0), 2), CASE WHEN sbev_v3.cnt = sbev_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM sbev_v3, sbev_v2 UNION ALL SELECT '10. Foreign Trading (V3 vs V2)', 'krx_mdds_v3_trading_foreign_investors', ftr_v3.cnt, 'trading_result_of_foreign_investors', ftr_v2.cnt, (ftr_v3.cnt - ftr_v2.cnt), ROUND(ABS(ftr_v3.cnt - ftr_v2.cnt)::numeric * 100.0 / NULLIF(ftr_v3.cnt, 0), 2), CASE WHEN ftr_v3.cnt = ftr_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM ftr_v3, ftr_v2 UNION ALL SELECT '11. Security Definitions (Master)', 'security_definition_v3', sec_v3.cnt, 'security_definitions', sec_v2.cnt, (sec_v3.cnt - sec_v2.cnt), ROUND(ABS(sec_v3.cnt - sec_v2.cnt)::numeric * 100.0 / NULLIF(sec_v3.cnt, 0), 2), CASE WHEN sec_v3.cnt = sec_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END FROM sec_v3, sec_v2"
+    "sql": "WITH t_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), t_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), t_raw_ticks AS (SELECT COUNT(*) as cnt FROM prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND total_volume_traded IS NOT NULL), t_raw_topprices AS (SELECT COUNT(*) as cnt FROM prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND total_volume_traded IS NULL), tp_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), tp_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), exp_v3 AS (SELECT COUNT(*) as cnt FROM expected_price_v3 WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), exp_snap AS (SELECT COUNT(*) as cnt FROM expected_price_v3_snapshots WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), ohlc_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day'), ohlc_agg AS (SELECT COUNT(*) as cnt FROM stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day'), idx_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_market_indices WHERE transact_time >= '{{date}}'::date AND transact_time < '{{date}}'::date + INTERVAL '1 day'), idx_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_market_indices WHERE transact_time >= '{{date}}'::date AND transact_time < '{{date}}'::date + INTERVAL '1 day'), bev_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), bev_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), sbev_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_symbol_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), sbev_v2 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v2_symbol_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), ftr_v3 AS (SELECT COUNT(*) as cnt FROM krx_mdds_v3_trading_foreign_investors WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), ftr_v2 AS (SELECT COUNT(*) as cnt FROM trading_result_of_foreign_investors WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'), sec_v3 AS (SELECT COUNT(*) as cnt FROM security_definition_v3), sec_v2 AS (SELECT COUNT(*) as cnt FROM security_definitions) SELECT '1. Ticks (V3 vs V2)' as topic, 'krx_mdds_v3_ticks' as table_a, t_v3.cnt as count_a, 'krx_mdds_v2_ticks' as table_b, t_v2.cnt as count_b, (t_v3.cnt - t_v2.cnt) as diff, ROUND(ABS(t_v3.cnt - t_v2.cnt)::numeric * 100.0 / NULLIF(t_v3.cnt, 0), 2) as pct_diff, CASE WHEN t_v3.cnt = t_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM t_v3, t_v2 UNION ALL SELECT '2. Ticks (V3 vs RAW)' as topic, 'krx_mdds_v3_ticks' as table_a, t_v3.cnt as count_a, 'prices (trades)' as table_b, t_raw_ticks.cnt as count_b, (t_v3.cnt - t_raw_ticks.cnt) as diff, ROUND(ABS(t_v3.cnt - t_raw_ticks.cnt)::numeric * 100.0 / NULLIF(t_v3.cnt, 0), 2) as pct_diff, CASE WHEN t_v3.cnt = t_raw_ticks.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM t_v3, t_raw_ticks UNION ALL SELECT '3. Top Prices (V3 vs V2)' as topic, 'krx_mdds_v3_top_prices' as table_a, tp_v3.cnt as count_a, 'krx_mdds_v2_top_prices' as table_b, tp_v2.cnt as count_b, (tp_v3.cnt - tp_v2.cnt) as diff, ROUND(ABS(tp_v3.cnt - tp_v2.cnt)::numeric * 100.0 / NULLIF(tp_v3.cnt, 0), 2) as pct_diff, CASE WHEN tp_v3.cnt = tp_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM tp_v3, tp_v2 UNION ALL SELECT '4. Top Prices (V3 vs RAW)' as topic, 'krx_mdds_v3_top_prices' as table_a, tp_v3.cnt as count_a, 'prices (quotes)' as table_b, t_raw_topprices.cnt as count_b, (tp_v3.cnt - t_raw_topprices.cnt) as diff, ROUND(ABS(tp_v3.cnt - t_raw_topprices.cnt)::numeric * 100.0 / NULLIF(tp_v3.cnt, 0), 2) as pct_diff, CASE WHEN tp_v3.cnt = t_raw_topprices.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM tp_v3, t_raw_topprices UNION ALL SELECT '5. Expected Price (Live vs Snap)' as topic, 'expected_price_v3' as table_a, exp_v3.cnt as count_a, 'expected_price_v3_snapshots' as table_b, exp_snap.cnt as count_b, (exp_v3.cnt - exp_snap.cnt) as diff, ROUND(ABS(exp_v3.cnt - exp_snap.cnt)::numeric * 100.0 / NULLIF(exp_v3.cnt, 0), 2) as pct_diff, CASE WHEN exp_v3.cnt = exp_snap.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM exp_v3, exp_snap UNION ALL SELECT '6. OHLC (V2 vs Aggregated)' as topic, 'krx_mdds_v2_stock_ohlc' as table_a, ohlc_v2.cnt as count_a, 'stock_ohlc' as table_b, ohlc_agg.cnt as count_b, (ohlc_v2.cnt - ohlc_agg.cnt) as diff, ROUND(ABS(ohlc_v2.cnt - ohlc_agg.cnt)::numeric * 100.0 / NULLIF(ohlc_v2.cnt, 0), 2) as pct_diff, CASE WHEN ohlc_v2.cnt = ohlc_agg.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM ohlc_v2, ohlc_agg UNION ALL SELECT '7. Market Indices (V3 vs V2)' as topic, 'krx_mdds_v3_market_indices' as table_a, idx_v3.cnt as count_a, 'krx_mdds_v2_market_indices' as table_b, idx_v2.cnt as count_b, (idx_v3.cnt - idx_v2.cnt) as diff, ROUND(ABS(idx_v3.cnt - idx_v2.cnt)::numeric * 100.0 / NULLIF(idx_v3.cnt, 0), 2) as pct_diff, CASE WHEN idx_v3.cnt = idx_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM idx_v3, idx_v2 UNION ALL SELECT '8. Board Events (V3 vs V2)' as topic, 'krx_mdds_v3_board_events' as table_a, bev_v3.cnt as count_a, 'krx_mdds_v2_board_events' as table_b, bev_v2.cnt as count_b, (bev_v3.cnt - bev_v2.cnt) as diff, ROUND(ABS(bev_v3.cnt - bev_v2.cnt)::numeric * 100.0 / NULLIF(bev_v3.cnt, 0), 2) as pct_diff, CASE WHEN bev_v3.cnt = bev_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM bev_v3, bev_v2 UNION ALL SELECT '9. Symbol Board Events (V3 vs V2)' as topic, 'krx_mdds_v3_symbol_board_events' as table_a, sbev_v3.cnt as count_a, 'krx_mdds_v2_symbol_board_events' as table_b, sbev_v2.cnt as count_b, (sbev_v3.cnt - sbev_v2.cnt) as diff, ROUND(ABS(sbev_v3.cnt - sbev_v2.cnt)::numeric * 100.0 / NULLIF(sbev_v3.cnt, 0), 2) as pct_diff, CASE WHEN sbev_v3.cnt = sbev_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM sbev_v3, sbev_v2 UNION ALL SELECT '10. Foreign Trading (V3 vs V2)' as topic, 'krx_mdds_v3_trading_foreign_investors' as table_a, ftr_v3.cnt as count_a, 'trading_result_of_foreign_investors' as table_b, ftr_v2.cnt as count_b, (ftr_v3.cnt - ftr_v2.cnt) as diff, ROUND(ABS(ftr_v3.cnt - ftr_v2.cnt)::numeric * 100.0 / NULLIF(ftr_v3.cnt, 0), 2) as pct_diff, CASE WHEN ftr_v3.cnt = ftr_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM ftr_v3, ftr_v2 UNION ALL SELECT '11. Security Definitions (Master)' as topic, 'security_definition_v3' as table_a, sec_v3.cnt as count_a, 'security_definitions' as table_b, sec_v2.cnt as count_b, (sec_v3.cnt - sec_v2.cnt) as diff, ROUND(ABS(sec_v3.cnt - sec_v2.cnt)::numeric * 100.0 / NULLIF(sec_v3.cnt, 0), 2) as pct_diff, CASE WHEN sec_v3.cnt = sec_v2.cnt THEN 'MATCH' ELSE 'DISCREPANCY' END as status FROM sec_v3, sec_v2"
   },
   "recon-ticks": {
     "name": "Đối chiếu Tick khớp lệnh theo từng mã (V3 vs V2)",
@@ -36,10 +36,10 @@
     "sql": "WITH v3 AS (SELECT symbol, COUNT(*) as cnt_v3, SUM(match_qtty) as vol_v3 FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol), v2 AS (SELECT symbol, COUNT(*) as cnt_v2, SUM(match_qtty) as vol_v2 FROM krx_mdds_v2_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol) SELECT COALESCE(v3.symbol, v2.symbol) as symbol, COALESCE(v3.cnt_v3, 0) as ticks_v3, COALESCE(v2.cnt_v2, 0) as ticks_v2, (COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) as diff_ticks, COALESCE(v3.vol_v3, 0) as vol_v3, COALESCE(v2.vol_v2, 0) as vol_v2, (COALESCE(v3.vol_v3, 0) - COALESCE(v2.vol_v2, 0)) as diff_vol FROM v3 FULL OUTER JOIN v2 ON v3.symbol = v2.symbol WHERE ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) >= {{minDiff}} ORDER BY ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) DESC LIMIT 50"
   },
   "recon-ticks-raw": {
-    "name": "Đối chiếu Tick V3 so với Stream Raw của Sở (ticks)",
+    "name": "Đối chiếu Tick V3 so với bảng RAW prices của Sở (via ISIN)",
     "topic": "Trade (Price X)",
     "database": "timescale",
-    "description": "So sánh số lượng tick giữa bảng xử lý V3 và feed thô từ Sở (bảng ticks) để phát hiện drop packet",
+    "description": "So sánh COUNT tick giữa bảng V3 (symbol mã ngắn) và bảng prices (symbol = ISIN đầy đủ từ Sở). JOIN qua security_definition_v3 để resolve ISIN → short symbol. Phát hiện drop packet trong pipeline V3.",
     "params": {
       "date": {
         "type": "string",
@@ -48,7 +48,7 @@
         "description": "Ngày giao dịch"
       }
     },
-    "sql": "WITH v3 AS (SELECT symbol, COUNT(*) as cnt_v3, SUM(match_qtty) as vol_v3 FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol), raw AS (SELECT symbol, COUNT(*) as cnt_raw, SUM(match_qtty) as vol_raw FROM ticks WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol) SELECT COALESCE(v3.symbol, raw.symbol) as symbol, COALESCE(v3.cnt_v3, 0) as ticks_v3, COALESCE(raw.cnt_raw, 0) as ticks_raw, (COALESCE(v3.cnt_v3, 0) - COALESCE(raw.cnt_raw, 0)) as diff_ticks, COALESCE(v3.vol_v3, 0) as vol_v3, COALESCE(raw.vol_raw, 0) as vol_raw, (COALESCE(v3.vol_v3, 0) - COALESCE(raw.vol_raw, 0)) as diff_vol FROM v3 FULL OUTER JOIN raw ON v3.symbol = raw.symbol WHERE ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(raw.cnt_raw, 0)) > 0 ORDER BY ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(raw.cnt_raw, 0)) DESC LIMIT 50"
+    "sql": "WITH isin_map AS (SELECT DISTINCT ON (isin) symbol, isin FROM security_definition_v3 WHERE isin IS NOT NULL), v3 AS (SELECT symbol, COUNT(*) as cnt_v3, SUM(match_qtty) as vol_v3 FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol), raw AS (SELECT m.symbol as symbol, COUNT(*) as cnt_raw FROM prices p JOIN isin_map m ON p.symbol = m.isin WHERE p.sending_time >= '{{date}}'::date AND p.sending_time < '{{date}}'::date + INTERVAL '1 day' AND p.total_volume_traded IS NOT NULL GROUP BY m.symbol) SELECT COALESCE(v3.symbol, raw.symbol) as symbol, COALESCE(v3.cnt_v3, 0) as ticks_v3, COALESCE(raw.cnt_raw, 0) as count_raw_prices, (COALESCE(v3.cnt_v3, 0) - COALESCE(raw.cnt_raw, 0)) as diff_ticks, COALESCE(v3.vol_v3, 0) as vol_v3 FROM v3 FULL OUTER JOIN raw ON v3.symbol = raw.symbol WHERE ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(raw.cnt_raw, 0)) > 0 ORDER BY ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(raw.cnt_raw, 0)) DESC LIMIT 50"
   },
   "recon-ticks-extra": {
     "name": "Đối chiếu tính toán Trade Extra (Chiều mua/bán & Giá trung bình)",
@@ -63,7 +63,7 @@
         "description": "Ngày giao dịch"
       }
     },
-    "sql": "SELECT v3.symbol, COUNT(v3.*) as raw_ticks, COUNT(extra.*) as extra_ticks, COUNT(CASE WHEN extra.side IS NOT NULL AND extra.side != 'UNKNOWN' THEN 1 END) as determined_sides, COUNT(CASE WHEN extra.avgprice IS NOT NULL AND extra.avgprice > 0 THEN 1 END) as calculated_avgprices FROM krx_mdds_v3_ticks v3 LEFT JOIN krx_mdds_v3_ticks_extra extra ON v3.symbol = extra.symbol AND v3.sending_time = extra.sending_time WHERE v3.sending_time >= '{{date}}'::date AND v3.sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY v3.symbol ORDER BY raw_ticks DESC LIMIT 50"
+    "sql": "SELECT v3.symbol, COUNT(v3.*) as raw_ticks, COUNT(extra.*) as extra_ticks, COUNT(CASE WHEN extra.side IS NOT NULL AND extra.side != 0 THEN 1 END) as determined_sides, COUNT(CASE WHEN extra.avg_price IS NOT NULL AND extra.avg_price > 0 THEN 1 END) as calculated_avgprices FROM krx_mdds_v3_ticks v3 LEFT JOIN krx_mdds_v3_ticks_extra extra ON v3.symbol = extra.symbol AND v3.sending_time = extra.sending_time WHERE v3.sending_time >= '{{date}}'::date AND v3.sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY v3.symbol ORDER BY raw_ticks DESC LIMIT 50"
   },
   "recon-topprice": {
     "name": "Đối chiếu Sổ lệnh Top 3/10 Giá (V3 vs V2)",
@@ -79,6 +79,21 @@
       }
     },
     "sql": "WITH v3 AS (SELECT symbol, COUNT(*) as cnt_v3, MAX(sending_time) as last_v3 FROM krx_mdds_v3_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol), v2 AS (SELECT symbol, COUNT(*) as cnt_v2, MAX(sending_time) as last_v2 FROM krx_mdds_v2_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol) SELECT COALESCE(v3.symbol, v2.symbol) as symbol, COALESCE(v3.cnt_v3, 0) as top_prices_v3, COALESCE(v2.cnt_v2, 0) as top_prices_v2, (COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) as diff, v3.last_v3, v2.last_v2 FROM v3 FULL OUTER JOIN v2 ON v3.symbol = v2.symbol WHERE ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) > 0 ORDER BY ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) DESC LIMIT 50"
+  },
+  "recon-topprices-raw": {
+    "name": "Đối chiếu TopPrice V3 so với bảng RAW prices của Sở (via ISIN)",
+    "topic": "Quote TopPrice",
+    "database": "timescale",
+    "description": "So sánh COUNT sổ lệnh giữa bảng V3 (symbol mã ngắn) và bảng prices (symbol = ISIN). Lọc các bản tin có total_volume_traded IS NULL (Quote).",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "WITH isin_map AS (SELECT DISTINCT ON (isin) symbol, isin FROM security_definition_v3 WHERE isin IS NOT NULL), v3 AS (SELECT symbol, COUNT(*) as cnt_v3 FROM krx_mdds_v3_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol), raw AS (SELECT m.symbol as symbol, COUNT(*) as cnt_raw FROM prices p JOIN isin_map m ON p.symbol = m.isin WHERE p.sending_time >= '{{date}}'::date AND p.sending_time < '{{date}}'::date + INTERVAL '1 day' AND p.total_volume_traded IS NULL GROUP BY m.symbol) SELECT COALESCE(v3.symbol, raw.symbol) as symbol, COALESCE(v3.cnt_v3, 0) as top_prices_v3, COALESCE(raw.cnt_raw, 0) as count_raw_prices, (COALESCE(v3.cnt_v3, 0) - COALESCE(raw.cnt_raw, 0)) as diff_top_prices FROM v3 FULL OUTER JOIN raw ON v3.symbol = raw.symbol WHERE ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(raw.cnt_raw, 0)) > 0 ORDER BY ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(raw.cnt_raw, 0)) DESC LIMIT 50"
   },
   "recon-expected-price": {
     "name": "Đối chiếu Giá khớp dự kiến ATO/ATC (Live vs Snapshots)",
@@ -162,10 +177,10 @@
     "sql": "SELECT COALESCE(v3.symbol, v2.symbol) as symbol, v3.cnt_v3, v2.cnt_v2, (COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) as diff FROM (SELECT symbol, COUNT(*) as cnt_v3 FROM krx_mdds_v3_symbol_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol) v3 FULL OUTER JOIN (SELECT symbol, COUNT(*) as cnt_v2 FROM krx_mdds_v2_symbol_board_events WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol) v2 ON v3.symbol = v2.symbol WHERE COALESCE(v3.cnt_v3, 0) != COALESCE(v2.cnt_v2, 0) ORDER BY diff DESC LIMIT 50"
   },
   "recon-foreign-trading": {
-    "name": "Đối chiếu Giao dịch Khối ngoại (V3 vs V2/Raw)",
+    "name": "Đối chiếu Giao dịch Khối ngoại (V3 vs V2/Raw) via ISIN",
     "topic": "Foreign Investor (MT/MF)",
     "database": "timescale",
-    "description": "So sánh khối lượng mua/bán ròng của khối ngoại theo từng mã giữa V3 và bảng kết quả giao dịch V2",
+    "description": "So sánh khối lượng mua/bán ròng của khối ngoại theo từng mã giữa V3 (symbol mã ngắn) và bảng V2 (symbol = ISIN đầy đủ). JOIN qua security_definition_v3 để resolve ISIN → short symbol.",
     "params": {
       "date": {
         "type": "string",
@@ -174,7 +189,7 @@
         "description": "Ngày giao dịch"
       }
     },
-    "sql": "WITH v3 AS (SELECT symbol, COUNT(*) as cnt, SUM(buy_volume) as buy_vol, SUM(sell_volume) as sell_vol FROM krx_mdds_v3_trading_foreign_investors WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol), v2 AS (SELECT symbol, COUNT(*) as cnt, SUM(buy_volume) as buy_vol, SUM(sell_volume) as sell_vol FROM trading_result_of_foreign_investors WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol) SELECT COALESCE(v3.symbol, v2.symbol) as symbol, COALESCE(v3.cnt, 0) as records_v3, COALESCE(v2.cnt, 0) as records_v2, COALESCE(v3.buy_vol, 0) as buy_v3, COALESCE(v2.buy_vol, 0) as buy_v2, (COALESCE(v3.buy_vol, 0) - COALESCE(v2.buy_vol, 0)) as diff_buy_vol, COALESCE(v3.sell_vol, 0) as sell_v3, COALESCE(v2.sell_vol, 0) as sell_v2, (COALESCE(v3.sell_vol, 0) - COALESCE(v2.sell_vol, 0)) as diff_sell_vol FROM v3 FULL OUTER JOIN v2 ON v3.symbol = v2.symbol WHERE COALESCE(v3.cnt, 0) != COALESCE(v2.cnt, 0) OR COALESCE(v3.buy_vol, 0) != COALESCE(v2.buy_vol, 0) ORDER BY ABS(COALESCE(v3.buy_vol, 0) - COALESCE(v2.buy_vol, 0)) DESC LIMIT 50"
+    "sql": "WITH isin_map AS (SELECT DISTINCT ON (isin) symbol, isin FROM security_definition_v3 WHERE isin IS NOT NULL), v3 AS (SELECT symbol, COUNT(*) as cnt, SUM(buy_volume) as buy_vol, SUM(sell_volume) as sell_vol FROM krx_mdds_v3_trading_foreign_investors WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol), v2 AS (SELECT COALESCE(m.symbol, f.symbol) as symbol, COUNT(*) as cnt, SUM(f.buy_volume) as buy_vol, SUM(f.sell_volume) as sell_vol FROM trading_result_of_foreign_investors f LEFT JOIN isin_map m ON f.symbol = m.isin WHERE f.sending_time >= '{{date}}'::date AND f.sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY COALESCE(m.symbol, f.symbol)) SELECT COALESCE(v3.symbol, v2.symbol) as symbol, COALESCE(v3.cnt, 0) as records_v3, COALESCE(v2.cnt, 0) as records_v2, COALESCE(v3.buy_vol, 0) as buy_v3, COALESCE(v2.buy_vol, 0) as buy_v2, (COALESCE(v3.buy_vol, 0) - COALESCE(v2.buy_vol, 0)) as diff_buy_vol, COALESCE(v3.sell_vol, 0) as sell_v3, COALESCE(v2.sell_vol, 0) as sell_v2, (COALESCE(v3.sell_vol, 0) - COALESCE(v2.sell_vol, 0)) as diff_sell_vol FROM v3 FULL OUTER JOIN v2 ON v3.symbol = v2.symbol WHERE COALESCE(v3.cnt, 0) != COALESCE(v2.cnt, 0) OR COALESCE(v3.buy_vol, 0) != COALESCE(v2.buy_vol, 0) ORDER BY ABS(COALESCE(v3.buy_vol, 0) - COALESCE(v2.buy_vol, 0)) DESC LIMIT 50"
   },
   "recon-missing-symbols": {
     "name": "Phát hiện Mã Niêm Yết bị thiếu giữa V3 và V2/Sở",
@@ -186,19 +201,25 @@
   },
 
   "audit-tick-price-drift": {
-    "name": "[Value Drift] Phát hiện Tick cùng key nhưng giá khớp khác nhau (V3 vs Raw)",
+    "name": "[Value Drift] Phát hiện Tick cùng key nhưng giá khớp khác nhau (V3 vs RAW prices)",
     "topic": "Trade (Price X)",
     "database": "timescale",
-    "description": "JOIN krx_mdds_v3_ticks và ticks (raw Sở) theo (symbol, sending_time/time) để phát hiện các bản ghi có COUNT khớp nhưng match_price khác nhau — bug ẩn không thể phát hiện bằng COUNT(*) đơn thuần",
+    "description": "JOIN krx_mdds_v3_ticks và bảng prices (RAW msg Price X từ Sở) theo (symbol, sending_time) để phát hiện bản ghi COUNT khớp nhưng match_price khác nhau. Dùng {{price_field}} để tham số hóa tên cột giá trong bảng prices (default: match_price)",
     "params": {
       "date": {
         "type": "string",
         "required": false,
         "default": "CURRENT_DATE",
         "description": "Ngày giao dịch (YYYY-MM-DD hoặc CURRENT_DATE)"
+      },
+      "price_field": {
+        "type": "string",
+        "required": false,
+        "default": "(r.md_entry->0->>'MDEntryPx')::numeric",
+        "description": "Tên cột giá khớp trong bảng prices RAW (xác nhận trên DB thực tế)"
       }
     },
-    "sql": "SELECT v3.symbol, COUNT(*) as drift_count, MIN(v3.match_price - r.match_price) as min_price_diff, MAX(v3.match_price - r.match_price) as max_price_diff, ROUND(AVG(ABS(v3.match_price - r.match_price))::numeric, 2) as avg_abs_diff FROM krx_mdds_v3_ticks v3 JOIN ticks r ON v3.symbol = r.symbol AND v3.sending_time = r.time WHERE v3.sending_time >= '{{date}}'::date AND v3.sending_time < '{{date}}'::date + INTERVAL '1 day' AND v3.match_price IS DISTINCT FROM r.match_price GROUP BY v3.symbol ORDER BY drift_count DESC LIMIT 50"
+    "sql": "WITH isin_map AS (SELECT DISTINCT ON (isin) symbol, isin FROM security_definition_v3 WHERE isin IS NOT NULL) SELECT v3.symbol, COUNT(*) as drift_count, MIN(v3.match_price - {{price_field}}) as min_price_diff, MAX(v3.match_price - {{price_field}}) as max_price_diff, ROUND(AVG(ABS(v3.match_price - {{price_field}}))::numeric, 2) as avg_abs_diff FROM krx_mdds_v3_ticks v3 JOIN isin_map m ON v3.symbol = m.symbol JOIN prices r ON m.isin = r.symbol AND v3.sending_time = r.sending_time WHERE v3.sending_time >= '{{date}}'::date AND v3.sending_time < '{{date}}'::date + INTERVAL '1 day' AND v3.match_price IS DISTINCT FROM {{price_field}} GROUP BY v3.symbol ORDER BY drift_count DESC LIMIT 50"
   },
 
   "audit-topprice-value-drift": {
@@ -262,7 +283,7 @@
     "name": "[Duplicate] Phát hiện TopPrice trùng khóa chính (symbol, sending_time)",
     "topic": "Quote TopPrice",
     "database": "timescale",
-    "description": "Phát hiện các bản ghi trong krx_mdds_v3_top_prices có cùng (symbol, sending_time) — gây inflate số lượt cập nhật sổ lệnh",
+    "description": "Phát hiện các bản ghi trong krx_mdds_v3_top_prices có cùng (symbol, sending_time, bid, offer, total_bid_qtty, total_offer_qtty) — gây inflate số lượt cập nhật sổ lệnh. Việc gộp toàn bộ các trường giúp loại bỏ trường hợp Sở cập nhật sổ lệnh nhiều lần trong cùng 1 mili-giây do có thay đổi lệnh ở các mức giá sâu (ngoài top 10) làm đổi tổng khối lượng.",
     "params": {
       "date": {
         "type": "string",
@@ -271,14 +292,14 @@
         "description": "Ngày giao dịch"
       }
     },
-    "sql": "SELECT symbol, sending_time, COUNT(*) as dup_count FROM krx_mdds_v3_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol, sending_time HAVING COUNT(*) > 1 ORDER BY dup_count DESC, symbol LIMIT 50"
+    "sql": "SELECT symbol, sending_time, COUNT(*) as dup_count FROM krx_mdds_v3_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol, sending_time, bid::text, offer::text, total_bid_qtty, total_offer_qtty HAVING COUNT(*) > 1 ORDER BY dup_count DESC, symbol LIMIT 50"
   },
 
   "audit-late-ticks": {
-    "name": "[created_at] Tick đến muộn — lag giữa sending_time và created_at",
+    "name": "[created_date] Tick đến muộn — lag giữa sending_time và created_date",
     "topic": "Trade (Price X)",
     "database": "timescale",
-    "description": "SAFE: anchor sending_time trước (partition key), sau đó filter created_at trong chunk. Phát hiện tick được ghi vào DB muộn hơn 30 giây so với thời điểm Sở phát tin — dấu hiệu nghẽn Kafka consumer hoặc pipeline retry",
+    "description": "SAFE: anchor sending_time trước (partition key), sau đó filter created_date trong chunk. Phát hiện tick được ghi vào DB muộn hơn 30 giây so với thời điểm Sở phát tin — dấu hiệu nghẽn Kafka consumer hoặc pipeline retry",
     "params": {
       "date": {
         "type": "string",
@@ -293,14 +314,14 @@
         "description": "Ngưỡng lag tính bằng giây để coi là 'đến muộn'"
       }
     },
-    "sql": "SELECT symbol, COUNT(*) as late_count, ROUND(MAX(EXTRACT(EPOCH FROM (created_at - sending_time)))::numeric, 2) as max_lag_seconds, ROUND(AVG(EXTRACT(EPOCH FROM (created_at - sending_time)))::numeric, 2) as avg_lag_seconds FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND created_at > sending_time + make_interval(secs => {{lag_threshold_seconds}}) GROUP BY symbol ORDER BY max_lag_seconds DESC LIMIT 30"
+    "sql": "SELECT symbol, COUNT(*) as late_count, ROUND(MAX(EXTRACT(EPOCH FROM (created_date - sending_time)))::numeric, 2) as max_lag_seconds, ROUND(AVG(EXTRACT(EPOCH FROM (created_date - sending_time)))::numeric, 2) as avg_lag_seconds FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND created_date > sending_time + make_interval(secs => {{lag_threshold_seconds}}) GROUP BY symbol ORDER BY max_lag_seconds DESC LIMIT 30"
   },
 
   "audit-late-write-after-session": {
-    "name": "[created_at] Bản ghi ghi vào DB sau khi phiên giao dịch kết thúc (15:00)",
+    "name": "[created_date] Bản ghi ghi vào DB sau khi phiên giao dịch kết thúc (15:00)",
     "topic": "Trade (Price X)",
     "database": "timescale",
-    "description": "SAFE: anchor sending_time trước, sau đó filter created_at > 15:00. Phát hiện pipeline retry hoặc consumer lag cực lớn — bản ghi có sending_time trong phiên nhưng được ghi vào DB sau khi phiên đã đóng",
+    "description": "SAFE: anchor sending_time trước, sau đó filter created_date > 15:00. Phát hiện pipeline retry hoặc consumer lag cực lớn — bản ghi có sending_time trong phiên nhưng được ghi vào DB sau khi phiên đã đóng",
     "params": {
       "date": {
         "type": "string",
@@ -309,14 +330,14 @@
         "description": "Ngày giao dịch"
       }
     },
-    "sql": "SELECT symbol, COUNT(*) as late_write_count, MIN(created_at) as earliest_late_write, MAX(created_at) as latest_late_write, ROUND(MAX(EXTRACT(EPOCH FROM (created_at - sending_time)) / 60)::numeric, 2) as max_write_lag_minutes FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND created_at > '{{date}}'::date + INTERVAL '15 hours' GROUP BY symbol HAVING COUNT(*) > 0 ORDER BY late_write_count DESC LIMIT 50"
+    "sql": "SELECT symbol, COUNT(*) as late_write_count, MIN(created_date) as earliest_late_write, MAX(created_date) as latest_late_write, ROUND(MAX(EXTRACT(EPOCH FROM (created_date - sending_time)) / 60)::numeric, 2) as max_write_lag_minutes FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND created_date > '{{date}}'::date + INTERVAL '15 hours' GROUP BY symbol HAVING COUNT(*) > 0 ORDER BY late_write_count DESC LIMIT 50"
   },
 
   "audit-ingestion-rate": {
-    "name": "[created_at] Tốc độ ingestion tick theo giờ trong ngày",
+    "name": "[created_date] Tốc độ ingestion tick theo giờ trong ngày",
     "topic": "Trade (Price X)",
     "database": "timescale",
-    "description": "SAFE: anchor sending_time trước, dùng time_bucket trên created_at trong chunk đã thu hẹp. Phát hiện bucket giờ có tick count bất thường thấp — dấu hiệu pipeline bị gián đoạn trong khoảng thời gian đó",
+    "description": "SAFE: anchor sending_time trước, dùng time_bucket trên created_date trong chunk đã thu hẹp. Phát hiện bucket giờ có tick count bất thường thấp — dấu hiệu pipeline bị gián đoạn trong khoảng thời gian đó",
     "params": {
       "date": {
         "type": "string",
@@ -325,14 +346,14 @@
         "description": "Ngày giao dịch"
       }
     },
-    "sql": "SELECT time_bucket('1 hour', created_at) as hour_bucket, COUNT(*) as tick_count, COUNT(DISTINCT symbol) as active_symbols FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY hour_bucket ORDER BY hour_bucket"
+    "sql": "SELECT time_bucket('1 hour', created_date) as hour_bucket, COUNT(*) as tick_count, COUNT(DISTINCT symbol) as active_symbols FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY hour_bucket ORDER BY hour_bucket"
   },
 
   "audit-clock-skew": {
-    "name": "[created_at] Phát hiện Clock Skew — created_at sớm hơn sending_time",
+    "name": "[created_date] Phát hiện Clock Skew — created_date sớm hơn sending_time",
     "topic": "Trade (Price X)",
     "database": "timescale",
-    "description": "SAFE: anchor sending_time trước. Phát hiện bản ghi có created_at < sending_time - 1 giây — dấu hiệu đồng hồ server pipeline bị lệch so với đồng hồ Sở, dẫn đến timestamp không đáng tin cậy",
+    "description": "SAFE: anchor sending_time trước. Phát hiện bản ghi có created_date < sending_time - 1 giây — dấu hiệu đồng hồ server pipeline bị lệch so với đồng hồ Sở, dẫn đến timestamp không đáng tin cậy",
     "params": {
       "date": {
         "type": "string",
@@ -341,14 +362,42 @@
         "description": "Ngày giao dịch"
       }
     },
-    "sql": "SELECT symbol, sending_time, created_at, ROUND(EXTRACT(EPOCH FROM (sending_time - created_at))::numeric, 3) as skew_seconds FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND created_at < sending_time - INTERVAL '1 second' ORDER BY skew_seconds DESC LIMIT 50"
+    "sql": "SELECT symbol, sending_time, created_date, ROUND(EXTRACT(EPOCH FROM (sending_time - created_date))::numeric, 3) as skew_seconds FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND created_date < sending_time - INTERVAL '1 second' ORDER BY skew_seconds DESC LIMIT 50"
   },
 
   "audit-ohlc-gap": {
     "name": "[Gap] Phát hiện Nến OHLC bị thiếu trong phiên liên tục",
     "topic": "OHLC Candlesticks",
     "database": "timescale",
-    "description": "Phát hiện các slot 1 phút trong phiên liên tục (09:15 - 14:30) không có nến OHLC cho top 20 mã giao dịch nhiều nhất — dấu hiệu pipeline tổng hợp nến bị lỗi hoặc thiếu tick nguồn",
+    "description": "Phát hiện các slot 1 phút trong phiên liên tục không có nến OHLC cho top 20 mã. Tham số open_time: HoSE dùng 09:15, HNX/UpCOM/PS dùng 09:00. Dấu hiệu pipeline tổng hợp nến bị lỗi hoặc thiếu tick nguồn",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      },
+      "open_hour": {
+        "type": "number",
+        "required": false,
+        "default": 9,
+        "description": "Giờ mở phiên (9 cho HoSE, 9 cho HNX)"
+      },
+      "open_minute": {
+        "type": "number",
+        "required": false,
+        "default": 15,
+        "description": "Phút mở phiên (15 cho HoSE, 0 cho HNX/UpCOM/PS)"
+      }
+    },
+    "sql": "WITH top_symbols AS (SELECT symbol FROM krx_mdds_v2_stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day' AND resolution = '1' GROUP BY symbol ORDER BY COUNT(*) DESC LIMIT 20), expected_slots AS (SELECT s.symbol, generate_series('{{date}}'::timestamp + make_interval(hours => {{open_hour}}, mins => {{open_minute}}), '{{date}}'::timestamp + INTERVAL '14 hours 29 minutes', INTERVAL '1 minute') as slot FROM top_symbols s), actual AS (SELECT symbol, time_bucket('1 minute', time) as slot FROM krx_mdds_v2_stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day' AND resolution = '1') SELECT e.symbol, COUNT(*) as missing_candles FROM expected_slots e LEFT JOIN actual a ON e.symbol = a.symbol AND e.slot = a.slot WHERE a.slot IS NULL GROUP BY e.symbol HAVING COUNT(*) > 0 ORDER BY missing_candles DESC"
+  },
+
+  "recon-ticks-by-session": {
+    "name": "Đối chiếu Tick V3 vs V2 phân tách theo Phiên Giao Dịch (ATO/Continuous/ATC)",
+    "topic": "Trade (Price X)",
+    "database": "timescale",
+    "description": "So sánh số lượng tick và khối lượng theo từng phiên giao dịch (trading_session_id integer: ATO=2, ATC=6, Continuous=7) giữa V3 và V2. Phát hiện lệch phiên-cụ thể mà master-dashboard COUNT(*) tổng không thể thấy. Lưu ý: board_id trong V3 đã gộp (G1=G1+G7+G3 từ Sở).",
     "params": {
       "date": {
         "type": "string",
@@ -357,6 +406,68 @@
         "description": "Ngày giao dịch"
       }
     },
-    "sql": "WITH top_symbols AS (SELECT symbol FROM krx_mdds_v2_stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day' AND resolution = '1' GROUP BY symbol ORDER BY COUNT(*) DESC LIMIT 20), expected_slots AS (SELECT s.symbol, generate_series('{{date}}'::timestamp + INTERVAL '9 hours 15 minutes', '{{date}}'::timestamp + INTERVAL '14 hours 29 minutes', INTERVAL '1 minute') as slot FROM top_symbols s), actual AS (SELECT symbol, time_bucket('1 minute', time) as slot FROM krx_mdds_v2_stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day' AND resolution = '1') SELECT e.symbol, COUNT(*) as missing_candles FROM expected_slots e LEFT JOIN actual a ON e.symbol = a.symbol AND e.slot = a.slot WHERE a.slot IS NULL GROUP BY e.symbol HAVING COUNT(*) > 0 ORDER BY missing_candles DESC"
+    "sql": "WITH v3 AS (SELECT trading_session_id, symbol, COUNT(*) as cnt_v3, SUM(match_qtty) as vol_v3 FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND trading_session_id IN (2, 6, 7) GROUP BY trading_session_id, symbol), v2 AS (SELECT trading_session_id, symbol, COUNT(*) as cnt_v2, SUM(match_qtty) as vol_v2 FROM krx_mdds_v2_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND trading_session_id IN (2, 6, 7) GROUP BY trading_session_id, symbol) SELECT COALESCE(v3.trading_session_id, v2.trading_session_id) as session_id, CASE COALESCE(v3.trading_session_id, v2.trading_session_id) WHEN 2 THEN 'ATO (code=10)' WHEN 6 THEN 'ATC (code=30)' WHEN 7 THEN 'Continuous (code=40)' ELSE 'Other' END as session_name, COALESCE(v3.symbol, v2.symbol) as symbol, COALESCE(v3.cnt_v3, 0) as ticks_v3, COALESCE(v2.cnt_v2, 0) as ticks_v2, (COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) as diff_ticks, COALESCE(v3.vol_v3, 0) as vol_v3, COALESCE(v2.vol_v2, 0) as vol_v2, (COALESCE(v3.vol_v3, 0) - COALESCE(v2.vol_v2, 0)) as diff_vol FROM v3 FULL OUTER JOIN v2 ON v3.symbol = v2.symbol AND v3.trading_session_id = v2.trading_session_id WHERE ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) > 0 ORDER BY session_id, ABS(COALESCE(v3.cnt_v3, 0) - COALESCE(v2.cnt_v2, 0)) DESC LIMIT 50"
+  },
+
+  "audit-tick-value-fields-drift": {
+    "name": "[Value Drift] So sánh các field tổng hợp V3 vs RAW prices (volume/GTGD/giá cao-thấp-mở)",
+    "topic": "Trade (Price X)",
+    "database": "timescale",
+    "description": "JOIN krx_mdds_v3_ticks và bảng prices (RAW Sở) theo (symbol, sending_time) để phát hiện drift các field tổng hợp: total_volume_traded, gross_trade_amount, highest_price, lowest_price, open_price. Dùng {{xxx_field}} params vì tên cột trong bảng prices chưa được xác nhận chính thức.",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      },
+      "total_vol_field": {
+        "type": "string",
+        "required": false,
+        "default": "total_volume_traded",
+        "description": "Tên cột total_volume_traded trong bảng prices RAW"
+      },
+      "gross_amt_field": {
+        "type": "string",
+        "required": false,
+        "default": "gross_trade_amount",
+        "description": "Tên cột gross_trade_amount trong bảng prices RAW"
+      },
+      "highest_field": {
+        "type": "string",
+        "required": false,
+        "default": "highest_price",
+        "description": "Tên cột highest_price trong bảng prices RAW"
+      },
+      "lowest_field": {
+        "type": "string",
+        "required": false,
+        "default": "lowest_price",
+        "description": "Tên cột lowest_price trong bảng prices RAW"
+      },
+      "open_field": {
+        "type": "string",
+        "required": false,
+        "default": "open_price",
+        "description": "Tên cột open_price trong bảng prices RAW"
+      }
+    },
+    "sql": "SELECT v3.symbol, COUNT(*) as matched_keys, COUNT(*) FILTER (WHERE v3.total_volume_traded IS DISTINCT FROM r.{{total_vol_field}}) as total_vol_drift, COUNT(*) FILTER (WHERE v3.gross_trade_amount IS DISTINCT FROM r.{{gross_amt_field}}) as gross_amt_drift, COUNT(*) FILTER (WHERE v3.highest_price IS DISTINCT FROM r.{{highest_field}}) as highest_price_drift, COUNT(*) FILTER (WHERE v3.lowest_price IS DISTINCT FROM r.{{lowest_field}}) as lowest_price_drift, COUNT(*) FILTER (WHERE v3.open_price IS DISTINCT FROM r.{{open_field}}) as open_price_drift FROM krx_mdds_v3_ticks v3 JOIN prices r ON v3.symbol = r.symbol AND v3.sending_time = r.sending_time WHERE v3.sending_time >= '{{date}}'::date AND v3.sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY v3.symbol HAVING COUNT(*) FILTER (WHERE v3.total_volume_traded IS DISTINCT FROM r.{{total_vol_field}}) > 0 OR COUNT(*) FILTER (WHERE v3.gross_trade_amount IS DISTINCT FROM r.{{gross_amt_field}}) > 0 OR COUNT(*) FILTER (WHERE v3.highest_price IS DISTINCT FROM r.{{highest_field}}) > 0 ORDER BY total_vol_drift DESC LIMIT 30"
+  },
+
+  "audit-foreign-value-drift": {
+    "name": "[Value Drift] Phát hiện lệch GTGD Khối ngoại — buy/sell_traded_amount (V3 vs V2)",
+    "topic": "Foreign Investor (MT/MF)",
+    "database": "timescale",
+    "description": "So sánh cả KL lẫn GTGD (buy_traded_amount, sell_traded_amount) của khối ngoại giữa V3 và V2. Phát hiện lệch giá trị tiền (tỷ đồng) mà recon-foreign-trading chỉ check volume không thể thấy. Theo đặc tả Sở: sellTradedAmount/buyTradedAmount là GTGD theo board; totalSellTradedAmount/totalBuyTradedAmount là ALL board.",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "WITH v3 AS (SELECT symbol, COUNT(*) as cnt, SUM(buy_volume) as buy_vol, SUM(sell_volume) as sell_vol, SUM(buy_traded_amount) as buy_amt, SUM(sell_traded_amount) as sell_amt FROM krx_mdds_v3_trading_foreign_investors WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol), v2 AS (SELECT symbol, COUNT(*) as cnt, SUM(buy_volume) as buy_vol, SUM(sell_volume) as sell_vol, SUM(buy_traded_amount) as buy_amt, SUM(sell_traded_amount) as sell_amt FROM trading_result_of_foreign_investors WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol) SELECT COALESCE(v3.symbol, v2.symbol) as symbol, COALESCE(v3.buy_vol, 0) as buy_vol_v3, COALESCE(v2.buy_vol, 0) as buy_vol_v2, (COALESCE(v3.buy_vol, 0) - COALESCE(v2.buy_vol, 0)) as diff_buy_vol, COALESCE(v3.sell_vol, 0) as sell_vol_v3, COALESCE(v2.sell_vol, 0) as sell_vol_v2, (COALESCE(v3.sell_vol, 0) - COALESCE(v2.sell_vol, 0)) as diff_sell_vol, ROUND(COALESCE(v3.buy_amt, 0)::numeric / 1e9, 4) as buy_amt_v3_bil, ROUND(COALESCE(v2.buy_amt, 0)::numeric / 1e9, 4) as buy_amt_v2_bil, ROUND((COALESCE(v3.buy_amt, 0) - COALESCE(v2.buy_amt, 0))::numeric / 1e9, 4) as diff_buy_amt_bil, ROUND(COALESCE(v3.sell_amt, 0)::numeric / 1e9, 4) as sell_amt_v3_bil, ROUND(COALESCE(v2.sell_amt, 0)::numeric / 1e9, 4) as sell_amt_v2_bil, ROUND((COALESCE(v3.sell_amt, 0) - COALESCE(v2.sell_amt, 0))::numeric / 1e9, 4) as diff_sell_amt_bil FROM v3 FULL OUTER JOIN v2 ON v3.symbol = v2.symbol WHERE COALESCE(v3.buy_vol, 0) != COALESCE(v2.buy_vol, 0) OR COALESCE(v3.sell_vol, 0) != COALESCE(v2.sell_vol, 0) OR COALESCE(v3.buy_amt, 0) != COALESCE(v2.buy_amt, 0) OR COALESCE(v3.sell_amt, 0) != COALESCE(v2.sell_amt, 0) ORDER BY ABS(COALESCE(v3.buy_amt, 0) - COALESCE(v2.buy_amt, 0)) DESC LIMIT 50"
   }
 }
