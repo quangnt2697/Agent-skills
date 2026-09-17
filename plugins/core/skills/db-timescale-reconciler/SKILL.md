@@ -1,98 +1,296 @@
 ---
 name: db-timescale-reconciler
-description: .
-trigger: Sử dụng khi cần quét, đối chiếu hoặc kiểm tra độ lệch dữ liệu TimescaleDB Production giữa các bảng V3 so với V2 hoặc giữa bảng raw của Sở (MDDS feeds) với bảng đã xử lý cho 11 topic thị trường KRX. Kích hoạt khi chạy lệnh /db-recon hoặc nhận yêu cầu đối chiếu dữ liệu thị trường.
+description: Quét, đối chiếu và phát hiện sai lệch dữ liệu thị trường KRX MDDS trên TimescaleDB Production. Bao gồm kiểm tra count parity, value drift (giá/khối lượng), NULL/invalid scan, duplicate key, late-arriving data (created_at vs sending_time), và OHLC gap detection cho 11 topic nghiệp vụ.
+trigger: Kích hoạt khi người dùng gõ /db-recon, yêu cầu "đối chiếu dữ liệu", "kiểm tra lệch tick/topprice/ohlc/giá", "so sánh v3 vs v2", "scan dữ liệu prod", hoặc khi cần xác minh tính toàn vẹn dữ liệu sau deploy pipeline MDDS mới.
 ---
 
-# db-timescale-reconciler: Đối Chiếu & Kiểm Tra Độ Lệch Dữ Liệu TimescaleDB Production
+# db-timescale-reconciler
 
-## Tổng quan (Overview)
+**Mục đích:** Phát hiện sai lệch dữ liệu chứng khoán KRX MDDS trên TimescaleDB Production qua Metabase API (`${METABASE_PROD_URL}`, DB ID: `${METABASE_PROD_DB_TIMESCALE_ID}`).
 
-Kỹ năng `db-timescale-reconciler` chuyên trách quét, đối chiếu và kiểm tra tính nhất quán (Data Parity & Reconciliation) của dữ liệu thị trường chứng khoán KRX MDDS trên **TimescaleDB Production (DB ID: `${METABASE_PROD_DB_TIMESCALE_ID}`)** thông qua Metabase API (`${METABASE_PROD_URL}`).
-
-Hệ thống dựa trên tài liệu đặc tả kiến trúc **[KRX] Xử lý dữ liệu thị trường MDDS**, đối chiếu hai chiều:
-1. **Pipeline v3 so với v2:** Kiểm tra sự chuyển đổi từ mô hình cũ (gộp topic Stock Info) sang mô hình mới (phân tách thành các stream chuyên biệt v3).
-2. **Stream Raw của Sở so với Bảng Đã Xử Lý:** Đối chiếu các message thô từ Sở HOSE/HNX (`ticks`, `top_prices`, `security_definitions`, `indices`...) với bảng chuẩn hóa để phát hiện rớt bản ghi (dropped packets), trễ nến (OHLC lag), hoặc lệch khối lượng.
-
-Tất cả các truy vấn đều tuân thủ nghiêm ngặt **nguyên tắc 4 lớp bảo vệ 100% Read-Only** (Zero-Mutation Policy).
+**Phạm vi:** 11 topic MDDS — Ticks, TopPrices, ExpectedPrice, OHLC, Indices, BoardEvents, SymbolBoardEvents, ForeignTrading, SecurityDefinition, VolatilityInterruption, TradeExtra.
 
 ---
 
-## Khi nào cần sử dụng (When to Use)
+## Quy Tắc An Toàn Bắt Buộc (Read-Only + Index Safety)
 
-Sử dụng kỹ năng này trong các tình huống sau:
-- **Kiểm toán dữ liệu định kỳ:** Hằng ngày sau phiên giao dịch hoặc đầu ngày để kiểm tra tính toàn vẹn của dữ liệu thị trường.
-- **Xác minh lỗi dữ liệu (Data Bug Triage):** Khi người dùng báo cáo bảng giá bị lag, lệch giá khớp, nhảy sai bước giá, hoặc biểu đồ thiếu nến so với sàn.
-- **Kiểm thử nghiệm thu (QA Verification):** Sau khi deploy phiên bản mới của pipeline MDDS, dùng để kiểm tra xem số lượng bản ghi V3 có khớp 100% với V2 và Sở raw hay không.
-- **Hỗ trợ BA & DEV:** Khi cần khảo sát mẫu dữ liệu thực tế và đối chiếu sự khác biệt giữa hai mô hình bảng.
-- **Kích hoạt qua lệnh:** Người dùng gõ `/db-recon` hoặc yêu cầu "đối chiếu dữ liệu", "kiểm tra lệch tick/topprice/ohlc", "so sánh v3 với v2".
+### 1. Zero-Mutation Policy
+- **TUYỆT ĐỐI KHÔNG** chạy INSERT, UPDATE, DELETE, TRUNCATE, DROP.
+- Mọi query phải qua `sanitizeQuery()` trước khi thực thi.
 
----
+### 2. TimescaleDB Partition-First Rule
+`sending_time` / `time` là **partition key** — luôn filter trước để kích hoạt chunk exclusion.
+`created_at` là cột thứ cấp, **có thể chưa có index** — chỉ filter sau khi đã anchor partition key.
 
-## Danh Mục 11 Topic Nghiệp Vụ MDDS
+```sql
+-- ✅ ĐÚNG
+WHERE sending_time >= '{{date}}'::date
+  AND sending_time <  '{{date}}'::date + INTERVAL '1 day'
+  AND created_at   >  sending_time + INTERVAL '30 seconds'   -- safe: scan trong chunk nhỏ
 
-Kỹ năng quản lý thư viện câu query mẫu tại `assets/reconciliation-queries.json` bao phủ 11 topic:
-
-1. **Trade / Khớp lệnh Ticks (Msg `Price - X`):** `krx_mdds_v3_ticks` vs `krx_mdds_v2_ticks` vs `ticks` (raw).
-2. **Trade Extra (BE tính toán `side`, `avgprice`):** `krx_mdds_v3_ticks_extra` vs `krx_mdds_v3_ticks`.
-3. **Quote / Sổ lệnh TopPrice (Msg `Price - X`):** `krx_mdds_v3_top_prices` vs `krx_mdds_v2_top_prices` vs `top_prices` (raw).
-4. **Expected Price ATO/ATC (Msg `ME` + `M8`):** `expected_price_v3` vs `expected_price_v3_snapshots` vs `deem_trade_prices`.
-5. **OHLC Nến kỹ thuật (Tổng hợp từ Tick):** `krx_mdds_v2_stock_ohlc` vs `stock_ohlc` vs `ohlc`.
-6. **Market Index (Msg `Index - M1`):** `krx_mdds_v3_market_indices` vs `krx_mdds_v2_market_indices` vs `indices`.
-7. **Board Session Events (Msg `Security Status - f`):** `krx_mdds_v3_board_events` vs `krx_mdds_v2_board_events` vs `sessions`.
-8. **Symbol Board Events (Msg `Security Status - f`):** `krx_mdds_v3_symbol_board_events` vs `krx_mdds_v2_symbol_board_events`.
-9. **Foreign Investor (Msg `MT` + `MF`):** `krx_mdds_v3_trading_foreign_investors` vs `trading_result_of_foreign_investors` vs `foreigner_order_limits`.
-10. **Security Definition (Msg `d` + `M7`):** `security_definition_v3` vs `security_definitions` (phát hiện mã niêm yết bị mất).
-11. **Volatility Interruption / Random End (Msg `MD` + `MW`):** `volatility_interruptions` vs `price_limit_expansions` vs `random_ends`.
-
----
-
-## Hướng dẫn thực thi
-
-### Cách 1: Chạy tự động qua CLI Runner
-
-```bash
-# Chạy Master Dashboard quét đồng loạt 11 topic trong ngày hôm nay:
-node scripts/db-recon.js
-
-# Chạy đối chiếu chuyên sâu Ticks của ngày cụ thể:
-node scripts/db-recon.js recon-ticks --date 2026-09-08
-
-# Lọc theo mã cổ phiếu cụ thể (ví dụ: FPT):
-node scripts/db-recon.js recon-ticks --symbol FPT
-
-# Xem danh sách tất cả các câu query có sẵn:
-node scripts/db-recon.js --list
+-- ❌ SAI — full table scan, gây timeout prod
+WHERE created_at >= '{{date}}'::date
 ```
 
-### Cách 2: Gọi qua DB MCP Tool trong chat
-Agent có thể gọi tool `db_query` trên TimescaleDB (`database: "timescale"`) với template SQL tương ứng trong `assets/reconciliation-queries.json`.
+### 3. Bắt Buộc Trước Khi Chạy Query `created_at`
+| Bước | Hành động |
+|---|---|
+| 1 | Luôn có `WHERE sending_time >= ... AND sending_time < ...` trước |
+| 2 | Chạy `EXPLAIN (ANALYZE false, COSTS true)` — xác nhận không có `Seq Scan` toàn bảng |
+| 3 | Thêm `LIMIT 500` lần đầu chạy |
+| 4 | `SET LOCAL statement_timeout = '30000'` trong session |
 
 ---
 
-## Những lời biện minh thường gặp (Common Rationalizations)
+## Workflow Thực Thi (Agent Steps)
 
-- *"Dữ liệu lệch vài tick là bình thường do mạng trễ, không cần so sánh."*
-  $\rightarrow$ **Sai lầm:** Trong giao dịch chứng khoán, lệch 1 tick có thể dẫn tới tính sai giá cao/thấp nhất ngày, sai nến OHLC, hoặc sai giá trị khớp lệnh tổng. Cần đối chiếu chính xác để khoanh vùng sự cố mạng hay lỗi xử lý của pipeline.
-- *"Chỉ cần kiểm tra bảng v3 là đủ, không cần đối chiếu với v2 hay bảng raw của Sở."*
-  $\rightarrow$ **Sai lầm:** Bảng raw của Sở là chân lý (Ground Truth). Nếu không so sánh v3 với raw, ta không thể biết pipeline mới có làm rơi rụng thông điệp hay không.
-- *"Viết query ad-hoc tự nghĩ ra để chạy cho nhanh."*
-  $\rightarrow$ **Sai lầm:** Query tự nghĩ dễ gây khóa bảng hoặc quét toàn bộ partition lớn trên Production. Luôn sử dụng query catalog đã được tối ưu hóa và kiểm duyệt Read-Only trong `reconciliation-queries.json`.
+### Bước 1 — Xác định phạm vi
+- Lấy ngày giao dịch cần kiểm tra (`{{date}}`, mặc định `CURRENT_DATE`).
+- Nếu người dùng chỉ đề cập topic cụ thể → chạy query chuyên sâu của topic đó.
+- Nếu không rõ → chạy `master-dashboard` trước để có bức tranh tổng quan.
+
+### Bước 2 — Chọn query theo tình huống
+
+| Tình huống | Query cần chạy |
+|---|---|
+| Báo cáo tổng quan nhanh | `master-dashboard` |
+| Nghi ngờ tick/volume sai | `recon-ticks` → `recon-ticks-raw` → `audit-tick-price-drift` |
+| Nghi ngờ giá sổ lệnh sai | `recon-topprice` → `audit-topprice-value-drift` |
+| Kiểm tra giá NULL/invalid | `audit-null-invalid-ticks` |
+| Kiểm tra mã niêm yết | `recon-missing-symbols` → `audit-null-security-def` |
+| Kiểm tra nến OHLC | `recon-ohlc` → `audit-ohlc-gap` |
+| Phát hiện bản ghi trùng | `audit-duplicate-ticks` / `audit-duplicate-top-prices` |
+| Phát hiện ghi DB muộn | `audit-late-ticks` → `audit-late-write-after-session` |
+| Phân tích tốc độ ingestion | `audit-ingestion-rate` |
+| Phát hiện clock skew | `audit-clock-skew` |
+| Kiểm tra ATO/ATC | `recon-expected-price` |
+| Kiểm tra chỉ số thị trường | `recon-indices` |
+| Kiểm tra cờ phiên giao dịch | `recon-board-events` → `recon-symbol-board-events` |
+| Kiểm tra khối ngoại | `recon-foreign-trading` |
+| Kiểm tra side mua/bán | `recon-ticks-extra` |
+
+### Bước 3 — Thực thi query
+Gọi tool `db_query` với:
+- `database`: `"timescale"`
+- `sql`: nội dung SQL từ `assets/reconciliation-queries.json` với `{{date}}` đã được thay thế.
+- Ghi nhận: timestamp bắt đầu, DB ID, latency (ms).
+
+### Bước 4 — Đánh giá kết quả
+
+**Ngưỡng cờ đỏ:**
+| Metric | Ngưỡng WARN | Ngưỡng CRITICAL |
+|---|---|---|
+| Count parity (ticks/top_prices) | `diff > 0` | `pct_diff > 1%` |
+| Volume diff (`diff_vol`) | `!= 0` | bất kỳ |
+| Price drift (`match_price` V3 vs Raw) | bất kỳ 1 bản ghi | bất kỳ |
+| NULL symbol / invalid price | bất kỳ 1 bản ghi | bất kỳ |
+| Duplicate key | bất kỳ 1 bản ghi | bất kỳ |
+| Late write lag | `max_lag > 30s` | `max_lag > 5 phút` |
+| Clock skew (`created_at < sending_time`) | bất kỳ | bất kỳ |
+
+### Bước 5 — Xuất báo cáo
+
+**Lưu file:**
+```
+{project-root}/workspace/database/db-recon-{date}.md
+```
+Trong đó `{date}` có định dạng `YYYYMMDD`. Ví dụ: `workspace/database/db-recon-20260917.md`.
 
 ---
 
-## Cờ đỏ (Red Flags)
+**Cấu trúc báo cáo (bắt buộc đủ 5 section):**
 
-- 🚩 **Độ lệch vượt quá 1%:** Số lượng tick hoặc top price giữa v3 và v2/raw lệch trên 1% $\implies$ Cảnh báo nguy cơ nghẽn hàng đợi Kafka hoặc rớt packet mạng.
-- 🚩 **Mã bị thiếu trong Security Definition (`status != 'MATCH'`):** Mã cổ phiếu có giao dịch trên Sở nhưng không xuất hiện trong `security_definition_v3` $\implies$ Khách hàng không thể đặt lệnh hoặc nhìn thấy bảng giá của mã đó.
-- 🚩 **Lệch tổng khối lượng khớp (`diff_vol != 0`):** Tổng khối lượng khớp tích lũy giữa hai bảng bị chênh lệch $\implies$ Sai lệch số liệu thanh khoản thị trường.
-- 🚩 **Hết hạn Session Token (401/403):** Nếu gặp lỗi xác thực Metabase, bắt buộc chạy `npm run metabase:login` để làm mới token qua browser SSO trước khi tiếp tục.
+```
+# Báo Cáo Đối Chiếu Dữ Liệu MDDS — {date}
+
+## 📋 Metadata
+## 🔴 P1 — Giá & Khối Lượng
+## 🟡 P2 — Dữ Liệu Tổng Hợp
+## 🔵 Cross-cutting — Kỹ Thuật
+## 📌 Kết Luận & Khuyến Nghị
+```
 
 ---
 
-## Xác minh (Verification)
+**Mẫu báo cáo đầy đủ:**
 
-Sau khi chạy đối chiếu, Agent cần xác minh:
-1. **Kiểm tra trạng thái đối chiếu:** Toàn bộ các topic chính phải hiển thị `🟢 MATCH`. Nếu có `🔴 DISCREPANCY`, phải xuất bảng chi tiết danh sách mã bị lệch và số lượng cụ thể.
-2. **Kiểm tra tính an toàn Read-Only:** Câu query phải được thực thi qua `sanitizeQuery` và giới hạn tối đa 200 dòng (`applyLimit`).
-3. **Traceability:** Báo cáo kết quả phải ghi rõ: Thời gian truy vấn, database ID (từ `.env`), ngày giao dịch đối chiếu, và độ trễ phản hồi (latency tính bằng ms).
+````markdown
+# Báo Cáo Đối Chiếu Dữ Liệu MDDS — 2026-09-17
+
+## 📋 Metadata
+
+| Trường | Giá trị |
+|---|---|
+| Thời gian chạy | 2026-09-17 10:05:32 +07:00 |
+| DB ID (Prod) | `${METABASE_PROD_DB_TIMESCALE_ID}` |
+| Ngày giao dịch | 2026-09-17 |
+| Số query đã chạy | 8 |
+| Tổng latency | 4,230 ms |
+| Người chạy | agent / QA |
+
+---
+
+## 🔴 P1 — Giá & Khối Lượng
+
+### P1.1 Count Parity — Tick Khớp Lệnh
+
+| Topic | Bảng A (V3) | Bảng B | Count A | Count B | Diff | Diff% | Status |
+|---|---|---|---|---|---|---|---|
+| Ticks V3 vs V2 | `krx_mdds_v3_ticks` | `krx_mdds_v2_ticks` | 1,284,501 | 1,284,501 | 0 | 0.00% | 🟢 MATCH |
+| Ticks V3 vs Raw | `krx_mdds_v3_ticks` | `ticks` | 1,284,501 | 1,281,320 | **+3,181** | **0.25%** | 🔴 DISCREPANCY |
+| TopPrice V3 vs V2 | `krx_mdds_v3_top_prices` | `krx_mdds_v2_top_prices` | 3,102,844 | 3,102,844 | 0 | 0.00% | 🟢 MATCH |
+| TopPrice V3 vs Raw | `krx_mdds_v3_top_prices` | `top_prices` | 3,102,844 | 3,102,844 | 0 | 0.00% | 🟢 MATCH |
+
+### P1.2 Volume Parity — Tổng Khối Lượng Khớp (Lệch)
+
+> ⚠️ 3 mã phát hiện lệch volume giữa V3 và Raw:
+
+| Symbol | Vol V3 | Vol Raw | Diff Vol | Diff Tick |
+|---|---|---|---|---|
+| FPT | 12,450,000 | 12,348,100 | **+101,900** | +18 |
+| VNM | 8,320,000 | 8,320,000 | 0 | **+2** |
+| HPG | 5,100,200 | 5,098,600 | **+1,600** | +1 |
+
+### P1.3 Value Drift — Giá Khớp (match_price V3 vs Raw)
+
+| Symbol | drift_count | min_price_diff | max_price_diff | avg_abs_diff |
+|---|---|---|---|---|
+| FPT | **18** | -100 | +100 | 72.5 |
+| HPG | **1** | -50 | -50 | 50.0 |
+
+> 🔴 **CRITICAL:** FPT có 18 tick cùng `(symbol, sending_time)` nhưng `match_price` khác nhau giữa V3 và Raw — nghi ngờ lỗi parse giá trong pipeline v3.
+
+### P1.4 NULL / Invalid Scan — Ticks
+
+| Metric | Count | Tỷ lệ | Status |
+|---|---|---|---|
+| Total scanned | 1,284,501 | — | — |
+| null_symbol | 0 | 0.0000% | 🟢 OK |
+| invalid_price (≤0 or NULL) | **3** | 0.0002% | 🟡 WARN |
+| invalid_qtty (≤0 or NULL) | 0 | 0.0000% | 🟢 OK |
+| null_time | 0 | 0.0000% | 🟢 OK |
+
+---
+
+## 🟡 P2 — Dữ Liệu Tổng Hợp
+
+### P2.1 OHLC Nến — Count Parity
+
+| Symbol | OHLC V2 | OHLC Aggregated | Diff | Status |
+|---|---|---|---|---|
+| (all) | 28,440 | 28,440 | 0 | 🟢 MATCH |
+
+### P2.2 Market Index — Cập nhật Chỉ Số
+
+| Index | Count V3 | Count V2 | Diff | Last V3 | Last V2 | Status |
+|---|---|---|---|---|---|---|
+| VNINDEX | 4,812 | 4,812 | 0 | 1,287.45 | 1,287.45 | 🟢 MATCH |
+| VN30 | 4,810 | 4,810 | 0 | 1,342.10 | 1,342.10 | 🟢 MATCH |
+| HNX | 3,204 | 3,204 | 0 | 221.38 | 221.38 | 🟢 MATCH |
+
+---
+
+## 🔵 Cross-cutting — Kỹ Thuật
+
+### C1 Duplicate Key
+
+| Bảng | Key trùng | Số symbol bị dup | Status |
+|---|---|---|---|
+| `krx_mdds_v3_ticks` | (symbol, sending_time) | 0 | 🟢 OK |
+| `krx_mdds_v3_top_prices` | (symbol, sending_time) | 0 | 🟢 OK |
+
+### C2 Late-Arriving (created_at vs sending_time > 30s)
+
+| Symbol | late_count | max_lag_seconds | avg_lag_seconds |
+|---|---|---|---|
+| TCB | **142** | **187.4** | 45.2 |
+| SSI | **38** | 62.1 | 34.8 |
+
+> 🟡 **WARN:** TCB có max lag 187s — kiểm tra Kafka consumer partition của TCB.
+
+### C4 Ingestion Rate theo Giờ
+
+| Giờ | Tick Count | Active Symbols | Ghi chú |
+|---|---|---|---|
+| 09:00 | 12,401 | 412 | — |
+| 10:00 | 284,102 | 697 | — |
+| 11:00 | **1,204** | **89** | 🔴 BẤT THƯỜNG — drop đột ngột |
+| 12:00 | 0 | 0 | Nghỉ trưa bình thường |
+| 13:00 | 318,920 | 712 | — |
+| 14:00 | 290,451 | 703 | — |
+| 15:00 | 377,423 | 698 | — |
+
+> 🔴 **CRITICAL:** Bucket 11:00 chỉ có 1,204 tick — drop 99.6% so với bình thường. Kiểm tra Kafka lag và pipeline log lúc 11:xx.
+
+---
+
+## 📌 Kết Luận & Khuyến Nghị
+
+### Tổng Hợp Trạng Thái
+
+| Priority | Số check | 🟢 PASS | 🟡 WARN | 🔴 FAIL |
+|---|---|---|---|---|
+| P1 Giá & Khối lượng | 6 | 3 | 1 | **2** |
+| P2 Tổng hợp | 3 | 3 | 0 | 0 |
+| Cross-cutting | 4 | 2 | 1 | **1** |
+
+### Hành Động Cần Thực Hiện (theo thứ tự ưu tiên)
+
+| # | Mức | Vấn đề | Hành động | Assignee |
+|---|---|---|---|---|
+| 1 | 🔴 CRITICAL | FPT: 18 tick giá khác V3 vs Raw | Kiểm tra parser giá pipeline v3, so sánh log Kafka offset FPT bucket 09-15h | DEV |
+| 2 | 🔴 CRITICAL | Ingestion drop 99.6% lúc 11:00-11:59 | Kiểm tra Kafka consumer lag, pipeline restart log | DEV/OPS |
+| 3 | 🟡 WARN | TCB late tick max 187s | Kiểm tra Kafka partition assignment TCB, consumer throughput | DEV |
+| 4 | 🟡 WARN | 3 tick có invalid_price | Truy vấn chi tiết 3 tick đó để xác định symbol, gửi bug report | QA |
+
+### Kết Luận
+
+> Ngày 2026-09-17: **KHÔNG ĐẠT** — Phát hiện 2 vấn đề Critical cần xử lý trước EOD.
+````
+
+---
+
+**Quy tắc icon:**
+| Icon | Nghĩa |
+|---|---|
+| 🟢 MATCH / OK | Không phát hiện sai lệch |
+| 🟡 WARN | Sai lệch nhỏ, cần theo dõi |
+| 🔴 DISCREPANCY / CRITICAL | Sai lệch nghiêm trọng, phải xử lý ngay |
+| — | Không áp dụng |
+
+
+
+---
+
+## Xử Lý Lỗi
+
+| Lỗi | Hành động |
+|---|---|
+| HTTP 401/403 | Chạy `npm run metabase:login` để làm mới token SSO, sau đó thử lại |
+| Query timeout | Thêm filter hẹp hơn (symbol cụ thể, time range ngắn hơn) |
+| `Seq Scan` trên bảng lớn | Kiểm tra lại thứ tự WHERE clause — đảm bảo partition key đứng trước |
+| Kết quả rỗng | Xác nhận ngày có phiên giao dịch (không phải cuối tuần/lễ) |
+
+---
+
+## Tham Chiếu Query Catalog
+
+File: `assets/reconciliation-queries.json`
+
+**Nhóm Count Parity (đối chiếu số lượng):**
+`master-dashboard` | `recon-ticks` | `recon-ticks-raw` | `recon-topprice` | `recon-expected-price` | `recon-ohlc` | `recon-indices` | `recon-board-events` | `recon-symbol-board-events` | `recon-foreign-trading` | `recon-missing-symbols` | `recon-ticks-extra`
+
+**Nhóm Value Drift (sai lệch giá trị thực):**
+`audit-tick-price-drift` | `audit-topprice-value-drift`
+
+**Nhóm NULL / Invalid Scan:**
+`audit-null-invalid-ticks` | `audit-null-security-def`
+
+**Nhóm Duplicate Key:**
+`audit-duplicate-ticks` | `audit-duplicate-top-prices`
+
+**Nhóm created_at Dimension (ghi DB muộn):**
+`audit-late-ticks` | `audit-late-write-after-session` | `audit-ingestion-rate` | `audit-clock-skew`
+
+**Nhóm Gap Detection:**
+`audit-ohlc-gap`

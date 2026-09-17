@@ -183,5 +183,180 @@
     "description": "Tìm kiếm các mã chứng khoán có trong bảng gốc của Sở (security_definitions) nhưng bị thiếu trong V3 hoặc ngược lại",
     "params": {},
     "sql": "SELECT COALESCE(v3.symbol, v2.symbol) as symbol, CASE WHEN v3.symbol IS NULL THEN 'THIEU_TREN_V3' WHEN v2.symbol IS NULL THEN 'THIEU_TREN_V2_SO' ELSE 'KHOP' END as status, v3.basic_price as basic_price_v3, v2.basic_price as basic_price_v2, v3.floor_code as floor_v3, v2.security_exchange as floor_v2 FROM (SELECT DISTINCT symbol, basic_price, floor_code FROM security_definition_v3) v3 FULL OUTER JOIN (SELECT DISTINCT symbol, basic_price, security_exchange FROM security_definitions) v2 ON v3.symbol = v2.symbol WHERE v3.symbol IS NULL OR v2.symbol IS NULL ORDER BY status, symbol"
+  },
+
+  "audit-tick-price-drift": {
+    "name": "[Value Drift] Phát hiện Tick cùng key nhưng giá khớp khác nhau (V3 vs Raw)",
+    "topic": "Trade (Price X)",
+    "database": "timescale",
+    "description": "JOIN krx_mdds_v3_ticks và ticks (raw Sở) theo (symbol, sending_time/time) để phát hiện các bản ghi có COUNT khớp nhưng match_price khác nhau — bug ẩn không thể phát hiện bằng COUNT(*) đơn thuần",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch (YYYY-MM-DD hoặc CURRENT_DATE)"
+      }
+    },
+    "sql": "SELECT v3.symbol, COUNT(*) as drift_count, MIN(v3.match_price - r.match_price) as min_price_diff, MAX(v3.match_price - r.match_price) as max_price_diff, ROUND(AVG(ABS(v3.match_price - r.match_price))::numeric, 2) as avg_abs_diff FROM krx_mdds_v3_ticks v3 JOIN ticks r ON v3.symbol = r.symbol AND v3.sending_time = r.time WHERE v3.sending_time >= '{{date}}'::date AND v3.sending_time < '{{date}}'::date + INTERVAL '1 day' AND v3.match_price IS DISTINCT FROM r.match_price GROUP BY v3.symbol ORDER BY drift_count DESC LIMIT 50"
+  },
+
+  "audit-topprice-value-drift": {
+    "name": "[Value Drift] Phát hiện Sổ lệnh TopPrice sai giá bid/ask (V3 vs Raw)",
+    "topic": "Quote TopPrice",
+    "database": "timescale",
+    "description": "JOIN krx_mdds_v3_top_prices và top_prices theo (symbol, sending_time) để phát hiện sai lệch bid_price_1 / ask_price_1 — khách hàng nhìn thấy giá mua/bán không đúng thực tế Sở",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "SELECT v3.symbol, COUNT(*) FILTER (WHERE v3.bid_price_1 IS DISTINCT FROM r.bid_price_1) as bid1_drift_count, COUNT(*) FILTER (WHERE v3.ask_price_1 IS DISTINCT FROM r.ask_price_1) as ask1_drift_count, COUNT(*) FILTER (WHERE v3.bid_price_1 IS DISTINCT FROM r.bid_price_1 OR v3.ask_price_1 IS DISTINCT FROM r.ask_price_1) as total_drift_count FROM krx_mdds_v3_top_prices v3 JOIN top_prices r ON v3.symbol = r.symbol AND v3.sending_time = r.time WHERE v3.sending_time >= '{{date}}'::date AND v3.sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY v3.symbol HAVING COUNT(*) FILTER (WHERE v3.bid_price_1 IS DISTINCT FROM r.bid_price_1 OR v3.ask_price_1 IS DISTINCT FROM r.ask_price_1) > 0 ORDER BY total_drift_count DESC LIMIT 30"
+  },
+
+  "audit-null-invalid-ticks": {
+    "name": "[NULL Scan] Phát hiện Tick có giá trị NULL hoặc không hợp lệ",
+    "topic": "Trade (Price X)",
+    "database": "timescale",
+    "description": "Quét toàn bộ krx_mdds_v3_ticks trong ngày để đếm số bản ghi có symbol NULL, match_price <= 0, match_qtty <= 0, hoặc sending_time NULL — các giá trị này không hợp lệ về nghiệp vụ",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "SELECT COUNT(*) as total_scanned, COUNT(*) FILTER (WHERE symbol IS NULL OR symbol = '') as null_symbol, COUNT(*) FILTER (WHERE match_price IS NULL OR match_price <= 0) as invalid_price, COUNT(*) FILTER (WHERE match_qtty IS NULL OR match_qtty <= 0) as invalid_qtty, COUNT(*) FILTER (WHERE sending_time IS NULL) as null_time, ROUND(COUNT(*) FILTER (WHERE match_price IS NULL OR match_price <= 0)::numeric * 100.0 / NULLIF(COUNT(*), 0), 4) as invalid_price_pct FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day'"
+  },
+
+  "audit-null-security-def": {
+    "name": "[NULL Scan] Mã Niêm Yết thiếu trường bắt buộc (basic_price, floor_code, lot_size)",
+    "topic": "Security Definition (d)",
+    "database": "timescale",
+    "description": "Tìm các mã trong security_definition_v3 có basic_price NULL/0, floor_code NULL/rỗng, lot_size NULL/0 — ảnh hưởng trực tiếp đến tính toán biên độ và điều kiện đặt lệnh",
+    "params": {},
+    "sql": "SELECT symbol, basic_price, floor_code, lot_size, CASE WHEN basic_price IS NULL OR basic_price <= 0 THEN 'INVALID_BASIC_PRICE' WHEN floor_code IS NULL OR floor_code = '' THEN 'MISSING_FLOOR_CODE' WHEN lot_size IS NULL OR lot_size <= 0 THEN 'INVALID_LOT_SIZE' ELSE 'MULTIPLE_ISSUES' END as primary_issue FROM security_definition_v3 WHERE basic_price IS NULL OR basic_price <= 0 OR floor_code IS NULL OR floor_code = '' OR lot_size IS NULL OR lot_size <= 0 ORDER BY primary_issue, symbol LIMIT 50"
+  },
+
+  "audit-duplicate-ticks": {
+    "name": "[Duplicate] Phát hiện Tick trùng khóa chính (symbol, sending_time)",
+    "topic": "Trade (Price X)",
+    "database": "timescale",
+    "description": "Phát hiện các bản ghi trong krx_mdds_v3_ticks có cùng (symbol, sending_time) — trùng key làm inflate tổng khối lượng và số lượng tick, gây sai COUNT/SUM ngay cả khi V3 vs V2 không lệch",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "SELECT symbol, sending_time, COUNT(*) as dup_count FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol, sending_time HAVING COUNT(*) > 1 ORDER BY dup_count DESC, symbol LIMIT 50"
+  },
+
+  "audit-duplicate-top-prices": {
+    "name": "[Duplicate] Phát hiện TopPrice trùng khóa chính (symbol, sending_time)",
+    "topic": "Quote TopPrice",
+    "database": "timescale",
+    "description": "Phát hiện các bản ghi trong krx_mdds_v3_top_prices có cùng (symbol, sending_time) — gây inflate số lượt cập nhật sổ lệnh",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "SELECT symbol, sending_time, COUNT(*) as dup_count FROM krx_mdds_v3_top_prices WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY symbol, sending_time HAVING COUNT(*) > 1 ORDER BY dup_count DESC, symbol LIMIT 50"
+  },
+
+  "audit-late-ticks": {
+    "name": "[created_at] Tick đến muộn — lag giữa sending_time và created_at",
+    "topic": "Trade (Price X)",
+    "database": "timescale",
+    "description": "SAFE: anchor sending_time trước (partition key), sau đó filter created_at trong chunk. Phát hiện tick được ghi vào DB muộn hơn 30 giây so với thời điểm Sở phát tin — dấu hiệu nghẽn Kafka consumer hoặc pipeline retry",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      },
+      "lag_threshold_seconds": {
+        "type": "number",
+        "required": false,
+        "default": 30,
+        "description": "Ngưỡng lag tính bằng giây để coi là 'đến muộn'"
+      }
+    },
+    "sql": "SELECT symbol, COUNT(*) as late_count, ROUND(MAX(EXTRACT(EPOCH FROM (created_at - sending_time)))::numeric, 2) as max_lag_seconds, ROUND(AVG(EXTRACT(EPOCH FROM (created_at - sending_time)))::numeric, 2) as avg_lag_seconds FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND created_at > sending_time + make_interval(secs => {{lag_threshold_seconds}}) GROUP BY symbol ORDER BY max_lag_seconds DESC LIMIT 30"
+  },
+
+  "audit-late-write-after-session": {
+    "name": "[created_at] Bản ghi ghi vào DB sau khi phiên giao dịch kết thúc (15:00)",
+    "topic": "Trade (Price X)",
+    "database": "timescale",
+    "description": "SAFE: anchor sending_time trước, sau đó filter created_at > 15:00. Phát hiện pipeline retry hoặc consumer lag cực lớn — bản ghi có sending_time trong phiên nhưng được ghi vào DB sau khi phiên đã đóng",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "SELECT symbol, COUNT(*) as late_write_count, MIN(created_at) as earliest_late_write, MAX(created_at) as latest_late_write, ROUND(MAX(EXTRACT(EPOCH FROM (created_at - sending_time)) / 60)::numeric, 2) as max_write_lag_minutes FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND created_at > '{{date}}'::date + INTERVAL '15 hours' GROUP BY symbol HAVING COUNT(*) > 0 ORDER BY late_write_count DESC LIMIT 50"
+  },
+
+  "audit-ingestion-rate": {
+    "name": "[created_at] Tốc độ ingestion tick theo giờ trong ngày",
+    "topic": "Trade (Price X)",
+    "database": "timescale",
+    "description": "SAFE: anchor sending_time trước, dùng time_bucket trên created_at trong chunk đã thu hẹp. Phát hiện bucket giờ có tick count bất thường thấp — dấu hiệu pipeline bị gián đoạn trong khoảng thời gian đó",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "SELECT time_bucket('1 hour', created_at) as hour_bucket, COUNT(*) as tick_count, COUNT(DISTINCT symbol) as active_symbols FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' GROUP BY hour_bucket ORDER BY hour_bucket"
+  },
+
+  "audit-clock-skew": {
+    "name": "[created_at] Phát hiện Clock Skew — created_at sớm hơn sending_time",
+    "topic": "Trade (Price X)",
+    "database": "timescale",
+    "description": "SAFE: anchor sending_time trước. Phát hiện bản ghi có created_at < sending_time - 1 giây — dấu hiệu đồng hồ server pipeline bị lệch so với đồng hồ Sở, dẫn đến timestamp không đáng tin cậy",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "SELECT symbol, sending_time, created_at, ROUND(EXTRACT(EPOCH FROM (sending_time - created_at))::numeric, 3) as skew_seconds FROM krx_mdds_v3_ticks WHERE sending_time >= '{{date}}'::date AND sending_time < '{{date}}'::date + INTERVAL '1 day' AND created_at < sending_time - INTERVAL '1 second' ORDER BY skew_seconds DESC LIMIT 50"
+  },
+
+  "audit-ohlc-gap": {
+    "name": "[Gap] Phát hiện Nến OHLC bị thiếu trong phiên liên tục",
+    "topic": "OHLC Candlesticks",
+    "database": "timescale",
+    "description": "Phát hiện các slot 1 phút trong phiên liên tục (09:15 - 14:30) không có nến OHLC cho top 20 mã giao dịch nhiều nhất — dấu hiệu pipeline tổng hợp nến bị lỗi hoặc thiếu tick nguồn",
+    "params": {
+      "date": {
+        "type": "string",
+        "required": false,
+        "default": "CURRENT_DATE",
+        "description": "Ngày giao dịch"
+      }
+    },
+    "sql": "WITH top_symbols AS (SELECT symbol FROM krx_mdds_v2_stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day' AND resolution = '1' GROUP BY symbol ORDER BY COUNT(*) DESC LIMIT 20), expected_slots AS (SELECT s.symbol, generate_series('{{date}}'::timestamp + INTERVAL '9 hours 15 minutes', '{{date}}'::timestamp + INTERVAL '14 hours 29 minutes', INTERVAL '1 minute') as slot FROM top_symbols s), actual AS (SELECT symbol, time_bucket('1 minute', time) as slot FROM krx_mdds_v2_stock_ohlc WHERE time >= '{{date}}'::date AND time < '{{date}}'::date + INTERVAL '1 day' AND resolution = '1') SELECT e.symbol, COUNT(*) as missing_candles FROM expected_slots e LEFT JOIN actual a ON e.symbol = a.symbol AND e.slot = a.slot WHERE a.slot IS NULL GROUP BY e.symbol HAVING COUNT(*) > 0 ORDER BY missing_candles DESC"
   }
 }
