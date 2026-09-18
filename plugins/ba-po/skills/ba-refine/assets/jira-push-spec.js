@@ -132,7 +132,9 @@ function toPlainAdf(markdown) {
 // convert riêng ô đó rồi bóc content của paragraph đầu tiên.
 function inlineContent(text) {
     if (!text) return [];
-    const doc = toPlainAdf(text);
+    // md-to-adf giữ nguyên <br> dưới dạng text thường, applyHardBreaks sẽ quét
+    // và chuyển đổi trực tiếp thành node hardBreak.
+    const doc = applyHardBreaks(toPlainAdf(text));
     const first = (doc.content || [])[0];
     if (!first || !first.content) return text ? [{ type: 'text', text }] : [];
     return first.content;
@@ -177,7 +179,7 @@ function markdownTableToAdf(tableLines) {
     };
 }
 
-// Thay sentinel trong các text node bằng node hardBreak, giữ nguyên marks của
+// Thay sentinel và thẻ <br> trong các text node bằng node hardBreak, giữ nguyên marks của
 // đoạn text bao quanh. Jira ADF cấm hardBreak bên trong codeBlock.
 function applyHardBreaks(node, inCodeBlock = false) {
     if (!node || typeof node !== 'object') return node;
@@ -188,12 +190,16 @@ function applyHardBreaks(node, inCodeBlock = false) {
         const rebuilt = [];
 
         for (const child of node.content) {
-            if (child.type === 'text' && child.text.includes(HARD_BREAK_TOKEN)) {
+            // Quét tìm HARD_BREAK_TOKEN (ngắt dòng mềm) hoặc thẻ <br> (hard break HTML)
+            if (child.type === 'text' && (child.text.includes(HARD_BREAK_TOKEN) || /<br\s*\/?>/i.test(child.text))) {
                 if (isCodeBlock) {
+                    // Trong codeBlock, chỉ xóa HARD_BREAK_TOKEN (sentinel), giữ nguyên <br> như text thường.
                     child.text = child.text.split(HARD_BREAK_TOKEN).join('');
                     rebuilt.push(child);
                 } else {
-                    const parts = child.text.split(HARD_BREAK_TOKEN);
+                    // Chuẩn hóa <br> thành HARD_BREAK_TOKEN để xử lý cắt chuỗi thống nhất
+                    const normalizedText = child.text.replace(/<br\s*\/?>/gi, HARD_BREAK_TOKEN);
+                    const parts = normalizedText.split(HARD_BREAK_TOKEN);
                     parts.forEach((part, index) => {
                         if (index > 0) rebuilt.push({ type: 'hardBreak' });
                         // Khoảng trắng thừa ở đầu dòng mới là do md-to-adf nối dòng,

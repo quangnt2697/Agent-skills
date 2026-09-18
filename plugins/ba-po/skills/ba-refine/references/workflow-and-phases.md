@@ -235,7 +235,7 @@ File template là **skeleton thuần** — mọi dòng trong đó đều là n�
    - Gọi kỹ năng `/ba-user-story-writing` để tinh chỉnh User Story + AC. **AC BẮT BUỘC** viết trong codeblock `gherkin` với ≥3 Scenario (Happy, Edge, Validation).
    - **Diagram Preference Gate (BẮT BUỘC HỎI USER TRƯỚC KHI TẠO FLOW):**
      - Đề xuất loại flow (Mermaid, Text, Không cần).
-     - Nếu user chọn Mermaid: Gọi `/ba-process-modeling`, render PNG bằng `assets/render.mjs`, lưu ảnh và gắn placeholder.
+     - Nếu user chọn Mermaid: Gọi `/ba-process-modeling` để thiết kế mã Mermaid, sau đó gọi `/ba-design-flowchart` để render thành file PNG, lưu ảnh vào thư mục `diagrams/` và gắn placeholder vào tài liệu.
      - Nếu user chọn Text: Viết list có đánh số.
 
 3. **Tính confidence score.**
