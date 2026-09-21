@@ -40,65 +40,90 @@ if (project) {
     cwd = path.resolve(cwd, project);
   }
 } else {
-  // Nếu không truyền project, kiểm tra xem workspace issueKey nằm ở project nào
-  const currentTestDir = path.resolve(cwd, 'workspace', issueKey, 'test');
-  if (!fs.existsSync(currentTestDir)) {
-    for (const [pName, pPath] of Object.entries(projects)) {
-      if (fs.existsSync(path.resolve(pPath, 'workspace', issueKey, 'test'))) {
-        cwd = pPath;
-        project = pName;
-        break;
+  // Nếu không truyền project: ưu tiên đường dẫn duy nhất trong projects.json nếu có
+  const projectKeys = Object.keys(projects);
+  if (projectKeys.length === 1) {
+    cwd = projects[projectKeys[0]];
+    project = projectKeys[0];
+  } else {
+    // Nếu có nhiều, tự động tìm xem workspace issueKey nằm ở project nào
+    const currentTestDir = path.resolve(cwd, 'workspace', issueKey, 'test');
+    if (!fs.existsSync(currentTestDir)) {
+      for (const [pName, pPath] of Object.entries(projects)) {
+        if (fs.existsSync(path.resolve(pPath, 'workspace', issueKey))) {
+          cwd = pPath;
+          project = pName;
+          break;
+        }
       }
     }
   }
 }
 
-// 2. Định vị file test: Ưu tiên workspace/[issueKey]/test/steps/test*.py
-const stepsDir = path.resolve(cwd, 'workspace', issueKey, 'test', 'steps');
-const testDir = path.resolve(cwd, 'workspace', issueKey, 'test');
+// Hàm kiểm tra file test: Tên file luôn bắt đầu hoặc kết thúc bằng "test" (VD: test_*.py, test-*.py, *_test.py, *-test.py)
+function isTestFile(filename) {
+  if (!filename.toLowerCase().endsWith('.py')) return false;
+  const baseName = filename.slice(0, -3).toLowerCase();
+  return baseName.startsWith('test') || baseName.endsWith('test');
+}
 
-let testTarget = '';
-let targetFolder = '';
+// 2. Định vị file test: Ưu tiên workspace/[issueKey]/test/steps/ rồi đến workspace/[issueKey]/test/
+const ticketDir = path.resolve(cwd, 'workspace', issueKey);
+const stepsDir = path.resolve(ticketDir, 'test', 'steps');
+const testDir = path.resolve(ticketDir, 'test');
+
+let matchedFiles = [];
+let targetDir = '';
 
 if (fs.existsSync(stepsDir)) {
   try {
     const files = fs.readdirSync(stepsDir);
-    const testFiles = files.filter(f => f.startsWith('test') && f.endsWith('.py'));
-    if (testFiles.length > 0) {
-      testTarget = 'workspace/' + issueKey + '/test/steps/test*.py';
-      targetFolder = 'workspace/' + issueKey + '/test/steps';
+    matchedFiles = files.filter(isTestFile).map(f => path.join('workspace', issueKey, 'test', 'steps', f));
+    if (matchedFiles.length > 0) {
+      targetDir = 'workspace/' + issueKey + '/test/steps';
     }
   } catch (e) {}
 }
 
-if (!testTarget && fs.existsSync(testDir)) {
+if (matchedFiles.length === 0 && fs.existsSync(testDir)) {
   try {
     const files = fs.readdirSync(testDir);
-    const testFiles = files.filter(f => f.startsWith('test') && f.endsWith('.py'));
-    if (testFiles.length > 0) {
-      testTarget = 'workspace/' + issueKey + '/test/test*.py';
-      targetFolder = 'workspace/' + issueKey + '/test';
+    matchedFiles = files.filter(isTestFile).map(f => path.join('workspace', issueKey, 'test', f));
+    if (matchedFiles.length > 0) {
+      targetDir = 'workspace/' + issueKey + '/test';
     }
   } catch (e) {}
 }
 
 // Nếu không tìm thấy file test
-if (!testTarget) {
-  const checkedPath = 'workspace/' + issueKey + '/test/steps/test*.py';
+if (matchedFiles.length === 0) {
+  let detailMsg = '';
+  if (!fs.existsSync(ticketDir)) {
+    detailMsg = 'Thư mục ticket workspace/' + issueKey + ' chưa tồn tại trong dự án ' + cwd;
+  } else if (!fs.existsSync(testDir)) {
+    const existingDirs = fs.readdirSync(ticketDir).filter(f => {
+      try { return fs.statSync(path.join(ticketDir, f)).isDirectory(); } catch(e) { return false; }
+    });
+    detailMsg = 'Ticket ' + issueKey + ' hiện tại chưa có thư mục kiểm thử `test/` (mới chỉ có các thư mục: ' + (existingDirs.length > 0 ? existingDirs.join(', ') : 'trống') + '). Cần chạy `qa-auto-design` để sinh kịch bản test trước.';
+  } else {
+    detailMsg = 'Thư mục `workspace/' + issueKey + '/test` đã tồn tại nhưng không tìm thấy file testscript nào (file cần bắt đầu hoặc kết thúc bằng \"test\", ví dụ: test_*.py, test-*.py, *_test.py).';
+  }
+
   return [{
     json: {
       stdout: '',
-      stderr: 'Không tìm thấy file kiểm thử tại: ' + checkedPath + ' (Thư mục dự án: ' + cwd + ')',
+      stderr: detailMsg,
       exitCode: 4,
-      error: { message: 'Không tìm thấy file test cho ticket ' + issueKey + '.' },
+      error: { message: detailMsg },
       project: project,
       issueKey: issueKey
     }
   }];
 }
 
-// 3. Thực thi Pytest
-const command = 'pytest ' + testTarget + ' -v --tb=short';
+// 3. Thực thi Pytest với danh sách file tìm được
+const fileArgs = matchedFiles.join(' ');
+const command = 'pytest ' + fileArgs + ' -v --tb=short -o python_files="test*.py *test.py test-*.py *-test.py test_*.py *_test.py"';
 
 try {
   const result = execSync(command, { encoding: 'utf-8', cwd: cwd, timeout: 120000 });
