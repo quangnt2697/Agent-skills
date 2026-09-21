@@ -198,7 +198,7 @@ plugins/dev/
 | `/learn` hoặc `/save-session` | Tự động đúc kết bài học từ phiên làm việc và lưu thành Rule mới |
 | `/save-checkpoint`            | Nén toàn bộ ngữ cảnh hiện tại thành file trạng thái nhỏ gọn     |
 | `/load-checkpoint`            | Khôi phục trạng thái từ file nén và tự động tiếp tục công việc  |
-| `/flowchart`                  | Render nội dung Mermaid sang ảnh                                |
+| `/flowchart`                  | Render sơ đồ Editorial HTML sang ảnh                            |
 | `/webperf`                    | Audit web performance (Core Web Vitals)                         |
 
 ---

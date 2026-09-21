@@ -235,8 +235,8 @@ File template là **skeleton thuần** — mọi dòng trong đó đều là n�
 2. **Làm giàu nội dung Spec bằng các Kỹ năng Bổ trợ (Sub-processes):**
    - Gọi kỹ năng `/ba-user-story-writing` để tinh chỉnh User Story + AC. **AC BẮT BUỘC** viết trong codeblock `gherkin` với ≥3 Scenario (Happy, Edge, Validation).
    - **Diagram Preference Gate (BẮT BUỘC HỎI USER TRƯỚC KHI TẠO FLOW):**
-     - Đề xuất loại flow (Mermaid, Text, Không cần).
-     - Nếu user chọn Mermaid: Gọi `/ba-process-modeling` để thiết kế mã Mermaid, sau đó gọi `/ba-design-flowchart` để render thành file PNG, lưu ảnh vào thư mục `diagrams/` và gắn placeholder vào tài liệu.
+     - Đề xuất loại flow (Sơ đồ Editorial chuẩn HTML/SVG, Text, Không cần).
+     - Nếu user chọn sơ đồ Editorial: Gọi `/ba-process-modeling` để phân tích nghiệp vụ, sau đó gọi `/ba-design-flowchart` để sinh mã sơ đồ dạng HTML tĩnh. Vì Jira cần ảnh, BẮT BUỘC dùng lệnh export trong `ba-design-flowchart` (`python scripts/export.py`) để xuất file HTML thành PNG, lưu vào thư mục `diagrams/` và gắn placeholder vào tài liệu.
      - Nếu user chọn Text: Viết list có đánh số.
 
 3. **Tính confidence score.**

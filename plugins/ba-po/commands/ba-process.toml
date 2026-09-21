@@ -1,4 +1,4 @@
-description = "[BA/PO] Vẽ Business Process diagram (BPMN, flowchart, swim lane) để visualize quy trình nghiệp vụ. Identify actors, activities, decision points, start/end. Generate Mermaid diagram."
+description = "[BA/PO] Vẽ Business Process diagram (BPMN, flowchart, swim lane) để visualize quy trình nghiệp vụ. Identify actors, activities, decision points, start/end. Generate Editorial HTML/SVG diagram."
 
 prompt = """
 **Persona:** BA/PO (Business Analyst / Product Owner)
@@ -28,8 +28,8 @@ $ARGUMENTS có thể chứa:
    - **Swim Lane** (Multi-Actor): 3+ actors, cross-functional, nhiều handoffs
    - **BPMN** (Formal): Standard notation, compliance documentation
 
-4. **Create Diagram** (Mermaid Syntax):
-   - Generate Mermaid flowchart code
+4. **Create Diagram** (Editorial HTML/SVG):
+   - Generate Editorial HTML flowchart code
    - Swim lanes: Use `subgraph` cho từng actor
    - Annotations: Pain points (🐢 slow, ⚠️ error), metrics (⏱️ time)
    - Colors: Red = bottleneck, Orange = medium issue, Green = improvement
@@ -47,7 +47,7 @@ $ARGUMENTS có thể chứa:
 
 ### Type 1: Flowchart (Simple)
 ```markdown
-```mermaid
+```html
 flowchart TD
     Start([Khách hàng muốn đặt lệnh])
     A[Gọi điện]
@@ -64,7 +64,7 @@ flowchart TD
 
 ### Type 2: Swim Lane (Multi-Actor)
 ```markdown
-```mermaid
+```html
 flowchart TD
     subgraph KH["🧑 Khách hàng"]
         Start([Muốn đặt lệnh])
@@ -117,5 +117,5 @@ flowchart TD
 - Annotate pain points với colors/icons — Visual impact cao hơn text
 - Validate diagram với stakeholders — Ensure accuracy trước khi finalize
 
-LƯU Ý: Tất cả labels trong diagram phải bằng TIẾNG VIỆT (trừ keywords Mermaid như `flowchart`, `subgraph`).
+LƯU Ý: Tất cả labels trong diagram phải bằng TIẾNG VIỆT.
 """

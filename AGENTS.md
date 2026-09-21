@@ -91,8 +91,8 @@ Mỗi skill output có **Confidence Level** (90-100% = High, 70-89% = Medium, <7
 Mọi artifact phải có section `## 📊 Confidence Assessment` ở cuối với confidence level, factors, và blockers.
 - **📖 Chi tiết:** `.claude/rules/confidence-level.md`
 
-## 6. Quy Tắc Thiết Kế Sơ Đồ (Mermaid Rules)
-Khi tạo sơ đồ (flowchart, sequence, BPMN, kiến trúc), **BẮT BUỘC** gọi skill `ba-design-flowchart` và xem hướng dẫn chi tiết tại [mermaid_rules.md](plugins/ba-po/skills/ba-design-flowchart/references/mermaid_rules.md).
+## 6. Quy Tắc Thiết Kế Sơ Đồ (Editorial Diagrams)
+Khi tạo sơ đồ (flowchart, sequence, BPMN, kiến trúc), **BẮT BUỘC** gọi skill `ba-design-flowchart` và xem hướng dẫn chi tiết tại [style-guide.md](plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md) cũng như các quy tắc semantic pattern tương ứng.
 
 ## 7. Cẩm Nang Nghiệp Vụ Chứng Khoán & Fintech (Domain Knowledge Base)
 Khi làm task liên quan đến fintech/chứng khoán, **BẮT BUỘC** mở [references/securities-domain-rules.md](references/securities-domain-rules.md) để tra cứu tài liệu chuyên sâu.
