@@ -97,9 +97,9 @@ Gọi tool `db_query` với:
 
 **Lưu file:**
 ```
-{project-root}/workspace/database/db-recon-{date}.md
+{project-root}/workspace/{issueKey}/test/db-recon-{date}.md
 ```
-Trong đó `{date}` có định dạng `YYYYMMDD`. Ví dụ: `workspace/database/db-recon-20260917.md`.
+Trong đó `{date}` có định dạng `YYYYMMDD`. Ví dụ: `workspace/{issueKey}/test/db-recon-20260917.md`.
 
 ---
 

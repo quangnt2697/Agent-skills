@@ -19,7 +19,7 @@
       "typeVersion": 1.2,
       "position": [
         220,
-        200
+        180
       ]
     },
     {
@@ -30,14 +30,42 @@
       "typeVersion": 1,
       "position": [
         220,
-        400
+        340
       ]
     },
     {
       "parameters": {
-        "url": "={{ ($json.body && $json.body.baseUrl) || $env.ATLASSIAN_BASE_URL || 'https://entrade.atlassian.net' }}/rest/api/3/search?jql=sprint%20in%20openSprints()%20AND%20statusCategory%20!=%20Done&fields=summary,status,assignee,priority,updated",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBasicAuth",
+        "httpMethod": "POST",
+        "path": "sm-standup",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "w1",
+      "name": "Webhook Trigger (sm-standup)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        500
+      ],
+      "webhookId": "sm-standup"
+    },
+    {
+      "parameters": {
+        "url": "={{ ($json.body && $json.body.baseUrl) || $json.baseUrl || $env.ATLASSIAN_BASE_URL || 'https://entrade.atlassian.net' }}/rest/api/3/search?jql=sprint%20in%20openSprints()%20AND%20statusCategory%20!=%20Done&fields=summary,status,assignee,priority,updated",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Basic ' + Buffer.from(($env.ATLASSIAN_EMAIL || '') + ':' + ($env.ATLASSIAN_API_TOKEN || '')).toString('base64') }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
         "options": {}
       },
       "id": "3",
@@ -46,12 +74,13 @@
       "typeVersion": 4.2,
       "position": [
         480,
-        300
-      ]
+        340
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const issues = $input.first().json.issues || [];\nconst now = new Date();\nconst stuckIssues = [];\nconst assigneeWorkload = {};\n\nfor (const issue of issues) {\n  const f = issue.fields;\n  const assignee = f.assignee ? f.assignee.displayName : 'Chưa phân bổ';\n  assigneeWorkload[assignee] = (assigneeWorkload[assignee] || 0) + 1;\n\n  // Kiểm tra ticket bị kẹt > 3 ngày chưa cập nhật\n  const updated = new Date(f.updated);\n  const diffDays = (now - updated) / (1000 * 60 * 60 * 24);\n  if (diffDays >= 3) {\n    stuckIssues.push({\n      key: issue.key,\n      summary: f.summary,\n      assignee: assignee,\n      status: f.status ? f.status.name : '',\n      stuckDays: Math.round(diffDays)\n    });\n  }\n}\n\nlet reportText = `### 📋 BÁO CÁO DAILY STANDUP (${now.toISOString().split('T')[0]})\\n`;\nreportText += `- **Tổng số task đang mở:** ${issues.length}\\n`;\nreportText += `- **Cảnh báo Task bị treo (>3 ngày):** ${stuckIssues.length}\\n\\n`;\n\nif (stuckIssues.length > 0) {\n  reportText += `#### 🚨 Danh sách Task bị tắc nghẽn (Impediments):\\n`;\n  for (const s of stuckIssues) {\n    reportText += `- **[${s.key}]** ${s.summary} (👤 ${s.assignee} | ⏳ ${s.stuckDays} ngày chưa cập nhật)\\n`;\n  }\n}\n\nreturn [{ json: { reportText, totalIssues: issues.length, stuckCount: stuckIssues.length } }];"
+        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\n\nlet triggerSource = 'mattermost';\ntry {\n  if ($('Webhook Trigger (sm-standup)').first()) {\n    triggerSource = 'webhook';\n  }\n} catch (e) {\n  triggerSource = 'mattermost';\n}\n\n// ── Xử lý lỗi khi không kết nối được Jira API ───────────────────────────────\nif (json.error || json.errorMessages || (json.message && !json.issues)) {\n  const errMsg = (json.errorMessages && json.errorMessages.join(', ')) || \n                 (json.error && (json.error.message || json.error.description)) || \n                 json.message || 'Không thể kết nối đến Jira Search API';\n  const reportText = `🚨 **[Lỗi Báo Cáo Daily Standup]** Không thể lấy danh sách Sprint đang mở:\\n> ${errMsg}\\n\\n*Gợi ý: Kiểm tra cấu hình ATLASSIAN_BASE_URL, ATLASSIAN_EMAIL và API Token trong file .env.*`;\n  \n  return [{\n    json: {\n      isError: true,\n      error: errMsg,\n      reportText: reportText,\n      totalIssues: 0,\n      stuckCount: 0,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\n// ── Phân tích dữ liệu Sprint ────────────────────────────────────────────────\nconst issues = json.issues || [];\nconst now = new Date();\nconst stuckIssues = [];\nconst assigneeWorkload = {};\n\nfor (const issue of issues) {\n  const f = issue.fields;\n  const assignee = f.assignee ? f.assignee.displayName : 'Chưa phân bổ';\n  assigneeWorkload[assignee] = (assigneeWorkload[assignee] || 0) + 1;\n\n  // Kiểm tra ticket bị kẹt > 3 ngày chưa cập nhật\n  const updated = new Date(f.updated);\n  const diffDays = (now - updated) / (1000 * 60 * 60 * 24);\n  if (diffDays >= 3) {\n    stuckIssues.push({\n      key: issue.key,\n      summary: f.summary,\n      assignee: assignee,\n      status: f.status ? f.status.name : '',\n      stuckDays: Math.round(diffDays)\n    });\n  }\n}\n\nlet reportText = `### 📋 BÁO CÁO DAILY STANDUP (${now.toISOString().split('T')[0]})\\n`;\nreportText += `- **Tổng số task đang mở:** ${issues.length}\\n`;\nreportText += `- **Cảnh báo Task bị treo (>3 ngày):** ${stuckIssues.length}\\n\\n`;\n\nif (stuckIssues.length > 0) {\n  reportText += `#### 🚨 Danh sách Task bị tắc nghẽn (Impediments):\\n`;\n  for (const s of stuckIssues) {\n    reportText += `- **[${s.key}]** ${s.summary} (👤 ${s.assignee} | ⏳ ${s.stuckDays} ngày chưa cập nhật)\\n`;\n  }\n}\n\nreturn [{\n  json: {\n    isError: false,\n    reportText: reportText,\n    totalIssues: issues.length,\n    stuckCount: stuckIssues.length,\n    _triggerSource: triggerSource\n  }\n}];"
       },
       "id": "4",
       "name": "Analyze Velocity & Blockers",
@@ -59,7 +88,36 @@
       "typeVersion": 2,
       "position": [
         700,
-        300
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json._triggerSource === 'webhook' ? 0 : 1 }}",
+        "numberOutputs": 2
+      },
+      "id": "5",
+      "name": "Route by Caller",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        920,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "6",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1140,
+        240
       ]
     },
     {
@@ -77,17 +135,18 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"text\": \"{{ $json.reportText }}\"\n}",
+        "jsonBody": "={{ JSON.stringify({ text: $json.reportText }) }}",
         "options": {}
       },
-      "id": "5",
-      "name": "Respond to Caller",
+      "id": "7",
+      "name": "Return Report to Mattermost",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        920,
-        300
-      ]
+        1140,
+        440
+      ],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -113,6 +172,17 @@
         ]
       ]
     },
+    "Webhook Trigger (sm-standup)": {
+      "main": [
+        [
+          {
+            "node": "Query Active Sprint Issues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Query Active Sprint Issues": {
       "main": [
         [
@@ -128,7 +198,25 @@
       "main": [
         [
           {
-            "node": "Respond to Caller",
+            "node": "Route by Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Caller": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Report to Mattermost",
             "type": "main",
             "index": 0
           }

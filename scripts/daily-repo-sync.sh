@@ -13,7 +13,7 @@
 set -uo pipefail
 
 SCAN_RAW="${PROJECT_SCAN_DIRS:-}"
-PAT="${GITLAB_PERSONAL_ACCESS_TOKEN:-}"
+PAT="${GITLAB_PERSONAL_ACCESS_TOKEN:-${GITLAB_PAT:-}}"
 
 # Counters
 TOTAL=0; PULLED=0; UP_TO_DATE=0; DIRTY_COUNT=0; ERR_COUNT=0
@@ -78,7 +78,7 @@ for BASE_DIR in "${DIRS[@]}"; do
     # ── Có commit mới — kiểm tra dirty trước khi pull ───────────────────────
     if [ "$DIRTY_FILES" -gt "0" ]; then
       DIRTY_COUNT=$((DIRTY_COUNT + 1))
-      TOP_FILES="$(echo "$DIRTY_OUTPUT" | head -2 | awk '{print $2}' | tr '\\n' ',' | sed 's/,$//')"
+      TOP_FILES="$(echo "$DIRTY_OUTPUT" | head -2 | awk '{print $2}' | tr '\n' ',' | sed 's/,$//')"
       [ "$DIRTY_FILES" -gt "2" ] && TOP_FILES="${TOP_FILES},..."
       
       DIRTY_REPOS="${DIRTY_REPOS}|${REPO_BASE}(${CUR_BRANCH}):${DIRTY_FILES} file(s) chưa commit (${TOP_FILES}) — cần stash/commit thủ công"

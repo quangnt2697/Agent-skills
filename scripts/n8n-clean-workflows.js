@@ -41,9 +41,9 @@ try {
   process.exit(1);
 }
 
-// 3. Import lại 4 workflow chuẩn hóa mới
+// 3. Import lại toàn bộ workflow chuẩn hóa mới
 try {
-  console.log('\n3. Đang import 4 workflow mới nhất từ n8n-workflows/...');
+  console.log('\n3. Đang import toàn bộ workflow mới nhất từ n8n-workflows/...');
   execSync(`n8n import:workflow --separate --input="${workflowsDir}"`, { stdio: 'inherit' });
   console.log('✅ Đã nạp thành công các workflow mới!');
 } catch (err) {
@@ -51,18 +51,31 @@ try {
   process.exit(1);
 }
 
-// 4. Khởi động lại n8n chạy ngầm
+// 4. Kích hoạt (publish) toàn bộ workflow để Webhook và Cron sẵn sàng
 try {
-  console.log('\n4. Đang khởi động lại n8n chạy ngầm...');
+  console.log('\n4. Đang kích hoạt (publish) các workflow...');
+  const idsOutput = execSync(`sqlite3 "${dbPath}" "SELECT id FROM workflow_entity;"`, { encoding: 'utf-8' }).trim();
+  const ids = idsOutput.split('\n').filter(Boolean);
+  for (const id of ids) {
+    execSync(`n8n publish:workflow --id="${id}"`, { stdio: 'ignore' });
+  }
+  console.log(`✅ Đã kích hoạt thành công ${ids.length} workflow!`);
+} catch (err) {
+  console.warn('⚠️ Cảnh báo khi kích hoạt workflow:', err.message);
+}
+
+// 5. Khởi động lại n8n chạy ngầm
+try {
+  console.log('\n5. Đang khởi động lại n8n chạy ngầm...');
   execSync('npm run n8n:bg', { stdio: 'inherit' });
 } catch (e) {
   // ignore
 }
 
-// 5. Kiểm tra danh sách workflow hiện tại
+// 6. Kiểm tra danh sách workflow hiện tại
 try {
-  console.log('\n5. Danh sách workflow hiện tại trên n8n:');
-  const list = execSync('n8n list:workflow', { encoding: 'utf-8' });
+  console.log('\n6. Danh sách workflow hiện tại trên n8n:');
+  const list = execSync(`sqlite3 "${dbPath}" "SELECT id, name, CASE WHEN active = 1 THEN '✅ Active' ELSE '❌ Inactive' END FROM workflow_entity;"`, { encoding: 'utf-8' });
   console.log(list);
 } catch (e) {
   // ignore

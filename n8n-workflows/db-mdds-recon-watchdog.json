@@ -62,11 +62,12 @@
       "position": [
         480,
         300
-      ]
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const res = $input.first().json;\nconst rowCount = (res.data && res.data.rows && res.data.rows[0]) ? res.data.rows[0][0] : 0;\nconst isHealthy = rowCount > 0;\n\nreturn [{\n  json: {\n    environment: 'PRODUCTION',\n    timestamp: new Date().toISOString(),\n    rowCount: rowCount,\n    isHealthy: isHealthy,\n    message: isHealthy \n      ? `✅ [TimescaleDB MDDS PROD] Dữ liệu Ticks V3 hôm nay ổn định: ${rowCount} records.` \n      : `🚨 [TimescaleDB MDDS PROD CẢNH BÁO] Không tìm thấy dữ liệu Ticks V3 cho phiên hôm nay!`\n  }\n}];"
+        "jsCode": "const input = $input.first();\nconst res = (input && input.json) || {};\n\n// ── Xử lý lỗi khi truy vấn Metabase thất bại ────────────────────────────────\nif (res.error || (res.status && res.status >= 400) || !res.data) {\n  const errMsg = (res.error && (res.error.message || res.error.description || res.error)) || res.message || 'Lỗi kết nối hoặc phiên đăng nhập Metabase hết hạn';\n  return [{\n    json: {\n      environment: 'PRODUCTION',\n      timestamp: new Date().toISOString(),\n      rowCount: 0,\n      isHealthy: false,\n      message: `🚨 **[TimescaleDB MDDS Watchdog LỖI]** Không thể truy vấn Metabase Production:\\n> ${errMsg}\\n\\n*Gợi ý: Kiểm tra và làm mới METABASE_PROD_SESSION_TOKEN bằng lệnh: node scripts/metabase-sso-login.js.*`\n    }\n  }];\n}\n\n// ── Kiểm tra tính toàn vẹn dữ liệu MDDS ─────────────────────────────────────\nconst rowCount = (res.data && res.data.rows && res.data.rows[0]) ? res.data.rows[0][0] : 0;\nconst isHealthy = rowCount > 0;\n\nreturn [{\n  json: {\n    environment: 'PRODUCTION',\n    timestamp: new Date().toISOString(),\n    rowCount: rowCount,\n    isHealthy: isHealthy,\n    message: isHealthy \n      ? `✅ **[TimescaleDB MDDS PROD]** Dữ liệu Ticks V3 hôm nay ổn định: **${rowCount.toLocaleString()}** records.` \n      : `🚨 **[TimescaleDB MDDS PROD CẢNH BÁO]** Không tìm thấy dữ liệu Ticks V3 cho phiên hôm nay!`\n  }\n}];"
       },
       "id": "4",
       "name": "Verify Health & Parity",

@@ -10,20 +10,37 @@
       "typeVersion": 1,
       "position": [
         220,
-        300
+        220
       ]
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.first().json.body || {};\nconst testCases = body.testCases || [];\nconst baseUrl = (body.baseUrl || process.env.SQUASH_BASE_URL || '').replace(/\\/$/, '');\nconst apiToken = body.apiToken || process.env.SQUASH_API_TOKEN || '';\nconst folderId = body.folderId || process.env.SQUASH_TC_G31_FOLDER_ID;\nconst projectId = body.projectId || process.env.SQUASH_PROJECT_ID;\n\n// Chuẩn bị danh sách payload động kèm token và URL để gửi song song lên Squash TM\nreturn testCases.map(tc => ({\n  json: {\n    baseUrl: baseUrl,\n    apiToken: apiToken,\n    folderId: folderId,\n    projectId: projectId,\n    name: tc.name || 'Test Case',\n    reference: tc.reference || '',\n    description: tc.description || '',\n    prerequisite: tc.prerequisite || ''\n  }\n}));"
+        "httpMethod": "POST",
+        "path": "squash-batch",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "w1",
+      "name": "Webhook Trigger (squash-batch)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        420
+      ],
+      "webhookId": "squash-batch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json || {};\nconst body = inputData.body || inputData;\nconst testCases = body.testCases || [];\nconst baseUrl = (body.baseUrl || process.env.SQUASH_BASE_URL || '').replace(/\\/$/, '');\nconst apiToken = body.apiToken || process.env.SQUASH_API_TOKEN || '';\nconst folderId = body.folderId || process.env.SQUASH_TC_G31_FOLDER_ID;\nconst projectId = body.projectId || process.env.SQUASH_PROJECT_ID;\n\nlet triggerSource = 'mattermost';\ntry {\n  if ($('Webhook Trigger (squash-batch)').first()) {\n    triggerSource = 'webhook';\n  }\n} catch (e) {\n  triggerSource = 'mattermost';\n}\n\n// Chuẩn bị danh sách payload động kèm token và URL để gửi song song lên Squash TM\nif (testCases.length === 0) {\n  return [{\n    json: {\n      isEmpty: true,\n      baseUrl: baseUrl,\n      apiToken: apiToken,\n      folderId: folderId,\n      projectId: projectId,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nreturn testCases.map(tc => ({\n  json: {\n    baseUrl: baseUrl,\n    apiToken: apiToken,\n    folderId: folderId,\n    projectId: projectId,\n    name: tc.name || 'Test Case',\n    reference: tc.reference || '',\n    description: tc.description || '',\n    prerequisite: tc.prerequisite || '',\n    _triggerSource: triggerSource\n  }\n}));"
       },
       "id": "2",
       "name": "Prepare Test Case Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        440,
-        300
+        460,
+        320
       ]
     },
     {
@@ -53,21 +70,51 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        660,
-        300
-      ]
+        680,
+        320
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const results = $input.all();\nreturn [{\n  json: {\n    status: 'success',\n    totalImported: results.length,\n    createdCases: results.map(r => ({\n      id: r.json.id,\n      name: r.json.name\n    }))\n  }\n}];"
+        "jsCode": "const results = $input.all();\nconst first = results[0] ? results[0].json : {};\nconst triggerSource = first._triggerSource || 'mattermost';\n\nif (first.isEmpty) {\n  return [{\n    json: {\n      status: 'error',\n      isError: true,\n      totalImported: 0,\n      reportText: '⚠️ **[Squash Batch Pusher]** Không tìm thấy danh sách test cases nào trong payload để đẩy lên Squash TM.',\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nconst errors = [];\nconst createdCases = [];\n\nfor (const r of results) {\n  const j = r.json || {};\n  if (j.error || (j.status && j.status >= 400)) {\n    errors.push((j.error && (j.error.message || j.error.description)) || j.message || 'Lỗi HTTP ' + j.status);\n  } else if (j.id) {\n    createdCases.push({ id: j.id, name: j.name || '' });\n  }\n}\n\nconst isError = errors.length > 0;\nlet reportText = '';\nif (isError && createdCases.length === 0) {\n  reportText = `🚨 **[Lỗi Đẩy Test Case Squash TM]** Không thể tạo test case nào lên hệ thống:\\n> ${errors[0]}\\n\\n*Gợi ý: Hãy kiểm tra SQUASH_BASE_URL, SQUASH_API_TOKEN và folderId trong .env.*`;\n} else if (isError && createdCases.length > 0) {\n  reportText = `⚠️ **[Cảnh Báo Squash TM]** Đã tạo thành công **${createdCases.length}** test cases, nhưng có **${errors.length}** test cases thất bại.\\n> Lỗi mẫu: ${errors[0]}`;\n} else {\n  reportText = `### 🧪 Batch Push Squash TM Hoàn Tất\\n- **Tổng số test case đã tạo:** ${createdCases.length}\\n- **Trạng thái:** ✅ Thành công 100%`;\n}\n\nreturn [{\n  json: {\n    status: isError ? (createdCases.length > 0 ? 'partial' : 'failed') : 'success',\n    isError: isError,\n    totalImported: createdCases.length,\n    failedCount: errors.length,\n    createdCases: createdCases,\n    errors: errors,\n    reportText: reportText,\n    _triggerSource: triggerSource\n  }\n}];"
       },
       "id": "4",
       "name": "Aggregate Summary",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        880,
-        300
+        900,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json._triggerSource === 'webhook' ? 0 : 1 }}",
+        "numberOutputs": 2
+      },
+      "id": "5",
+      "name": "Route by Caller",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1120,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "6",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1340,
+        220
       ]
     },
     {
@@ -85,21 +132,33 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"text\": \"```json\\n{{ JSON.stringify($json, null, 2) }}\\n```\"\n}",
+        "jsonBody": "={{ JSON.stringify({ text: $json.reportText }) }}",
         "options": {}
       },
-      "id": "5",
-      "name": "Return Batch Result to QA Agent",
+      "id": "7",
+      "name": "Return Batch Result to Mattermost",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1100,
-        300
-      ]
+        1340,
+        420
+      ],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
     "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Test Case Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (squash-batch)": {
       "main": [
         [
           {
@@ -136,7 +195,25 @@
       "main": [
         [
           {
-            "node": "Return Batch Result to QA Agent",
+            "node": "Route by Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Caller": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Batch Result to Mattermost",
             "type": "main",
             "index": 0
           }

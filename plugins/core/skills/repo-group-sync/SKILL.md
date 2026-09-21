@@ -60,7 +60,7 @@ Kỹ năng `repo-group-sync` tự động hóa việc đưa working tree về tr
 ```
 
 ### Bước 1: Tra Cứu Alias & Định Vị Repository
-Phân tích tham số người dùng truyền vào (hoặc directive từ Discord):
+Phân tích tham số người dùng truyền vào (hoặc directive từ Mattermost):
 - Nếu có cờ `-p <tên>`, tra cứu trong `projects.json`.
 - Nếu alias trỏ tới một git repository cụ thể (chứa thư mục `.git`): Chọn duy nhất repo đó.
 - Nếu alias trỏ tới một thư mục cha chứa nhiều repo con (ví dụ folder `3.1`): Quét và thu thập toàn bộ các git repository con bên trong.

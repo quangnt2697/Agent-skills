@@ -46,10 +46,10 @@ Bây giờ, bạn có thể gọi trực tiếp các lệnh (slash commands) tí
 | Lệnh | Chức năng | Kích hoạt skill tương ứng |
 |---|---|---|
 | `/tech-spec` | Viết đặc tả cấu trúc trước khi code | `dev-spec-driven-development` |
-| `/plan` | Chia nhỏ công việc | `planning-and-task-breakdown` |
-| `/build` | Code từng bước (incrementally) | `incremental-implementation` |
+| `/plan` | Chia nhỏ công việc | `dev-planning-and-task-breakdown` |
+| `/build` | Code từng bước (incrementally) | `dev-incremental-implementation` |
 | `/unit-test` | Chạy workflow TDD | `dev-test-driven-development` |
-| `/review` | Review code 5 phương diện | `review-code-and-quality` |
+| `/review` | Review code 5 phương diện | `cr-review-code-and-quality` |
 
 ---
 

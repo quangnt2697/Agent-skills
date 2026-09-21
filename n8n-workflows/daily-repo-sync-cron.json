@@ -6,42 +6,40 @@
       "parameters": {
         "rule": {
           "type": "cron",
-          "value": "30 8 * * *"
+          "value": "30 8 * * 1-5"
         }
       },
       "id": "1",
-      "name": "Schedule Trigger (08:30)",
+      "name": "Schedule Trigger (08:30 Mon-Fri)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
       "position": [
         200,
-        300
+        200
       ],
-      "notes": "Chạy tự động vào 08:30 sáng mỗi ngày"
+      "notes": "Chạy tự động vào 08:30 sáng từ Thứ 2 đến Thứ 6 hàng tuần"
     },
     {
-      "parameters": {
-        "command": "cd \"{{ $env.AGENT_WORKSPACE_DIR || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills' }}\" && ./scripts/daily-repo-sync.sh"
-      },
+      "parameters": {},
       "id": "2",
-      "name": "Run Daily Sync Script",
-      "type": "n8n-nodes-base.executeCommand",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        440,
-        300
+        200,
+        380
       ]
     },
     {
       "parameters": {
-        "jsCode": "const output = $input.first().json.stdout || '';\nconst lines = output.split('\\n');\n\nlet summaryStr = '';\nconst pulled = [];\nconst dirty = [];\nconst errors = [];\n\nfor (const line of lines) {\n  if (line.startsWith('SUMMARY:')) {\n    summaryStr = line.replace('SUMMARY:', '');\n  } else if (line.startsWith('PULLED|')) {\n    pulled.push(...line.split('|').slice(1));\n  } else if (line.startsWith('DIRTY|')) {\n    dirty.push(...line.split('|').slice(1));\n  } else if (line.startsWith('ERRORS|')) {\n    errors.push(...line.split('|').slice(1));\n  }\n}\n\n// Parse summary\nconst summaryParts = summaryStr.split(',');\nlet total = 0, pulledCount = 0, upToDateCount = 0, dirtyCount = 0, errCount = 0;\nsummaryParts.forEach(part => {\n  const [k, v] = part.split('=');\n  if (k === 'total') total = parseInt(v) || 0;\n  if (k === 'pulled') pulledCount = parseInt(v) || 0;\n  if (k === 'up_to_date') upToDateCount = parseInt(v) || 0;\n  if (k === 'dirty') dirtyCount = parseInt(v) || 0;\n  if (k === 'errors') errCount = parseInt(v) || 0;\n});\n\nlet emoji = '✅';\nif (errCount > 0 || dirtyCount > 0) emoji = '⚠️';\n\nlet msg = emoji + ' **[Daily Repo Sync - 08:30]**\\n';\nmsg += '> Đã quét **' + total + '** repos. Up-to-date: ' + upToDateCount + ' | Đã pull mới: ' + pulledCount + ' | Cần chú ý: ' + dirtyCount + ' | Lỗi: ' + errCount + '\\n';\n\nif (pulled.length > 0) {\n  msg += '\\n✅ **Repos đã cập nhật code mới:**\\n';\n  pulled.forEach(item => {\n    const parts = item.split(':');\n    if (parts.length >= 3) {\n      msg += '- `' + parts[0] + '`: pulled ' + parts[1].replace('↓', '') + ' commits → `' + parts.slice(2).join(':') + '`\\n';\n    }\n  });\n}\n\nif (dirty.length > 0) {\n  msg += '\\n⚠️ **Repos chưa commit (bỏ qua pull):**\\n';\n  dirty.forEach(item => {\n    const parts = item.split(':');\n    if (parts.length >= 2) {\n      msg += '- `' + parts[0] + '`: ' + parts.slice(1).join(':') + '\\n';\n    }\n  });\n}\n\nif (errors.length > 0) {\n  msg += '\\n❌ **Repos gặp lỗi (Fetch/Pull fail):**\\n';\n  errors.forEach(item => {\n    const parts = item.split(':');\n    if (parts.length >= 2) {\n      msg += '- `' + parts[0] + '`: ' + parts.slice(1).join(':') + '\\n';\n    }\n  });\n}\n\nreturn [{ json: { msg, total, pulledCount, upToDateCount, dirtyCount, errCount } }];"
+        "jsCode": "const { execSync } = require('child_process');\nconst workspaceDir = $env.AGENT_WORKSPACE_DIR || '.';\n\nlet stdout = '';\ntry {\n  stdout = execSync('./scripts/daily-repo-sync.sh', {\n    cwd: workspaceDir,\n    encoding: 'utf-8',\n    timeout: 120000\n  });\n} catch (err) {\n  stdout = (err.stdout || '') + '\\n' + (err.stderr || err.message || '');\n}\n\nconst lines = stdout.split('\\n');\nlet summaryStr = '';\nconst pulled = [];\nconst dirty = [];\nconst errors = [];\n\nfor (const line of lines) {\n  if (line.startsWith('SUMMARY:')) {\n    summaryStr = line.replace('SUMMARY:', '');\n  } else if (line.startsWith('PULLED|')) {\n    pulled.push(...line.split('|').slice(1));\n  } else if (line.startsWith('DIRTY|')) {\n    dirty.push(...line.split('|').slice(1));\n  } else if (line.startsWith('ERRORS|')) {\n    errors.push(...line.split('|').slice(1));\n  }\n}\n\n// Parse summary\nconst summaryParts = summaryStr.split(',');\nlet total = 0, pulledCount = 0, upToDateCount = 0, dirtyCount = 0, errCount = 0;\nsummaryParts.forEach(part => {\n  const [k, v] = part.split('=');\n  if (k === 'total') total = parseInt(v) || 0;\n  if (k === 'pulled') pulledCount = parseInt(v) || 0;\n  if (k === 'up_to_date') upToDateCount = parseInt(v) || 0;\n  if (k === 'dirty') dirtyCount = parseInt(v) || 0;\n  if (k === 'errors') errCount = parseInt(v) || 0;\n});\n\nlet emoji = '✅';\nif (errCount > 0 || dirtyCount > 0) emoji = '⚠️';\n\nlet msg = emoji + ' **[Daily Repo Sync - 08:30]**\\n';\nmsg += '> Đã quét **' + total + '** repos. Up-to-date: ' + upToDateCount + ' | Đã pull mới: ' + pulledCount + ' | Cần chú ý: ' + dirtyCount + ' | Lỗi: ' + errCount + '\\n';\n\nif (pulled.length > 0) {\n  msg += '\\n✅ **Repos đã cập nhật code mới:**\\n';\n  pulled.forEach(item => {\n    const parts = item.split(':');\n    if (parts.length >= 3) {\n      msg += '- `' + parts[0] + '`: pulled ' + parts[1].replace('↓', '') + ' commits → `' + parts.slice(2).join(':') + '`\\n';\n    }\n  });\n}\n\nif (dirty.length > 0) {\n  msg += '\\n⚠️ **Repos chưa commit (bỏ qua pull):**\\n';\n  dirty.forEach(item => {\n    const parts = item.split(':');\n    if (parts.length >= 2) {\n      msg += '- `' + parts[0] + '`: ' + parts.slice(1).join(':') + '\\n';\n    }\n  });\n}\n\nif (errors.length > 0) {\n  msg += '\\n❌ **Repos gặp lỗi (Fetch/Pull fail):**\\n';\n  errors.forEach(item => {\n    const parts = item.split(':');\n    if (parts.length >= 2) {\n      msg += '- `' + parts[0] + '`: ' + parts.slice(1).join(':') + '\\n';\n    }\n  });\n}\n\nreturn [{ json: { msg, reportText: msg, total, pulledCount, upToDateCount, dirtyCount, errCount } }];"
       },
       "id": "3",
-      "name": "Parse Script Output",
+      "name": "Execute & Parse Daily Sync",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        660,
+        500,
         300
       ]
     },
@@ -60,7 +58,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"text\": \"{{ $json.msg }}\",\n  \"username\": \"RepoSync Bot\",\n  \"icon_emoji\": \":sunrise:\"\n}",
+        "jsonBody": "={{ JSON.stringify({ text: $json.msg, username: 'RepoSync Bot', icon_emoji: ':sunrise:' }) }}",
         "options": {}
       },
       "id": "4",
@@ -68,35 +66,36 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        880,
+        740,
         300
-      ]
+      ],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
-    "Schedule Trigger (08:30)": {
+    "Schedule Trigger (08:30 Mon-Fri)": {
       "main": [
         [
           {
-            "node": "Run Daily Sync Script",
+            "node": "Execute & Parse Daily Sync",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run Daily Sync Script": {
+    "Execute Workflow Trigger": {
       "main": [
         [
           {
-            "node": "Parse Script Output",
+            "node": "Execute & Parse Daily Sync",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Parse Script Output": {
+    "Execute & Parse Daily Sync": {
       "main": [
         [
           {

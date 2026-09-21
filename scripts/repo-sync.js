@@ -24,6 +24,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const PROJECTS_JSON_PATH = path.resolve(ROOT_DIR, 'projects.json');
+const PROJECTS_EXAMPLE_PATH = path.resolve(ROOT_DIR, 'projects.json.example');
+
 
 // ─── PARSE ARGUMENTS ─────────────────────────────────────────────────────────
 
@@ -85,14 +87,18 @@ export function parseArgs(rawArgs) {
 
 export function loadProjectsConfig() {
   const mapping = {};
-  if (fs.existsSync(PROJECTS_JSON_PATH)) {
+  const configPath = fs.existsSync(PROJECTS_JSON_PATH)
+    ? PROJECTS_JSON_PATH
+    : (fs.existsSync(PROJECTS_EXAMPLE_PATH) ? PROJECTS_EXAMPLE_PATH : null);
+
+  if (configPath) {
     try {
-      const data = JSON.parse(fs.readFileSync(PROJECTS_JSON_PATH, 'utf8'));
+      const data = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       for (const [key, val] of Object.entries(data)) {
         mapping[key.toLowerCase().trim()] = path.resolve(val);
       }
     } catch (err) {
-      console.error(`⚠️ Lỗi khi đọc ${PROJECTS_JSON_PATH}: ${err.message}`);
+      console.error(`⚠️ Lỗi khi đọc ${configPath}: ${err.message}`);
     }
   }
   return mapping;

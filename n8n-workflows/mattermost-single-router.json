@@ -34,7 +34,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"system_instruction\": {\n    \"parts\": [{\n      \"text\": \"Bạn là Intent Classifier cho hệ thống ChatOps. Phân tích câu lệnh và trả về JSON thuần túy (không dùng markdown code block). Format bắt buộc: {\\\"intent\\\": \\\"standup|test|jira|squash|sync|help\\\", \\\"params\\\": {\\\"issueKey\\\": \\\"...\\\"}}.  Quy tắc: standup=báo cáo/daily/sprint, test=chạy test/kiểm thử, jira=lấy issue/vé (params.issueKey bắt buộc), squash=đẩy test case, sync=đồng bộ code/repo/pull, help=mặc định khi không rõ.\"\n    }]\n  },\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \" Câu lệnh từ Mattermost: \" + $json.body.text\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0.1,\n    \"maxOutputTokens\": 256,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "jsonBody": "={\n  \"system_instruction\": {\n    \"parts\": [{\n      \"text\": \"Bạn là Intent Classifier cho hệ thống ChatOps. Phân tích câu lệnh và trả về JSON thuần túy (không dùng markdown code block). Format bắt buộc: {\\\"intent\\\": \\\"standup|test|jira|squash|sync|help\\\", \\\"params\\\": {\\\"issueKey\\\": \\\"...\\\"}}. Quy tắc: standup=báo cáo/daily/sprint, test=chạy test/kiểm thử/recon, jira=lấy issue/vé (params.issueKey bắt buộc), squash=đẩy test case, sync=đồng bộ code/repo/pull, help=mặc định khi không rõ.\"\n    }]\n  },\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \" Câu lệnh từ Mattermost: \" + ($json.body.text || '')\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0.1,\n    \"maxOutputTokens\": 256,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
         "options": {}
       },
       "id": "2",
@@ -44,11 +44,12 @@
       "position": [
         440,
         300
-      ]
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "try {\n  const response = $input.first().json;\n  const rawText = response.candidates?.[0]?.content?.parts?.[0]?.text || '';\n  // Handle: JSON thuần, markdown code block, hoặc Antigravity trả nested object\n  let data;\n  if (typeof rawText === 'object') {\n    data = rawText;\n  } else {\n    const cleanJson = rawText.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n    data = JSON.parse(cleanJson);\n  }\n  // Validate intent hợp lệ\n  const validIntents = ['standup', 'test', 'jira', 'squash', 'sync', 'help'];\n  if (!validIntents.includes(data.intent)) data.intent = 'help';\n  return [{ json: data }];\n} catch(e) {\n  return [{ json: { intent: 'help', error: e.message } }];\n}"
+        "jsCode": "const input = $input.first();\nconst response = (input && input.json) || {};\nconst originalText = $('Webhook (Mattermost Slash Command)').first()?.json?.body?.text || '';\n\n// ── Hàm fallback bóc tách từ khóa bằng Regex khi AI gặp sự cố ─────────────────\nfunction fallbackParse(text) {\n  const clean = (text || '').toLowerCase().trim();\n  if (clean.includes('standup') || clean.includes('daily')) return { intent: 'standup' };\n  if (clean.includes('test') || clean.includes('kiểm thử') || clean.includes('recon')) return { intent: 'test' };\n  if (clean.includes('sync') || clean.includes('pull') || clean.includes('đồng bộ')) return { intent: 'sync' };\n  if (clean.includes('squash')) return { intent: 'squash' };\n  const jiraMatch = (text || '').match(/([A-Za-z0-9]+-[0-9]+)/i);\n  if (jiraMatch || clean.includes('jira') || clean.includes('vé') || clean.includes('issue')) {\n    return { intent: 'jira', params: { issueKey: jiraMatch ? jiraMatch[1].toUpperCase() : '' } };\n  }\n  return { intent: 'help' };\n}\n\n// Nếu Gemini API gặp lỗi (hết quota, sai key, timeout)\nif (response.error || (response.status && response.status >= 400)) {\n  const fallback = fallbackParse(originalText);\n  return [{ json: { ...fallback, _geminiError: response.error?.message || 'Lỗi Gemini API' } }];\n}\n\ntry {\n  const rawText = response.candidates?.[0]?.content?.parts?.[0]?.text || '';\n  let data;\n  if (typeof rawText === 'object') {\n    data = rawText;\n  } else {\n    const cleanJson = rawText.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n    data = JSON.parse(cleanJson);\n  }\n  \n  // Validate intent hợp lệ\n  const validIntents = ['standup', 'test', 'jira', 'squash', 'sync', 'help'];\n  if (!validIntents.includes(data.intent)) data.intent = 'help';\n  \n  // Đảm bảo trích xuất issueKey nếu intent là jira mà AI quên trích\n  if (data.intent === 'jira' && (!data.params || !data.params.issueKey)) {\n    const m = originalText.match(/([A-Za-z0-9]+-[0-9]+)/i);\n    if (m) {\n      data.params = data.params || {};\n      data.params.issueKey = m[1].toUpperCase();\n    }\n  }\n  \n  return [{ json: data }];\n} catch(e) {\n  return [{ json: fallbackParse(originalText) }];\n}"
       },
       "id": "3",
       "name": "Parse AI Output",
@@ -61,29 +62,9 @@
     },
     {
       "parameters": {
-        "dataType": "string",
-        "value1": "={{ $json.intent }}",
-        "rules": {
-          "rules": [
-            {
-              "value2": "standup",
-              "output": 0
-            },
-            {
-              "value2": "test",
-              "output": 1
-            },
-            {
-              "value2": "jira",
-              "output": 2
-            },
-            {
-              "value2": "squash",
-              "output": 3
-            }
-          ]
-        },
-        "fallbackOutput": 4
+        "mode": "expression",
+        "output": "={{ ['standup', 'test', 'jira', 'squash', 'sync'].indexOf($json.intent) !== -1 ? ['standup', 'test', 'jira', 'squash', 'sync'].indexOf($json.intent) : 5 }}",
+        "numberOutputs": 6
       },
       "id": "4",
       "name": "Switch by Intent",
@@ -105,8 +86,9 @@
       "typeVersion": 1,
       "position": [
         1160,
-        100
-      ]
+        80
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -119,8 +101,9 @@
       "typeVersion": 1,
       "position": [
         1160,
-        240
-      ]
+        220
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -133,8 +116,9 @@
       "typeVersion": 1,
       "position": [
         1160,
-        380
-      ]
+        360
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -147,7 +131,65 @@
       "typeVersion": 1,
       "position": [
         1160,
-        520
+        500
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "workflowId": "DailyRepoSyncCron001",
+        "mode": "wait"
+      },
+      "id": "10",
+      "name": "Execute Repo Sync Workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        640
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"### 🤖 Menu Hướng Dẫn Slash Command `/agent`\\n\\nHệ thống hỗ trợ các câu lệnh nhanh:\\n- `/agent standup`: Báo cáo tiến độ Sprint và các task bị treo > 3 ngày.\\n- `/agent jira <mã_issue>`: Tra cứu và tóm tắt thông tin vé Jira (VD: `/agent jira G3PTP-17396`).\\n- `/agent test`: Khảo sát đối chiếu dữ liệu thị trường KRX MDDS Ticks v3 hôm nay.\\n- `/agent sync`: Đồng bộ và kéo mã nguồn mới nhất cho toàn bộ các repository.\\n- `/agent squash`: Đẩy hàng loạt test cases lên hệ thống kiểm thử Squash TM.\\n- `/agent help`: Xem danh sách hướng dẫn này.\"\n}",
+        "options": {}
+      },
+      "id": "9",
+      "name": "Respond Help Menu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1160,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ ($json.error && !$json.reportText) ? 0 : 1 }}",
+        "numberOutputs": 2
+      },
+      "id": "11",
+      "name": "Check Router Execution Error",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1460,
+        360
       ]
     },
     {
@@ -165,17 +207,18 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"text\": \"Các lệnh hiện có: /agent standup, /agent test, /agent jira <issue>\"\n}",
+        "jsonBody": "={{ JSON.stringify({ text: '🚨 **[Lỗi ChatOps Router]** Không thể thực thi tiến trình:\\n> ' + ($json.error?.message || $json.error || 'Lỗi không xác định') + '\\n\\n*Vui lòng kiểm tra log tiến trình trên máy chủ n8n bằng lệnh: npm run n8n:logs.*' }) }}",
         "options": {}
       },
-      "id": "9",
-      "name": "Respond Help Menu",
+      "id": "12",
+      "name": "Notify Execution Error to Mattermost",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1160,
-        660
-      ]
+        1700,
+        360
+      ],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -244,7 +287,80 @@
         ],
         [
           {
+            "node": "Execute Repo Sync Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Respond Help Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Standup Workflow": {
+      "main": [
+        [
+          {
+            "node": "Check Router Execution Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Test/Recon Workflow": {
+      "main": [
+        [
+          {
+            "node": "Check Router Execution Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Jira Ingestor": {
+      "main": [
+        [
+          {
+            "node": "Check Router Execution Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Squash Pusher": {
+      "main": [
+        [
+          {
+            "node": "Check Router Execution Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Repo Sync Workflow": {
+      "main": [
+        [
+          {
+            "node": "Check Router Execution Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Router Execution Error": {
+      "main": [
+        [
+          {
+            "node": "Notify Execution Error to Mattermost",
             "type": "main",
             "index": 0
           }
