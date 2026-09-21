@@ -1,7 +1,7 @@
 const input = $input.first();
 const extractNode = $('Extract issueKey').first().json;
-const issueKey = extractNode.issueKey || '';
-const project = extractNode.project || '';
+const issueKey = extractNode.issueKey || input.json.issueKey || '';
+const project = extractNode.project || input.json.project || '';
 const targetLabel = project ? (project + ' / ' + issueKey) : issueKey;
 
 // Xử lý lỗi Extract
@@ -34,7 +34,7 @@ if (logSnippet.length > 2500) {
 const statusIcon = success ? '✅' : '❌';
 const statusText = success ? 'Thành công (Passed)' : 'Thất bại (Failed)';
 
-const message = '🚀 **[QA Automation]** Kết quả chạy kiểm thử cho vé **' + targetLabel + '**:\n' +
+const message = '🚀 **[QA Automation]** Kết quả chạy kiểm thử cho ticket **' + targetLabel + '**:\n' +
                 '- Trạng thái: ' + statusIcon + ' **' + statusText + '**\n\n' +
                 '```text\n' + logSnippet + '\n```';
 
