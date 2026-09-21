@@ -19,12 +19,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const PROJECTS_JSON_PATH = path.resolve(ROOT_DIR, 'projects.json');
 const PROJECTS_EXAMPLE_PATH = path.resolve(ROOT_DIR, 'projects.json.example');
+
+// Tự động load .env nếu PROJECT_SCAN_DIRS chưa được set trong env
+if (!process.env.PROJECT_SCAN_DIRS) {
+  const envPath = path.resolve(ROOT_DIR, '.env');
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+}
 
 
 // ─── PARSE ARGUMENTS ─────────────────────────────────────────────────────────
@@ -101,6 +110,52 @@ export function loadProjectsConfig() {
       console.error(`⚠️ Lỗi khi đọc ${configPath}: ${err.message}`);
     }
   }
+
+  // Tự động bổ sung các thư mục nhóm/repos từ PROJECT_SCAN_DIRS theo cơ chế Smart 2-Tier
+  const scanDirsRaw = process.env.PROJECT_SCAN_DIRS || '';
+  if (scanDirsRaw) {
+    const scanDirs = scanDirsRaw.split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+    for (const sDir of scanDirs) {
+      const resolved = path.resolve(sDir);
+      if (!fs.existsSync(resolved)) continue;
+
+      const baseName = path.basename(resolved).toLowerCase();
+
+      // Tầng 1: Nếu chính thư mục này là 1 git repo (như dnse-trading)
+      if (fs.existsSync(path.join(resolved, '.git'))) {
+        if (!mapping[baseName]) {
+          mapping[baseName] = resolved;
+        }
+        continue;
+      }
+
+      // Tầng 2: Nếu là thư mục nhóm chứa nhiều repo con (như 3.1, mobile)
+      if (!mapping[baseName]) {
+        mapping[baseName] = resolved;
+      }
+
+      try {
+        const entries = fs.readdirSync(resolved, { withFileTypes: true });
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+          if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+
+          const subPath = path.join(resolved, entry.name);
+          // CHỈ nhận nếu là git repository thật sự (có .git thư mục hoặc file)
+          if (fs.existsSync(path.join(subPath, '.git'))) {
+            const subName = entry.name.toLowerCase();
+            if (!mapping[subName]) {
+              mapping[subName] = subPath;
+            }
+          }
+          // Thư mục chưa tạo .git (hoặc phi-git) -> Bỏ qua an toàn
+        }
+      } catch {
+        // Bỏ qua lỗi truy cập thư mục
+      }
+    }
+  }
+
   return mapping;
 }
 
@@ -197,6 +252,35 @@ export function syncSingleRepo(repoPath, options = {}) {
   const startTime = Date.now();
 
   try {
+    // 0. Kiểm tra repo có commit nào chưa (Unborn branch do mới git init)
+    try {
+      execSync('git rev-parse --verify HEAD', { cwd: repoPath, stdio: ['pipe', 'pipe', 'pipe'] });
+    } catch {
+      result.status = 'UNBORN';
+      result.message = 'Repo mới khởi tạo (git init), chưa có commit nào.';
+      result.durationMs = Date.now() - startTime;
+      return result;
+    }
+
+    // 0.1. Kiểm tra remote origin
+    let remote = '';
+    try {
+      remote = execSync('git remote get-url origin', {
+        cwd: repoPath,
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe']
+      }).trim();
+    } catch {
+      // Không có remote origin
+    }
+
+    if (!remote) {
+      result.status = 'LOCAL_ONLY';
+      result.message = 'Repo cục bộ, chưa cấu hình remote origin.';
+      result.durationMs = Date.now() - startTime;
+      return result;
+    }
+
     // 1. Lấy tên branch ban đầu
     result.initialBranch = execSync('git rev-parse --abbrev-ref HEAD', {
       cwd: repoPath,
@@ -486,6 +570,8 @@ export function formatReport(results) {
     DIVERGED: '🔴 Diverged',
     BRANCH_CHECKOUT_FAILED: '❌ Branch Error',
     NO_UPSTREAM: 'ℹ️ No Upstream',
+    UNBORN: '⚪ Unborn',
+    LOCAL_ONLY: '⚪ Local-only',
     ERROR: '❌ Error'
   };
 
@@ -517,7 +603,7 @@ export function formatReport(results) {
 
   const pulledCount = results.filter(r => r.status === 'PULLED').length;
   const upToDateCount = results.filter(r => r.status === 'UP_TO_DATE').length;
-  const skippedCount = results.filter(r => r.status === 'DIRTY_SKIPPED').length;
+  const skippedCount = results.filter(r => ['DIRTY_SKIPPED', 'UNBORN', 'LOCAL_ONLY'].includes(r.status)).length;
   const resetCount = results.filter(r => r.wasReset).length;
   const errCount = results.filter(r => ['ERROR', 'DIVERGED', 'BRANCH_CHECKOUT_FAILED'].includes(r.status)).length;
 

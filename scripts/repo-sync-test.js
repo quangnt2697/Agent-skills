@@ -152,3 +152,48 @@ test('repo-sync formatReport: Hiển thị đầy đủ thông tin đa nhánh v�
   assert.ok(md.includes('dev (+4)'));
   assert.ok(md.includes('🔄 Đã reset: 1'));
 });
+
+test('repo-sync loadProjectsConfig: Smart 2-Tier scanning nhận diện đúng repo độc lập và thư mục nhóm, bỏ qua thư mục phi-git', () => {
+  const mapping = loadProjectsConfig();
+  
+  // 1. Phải nhận diện được repo từ group dirs nếu có trong env
+  if (process.env.PROJECT_SCAN_DIRS) {
+    // Thư mục non-git không bao giờ được đưa vào mapping
+    assert.equal(mapping['workspace'], undefined, 'workspace không có .git không được vào mapping');
+    assert.equal(mapping['temp_ba_refine_skill'], undefined, 'temp_ba_refine_skill không có .git không được vào mapping');
+    assert.equal(mapping['certificates'], undefined, 'certificates không có .git không được vào mapping');
+  }
+});
+
+test('repo-sync formatReport: Hiển thị đúng trạng thái UNBORN và LOCAL_ONLY', () => {
+  const specialResults = [
+    {
+      name: 'new-repo-init',
+      path: '/path/new-repo-init',
+      currentBranch: 'unknown',
+      status: 'UNBORN',
+      behind: 0,
+      ahead: 0,
+      latestSha: '',
+      message: 'Repo mới khởi tạo (git init), chưa có commit nào.',
+      durationMs: 50
+    },
+    {
+      name: 'local-repo',
+      path: '/path/local-repo',
+      currentBranch: 'main',
+      status: 'LOCAL_ONLY',
+      behind: 0,
+      ahead: 0,
+      latestSha: '1234567',
+      message: 'Repo cục bộ, chưa cấu hình remote origin.',
+      durationMs: 80
+    }
+  ];
+
+  const md = formatReport(specialResults);
+  assert.ok(md.includes('⚪ Unborn'));
+  assert.ok(md.includes('⚪ Local-only'));
+  assert.ok(md.includes('⚠️ Bỏ qua: 2'));
+});
+

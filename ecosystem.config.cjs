@@ -11,11 +11,13 @@ module.exports = {
   apps: [
     {
       name: 'n8n-agent-skills',
+      cwd: __dirname,
       script: 'n8n',
       args: 'start',
       interpreter: 'none',
       env: {
         ...process.env,
+        AGENT_WORKSPACE_DIR: __dirname,
         N8N_PORT: process.env.N8N_PORT || '5678',
         N8N_PROTOCOL: 'http',
         N8N_HOST: 'localhost',
