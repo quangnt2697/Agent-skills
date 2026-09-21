@@ -10,7 +10,7 @@ $ARGUMENTS có thể chứa:
 **Workflow:**
 1. Đọc nội dung file `SKILL.md` của thư mục `plugins/ba-po/skills/ba-design-flowchart` để hiểu cách sử dụng.
 2. Nếu text là mã HTML thô, lưu nội dung đó vào một file `.html` trong thư mục tạm hoặc thư mục làm việc.
-3. Chạy script CLI tương ứng (VD: `node plugins/ba-po/skills/ba-design-flowchart/scripts/render.mjs`) để render diagram thành file SVG, PNG, hoặc in ra Terminal (ASCII).
+3. Chạy script tương ứng (VD: `python plugins/ba-po/skills/ba-design-flowchart/scripts/export.py`) để render diagram HTML thành file PNG.
 4. Nếu CLI báo lỗi cú pháp (Exit Code > 0), tự động nhận diện lỗi theo verify-geometry và sửa lại mã HTML, sau đó thử lại.
 5. Trả kết quả (đường dẫn file ảnh) hoặc nội dung đã sửa lỗi cho người dùng.
 """
