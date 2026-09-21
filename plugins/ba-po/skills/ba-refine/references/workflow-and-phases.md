@@ -31,9 +31,10 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
    [ -f "${PROJECT_ROOT}/.env" ] && source "${PROJECT_ROOT}/.env"
    ```
 
-3. **Lấy metadata Jira issue** (chưa tải PDF):
-   - **Ưu tiên (MCP):** Gọi MCP tool `getJiraIssue(issueKey)` — agent nhận JSON trực tiếp. BẮT BUỘC trích xuất chính xác trường `fields.summary` để làm Tiêu đề Task.
-   - **Fallback (REST API):** Dùng `curl` gọi API:
+3. **Lấy metadata Jira issue** (chưa tải PDF) theo **Chiến lược 3-Tier Fallback**:
+   - **Ưu tiên 1 (n8n Fast-Path):** Import và chạy hàm `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`. Hệ thống tự động gọi webhook `/webhook/jira-prep` để lấy metadata JSON siêu sạch (có cả `attachments` và `issueLinks`). BẮT BUỘC dùng `summary` từ đây làm Tiêu đề Task.
+   - **Ưu tiên 2 (MCP):** Nếu n8n lỗi, gọi MCP tool `getJiraIssue(issueKey)`. Cẩn thận trích xuất chính xác trường `fields.summary`.
+   - **Ưu tiên 3 (REST API - Fallback cuối):** Dùng `curl` gọi API:
      ```bash
      curl -s -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
        -H "Accept: application/json" \

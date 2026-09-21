@@ -6,12 +6,12 @@ Thư mục này chứa documentation cho agent-skills repository.
 
 ## 📚 Core Documentation (Guides)
 
-### [guides/getting-started.md](guides/getting-started.md)
-Hướng dẫn cài đặt và bắt đầu sử dụng agent-skills. Bao gồm:
-- Cài đặt với Claude Code
+### [guides/installation-guide.md](guides/installation-guide.md)
+Hướng dẫn cài đặt từ A-Z và bắt đầu sử dụng agent-skills. Bao gồm:
+- Cài đặt với Claude Code, Gemini CLI, Antigravity CLI
 - Workflow cơ bản cho từng persona (BA/PO, QA, DEV)
 - Examples với real Jira issues
-- Troubleshooting common issues
+- Setup n8n, ngrok và PM2
 
 ### [guides/adoption-guide.md](guides/adoption-guide.md)
 Cẩm nang áp dụng Agent Skills trong doanh nghiệp:
@@ -73,17 +73,10 @@ Tổng hợp thiết kế, vai trò, tiêu chuẩn bảo mật (SQL Sanitizer, A
 
 agent-skills hỗ trợ nhiều AI coding platforms:
 
-### [guides/gemini-cli-setup.md](guides/gemini-cli-setup.md)
-**Hướng dẫn cài đặt agent-skills với Gemini CLI**
+### [guides/installation-guide.md](guides/installation-guide.md)
+**Hướng dẫn cài đặt chung cho mọi nền tảng**
 
-Gemini CLI có skills system tương tự Claude Code. File này hướng dẫn cài đặt từ repo hoặc local clone.
-
-### [guides/antigravity-setup.md](guides/antigravity-setup.md)
-**Hướng dẫn cài đặt agent-skills với Antigravity CLI (agy)**
-
-Antigravity CLI có native plugin system. File này hướng dẫn cài đặt dưới dạng plugin và cách sử dụng custom commands.
-
-**Platforms tested:**
+agent-skills hỗ trợ nhiều AI coding platforms:
 - ✅ **Claude Code** — Primary platform, fully tested
 - ✅ **Gemini CLI** — Full compatibility
 - ✅ **Antigravity CLI** — Full compatibility
@@ -98,4 +91,4 @@ Antigravity CLI có native plugin system. File này hướng dẫn cài đặt d
 
 ---
 
-**Tip:** Bắt đầu với [guides/getting-started.md](guides/getting-started.md) nếu bạn mới sử dụng agent-skills.
+**Tip:** Bắt đầu với [guides/installation-guide.md](guides/installation-guide.md) nếu bạn mới sử dụng agent-skills.

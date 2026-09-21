@@ -1,0 +1,147 @@
+{
+  "name": "AgentSkills - Squash TM Batch Pusher",
+  "id": "JHppihloutGUzXqS",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst testCases = body.testCases || [];\nconst baseUrl = (body.baseUrl || process.env.SQUASH_BASE_URL || '').replace(/\\/$/, '');\nconst apiToken = body.apiToken || process.env.SQUASH_API_TOKEN || '';\nconst folderId = body.folderId || process.env.SQUASH_TC_G31_FOLDER_ID;\nconst projectId = body.projectId || process.env.SQUASH_PROJECT_ID;\n\n// Chuẩn bị danh sách payload động kèm token và URL để gửi song song lên Squash TM\nreturn testCases.map(tc => ({\n  json: {\n    baseUrl: baseUrl,\n    apiToken: apiToken,\n    folderId: folderId,\n    projectId: projectId,\n    name: tc.name || 'Test Case',\n    reference: tc.reference || '',\n    description: tc.description || '',\n    prerequisite: tc.prerequisite || ''\n  }\n}));"
+      },
+      "id": "2",
+      "name": "Prepare Test Case Batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.baseUrl }}/api/rest/latest/test-case-folders/{{ $json.folderId }}/test-cases",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.apiToken }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  _type: 'test-case',\n  name: $json.name,\n  reference: $json.reference,\n  description: $json.description,\n  prerequisite: $json.prerequisite\n}) }}",
+        "options": {}
+      },
+      "id": "3",
+      "name": "Create Test Case on Squash TM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = $input.all();\nreturn [{\n  json: {\n    status: 'success',\n    totalImported: results.length,\n    createdCases: results.map(r => ({\n      id: r.json.id,\n      name: r.json.name\n    }))\n  }\n}];"
+      },
+      "id": "4",
+      "name": "Aggregate Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"```json\\n{{ JSON.stringify($json, null, 2) }}\\n```\"\n}",
+        "options": {}
+      },
+      "id": "5",
+      "name": "Return Batch Result to QA Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Test Case Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Test Case Batch": {
+      "main": [
+        [
+          {
+            "node": "Create Test Case on Squash TM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Test Case on Squash TM": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Summary": {
+      "main": [
+        [
+          {
+            "node": "Return Batch Result to QA Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

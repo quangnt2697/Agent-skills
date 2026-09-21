@@ -131,7 +131,7 @@ pythonpath = . steps ../../.. ../../../shared ../../../sdk ../../../openapi-tyk/
 ### 3.2. Ưu tiên Sử Dụng SDK OpenAPI Sẵn Có (`openapi-tyk/sdk/python/`)
 Khi viết code kiểm thử cho API/WebSocket:
 1. **Kiểm tra và nạp SDK `openapi-tyk/sdk/python`:**
-   - Quét tìm SDK `openapi-tyk/sdk/python/` (qua `tools/discord-bridge/projects.json`, biến môi trường `OPENAPI_TYK_PATH`, hoặc thư mục tương đối).
+   - Quét tìm SDK `openapi-tyk/sdk/python/` (qua `projects.json`, biến môi trường `OPENAPI_TYK_PATH`, hoặc thư mục tương đối).
    - Sử dụng trực tiếp:
      - `from dnse import DNSEClient` để tương tác REST API và ký số tự động.
      - Các client từ `trading-api`, `marketdata-api`, `broker-api`.

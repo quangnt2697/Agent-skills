@@ -6,6 +6,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "setup:mac": "bash scripts/setup-mac.sh",
     "build": "node scripts/build-commands.js",
     "lint": "npm run validate",
     "test": "npm run validate && npm run test:unit && npm run evals",
@@ -24,8 +25,17 @@
     "db:recon:prod": "node scripts/db-recon-prod.js",
     "repo:sync": "node scripts/repo-sync.js",
     "sync": "node scripts/repo-sync.js",
-    "setup:discord": "pip3 install -r tools/discord-bridge/requirements.txt",
-    "bridge:discord": "python3 tools/discord-bridge/discord_bot.py"
+    "n8n": "n8n start",
+    "n8n:tunnel": "n8n start --tunnel",
+    "n8n:setup": "node scripts/setup-n8n.js",
+    "n8n:bg": "pm2 start ecosystem.config.cjs",
+    "n8n:stop": "pm2 stop n8n-agent-skills",
+    "n8n:restart": "pm2 restart n8n-agent-skills",
+    "n8n:status": "pm2 status n8n-agent-skills",
+    "n8n:logs": "pm2 logs n8n-agent-skills",
+    "n8n:import": "n8n import:workflow --separate --input=n8n-workflows/",
+    "n8n:export": "n8n export:workflow --all --separate --output=n8n-workflows/",
+    "n8n:clean": "node scripts/n8n-clean-workflows.js"
   },
   "engines": {
     "node": ">=20"
@@ -37,5 +47,8 @@
     "pg": "^8.23.0",
     "playwright": "^1.62.1",
     "smol-toml": "^1.8.0"
+  },
+  "devDependencies": {
+    "pm2": "^7.0.4"
   }
 }

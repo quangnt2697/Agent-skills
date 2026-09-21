@@ -2,12 +2,13 @@
 
 ## 1. Chiến lược Truy cập Jira/Confluence
 
-> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/atlassian-mcp-strategy.md`
+> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/n8n-integration-strategy.md`
 
-Skill này tương tác với Jira/Confluence qua **2 phương thức** (theo thứ tự ưu tiên):
+Skill này tương tác với Jira/Confluence theo **Chiến lược 3-Tier Fallback** (theo thứ tự ưu tiên):
 
-1. **Shell Script / curl** (ưu tiên): Do tool `getJiraIssue` của Rovo MCP sử dụng AI agent có thể làm sai lệch nội dung thô (ví dụ như trường `summary`), agent SẼ dùng REST API qua `curl` hoặc chạy `plugins/ba-po/skills/ba-spec/assets/jira-fetch-pdf.sh` để đảm bảo độ chuẩn xác 100%. Đọc credentials từ `.env`.
-2. **MCP Tool** (fallback/phụ trợ): Nếu cần các tác vụ tìm kiếm tự do, agent sử dụng các MCP tool (`searchJiraIssuesUsingJql`, `searchConfluenceUsingCql`). Hạn chế dùng `getJiraIssue`.
+1. **Tier 1 - n8n Fast-Path Webhook (Ưu tiên số 1):** Chạy đoạn mã qua `scripts/lib/n8n-client.js` để gọi n8n Webhook. Cách này lấy dữ liệu tức thì, lọc sạch nhiễu và không tốn token LLM đọc hiểu ADF rác.
+2. **Tier 2 - MCP Tool (Ưu tiên số 2):** Nếu n8n không khả dụng, sử dụng Rovo MCP (`getJiraIssue`, `searchConfluenceUsingCql`). Hạn chế dùng `getJiraIssue` nếu có thể vì AI agent MCP có thể tóm tắt lại `summary` gây sai lệch.
+3. **Tier 3 - Shell Script / curl (Dự phòng cuối):** Nếu cả 2 cách trên thất bại hoặc cần tải binary (ví dụ PDF), agent chạy REST API qua `curl` hoặc `jira-fetch-pdf.sh` để đảm bảo độ chính xác.
 
 **Lưu ý:** Lớp xử lý (Phase 2–5: phân tích, interview, tổng hợp) hoạt động **giống nhau** bất kể nguồn dữ liệu là MCP hay REST API.
 
@@ -45,8 +46,9 @@ danh sách                                 loại task          theo profile
 **Các bước:**
 
 1. **Lấy metadata Jira issue** (chưa tải PDF):
-   - **Ưu tiên (REST API):** Chạy `curl GET /rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels,sprint` hoặc sử dụng script `jira-fetch-pdf.sh` để lấy chuỗi raw của trường `summary` (chống nhiễu từ LLM).
-   - **Lưu ý:** KHÔNG dùng MCP tool `getJiraIssue(issueKey)` để lấy metadata do Atlassian Rovo MCP có thể tóm tắt lại tên task làm mất độ chính xác.
+   - **Ưu tiên (n8n Fast-Path):** Import và chạy hàm `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`. Hệ thống sẽ tự động gọi n8n webhook `/webhook/jira-prep` để trả về JSON siêu sạch gồm các trường quan trọng và danh sách `attachments`, `issueLinks`.
+   - **Fallback 1 (MCP):** Dùng `getJiraIssue(issueKey)` nhưng BẮT BUỘC cẩn thận với trường `summary` bị LLM tóm tắt sai.
+   - **Fallback 2 (REST API):** Chạy `curl GET /rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels,sprint`.
 
 2. **Trích xuất danh sách liên kết tham chiếu:**
    - Từ field `issuelinks`: Lấy các Confluence page được link.

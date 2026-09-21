@@ -1,0 +1,108 @@
+{
+  "name": "AgentSkills - Jira Fast Ingestor",
+  "id": "jTKaZzFv7QaODpYu",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ ($json.body && $json.body.baseUrl) || $env.ATLASSIAN_BASE_URL || 'https://entrade.atlassian.net' }}/rest/api/3/issue/{{ $json.body.issueKey }}?fields=summary,description,status,assignee,priority,attachment,issuelinks,reporter,labels,sprint",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "id": "2",
+      "name": "Fetch Jira REST API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst fields = (input && input.json && input.json.fields) ? input.json.fields : {};\n\n// Bóc tách text đơn giản từ description (bỏ ADF rườm rà)\nlet cleanDesc = '';\nif (fields.description && fields.description.content) {\n  cleanDesc = JSON.stringify(fields.description.content);\n} else if (typeof fields.description === 'string') {\n  cleanDesc = fields.description;\n}\n\n// Lấy thêm các tham chiếu quan trọng (References)\nconst attachments = fields.attachment ? fields.attachment.map(a => ({ filename: a.filename, size: a.size, content: a.content })) : [];\nconst issueLinks = fields.issuelinks ? fields.issuelinks.map(l => l.outwardIssue ? l.outwardIssue.key : (l.inwardIssue ? l.inwardIssue.key : null)).filter(Boolean) : [];\n\n// Trả về payload cực gọn cho Agent suy luận\nreturn [{\n  json: {\n    issueKey: $node['Webhook Agent'].json.body.issueKey || '',\n    summary: fields.summary || '',\n    status: fields.status ? fields.status.name : 'Unknown',\n    assignee: fields.assignee ? fields.assignee.displayName : 'Unassigned',\n    reporter: fields.reporter ? fields.reporter.displayName : 'Unknown',\n    labels: fields.labels || [],\n    attachments: attachments,\n    issueLinks: issueLinks,\n    descriptionSnippet: cleanDesc.substring(0, 1500)\n  }\n}];"
+      },
+      "id": "3",
+      "name": "Filter & Clean Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"```json\\n{{ JSON.stringify($json, null, 2) }}\\n```\"\n}",
+        "options": {}
+      },
+      "id": "4",
+      "name": "Return Clean Context to Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Jira REST API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Jira REST API": {
+      "main": [
+        [
+          {
+            "node": "Filter & Clean Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter & Clean Payload": {
+      "main": [
+        [
+          {
+            "node": "Return Clean Context to Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

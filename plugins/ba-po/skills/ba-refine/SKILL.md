@@ -23,7 +23,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành 
 - **ba-refine**: Yêu cầu thô/mơ hồ → brainstorm + hội tụ → cập nhật Jira + handoff `refined.md`
 
 > ⚠️ **DOMAIN CHỨNG KHOÁN & FINTECH:**
-> Khi spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, KRX/MDDS, ký quỹ — **BẮT BUỘC** đọc `references/securities-domain-rules.md` trong suốt Phase 1-3.
+> Khi spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, KRX/MDDS, ký quỹ — **BẮT BUỘC** đọc `../../../../references/securities-domain-rules.md` trong suốt Phase 1-3.
 
 ## 1. Các Approval Gates Bắt buộc
 
@@ -68,6 +68,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành 
 - 📖 **Tài liệu chi tiết (references/):**
   - [workflow-and-phases.md](references/workflow-and-phases.md): Chi tiết 4 phase, curl commands, metadata.json schema.
   - [rules-and-guidelines.md](references/rules-and-guidelines.md): Auth, file filter, anti-patterns, verification checklist.
+  - [securities-domain-rules.md](../../../../references/securities-domain-rules.md): Quy tắc Domain ngành Chứng khoán.
   - [quality-rules.md](references/quality-rules.md): Công thức Confidence Score (ngưỡng ≥90%).
   - [refinement-criteria.md](references/refinement-criteria.md): Rubric 4 tiêu chí stress-test.
   - [frameworks.md](references/frameworks.md): 7 lăng kính sinh idea (HMW, Inversion, 10x...).

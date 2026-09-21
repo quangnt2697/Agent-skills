@@ -26,7 +26,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 - **ba-interview-me**: Phỏng vấn tương tác từng câu một làm rõ điểm mơ hồ.
 
 > ⚠️ **DOMAIN CHỨNG KHOÁN & FINTECH:**
-> Khi spec liên quan đến tài chính, đặt/sửa/hủy lệnh (ATO/LO/ATC/MP), sổ lệnh, bảng giá, KRX/MDDS, ký quỹ, mã lỗi ORS — **BẮT BUỘC** đọc [references/securities-domain-rules.md](../../../../references/securities-domain-rules.md) trong suốt quá trình phân tích.
+> Khi spec liên quan đến tài chính, đặt/sửa/hủy lệnh (ATO/LO/ATC/MP), sổ lệnh, bảng giá, KRX/MDDS, ký quỹ, mã lỗi ORS — **BẮT BUỘC** đọc [../../../../references/securities-domain-rules.md](../../../../references/securities-domain-rules.md) trong suốt quá trình phân tích.
 
 ---
 

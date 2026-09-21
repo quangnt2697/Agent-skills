@@ -16,6 +16,8 @@ plugins/                          → Chứa các plugin chuyên biệt
   ├── security-auditor/           → Security Auditor persona & skills
   ├── web-performance-auditor/    → Web Performance Auditor persona & skills
   └── core/                       → Meta-skills, shared commands (e2e-delivery, learn, checkpoint)
+n8n-workflows/                    → Các n8n workflow tự động (ChatOps, Cron)
+scripts/                          → Các script hỗ trợ, tool cài đặt (A-Z)
 references/                       → Domain knowledge & checklists dùng chung
   └── securities/                 → 8 modules nghiệp vụ chứng khoán
 docs/                             → Hướng dẫn cài đặt và thiết kế kiến trúc (dành cho user)

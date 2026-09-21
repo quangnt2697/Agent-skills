@@ -1,0 +1,154 @@
+{
+  "name": "AgentSkills - TimescaleDB MDDS Watchdog",
+  "id": "9W4kB02OTGu0QRpO",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "15 15 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "1",
+      "name": "Cron 15:15 PM (End of Trading Session)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "2",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($json.body && $json.body.baseUrl) || $env.METABASE_PROD_URL || $env.METABASE_URL }}/api/dataset",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Metabase-Session",
+              "value": "={{ ($json.body && $json.body.sessionToken) || $env.METABASE_PROD_SESSION_TOKEN || $env.METABASE_SESSION_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  database: parseInt($env.METABASE_PROD_DB_TIMESCALE_ID || '7', 10),\n  type: 'native',\n  native: {\n    query: 'SELECT count(1) as total_ticks_v3 FROM mdds_ticks_v3 WHERE sending_time >= CURRENT_DATE AND sending_time < CURRENT_DATE + INTERVAL \\'1 day\\';'\n  }\n}) }}",
+        "options": {}
+      },
+      "id": "3",
+      "name": "Execute MDDS Ticks Query on Production Metabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json;\nconst rowCount = (res.data && res.data.rows && res.data.rows[0]) ? res.data.rows[0][0] : 0;\nconst isHealthy = rowCount > 0;\n\nreturn [{\n  json: {\n    environment: 'PRODUCTION',\n    timestamp: new Date().toISOString(),\n    rowCount: rowCount,\n    isHealthy: isHealthy,\n    message: isHealthy \n      ? `✅ [TimescaleDB MDDS PROD] Dữ liệu Ticks V3 hôm nay ổn định: ${rowCount} records.` \n      : `🚨 [TimescaleDB MDDS PROD CẢNH BÁO] Không tìm thấy dữ liệu Ticks V3 cho phiên hôm nay!`\n  }\n}];"
+      },
+      "id": "4",
+      "name": "Verify Health & Parity",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "id": "5",
+      "name": "Respond to Caller",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        920,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Cron 15:15 PM (End of Trading Session)": {
+      "main": [
+        [
+          {
+            "node": "Execute MDDS Ticks Query on Production Metabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute MDDS Ticks Query on Production Metabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute MDDS Ticks Query on Production Metabase": {
+      "main": [
+        [
+          {
+            "node": "Verify Health & Parity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Health & Parity": {
+      "main": [
+        [
+          {
+            "node": "Respond to Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

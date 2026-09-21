@@ -3,7 +3,7 @@
  * scripts/repo-sync.js
  * 
  * Engine đồng bộ mã nguồn (Fetch & Pull Multi-repo Sync)
- * Hỗ trợ các cờ chuẩn của discord-bridge:
+ * Hỗ trợ các cờ chuẩn:
  *   -p, --project, project: <tên_project_hoặc_thư_mục>
  *   -b, --branch, branch: <nhánh_cần_pull>
  *   -d, --des, des: <mô_tả_hoặc_ghi_chú>
@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const PROJECTS_JSON_PATH = path.resolve(ROOT_DIR, 'tools', 'discord-bridge', 'projects.json');
+const PROJECTS_JSON_PATH = path.resolve(ROOT_DIR, 'projects.json');
 
 // ─── PARSE ARGUMENTS ─────────────────────────────────────────────────────────
 

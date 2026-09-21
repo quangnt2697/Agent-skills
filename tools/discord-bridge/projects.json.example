@@ -1,6 +1,0 @@
-{
-  "openapi-tyk": "/path/to/3.1/openapi-tyk",
-  "openapi": "/path/to/3.1",
-  "agent-skills": "/path/to/Test/agent-skills",
-  "my-project": "/path/to/my-project"
-}

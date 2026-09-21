@@ -13,7 +13,7 @@ Trong kiến trúc microservices và đa kho lưu trữ (multi-repo), mã nguồ
 3. Các file sửa dở (uncommitted/untracked) cản trở quá trình checkout và pull các nhánh mới.
 4. Thao tác kéo mã thủ công cho từng nhánh và từng thư mục rất mất thời gian và dễ bỏ sót các dịch vụ phụ thuộc.
 
-Kỹ năng `repo-group-sync` tự động hóa việc đưa working tree về trạng thái sạch ban đầu (`git reset --hard HEAD && git clean -fd`), tải về toàn bộ metadata và commit của tất cả các nhánh từ remote (`git fetch --all --prune`), và kéo mã nguồn mới nhất (`git pull --ff-only`) cho toàn bộ các nhánh local trong từng repository đơn lẻ hoặc toàn bộ cụm dịch vụ. Sau khi đồng bộ, hệ thống tự động checkout trả lại nhánh ban đầu cho kỹ sư. Kỹ năng hỗ trợ định danh qua alias cấu hình trong `tools/discord-bridge/projects.json`, tương thích hoàn toàn với hệ thống cờ của Discord Bridge và có thể kích hoạt trực tiếp từ terminal, Agent chat hoặc Discord.
+Kỹ năng `repo-group-sync` tự động hóa việc đưa working tree về trạng thái sạch ban đầu (`git reset --hard HEAD && git clean -fd`), tải về toàn bộ metadata và commit của tất cả các nhánh từ remote (`git fetch --all --prune`), và kéo mã nguồn mới nhất (`git pull --ff-only`) cho toàn bộ các nhánh local trong từng repository đơn lẻ hoặc toàn bộ cụm dịch vụ. Sau khi đồng bộ, hệ thống tự động checkout trả lại nhánh ban đầu cho kỹ sư. Kỹ năng hỗ trợ định danh qua alias cấu hình trong `projects.json`, có thể kích hoạt trực tiếp từ terminal hoặc Mattermost.
 
 ## Khi nào sử dụng
 
@@ -21,7 +21,7 @@ Kỹ năng `repo-group-sync` tự động hóa việc đưa working tree về tr
 - Trước khi thiết kế kỹ thuật (`/tech-spec`) hoặc thực hiện kiểm thử toàn trình (`/e2e-delivery`).
 - Khi tiếp nhận một tính năng mới cần đảm bảo các microservices phụ thuộc đều ở commit mới nhất.
 - Khi người dùng yêu cầu "pull code mới", "sync repo", "cập nhật code dự án", "fetch code mới nhất về local".
-- Khi điều phối Agent từ xa qua Discord thông qua lệnh `/sync` hoặc `!sync -p <project>`.
+- Khi điều phối Agent từ xa qua Mattermost thông qua lệnh `/agent sync -p <project>`.
 
 **Khi KHÔNG sử dụng:**
 - Khi bạn đang trong quá trình commit hoặc rebase dở dang trên repository và muốn giữ nguyên thay đổi cục bộ (trừ khi bật cờ `--no-reset --stash`).
@@ -61,7 +61,7 @@ Kỹ năng `repo-group-sync` tự động hóa việc đưa working tree về tr
 
 ### Bước 1: Tra Cứu Alias & Định Vị Repository
 Phân tích tham số người dùng truyền vào (hoặc directive từ Discord):
-- Nếu có cờ `-p <tên>`, tra cứu trong `tools/discord-bridge/projects.json`.
+- Nếu có cờ `-p <tên>`, tra cứu trong `projects.json`.
 - Nếu alias trỏ tới một git repository cụ thể (chứa thư mục `.git`): Chọn duy nhất repo đó.
 - Nếu alias trỏ tới một thư mục cha chứa nhiều repo con (ví dụ folder `3.1`): Quét và thu thập toàn bộ các git repository con bên trong.
 - Nếu không truyền `-p`: Tự động nhận diện thư mục làm việc hiện tại (CWD).
@@ -91,9 +91,9 @@ Tại từng repository mục tiêu:
 ### Bước 5: Báo Cáo Kết Quả Chi Tiết
 Xuất bảng tổng hợp Markdown đầy đủ các cột: Repository, Nhánh Đồng Bộ, Trạng Thái, Delta, Commit SHA, Thời gian thực thi và Chi tiết/Ghi chú (bao gồm chi tiết từng nhánh và thông báo reset nếu có).
 
-## Cú pháp & Hệ thống Cờ (CLI & Discord)
+## Cú pháp & Hệ thống Cờ (CLI & Mattermost)
 
-Kỹ năng hỗ trợ trọn bộ cú pháp cờ tương thích với `discord-bridge`:
+Kỹ năng hỗ trợ trọn bộ cú pháp cờ tương thích:
 
 | Cờ | Biến thể cú pháp | Ý nghĩa |
 |:---|:---|:---|
@@ -112,7 +112,7 @@ Kỹ năng hỗ trợ trọn bộ cú pháp cờ tương thích với `discord-b
 - `/sync -p 3.1`
 - `/sync -p backend --no-reset --stash`
 - CLI: `npm run repo:sync -- -p order-service`
-- Discord: `!sync -p order-service` hoặc `!run /sync -p order-service`
+- Mattermost: `/agent sync -p order-service`
 
 ## Những lời Biện minh Thường gặp
 

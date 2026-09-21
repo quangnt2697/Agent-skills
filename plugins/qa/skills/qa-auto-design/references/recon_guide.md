@@ -159,7 +159,7 @@ Tài liệu này hướng dẫn chi tiết quy trình khảo sát thực tế (R
 
 #### 3.2.1. Cơ Chế Tự Động Định Vị Thư Mục SDK
 Agent tiến hành dò tìm thư mục `openapi-tyk/sdk/python/` theo thứ tự ưu tiên:
-1. **Tra cứu Alias từ `tools/discord-bridge/projects.json`:**
+1. **Tra cứu Alias từ `projects.json`:**
    - Đọc key `"openapi-tyk"` (ví dụ: `/path/to/openapi-tyk`) ➔ Nối thêm `/sdk/python/`.
 2. **Biến môi trường trong `.env`:**
    - Kiểm tra `OPENAPI_TYK_PATH` hoặc `OPENAPI_SDK_PATH` (nếu có chỉ định cụ thể).

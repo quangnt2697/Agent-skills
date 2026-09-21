@@ -47,54 +47,17 @@ Kỹ sư chuyên trách đánh giá hiệu năng web, Core Web Vitals (LCP, FID,
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Hướng Dẫn Cài Đặt (Installation Guide)
 
-### Cài đặt Toàn Cục cho Gemini CLI & Antigravity (Khuyên dùng)
+Do dự án bao gồm nhiều hệ sinh thái (Agent Plugins, n8n Fast-Path, Ngrok Tunnel, Mattermost Webhook), toàn bộ quy trình thiết lập đã được hợp nhất vào một tài liệu duy nhất để dễ theo dõi.
 
-Để tất cả các dự án trên máy tự động nhận diện và gọi được toàn bộ 44 skills và 7 personas của `agent-skills`, bạn chỉ cần:
+👉 **Mời bạn xem: [Cẩm Nang Cài Đặt & Tích Hợp (Installation Guide)](docs/guides/installation-guide.md)**
 
-```bash
-# 1. Clone repository
-git clone https://gitlab.example.com/org/agent-skills.git
-cd agent-skills
-npm install
-
-# 2. Thiết lập liên kết tự động tới ~/.gemini/config/plugins/
-npm run setup:plugins
-```
-
-> 💡 **Lưu ý:** Lệnh trên tạo các symlinks an toàn từ 8 sub-plugins (`agent-skills-ba-po`, `agent-skills-qa`, `agent-skills-dev`, v.v.) vào thư mục cấu hình toàn cục `~/.gemini/config/plugins/`. Khi bạn `git pull` code mới, các dự án khác sẽ tự động nhận diện cập nhật ngay lập tức. Để gỡ bỏ, chỉ cần chạy `npm run unlink:plugins`.
-
-### Cài đặt với Claude Code
-
-```bash
-# Mở thư mục gốc trong Claude Code để tải toàn bộ plugins
-claude
-# Hoặc gõ `/` trong chat để xem danh sách 35 slash commands
-```
-
-### Điều khiển Từ Xa qua Discord (Discord Bot Bridge)
-
-Dự án tích hợp sẵn module điều khiển Agent từ xa qua Discord (hỗ trợ mobile/desktop, gợi ý lệnh autocomplete và chat đa lượt trong Thread):
-
-```bash
-# 1. Cài đặt thư viện Discord
-npm run setup:discord
-
-# 2. Tạo file cấu hình và điền Token
-cp .env.example .env
-
-# 3. Khởi chạy Bot
-npm run bridge:discord
-```
-
-> 📖 Hướng dẫn chi tiết tạo Bot, cấp quyền Intent và sử dụng Slash Command xem tại: **[tools/discord-bridge/README.md](tools/discord-bridge/README.md)**.
-
-**Xem tài liệu chi tiết:** 
-- [docs/guides/antigravity-setup.md](docs/guides/antigravity-setup.md) — Antigravity CLI
-- [docs/guides/gemini-cli-setup.md](docs/guides/gemini-cli-setup.md) — Gemini CLI
+*Tài liệu trên bao gồm:*
+- *Kịch bản cài đặt A-Z chỉ với 1 lệnh cho macOS (`npm run setup:mac`).*
+- *Hướng dẫn kết nối Agent Plugins cho Antigravity / Gemini CLI.*
+- *Hướng dẫn tích hợp hệ thống ChatOps qua n8n và Mattermost Slash Command.*
 - [docs/guides/adoption-guide.md](docs/guides/adoption-guide.md) — Cẩm nang áp dụng theo quy trình Agile/Scrum
-- [tools/discord-bridge/README.md](tools/discord-bridge/README.md) — Hướng dẫn Discord Bot Bridge
 
 ### Workflow cơ bản
 
@@ -140,6 +103,8 @@ agent-skills/
 │   ├── scrum-master/           → Scrum Master persona & skills
 │   ├── security-auditor/       → Security Auditor persona & skills
 │   └── web-performance-auditor/ → Web Performance Auditor persona & skills
+├── n8n-workflows/               → Các workflow tự động (ChatOps, Cron)
+├── scripts/                     → Các script hỗ trợ, tool cài đặt (A-Z)
 ├── references/                  → Checklists & templates dùng chung
 ├── docs/                        → Documentation
 │   ├── guides/                  → Hướng dẫn (setup, skills, agents)
@@ -242,7 +207,7 @@ plugins/dev/
 
 ### 1. Đọc Documentation
 
-- **[Getting Started](docs/guides/getting-started.md)** — Hướng dẫn cài đặt chi tiết
+- **[Installation Guide](docs/guides/installation-guide.md)** — Hướng dẫn cài đặt chi tiết
 - **[Skill Anatomy](docs/guides/skill-anatomy.md)** — Cấu trúc một skill
 - **[Agents Guide](docs/guides/agents.md)** — Hiểu rõ 7 personas
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — Hướng dẫn tạo skill và plugin mới
@@ -321,7 +286,7 @@ Sửa file `plugins/<plugin-name>/agents/{persona}.md` để thay đổi:
 | Doc                                               | Nội dung                              |
 |---------------------------------------------------|---------------------------------------|
 | [CLAUDE.md](CLAUDE.md)                            | Project instructions cho Claude agent |
-| [Getting Started](docs/guides/getting-started.md) | Hướng dẫn cài đặt & sử dụng           |
+| [Installation Guide](docs/guides/installation-guide.md) | Hướng dẫn cài đặt & sử dụng           |
 | [Skill Anatomy](docs/guides/skill-anatomy.md)     | Cấu trúc một skill, best practices    |
 | [Agents Guide](docs/guides/agents.md)             | Chi tiết 7 personas và ranh giới      |
 | [CONTRIBUTING.md](CONTRIBUTING.md)                | Hướng dẫn đóng góp                    |

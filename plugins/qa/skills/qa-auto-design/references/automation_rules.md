@@ -14,7 +14,7 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 ### 1.2. Tái sử dụng Code có sẵn & SDK OpenAPI (API/WebSocket)
 - **Ưu tiên tái sử dụng tối đa:** Khi gặp task liên quan đến API hoặc WebSocket, Agent BẮT BUỘC phải tìm và import lại các module client có sẵn thay vì viết mới từ đầu.
 - **Quét Bắt Buộc Thư Mục SDK `openapi-tyk/sdk/python/`:**
-  - Đối với các dịch vụ OpenAPI (Entrade / DNSE), Agent bắt buộc dò quét thư mục `openapi-tyk/sdk/python/` (thông qua `tools/discord-bridge/projects.json`, biến môi trường `OPENAPI_TYK_PATH`, hoặc đường dẫn tương đối).
+  - Đối với các dịch vụ OpenAPI (Entrade / DNSE), Agent bắt buộc dò quét thư mục `openapi-tyk/sdk/python/` (thông qua `projects.json`, biến môi trường `OPENAPI_TYK_PATH`, hoặc đường dẫn tương đối).
   - Tái sử dụng `DNSEClient` (`dnse/`), các module `trading-api/`, `marketdata-api/`, `broker-api/`, `websocket-trading/`, `websocket-marketdata/` và tham khảo `examples/`.
 - **Cách tìm code có sẵn khác của Dev:**
   - Quét các file `.py` chứa thư viện `requests`, `httpx`, `APIRequestContext`, `websockets`, `websocket-client`.

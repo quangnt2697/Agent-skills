@@ -1,0 +1,149 @@
+/**
+ * n8n Client Adapter (`scripts/lib/n8n-client.js`)
+ *
+ * Tiện ích kết nối n8n Fast-Path cho các AI Agent Skills:
+ * - Kiểm tra trạng thái n8n (Fast healthcheck)
+ * - Gửi Webhook với timeout và fallback an toàn
+ * - Cung cấp các hàm chuyên biệt: prepJiraContext, pushSpecToJira, batchSquashPush, runAsyncTest
+ */
+
+import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.join(__dirname, '..', '..');
+
+// Đảm bảo nạp .env
+dotenv.config({ path: path.join(projectRoot, '.env') });
+
+const N8N_ENABLED = (process.env.N8N_ENABLED || 'true').toLowerCase() === 'true';
+const N8N_BASE_URL = (process.env.N8N_BASE_URL || 'http://localhost:5678').replace(/\/$/, '');
+const DEFAULT_TIMEOUT_MS = parseInt(process.env.N8N_WEBHOOK_TIMEOUT_MS || '8000', 10);
+
+/**
+ * Kiểm tra xem n8n có đang chạy và sẵn sàng nhận webhook hay không.
+ * @returns {Promise<boolean>}
+ */
+export async function isN8nAvailable() {
+  if (!N8N_ENABLED) return false;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1500); // 1.5s fast ping
+    
+    // n8n exposes /healthz or check base endpoint
+    const res = await fetch(`${N8N_BASE_URL}/healthz`, {
+      method: 'GET',
+      signal: controller.signal
+    }).catch(async () => {
+      // Fallback: ping root
+      return await fetch(N8N_BASE_URL, { method: 'HEAD', signal: controller.signal });
+    });
+
+    clearTimeout(timeout);
+    return res && (res.ok || res.status < 500);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Gửi webhook đến n8n với timeout và error handling.
+ * @param {string} path Webhook path (VD: 'jira-prep' hoặc 'webhook/jira-prep')
+ * @param {object} payload Dữ liệu gửi đi
+ * @param {number} timeoutMs Thời gian chờ tối đa
+ * @returns {Promise<object|null>}
+ */
+export async function callN8nWebhook(path, payload = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  const cleanPath = path.replace(/^\//, '');
+  const url = cleanPath.startsWith('webhook') 
+    ? `${N8N_BASE_URL}/${cleanPath}` 
+    : `${N8N_BASE_URL}/webhook/${cleanPath}`;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    let res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+
+    // Nếu webhook production chưa Publish (404), thử gọi webhook-test (khi user đang test trên UI)
+    if (res.status === 404 && !cleanPath.includes('webhook-test')) {
+      const testUrl = `${N8N_BASE_URL}/webhook-test/${cleanPath.replace(/^webhook\//, '')}`;
+      const testRes = await fetch(testUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      }).catch(() => null);
+      if (testRes && testRes.ok) {
+        clearTimeout(timer);
+        return await testRes.json();
+      }
+    }
+
+    clearTimeout(timer);
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`n8n HTTP ${res.status}: ${errText}`);
+    }
+
+    return await res.json();
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
+/**
+ * Fast-Path: Lấy context Jira đã làm sạch từ n8n
+ * @param {string} issueKey Mã Jira (VD: G3PTP-17396)
+ * @returns {Promise<object|null>}
+ */
+export async function prepJiraContext(issueKey) {
+  return await callN8nWebhook('jira-prep', { issueKey });
+}
+
+/**
+ * Fast-Path: Batch Push test cases lên Squash TM qua n8n
+ * Tự động nạp cấu hình từ .env nếu params không truyền vào
+ * @param {object} params { baseUrl, apiToken, projectId, folderId, testCases }
+ * @returns {Promise<object>}
+ */
+export async function batchSquashPush(params = {}) {
+  const payload = {
+    baseUrl: (params.baseUrl || process.env.SQUASH_BASE_URL || '').replace(/\/$/, ''),
+    apiToken: params.apiToken || process.env.SQUASH_API_TOKEN || '',
+    projectId: params.projectId || process.env.SQUASH_PROJECT_ID || '',
+    folderId: params.folderId || process.env.SQUASH_TC_G31_FOLDER_ID || '',
+    testCases: params.testCases || []
+  };
+  return await callN8nWebhook('squash-batch', payload, 30000); // 30s for batch
+}
+
+/**
+ * Fast-Path: Lấy báo cáo Standup từ n8n để hiển thị trực tiếp lên Mattermost
+ * @returns {Promise<object>}
+ */
+export async function getStandupReport() {
+  return await callN8nWebhook('sm-standup', {});
+}
+
+/**
+ * Fast-Path: Kích hoạt test suite phi đồng bộ (Non-blocking)
+ * @param {object} params { issueKey, testCommand, testFiles }
+ * @returns {Promise<object>}
+ */
+export async function triggerAsyncTest(params) {
+  return await callN8nWebhook('qa-async-test', params);
+}
+

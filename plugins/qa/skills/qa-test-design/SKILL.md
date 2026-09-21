@@ -30,7 +30,7 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 40 dòng cho toàn bộ quy trình.
 
 - **Giai đoạn 1 (Phân tích Spec & Thiết kế Checklist `checklist.md`):**
-  - Đọc `workspace/{issueKey}/spec/final.md` và `references/securities-domain-rules.md` (nếu domain fintech/chứng khoán).
+  - Đọc `workspace/{issueKey}/spec/final.md` và `../../../../references/securities-domain-rules.md` (nếu domain fintech/chứng khoán).
   - Phân tích theo 6 chiều kiểm thử (Bảo mật, Quy tắc nghiệp vụ, Toàn vẹn dữ liệu, Đường dẫn chuẩn, Ngoại lệ, Ranh giới BVA).
   - Gán nhãn ưu tiên `[P0]`, `[P1]`, `[P2]`. Mỗi item bắt đầu bằng **động từ hành động**, lượng hóa rõ ràng.
   - Tham chiếu kỹ thuật BVA/EP: [qa-testing-checklist.md](references/qa-testing-checklist.md).

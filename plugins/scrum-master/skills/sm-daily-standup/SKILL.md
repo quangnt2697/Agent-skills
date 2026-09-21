@@ -9,7 +9,7 @@ trigger: Khi cần tạo báo cáo daily standup tự động cho team hoặc ph
 ## 1. Khi nào dùng?
 - Tạo báo cáo Daily Standup hằng ngày trong chu kỳ Sprint đang mở.
 - Phân tích tiến độ hoàn thành Story Points và cân bằng tải công việc giữa các lập trình viên.
-- Tự động bắn thông báo tóm tắt lên kênh chat Mattermost/Discord của team.
+- Tự động bắn thông báo tóm tắt lên kênh chat Mattermost của team.
 
 **Khi KHÔNG sử dụng:**
 - Lập kế hoạch cho Sprint mới sắp tới → Dùng `sm-sprint-planning`.
@@ -21,12 +21,14 @@ trigger: Khi cần tạo báo cáo daily standup tự động cho team hoặc ph
 3. Dữ liệu các Issues trong Open Sprint trên Jira REST API.
 
 ## 3. Quy trình Thực hiện 3 Bước
-- **Bước 1 (Chạy Script Tự động Tạo Báo cáo):** Chạy script Python có sẵn trong thư mục `assets/`:
-  ```bash
-  python3 plugins/scrum-master/skills/sm-daily-standup/assets/generate_report.py --project-root "."
-  ```
-  Script tự động tính toán số ngày còn lại của Sprint, tỷ lệ hoàn thành Story Points, số ngày ticket tồn đọng, render báo cáo theo `assets/daily-standup-report.md` và bắn webhook lên Mattermost.
-- **Bước 2 (Gửi lại Báo cáo - Tùy chọn):** Nếu cần gửi lại thông báo sau khi chỉnh sửa thủ công:
+- **Bước 1 (Tạo Báo cáo Daily Standup):** Áp dụng Chiến lược 3-Tier Fallback:
+  - **Tier 1 (Ưu tiên - n8n Fast-Path):** Import và chạy hàm `getStandupReport()` từ `scripts/lib/n8n-client.js`. Cách này lấy dữ liệu siêu nhanh từ webhook `/webhook/sm-standup` và trả về ngay báo cáo text (hiển thị trực tiếp vào chat).
+  - **Tier 3 (Dự phòng / Full Report):** Nếu n8n không khả dụng hoặc user muốn render file Markdown và tự động gửi webhook Mattermost, chạy script Python:
+    ```bash
+    python3 plugins/scrum-master/skills/sm-daily-standup/assets/generate_report.py --project-root "."
+    ```
+    Script tự động tính toán số ngày còn lại của Sprint, tỷ lệ hoàn thành Story Points, số ngày ticket tồn đọng, render báo cáo theo `assets/daily-standup-report.md` và bắn webhook lên Mattermost.
+- **Bước 2 (Gửi lại Báo cáo - Tùy chọn):** Nếu cần gửi lại thông báo sau khi chỉnh sửa thủ công (chỉ áp dụng nếu dùng Tier 3):
   ```bash
   python3 plugins/scrum-master/skills/sm-daily-standup/assets/send_mattermost.py --project-root "."
   ```
