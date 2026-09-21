@@ -32,7 +32,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst json = input.json;\nlet issueKey = '';\n\nif (json.params && json.params.issueKey) {\n  issueKey = json.params.issueKey;\n} else if (json.body && json.body.issueKey) {\n  issueKey = json.body.issueKey;\n}\n\nif (!issueKey) {\n  throw new Error('Thiếu tham số issueKey.');\n}\n\nreturn [{ json: { issueKey: issueKey.toUpperCase() } }];"
+        "jsCode": "const input = $input.first();\nconst json = input.json;\nlet issueKey = '';\nlet project = '';\nlet skill = '';\n\nif (json.params) {\n  issueKey = json.params.issueKey || '';\n  project = json.params.project || '';\n  skill = json.params.skill || '';\n} else if (json.body) {\n  issueKey = json.body.issueKey || '';\n  project = json.body.project || '';\n  skill = json.body.skill || '';\n}\n\nif (!issueKey && json.issueKey) {\n  issueKey = json.issueKey;\n}\n\nif (!issueKey) {\n  return [{\n    json: {\n      error: 'Thiếu tham số issueKey.',\n      issueKey: '',\n      project: project,\n      skill: skill\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    issueKey: issueKey.toUpperCase(),\n    project: (project || '').trim(),\n    skill: (skill || 'run-test').trim()\n  }\n}];\n"
       },
       "id": "code-extract-issuekey",
       "name": "Extract issueKey",
@@ -46,13 +46,12 @@
     },
     {
       "parameters": {
-        "command": "={{ 'pytest workspace/' + $json.issueKey + '/test/test_*.py -v --tb=short' }}",
-        "executeOnce": false
+        "jsCode": "const { execSync } = require('child_process');\nconst fs = require('fs');\nconst path = require('path');\n\nconst input = $input.first();\nconst issueKey = (input.json.issueKey || '').toUpperCase();\nconst project = input.json.project || '';\n\nif (input.json.error || !issueKey) {\n  return [{\n    json: {\n      stdout: '',\n      stderr: input.json.error || 'Thiếu tham số issueKey.',\n      exitCode: 1,\n      error: { message: input.json.error || 'Thiếu tham số issueKey.' }\n    }\n  }];\n}\n\nlet cwd = $env.AGENT_WORKSPACE_DIR || process.cwd();\n\n// Nếu có chỉ định project, tìm thư mục project từ projects.json nếu tồn tại\nif (project) {\n  try {\n    const projectsFile = path.resolve(cwd, 'projects.json');\n    if (fs.existsSync(projectsFile)) {\n      const projects = JSON.parse(fs.readFileSync(projectsFile, 'utf8'));\n      if (projects[project]) {\n        cwd = projects[project];\n      }\n    }\n  } catch (e) {}\n}\n\nconst testDir = path.resolve(cwd, 'workspace', issueKey, 'test');\n\nif (!fs.existsSync(testDir)) {\n  return [{\n    json: {\n      stdout: '',\n      stderr: 'Không tìm thấy thư mục kiểm thử: workspace/' + issueKey + '/test trên hệ thống.',\n      exitCode: 4,\n      error: { message: 'Thư mục kiểm thử không tồn tại: workspace/' + issueKey + '/test' }\n    }\n  }];\n}\n\nlet testTarget = '';\ntry {\n  const files = fs.readdirSync(testDir);\n  const pyTestFiles = files.filter(f => f.startsWith('test_') && f.endsWith('.py'));\n  const anyPyFiles = files.filter(f => f.endsWith('.py'));\n\n  if (pyTestFiles.length > 0) {\n    testTarget = path.join(testDir, 'test_*.py');\n  } else if (anyPyFiles.length > 0) {\n    testTarget = path.join(testDir, anyPyFiles[0]);\n  } else {\n    return [{\n      json: {\n        stdout: '',\n        stderr: 'Không tìm thấy file Python test (*.py) nào trong workspace/' + issueKey + '/test.',\n        exitCode: 4,\n        error: { message: 'Không có file test nào trong thư mục.' }\n      }\n    }];\n  }\n} catch (e) {\n  return [{\n    json: {\n      stdout: '',\n      stderr: 'Lỗi truy xuất thư mục kiểm thử: ' + e.message,\n      exitCode: 1,\n      error: { message: e.message }\n    }\n  }];\n}\n\nconst command = 'pytest ' + testTarget + ' -v --tb=short';\n\ntry {\n  const result = execSync(command, { encoding: 'utf-8', cwd: cwd, timeout: 60000 });\n  return [{ json: { stdout: result, stderr: '', exitCode: 0 } }];\n} catch (err) {\n  return [{\n    json: {\n      stdout: err.stdout || '',\n      stderr: err.stderr || err.message,\n      exitCode: err.status || 1,\n      error: { message: err.message }\n    }\n  }];\n}\n"
       },
       "id": "execute-command",
       "name": "Run Pytest",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         660,
         300
@@ -61,7 +60,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst issueKey = $('Extract issueKey').first().json.issueKey;\n\n// Xử lý lỗi Extract\nif (input.json.error && $('Extract issueKey').first().json.error) {\n   return [{\n     json: {\n       success: false,\n       message: `🚨 **[QA Automation Lỗi]** Không tìm thấy `issueKey` trong yêu cầu.`\n     }\n   }];\n}\n\n// Xử lý kết quả lệnh Execute Command\nconst execRes = input.json;\nlet success = true;\nlet outputText = execRes.stdout || '';\nlet errText = execRes.stderr || '';\n\nif (execRes.error || (execRes.exitCode && execRes.exitCode !== 0)) {\n  success = false;\n  if (execRes.error && execRes.error.message && execRes.error.message.includes('No such file or directory')) {\n    errText += '\\nKhông tìm thấy file test cho vé này.';\n  }\n}\n\n// Rút gọn output nếu quá dài\nlet logSnippet = (outputText + '\\n' + errText).trim();\nif (logSnippet.length > 2000) {\n  logSnippet = logSnippet.substring(logSnippet.length - 2000);\n}\n\nconst statusIcon = success ? '✅' : '❌';\nconst statusText = success ? 'Thành công (Passed)' : 'Thất bại (Failed)';\n\nconst message = `🚀 **[QA Automation]** Kết quả chạy kiểm thử cho vé **${issueKey}**:\\n` +\n                `- Trạng thái: ${statusIcon} **${statusText}**\\n\\n` +\n                ````text\\n${logSnippet}\\n````;\n\nreturn [{ json: { success, message, issueKey } }];"
+        "jsCode": "const input = $input.first();\nconst extractNode = $('Extract issueKey').first().json;\nconst issueKey = extractNode.issueKey || '';\nconst project = extractNode.project || '';\nconst targetLabel = project ? (project + ' / ' + issueKey) : issueKey;\n\n// Xử lý lỗi Extract\nif (!issueKey || extractNode.error) {\n  return [{\n    json: {\n      success: false,\n      message: '🚨 **[QA Automation Lỗi]** Không tìm thấy issueKey hợp lệ trong yêu cầu.\\n' +\n               '> Cú pháp hợp lệ: `/agent [project] run-test <issueKey>` (trong đó [project] là tùy chọn).'\n    }\n  }];\n}\n\n// Xử lý kết quả lệnh Execute Command\nconst execRes = input.json;\nlet success = true;\nlet outputText = execRes.stdout || '';\nlet errText = execRes.stderr || '';\n\nif (execRes.error || (execRes.exitCode !== undefined && execRes.exitCode !== 0)) {\n  success = false;\n}\n\n// Rút gọn output nếu quá dài\nlet logSnippet = (outputText + '\\n' + errText).trim();\nif (logSnippet.length > 2500) {\n  logSnippet = logSnippet.substring(logSnippet.length - 2500);\n}\n\nconst statusIcon = success ? '✅' : '❌';\nconst statusText = success ? 'Thành công (Passed)' : 'Thất bại (Failed)';\n\nconst message = '🚀 **[QA Automation]** Kết quả chạy kiểm thử cho vé **' + targetLabel + '**:\\n' +\n                '- Trạng thái: ' + statusIcon + ' **' + statusText + '**\\n\\n' +\n                '```text\\n' + logSnippet + '\\n```';\n\nreturn [{ json: { success, message, issueKey, project } }];\n"
       },
       "id": "code-format-result",
       "name": "Format Result",
@@ -87,7 +86,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"text\": \"{{ $json.message }}\"\n}",
+        "jsonBody": "={{ JSON.stringify({ text: $json.message }) }}",
         "options": {}
       },
       "id": "http-mattermost",
