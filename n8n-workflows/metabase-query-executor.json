@@ -1,0 +1,291 @@
+{
+  "name": "AgentSkills - Metabase Query Executor",
+  "id": "MetabaseQueryExecutor001",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "metabase-query",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2",
+      "name": "Webhook Trigger (metabase-query)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        420
+      ],
+      "webhookId": "metabase-query"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst rawJson = (input && input.json) || {};\n\n// 1. Nhận diện nguồn gọi\nlet triggerSource = 'executeWorkflow';\nlet rawBody = {};\n\ntry {\n  const trigWebhook = $('Webhook Trigger (metabase-query)').first();\n  if (trigWebhook && trigWebhook.json) {\n    triggerSource = 'webhook';\n    rawBody = trigWebhook.json.body || trigWebhook.json;\n  }\n} catch (e) {}\n\nif (triggerSource !== 'webhook') {\n  try {\n    const trigExec = $('Execute Workflow Trigger').first();\n    if (trigExec && trigExec.json) {\n      triggerSource = trigExec.json._triggerSource || 'mattermost';\n      rawBody = trigExec.json.body?.params || trigExec.json.body || trigExec.json.params || trigExec.json;\n    }\n  } catch (e) {}\n}\n\nconst payload = Object.assign({}, rawJson, rawBody);\nlet rawQuery = (payload.query || payload.sql || '').trim();\nconst userQuestion = (payload.userQuestion || payload.question || '').trim();\nconst userName = payload.userName || 'User';\nconst params = payload.params || {};\nlet maxRows = parseInt(payload.maxRows || payload.limit || '50', 10);\nif (isNaN(maxRows) || maxRows <= 0) maxRows = 50;\nif (maxRows > 200) maxRows = 200; // Hard cap trần 200\n\n// A. Bind tham số vào template {{key}} nếu có\nif (params && typeof params === 'object') {\n  for (const [k, v] of Object.entries(params)) {\n    const regex = new RegExp(`\\\\{\\\\{${k}\\\\}\\\\}`, 'g');\n    rawQuery = rawQuery.replace(regex, String(v));\n  }\n}\n\n// B. Kiểm tra câu query rỗng\nif (!rawQuery) {\n  const errMsg = '🚨 **[Lỗi Truy Vấn Metabase]** Không tìm thấy câu lệnh SQL nào được cung cấp.';\n  return [{\n    json: {\n      isError: true,\n      errorType: 'EMPTY_QUERY',\n      reportText: errMsg,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\n// C. QA Security Gate: Chỉ cho phép READ-ONLY (SELECT / EXPLAIN / SHOW / WITH)\nconst forbiddenPattern = /\\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|GRANT|REVOKE|CREATE|REPLACE|UPSERT|MERGE|EXECUTE|EXEC|CALL)\\b/i;\nif (forbiddenPattern.test(rawQuery)) {\n  const errMsg = '🚨 **[Chặn Bởi QA Security Gate]** Lệnh SQL bị từ chối! Hệ thống chỉ cho phép các câu lệnh truy vấn dữ liệu (`SELECT`). Tuyệt đối cấm các câu lệnh thay đổi dữ liệu hoặc thay đổi cấu trúc database (`UPDATE`, `DELETE`, `DROP`, `ALTER`...).';\n  return [{\n    json: {\n      isError: true,\n      errorType: 'SECURITY_VIOLATION',\n      reportText: errMsg,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\n// Chặn đa câu lệnh bằng dấu chấm phẩy (;)\nconst cleanQueryNoComments = rawQuery.replace(/--.*$/gm, '').replace(/\\/\\*[\\s\\S]*?\\*\\//g, '').trim();\nconst semiIndex = cleanQueryNoComments.indexOf(';');\nif (semiIndex !== -1 && semiIndex < cleanQueryNoComments.length - 1) {\n  const remaining = cleanQueryNoComments.slice(semiIndex + 1).trim();\n  if (remaining.length > 0) {\n    const errMsg = '🚨 **[Chặn Bởi QA Security Gate]** Phát hiện nhiều câu lệnh phân tách bởi dấu chấm phẩy (`;`). Chỉ cho phép 1 câu lệnh duy nhất.';\n    return [{\n      json: {\n        isError: true,\n        errorType: 'MULTI_STATEMENT_DETECTED',\n        reportText: errMsg,\n        _triggerSource: triggerSource,\n        userName\n      }\n    }];\n  }\n}\n\n// D. Tự động tiêm LIMIT nếu chưa có\nlet sanitizedQuery = rawQuery.replace(/;\\s*$/, '').trim();\nconst hasLimit = /\\bLIMIT\\s+\\d+/i.test(sanitizedQuery);\nif (!hasLimit) {\n  sanitizedQuery += ` LIMIT ${maxRows}`;\n}\n\n// E. Phân giải Database ID và Môi trường\nconst envVal = (payload.environment || payload.env || ($env && $env.METABASE_ENV) || 'uat').toLowerCase();\nconst isProd = envVal === 'prod' || envVal === 'production';\nconst rawDb = (payload.database || payload.db || 'openapi').toString().toLowerCase().trim();\n\nlet dbName = 'openapi';\nlet databaseId = 535;\n\nif (rawDb.includes('time') || rawDb.includes('mdds') || rawDb.includes('tick') || rawDb.includes('price')) {\n  dbName = 'timescale';\n  databaseId = isProd\n    ? parseInt(($env && $env.METABASE_PROD_DB_TIMESCALE_ID) || '7', 10)\n    : parseInt(($env && ($env.METABASE_UAT_DB_TIMESCALE_ID || $env.METABASE_DB_TIMESCALE_ID)) || '644', 10);\n} else if (rawDb.includes('sand') || rawDb.includes('sb')) {\n  dbName = 'openapi-sandbox';\n  databaseId = parseInt(($env && ($env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || $env.METABASE_DB_OPENAPI_SANDBOX_ID)) || '655', 10);\n} else {\n  dbName = 'openapi';\n  databaseId = isProd\n    ? parseInt(($env && $env.METABASE_PROD_DB_OPENAPI_ID) || '266', 10)\n    : parseInt(($env && ($env.METABASE_UAT_DB_OPENAPI_ID || $env.METABASE_DB_OPENAPI_ID)) || '535', 10);\n}\n\n// Nếu user truyền thẳng database ID dạng số\nconst parsedNumericDb = parseInt(rawDb, 10);\nif (!isNaN(parsedNumericDb) && parsedNumericDb > 0) {\n  databaseId = parsedNumericDb;\n}\n\n// F. Phân giải URL và Session Token\nlet metabaseUrl = isProd\n  ? (($env && $env.METABASE_PROD_URL) || ($env && $env.METABASE_URL) || 'https://mb.dnse.com.vn')\n  : (($env && $env.METABASE_UAT_URL) || ($env && $env.METABASE_URL) || 'https://mb-uat.dnse.com.vn');\nmetabaseUrl = metabaseUrl.replace(/\\/+$/, '');\n\nlet sessionToken = '';\nif (isProd) {\n  sessionToken = ($env && $env.METABASE_PROD_SESSION_TOKEN) || ($env && $env.METABASE_PROD_API_TOKEN) || ($env && $env.METABASE_SESSION_TOKEN) || '';\n} else {\n  sessionToken = ($env && $env.METABASE_UAT_API_TOKEN) || ($env && $env.METABASE_UAT_SESSION_TOKEN) || ($env && $env.METABASE_API_TOKEN) || ($env && $env.METABASE_SESSION_TOKEN) || '';\n}\n\nreturn [{\n  json: {\n    isError: false,\n    sanitizedQuery,\n    originalQuery: rawQuery,\n    userQuestion,\n    dbName,\n    databaseId,\n    environment: isProd ? 'PRODUCTION' : 'UAT',\n    metabaseUrl,\n    sessionToken,\n    maxRows,\n    userName,\n    _triggerSource: triggerSource\n  }\n}];\n"
+      },
+      "id": "3",
+      "name": "Prepare & Sanitize Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json.isError ? 0 : 1 }}",
+        "numberOutputs": 2
+      },
+      "id": "4",
+      "name": "Check Pre-flight Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        660,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.metabaseUrl }}/api/dataset",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.sessionToken }}"
+            },
+            {
+              "name": "X-Metabase-Session",
+              "value": "={{ $json.sessionToken }}"
+            },
+            {
+              "name": "Cookie",
+              "value": "=metabase.SESSION={{ $json.sessionToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  database: $json.databaseId,\n  type: 'native',\n  native: { query: $json.sanitizedQuery }\n}) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "5",
+      "name": "Execute Metabase HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        380
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst httpRes = (input && input.json) || {};\nconst context = $('Prepare & Sanitize Query').first()?.json || {};\n\nconst triggerSource = context._triggerSource || httpRes._triggerSource || 'mattermost';\nconst userName = context.userName || 'User';\nconst dbName = context.dbName || 'DB';\nconst envName = context.environment || 'UAT';\nconst sql = context.sanitizedQuery || '';\nconst userQuestion = context.userQuestion || '';\n\n// 1. Xử lý lỗi Pre-flight từ bước Sanitize\nif (context.isError || httpRes.isError) {\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      errorType: context.errorType || httpRes.errorType,\n      reportText: context.reportText || httpRes.reportText,\n      data: [],\n      rowCount: 0,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\n// 2. Xử lý lỗi từ Metabase API\nif (httpRes.error || (httpRes.status && httpRes.status >= 400)) {\n  let errMsg = (httpRes.error && (httpRes.error.message || httpRes.error.description || httpRes.error)) || httpRes.message || 'Lỗi không xác định từ Metabase API';\n  let suggestion = '';\n  \n  if (httpRes.status === 401 || httpRes.status === 403 || String(errMsg).toLowerCase().includes('unauthenticated')) {\n    errMsg = 'Phiên đăng nhập Metabase (Session Token) đã hết hạn hoặc không hợp lệ.';\n    suggestion = '\\n\\n*👉 Hãy chạy lệnh sau trên terminal để làm mới Session Token:\\n`node scripts/metabase-sso-login.js`*';\n  }\n  \n  const reportText = `🚨 **[Lỗi Truy Vấn Metabase]** (${dbName.toUpperCase()} / ${envName}):\\n> ${errMsg}${suggestion}\\n\\n\\`\\`\\`sql\\n${sql}\\n\\`\\`\\``;\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      errorType: 'METABASE_API_ERROR',\n      message: errMsg,\n      reportText,\n      sql,\n      data: [],\n      rowCount: 0,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\n// 3. Chuẩn hóa dữ liệu trả về: cols + rows -> Array of JSON Objects\nconst rawData = httpRes.data || {};\nconst cols = (rawData.cols || []).map(c => c.name || c.display_name || 'col');\nconst rawRows = rawData.rows || [];\n\nconst normalizedData = rawRows.map(row => {\n  const obj = {};\n  cols.forEach((colName, idx) => {\n    obj[colName] = row[idx];\n  });\n  return obj;\n});\n\nconst rowCount = normalizedData.length;\n\n// 4. Render Bảng Markdown trực quan cho Mattermost\nlet reportText = '';\nlet headerTitle = `🔍 **[Metabase Query Result]**\\n- **Cơ sở dữ liệu:** \\`${dbName.toUpperCase()} (${envName})\\` | **Bản ghi:** **${rowCount}** records`;\nif (userQuestion) {\n  headerTitle += `\\n- **Yêu cầu:** _\"${userQuestion}\"_`;\n}\n\nif (rowCount === 0) {\n  reportText = `${headerTitle}\\n\\n⚠️ **Không tìm thấy bản ghi nào khớp với điều kiện query.**\\n\\n💡 **SQL:** \\`${sql}\\``;\n} else {\n  // Lấy tối đa 6 cột hiển thị đầu tiên để không bị vỡ khung chat di động\n  const displayCols = cols.slice(0, 6);\n  let tableMd = '| ' + displayCols.join(' | ') + ' |\\n';\n  tableMd += '| ' + displayCols.map(() => ':---').join(' | ') + ' |\\n';\n  \n  // Hiển thị tối đa 10 dòng đầu\n  const displayRows = normalizedData.slice(0, 10);\n  for (const item of displayRows) {\n    const rowValues = displayCols.map(c => {\n      const val = item[c];\n      if (val === null || val === undefined) return '_null_';\n      if (typeof val === 'number') return val.toLocaleString();\n      const str = String(val).replace(/\\|/g, '/').replace(/\\n/g, ' ');\n      return str.length > 30 ? (str.slice(0, 27) + '...') : str;\n    });\n    tableMd += '| ' + rowValues.join(' | ') + ' |\\n';\n  }\n  \n  let truncationNote = '';\n  if (rowCount > 10) {\n    truncationNote = `\\n> *(Đã ẩn ${rowCount - 10} dòng dữ liệu tiếp theo để tối ưu hiển thị)*`;\n  }\n  \n  reportText = `${headerTitle}\\n\\n${tableMd}${truncationNote}\\n\\n💡 **SQL:** \\`${sql}\\``;\n}\n\nreturn [{\n  json: {\n    success: true,\n    isError: false,\n    database: dbName,\n    environment: envName,\n    databaseId: context.databaseId,\n    sql,\n    userQuestion,\n    columns: cols,\n    rowCount,\n    data: normalizedData,\n    reportText,\n    _triggerSource: triggerSource,\n    userName\n  }\n}];\n"
+      },
+      "id": "6",
+      "name": "Normalize & Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json._triggerSource === 'webhook' ? 0 : ($json._triggerSource === 'executeWorkflow' ? 1 : 2) }}",
+        "numberOutputs": 3
+      },
+      "id": "7",
+      "name": "Route by Caller",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1320,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "8",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1560,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "9",
+      "name": "Return to Sub-workflow",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.reportText, username: 'Metabase Query Bot', icon_emoji: ':mag:' }) }}",
+        "options": {}
+      },
+      "id": "10",
+      "name": "Notify Result to Mattermost",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        440
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare & Sanitize Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (metabase-query)": {
+      "main": [
+        [
+          {
+            "node": "Prepare & Sanitize Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare & Sanitize Query": {
+      "main": [
+        [
+          {
+            "node": "Check Pre-flight Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Pre-flight Status": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Metabase HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Metabase HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize & Format Response": {
+      "main": [
+        [
+          {
+            "node": "Route by Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Caller": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return to Sub-workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Result to Mattermost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

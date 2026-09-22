@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   isN8nAvailable,
   prepJiraContext,
+  pushSpecToJira,
   batchSquashPush,
   getStandupReport,
   triggerAsyncTest
@@ -15,6 +16,7 @@ test('n8n-client: isN8nAvailable returns boolean', async () => {
 
 test('n8n-client: All fast-path adapter methods are exported as functions', () => {
   assert.equal(typeof prepJiraContext, 'function');
+  assert.equal(typeof pushSpecToJira, 'function');
   assert.equal(typeof batchSquashPush, 'function');
   assert.equal(typeof getStandupReport, 'function');
   assert.equal(typeof triggerAsyncTest, 'function');

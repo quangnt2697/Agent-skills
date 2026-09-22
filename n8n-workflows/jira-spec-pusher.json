@@ -1,0 +1,311 @@
+{
+  "name": "AgentSkills - Jira Spec Pusher",
+  "id": "AgentSkillsJiraSpecPusher001",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        160,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jira-push-spec",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2",
+      "name": "Webhook Trigger (jira-push-spec)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        160,
+        420
+      ],
+      "webhookId": "jira-push-spec"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst rawJson = (input && input.json) || {};\n\nlet triggerSource = 'mattermost';\nlet rawBody = {};\n\ntry {\n  const trigWebhook = $('Webhook Trigger (jira-push-spec)').first();\n  if (trigWebhook && trigWebhook.json) {\n    triggerSource = 'webhook';\n    rawBody = trigWebhook.json.body || trigWebhook.json;\n  }\n} catch (e) {}\n\nif (triggerSource !== 'webhook') {\n  try {\n    const trigExec = $('Execute Workflow Trigger').first();\n    if (trigExec && trigExec.json) {\n      triggerSource = 'mattermost';\n      rawBody = trigExec.json.body?.params || trigExec.json.body || trigExec.json.params || trigExec.json;\n    }\n  } catch (e) {}\n}\n\nconst payload = Object.assign({}, rawJson, rawBody);\nconst rawKey = payload.issueKey || '';\nconst rawProject = (payload.project || '').trim();\nconst userName = payload.userName || 'User';\nconst isDryRun = Boolean(payload.dryRun);\n\nconst match = String(rawKey).match(/([A-Z][A-Z0-9]*-\\d+)/i);\nconst issueKey = match ? match[1].toUpperCase() : '';\n\nif (!issueKey) {\n  const errMsg = `🚨 **[Lỗi Cú Pháp]** Không tìm thấy mã Jira \\`issueKey\\` hợp lệ trong lệnh.\\n> Cú pháp: \\`/agent [project] push-jira [issueKey]\\`\\n> Ví dụ: \\`/agent 3.1 push-jira G3PTP-17396\\``;\n  return [{\n    json: {\n      isError: true,\n      errorType: 'INVALID_ISSUE_KEY',\n      reportText: errMsg,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    isError: false,\n    issueKey: issueKey,\n    project: rawProject,\n    targetPath: 'spec/refined.md',\n    readContent: true,\n    dryRun: isDryRun,\n    userName: userName,\n    _triggerSource: triggerSource\n  }\n}];"
+      },
+      "id": "10",
+      "name": "Prepare Resolver Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        380,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "LocalWorkspaceResolver001",
+        "mode": "wait"
+      },
+      "id": "11",
+      "name": "Resolve Workspace Spec",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        580,
+        320
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst input = $input.first();\nconst resolveRes = (input && input.json) || {};\nconst prepContext = $('Prepare Resolver Input').first()?.json || {};\n\nconst triggerSource = prepContext._triggerSource || resolveRes._triggerSource || 'mattermost';\nconst issueKey = prepContext.issueKey || resolveRes.issueKey || '';\nconst userName = prepContext.userName || resolveRes.userName || 'User';\nconst isDryRun = Boolean(prepContext.dryRun || resolveRes.dryRun);\n\n// 1. Kiểm tra kết quả từ Workspace Resolver\nif (resolveRes.isError || !resolveRes.found) {\n  return [{\n    json: {\n      isError: true,\n      errorType: resolveRes.errorType || 'FILE_NOT_FOUND',\n      reportText: resolveRes.reportText || `🚨 Không tìm thấy file spec/refined.md cho vé ${issueKey}`,\n      _triggerSource: triggerSource,\n      userName,\n      issueKey\n    }\n  }];\n}\n\nconst targetFilePath = resolveRes.filePath;\nconst markdownContent = resolveRes.fileContent || '';\n\nif (!markdownContent.trim()) {\n  return [{\n    json: {\n      isError: true,\n      errorType: 'EMPTY_FILE',\n      reportText: `🚨 **[File Spec Rỗng]** File tại \\`${targetFilePath}\\` không có nội dung.`,\n      _triggerSource: triggerSource,\n      userName,\n      issueKey\n    }\n  }];\n}\n\n// 2. Pre-flight Quality Gate\nconst qualityErrors = [];\nif (/\\[\\.\\.\\.\\]/.test(markdownContent)) {\n  qualityErrors.push(\"Spec còn chứa placeholder chưa điền: `[...]`\");\n}\nconst forbiddenSections = [\n  /##\\s*Giả định\\s*(&|và)\\s*Rủi ro/i,\n  /##\\s*Ngoài Phạm vi/i,\n  /##\\s*Đánh giá Độ tin cậy/i\n];\nfor (const pattern of forbiddenSections) {\n  if (pattern.test(markdownContent)) {\n    qualityErrors.push(`Spec còn chứa section nội bộ bị cấm trên Jira: \\`${pattern.source}\\``);\n  }\n}\nif (!markdownContent.includes('Given') || !markdownContent.includes('When') || !markdownContent.includes('Then')) {\n  qualityErrors.push(\"Acceptance Criteria bắt buộc phải có cấu trúc Gherkin chuẩn (`Given` / `When` / `Then`).\");\n}\n\nif (qualityErrors.length > 0) {\n  const errMsg = `⚠️ **[Chặn Ghi Đè - Spec Chưa Đạt Chuẩn]** File \\`refined.md\\` của ticket **${issueKey}** chưa hoàn thiện:\\n` +\n                 qualityErrors.map(e => `> - ${e}`).join('\\n') + '\\n\\n' +\n                 `*Vui lòng mở file \\`${targetFilePath}\\` để hoàn thiện spec trước khi đẩy lên Jira.*`;\n  return [{\n    json: {\n      isError: true,\n      errorType: 'PREFLIGHT_FAILED',\n      reportText: errMsg,\n      _triggerSource: triggerSource,\n      userName,\n      issueKey,\n      filePath: targetFilePath\n    }\n  }];\n}\n\n// 3. Chuyển đổi Markdown sang ADF\nconst projectRoot = ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills';\nlet adfContent = null;\ntry {\n  const scriptPath = path.join(projectRoot, 'plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js');\n  if (fs.existsSync(scriptPath)) {\n    const { markdownToAdf } = require(scriptPath);\n    adfContent = markdownToAdf(markdownContent);\n  }\n} catch (e) {}\n\nif (!adfContent) {\n  adfContent = {\n    version: 1,\n    type: 'doc',\n    content: [\n      {\n        type: 'paragraph',\n        content: [{ type: 'text', text: markdownContent }]\n      }\n    ]\n  };\n}\n\nconst tableCount = (adfContent.content || []).filter(n => n.type === 'table').length;\nconst blockCount = (adfContent.content || []).length;\n\nreturn [{\n  json: {\n    isError: false,\n    issueKey,\n    project: resolveRes.project || prepContext.project,\n    filePath: targetFilePath,\n    dryRun: isDryRun,\n    adfContent,\n    tableCount,\n    blockCount,\n    diagramPaths: resolveRes.diagramPaths || [],\n    userName,\n    _triggerSource: triggerSource\n  }\n}];"
+      },
+      "id": "3",
+      "name": "Pre-flight Gate & ADF Converter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json.isError ? 0 : ($json.dryRun ? 0 : 1) }}",
+        "numberOutputs": 2
+      },
+      "id": "4",
+      "name": "Switch by Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1020,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ ($env.ATLASSIAN_BASE_URL || 'https://entrade.atlassian.net') }}/rest/api/3/issue/{{ $json.issueKey }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Basic ' + Buffer.from(($env.ATLASSIAN_EMAIL || '') + ':' + ($env.ATLASSIAN_API_TOKEN || '')).toString('base64') }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fields: { description: $json.adfContent } }) }}",
+        "options": {}
+      },
+      "id": "5",
+      "name": "Update Jira Description API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1240,
+        380
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\n\nlet specContext = {};\ntry {\n  specContext = $('Pre-flight Gate & ADF Converter').first()?.json || {};\n} catch (e) {}\n\nconst triggerSource = specContext._triggerSource || json._triggerSource || 'mattermost';\nconst issueKey = specContext.issueKey || json.issueKey || '';\nconst userName = specContext.userName || json.userName || 'User';\nconst baseUrl = ($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net';\n\n// 1. Trường hợp có lỗi từ bước Resolve/Pre-flight\nif (specContext.isError || json.isError) {\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      issueKey,\n      reportText: specContext.reportText || json.reportText,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\n// 2. Trường hợp Dry Run\nif (specContext.dryRun) {\n  const dryRunMsg = `🧪 **[DRY RUN - Xem Trước Spec ADF]** Cho ticket [${issueKey}](${baseUrl}/browse/${issueKey}):\\n` +\n                    `- **Nguồn file:** \\`${specContext.filePath}\\`\\n` +\n                    `- **Tổng số block:** ${specContext.blockCount} blocks (gồm ${specContext.tableCount} bảng)\\n` +\n                    `> *Lưu ý: Chế độ Dry Run không ghi đè dữ liệu lên Jira.*`;\n  return [{\n    json: {\n      success: true,\n      isDryRun: true,\n      issueKey,\n      reportText: dryRunMsg,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\n// 3. Trường hợp Live Push - kiểm tra phản hồi từ Jira API\nif (json.error || json.errorMessages || (json.status && json.status >= 400)) {\n  const errMsg = (json.errorMessages && json.errorMessages.join(', ')) ||\n                 (json.error && (json.error.message || json.error.description)) ||\n                 'Lỗi không xác định từ Jira REST API';\n  const failText = `🚨 **[Lỗi Ghi Đè Jira]** Không thể cập nhật Description cho ticket [${issueKey}](${baseUrl}/browse/${issueKey}):\\n> ${errMsg}\\n\\n*Gợi ý: Kiểm tra quyền hạn của tài khoản hoặc cấu trúc ADF.*`;\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      issueKey,\n      reportText: failText,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nconst formattedUser = userName ? (userName.startsWith('@') ? userName : '@' + userName) : '@User';\nconst successMsg = `✅ **[Jira Spec Pusher]** Đã cập nhật thành công Description cho ticket **[${issueKey}](${baseUrl}/browse/${issueKey})**!\\n` +\n                   `- **Nguồn file:** \\`${specContext.filePath}\\`\\n` +\n                   `- **Dự án/Cluster:** \\`${specContext.project || 'Tự động phát hiện'}\\`\\n` +\n                   `- **Thống kê:** ${specContext.blockCount || 0} ADF blocks (bao gồm ${specContext.tableCount || 0} bảng nghiệp vụ & AC Gherkin)\\n` +\n                   `- **Người thực hiện:** ${formattedUser}\\n\\n` +\n                   `👉 [Nhấp vào đây để xem trực tiếp trên Jira](${baseUrl}/browse/${issueKey})`;\n\nreturn [{\n  json: {\n    success: true,\n    isError: false,\n    issueKey,\n    jiraUrl: `${baseUrl}/browse/${issueKey}`,\n    filePath: specContext.filePath,\n    reportText: successMsg,\n    _triggerSource: triggerSource\n  }\n}];"
+      },
+      "id": "6",
+      "name": "Format Response & Audit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json._triggerSource === 'webhook' ? 0 : 1 }}",
+        "numberOutputs": 2
+      },
+      "id": "7",
+      "name": "Route by Caller",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1680,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "8",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1900,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.reportText }) }}",
+        "options": {}
+      },
+      "id": "9",
+      "name": "Notify Result to Mattermost",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1900,
+        420
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Resolver Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (jira-push-spec)": {
+      "main": [
+        [
+          {
+            "node": "Prepare Resolver Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Resolver Input": {
+      "main": [
+        [
+          {
+            "node": "Resolve Workspace Spec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Workspace Spec": {
+      "main": [
+        [
+          {
+            "node": "Pre-flight Gate & ADF Converter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-flight Gate & ADF Converter": {
+      "main": [
+        [
+          {
+            "node": "Switch by Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch by Status": {
+      "main": [
+        [
+          {
+            "node": "Format Response & Audit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Jira Description API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Jira Description API": {
+      "main": [
+        [
+          {
+            "node": "Format Response & Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response & Audit": {
+      "main": [
+        [
+          {
+            "node": "Route by Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Caller": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Result to Mattermost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

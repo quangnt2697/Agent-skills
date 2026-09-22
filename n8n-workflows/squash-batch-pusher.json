@@ -9,8 +9,8 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        220,
-        220
+        200,
+        260
       ]
     },
     {
@@ -25,22 +25,92 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        220,
-        420
+        200,
+        460
       ],
       "webhookId": "squash-batch"
     },
     {
       "parameters": {
-        "jsCode": "const inputData = $input.first().json || {};\nconst body = inputData.body || inputData;\nconst testCases = body.testCases || [];\nconst baseUrl = (body.baseUrl || process.env.SQUASH_BASE_URL || '').replace(/\\/$/, '');\nconst apiToken = body.apiToken || process.env.SQUASH_API_TOKEN || '';\nconst folderId = body.folderId || process.env.SQUASH_TC_G31_FOLDER_ID;\nconst projectId = body.projectId || process.env.SQUASH_PROJECT_ID;\n\nlet triggerSource = 'mattermost';\ntry {\n  if ($('Webhook Trigger (squash-batch)').first()) {\n    triggerSource = 'webhook';\n  }\n} catch (e) {\n  triggerSource = 'mattermost';\n}\n\n// Chuẩn bị danh sách payload động kèm token và URL để gửi song song lên Squash TM\nif (testCases.length === 0) {\n  return [{\n    json: {\n      isEmpty: true,\n      baseUrl: baseUrl,\n      apiToken: apiToken,\n      folderId: folderId,\n      projectId: projectId,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nreturn testCases.map(tc => ({\n  json: {\n    baseUrl: baseUrl,\n    apiToken: apiToken,\n    folderId: folderId,\n    projectId: projectId,\n    name: tc.name || 'Test Case',\n    reference: tc.reference || '',\n    description: tc.description || '',\n    prerequisite: tc.prerequisite || '',\n    _triggerSource: triggerSource\n  }\n}));"
+        "jsCode": "const input = $input.first();\nconst raw = (input && input.json) || {};\nconst body = raw.body || raw;\n\nlet triggerSource = \"mattermost\";\ntry {\n  if ($(\"Webhook Trigger (squash-batch)\").first()) {\n    triggerSource = \"webhook\";\n  }\n} catch (e) {\n  triggerSource = \"mattermost\";\n}\n\nconst params = body.params || raw.params || {};\nlet issueKey = body.issueKey || raw.issueKey || params.issueKey || \"\";\nlet project = body.project || raw.project || params.project || \"\";\nconst userName = body.user_name || body.userName || raw.userName || \"User\";\n\nconst text = body.text || raw.text || \"\";\nif (!issueKey && text) {\n  const match = text.match(/\\b([A-Za-z0-9]+-[0-9]+)\\b/i);\n  if (match) issueKey = match[1].toUpperCase();\n}\n\nconst isLegacyBatch = Array.isArray(body.testCases) && body.testCases.length > 0;\n\nreturn [{\n  json: {\n    issueKey,\n    project,\n    targetPath: \"test\",\n    userName,\n    isLegacyBatch,\n    testCases: body.testCases || [],\n    baseUrl: body.baseUrl || \"\",\n    apiToken: body.apiToken || \"\",\n    folderId: body.folderId || \"\",\n    projectId: body.projectId || \"\",\n    _triggerSource: triggerSource\n  }\n}];"
       },
       "id": "2",
-      "name": "Prepare Test Case Batch",
+      "name": "Extract & Prepare Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        460,
-        320
+        440,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json.isLegacyBatch ? 0 : 1 }}",
+        "numberOutputs": 2
+      },
+      "id": "3",
+      "name": "Check Push Mode",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        660,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "LocalWorkspaceResolver001",
+        "mode": "wait"
+      },
+      "id": "4",
+      "name": "Call Local Workspace Resolver",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        880,
+        460
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const { exec } = require('child_process');\nconst util = require('util');\nconst fs = require('fs');\nconst path = require('path');\nconst execAsync = util.promisify(exec);\n\nconst input = $input.first();\nconst resolveRes = input.json || {};\nconst context = $('Extract & Prepare Input').first()?.json || {};\nconst issueKey = context.issueKey || resolveRes.issueKey || '';\nconst project = context.project || resolveRes.project || '';\nconst triggerSource = context._triggerSource || context.triggerSource || 'mattermost';\nconst userName = context.userName || 'User';\n\nif (!issueKey) {\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      reportText: '🚨 **[Squash Push Lỗi]** Không tìm thấy mã `issueKey` trong yêu cầu.\\n> Cú pháp: `/agent [project] push-squash <issueKey>`',\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\nif (resolveRes.isError || !resolveRes.found) {\n  const errMsg = resolveRes.reportText || `Không tìm thấy thư mục workspace cho ticket **${issueKey}**.`;\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      reportText: `🚨 **[Squash Push Lỗi]** ${errMsg}`,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\nconst projectRoot = resolveRes.projectRoot || (($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills');\nconst matchedFiles = resolveRes.matchedFiles || [];\nconst featureFile = matchedFiles.find(f => f.endsWith('.feature'));\n\nif (!featureFile) {\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      reportText: `🚨 **[Squash Push Lỗi]** Không tìm thấy file kịch bản BDD (\\`.feature\\`) trong thư mục test của ticket **${issueKey}**.\\n> Đường dẫn tìm kiếm: \\`${resolveRes.targetPath || 'workspace/' + issueKey + '/test'}\\`\\n*👉 Hãy chạy kỹ năng \\`qa-auto-design\\` hoặc tạo file \\`${issueKey}.feature\\` trước khi đẩy lên Squash TM.*`,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\n// Tìm namejira từ final.md nếu có\nlet namejira = issueKey;\nconst finalMdPath = path.join(projectRoot, 'workspace', issueKey, 'spec', 'final.md');\nif (fs.existsSync(finalMdPath)) {\n  try {\n    const finalContent = fs.readFileSync(finalMdPath, 'utf-8');\n    const firstLine = finalContent.split('\\n').find(l => l.startsWith('# '));\n    if (firstLine) {\n      namejira = firstLine.replace(/^#\\s*(\\[[^\\]]+\\])?\\s*/, '').trim()\n        .replace(/[^a-zA-Z0-9\\u00C0-\\u024F\\u1EA0-\\u1EF9]+/g, '-')\n        .replace(/^-+|-+$/g, '').substring(0, 80);\n    }\n  } catch (_) {}\n}\n\n// Xác định đường dẫn script engine squash-push.sh từ repo agent-skills\nconst agentSkillsRoot = ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills';\nconst scriptCandidates = [\n  path.join(agentSkillsRoot, 'plugins/qa/skills/qa-squash-push/assets/squash-push.sh'),\n  '/Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/qa/skills/qa-squash-push/assets/squash-push.sh',\n  path.join(projectRoot, 'plugins/qa/skills/qa-squash-push/assets/squash-push.sh')\n];\n\nlet scriptPath = '';\nfor (const cand of scriptCandidates) {\n  if (fs.existsSync(cand)) {\n    scriptPath = cand;\n    break;\n  }\n}\n\nif (!scriptPath) {\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      reportText: `🚨 **[Squash Push Lỗi]** Không tìm thấy script engine \\`squash-push.sh\\` tại các thư mục plugins:\\n` +\n                  scriptCandidates.map(c => `- \\`${c}\\``).join('\\n'),\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\nconst absFeatureFile = path.isAbsolute(featureFile) ? featureFile : path.join(projectRoot, featureFile);\nconst cmd = `bash \"${scriptPath}\" \"${issueKey}\" \"${namejira || issueKey}\" \"${absFeatureFile}\"`;\n\ntry {\n  const result = await execAsync(cmd, {\n    cwd: projectRoot,\n    timeout: 180000,\n    encoding: 'utf-8',\n    env: { ...require('process').env }\n  });\n\n  const stdout = result.stdout || '';\n  \n  // Đọc file sync metadata nếu có\n  let syncMeta = null;\n  const syncJsonPath = path.join(projectRoot, 'workspace', issueKey, 'test', 'squash_sync.json');\n  if (fs.existsSync(syncJsonPath)) {\n    try {\n      syncMeta = JSON.parse(fs.readFileSync(syncJsonPath, 'utf-8'));\n    } catch (_) {}\n  }\n\n  return [{\n    json: {\n      success: true,\n      isError: false,\n      issueKey,\n      project,\n      featureFile: absFeatureFile,\n      namejira,\n      stdout,\n      syncMeta,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n} catch (err) {\n  const errOutput = (err.stdout || '') + '\\n' + (err.stderr || err.message || '');\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      issueKey,\n      project,\n      featureFile: absFeatureFile,\n      errorOutput: errOutput,\n      reportText: `🚨 **[Squash Push Thất Bại]** Không thể đồng bộ kịch bản Gherkin của **${issueKey}** lên Squash TM:\\n\\`\\`\\`text\\n${errOutput.substring(errOutput.length - 1200)}\\n\\`\\`\\``,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n"
+      },
+      "id": "5",
+      "name": "Execute Squash Push Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        460
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst res = (input && input.json) || {};\n\nif (res.isError) {\n  return [{ json: res }];\n}\n\nconst meta = res.syncMeta || {};\nconst issueKey = res.issueKey || '';\nconst featureFile = res.featureFile || '';\nconst tcId = meta.testCaseId;\nconst tcName = meta.testCaseName || `${issueKey}-${res.namejira}`;\nconst sprintName = meta.sprintName || 'Sprint mới nhất';\nconst sprintReqId = meta.sprintReqVersionId;\nconst baseUrl = (($env && $env.SQUASH_BASE_URL) || 'https://tm.dnse.com.vn/squash').replace(/\\/+$/, '');\n\nconst tcLink = tcId ? `[#${tcId} - ${tcName}](${baseUrl}/test-case-workspace/test-case/${tcId})` : `\\`${tcName}\\``;\nconst campaignStatus = sprintReqId \n  ? `✅ **Đã gán vào Requirement Test Plan** (sprint-req-version: \\`#${sprintReqId}\\`)` \n  : `⚠️ *Chưa tìm thấy Requirement tương ứng trong Sprint để tự động gán*`;\n\nconst reportText = `### 🧪 Kết Quả Đẩy Kịch Bản Gherkin Lên Squash TM\n- **Ticket:** **${issueKey}** ${res.project ? '(`' + res.project + '`)' : ''}\n- **Kịch bản nguồn:** \\`${featureFile}\\`\n- **Thư mục Sprint:** \\`${sprintName}\\`\n- **Test Case Workspace:** ${tcLink}\n- **Nội dung BDD:** ✅ Đã nạp toàn bộ kịch bản Gherkin (.feature) vào trường script.\n- **Campaign Workspace:** ${campaignStatus}\n- **Truy vết Local:** Đã lưu metadata tại \\`workspace/${issueKey}/test/squash_sync.json\\``;\n\nreturn [{\n  json: {\n    ...res,\n    reportText\n  }\n}];\n"
+      },
+      "id": "6",
+      "name": "Format Squash Report Markdown",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst testCases = input.testCases || [];\nconst baseUrl = (input.baseUrl || ($env && $env.SQUASH_BASE_URL) || \"\").replace(/\\/$/, \"\");\nconst apiToken = input.apiToken || ($env && $env.SQUASH_API_TOKEN) || \"\";\nconst folderId = input.folderId || ($env && $env.SQUASH_TC_G31_FOLDER_ID);\nconst projectId = input.projectId || ($env && $env.SQUASH_PROJECT_ID);\nconst triggerSource = input._triggerSource || \"webhook\";\n\nif (testCases.length === 0) {\n  return [{\n    json: {\n      isEmpty: true,\n      baseUrl, apiToken, folderId, projectId,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nreturn testCases.map(tc => ({\n  json: {\n    baseUrl, apiToken, folderId, projectId,\n    name: tc.name || \"Test Case\",\n    reference: tc.reference || \"\",\n    description: tc.description || \"\",\n    prerequisite: tc.prerequisite || \"\",\n    _triggerSource: triggerSource\n  }\n}));"
+      },
+      "id": "7",
+      "name": "Legacy Prepare Batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        260
       ]
     },
     {
@@ -62,45 +132,45 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  _type: 'test-case',\n  name: $json.name,\n  reference: $json.reference,\n  description: $json.description,\n  prerequisite: $json.prerequisite\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  _type: \"test-case\",\n  name: $json.name,\n  reference: $json.reference,\n  description: $json.description,\n  prerequisite: $json.prerequisite\n}) }}",
         "options": {}
       },
-      "id": "3",
-      "name": "Create Test Case on Squash TM",
+      "id": "8",
+      "name": "Legacy HTTP Create Test Case",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        680,
-        320
+        1100,
+        260
       ],
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const results = $input.all();\nconst first = results[0] ? results[0].json : {};\nconst triggerSource = first._triggerSource || 'mattermost';\n\nif (first.isEmpty) {\n  return [{\n    json: {\n      status: 'error',\n      isError: true,\n      totalImported: 0,\n      reportText: '⚠️ **[Squash Batch Pusher]** Không tìm thấy danh sách test cases nào trong payload để đẩy lên Squash TM.',\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nconst errors = [];\nconst createdCases = [];\n\nfor (const r of results) {\n  const j = r.json || {};\n  if (j.error || (j.status && j.status >= 400)) {\n    errors.push((j.error && (j.error.message || j.error.description)) || j.message || 'Lỗi HTTP ' + j.status);\n  } else if (j.id) {\n    createdCases.push({ id: j.id, name: j.name || '' });\n  }\n}\n\nconst isError = errors.length > 0;\nlet reportText = '';\nif (isError && createdCases.length === 0) {\n  reportText = `🚨 **[Lỗi Đẩy Test Case Squash TM]** Không thể tạo test case nào lên hệ thống:\\n> ${errors[0]}\\n\\n*Gợi ý: Hãy kiểm tra SQUASH_BASE_URL, SQUASH_API_TOKEN và folderId trong .env.*`;\n} else if (isError && createdCases.length > 0) {\n  reportText = `⚠️ **[Cảnh Báo Squash TM]** Đã tạo thành công **${createdCases.length}** test cases, nhưng có **${errors.length}** test cases thất bại.\\n> Lỗi mẫu: ${errors[0]}`;\n} else {\n  reportText = `### 🧪 Batch Push Squash TM Hoàn Tất\\n- **Tổng số test case đã tạo:** ${createdCases.length}\\n- **Trạng thái:** ✅ Thành công 100%`;\n}\n\nreturn [{\n  json: {\n    status: isError ? (createdCases.length > 0 ? 'partial' : 'failed') : 'success',\n    isError: isError,\n    totalImported: createdCases.length,\n    failedCount: errors.length,\n    createdCases: createdCases,\n    errors: errors,\n    reportText: reportText,\n    _triggerSource: triggerSource\n  }\n}];"
+        "jsCode": "const results = $input.all();\nconst first = results[0] ? results[0].json : {};\nconst triggerSource = first._triggerSource || \"webhook\";\n\nif (first.isEmpty) {\n  return [{\n    json: {\n      status: \"error\",\n      isError: true,\n      totalImported: 0,\n      reportText: \"⚠️ **[Squash Batch Pusher]** Không tìm thấy danh sách test cases nào trong payload để đẩy lên Squash TM.\",\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nconst errors = [];\nconst createdCases = [];\n\nfor (const r of results) {\n  const j = r.json || {};\n  if (j.error || (j.status && j.status >= 400)) {\n    errors.push((j.error && (j.error.message || j.error.description)) || j.message || \"Lỗi HTTP \" + j.status);\n  } else if (j.id) {\n    createdCases.push({ id: j.id, name: j.name || \"\" });\n  }\n}\n\nconst isError = errors.length > 0;\nlet reportText = \"\";\nif (isError && createdCases.length === 0) {\n  reportText = \"🚨 **[Lỗi Đẩy Test Case Squash TM]** Không thể tạo test case nào lên hệ thống:\\n> \" + errors[0];\n} else if (isError && createdCases.length > 0) {\n  reportText = \"⚠️ **[Cảnh Báo Squash TM]** Đã tạo thành công **\" + createdCases.length + \"** test cases, nhưng có **\" + errors.length + \"** test cases thất bại.\\n> Lỗi mẫu: \" + errors[0];\n} else {\n  reportText = \"### 🧪 Batch Push Squash TM Hoàn Tất\\n- **Tổng số test case đã tạo:** \" + createdCases.length + \"\\n- **Trạng thái:** ✅ Thành công 100%\";\n}\n\nreturn [{\n  json: {\n    status: isError ? (createdCases.length > 0 ? \"partial\" : \"failed\") : \"success\",\n    isError: isError,\n    totalImported: createdCases.length,\n    failedCount: errors.length,\n    createdCases: createdCases,\n    errors: errors,\n    reportText: reportText,\n    _triggerSource: triggerSource\n  }\n}];"
       },
-      "id": "4",
-      "name": "Aggregate Summary",
+      "id": "9",
+      "name": "Legacy Aggregate Summary",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        900,
-        320
+        1320,
+        260
       ]
     },
     {
       "parameters": {
         "mode": "expression",
-        "output": "={{ $json._triggerSource === 'webhook' ? 0 : 1 }}",
+        "output": "={{ $json._triggerSource === \"webhook\" ? 0 : 1 }}",
         "numberOutputs": 2
       },
-      "id": "5",
+      "id": "10",
       "name": "Route by Caller",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        1120,
-        320
+        1540,
+        360
       ]
     },
     {
@@ -108,13 +178,13 @@
         "respondWith": "firstIncomingItem",
         "options": {}
       },
-      "id": "6",
+      "id": "11",
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1340,
-        220
+        1760,
+        260
       ]
     },
     {
@@ -135,13 +205,13 @@
         "jsonBody": "={{ JSON.stringify({ text: $json.reportText }) }}",
         "options": {}
       },
-      "id": "7",
+      "id": "12",
       "name": "Return Batch Result to Mattermost",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1340,
-        420
+        1760,
+        460
       ],
       "onError": "continueRegularOutput"
     }
@@ -151,7 +221,7 @@
       "main": [
         [
           {
-            "node": "Prepare Test Case Batch",
+            "node": "Extract & Prepare Input",
             "type": "main",
             "index": 0
           }
@@ -162,36 +232,98 @@
       "main": [
         [
           {
-            "node": "Prepare Test Case Batch",
+            "node": "Extract & Prepare Input",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Prepare Test Case Batch": {
+    "Extract & Prepare Input": {
       "main": [
         [
           {
-            "node": "Create Test Case on Squash TM",
+            "node": "Check Push Mode",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Create Test Case on Squash TM": {
+    "Check Push Mode": {
       "main": [
         [
           {
-            "node": "Aggregate Summary",
+            "node": "Legacy Prepare Batch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Local Workspace Resolver",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Aggregate Summary": {
+    "Legacy Prepare Batch": {
+      "main": [
+        [
+          {
+            "node": "Legacy HTTP Create Test Case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legacy HTTP Create Test Case": {
+      "main": [
+        [
+          {
+            "node": "Legacy Aggregate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legacy Aggregate Summary": {
+      "main": [
+        [
+          {
+            "node": "Route by Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Local Workspace Resolver": {
+      "main": [
+        [
+          {
+            "node": "Execute Squash Push Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Squash Push Engine": {
+      "main": [
+        [
+          {
+            "node": "Format Squash Report Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Squash Report Markdown": {
       "main": [
         [
           {

@@ -147,6 +147,42 @@ export async function triggerAsyncTest(params) {
   return await callN8nWebhook('qa-run-test', params);
 }
 
+/**
+ * Fast-Path: Đẩy file refined.md lên Jira Description qua n8n
+ * @param {string} issueKey Mã Jira
+ * @param {string} filePathOrProject Đường dẫn file hoặc tên project/cluster
+ * @param {object} options { dryRun: boolean, project: string }
+ * @returns {Promise<object>}
+ */
+export async function pushSpecToJira(issueKey, filePathOrProject = '', options = {}) {
+  const isMd = typeof filePathOrProject === 'string' && filePathOrProject.endsWith('.md');
+  const payload = {
+    issueKey,
+    filePath: isMd ? filePathOrProject : undefined,
+    project: options.project || (!isMd ? filePathOrProject : undefined),
+    dryRun: Boolean(options.dryRun)
+  };
+  return await callN8nWebhook('jira-push-spec', payload, 30000);
+}
+
+/**
+ * Fast-Path: Thực thi truy vấn dữ liệu Metabase (TimescaleDB / OpenAPI) qua n8n
+ * @param {string} query Câu lệnh SQL hoặc template
+ * @param {object} options { database, environment, maxRows, params, userQuestion }
+ * @returns {Promise<object>}
+ */
+export async function queryMetabase(query, options = {}) {
+  const payload = {
+    query,
+    database: options.database || 'openapi',
+    environment: options.environment || 'uat',
+    maxRows: options.maxRows || 50,
+    params: options.params || {},
+    userQuestion: options.userQuestion || ''
+  };
+  return await callN8nWebhook('metabase-query', payload, 35000);
+}
+
 // ── CLI ENTRYPOINT (Chống sai lệch kiến trúc) ──────────────────────────────
 // Cho phép gọi trực tiếp script này từ Bash thay vì chỉ làm JS Module
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -166,6 +202,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           break;
         case 'prepJiraContext':
           result = await prepJiraContext(args[1]);
+          break;
+        case 'pushSpecToJira':
+          result = await pushSpecToJira(args[1], args[2], JSON.parse(args[3] || '{}'));
+          break;
+        case 'queryMetabase':
+          result = await queryMetabase(args[1], JSON.parse(args[2] || '{}'));
           break;
         case 'batchSquashPush':
           result = await batchSquashPush(JSON.parse(args[1] || '{}'));

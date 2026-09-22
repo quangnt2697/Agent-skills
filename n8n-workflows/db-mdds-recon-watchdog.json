@@ -18,7 +18,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        220,
+        160,
         200
       ]
     },
@@ -29,52 +29,48 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        220,
+        160,
         400
       ]
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ ($json.body && $json.body.baseUrl) || $env.METABASE_PROD_URL || $env.METABASE_URL }}/api/dataset",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-Metabase-Session",
-              "value": "={{ ($json.body && $json.body.sessionToken) || $env.METABASE_PROD_SESSION_TOKEN || $env.METABASE_SESSION_TOKEN }}"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  database: parseInt($env.METABASE_PROD_DB_TIMESCALE_ID || '7', 10),\n  type: 'native',\n  native: {\n    query: 'SELECT count(1) as total_ticks_v3 FROM mdds_ticks_v3 WHERE sending_time >= CURRENT_DATE AND sending_time < CURRENT_DATE + INTERVAL \\'1 day\\';'\n  }\n}) }}",
-        "options": {}
+        "jsCode": "return [{\n  json: {\n    query: 'SELECT count(1) as total_ticks_v3 FROM mdds_ticks_v3 WHERE sending_time >= CURRENT_DATE AND sending_time < CURRENT_DATE + INTERVAL \\'1 day\\';',\n    database: 'timescale',\n    environment: 'prod',\n    _triggerSource: 'executeWorkflow'\n  }\n}];"
       },
       "id": "3",
-      "name": "Execute MDDS Ticks Query on Production Metabase",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "name": "Prepare Watchdog Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        480,
+        380,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "MetabaseQueryExecutor001",
+        "mode": "wait"
+      },
+      "id": "4",
+      "name": "Execute Metabase Query Executor",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        600,
         300
       ],
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst res = (input && input.json) || {};\n\n// ── Xử lý lỗi khi truy vấn Metabase thất bại ────────────────────────────────\nif (res.error || (res.status && res.status >= 400) || !res.data) {\n  const errMsg = (res.error && (res.error.message || res.error.description || res.error)) || res.message || 'Lỗi kết nối hoặc phiên đăng nhập Metabase hết hạn';\n  return [{\n    json: {\n      environment: 'PRODUCTION',\n      timestamp: new Date().toISOString(),\n      rowCount: 0,\n      isHealthy: false,\n      message: `🚨 **[TimescaleDB MDDS Watchdog LỖI]** Không thể truy vấn Metabase Production:\\n> ${errMsg}\\n\\n*Gợi ý: Kiểm tra và làm mới METABASE_PROD_SESSION_TOKEN bằng lệnh: node scripts/metabase-sso-login.js.*`\n    }\n  }];\n}\n\n// ── Kiểm tra tính toàn vẹn dữ liệu MDDS ─────────────────────────────────────\nconst rowCount = (res.data && res.data.rows && res.data.rows[0]) ? res.data.rows[0][0] : 0;\nconst isHealthy = rowCount > 0;\n\nreturn [{\n  json: {\n    environment: 'PRODUCTION',\n    timestamp: new Date().toISOString(),\n    rowCount: rowCount,\n    isHealthy: isHealthy,\n    message: isHealthy \n      ? `✅ **[TimescaleDB MDDS PROD]** Dữ liệu Ticks V3 hôm nay ổn định: **${rowCount.toLocaleString()}** records.` \n      : `🚨 **[TimescaleDB MDDS PROD CẢNH BÁO]** Không tìm thấy dữ liệu Ticks V3 cho phiên hôm nay!`\n  }\n}];"
+        "jsCode": "const input = $input.first();\nconst res = (input && input.json) || {};\n\n// ── Xử lý lỗi khi truy vấn Metabase thất bại ────────────────────────────────\nif (res.isError || !res.success) {\n  const errMsg = res.reportText || res.message || 'Lỗi kết nối hoặc phiên đăng nhập Metabase hết hạn';\n  return [{\n    json: {\n      environment: 'PRODUCTION',\n      timestamp: new Date().toISOString(),\n      rowCount: 0,\n      isHealthy: false,\n      message: res.reportText || `🚨 **[TimescaleDB MDDS Watchdog LỖI]** Không thể truy vấn Metabase Production:\\n> ${errMsg}`\n    }\n  }];\n}\n\n// ── Kiểm tra tính toàn vẹn dữ liệu MDDS ─────────────────────────────────────\nconst firstRow = (res.data && res.data[0]) || {};\nconst rowCount = parseInt(firstRow.total_ticks_v3 || firstRow.count || res.rowCount || 0, 10);\nconst isHealthy = rowCount > 0;\n\nreturn [{\n  json: {\n    environment: 'PRODUCTION',\n    timestamp: new Date().toISOString(),\n    rowCount: rowCount,\n    isHealthy: isHealthy,\n    message: isHealthy \n      ? `✅ **[TimescaleDB MDDS PROD]** Dữ liệu Ticks V3 hôm nay ổn định: **${rowCount.toLocaleString()}** records.` \n      : `🚨 **[TimescaleDB MDDS PROD CẢNH BÁO]** Không tìm thấy dữ liệu Ticks V3 cho phiên hôm nay!`\n  }\n}];"
       },
-      "id": "4",
+      "id": "5",
       "name": "Verify Health & Parity",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        700,
+        820,
         300
       ]
     },
@@ -96,14 +92,15 @@
         "jsonBody": "={\n  \"text\": \"{{ $json.message }}\"\n}",
         "options": {}
       },
-      "id": "5",
+      "id": "6",
       "name": "Respond to Caller",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        920,
+        1040,
         300
-      ]
+      ],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -111,7 +108,7 @@
       "main": [
         [
           {
-            "node": "Execute MDDS Ticks Query on Production Metabase",
+            "node": "Prepare Watchdog Query",
             "type": "main",
             "index": 0
           }
@@ -122,14 +119,25 @@
       "main": [
         [
           {
-            "node": "Execute MDDS Ticks Query on Production Metabase",
+            "node": "Prepare Watchdog Query",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute MDDS Ticks Query on Production Metabase": {
+    "Prepare Watchdog Query": {
+      "main": [
+        [
+          {
+            "node": "Execute Metabase Query Executor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Metabase Query Executor": {
       "main": [
         [
           {

@@ -262,12 +262,17 @@ File template là **skeleton thuần** — mọi dòng trong đó đều là n�
 3. **Đính kèm ảnh sơ đồ lên Jira (nếu có)**
    Upload từng file PNG trong `diagrams/` lên tab Attachments.
 
-4. **Cập nhật Jira description**
-   Dùng đúng script này (cập nhật đường dẫn):
-   ```bash
-   bash plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
-     "/project-root/workspace/{issueKey}/spec/refined.md"
-   ```
+4. **Cập nhật Jira description (3-Tier Fallback)**
+   - **Ưu tiên 1 (n8n Fast-Path - Tức thời & đồng bộ Mattermost):**
+     ```bash
+     node scripts/lib/n8n-client.js pushSpecToJira {issueKey} "/project-root/workspace/{issueKey}/spec/refined.md"
+     ```
+     *(Hoặc gõ từ Mattermost: `/agent [project hoặc cluster] push-jira {issueKey}`)*
+   - **Ưu tiên 2 (Fallback - Script Shell nội bộ):**
+     ```bash
+     bash plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
+       "/project-root/workspace/{issueKey}/spec/refined.md"
+     ```
 
 5. **Ghi log push history** vào `push-log.json`.
 

@@ -40,6 +40,30 @@ const mappings = [
     nodeName: 'Parse AI Output',
     nodeId: '3',
     scriptFile: 'scripts/n8n-nodes/router-parse-ai-output.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/squash-batch-pusher.json',
+    nodeName: 'Execute Squash Push Engine',
+    nodeId: '5',
+    scriptFile: 'scripts/n8n-nodes/squash-push-engine.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/squash-batch-pusher.json',
+    nodeName: 'Format Squash Report Markdown',
+    nodeId: '6',
+    scriptFile: 'scripts/n8n-nodes/squash-format-report.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/metabase-query-executor.json',
+    nodeName: 'Prepare & Sanitize Query',
+    nodeId: '3',
+    scriptFile: 'scripts/n8n-nodes/metabase-prepare-query.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/metabase-query-executor.json',
+    nodeName: 'Normalize & Format Response',
+    nodeId: '6',
+    scriptFile: 'scripts/n8n-nodes/metabase-normalize-response.js'
   }
 ];
 
