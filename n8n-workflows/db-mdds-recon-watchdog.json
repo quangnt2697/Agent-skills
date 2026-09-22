@@ -8,13 +8,13 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "15 15 * * 1-5"
+              "expression": "20 8 * * 1-5"
             }
           ]
         }
       },
       "id": "1",
-      "name": "Cron 15:15 PM (End of Trading Session)",
+      "name": "Cron 08:20 AM (Pre-Trading Definition Check)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -35,7 +35,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return [{\n  json: {\n    query: 'SELECT count(1) as total_ticks_v3 FROM mdds_ticks_v3 WHERE sending_time >= CURRENT_DATE AND sending_time < CURRENT_DATE + INTERVAL \\'1 day\\';',\n    database: 'timescale',\n    environment: 'prod',\n    _triggerSource: 'executeWorkflow'\n  }\n}];"
+        "jsCode": "/**\n * Node Script: Prepare Watchdog Query (`scripts/n8n-nodes/watchdog-prepare-query.js`)\n * \n * Mục đích:\n * Chuẩn bị câu lệnh SQL kiểm tra dữ liệu thị trường KRX MDDS đầu ngày lúc 08:30 AM:\n * 1. Kiểm tra bảng `security_definition_v3`:\n *    - Xác thực sự tồn tại của dữ liệu (bảng không được rỗng).\n *    - Thống kê tổng số lượng mã niêm yết theo từng sàn (HOSE, HNX, UPCOM, DVX...).\n *    - Đảm bảo 100% các mã đã có đầy đủ bộ 3 giá biên độ: Giá Trần (ceiling_price),\n *      Giá Sàn (floor_price) và Giá Tham Chiếu (basic_price) > 0.\n * 2. Kiểm tra bảng giá tổng hợp `krx_mdds_v2_stock_infos`:\n *    - Đảm bảo các trường khớp lệnh và khối lượng giao dịch tích lũy (match_price,\n *      total_volume_traded, gross_trade_amount...) BẮT BUỘC PHẢI ĐƯỢC CLEAR\n *      (NULL hoặc = 0) trước giờ mở phiên ATO lúc 09:00 AM.\n * 3. Đóng gói kết quả dưới dạng JSON duy nhất (`json_build_object`) để vượt qua giới hạn\n *    Hard Cap LIMIT của Metabase API mà vẫn quét toàn bộ 1,600+ mã trên thị trường.\n */\n\nconst input = $input.first();\nconst raw = (input && input.json) || {};\n\nlet triggerSource = 'cron';\ntry {\n  if ($('Execute Workflow Trigger').first()) {\n    triggerSource = 'executeWorkflow';\n  }\n} catch (e) {\n  triggerSource = 'cron';\n}\n\n// Câu truy vấn SQL đơn lệnh tổng hợp toàn diện trên TimescaleDB Production\nconst watchdogSql = `\nWITH sec_summary AS (\n  SELECT\n    CASE\n      WHEN market_id = 6 THEN 'HOSE'\n      WHEN market_id = 7 THEN 'HNX'\n      WHEN market_id = 8 THEN 'UPCOM'\n      WHEN market_id = 3 THEN 'DVX (Phái sinh)'\n      ELSE 'SÀN ' || COALESCE(market_id::text, 'KHÁC')\n    END AS floor_code,\n    COUNT(*)::int AS total_symbols,\n    COUNT(CASE WHEN basic_price > 0 AND ceiling_price > 0 AND floor_price > 0 AND board_id IS NOT NULL AND board_id <> '' THEN 1 END)::int AS valid_symbols,\n    COUNT(CASE WHEN basic_price IS NULL OR basic_price <= 0 \n                 OR ceiling_price IS NULL OR ceiling_price <= 0 \n                 OR floor_price IS NULL OR floor_price <= 0 \n                 OR board_id IS NULL OR board_id = '' THEN 1 END)::int AS invalid_symbols,\n    COUNT(CASE WHEN basic_price IS NULL OR basic_price <= 0 THEN 1 END)::int AS missing_basic_count,\n    COUNT(CASE WHEN ceiling_price IS NULL OR ceiling_price <= 0 THEN 1 END)::int AS missing_ceiling_count,\n    COUNT(CASE WHEN floor_price IS NULL OR floor_price <= 0 THEN 1 END)::int AS missing_floor_count,\n    COUNT(CASE WHEN board_id IS NULL OR board_id = '' THEN 1 END)::int AS missing_board_id_count\n  FROM security_definition_v3\n  GROUP BY market_id\n  ORDER BY floor_code\n),\nsec_invalids AS (\n  SELECT\n    symbol,\n    CASE\n      WHEN market_id = 6 THEN 'HOSE'\n      WHEN market_id = 7 THEN 'HNX'\n      WHEN market_id = 8 THEN 'UPCOM'\n      WHEN market_id = 3 THEN 'DVX'\n      ELSE 'SÀN ' || COALESCE(market_id::text, 'KHÁC')\n    END AS floor_code,\n    basic_price,\n    ceiling_price,\n    floor_price,\n    board_id,\n    CONCAT_WS(', ',\n      CASE WHEN basic_price IS NULL OR basic_price <= 0 THEN 'Thiếu giá TC' END,\n      CASE WHEN ceiling_price IS NULL OR ceiling_price <= 0 THEN 'Thiếu giá Trần' END,\n      CASE WHEN floor_price IS NULL OR floor_price <= 0 THEN 'Thiếu giá Sàn' END,\n      CASE WHEN board_id IS NULL OR board_id = '' THEN 'Thiếu Board ID' END\n    ) AS error_detail\n  FROM security_definition_v3\n  WHERE basic_price IS NULL OR basic_price <= 0 \n     OR ceiling_price IS NULL OR ceiling_price <= 0 \n     OR floor_price IS NULL OR floor_price <= 0\n     OR board_id IS NULL OR board_id = ''\n  ORDER BY market_id, symbol\n  LIMIT 100\n)\nSELECT json_build_object(\n  'total_scanned', (SELECT COUNT(*)::int FROM security_definition_v3),\n  'summary', (SELECT COALESCE(json_agg(s), '[]'::json) FROM sec_summary s),\n  'invalids', (SELECT COALESCE(json_agg(i), '[]'::json) FROM sec_invalids i)\n)::text AS report_data;\n`.trim();\n\nreturn [{\n  json: {\n    query: watchdogSql,\n    database: 'timescale',\n    environment: 'prod',\n    maxRows: 50,\n    checkTime: '08:30:00 ICT',\n    _triggerSource: triggerSource\n  }\n}];\n"
       },
       "id": "3",
       "name": "Prepare Watchdog Query",
@@ -63,7 +63,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst res = (input && input.json) || {};\n\n// ── Xử lý lỗi khi truy vấn Metabase thất bại ────────────────────────────────\nif (res.isError || !res.success) {\n  const errMsg = res.reportText || res.message || 'Lỗi kết nối hoặc phiên đăng nhập Metabase hết hạn';\n  return [{\n    json: {\n      environment: 'PRODUCTION',\n      timestamp: new Date().toISOString(),\n      rowCount: 0,\n      isHealthy: false,\n      message: res.reportText || `🚨 **[TimescaleDB MDDS Watchdog LỖI]** Không thể truy vấn Metabase Production:\\n> ${errMsg}`\n    }\n  }];\n}\n\n// ── Kiểm tra tính toàn vẹn dữ liệu MDDS ─────────────────────────────────────\nconst firstRow = (res.data && res.data[0]) || {};\nconst rowCount = parseInt(firstRow.total_ticks_v3 || firstRow.count || res.rowCount || 0, 10);\nconst isHealthy = rowCount > 0;\n\nreturn [{\n  json: {\n    environment: 'PRODUCTION',\n    timestamp: new Date().toISOString(),\n    rowCount: rowCount,\n    isHealthy: isHealthy,\n    message: isHealthy \n      ? `✅ **[TimescaleDB MDDS PROD]** Dữ liệu Ticks V3 hôm nay ổn định: **${rowCount.toLocaleString()}** records.` \n      : `🚨 **[TimescaleDB MDDS PROD CẢNH BÁO]** Không tìm thấy dữ liệu Ticks V3 cho phiên hôm nay!`\n  }\n}];"
+        "jsCode": "/**\n * Node Script: Verify Health & Parity (`scripts/n8n-nodes/watchdog-verify-health.js`)\n * \n * Mục đích:\n * Xử lý kết quả kiểm tra dữ liệu thị trường KRX MDDS lúc 08:30 AM từ Metabase Query Executor:\n * 1. Đánh giá tính sẵn sàng của bảng `security_definition_v3` (phải có dữ liệu đầu ngày).\n * 2. Thống kê tổng số lượng mã niêm yết theo từng sàn (HOSE, HNX, UPCOM, DVX...).\n * 3. Đánh giá tỷ lệ đủ giá Trần / Sàn / Tham Chiếu và Board ID cho từng sàn.\n * 4. Xuất file báo cáo chi tiết `.txt` lưu trữ trên máy chủ (`reports/mdds-watchdog/`).\n * 6. Tạo thông báo Markdown trực quan kèm khối `txt` chi tiết gửi lên Mattermost.\n */\n\nconst input = $input.first();\nconst res = (input && input.json) || {};\n\nconst now = new Date();\nconst dateStr = now.toISOString().split('T')[0];\nconst timeStr = now.toTimeString().split(' ')[0] + ' ICT';\n\n// ── 1. Xử lý lỗi khi truy vấn Metabase thất bại ─────────────────────────────\nif (res.isError || !res.success) {\n  const errMsg = res.reportText || res.message || 'Lỗi kết nối hoặc phiên đăng nhập Metabase hết hạn';\n  const alertMsg = `🚨 **[MDDS PRODUCTION LỖI 08:30 AM]** Không thể truy vấn Metabase Production:\\n> ${errMsg}\\n\\n*👉 Hãy kiểm tra kết nối TimescaleDB hoặc chạy SSO login nếu session token hết hạn.*`;\n  return [{\n    json: {\n      environment: 'PRODUCTION',\n      timestamp: now.toISOString(),\n      isHealthy: false,\n      totalScanned: 0,\n      message: alertMsg\n    }\n  }];\n}\n\n// ── 2. Trích xuất payload JSON từ kết quả query ─────────────────────────────\nconst firstRow = (res.data && res.data[0]) || {};\nlet reportData = firstRow.report_data || firstRow.result || firstRow;\nif (typeof reportData === 'string') {\n  try {\n    reportData = JSON.parse(reportData);\n  } catch (e) {\n    reportData = {};\n  }\n}\n\nconst totalScanned = parseInt(reportData.total_scanned || 0, 10);\nconst summary = Array.isArray(reportData.summary) ? reportData.summary : [];\nconst invalids = Array.isArray(reportData.invalids) ? reportData.invalids : [];\n// ── 3. Kiểm tra trường hợp bảng rỗng (chưa nhận được bản tin đầu ngày) ───────\nif (totalScanned === 0) {\n  const emptyAlert = `🚨 **[MDDS PRODUCTION KHẨN CẤP 08:30 AM] Bảng \\`security_definition_v3\\` CHƯA CÓ DỮ LIỆU!**\\n\\n` +\n    `- **Thời gian kiểm tra:** \\`${dateStr} ${timeStr}\\`\\n` +\n    `- **Trạng thái:** ❌ **0 bản ghi** được tìm thấy trên TimescaleDB Production.\\n` +\n    `- **Nguyên nhân tiềm ẩn:** Pipeline MDDS chưa nhận hoặc chưa nạp bản tin Security Definition (\\`d\\`) từ Sở KRX.\\n` +\n    `- **Hành động cần làm:** Kiểm tra ngay tiến trình Ingest MDDS và gateway kết nối Sở trước giờ mở phiên ATO (09:00).`;\n\n  return [{\n    json: {\n      environment: 'PRODUCTION',\n      timestamp: now.toISOString(),\n      isHealthy: false,\n      totalScanned: 0,\n      message: emptyAlert\n    }\n  }];\n}\n\n// ── 4. Tổng hợp số liệu theo từng sàn và tính tổng cộng ─────────────────────\nlet totalSymbolsAll = 0;\nlet validSymbolsAll = 0;\nlet invalidSymbolsAll = 0;\nlet missingBasicAll = 0;\nlet missingCeilingAll = 0;\nlet missingFloorAll = 0;\nlet missingBoardIdAll = 0;\n\nlet tableMd = `| Sàn Giao Dịch | Tổng Số Mã | Đủ Dữ Liệu (OK) | Thiếu Data (Lỗi) | Tỷ Lệ Đạt Chuẩn |\\n`;\ntableMd    += `| :--- | :---: | :---: | :---: | :---: |\\n`;\n\nfor (const s of summary) {\n  const floor = s.floor_code || 'KHÁC';\n  const total = parseInt(s.total_symbols || 0, 10);\n  const valid = parseInt(s.valid_symbols || 0, 10);\n  const invalid = parseInt(s.invalid_symbols || 0, 10);\n  const pct = total > 0 ? ((valid / total) * 100).toFixed(1) + '%' : '0.0%';\n\n  totalSymbolsAll += total;\n  validSymbolsAll += valid;\n  invalidSymbolsAll += invalid;\n  missingBasicAll += parseInt(s.missing_basic_count || 0, 10);\n  missingCeilingAll += parseInt(s.missing_ceiling_count || 0, 10);\n  missingFloorAll += parseInt(s.missing_floor_count || 0, 10);\n  missingBoardIdAll += parseInt(s.missing_board_id_count || 0, 10);\n\n  const statusIcon = invalid === 0 ? '✅' : '⚠️';\n  tableMd += `| **${floor}** | ${total.toLocaleString()} | ${valid.toLocaleString()} | ${invalid > 0 ? `**${invalid}**` : '0'} | ${statusIcon} ${pct} |\\n`;\n}\n\nconst totalPct = totalSymbolsAll > 0 ? ((validSymbolsAll / totalSymbolsAll) * 100).toFixed(1) + '%' : '0.0%';\ntableMd += `| **TỔNG CỘNG** | **${totalSymbolsAll.toLocaleString()}** | **${validSymbolsAll.toLocaleString()}** | **${invalidSymbolsAll > 0 ? `**${invalidSymbolsAll}**` : '0'}** | **${totalPct}** |\\n`;\n\n// ── 5. Đánh giá tính toàn vẹn tổng thể (Health Status) ──────────────────────\nconst hasDataError = invalidSymbolsAll > 0;\nconst isHealthy = !hasDataError;\n\n// ── 6. Xây dựng nội dung file text chi tiết (Audit Log) ─────────────────────\nlet txtContent = `================================================================================\\n`;\ntxtContent += `BÁO CÁO KIỂM TRA ĐẶC TẢ CHỨNG KHOÁN (SECURITY DEFINITION V3) & RESET ĐẦU NGÀY\\n`;\ntxtContent += `Thời gian kiểm tra: ${dateStr} ${timeStr} | Môi trường: PRODUCTION\\n`;\ntxtContent += `================================================================================\\n\\n`;\n\ntxtContent += `1. KẾT QUẢ TỔNG QUAN THEO SÀN GIAO DỊCH:\\n`;\nfor (const s of summary) {\n  txtContent += `   - Sàn ${s.floor_code}: ${s.total_symbols} mã | Hợp lệ: ${s.valid_symbols} | Lỗi: ${s.invalid_symbols} (Thiếu TC: ${s.missing_basic_count}, Thiếu Trần: ${s.missing_ceiling_count}, Thiếu Sàn: ${s.missing_floor_count}, Thiếu Board: ${s.missing_board_id_count})\\n`;\n}\ntxtContent += `   => TỔNG CỘNG: ${totalSymbolsAll} mã đã kiểm tra. Đạt chuẩn: ${validSymbolsAll} (${totalPct}).\\n\\n`;\n\nif (invalids.length > 0) {\n  txtContent += `2. DANH SÁCH CHI TIẾT CÁC MÃ LỖI (${invalids.length} mã):\\n`;\n  txtContent += `--------------------------------------------------------------------------------\\n`;\n  txtContent += `STT | MÃ CK   | SÀN   | THAM CHIẾU | GIÁ TRẦN   | GIÁ SÀN    | BOARD ID   | LỖI CHI TIẾT\\n`;\n  txtContent += `--------------------------------------------------------------------------------\\n`;\n  invalids.forEach((inv, idx) => {\n    const num = String(idx + 1).padEnd(3);\n    const sym = String(inv.symbol || '').padEnd(8);\n    const flr = String(inv.floor_code || '').padEnd(5);\n    const ref = String(inv.basic_price ?? 'NULL').padEnd(10);\n    const ceil = String(inv.ceiling_price ?? 'NULL').padEnd(10);\n    const fl = String(inv.floor_price ?? 'NULL').padEnd(10);\n    const brd = String(inv.board_id ?? 'NULL').padEnd(10);\n    txtContent += `${num} | ${sym} | ${flr} | ${ref} | ${ceil} | ${fl} | ${brd} | ${inv.error_detail || ''}\\n`;\n  });\n  txtContent += `--------------------------------------------------------------------------------\\n\\n`;\n}\n\n// ── 7. Lưu file báo cáo .txt vào workspace/mdds-watchdog/ ────────────────────\nconst dayStr = String(now.getDate()).padStart(2, '0');\nconst monthStr = String(now.getMonth() + 1).padStart(2, '0');\nconst yearStr = String(now.getFullYear());\nconst ddmmyyyy = `${dayStr}${monthStr}${yearStr}`;\nconst fileName = `sec-def-v3-${ddmmyyyy}.txt`;\n\n// Đường dẫn tương đối chuẩn của file log\nlet displayFilePath = `workspace/mdds-watchdog/${fileName}`;\nlet physicalFilePath = null;\n\ntry {\n  let fsModule = null;\n  let pathMod = null;\n  if (typeof require !== 'undefined') {\n    fsModule = require('fs');\n    pathMod = require('path');\n  }\n\n  if (fsModule && pathMod) {\n    const envObj = (typeof $env !== 'undefined' && $env) ? $env : ((typeof process !== 'undefined' && process.env) ? process.env : {});\n    const currentDir = (envObj && envObj.AGENT_WORKSPACE_DIR) || process.cwd();\n\n    // 1. Đọc và phân giải biến đường dẫn từ projects.json hoặc project.js\n    const configFiles = [\n      pathMod.join(currentDir, 'projects.json'),\n      pathMod.join(currentDir, 'project.js'),\n      pathMod.join(currentDir, 'projects.js'),\n      pathMod.resolve(currentDir, '..', 'projects.json'),\n      pathMod.resolve(currentDir, '..', '..', 'projects.json')\n    ];\n\n    let baseDir = '';\n    let resolvedKey = '';\n\n    for (const cfgPath of configFiles) {\n      if (fsModule.existsSync(cfgPath)) {\n        try {\n          let configObj = null;\n          if (cfgPath.endsWith('.json')) {\n            configObj = JSON.parse(fsModule.readFileSync(cfgPath, 'utf8'));\n          } else if (typeof require !== 'undefined') {\n            configObj = require(cfgPath);\n          }\n          if (configObj && typeof configObj === 'object') {\n            // Lấy key dự án từ projects.json (nhận diện key dạng version số) mà không hardcode text làm lộ\n            const keys = Object.keys(configObj);\n            const foundKey = (envObj && envObj.WATCHDOG_PROJECT_KEY)\n              || keys.find(k => /^\\d+(\\.\\d+)+$/.test(k))\n              || keys.find(k => !k.includes('-') && !k.includes('_'))\n              || keys[0];\n\n            if (foundKey && configObj[foundKey]) {\n              resolvedKey = foundKey;\n              baseDir = configObj[foundKey];\n              break;\n            }\n          }\n        } catch (_) {}\n      }\n    }\n\n    // 2. Fallback từ biến môi trường (PROJECT_SCAN_DIRS hoặc WATCHDOG_DIR)\n    if (!baseDir) {\n      if (envObj && (envObj.MDDS_WATCHDOG_DIR || envObj.WATCHDOG_DIR)) {\n        baseDir = envObj.MDDS_WATCHDOG_DIR || envObj.WATCHDOG_DIR;\n      } else if (envObj && envObj.PROJECT_SCAN_DIRS) {\n        const scanDirs = String(envObj.PROJECT_SCAN_DIRS)\n          .split(',')\n          .map(d => d.trim().replace(/^[\"']|[\"']$/g, ''))\n          .filter(Boolean);\n        const matchedDir = scanDirs.find(d => /^\\d+(\\.\\d+)+$/.test(pathMod.basename(d)) || fsModule.existsSync(pathMod.join(d, 'workspace')));\n        if (matchedDir) {\n          baseDir = matchedDir;\n          resolvedKey = pathMod.basename(matchedDir);\n        }\n      }\n    }\n\n    // 3. Fallback sang thư mục hiện tại nếu không tìm thấy\n    if (!baseDir) {\n      baseDir = currentDir;\n    }\n\n    // 4. Bổ sung filepath \"workspace/mdds-watchdog/sec-def-v3-ddmmyyyy.txt\" nối vào biến đường dẫn\n    const relativeWatchdogPath = pathMod.join('workspace', 'mdds-watchdog', fileName);\n    const targetWatchdogDir = pathMod.join(baseDir, 'workspace', 'mdds-watchdog');\n\n    if (!fsModule.existsSync(targetWatchdogDir)) {\n      fsModule.mkdirSync(targetWatchdogDir, { recursive: true });\n    }\n\n    physicalFilePath = pathMod.join(targetWatchdogDir, fileName);\n    fsModule.writeFileSync(physicalFilePath, txtContent, 'utf-8');\n\n    // Thiết lập đường dẫn hiển thị kèm key dự án đã phân giải\n    displayFilePath = resolvedKey ? pathMod.join(resolvedKey, relativeWatchdogPath) : relativeWatchdogPath;\n  }\n} catch (e) {\n  // Lỗi ghi file không làm gián đoạn pipeline thông báo\n}\n\n// ── 8. Định dạng thông báo Markdown gửi lên Mattermost ──────────────────────\nlet msgTitle = '';\nif (isHealthy) {\n  msgTitle = `✅ **[MDDS PRODUCTION 08:30 AM] Dữ Liệu Security Definition V3 Đầu Ngày ỔN ĐỊNH**`;\n} else {\n  msgTitle = `🚨 **[CẢNH BÁO MDDS PRODUCTION 08:30 AM] Phát Hiện ${invalidSymbolsAll} Mã CHỨNG KHOÁN THIẾU Dữ Liệu Trần/Sàn/TC/Board!**`;\n}\n\nlet reportMarkdown = `${msgTitle}\\n\\n`;\nreportMarkdown += `- **Thời gian chạy kiểm tra:** \\`${dateStr} ${timeStr}\\` | **Môi trường:** \\`PRODUCTION\\`\\n`;\nreportMarkdown += `- **Tổng số mã niêm yết đã kiểm tra:** **${totalSymbolsAll.toLocaleString()}** mã\\n`;\nreportMarkdown += `- **Trạng thái Dữ Liệu (Trần/Sàn/TC/Board):** ${hasDataError ? `❌ **${invalidSymbolsAll} mã thiếu dữ liệu**` : `✅ **100% đầy đủ**`}\\n\\n`;\n\nreportMarkdown += `### 📊 Bảng Thống Kê Theo Sàn Giao Dịch:\\n`;\nreportMarkdown += `${tableMd}\\n`;\n\nif (hasDataError) {\n  reportMarkdown += `### 🚨 Danh Sách Mã Thiếu Dữ Liệu (${invalids.length} mã):\\n`;\n  reportMarkdown += `\\`\\`\\`txt\\n`;\n  const displayInvalids = invalids.slice(0, 25);\n  displayInvalids.forEach((inv, i) => {\n    reportMarkdown += `[${i + 1}] Mã: ${inv.symbol} (${inv.floor_code}) -> ${inv.error_detail} | TC: ${inv.basic_price ?? 'NULL'} | Trần: ${inv.ceiling_price ?? 'NULL'} | Sàn: ${inv.floor_price ?? 'NULL'} | Board: ${inv.board_id ?? 'NULL'}\\n`;\n  });\n  if (invalids.length > 25) {\n    reportMarkdown += `... (Đã ẩn ${invalids.length - 25} mã lỗi tiếp theo. Xem chi tiết đầy đủ trong file txt)\\n`;\n  }\n  reportMarkdown += `\\`\\`\\`\\n\\n`;\n}\n\nreportMarkdown += `📁 **File báo cáo kiểm toán chi tiết (.txt):** \\`${displayFilePath}\\``;\n\nreturn [{\n  json: {\n    environment: 'PRODUCTION',\n    timestamp: now.toISOString(),\n    isHealthy: isHealthy,\n    totalScanned: totalSymbolsAll,\n    validSymbols: validSymbolsAll,\n    invalidSymbols: invalidSymbolsAll,\n    filePath: displayFilePath,\n    logFilePath: displayFilePath,\n    physicalFilePath: physicalFilePath,\n    fileName: fileName,\n    fileContent: txtContent,\n    message: reportMarkdown\n  }\n}];\n"
       },
       "id": "5",
       "name": "Verify Health & Parity",
@@ -71,6 +71,48 @@
       "typeVersion": 2,
       "position": [
         820,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json._triggerSource === 'webhook' ? 0 : ($json._triggerSource === 'executeWorkflow' ? 1 : 2) }}",
+        "numberOutputs": 3
+      },
+      "id": "route-by-caller",
+      "name": "Route by Caller",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1260,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "return-subworkflow",
+      "name": "Return to Sub-workflow",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
         300
       ]
     },
@@ -89,22 +131,22 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"text\": \"{{ $json.message }}\"\n}",
+        "jsonBody": "={{ JSON.stringify({ text: $json.message, username: 'MDDS Watchdog', icon_emoji: ':shield:' }) }}",
         "options": {}
       },
       "id": "6",
-      "name": "Respond to Caller",
+      "name": "Notify Mattermost",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1040,
-        300
+        1260,
+        420
       ],
       "onError": "continueRegularOutput"
     }
   ],
   "connections": {
-    "Cron 15:15 PM (End of Trading Session)": {
+    "Cron 08:20 AM (Pre-Trading Definition Check)": {
       "main": [
         [
           {
@@ -152,7 +194,32 @@
       "main": [
         [
           {
-            "node": "Respond to Caller",
+            "node": "Route by Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Caller": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return to Sub-workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Mattermost",
             "type": "main",
             "index": 0
           }

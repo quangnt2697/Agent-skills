@@ -17,7 +17,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "qa-run-test",
-        "responseMode": "onReceived",
+        "responseMode": "responseNode",
         "options": {}
       },
       "id": "trigger-webhook",
@@ -32,7 +32,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst json = input.json;\nlet issueKey = '';\nlet project = '';\nlet skill = '';\n\nif (json.params) {\n  issueKey = json.params.issueKey || '';\n  project = json.params.project || '';\n  skill = json.params.skill || '';\n} else if (json.body) {\n  issueKey = json.body.issueKey || '';\n  project = json.body.project || '';\n  skill = json.body.skill || '';\n}\n\nif (!issueKey && json.issueKey) {\n  issueKey = json.issueKey;\n}\n\nif (!issueKey) {\n  return [{\n    json: {\n      error: 'Thiếu tham số issueKey.',\n      issueKey: '',\n      project: project,\n      skill: skill\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    issueKey: issueKey.toUpperCase(),\n    project: (project || '').trim(),\n    skill: (skill || 'run-test').trim()\n  }\n}];\n"
+        "jsCode": "const input = $input.first();\nconst json = input.json;\nlet issueKey = '';\nlet project = '';\nlet skill = '';\nlet triggerSource = 'mattermost';\n\n// Phát hiện trigger source\ntry {\n  const trigWebhook = $('Webhook').first();\n  if (trigWebhook && trigWebhook.json && trigWebhook.json.headers) {\n    triggerSource = 'webhook';\n  }\n} catch (_) {}\n\nif (json.params) {\n  issueKey = json.params.issueKey || '';\n  project = json.params.project || '';\n  skill = json.params.skill || '';\n} else if (json.body) {\n  issueKey = json.body.issueKey || '';\n  project = json.body.project || '';\n  skill = json.body.skill || '';\n}\n\nif (!issueKey && json.issueKey) {\n  issueKey = json.issueKey;\n}\n\nif (!issueKey) {\n  return [{\n    json: {\n      error: 'Thiếu tham số issueKey.',\n      issueKey: '',\n      project: project,\n      skill: skill,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    issueKey: issueKey.toUpperCase(),\n    project: (project || '').trim(),\n    skill: (skill || 'run-test').trim(),\n    _triggerSource: triggerSource\n  }\n}];\n"
       },
       "id": "code-extract-issuekey",
       "name": "Extract issueKey",
@@ -46,13 +46,12 @@
     },
     {
       "parameters": {
-        "workflowId": "LocalWorkspaceResolver001",
-        "mode": "wait"
+        "jsCode": "const { exec } = require('child_process');\nconst util = require('util');\nconst fs = require('fs');\nconst path = require('path');\nconst execAsync = util.promisify(exec);\n\nconst extractNode = $('Extract issueKey').first()?.json || {};\nconst issueKey = (extractNode.issueKey || '').toUpperCase();\nlet project = (extractNode.project || '').trim();\nconst triggerSource = extractNode._triggerSource || 'mattermost';\n\nif (extractNode.error || !issueKey) {\n  return [{\n    json: {\n      stdout: '',\n      stderr: extractNode.error || 'Thiếu tham số issueKey.',\n      exitCode: 1,\n      error: { message: extractNode.error || 'Thiếu tham số issueKey.' },\n      project: project,\n      issueKey: issueKey,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nlet cwd = ($env && $env.AGENT_WORKSPACE_DIR) || process.cwd();\n\n// Đọc danh sách project mapping từ projects.json\nlet projects = {};\ntry {\n  const projectsFile = path.resolve(cwd, 'projects.json');\n  if (fs.existsSync(projectsFile)) {\n    projects = JSON.parse(fs.readFileSync(projectsFile, 'utf8'));\n  }\n} catch (e) {}\n\n// Phân giải thư mục gốc theo project\nif (project) {\n  if (projects[project]) {\n    cwd = projects[project];\n  } else {\n    const scanDirsRaw = ($env && $env.PROJECT_SCAN_DIRS) || process.env.PROJECT_SCAN_DIRS || '';\n    const scanDirs = scanDirsRaw.split(',').map(s => s.trim().replace(/^[\"']|[\"']$/g, '')).filter(Boolean);\n    let foundDir = '';\n    for (const sDir of scanDirs) {\n      const candidate = path.resolve(sDir, project);\n      if (fs.existsSync(candidate)) { foundDir = candidate; break; }\n    }\n    if (foundDir) cwd = foundDir;\n    else if (fs.existsSync(path.resolve(cwd, project))) cwd = path.resolve(cwd, project);\n  }\n} else {\n  const projectKeys = Object.keys(projects);\n  if (projectKeys.length === 1) {\n    cwd = projects[projectKeys[0]];\n    project = projectKeys[0];\n  } else {\n    const currentTestDir = path.resolve(cwd, 'workspace', issueKey, 'test');\n    if (!fs.existsSync(currentTestDir)) {\n      for (const [pName, pPath] of Object.entries(projects)) {\n        if (fs.existsSync(path.resolve(pPath, 'workspace', issueKey))) {\n          cwd = pPath;\n          project = pName;\n          break;\n        }\n      }\n    }\n  }\n}\n\nfunction isTestFile(filename) {\n  if (!filename.toLowerCase().endsWith('.py')) return false;\n  const baseName = filename.slice(0, -3).toLowerCase();\n  return baseName.startsWith('test') || baseName.endsWith('test');\n}\n\nconst ticketDir = path.resolve(cwd, 'workspace', issueKey);\nconst stepsDir = path.resolve(ticketDir, 'test', 'steps');\nconst testDir = path.resolve(ticketDir, 'test');\nconst resultDir = path.resolve(ticketDir, 'test', 'result');\n\n// Đảm bảo result dir tồn tại\ntry {\n  if (!fs.existsSync(resultDir)) {\n    fs.mkdirSync(resultDir, { recursive: true });\n  }\n} catch (e) {}\n\nlet matchedFiles = [];\nlet targetDir = '';\n\nif (fs.existsSync(stepsDir)) {\n  try {\n    const files = fs.readdirSync(stepsDir);\n    matchedFiles = files.filter(isTestFile).map(f => path.join('workspace', issueKey, 'test', 'steps', f));\n    if (matchedFiles.length > 0) targetDir = 'workspace/' + issueKey + '/test/steps';\n  } catch (e) {}\n}\n\nif (matchedFiles.length === 0 && fs.existsSync(testDir)) {\n  try {\n    const files = fs.readdirSync(testDir);\n    matchedFiles = files.filter(isTestFile).map(f => path.join('workspace', issueKey, 'test', f));\n    if (matchedFiles.length > 0) targetDir = 'workspace/' + issueKey + '/test';\n  } catch (e) {}\n}\n\nif (matchedFiles.length === 0) {\n  let detailMsg = '';\n  if (!fs.existsSync(ticketDir)) {\n    detailMsg = 'Thư mục ticket workspace/' + issueKey + ' chưa tồn tại trong dự án ' + cwd;\n  } else if (!fs.existsSync(testDir)) {\n    const existingDirs = fs.readdirSync(ticketDir).filter(f => {\n      try { return fs.statSync(path.join(ticketDir, f)).isDirectory(); } catch(e) { return false; }\n    });\n    detailMsg = 'Ticket ' + issueKey + ' chưa có thư mục `test/` (hiện có: ' + (existingDirs.length > 0 ? existingDirs.join(', ') : 'trống') + '). Cần chạy `qa-auto-design` trước.';\n  } else {\n    detailMsg = 'Thư mục `workspace/' + issueKey + '/test` đã tồn tại nhưng không tìm thấy file test nào.';\n  }\n  return [{\n    json: {\n      stdout: '', stderr: detailMsg, exitCode: 4,\n      error: { message: detailMsg }, project, issueKey, targetDir,\n      resultDir: path.relative(cwd, resultDir),\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\n// Paths cho junit + log output\nconst junitPath = path.resolve(resultDir, 'junit.xml');\nconst logPath = path.resolve(resultDir, 'test-output.log');\nconst quotedFiles = matchedFiles.map(f => '\"' + f.replace(/\"/g, '\\\\\"') + '\"').join(' ');\n\n// Check pytest-html availability\nlet htmlFlag = '';\ntry {\n  await execAsync('python3 -c \"import pytest_html\"', { timeout: 5000 });\n  const htmlPath = path.resolve(resultDir, 'report.html');\n  htmlFlag = ` --html=\"${htmlPath}\" --self-contained-html`;\n} catch (_) {}\n\nconst command = [\n  'pytest', quotedFiles,\n  '-o python_files=\"test*.py *test.py test-*.py *-test.py test_*.py *_test.py\"',\n  '-s -v -rA --tb=short',\n  '-o log_cli=true -o log_cli_level=INFO',\n  `--junitxml=\"${junitPath}\"`,\n  htmlFlag,\n  `2>&1 | tee \"${logPath}\"`\n].filter(Boolean).join(' ');\n\ntry {\n  const result = await execAsync(command, { encoding: 'utf-8', cwd: cwd, timeout: 300000, shell: '/bin/bash' });\n  return [{\n    json: {\n      stdout: result.stdout || '',\n      stderr: result.stderr || '',\n      exitCode: 0,\n      project, issueKey, targetDir,\n      resultDir: path.relative(cwd, resultDir),\n      junitPath, logPath,\n      _triggerSource: triggerSource\n    }\n  }];\n} catch (err) {\n  return [{\n    json: {\n      stdout: err.stdout || '',\n      stderr: err.stderr || err.message,\n      exitCode: err.code !== undefined ? err.code : (err.status || 1),\n      error: { message: err.message },\n      project, issueKey, targetDir,\n      resultDir: path.relative(cwd, resultDir),\n      junitPath, logPath,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n"
       },
-      "id": "node-resolve-test-dir",
-      "name": "Resolve Workspace Test Dir",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
+      "id": "execute-command",
+      "name": "Run Pytest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         660,
         300
@@ -61,29 +60,44 @@
     },
     {
       "parameters": {
-        "jsCode": "const { exec } = require('child_process');\nconst util = require('util');\nconst fs = require('fs');\nconst path = require('path');\nconst execAsync = util.promisify(exec);\n\nconst input = $input.first();\nconst issueKey = (input.json.issueKey || '').toUpperCase();\nlet project = (input.json.project || '').trim();\n\nif (input.json.error || !issueKey) {\n  return [{\n    json: {\n      stdout: '',\n      stderr: input.json.error || 'Thiếu tham số issueKey.',\n      exitCode: 1,\n      error: { message: input.json.error || 'Thiếu tham số issueKey.' },\n      project: project,\n      issueKey: issueKey\n    }\n  }];\n}\n\nlet cwd = $env.AGENT_WORKSPACE_DIR || process.cwd();\n\n// Đọc danh sách project mapping từ projects.json\nlet projects = {};\ntry {\n  const projectsFile = path.resolve(cwd, 'projects.json');\n  if (fs.existsSync(projectsFile)) {\n    projects = JSON.parse(fs.readFileSync(projectsFile, 'utf8'));\n  }\n} catch (e) {}\n\n// 1. Phân giải thư mục gốc (cwd) theo project hoặc tự động tìm kiếm\nif (project) {\n  if (projects[project]) {\n    cwd = projects[project];\n  } else {\n    // Kiểm tra trong PROJECT_SCAN_DIRS hoặc thư mục cha\n    const scanDirsRaw = (typeof $env !== 'undefined' && $env.PROJECT_SCAN_DIRS) || process.env.PROJECT_SCAN_DIRS || '';\n    const scanDirs = scanDirsRaw.split(',').map(s => s.trim().replace(/^[\"']|[\"']$/g, '')).filter(Boolean);\n    let foundDir = '';\n    for (const sDir of scanDirs) {\n      const candidate = path.resolve(sDir, project);\n      if (fs.existsSync(candidate)) {\n        foundDir = candidate;\n        break;\n      }\n    }\n    if (foundDir) {\n      cwd = foundDir;\n    } else if (fs.existsSync(path.resolve(cwd, project))) {\n      cwd = path.resolve(cwd, project);\n    }\n  }\n} else {\n  // Nếu không truyền project: ưu tiên đường dẫn duy nhất trong projects.json nếu có\n  const projectKeys = Object.keys(projects);\n  if (projectKeys.length === 1) {\n    cwd = projects[projectKeys[0]];\n    project = projectKeys[0];\n  } else {\n    // Nếu có nhiều, tự động tìm xem workspace issueKey nằm ở project nào\n    const currentTestDir = path.resolve(cwd, 'workspace', issueKey, 'test');\n    if (!fs.existsSync(currentTestDir)) {\n      for (const [pName, pPath] of Object.entries(projects)) {\n        if (fs.existsSync(path.resolve(pPath, 'workspace', issueKey))) {\n          cwd = pPath;\n          project = pName;\n          break;\n        }\n      }\n    }\n  }\n}\n\n// Hàm kiểm tra file test: Tên file luôn bắt đầu hoặc kết thúc bằng \"test\" (VD: test_*.py, test-*.py, *_test.py, *-test.py)\nfunction isTestFile(filename) {\n  if (!filename.toLowerCase().endsWith('.py')) return false;\n  const baseName = filename.slice(0, -3).toLowerCase();\n  return baseName.startsWith('test') || baseName.endsWith('test');\n}\n\n// 2. Định vị file test: Ưu tiên workspace/[issueKey]/test/steps/ rồi đến workspace/[issueKey]/test/\nconst ticketDir = path.resolve(cwd, 'workspace', issueKey);\nconst stepsDir = path.resolve(ticketDir, 'test', 'steps');\nconst testDir = path.resolve(ticketDir, 'test');\n\nlet matchedFiles = [];\nlet targetDir = '';\n\nif (fs.existsSync(stepsDir)) {\n  try {\n    const files = fs.readdirSync(stepsDir);\n    matchedFiles = files.filter(isTestFile).map(f => path.join('workspace', issueKey, 'test', 'steps', f));\n    if (matchedFiles.length > 0) {\n      targetDir = 'workspace/' + issueKey + '/test/steps';\n    }\n  } catch (e) {}\n}\n\nif (matchedFiles.length === 0 && fs.existsSync(testDir)) {\n  try {\n    const files = fs.readdirSync(testDir);\n    matchedFiles = files.filter(isTestFile).map(f => path.join('workspace', issueKey, 'test', f));\n    if (matchedFiles.length > 0) {\n      targetDir = 'workspace/' + issueKey + '/test';\n    }\n  } catch (e) {}\n}\n\n// Nếu không tìm thấy file test\nif (matchedFiles.length === 0) {\n  let detailMsg = '';\n  if (!fs.existsSync(ticketDir)) {\n    detailMsg = 'Thư mục ticket workspace/' + issueKey + ' chưa tồn tại trong dự án ' + cwd;\n  } else if (!fs.existsSync(testDir)) {\n    const existingDirs = fs.readdirSync(ticketDir).filter(f => {\n      try { return fs.statSync(path.join(ticketDir, f)).isDirectory(); } catch(e) { return false; }\n    });\n    detailMsg = 'Ticket ' + issueKey + ' hiện tại chưa có thư mục kiểm thử `test/` (mới chỉ có các thư mục: ' + (existingDirs.length > 0 ? existingDirs.join(', ') : 'trống') + '). Cần chạy `qa-auto-design` để sinh kịch bản test trước.';\n  } else {\n    detailMsg = 'Thư mục `workspace/' + issueKey + '/test` đã tồn tại nhưng không tìm thấy file testscript nào (file cần bắt đầu hoặc kết thúc bằng \\\"test\\\", ví dụ: test_*.py, test-*.py, *_test.py).';\n  }\n\n  return [{\n    json: {\n      stdout: '',\n      stderr: detailMsg,\n      exitCode: 4,\n      error: { message: detailMsg },\n      project: project,\n      issueKey: issueKey\n    }\n  }];\n}\n\n// 3. Thực thi Pytest với danh sách file tìm được\nconst quotedFiles = matchedFiles.map(f => '\"' + f.replace(/\"/g, '\\\\\"') + '\"').join(' ');\nconst command = 'pytest ' + quotedFiles + ' -v --tb=short -o python_files=\"test*.py *test.py test-*.py *-test.py test_*.py *_test.py\"';\n\ntry {\n  const result = await execAsync(command, { encoding: 'utf-8', cwd: cwd, timeout: 120000 });\n  return [{\n    json: {\n      stdout: result.stdout || '',\n      stderr: result.stderr || '',\n      exitCode: 0,\n      project: project,\n      issueKey: issueKey\n    }\n  }];\n} catch (err) {\n  return [{\n    json: {\n      stdout: err.stdout || '',\n      stderr: err.stderr || err.message,\n      exitCode: err.code !== undefined ? err.code : (err.status || 1),\n      error: { message: err.message },\n      project: project,\n      issueKey: issueKey\n    }\n  }];\n}\n"
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst input = $input.first();\nconst extractNode = $('Extract issueKey').first().json;\nconst issueKey = extractNode.issueKey || input.json.issueKey || '';\nconst project = extractNode.project || input.json.project || '';\nconst triggerSource = extractNode._triggerSource || input.json._triggerSource || 'mattermost';\nconst targetLabel = project ? (project + ' / ' + issueKey) : issueKey;\n\n// Xử lý lỗi Extract\nif (!issueKey || extractNode.error) {\n  return [{\n    json: {\n      success: false,\n      reportText: '🚨 **[QA Automation Lỗi]** Không tìm thấy issueKey hợp lệ.\\n> Cú pháp: `/agent [project] run-test <issueKey>`',\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\nconst execRes = input.json;\nlet success = true;\nlet outputText = execRes.stdout || '';\nlet errText = execRes.stderr || '';\n\nif (execRes.error || (execRes.exitCode !== undefined && execRes.exitCode !== 0)) {\n  success = false;\n}\n\n// Trích xuất stats từ pytest output\nconst passMatch = outputText.match(/(\\d+) passed/);\nconst failMatch = outputText.match(/(\\d+) failed/);\nconst skipMatch = outputText.match(/(\\d+) skipped/);\nconst errorMatch = outputText.match(/(\\d+) error/);\nconst durationMatch = outputText.match(/in ([\\d.]+)s/);\n\nconst passedCount = passMatch ? parseInt(passMatch[1]) : 0;\nconst failedCount = failMatch ? parseInt(failMatch[1]) : 0;\nconst skippedCount = skipMatch ? parseInt(skipMatch[1]) : 0;\nconst errorCount = errorMatch ? parseInt(errorMatch[1]) : 0;\nconst duration = durationMatch ? durationMatch[1] + 's' : 'N/A';\n\n// Rút gọn log output\nlet logSnippet = (outputText + '\\n' + errText).trim();\nif (logSnippet.length > 3000) {\n  logSnippet = '...(truncated)...\\n' + logSnippet.substring(logSnippet.length - 2500);\n}\n\nconst statusIcon = success ? '✅' : '❌';\nconst statusText = success ? 'Thành công (Passed)' : 'Thất bại (Failed)';\n\n// Build report content cho file report.md\nconst now = new Date();\nconst dateStr = now.toISOString().replace('T', ' ').split('.')[0] + ' ICT';\n\nconst failedTests = [];\nconst failRegex = /FAILED (.+?) - (.+)/g;\nlet failMatch2;\nwhile ((failMatch2 = failRegex.exec(outputText)) !== null) {\n  failedTests.push(`- \\`${failMatch2[1]}\\`: ${failMatch2[2]}`);\n}\n\nconst reportMdLines = [\n  `# Báo Cáo Kiểm Thử Tự Động — ${issueKey}`,\n  ``,\n  `- **Thời gian chạy:** ${dateStr}`,\n  `- **Ticket:** ${issueKey}${project ? ' (Project: `' + project + '`)' : ''}`,\n  `- **Trạng thái tổng thể:** ${statusIcon} **${statusText}**`,\n  ``,\n  `## 📊 Thống Kê Kết Quả`,\n  ``,\n  `| Metric | Kết Quả |`,\n  `| :--- | :---: |`,\n  `| ✅ Passed | **${passedCount}** |`,\n  `| ❌ Failed | **${failedCount}** |`,\n  `| ⏭️ Skipped | **${skippedCount}** |`,\n  `| ⚠️ Errors | **${errorCount}** |`,\n  `| ⏱️ Duration | **${duration}** |`,\n  ``\n];\n\nif (failedTests.length > 0) {\n  reportMdLines.push(`## ❌ Test Cases Thất Bại\\n`);\n  reportMdLines.push(failedTests.join('\\n'));\n  reportMdLines.push('');\n}\n\nreportMdLines.push(`## 📄 Full Log Output`, ``, '```text', logSnippet, '```', '');\n\nif (failedCount > 0 || errorCount > 0) {\n  reportMdLines.push(\n    `## 💡 Đề Xuất Hành Động Tiếp Theo`, ``,\n    `- 🛠️ **Gỡ lỗi nguyên nhân gốc rễ:** Chạy skill \\`dev-debugging\\``,\n    `- 🔍 **Review code chất lượng:** Chạy skill \\`cr-review-code-and-quality\\``,\n    `- ⚙️ **Cập nhật test script:** Chạy skill \\`qa-auto-design\\``\n  );\n}\n\nconst reportMdContent = reportMdLines.join('\\n');\n\n// Ghi file report.md\nlet reportPath = '';\ntry {\n  const cwdBase = ($env && $env.AGENT_WORKSPACE_DIR) || process.cwd();\n  const resultDir = path.resolve(cwdBase, 'workspace', issueKey, 'test', 'result');\n  if (!fs.existsSync(resultDir)) fs.mkdirSync(resultDir, { recursive: true });\n  reportPath = path.join(resultDir, 'report.md');\n  fs.writeFileSync(reportPath, reportMdContent, 'utf-8');\n} catch (e) {}\n\nconst reportDirStr = `workspace/${issueKey}/test/result/`;\n\nconst mattermostMsg = [\n  `🚀 **[QA Automation]** Kết quả kiểm thử ticket **${targetLabel}**:`,\n  `- Trạng thái: ${statusIcon} **${statusText}** | Passed: **${passedCount}** | Failed: **${failedCount}** | Time: **${duration}**`,\n  reportPath ? `- Báo cáo đầy đủ: \\`${reportDirStr}report.md\\`` : '',\n  execRes.junitPath ? `- JUnit XML: \\`${reportDirStr}junit.xml\\`` : '',\n  ``,\n  '```text',\n  logSnippet.length > 1500 ? logSnippet.substring(logSnippet.length - 1500) : logSnippet,\n  '```',\n  failedCount > 0 ? `\\n💡 *Gợi ý: Chạy \\`dev-debugging\\` hoặc \\`cr-review-code-and-quality\\` để điều tra lỗi.*` : ''\n].filter(Boolean).join('\\n');\n\nreturn [{ json: { success, reportText: mattermostMsg, issueKey, project, _triggerSource: triggerSource } }];\n"
       },
-      "id": "execute-command",
-      "name": "Run Pytest",
+      "id": "code-format-result",
+      "name": "Format Result & Write Report",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         880,
         300
-      ],
-      "onError": "continueRegularOutput"
+      ]
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst extractNode = $('Extract issueKey').first().json;\nconst issueKey = extractNode.issueKey || input.json.issueKey || '';\nconst project = extractNode.project || input.json.project || '';\nconst targetLabel = project ? (project + ' / ' + issueKey) : issueKey;\n\n// Xử lý lỗi Extract\nif (!issueKey || extractNode.error) {\n  return [{\n    json: {\n      success: false,\n      message: '🚨 **[QA Automation Lỗi]** Không tìm thấy issueKey hợp lệ trong yêu cầu.\\n' +\n               '> Cú pháp hợp lệ: `/agent [project] run-test <issueKey>` (trong đó [project] là tùy chọn).'\n    }\n  }];\n}\n\n// Xử lý kết quả lệnh Execute Command\nconst execRes = input.json;\nlet success = true;\nlet outputText = execRes.stdout || '';\nlet errText = execRes.stderr || '';\n\nif (execRes.error || (execRes.exitCode !== undefined && execRes.exitCode !== 0)) {\n  success = false;\n}\n\n// Rút gọn output nếu quá dài\nlet logSnippet = (outputText + '\\n' + errText).trim();\nif (logSnippet.length > 2500) {\n  logSnippet = logSnippet.substring(logSnippet.length - 2500);\n}\n\nconst statusIcon = success ? '✅' : '❌';\nconst statusText = success ? 'Thành công (Passed)' : 'Thất bại (Failed)';\n\nconst message = '🚀 **[QA Automation]** Kết quả chạy kiểm thử cho ticket **' + targetLabel + '**:\\n' +\n                '- Trạng thái: ' + statusIcon + ' **' + statusText + '**\\n\\n' +\n                '```text\\n' + logSnippet + '\\n```';\n\nreturn [{ json: { success, message, issueKey, project } }];\n"
+        "mode": "expression",
+        "output": "={{ $json._triggerSource === 'webhook' ? 0 : 1 }}",
+        "numberOutputs": 2
       },
-      "id": "code-format-result",
-      "name": "Format Result",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "route-by-caller",
+      "name": "Route by Caller",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
       "position": [
         1100,
         300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        200
       ]
     },
     {
@@ -101,7 +115,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ text: $json.message }) }}",
+        "jsonBody": "={{ JSON.stringify({ text: $json.reportText, username: 'QA Bot', icon_emoji: ':test_tube:' }) }}",
         "options": {}
       },
       "id": "http-mattermost",
@@ -110,8 +124,9 @@
       "typeVersion": 4.2,
       "position": [
         1320,
-        300
-      ]
+        400
+      ],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -141,17 +156,6 @@
       "main": [
         [
           {
-            "node": "Resolve Workspace Test Dir",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Resolve Workspace Test Dir": {
-      "main": [
-        [
-          {
             "node": "Run Pytest",
             "type": "main",
             "index": 0
@@ -163,15 +167,33 @@
       "main": [
         [
           {
-            "node": "Format Result",
+            "node": "Format Result & Write Report",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Format Result": {
+    "Format Result & Write Report": {
       "main": [
+        [
+          {
+            "node": "Route by Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Caller": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Send to Mattermost",

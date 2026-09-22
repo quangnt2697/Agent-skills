@@ -8,20 +8,20 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "30 8 * * 1-5"
+              "expression": "00 9 * * 1-5"
             }
           ]
         }
       },
       "id": "1",
-      "name": "Schedule Trigger (08:30 Mon-Fri)",
+      "name": "Schedule Trigger (09:00 Mon-Fri)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
         200,
         200
       ],
-      "notes": "Chạy tự động vào 08:30 sáng từ Thứ 2 đến Thứ 6 hàng tuần"
+      "notes": "Chạy tự động vào 09:00 sáng từ Thứ 2 đến Thứ 6 hàng tuần"
     },
     {
       "parameters": {},
@@ -49,6 +49,48 @@
     },
     {
       "parameters": {
+        "mode": "expression",
+        "output": "={{ $json._triggerSource === 'webhook' ? 0 : ($json._triggerSource === 'executeWorkflow' ? 1 : 2) }}",
+        "numberOutputs": 3
+      },
+      "id": "route-by-caller",
+      "name": "Route by Caller",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        740,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "return-subworkflow",
+      "name": "Return to Sub-workflow",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        300
+      ]
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
         "sendHeaders": true,
@@ -70,14 +112,14 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        740,
-        300
+        960,
+        420
       ],
       "onError": "continueRegularOutput"
     }
   ],
   "connections": {
-    "Schedule Trigger (08:30 Mon-Fri)": {
+    "Schedule Trigger (09:00 Mon-Fri)": {
       "main": [
         [
           {
@@ -101,6 +143,31 @@
     },
     "Execute & Parse Daily Sync": {
       "main": [
+        [
+          {
+            "node": "Route by Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Caller": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return to Sub-workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Notify Mattermost",

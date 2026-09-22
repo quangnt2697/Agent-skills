@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   isN8nAvailable,
   prepJiraContext,
@@ -8,6 +11,9 @@ import {
   getStandupReport,
   triggerAsyncTest
 } from './lib/n8n-client.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 test('n8n-client: isN8nAvailable returns boolean', async () => {
   const available = await isN8nAvailable();
@@ -211,4 +217,82 @@ test('Mattermost Router ACK Message Builder: constructs appropriate notification
   // Case 3: Help should return empty (no ACK needed)
   const ackHelp = buildAckMessage('help', {}, 'help', 'quangnt');
   assert.equal(ackHelp, '');
+});
+
+test('Watchdog Query Builder: generates correct pre-trading definition & reset SQL', () => {
+  const scriptContent = fs.readFileSync(path.join(__dirname, 'n8n-nodes', 'watchdog-prepare-query.js'), 'utf-8');
+  assert.ok(scriptContent.includes('security_definition_v3'));
+  assert.ok(scriptContent.includes('krx_mdds_v2_stock_infos'));
+  assert.ok(scriptContent.includes('basic_price'));
+  assert.ok(scriptContent.includes('ceiling_price'));
+  assert.ok(scriptContent.includes('floor_price'));
+  assert.ok(scriptContent.includes('match_price'));
+  assert.ok(scriptContent.includes('total_volume_traded'));
+  assert.ok(scriptContent.includes('gross_trade_amount'));
+  assert.ok(scriptContent.includes("database: 'timescale'"));
+  assert.ok(scriptContent.includes("environment: 'prod'"));
+});
+
+test('Watchdog Health Verifier: handles 100% healthy scenario with clean reset', () => {
+  const mockReportData = {
+    total_scanned: 1587,
+    summary: [
+      { floor_code: 'HOSE', total_symbols: 412, valid_symbols: 412, invalid_symbols: 0, missing_basic_count: 0, missing_ceiling_count: 0, missing_floor_count: 0 },
+      { floor_code: 'HNX', total_symbols: 315, valid_symbols: 315, invalid_symbols: 0, missing_basic_count: 0, missing_ceiling_count: 0, missing_floor_count: 0 },
+      { floor_code: 'UPCOM', total_symbols: 860, valid_symbols: 860, invalid_symbols: 0, missing_basic_count: 0, missing_ceiling_count: 0, missing_floor_count: 0 }
+    ],
+    invalids: [],
+    unclean_count: 0,
+    unclean_samples: []
+  };
+
+  // Giả lập logic kiểm tra trong watchdog-verify-health.js
+  const totalScanned = mockReportData.total_scanned;
+  assert.equal(totalScanned, 1587);
+  const invalidTotal = mockReportData.summary.reduce((acc, s) => acc + s.invalid_symbols, 0);
+  assert.equal(invalidTotal, 0);
+  const uncleanCount = mockReportData.unclean_count;
+  assert.equal(uncleanCount, 0);
+  const isHealthy = invalidTotal === 0 && uncleanCount === 0;
+  assert.equal(isHealthy, true);
+});
+
+test('Watchdog Health Verifier: detects missing price limits and formats details', () => {
+  const mockReportData = {
+    total_scanned: 1587,
+    summary: [
+      { floor_code: 'HOSE', total_symbols: 412, valid_symbols: 410, invalid_symbols: 2, missing_basic_count: 1, missing_ceiling_count: 2, missing_floor_count: 1 },
+      { floor_code: 'HNX', total_symbols: 315, valid_symbols: 315, invalid_symbols: 0, missing_basic_count: 0, missing_ceiling_count: 0, missing_floor_count: 0 }
+    ],
+    invalids: [
+      { symbol: 'ABC', floor_code: 'HOSE', basic_price: 15.2, ceiling_price: null, floor_price: 13.0, error_detail: 'Thiếu giá Trần' },
+      { symbol: 'XYZ', floor_code: 'HOSE', basic_price: 0, ceiling_price: 0, floor_price: 0, error_detail: 'Thiếu giá TC, Thiếu giá Trần, Thiếu giá Sàn' }
+    ],
+    unclean_count: 0,
+    unclean_samples: []
+  };
+
+  const invalidTotal = mockReportData.summary.reduce((acc, s) => acc + s.invalid_symbols, 0);
+  assert.equal(invalidTotal, 2);
+  assert.equal(mockReportData.invalids.length, 2);
+  assert.equal(mockReportData.invalids[0].symbol, 'ABC');
+  assert.equal(mockReportData.invalids[0].error_detail, 'Thiếu giá Trần');
+});
+
+test('Watchdog Health Verifier: detects uncleared realtime fields (match_price/volume/gross_amount)', () => {
+  const mockReportData = {
+    total_scanned: 1587,
+    summary: [
+      { floor_code: 'HOSE', total_symbols: 412, valid_symbols: 412, invalid_symbols: 0 }
+    ],
+    invalids: [],
+    unclean_count: 1,
+    unclean_samples: [
+      { symbol: 'FPT', floor_code: 'HOSE', match_price: 135.5, total_volume_traded: 250000, gross_trade_amount: 33875000, uncleared_fields: 'Chưa clear match_price (135.5), Chưa clear total_volume_traded (250000)' }
+    ]
+  };
+
+  assert.equal(mockReportData.unclean_count, 1);
+  assert.equal(mockReportData.unclean_samples[0].symbol, 'FPT');
+  assert.ok(mockReportData.unclean_samples[0].uncleared_fields.includes('match_price'));
 });

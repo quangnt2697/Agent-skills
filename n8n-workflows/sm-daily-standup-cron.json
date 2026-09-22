@@ -8,13 +8,13 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "30 8 * * 1-5"
+              "expression": "50 8 * * 1-5"
             }
           ]
         }
       },
       "id": "1",
-      "name": "Cron 08:30 AM (Mon-Fri)",
+      "name": "Cron 08:50 AM (Mon-Fri)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -52,13 +52,26 @@
     },
     {
       "parameters": {
-        "url": "={{ ($json.body && $json.body.baseUrl) || $json.baseUrl || $env.ATLASSIAN_BASE_URL || 'https://entrade.atlassian.net' }}/rest/api/3/search?jql=sprint%20in%20openSprints()%20AND%20statusCategory%20!=%20Done&fields=summary,status,assignee,priority,updated",
+        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\nconst body = json.body || json;\n\n// Fix: Detect trigger source dựa vào cấu trúc payload (không dùng try/catch node check)\nlet triggerSource = 'cron';\nif (json.headers || (json.body && typeof json.body === 'object')) {\n  triggerSource = 'webhook';\n} else if (json._triggerSource) {\n  triggerSource = json._triggerSource;\n} else if (json.params || json.issueKey || json.project) {\n  triggerSource = 'mattermost';\n}\n\nconst baseUrl = (body.baseUrl || json.baseUrl || ($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst email = ($env && $env.ATLASSIAN_EMAIL) || '';\nconst token = ($env && $env.ATLASSIAN_API_TOKEN) || '';\nconst authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');\n\n// Fix: Thêm customfield_10016 (Story Points), customfield_10020 (Sprint) và maxResults=100\nconst fields = 'summary,status,assignee,priority,updated,customfield_10016,customfield_10020';\nconst jql = encodeURIComponent('sprint in openSprints() AND statusCategory != Done ORDER BY assignee');\nconst searchUrl = `${baseUrl}/rest/api/3/search?jql=${jql}&fields=${fields}&maxResults=100`;\n\nreturn [{\n  json: {\n    baseUrl,\n    authHeader,\n    searchUrl,\n    _triggerSource: triggerSource\n  }\n}];\n"
+      },
+      "id": "prep-standup",
+      "name": "Prepare Standup Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.searchUrl }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "={{ 'Basic ' + Buffer.from(($env.ATLASSIAN_EMAIL || '') + ':' + ($env.ATLASSIAN_API_TOKEN || '')).toString('base64') }}"
+              "value": "={{ $json.authHeader }}"
             },
             {
               "name": "Accept",
@@ -73,21 +86,21 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        480,
+        660,
         340
       ],
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\n\nlet triggerSource = 'mattermost';\ntry {\n  if ($('Webhook Trigger (sm-standup)').first()) {\n    triggerSource = 'webhook';\n  }\n} catch (e) {\n  triggerSource = 'mattermost';\n}\n\n// ── Xử lý lỗi khi không kết nối được Jira API ───────────────────────────────\nif (json.error || json.errorMessages || (json.message && !json.issues)) {\n  const errMsg = (json.errorMessages && json.errorMessages.join(', ')) || \n                 (json.error && (json.error.message || json.error.description)) || \n                 json.message || 'Không thể kết nối đến Jira Search API';\n  const reportText = `🚨 **[Lỗi Báo Cáo Daily Standup]** Không thể lấy danh sách Sprint đang mở:\\n> ${errMsg}\\n\\n*Gợi ý: Kiểm tra cấu hình ATLASSIAN_BASE_URL, ATLASSIAN_EMAIL và API Token trong file .env.*`;\n  \n  return [{\n    json: {\n      isError: true,\n      error: errMsg,\n      reportText: reportText,\n      totalIssues: 0,\n      stuckCount: 0,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\n// ── Phân tích dữ liệu Sprint ────────────────────────────────────────────────\nconst issues = json.issues || [];\nconst now = new Date();\nconst stuckIssues = [];\nconst assigneeWorkload = {};\n\nfor (const issue of issues) {\n  const f = issue.fields;\n  const assignee = f.assignee ? f.assignee.displayName : 'Chưa phân bổ';\n  assigneeWorkload[assignee] = (assigneeWorkload[assignee] || 0) + 1;\n\n  // Kiểm tra ticket bị kẹt > 3 ngày chưa cập nhật\n  const updated = new Date(f.updated);\n  const diffDays = (now - updated) / (1000 * 60 * 60 * 24);\n  if (diffDays >= 3) {\n    stuckIssues.push({\n      key: issue.key,\n      summary: f.summary,\n      assignee: assignee,\n      status: f.status ? f.status.name : '',\n      stuckDays: Math.round(diffDays)\n    });\n  }\n}\n\nlet reportText = `### 📋 BÁO CÁO DAILY STANDUP (${now.toISOString().split('T')[0]})\\n`;\nreportText += `- **Tổng số task đang mở:** ${issues.length}\\n`;\nreportText += `- **Cảnh báo Task bị treo (>3 ngày):** ${stuckIssues.length}\\n\\n`;\n\nif (stuckIssues.length > 0) {\n  reportText += `#### 🚨 Danh sách Task bị tắc nghẽn (Impediments):\\n`;\n  for (const s of stuckIssues) {\n    reportText += `- **[${s.key}]** ${s.summary} (👤 ${s.assignee} | ⏳ ${s.stuckDays} ngày chưa cập nhật)\\n`;\n  }\n}\n\nreturn [{\n  json: {\n    isError: false,\n    reportText: reportText,\n    totalIssues: issues.length,\n    stuckCount: stuckIssues.length,\n    _triggerSource: triggerSource\n  }\n}];"
+        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\n\n// Fix: Lấy triggerSource từ Prepare node (đã detect đúng), không detect lại\nconst prepNode = $('Prepare Standup Request').first()?.json || {};\nconst triggerSource = prepNode._triggerSource || 'cron';\n\n// Xử lý lỗi Jira API\nif (json.error || json.errorMessages || (json.message && !json.issues)) {\n  const errMsg = (json.errorMessages && json.errorMessages.join(', ')) ||\n                 (json.error && (json.error.message || json.error.description)) ||\n                 json.message || 'Không thể kết nối đến Jira Search API';\n  return [{\n    json: {\n      isError: true,\n      error: errMsg,\n      reportText: `🚨 **[Lỗi Báo Cáo Daily Standup]** Không thể lấy danh sách Sprint đang mở:\\n> ${errMsg}\\n\\n*Gợi ý: Kiểm tra cấu hình ATLASSIAN_BASE_URL, ATLASSIAN_EMAIL và API Token trong file .env.*`,\n      totalIssues: 0, stuckCount: 0, _triggerSource: triggerSource\n    }\n  }];\n}\n\n// Phân tích dữ liệu Sprint\nconst issues = json.issues || [];\nconst now = new Date();\nconst stuckIssues = [];\nconst assigneeWorkload = {};\n\n// Lấy sprint name từ customfield_10020 (issue đầu tiên)\nlet sprintName = 'Sprint đang mở';\ntry {\n  const firstSprint = issues[0]?.fields?.customfield_10020;\n  if (Array.isArray(firstSprint) && firstSprint.length > 0) {\n    const activeSprint = firstSprint.find(s => s.state === 'active') || firstSprint[0];\n    sprintName = activeSprint.name || sprintName;\n  }\n} catch (_) {}\n\nlet totalSP = 0;\n\nfor (const issue of issues) {\n  const f = issue.fields;\n  const assignee = f.assignee ? f.assignee.displayName : 'Chưa phân bổ';\n  const sp = parseFloat(f.customfield_10016 || 0);\n  const statusName = (f.status && f.status.name) || '';\n  const isInProgress = /in progress|doing|dev|review/i.test(statusName);\n\n  if (!assigneeWorkload[assignee]) {\n    assigneeWorkload[assignee] = { count: 0, sp: 0, inProgress: 0 };\n  }\n  assigneeWorkload[assignee].count++;\n  assigneeWorkload[assignee].sp += sp;\n  if (isInProgress) assigneeWorkload[assignee].inProgress++;\n  totalSP += sp;\n\n  // Kiểm tra ticket bị kẹt > 3 ngày\n  const updated = new Date(f.updated);\n  const diffDays = (now - updated) / (1000 * 60 * 60 * 24);\n  if (diffDays >= 3) {\n    stuckIssues.push({\n      key: issue.key, summary: f.summary,\n      assignee, status: statusName,\n      stuckDays: Math.round(diffDays), sp\n    });\n  }\n}\n\nconst dateStr = now.toISOString().split('T')[0];\nlet reportText = `### ☀️ BÁO CÁO DAILY STANDUP (${dateStr}) — ${sprintName}\\n`;\nreportText += `- **Tổng task đang mở:** ${issues.length} issues`;\nif (totalSP > 0) reportText += ` | **Tổng SP In-Sprint:** ${totalSP} SP`;\nreportText += `\\n- **Cảnh báo task bị treo (>3 ngày):** ${stuckIssues.length} issues\\n\\n`;\n\n// Render bảng workload balance\nconst workloadEntries = Object.entries(assigneeWorkload).sort((a, b) => b[1].sp - a[1].sp);\nif (workloadEntries.length > 0) {\n  reportText += `#### 📊 Bảng Cân Bằng Tải (Workload Balance):\\n`;\n  reportText += `| 👤 Dev | Issues | SP | In Progress | Trạng thái |\\n`;\n  reportText += `| :--- | :---: | :---: | :---: | :--- |\\n`;\n  for (const [name, data] of workloadEntries) {\n    const status = data.sp > 15 ? '⚠️ Quá tải' : (data.sp > 8 ? '🟡 Đồng đều' : '🟢 Bình thường');\n    reportText += `| **${name}** | ${data.count} | **${data.sp}** SP | ${data.inProgress} | ${status} |\\n`;\n  }\n  reportText += '\\n';\n}\n\nif (stuckIssues.length > 0) {\n  reportText += `#### 🚨 Danh sách Task bị tắc nghẽn (Impediments):\\n`;\n  for (const s of stuckIssues) {\n    const spStr = s.sp > 0 ? ` | ${s.sp} SP` : '';\n    reportText += `- **[${s.key}]** ${s.summary} (👤 ${s.assignee} | ⏳ ${s.stuckDays} ngày${spStr})\\n`;\n  }\n}\n\nreturn [{\n  json: {\n    isError: false,\n    reportText,\n    totalIssues: issues.length,\n    totalSP,\n    stuckCount: stuckIssues.length,\n    sprintName,\n    _triggerSource: triggerSource\n  }\n}];"
       },
       "id": "4",
       "name": "Analyze Velocity & Blockers",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        700,
+        880,
         340
       ]
     },
@@ -102,7 +115,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        920,
+        1100,
         340
       ]
     },
@@ -116,7 +129,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1140,
+        1320,
         240
       ]
     },
@@ -150,11 +163,11 @@
     }
   ],
   "connections": {
-    "Cron 08:30 AM (Mon-Fri)": {
+    "Cron 08:50 AM (Mon-Fri)": {
       "main": [
         [
           {
-            "node": "Query Active Sprint Issues",
+            "node": "Prepare Standup Request",
             "type": "main",
             "index": 0
           }
@@ -165,7 +178,7 @@
       "main": [
         [
           {
-            "node": "Query Active Sprint Issues",
+            "node": "Prepare Standup Request",
             "type": "main",
             "index": 0
           }
@@ -176,7 +189,7 @@
       "main": [
         [
           {
-            "node": "Query Active Sprint Issues",
+            "node": "Prepare Standup Request",
             "type": "main",
             "index": 0
           }
@@ -217,6 +230,17 @@
         [
           {
             "node": "Return Report to Mattermost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Standup Request": {
+      "main": [
+        [
+          {
+            "node": "Query Active Sprint Issues",
             "type": "main",
             "index": 0
           }

@@ -64,6 +64,48 @@ const mappings = [
     nodeName: 'Normalize & Format Response',
     nodeId: '6',
     scriptFile: 'scripts/n8n-nodes/metabase-normalize-response.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/jira-fast-ingestor.json',
+    nodeName: 'Prepare Jira Request',
+    nodeId: 'prep-jira',
+    scriptFile: 'scripts/n8n-nodes/jira-prepare-request.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/jira-fast-ingestor.json',
+    nodeName: 'Filter & Clean Payload',
+    nodeId: '3',
+    scriptFile: 'scripts/n8n-nodes/jira-clean-payload.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/jira-spec-pusher.json',
+    nodeName: 'Pre-flight Gate & ADF Converter',
+    nodeId: '3',
+    scriptFile: 'scripts/n8n-nodes/jira-push-preflight.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/jira-spec-pusher.json',
+    nodeName: 'Format Response & Audit',
+    nodeId: '6',
+    scriptFile: 'scripts/n8n-nodes/jira-push-format-response.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/sm-daily-standup-cron.json',
+    nodeName: 'Prepare Standup Request',
+    nodeId: 'prep-standup',
+    scriptFile: 'scripts/n8n-nodes/sm-prepare-standup.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/db-mdds-recon-watchdog.json',
+    nodeName: 'Prepare Watchdog Query',
+    nodeId: '3',
+    scriptFile: 'scripts/n8n-nodes/watchdog-prepare-query.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/db-mdds-recon-watchdog.json',
+    nodeName: 'Verify Health & Parity',
+    nodeId: '5',
+    scriptFile: 'scripts/n8n-nodes/watchdog-verify-health.js'
   }
 ];
 

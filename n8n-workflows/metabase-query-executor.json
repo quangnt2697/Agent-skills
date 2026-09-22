@@ -74,16 +74,8 @@
               "value": "application/json"
             },
             {
-              "name": "X-API-KEY",
-              "value": "={{ $json.sessionToken }}"
-            },
-            {
               "name": "X-Metabase-Session",
               "value": "={{ $json.sessionToken }}"
-            },
-            {
-              "name": "Cookie",
-              "value": "=metabase.SESSION={{ $json.sessionToken }}"
             }
           ]
         },
@@ -91,7 +83,7 @@
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({\n  database: $json.databaseId,\n  type: 'native',\n  native: { query: $json.sanitizedQuery }\n}) }}",
         "options": {
-          "timeout": 30000
+          "timeout": 60000
         }
       },
       "id": "5",

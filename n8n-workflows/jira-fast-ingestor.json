@@ -1,6 +1,7 @@
 {
   "name": "AgentSkills - Jira Fast Ingestor",
   "id": "jTKaZzFv7QaODpYu",
+  "active": true,
   "nodes": [
     {
       "parameters": {},
@@ -32,13 +33,26 @@
     },
     {
       "parameters": {
-        "url": "={{ ($json.body && $json.body.baseUrl) || $json.baseUrl || $env.ATLASSIAN_BASE_URL || 'https://entrade.atlassian.net' }}/rest/api/3/issue/{{ ($json.body && ($json.body.issueKey || ($json.body.params && $json.body.params.issueKey))) || $json.issueKey || ($json.params && $json.params.issueKey) }}?fields=summary,description,status,assignee,priority,attachment,issuelinks,reporter,labels,sprint",
+        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\nconst body = json.body || json;\nconst params = body.params || json.params || {};\n\n// 1. Nhận diện nguồn gọi\nlet triggerSource = 'mattermost';\ntry {\n  const trigWebhook = $('Webhook Trigger (jira-prep)').first();\n  if (trigWebhook && trigWebhook.json) {\n    triggerSource = 'webhook';\n  }\n} catch (_) {}\n\n// 2. Trích xuất thông số\nconst issueKey = (params.issueKey || body.issueKey || json.issueKey || '').trim().toUpperCase();\nconst project = (params.project || body.project || json.project || '').trim();\nconst userName = json.userName || body.userName || json.user_name || body.user_name || 'User';\n\nconst baseUrl = (body.baseUrl || json.baseUrl || ($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst email = ($env && $env.ATLASSIAN_EMAIL) || '';\nconst token = ($env && $env.ATLASSIAN_API_TOKEN) || '';\nconst authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');\n\nconst fields = 'summary,description,status,assignee,priority,attachment,issuelinks,reporter,labels,sprint,issuetype,components,subtasks';\nconst jiraApiUrl = `${baseUrl}/rest/api/3/issue/${issueKey}?fields=${fields}`;\n\nreturn [{\n  json: {\n    issueKey,\n    project,\n    userName,\n    baseUrl,\n    authHeader,\n    jiraApiUrl,\n    _triggerSource: triggerSource,\n    _originalInput: json\n  }\n}];\n"
+      },
+      "id": "prep-jira",
+      "name": "Prepare Jira Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.jiraApiUrl }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "={{ 'Basic ' + Buffer.from(($env.ATLASSIAN_EMAIL || '') + ':' + ($env.ATLASSIAN_API_TOKEN || '')).toString('base64') }}"
+              "value": "={{ $json.authHeader }}"
             },
             {
               "name": "Accept",
@@ -53,21 +67,21 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        460,
+        660,
         320
       ],
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\n\n// Nhận diện nguồn gọi (Webhook Fast-Path vs Mattermost Router)\nlet triggerSource = 'mattermost';\nlet reqIssueKey = '';\n\ntry {\n  const trig = $('Webhook Trigger (jira-prep)').first();\n  if (trig && trig.json) {\n    triggerSource = 'webhook';\n    reqIssueKey = trig.json.body?.issueKey || trig.json.issueKey || '';\n  }\n} catch (e) {\n  // Không gọi từ Webhook\n}\n\nif (!reqIssueKey) {\n  try {\n    const trig = $('Execute Workflow Trigger').first();\n    if (trig && trig.json) {\n      triggerSource = 'mattermost';\n      reqIssueKey = trig.json.body?.params?.issueKey || trig.json.body?.issueKey || trig.json.params?.issueKey || trig.json.issueKey || '';\n    }\n  } catch (e) {\n    // Không gọi từ Execute Workflow Trigger\n  }\n}\n\n// ── Kiểm tra và xử lý lỗi từ Jira REST API (404, 401, timeout...) ───────────\nif (json.error || json.errorMessages || (json.message && !json.fields)) {\n  const errMsg = (json.errorMessages && json.errorMessages.join(', ')) ||\n                 (json.error && (json.error.message || json.error.description)) ||\n                 json.message || 'Không thể kết nối đến Jira REST API';\n  \n  const formattedError = `🚨 **[Lỗi Tra Cứu Jira]** Không thể lấy thông tin issue [${reqIssueKey || 'chưa nhập'}]:\\n> ${errMsg}\\n\\n*Gợi ý: Hãy kiểm tra mã issueKey (VD: G3PTP-17396) và quyền hạn tài khoản trong .env.*`;\n  \n  return [{\n    json: {\n      isError: true,\n      error: errMsg,\n      issueKey: reqIssueKey,\n      reportText: formattedError,\n      _triggerSource: triggerSource\n    }\n  }];\n}\n\n// ── Xử lý dữ liệu khi thành công ─────────────────────────────────────────────\nfunction adfToPlainText(node) {\n  if (!node) return '';\n  if (typeof node === 'string') return node;\n  if (Array.isArray(node)) return node.map(adfToPlainText).join('');\n  if (node.type === 'text') return node.text || '';\n  if (node.type === 'hardBreak') return '\\n';\n  let text = '';\n  if (node.content && Array.isArray(node.content)) {\n    const isBlock = node.type === 'paragraph' || (typeof node.type === 'string' && node.type.startsWith('heading'));\n    text = node.content.map(adfToPlainText).join('');\n    if (isBlock) return text + '\\n';\n    if (node.type === 'bulletList' || node.type === 'orderedList') return '\\n' + text;\n    if (node.type === 'listItem') return '- ' + text.trim() + '\\n';\n  }\n  return text;\n}\n\nconst fields = json.fields || {};\nlet cleanDesc = '';\nif (fields.description && typeof fields.description === 'object') {\n  cleanDesc = adfToPlainText(fields.description).trim();\n} else if (typeof fields.description === 'string') {\n  cleanDesc = fields.description.trim();\n}\n\nconst attachments = fields.attachment ? fields.attachment.map(a => ({ filename: a.filename, size: a.size, content: a.content })) : [];\nconst issueLinks = fields.issuelinks ? fields.issuelinks.map(l => l.outwardIssue ? l.outwardIssue.key : (l.inwardIssue ? l.inwardIssue.key : null)).filter(Boolean) : [];\nconst issueKey = json.key || reqIssueKey;\n\nconst reportText = `### 📋 Jira Issue: [${issueKey}] ${fields.summary || ''}\\n- **Trạng thái:** ${fields.status ? fields.status.name : 'Unknown'}\\n- **Người xử lý:** ${fields.assignee ? fields.assignee.displayName : 'Chưa phân bổ'}\\n- **Người báo cáo:** ${fields.reporter ? fields.reporter.displayName : 'Unknown'}\\n- **Liên kết:** ${issueLinks.join(', ') || 'Không có'}\\n- **Tóm tắt mô tả:**\\n> ${cleanDesc.substring(0, 500)}`;\n\nreturn [{\n  json: {\n    isError: false,\n    issueKey: issueKey,\n    summary: fields.summary || '',\n    status: fields.status ? fields.status.name : 'Unknown',\n    assignee: fields.assignee ? fields.assignee.displayName : 'Unassigned',\n    reporter: fields.reporter ? fields.reporter.displayName : 'Unknown',\n    labels: fields.labels || [],\n    attachments: attachments,\n    issueLinks: issueLinks,\n    descriptionSnippet: cleanDesc.substring(0, 1500),\n    reportText: reportText,\n    _triggerSource: triggerSource\n  }\n}];"
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst input = $input.first();\nconst json = (input && input.json) || {};\n\n// 1. Nhận diện nguồn gọi (Webhook Fast-Path vs Mattermost Router)\nlet triggerSource = 'mattermost';\nlet reqIssueKey = '';\nlet targetProject = '';\nlet userName = 'User';\n\ntry {\n  const prepNode = $('Prepare Jira Request').first();\n  if (prepNode && prepNode.json) {\n    reqIssueKey = prepNode.json.issueKey || '';\n    targetProject = prepNode.json.project || '';\n    userName = prepNode.json.userName || 'User';\n    triggerSource = prepNode.json._triggerSource || 'mattermost';\n  }\n} catch (e) {}\n\nif (!reqIssueKey) {\n  try {\n    const trigWebhook = $('Webhook Trigger (jira-prep)').first();\n    if (trigWebhook && trigWebhook.json) {\n      triggerSource = 'webhook';\n      const b = trigWebhook.json.body || trigWebhook.json;\n      reqIssueKey = b.issueKey || '';\n      targetProject = b.project || '';\n      userName = b.userName || b.user_name || 'User';\n    }\n  } catch (e) {}\n}\n\nif (!reqIssueKey) {\n  try {\n    const trigExec = $('Execute Workflow Trigger').first();\n    if (trigExec && trigExec.json) {\n      triggerSource = 'mattermost';\n      const b = trigExec.json.body?.params || trigExec.json.body || trigExec.json.params || trigExec.json;\n      reqIssueKey = b.issueKey || '';\n      targetProject = b.project || '';\n      userName = trigExec.json.userName || trigExec.json.user_name || 'User';\n    }\n  } catch (e) {}\n}\n\n// 2. Xử lý lỗi từ Jira REST API (404, 401, timeout...)\nif (json.error || json.errorMessages || (json.message && !json.fields)) {\n  const errMsg = (json.errorMessages && json.errorMessages.join(', ')) ||\n                 (json.error && (json.error.message || json.error.description)) ||\n                 json.message || 'Không thể kết nối đến Jira REST API';\n  \n  const formattedError = `🚨 **[Lỗi Tra Cứu Jira]** Không thể lấy thông tin issue [${reqIssueKey || 'chưa nhập'}]:\\n> ${errMsg}\\n\\n*Gợi ý: Hãy kiểm tra mã issueKey (VD: G3PTP-17396) và quyền hạn tài khoản trong .env.*`;\n  \n  return [{\n    json: {\n      isError: true,\n      error: errMsg,\n      issueKey: reqIssueKey,\n      reportText: formattedError,\n      _triggerSource: triggerSource,\n      userName\n    }\n  }];\n}\n\n// 3. Hàm giải mã Atlassian Document Format (ADF) sang Markdown chuẩn\nfunction adfToMarkdown(node) {\n  if (!node) return '';\n  if (typeof node === 'string') return node;\n  if (Array.isArray(node)) return node.map(adfToMarkdown).join('');\n\n  const type = node.type || '';\n  const content = node.content || [];\n  const text = node.text || '';\n\n  if (type === 'text') {\n    let res = text;\n    if (node.marks && Array.isArray(node.marks)) {\n      for (const m of node.marks) {\n        if (m.type === 'strong') res = `**${res}**`;\n        if (m.type === 'em') res = `*${res}*`;\n        if (m.type === 'code') res = `\\`${res}\\``;\n        if (m.type === 'link' && m.attrs?.href) res = `[${res}](${m.attrs.href})`;\n        if (m.type === 'strike') res = `~~${res}~~`;\n      }\n    }\n    return res;\n  }\n\n  if (type === 'hardBreak') return '\\n';\n  if (type === 'rule') return '\\n---\\n';\n\n  if (type === 'heading') {\n    const level = node.attrs?.level || 2;\n    const prefix = '#'.repeat(level);\n    return `\\n${prefix} ${content.map(adfToMarkdown).join('')}\\n`;\n  }\n\n  if (type === 'paragraph') {\n    const inner = content.map(adfToMarkdown).join('');\n    return inner ? `${inner}\\n` : '\\n';\n  }\n\n  if (type === 'bulletList') {\n    return '\\n' + content.map(item => '- ' + contentOfItem(item).trim()).join('\\n') + '\\n';\n  }\n\n  if (type === 'orderedList') {\n    return '\\n' + content.map((item, idx) => `${idx + 1}. ` + contentOfItem(item).trim()).join('\\n') + '\\n';\n  }\n\n  if (type === 'codeBlock') {\n    const lang = node.attrs?.language || '';\n    return `\\n\\`\\`\\`${lang}\\n${content.map(adfToMarkdown).join('')}\\n\\`\\`\\`\\n`;\n  }\n\n  if (type === 'blockquote') {\n    return '\\n> ' + content.map(adfToMarkdown).join('').trim().replace(/\\n/g, '\\n> ') + '\\n';\n  }\n\n  if (type === 'table') {\n    const rows = content.filter(n => n.type === 'tableRow');\n    if (rows.length === 0) return '';\n    let tableMd = '\\n';\n    rows.forEach((r, rIdx) => {\n      const cells = (r.content || []).filter(c => c.type === 'tableHeader' || c.type === 'tableCell');\n      const cellTexts = cells.map(c => contentOfItem(c).replace(/\\n+/g, ' ').trim());\n      tableMd += '| ' + cellTexts.join(' | ') + ' |\\n';\n      if (rIdx === 0) {\n        tableMd += '| ' + cells.map(() => '---').join(' | ') + ' |\\n';\n      }\n    });\n    return tableMd + '\\n';\n  }\n\n  if (content.length > 0) {\n    return content.map(adfToMarkdown).join('');\n  }\n  return '';\n}\n\nfunction contentOfItem(item) {\n  if (!item || !item.content) return '';\n  return item.content.map(adfToMarkdown).join('');\n}\n\n// 4. Trích xuất thông tin nghiệp vụ chi tiết\nconst fields = json.fields || {};\nconst issueKey = json.key || reqIssueKey;\nconst summary = fields.summary || 'Không có tiêu đề';\nconst issueType = fields.issuetype?.name || 'Task';\nconst status = fields.status?.name || 'Unknown';\nconst priority = fields.priority?.name || 'Medium';\nconst assignee = fields.assignee?.displayName || 'Chưa phân bổ';\nconst reporter = fields.reporter?.displayName || 'Chưa rõ';\nconst labels = fields.labels || [];\nconst components = (fields.components || []).map(c => c.name);\n\n// Sprint info\nlet sprintName = 'Không có Sprint';\nif (Array.isArray(fields.sprint)) {\n  sprintName = fields.sprint.map(s => s.name).join(', ') || sprintName;\n} else if (fields.sprint && typeof fields.sprint === 'object') {\n  sprintName = fields.sprint.name || sprintName;\n}\n\n// Attachments\nconst attachments = (fields.attachment || []).map(a => ({\n  filename: a.filename,\n  size: a.size,\n  mimeType: a.mimeType,\n  content: a.content\n}));\n\n// Issue Links\nconst issueLinks = (fields.issuelinks || []).map(l => {\n  if (l.outwardIssue) return `${l.type?.outward || 'liên kết tới'} ${l.outwardIssue.key} (${l.outwardIssue.fields?.summary || ''})`;\n  if (l.inwardIssue) return `${l.type?.inward || 'được liên kết bởi'} ${l.inwardIssue.key} (${l.inwardIssue.fields?.summary || ''})`;\n  return null;\n}).filter(Boolean);\n\n// Subtasks\nconst subtasks = (fields.subtasks || []).map(s => `[${s.key}] ${s.fields?.summary || ''} (${s.fields?.status?.name || ''})`);\n\n// Description ADF sang Markdown\nlet cleanDesc = '';\nif (fields.description && typeof fields.description === 'object') {\n  cleanDesc = adfToMarkdown(fields.description).trim();\n} else if (typeof fields.description === 'string') {\n  cleanDesc = fields.description.trim();\n}\n\n// Trích xuất Confluence links từ description và issueLinks\nconst confluenceMatches = cleanDesc.match(/https?:\\/\\/[^\\s)]+\\/wiki\\/(?:spaces|pages)\\/[^\\s)]+/gi) || [];\nconst uniqueConfluenceLinks = Array.from(new Set(confluenceMatches));\n\n// 5. Quét trạng thái Workspace Local\nconst candidateRoots = [\n  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills',\n  '/Users/qa-quangnt/Desktop/Project/Test/agent-skills'\n];\n\nconst scanDirsRaw = ($env && $env.PROJECT_SCAN_DIRS) || '';\nif (scanDirsRaw) {\n  scanDirsRaw.split(',').forEach(d => {\n    const p = d.trim().replace(/^[\"']|[\"']$/g, '');\n    if (p && !candidateRoots.includes(p)) candidateRoots.push(p);\n  });\n}\n\n// Thêm đường dẫn từ projects.json\ntry {\n  const pMapPath = path.join(candidateRoots[0], 'projects.json');\n  if (fs.existsSync(pMapPath)) {\n    const pMap = JSON.parse(fs.readFileSync(pMapPath, 'utf8'));\n    Object.values(pMap).forEach(v => {\n      const p = path.resolve(v);\n      if (!candidateRoots.includes(p)) candidateRoots.push(p);\n    });\n  }\n} catch (_) {}\n\nlet localWorkspaceInfo = {\n  found: false,\n  projectRoot: '',\n  hasRefinedSpec: false,\n  hasFinalSpec: false,\n  hasFeatureFile: false,\n  hasSquashSync: false,\n  squashSyncId: null,\n  specPath: ''\n};\n\nfor (const cRoot of candidateRoots) {\n  const wsDir = path.join(cRoot, 'workspace', issueKey);\n  if (fs.existsSync(wsDir)) {\n    localWorkspaceInfo.found = true;\n    localWorkspaceInfo.projectRoot = cRoot;\n    \n    const refinedPath = path.join(wsDir, 'spec', 'refined.md');\n    if (fs.existsSync(refinedPath)) {\n      localWorkspaceInfo.hasRefinedSpec = true;\n      localWorkspaceInfo.specPath = refinedPath;\n    }\n    \n    const finalPath = path.join(wsDir, 'spec', 'final.md');\n    if (fs.existsSync(finalPath)) {\n      localWorkspaceInfo.hasFinalSpec = true;\n      if (!localWorkspaceInfo.specPath) localWorkspaceInfo.specPath = finalPath;\n    }\n\n    const testDir = path.join(wsDir, 'test');\n    if (fs.existsSync(testDir)) {\n      try {\n        const testFiles = fs.readdirSync(testDir);\n        localWorkspaceInfo.hasFeatureFile = testFiles.some(f => f.endsWith('.feature'));\n        const syncJson = path.join(testDir, 'squash_sync.json');\n        if (fs.existsSync(syncJson)) {\n          const sData = JSON.parse(fs.readFileSync(syncJson, 'utf8'));\n          localWorkspaceInfo.hasSquashSync = true;\n          localWorkspaceInfo.squashSyncId = sData.testCaseId || null;\n        }\n      } catch (_) {}\n    }\n    break;\n  }\n}\n\n// 6. Xây dựng thẻ báo cáo Markdown chi tiết cho Mattermost\nconst baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst jiraUrl = `${baseUrl}/browse/${issueKey}`;\n\nlet localStatusText = '⚠️ *Chưa tìm thấy workspace local* (👉 Chạy `/ba-spec` hoặc `/ba-refine` để khởi tạo)';\nif (localWorkspaceInfo.found) {\n  const parts = [];\n  if (localWorkspaceInfo.hasRefinedSpec) parts.push('✅ `spec/refined.md`');\n  else if (localWorkspaceInfo.hasFinalSpec) parts.push('✅ `spec/final.md`');\n  else parts.push('❌ Chưa có file spec');\n\n  if (localWorkspaceInfo.hasFeatureFile) parts.push('✅ `test/*.feature`');\n  if (localWorkspaceInfo.hasSquashSync) parts.push(`✅ Squash TM [#${localWorkspaceInfo.squashSyncId || 'Sync'}]`);\n  \n  localStatusText = parts.join(' | ') + `\\n> Thư mục: \\`${localWorkspaceInfo.specPath || localWorkspaceInfo.projectRoot}\\``;\n}\n\nconst suggestions = [];\nconst resolvedProjTag = targetProject ? targetProject + ' ' : '';\nif (localWorkspaceInfo.hasRefinedSpec || localWorkspaceInfo.hasFinalSpec) {\n  suggestions.push(`\\`/agent ${resolvedProjTag}push-jira ${issueKey}\\` để cập nhật Description lên Jira`);\n}\nif (localWorkspaceInfo.hasFeatureFile) {\n  suggestions.push(`\\`/agent ${resolvedProjTag}push-squash ${issueKey}\\` để đồng bộ test case lên Squash TM`);\n  suggestions.push(`\\`/agent ${resolvedProjTag}run-test ${issueKey}\\` để chạy kiểm thử tự động`);\n} else {\n  suggestions.push(`\\`/ba-refine ${issueKey}\\` để mài giũa spec và viết User Story/AC`);\n}\n\nconst descSnippet = cleanDesc.length > 800 ? cleanDesc.substring(0, 800) + '\\n\\n*(... nội dung còn tiếp ...)*' : (cleanDesc || '*Không có mô tả chi tiết.*');\n\nconst reportText = `### 📋 Thông Tin Jira Issue: [${issueKey}](${jiraUrl}) - ${summary}\n- **Loại:** \\`${issueType}\\` | **Trạng thái:** **${status}** | **Ưu tiên:** \\`${priority}\\`\n- **Người xử lý:** **${assignee}** | **Người tạo:** ${reporter}\n- **Sprint:** \\`${sprintName}\\`${components.length > 0 ? (' | **Components:** `' + components.join(', ') + '`') : ''}\n${labels.length > 0 ? ('- **Labels:** `' + labels.join(', ') + '`\\n') : ''}- **Tài liệu tham chiếu:** ${attachments.length} file đính kèm | ${uniqueConfluenceLinks.length} liên kết Confluence | ${issueLinks.length} liên kết Issue\n- **Workspace Local:** ${localStatusText}\n\n#### 📖 Trích Đoạn Mô Tả (ADF Markdown):\n${descSnippet}\n\n---\n💡 **Gợi ý bước tiếp theo:**\n${suggestions.map(s => `- ${s}`).join('\\n')}`;\n\nreturn [{\n  json: {\n    isError: false,\n    issueKey,\n    summary,\n    issueType,\n    status,\n    priority,\n    assignee,\n    reporter,\n    sprintName,\n    labels,\n    components,\n    attachments,\n    issueLinks,\n    subtasks,\n    confluenceLinks: uniqueConfluenceLinks,\n    descriptionMarkdown: cleanDesc,\n    descriptionSnippet: cleanDesc.substring(0, 1500),\n    localWorkspace: localWorkspaceInfo,\n    reportText,\n    _triggerSource: triggerSource,\n    userName\n  }\n}];\n"
       },
       "id": "3",
       "name": "Filter & Clean Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        680,
+        880,
         320
       ]
     },
@@ -82,7 +96,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        900,
+        1100,
         320
       ]
     },
@@ -96,7 +110,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1120,
+        1320,
         220
       ]
     },
@@ -123,7 +137,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1120,
+        1320,
         420
       ],
       "onError": "continueRegularOutput"
@@ -134,7 +148,7 @@
       "main": [
         [
           {
-            "node": "Fetch Jira REST API",
+            "node": "Prepare Jira Request",
             "type": "main",
             "index": 0
           }
@@ -142,6 +156,17 @@
       ]
     },
     "Webhook Trigger (jira-prep)": {
+      "main": [
+        [
+          {
+            "node": "Prepare Jira Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Jira Request": {
       "main": [
         [
           {

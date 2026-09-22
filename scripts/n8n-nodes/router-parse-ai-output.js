@@ -11,7 +11,7 @@ function buildAckMessage(intent, params, rawText) {
     'run-test': `chạy kiểm thử tự động (Pytest) cho ${params?.project ? ('`' + params.project + '` / ') : ''}ticket **${params?.issueKey || 'được yêu cầu'}**`,
     'standup': 'tổng hợp báo cáo **Daily Standup Sprint** và phân tích impediments (>3 ngày)',
     'recon': 'đối chiếu dữ liệu thị trường **KRX MDDS TimescaleDB** (Ticks v3)',
-    'jira': `tra cứu và làm sạch thông tin vé Jira **${params?.issueKey || ''}**`,
+    'jira': `tra cứu thông tin vé Jira **${params?.issueKey || ''}** và kiểm tra trạng thái spec local`,
     'sync': `đồng bộ mã nguồn mới nhất cho ${params?.project ? ('repo `' + params.project + '`') : 'toàn bộ group microservices'}`,
     'squash': `đẩy kịch bản BDD Gherkin (.feature) lên **Squash TM** và gán vào Campaign Test Plan cho ticket **${params?.issueKey || 'được yêu cầu'}** (Project: \`${params?.project || 'tự động phát hiện'}\`)`,
     'push-jira': `tìm kiếm file spec local và đẩy lên Jira Description cho ticket **${params?.issueKey || 'được yêu cầu'}** (Project: \`${params?.project || 'tự động phát hiện'}\`)`,
@@ -28,10 +28,15 @@ function buildAckMessage(intent, params, rawText) {
 // ── Hàm bóc tách lệnh thủ công (Fallback & Deterministic Engine) ──
 function parseCommand(text) {
   let clean = (text || '').trim();
-  // Loại bỏ các tiền tố /agent hoặc agent dư thừa nếu người dùng nhập lặp lại
+  // Loại bỏ các tiền tố /agent hoặc agent dư thừa
   clean = clean.replace(/^(\/?agent\s*)+/i, '').trim();
 
   if (!clean) return { intent: 'help', params: { project: '', skill: '', issueKey: '' } };
+
+  // Chuẩn hóa cú pháp multi-word thông dụng: get jira / info jira / push jira / push squash / run test
+  clean = clean.replace(/\b(get|info|push)\s+jira\b/gi, '$1-jira');
+  clean = clean.replace(/\b(push)\s+squash\b/gi, '$1-squash');
+  clean = clean.replace(/\b(run)\s+test\b/gi, '$1-test');
 
   // 0. Nhận diện intent query (SQL hoặc ngôn ngữ tự nhiên)
   const queryPrefixMatch = clean.match(/^(query|sql|db)\s+(.*)$/i);
@@ -116,8 +121,14 @@ function parseCommand(text) {
     'db-timescale-reconciler': 'recon',
     'watchdog': 'recon',
 
-    // Jira / BA
+    // Jira / BA (Tra cứu thông tin vé & spec local)
     'jira': 'jira',
+    'get-jira': 'jira',
+    'get_jira': 'jira',
+    'getjira': 'jira',
+    'info-jira': 'jira',
+    'info_jira': 'jira',
+    'infojira': 'jira',
     'ba-spec': 'jira',
     'ba-refine': 'jira',
     'ba-user-story-writing': 'jira',
@@ -134,12 +145,12 @@ function parseCommand(text) {
     'qa-squash-push': 'squash',
     'push-squash': 'squash',
     'push_squash': 'squash',
-    'push squash': 'squash',
+    'pushsquash': 'squash',
 
     // Push Jira Spec
     'push-jira': 'push-jira',
     'push_jira': 'push-jira',
-    'push jira': 'push-jira',
+    'pushjira': 'push-jira',
     'push-spec': 'push-jira',
 
     // Query
@@ -184,7 +195,7 @@ function parseCommand(text) {
       detectedIntent = 'sync';
     } else if (lower.startsWith('select ') || lower.includes('tra cứu') || lower.includes('tìm tài khoản')) {
       detectedIntent = 'query';
-    } else if (lower.includes('jira') || lower.includes('ba-spec') || issueKey) {
+    } else if (lower.includes('get-jira') || lower.includes('info-jira') || lower.includes('jira') || lower.includes('ba-spec') || issueKey) {
       detectedIntent = 'jira';
     } else {
       detectedIntent = 'help';
