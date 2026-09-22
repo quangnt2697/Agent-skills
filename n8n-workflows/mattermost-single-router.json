@@ -237,15 +237,17 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\nif (json.intent === 'help' || !json.ackMessage) {\n  return [];\n}\nreturn [{\n  json: {\n    text: json.ackMessage\n  }\n}];"
+        "mode": "expression",
+        "output": "={{ $json.intent !== 'help' ? 0 : 1 }}",
+        "numberOutputs": 2
       },
-      "id": "13",
-      "name": "Filter Non-Help ACK",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "node-check-needs-ack",
+      "name": "Check Needs ACK",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
       "position": [
         880,
-        480
+        300
       ]
     },
     {
@@ -263,18 +265,31 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ text: $json.text, username: 'Agent System', icon_emoji: ':hourglass_flowing_sand:' }) }}",
+        "jsonBody": "={{ JSON.stringify({ text: $json.ackMessage, username: 'Agent System', icon_emoji: ':hourglass_flowing_sand:' }) }}",
         "options": {}
       },
-      "id": "14",
+      "id": "node-notify-ack",
       "name": "Notify Command Acknowledged to Mattermost",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1160,
-        480
+        1080,
+        200
       ],
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $('Parse AI Output').all();"
+      },
+      "id": "node-restore-context",
+      "name": "Restore Router Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        200
+      ]
     }
   ],
   "connections": {
@@ -304,23 +319,47 @@
       "main": [
         [
           {
-            "node": "Switch by Intent",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Filter Non-Help ACK",
+            "node": "Check Needs ACK",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter Non-Help ACK": {
+    "Check Needs ACK": {
       "main": [
         [
           {
             "node": "Notify Command Acknowledged to Mattermost",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch by Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Command Acknowledged to Mattermost": {
+      "main": [
+        [
+          {
+            "node": "Restore Router Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Router Context": {
+      "main": [
+        [
+          {
+            "node": "Switch by Intent",
             "type": "main",
             "index": 0
           }
