@@ -174,14 +174,22 @@ export function resolveTargetProjects(query, configMapping) {
     return targets;
   }
 
-  // Case 2: Query khớp trực tiếp với alias trong projects.json
-  if (configMapping[cleanQuery]) {
-    const targetPath = configMapping[cleanQuery];
-    inspectPathAndCollect(cleanQuery, targetPath, targets);
+  // Case 2: Kiểm tra xem query có khớp chính xác hoặc khớp tiền tố cụm alias không (VD: "openapi" khớp cả "openapi" lẫn "openapi-tyk", "openapi-service"...)
+  const prefixMatches = [];
+  for (const [alias, targetPath] of Object.entries(configMapping)) {
+    if (alias === cleanQuery || alias.startsWith(cleanQuery + '-') || alias.startsWith(cleanQuery + '_')) {
+      prefixMatches.push({ alias, targetPath });
+    }
+  }
+
+  if (prefixMatches.length > 0) {
+    for (const item of prefixMatches) {
+      inspectPathAndCollect(item.alias, item.targetPath, targets);
+    }
     return targets;
   }
 
-  // Case 3: Query khớp prefix/substring với alias trong projects.json
+  // Case 3: Query khớp prefix/substring rộng hơn với alias trong projects.json
   for (const [alias, targetPath] of Object.entries(configMapping)) {
     if (alias.startsWith(cleanQuery) || alias.includes(cleanQuery)) {
       inspectPathAndCollect(alias, targetPath, targets);

@@ -14,6 +14,12 @@ Forty-one visual types. Semantic patterns describe behavior; type references des
 
 ---
 
+## Overview (Tổng quan)
+
+Kỹ năng thiết kế và trực quan hóa sơ đồ nghiệp vụ, kiến trúc kỹ thuật dưới dạng file HTML/inline SVG tĩnh theo hệ thống thiết kế Editorial. Thay thế hoàn toàn Mermaid bằng giao diện xuất bản chuyên nghiệp, hỗ trợ 41 loại sơ đồ và khả năng xuất ảnh PNG/SVG chất lượng cao qua Playwright.
+
+---
+
 ## 0. First-time setup — style guide gate
 
 **Before generating your first diagram in a new project, verify the style guide has been customized.**
@@ -581,3 +587,20 @@ Every diagram is an accessible figure by default:
 When the user asks to export, save, rasterize, or convert a generated diagram to `.png` or `.svg`, load [`references/export.md`](references/export.md) and follow the procedure there. Both formats deliver the diagram only (the `<svg>` node) — editorial wrappers like cards and headers are dropped by design. Export is **manual** — never produce export files unprompted.
 
 For an imported diagram, pixel dimensions come from the `viewBox` × scale factor, so its size decision belongs to §11, not to export. For any diagram that needs an exact frame (an OG card or a slide image), see [`export.md` § Sizing the export](references/export.md).
+
+---
+
+## Red Flags (Dấu hiệu Cảnh báo)
+
+- Tự ý sinh sơ đồ bằng Mermaid thay vì hệ thống Editorial HTML/SVG.
+- Quá nhiều node (> 9 nodes) trong một sơ đồ đơn lẻ mà không gom nhóm hoặc zone.
+- Lạm dụng màu accent/coral cho nhiều hơn 2 focal nodes làm mất tín hiệu trực quan.
+- Tạo file HTML phụ thuộc thư viện JS bên ngoài hoặc hình ảnh ngoài thay vì inline SVG.
+- Quên thêm accessibility tags (`role="img"`, `aria-labelledby`, `<title>`, `<desc>`).
+
+## Verification (Xác minh)
+
+- [ ] File sơ đồ là một file HTML duy nhất, tự chứa (self-contained) với CSS nhúng và SVG inline.
+- [ ] Diagram hiển thị chính xác trên trình duyệt và tuân thủ bảng màu tokens.
+- [ ] Nếu có yêu cầu xuất PNG/SVG: đã thực hiện kiểm tra render qua Playwright không bị vỡ font hay mất nét.
+- [ ] Tất cả các nhãn (labels) tuân thủ đúng ngôn ngữ Tiếng Việt cho nghiệp vụ.

@@ -34,10 +34,23 @@ try {
 if (project) {
   if (projects[project]) {
     cwd = projects[project];
-  } else if (fs.existsSync(path.resolve('/Users/qa-quangnt/Desktop/Project', project))) {
-    cwd = path.resolve('/Users/qa-quangnt/Desktop/Project', project);
-  } else if (fs.existsSync(path.resolve(cwd, project))) {
-    cwd = path.resolve(cwd, project);
+  } else {
+    // Kiểm tra trong PROJECT_SCAN_DIRS hoặc thư mục cha
+    const scanDirsRaw = (typeof $env !== 'undefined' && $env.PROJECT_SCAN_DIRS) || process.env.PROJECT_SCAN_DIRS || '';
+    const scanDirs = scanDirsRaw.split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+    let foundDir = '';
+    for (const sDir of scanDirs) {
+      const candidate = path.resolve(sDir, project);
+      if (fs.existsSync(candidate)) {
+        foundDir = candidate;
+        break;
+      }
+    }
+    if (foundDir) {
+      cwd = foundDir;
+    } else if (fs.existsSync(path.resolve(cwd, project))) {
+      cwd = path.resolve(cwd, project);
+    }
   }
 } else {
   // Nếu không truyền project: ưu tiên đường dẫn duy nhất trong projects.json nếu có
@@ -122,8 +135,8 @@ if (matchedFiles.length === 0) {
 }
 
 // 3. Thực thi Pytest với danh sách file tìm được
-const fileArgs = matchedFiles.join(' ');
-const command = 'pytest ' + fileArgs + ' -v --tb=short -o python_files="test*.py *test.py test-*.py *-test.py test_*.py *_test.py"';
+const quotedFiles = matchedFiles.map(f => '"' + f.replace(/"/g, '\\"') + '"').join(' ');
+const command = 'pytest ' + quotedFiles + ' -v --tb=short -o python_files="test*.py *test.py test-*.py *-test.py test_*.py *_test.py"';
 
 try {
   const result = execSync(command, { encoding: 'utf-8', cwd: cwd, timeout: 120000 });

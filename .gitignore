@@ -30,3 +30,7 @@ evals/results/
 # Artifact sinh ra bởi skill — chạy lại được, không commit
 workspace/
 
+# Scratch & temporary scripts
+scratch*.*
+*.patch.*
+test-*.cjs

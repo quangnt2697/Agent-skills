@@ -38,6 +38,7 @@ Khi có bất kỳ điều gì bất ngờ xảy ra:
 
 > 📖 **BẮT BUỘC ĐỌC:** Xem hướng dẫn phân loại lỗi (Triage Checklist), xử lý ngoại lệ an toàn (Safe Fallbacks) và nguyên tắc log lỗi tại: **[triage-playbook.md](references/triage-playbook.md)**
 
+## Những lời Biện hộ Thường gặp (Common Rationalizations)
 
 | Biện hộ                                           | Thực tế                                                                                                                                   |
 |---------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|

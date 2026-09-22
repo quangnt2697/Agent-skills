@@ -27,8 +27,7 @@ if [ -t 0 ]; then INPUT="{}"; else INPUT=$(cat); fi
 
 # Dependencies check
 if ! command -v jq >/dev/null 2>&1; then
-  jq -cn '{injectSteps: [{ephemeralMessage: "agent-skills: jq is required for the session-start hook but was not found on PATH. Install jq (e.g. `brew install jq`) to enable meta-skill injection. Skills remain available individually."}]}' 2>/dev/null \
-    || echo '{"injectSteps": [{"ephemeralMessage": "agent-skills: jq not found. Skills available individually."}]}'
+  echo '{"injectSteps": [{"ephemeralMessage": "agent-skills: jq is required for the session-start hook but was not found on PATH. Install jq (e.g. `brew install jq`) to enable meta-skill injection. Skills remain available individually."}]}'
   exit 0
 fi
 

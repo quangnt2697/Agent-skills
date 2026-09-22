@@ -23,14 +23,7 @@ $ARGUMENTS có thể chứa Jira issue key (VD: G3PTP-16825), đường dẫn th
      HTML_FLAG=""
      python3 -c "import pytest_html" 2>/dev/null && HTML_FLAG="--html=$REPORT_DIR/report.html --self-contained-html"
 
-     pytest "$TEST_TARGET" \
-       -o python_files="test_*.py *_test.py" \
-       -v -s \
-       -o log_cli=true -o log_cli_level=INFO \
-       -rA --tb=short \
-       --junitxml="$REPORT_DIR/junit.xml" \
-       $HTML_FLAG \
-       2>&1 | tee "$REPORT_DIR/test-output.log"
+     pytest "$TEST_TARGET" -o python_files="test_*.py *_test.py" -v -s -o log_cli=true -o log_cli_level=INFO -rA --tb=short --junitxml="$REPORT_DIR/junit.xml" $HTML_FLAG 2>&1 | tee "$REPORT_DIR/test-output.log"
      ```
    - **Cờ cốt lõi:** `-s` (không nuốt log), live logging, `-rA` (tổng kết mọi test), và chuyển hướng `2>&1 | tee` vào DUY NHẤT 1 file `test-output.log`.
 

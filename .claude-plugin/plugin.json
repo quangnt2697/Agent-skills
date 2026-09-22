@@ -9,8 +9,14 @@
   "repository": "https://github.com/addyosmani/agent-skills",
   "license": "MIT",
   "commands": [
-    "./.claude/commands",
-    "./commands"
+    "./plugins/ba-po/.claude/commands",
+    "./plugins/code-reviewer/.claude/commands",
+    "./plugins/core/.claude/commands",
+    "./plugins/dev/.claude/commands",
+    "./plugins/qa/.claude/commands",
+    "./plugins/scrum-master/.claude/commands",
+    "./plugins/security-auditor/.claude/commands",
+    "./plugins/web-performance-auditor/.claude/commands"
   ],
-  "skills": "./skills"
+  "skills": "./plugins"
 }

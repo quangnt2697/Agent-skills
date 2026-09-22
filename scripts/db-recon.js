@@ -270,6 +270,8 @@ export {
     replaceParams,
     formatMarkdownTable,
     parseCliArgs,
-    catalogPath
+    catalogPath,
+    runQuery,
+    main
 };
 

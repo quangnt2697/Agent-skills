@@ -6,9 +6,16 @@ trigger: Kích hoạt khi người dùng gõ /db-recon, yêu cầu "đối chi�
 
 # db-timescale-reconciler
 
-**Mục đích:** Phát hiện sai lệch dữ liệu chứng khoán KRX MDDS trên TimescaleDB Production qua Metabase API (`${METABASE_PROD_URL}`, DB ID: `${METABASE_PROD_DB_TIMESCALE_ID}`).
+## Overview (Tổng quan)
 
-**Phạm vi:** 11 topic MDDS — Ticks, TopPrices, ExpectedPrice, OHLC, Indices, BoardEvents, SymbolBoardEvents, ForeignTrading, SecurityDefinition, VolatilityInterruption, TradeExtra.
+Phát hiện sai lệch dữ liệu chứng khoán KRX MDDS trên TimescaleDB Production qua Metabase API (`${METABASE_PROD_URL}`, DB ID: `${METABASE_PROD_DB_TIMESCALE_ID}`). Bao gồm 11 topic MDDS: Ticks, TopPrices, ExpectedPrice, OHLC, Indices, BoardEvents, SymbolBoardEvents, ForeignTrading, SecurityDefinition, VolatilityInterruption, TradeExtra.
+
+## When to Use (Khi nào sử dụng)
+
+- Kích hoạt khi cần đối chiếu dữ liệu thị trường KRX MDDS Ticks v3 hôm nay hoặc trong quá khứ.
+- Kích hoạt khi nghi ngờ có value drift (lệch giá, lệch khối lượng) giữa bảng raw và bảng transformed.
+- Kích hoạt khi cần rà soát nến OHLC bị thiếu (gap) hoặc bản ghi ghi muộn sau phiên.
+- Sau khi deploy phiên bản pipeline dữ liệu MDDS mới lên môi trường Production.
 
 ---
 
@@ -54,18 +61,18 @@ WHERE created_at >= '{{date}}'::date
 | Tình huống | Query cần chạy |
 |---|---|
 | Báo cáo tổng quan nhanh | `master-dashboard` |
-| Nghi ngờ tick/volume sai | `recon-ticks` → `recon-ticks-raw` → `audit-tick-price-drift` |
-| Nghi ngờ giá sổ lệnh sai | `recon-topprice` → `audit-topprice-value-drift` |
+| Nghi ngờ tick/volume sai | `recon-ticks` ➔ `recon-ticks-raw` ➔ `audit-tick-price-drift` |
+| Nghi ngờ giá sổ lệnh sai | `recon-topprice` ➔ `audit-topprice-value-drift` |
 | Kiểm tra giá NULL/invalid | `audit-null-invalid-ticks` |
-| Kiểm tra mã niêm yết | `recon-missing-symbols` → `audit-null-security-def` |
-| Kiểm tra nến OHLC | `recon-ohlc` → `audit-ohlc-gap` |
+| Kiểm tra mã niêm yết | `recon-missing-symbols` ➔ `audit-null-security-def` |
+| Kiểm tra nến OHLC | `recon-ohlc` ➔ `audit-ohlc-gap` |
 | Phát hiện bản ghi trùng | `audit-duplicate-ticks` / `audit-duplicate-top-prices` |
-| Phát hiện ghi DB muộn | `audit-late-ticks` → `audit-late-write-after-session` |
+| Phát hiện ghi DB muộn | `audit-late-ticks` ➔ `audit-late-write-after-session` |
 | Phân tích tốc độ ingestion | `audit-ingestion-rate` |
 | Phát hiện clock skew | `audit-clock-skew` |
 | Kiểm tra ATO/ATC | `recon-expected-price` |
 | Kiểm tra chỉ số thị trường | `recon-indices` |
-| Kiểm tra cờ phiên giao dịch | `recon-board-events` → `recon-symbol-board-events` |
+| Kiểm tra cờ phiên giao dịch | `recon-board-events` ➔ `recon-symbol-board-events` |
 | Kiểm tra khối ngoại | `recon-foreign-trading` |
 | Kiểm tra side mua/bán | `recon-ticks-extra` |
 
@@ -389,3 +396,26 @@ Bảng `krx_mdds_v3_ticks` lưu `board_id` đã gộp (không phải raw từ S�
 
 > [!NOTE]
 > Query đối chiếu theo board_id dùng giá trị đã gộp (G1, T1, T4, G4) — KHÔNG filter theo board raw của Sở (G7, G3, T2, T3, T6).
+
+---
+
+## Những lời Biện minh Thường gặp (Common Rationalizations)
+
+| Biện minh | Thực tế |
+|---|---|
+| "Dữ liệu hôm nay nhìn bình thường trên bảng giá, khỏi cần recon" | Bảng giá frontend thường chỉ hiển thị tick mới nhất, không phản ánh việc mất tick ở giữa phiên hoặc trễ ghi DB. |
+| "Query thẳng vào cột created_at cho nhanh, không cần sending_time" | TimescaleDB partition theo `sending_time`. Quên filter partition key sẽ kích hoạt Seq Scan toàn bộ các chunk gây sập database Prod. |
+| "Chạy INSERT/UPDATE tạm để fix giá sai" | Vi phạm tuyệt đối Zero-Mutation Policy. Mọi sửa đổi phải qua pipeline chính thức, reconciler chỉ là công cụ READ-ONLY. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- Chạy query không có mệnh đề `WHERE sending_time >= ...` trên bảng TimescaleDB.
+- Xuất hiện câu lệnh ghi (INSERT, UPDATE, DELETE) trong catalog query.
+- Bỏ qua EXPLAIN check trước khi chạy các query quét sâu vào `created_at`.
+- Quên đặt giới hạn LIMIT cho các câu query audit lỗi.
+
+## Xác minh (Verification)
+
+- [ ] 100% câu query trong catalog tuân thủ Read-Only và Partition-First.
+- [ ] Báo cáo markdown tổng kết đầy đủ số lượng và tỷ lệ sai lệch cho 11 topic.
+- [ ] Bất kỳ sai lệch (drift) nào vượt ngưỡng đều có log ID và timestamp cụ thể để bàn giao data engineer.

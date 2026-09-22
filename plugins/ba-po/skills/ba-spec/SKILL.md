@@ -6,7 +6,20 @@ trigger: "/ba-spec {issueKey}", "import jira", "/ba-spec confluence {keyword}"
 
 # Kỹ năng Phân Tích & Viết Spec (ba-spec)
 
+## Tổng quan (Overview)
+
 Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải references → Phân tích đa nguồn theo Profile → Phỏng vấn làm rõ gaps → Tổng hợp Business-Spec (`final.md`) chuẩn 13 sections làm Single Source of Truth cho QA và DEV.
+
+## Khi nào sử dụng (When to Use)
+
+- Khi cần phân tích một Jira Issue lần đầu tiên để bàn giao cho QA và DEV.
+- Khi cần import và tổng hợp tài liệu yêu cầu từ Confluence theo từ khóa hoặc đường dẫn.
+- Khi cần làm rõ các điểm thiếu, mơ hồ, xung đột nghiệp vụ trước khi triển khai kỹ thuật.
+
+**Không sử dụng khi:**
+- Jira chỉ có ý tưởng sơ khai cần brainstorm phân kỳ/hội tụ → dùng `ba-refine`.
+- Chỉ có mã nguồn backend không có tài liệu → dùng `qa-code2spec`.
+- Cần viết Tech-Spec kiến trúc/API/DB → việc của DEV (`dev-spec-driven-development`).
 
 ## ⚠️ RANH GIỚI NHIỆM VỤ (Bắt buộc đọc trước)
 
@@ -121,6 +134,31 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 - **Completeness:** 95% | **Certainty:** 95% | **Overall Confidence:** **95%**
 - **Blockers:** Không có. Sẵn sàng bàn giao cho `/qa-test-design G3PTP-16584`.
 ```
+
+---
+
+## Những lời Biện minh Thường gặp (Common Rationalizations)
+
+| Biện minh | Thực tế |
+|---|---|
+| "Jira mô tả ngắn gọn đủ rồi, cần gì tải tài liệu đính kèm" | 70% nghiệp vụ chi tiết và logic biên nằm trong file đính kèm hoặc trang Confluence liên kết. Bỏ qua sẽ gây thiếu sót nghiêm trọng. |
+| "Cứ viết spec đại đi rồi dev hỏi sau" | Chi phí sửa bug nghiệp vụ ở giai đoạn code/test đắt gấp 10 lần so với làm rõ ngay tại spec. Phải đạt Confidence >= 90% trước khi bàn giao. |
+| "Tự suy đoán logic cho nhanh, khỏi phỏng vấn" | Tự đoán yêu cầu dẫn đến sai lệch nghiệp vụ. Bắt buộc dùng `ba-interview-me` để xác thực giả định với user. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- Tự ý tải file đính kèm mà chưa qua Gate 1 (chờ user duyệt bảng tài liệu).
+- Bỏ qua việc đọc tài liệu tham chiếu đính kèm hoặc đọc lướt qua MCP summary.
+- Tự ý đoán yêu cầu thay vì phỏng vấn từng câu một qua `ba-interview-me`.
+- Bỏ trống các section trong template chuẩn 13 sections của `*-final.md`.
+- Dừng lại hỏi user "có tiếp tục sang QA không" thay vì tự động chuyển tiếp theo quy trình tự chủ.
+
+## Xác minh (Verification)
+
+- [ ] File `workspace/{issueKey}/spec/{issueKey}-final.md` đã được tạo đầy đủ 13 sections chuẩn.
+- [ ] Mọi Business Rules đều có ID truy vết (`[BR-01]`, `[BR-02]...`).
+- [ ] Acceptance Criteria được viết theo dạng kiểm thử được (Rule-based).
+- [ ] Đã chạy phỏng vấn đạt Confidence Score >= 90%.
 
 ---
 <CRITICAL_RULE>

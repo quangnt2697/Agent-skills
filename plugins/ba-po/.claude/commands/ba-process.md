@@ -1,5 +1,5 @@
 ---
-description: "[BA/PO] Vẽ Business Process diagram (BPMN, flowchart, swim lane) để visualize quy trình nghiệp vụ. Identify actors, activities, decision points, start/end. Generate Mermaid diagram."
+description: "[BA/PO] Vẽ Business Process diagram (BPMN, flowchart, swim lane) để visualize quy trình nghiệp vụ. Identify actors, activities, decision points, start/end. Generate Editorial HTML/SVG diagram."
 ---
 
 **Persona:** BA/PO (Business Analyst / Product Owner)
@@ -29,8 +29,8 @@ $ARGUMENTS có thể chứa:
    - **Swim Lane** (Multi-Actor): 3+ actors, cross-functional, nhiều handoffs
    - **BPMN** (Formal): Standard notation, compliance documentation
 
-4. **Create Diagram** (Mermaid Syntax):
-   - Generate Mermaid flowchart code
+4. **Create Diagram** (Editorial HTML/SVG):
+   - Generate Editorial HTML flowchart code
    - Swim lanes: Use `subgraph` cho từng actor
    - Annotations: Pain points (🐢 slow, ⚠️ error), metrics (⏱️ time)
    - Colors: Red = bottleneck, Orange = medium issue, Green = improvement
@@ -47,41 +47,15 @@ $ARGUMENTS có thể chứa:
 **Diagram Types:**
 
 ### Type 1: Flowchart (Simple)
-```markdown
-```mermaid
-flowchart TD
-    Start([Khách hàng muốn đặt lệnh])
-    A[Gọi điện]
-    B[Broker ghi sổ tay]
-    C{Đủ margin?}
-    D[Gửi lên sàn]
-    End([Success])
-    
-    Start --> A --> B --> C
-    C -->|Yes| D --> End
-```
-```
-
+Tuân theo chuẩn Editorial HTML/inline SVG (`plugins/ba-po/skills/ba-design-flowchart/SKILL.md`):
+- 1-2 actors, tiến trình tuyến tính, 0-1 điểm quyết định.
+- Cấu trúc: File HTML tự chứa (self-contained), SVG inline với các phần tử `<rect>`, `<path>`, `<text>`.
+- 1-2 focal nodes mang màu accent/coral (`#eb6c36`), các node thường mang màu ink/neutral.
 
 ### Type 2: Swim Lane (Multi-Actor)
-```markdown
-```mermaid
-flowchart TD
-    subgraph KH["🧑 Khách hàng"]
-        Start([Muốn đặt lệnh])
-    end
-    
-    subgraph Broker["👨‍💼 Broker"]
-        B1["Nhập HO<br/>🐢 3-5 phút"]
-    end
-    
-    subgraph HO["🖥️ Hệ thống"]
-        C1{Kiểm tra margin}
-    end
-    
-    Start -.-> B1 -.-> C1 --> End([✅ Success])
-```
-```
+- Phân chia các swim lanes theo từng Actor (Khách hàng, Broker, Hệ thống OMS/Core).
+- Handoff giữa các Actor được nối bằng connector SVG rõ ràng.
+- Gắn nhãn thời lượng hoặc pain points trực quan.
 
 
 ### Type 3: BPMN Elements
@@ -118,4 +92,4 @@ flowchart TD
 - Annotate pain points với colors/icons — Visual impact cao hơn text
 - Validate diagram với stakeholders — Ensure accuracy trước khi finalize
 
-LƯU Ý: Tất cả labels trong diagram phải bằng TIẾNG VIỆT (trừ keywords Mermaid như `flowchart`, `subgraph`).
+LƯU Ý: Tất cả labels trong diagram phải bằng TIẾNG VIỆT.
