@@ -1,6 +1,8 @@
-const { execSync } = require('child_process');
+const { exec } = require('child_process');
+const util = require('util');
 const fs = require('fs');
 const path = require('path');
+const execAsync = util.promisify(exec);
 
 const input = $input.first();
 const issueKey = (input.json.issueKey || '').toUpperCase();
@@ -139,11 +141,11 @@ const quotedFiles = matchedFiles.map(f => '"' + f.replace(/"/g, '\\"') + '"').jo
 const command = 'pytest ' + quotedFiles + ' -v --tb=short -o python_files="test*.py *test.py test-*.py *-test.py test_*.py *_test.py"';
 
 try {
-  const result = execSync(command, { encoding: 'utf-8', cwd: cwd, timeout: 120000 });
+  const result = await execAsync(command, { encoding: 'utf-8', cwd: cwd, timeout: 120000 });
   return [{
     json: {
-      stdout: result,
-      stderr: '',
+      stdout: result.stdout || '',
+      stderr: result.stderr || '',
       exitCode: 0,
       project: project,
       issueKey: issueKey
@@ -154,7 +156,7 @@ try {
     json: {
       stdout: err.stdout || '',
       stderr: err.stderr || err.message,
-      exitCode: err.status || 1,
+      exitCode: err.code !== undefined ? err.code : (err.status || 1),
       error: { message: err.message },
       project: project,
       issueKey: issueKey

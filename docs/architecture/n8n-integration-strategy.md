@@ -28,7 +28,7 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 |---|:---:|:---:|---|---|---|
 | `/webhook/jira-prep` | `POST` | BA/PO | Lấy tóm tắt và mô tả Jira sạch (bỏ ADF rác) | `{"issueKey": "G3PTP-17396"}` | `{"issueKey", "summary", "status", "assignee", "descriptionSnippet"}` |
 | `/webhook/squash-batch` | `POST` | QA | Đẩy hàng loạt Test Cases & Gherkin lên Squash TM | `{"baseUrl", "apiToken", "folderId", "testCases": [...]}` | `{"status": "success", "importedCount": 15}` |
-| `/webhook/qa-async-test` | `POST` | QA | Kích hoạt bộ test chạy ngầm (Non-blocking) | `{"issueKey": "...", "testCommand": "pytest ..."}` | `{"jobId": "...", "status": "queued"}` |
+| `/webhook/qa-run-test` | `POST` | QA | Kích hoạt bộ test chạy ngầm (Non-blocking) | `{"issueKey": "...", "testCommand": "pytest ..."}` | `{"jobId": "...", "status": "queued"}` |
 | `/webhook/sm-standup` | `POST` | Scrum Master | Lấy báo cáo Standup và đẩy thẳng qua Mattermost | `{}` | `{"reportText", "totalIssues", "stuckCount"}` |
 
 ---

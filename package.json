@@ -36,7 +36,8 @@
     "n8n:logs": "pm2 logs n8n-agent-skills",
     "n8n:import": "n8n import:workflow --separate --input=n8n-workflows/",
     "n8n:export": "n8n export:workflow --all --separate --output=n8n-workflows/",
-    "n8n:clean": "node scripts/n8n-clean-workflows.js"
+    "n8n:clean": "node scripts/n8n-clean-workflows.js",
+    "n8n:sync-nodes": "node scripts/sync-n8n-nodes.js"
   },
   "engines": {
     "node": ">=20"

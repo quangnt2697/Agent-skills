@@ -144,7 +144,7 @@ export async function getStandupReport() {
  * @returns {Promise<object>}
  */
 export async function triggerAsyncTest(params) {
-  return await callN8nWebhook('qa-async-test', params);
+  return await callN8nWebhook('qa-run-test', params);
 }
 
 // ── CLI ENTRYPOINT (Chống sai lệch kiến trúc) ──────────────────────────────
