@@ -3,9 +3,8 @@ const response = (input && input.json) || {};
 const webhookJson = $('Webhook (Mattermost Slash Command)').first()?.json || {};
 const webhookBody = webhookJson.body || webhookJson;
 const originalText = webhookBody.text || '';
-const userName = webhookBody.user_name || '';
 
-function buildAckMessage(intent, params, rawText, user) {
+function buildAckMessage(intent, params, rawText) {
   if (intent === 'help') return '';
   const intentDescriptions = {
     'run-test': `chạy kiểm thử tự động (Pytest) cho ${params?.project ? ('`' + params.project + '` / ') : ''}ticket **${params?.issueKey || 'được yêu cầu'}**`,
@@ -17,10 +16,9 @@ function buildAckMessage(intent, params, rawText, user) {
   };
 
   const actionText = intentDescriptions[intent] || 'thực thi tác vụ';
-  const userTag = user ? `@${user}` : 'bạn';
   const cleanCmd = (rawText || '').trim();
 
-  return `⏳ **[Agent System]** Đã tiếp nhận lệnh \`/agent ${cleanCmd}\` từ ${userTag}.\n> ⚙️ Hệ thống đang tiến hành **${actionText}**. Quá trình có thể mất từ vài giây đến một phút tùy độ lớn tác vụ, kết quả chi tiết sẽ được gửi tại đây ngay khi hoàn tất. Vui lòng an tâm đợi!`;
+  return `⏳ **[Agent System]** Đã tiếp nhận lệnh \`/agent ${cleanCmd}\`.\n> ⚙️ Hệ thống đang tiến hành **${actionText}** ...`;
 }
 
 // ── Hàm bóc tách lệnh theo cú pháp: /agent [project hoặc group] [skill-name] [issueKey] ──
