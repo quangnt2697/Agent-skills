@@ -174,3 +174,39 @@ test('Mattermost Router Command Parser: handles various command syntaxes', () =>
   const r5 = parseCommand('');
   assert.equal(r5.intent, 'help');
 });
+
+test('Mattermost Router ACK Message Builder: constructs appropriate notifications', () => {
+  function buildAckMessage(intent, params, rawText, user) {
+    if (intent === 'help') return '';
+    const intentDescriptions = {
+      'run-test': `chạy kiểm thử tự động (Pytest) cho ${params?.project ? ('`' + params.project + '` / ') : ''}ticket **${params?.issueKey || 'được yêu cầu'}**`,
+      'standup': 'tổng hợp báo cáo **Daily Standup Sprint** và phân tích impediments (>3 ngày)',
+      'recon': 'đối chiếu dữ liệu thị trường **KRX MDDS TimescaleDB** (Ticks v3)',
+      'jira': `tra cứu và làm sạch thông tin vé Jira **${params?.issueKey || ''}**`,
+      'sync': `đồng bộ mã nguồn mới nhất cho ${params?.project ? ('repo `' + params.project + '`') : 'toàn bộ group microservices'}`,
+      'squash': 'đẩy danh sách test cases lên **Squash TM**'
+    };
+
+    const actionText = intentDescriptions[intent] || 'thực thi tác vụ';
+    const userTag = user ? `@${user}` : 'bạn';
+    const cleanCmd = (rawText || '').trim();
+
+    return `⏳ **[Agent System]** Đã tiếp nhận lệnh \`/agent ${cleanCmd}\` từ ${userTag}.\n> ⚙️ Hệ thống đang tiến hành **${actionText}**. Quá trình có thể mất từ vài giây đến một phút tùy độ lớn tác vụ, kết quả chi tiết sẽ được gửi tại đây ngay khi hoàn tất. Vui lòng an tâm đợi!`;
+  }
+
+  // Case 1: Run test ACK
+  const ackRunTest = buildAckMessage('run-test', { issueKey: 'G3PTP-17059', project: 'my-project' }, 'my-project run-test G3PTP-17059', 'quangnt');
+  assert.ok(ackRunTest.includes('@quangnt'));
+  assert.ok(ackRunTest.includes('G3PTP-17059'));
+  assert.ok(ackRunTest.includes('chạy kiểm thử tự động (Pytest)'));
+  assert.ok(ackRunTest.includes('⏳ **[Agent System]**'));
+
+  // Case 2: Standup ACK
+  const ackStandup = buildAckMessage('standup', {}, 'standup', 'lannt');
+  assert.ok(ackStandup.includes('@lannt'));
+  assert.ok(ackStandup.includes('Daily Standup Sprint'));
+
+  // Case 3: Help should return empty (no ACK needed)
+  const ackHelp = buildAckMessage('help', {}, 'help', 'quangnt');
+  assert.equal(ackHelp, '');
+});

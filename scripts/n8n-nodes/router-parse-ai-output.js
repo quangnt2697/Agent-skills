@@ -1,6 +1,27 @@
 const input = $input.first();
 const response = (input && input.json) || {};
-const originalText = $('Webhook (Mattermost Slash Command)').first()?.json?.body?.text || '';
+const webhookJson = $('Webhook (Mattermost Slash Command)').first()?.json || {};
+const webhookBody = webhookJson.body || webhookJson;
+const originalText = webhookBody.text || '';
+const userName = webhookBody.user_name || '';
+
+function buildAckMessage(intent, params, rawText, user) {
+  if (intent === 'help') return '';
+  const intentDescriptions = {
+    'run-test': `chạy kiểm thử tự động (Pytest) cho ${params?.project ? ('`' + params.project + '` / ') : ''}ticket **${params?.issueKey || 'được yêu cầu'}**`,
+    'standup': 'tổng hợp báo cáo **Daily Standup Sprint** và phân tích impediments (>3 ngày)',
+    'recon': 'đối chiếu dữ liệu thị trường **KRX MDDS TimescaleDB** (Ticks v3)',
+    'jira': `tra cứu và làm sạch thông tin vé Jira **${params?.issueKey || ''}**`,
+    'sync': `đồng bộ mã nguồn mới nhất cho ${params?.project ? ('repo `' + params.project + '`') : 'toàn bộ group microservices'}`,
+    'squash': 'đẩy danh sách test cases lên **Squash TM**'
+  };
+
+  const actionText = intentDescriptions[intent] || 'thực thi tác vụ';
+  const userTag = user ? `@${user}` : 'bạn';
+  const cleanCmd = (rawText || '').trim();
+
+  return `⏳ **[Agent System]** Đã tiếp nhận lệnh \`/agent ${cleanCmd}\` từ ${userTag}.\n> ⚙️ Hệ thống đang tiến hành **${actionText}**. Quá trình có thể mất từ vài giây đến một phút tùy độ lớn tác vụ, kết quả chi tiết sẽ được gửi tại đây ngay khi hoàn tất. Vui lòng an tâm đợi!`;
+}
 
 // ── Hàm bóc tách lệnh theo cú pháp: /agent [project hoặc group] [skill-name] [issueKey] ──
 function parseCommand(text) {
@@ -136,7 +157,16 @@ const parsedFallback = parseCommand(originalText);
 
 // Nếu Gemini API gặp lỗi
 if (response.error || (response.status && response.status >= 400)) {
-  return [{ json: { ...parsedFallback, _geminiError: response.error?.message || 'Lỗi Gemini API' } }];
+  const ackMessage = buildAckMessage(parsedFallback.intent, parsedFallback.params, originalText, userName);
+  return [{
+    json: {
+      ...parsedFallback,
+      userName: userName,
+      originalCommand: originalText,
+      ackMessage: ackMessage,
+      _geminiError: response.error?.message || 'Lỗi Gemini API'
+    }
+  }];
 }
 
 try {
@@ -165,7 +195,23 @@ try {
     data.params.skill = parsedFallback.params.skill;
   }
   
-  return [{ json: data }];
+  const ackMessage = buildAckMessage(data.intent, data.params, originalText, userName);
+  return [{
+    json: {
+      ...data,
+      userName: userName,
+      originalCommand: originalText,
+      ackMessage: ackMessage
+    }
+  }];
 } catch(e) {
-  return [{ json: parsedFallback }];
+  const ackMessage = buildAckMessage(parsedFallback.intent, parsedFallback.params, originalText, userName);
+  return [{
+    json: {
+      ...parsedFallback,
+      userName: userName,
+      originalCommand: originalText,
+      ackMessage: ackMessage
+    }
+  }];
 }
