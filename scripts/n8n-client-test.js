@@ -220,7 +220,9 @@ test('Mattermost Router ACK Message Builder: constructs appropriate notification
 });
 
 test('Watchdog Query Builder: generates correct pre-trading definition & reset SQL', () => {
-  const scriptContent = fs.readFileSync(path.join(__dirname, 'n8n-nodes', 'watchdog-prepare-query.js'), 'utf-8');
+  const step1 = fs.readFileSync(path.join(__dirname, 'n8n-nodes', 'watchdog-prepare-query.js'), 'utf-8');
+  const step2 = fs.readFileSync(path.join(__dirname, 'n8n-nodes', 'watchdog-prepare-query-realtime.js'), 'utf-8');
+  const scriptContent = step1 + '\n' + step2;
   assert.ok(scriptContent.includes('security_definition_v3'));
   assert.ok(scriptContent.includes('krx_mdds_v2_stock_infos'));
   assert.ok(scriptContent.includes('basic_price'));

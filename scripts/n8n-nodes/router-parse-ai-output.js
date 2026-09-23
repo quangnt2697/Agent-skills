@@ -4,6 +4,8 @@ const webhookJson = $('Webhook (Mattermost Slash Command)').first()?.json || {};
 const webhookBody = webhookJson.body || webhookJson;
 const originalText = webhookBody.text || '';
 const userName = webhookBody.user_name || webhookBody.userName || 'User';
+const responseUrl = webhookBody.response_url || webhookJson.response_url || '';
+const channelId = webhookBody.channel_id || webhookJson.channel_id || '';
 
 function buildAckMessage(intent, params, rawText) {
   if (intent === 'help') return '';
@@ -223,6 +225,8 @@ if (response.error || (response.status && response.status >= 400)) {
       userName: userName,
       originalCommand: originalText,
       ackMessage: ackMessage,
+      response_url: responseUrl,
+      channel_id: channelId,
       _geminiError: response.error?.message || 'Lỗi Gemini API'
     }
   }];
@@ -265,7 +269,9 @@ try {
       ...data,
       userName: userName,
       originalCommand: originalText,
-      ackMessage: ackMessage
+      ackMessage: ackMessage,
+      response_url: responseUrl,
+      channel_id: channelId
     }
   }];
 } catch(e) {
@@ -275,7 +281,9 @@ try {
       ...parsedFallback,
       userName: userName,
       originalCommand: originalText,
-      ackMessage: ackMessage
+      ackMessage: ackMessage,
+      response_url: responseUrl,
+      channel_id: channelId
     }
   }];
 }

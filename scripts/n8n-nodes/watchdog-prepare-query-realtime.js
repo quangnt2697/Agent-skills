@@ -112,6 +112,6 @@ return [{
     environment: 'prod',
     maxRows: 10,
     checkStep: 'step2_realtime_clear',
-    checkTime: '08:30:00 ICT'
+    checkTime: '08:20:00 ICT'
   }
 }];

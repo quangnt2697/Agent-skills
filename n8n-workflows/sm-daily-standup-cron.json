@@ -52,7 +52,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\nconst body = json.body || json;\n\n// Fix: Detect trigger source dựa vào cấu trúc payload (không dùng try/catch node check)\nlet triggerSource = 'cron';\nif (json.headers || (json.body && typeof json.body === 'object')) {\n  triggerSource = 'webhook';\n} else if (json._triggerSource) {\n  triggerSource = json._triggerSource;\n} else if (json.params || json.issueKey || json.project) {\n  triggerSource = 'mattermost';\n}\n\nconst baseUrl = (body.baseUrl || json.baseUrl || ($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst email = ($env && $env.ATLASSIAN_EMAIL) || '';\nconst token = ($env && $env.ATLASSIAN_API_TOKEN) || '';\nconst authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');\n\n// Fix: Thêm customfield_10016 (Story Points), customfield_10020 (Sprint) và maxResults=100\nconst fields = 'summary,status,assignee,priority,updated,customfield_10016,customfield_10020';\nconst jql = encodeURIComponent('sprint in openSprints() AND statusCategory != Done ORDER BY assignee');\nconst searchUrl = `${baseUrl}/rest/api/3/search?jql=${jql}&fields=${fields}&maxResults=100`;\n\nreturn [{\n  json: {\n    baseUrl,\n    authHeader,\n    searchUrl,\n    _triggerSource: triggerSource\n  }\n}];\n"
+        "jsCode": "const input = $input.first();\nconst json = (input && input.json) || {};\nconst body = json.body || json;\n\nlet triggerSource = 'mattermost';\ntry {\n  if ($('Webhook Trigger (sm-standup)').first()) {\n    triggerSource = 'webhook';\n  }\n} catch (e) {\n  triggerSource = 'mattermost';\n}\n\nconst baseUrl = (body.baseUrl || json.baseUrl || ($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst email = ($env && $env.ATLASSIAN_EMAIL) || '';\nconst token = ($env && $env.ATLASSIAN_API_TOKEN) || '';\nconst authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');\nconst searchUrl = `${baseUrl}/rest/api/3/search?jql=sprint%20in%20openSprints()%20AND%20statusCategory%20!=%20Done&fields=summary,status,assignee,priority,updated`;\n\nreturn [{\n  json: {\n    baseUrl,\n    authHeader,\n    searchUrl,\n    _triggerSource: triggerSource\n  }\n}];\n"
       },
       "id": "prep-standup",
       "name": "Prepare Standup Request",
@@ -247,5 +247,9 @@
         ]
       ]
     }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Ho_Chi_Minh"
   }
 }

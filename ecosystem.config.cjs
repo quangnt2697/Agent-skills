@@ -26,7 +26,12 @@ module.exports = {
         N8N_RUNNERS_MODE: 'internal',
         N8N_RUNNERS_TASK_REQUEST_TIMEOUT: '60',
         NODE_FUNCTION_ALLOW_BUILTIN: '*',
-        NODE_FUNCTION_ALLOW_EXTERNAL: '*'
+        NODE_FUNCTION_ALLOW_EXTERNAL: '*',
+        // ── Múi Giờ Việt Nam ──────────────────────────────────────────────────
+        // GENERIC_TIMEZONE: n8n dùng để tính lịch cron (Schedule Trigger)
+        // TZ: Node.js process dùng để hiển thị time trong log và new Date()
+        GENERIC_TIMEZONE: process.env.GENERIC_TIMEZONE || 'Asia/Ho_Chi_Minh',
+        TZ: process.env.TZ || 'Asia/Ho_Chi_Minh'
       },
       watch: false,
       autorestart: true,

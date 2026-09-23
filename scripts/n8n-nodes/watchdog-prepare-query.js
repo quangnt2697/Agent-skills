@@ -94,7 +94,7 @@ return [{
     environment: 'prod',
     maxRows: 10,
     checkStep: 'step1_sec_def_v3',
-    checkTime: '08:30:00 ICT',
+    checkTime: '08:20:00 ICT',
     _triggerSource: triggerSource
   }
 }];

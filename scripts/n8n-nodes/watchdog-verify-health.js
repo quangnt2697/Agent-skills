@@ -82,7 +82,7 @@ if (missingSteps.length === 2) {
   // Cả 2 đều lỗi — có thể Metabase timeout hoàn toàn
   const firstItem = allInputs[0] || {};
   const errMsg = firstItem.reportText || firstItem.message || 'Không nhận được response từ Metabase';
-  const alertMsg = `🚨 **[MDDS PRODUCTION LỖI 08:30 AM]** Không thể truy vấn Metabase Production:\n> ${errMsg}\n\n*👉 Hãy kiểm tra kết nối TimescaleDB hoặc chạy SSO login nếu session token hết hạn.*`;
+  const alertMsg = `🚨 **[MDDS PRODUCTION LỖI 08:20 AM]** Không thể truy vấn Metabase Production:\n> ${errMsg}\n\n*👉 Hãy kiểm tra kết nối TimescaleDB hoặc chạy SSO login nếu session token hết hạn.*`;
   return [{
     json: {
       environment: 'PRODUCTION',
@@ -105,7 +105,7 @@ const uncleanSamples = Array.isArray(step2Data && step2Data.unclean_samples) ? s
 
 // ── 5. Kiểm tra bảng security_definition_v3 rỗng ─────────────────────────────
 if (totalScanned === 0 && step1Data) {
-  const emptyAlert = `🚨 **[MDDS PRODUCTION KHẨN CẤP 08:30 AM] Bảng \`security_definition_v3\` CHƯA CÓ DỮ LIỆU!**\n\n` +
+  const emptyAlert = `🚨 **[MDDS PRODUCTION KHẨN CẤP 08:20 AM] Bảng \`security_definition_v3\` CHƯA CÓ DỮ LIỆU!**\n\n` +
     `- **Thời gian kiểm tra:** \`${dateStr} ${timeStr}\`\n` +
     `- **Trạng thái:** ❌ **0 bản ghi** được tìm thấy trên TimescaleDB Production.\n` +
     `- **Nguyên nhân tiềm ẩn:** Pipeline MDDS chưa nhận hoặc chưa nạp bản tin Security Definition (\`d\`) từ Sở KRX.\n` +
@@ -318,13 +318,13 @@ try {
 // ── 11. Định dạng thông báo Markdown gửi lên Mattermost ─────────────────────
 let msgTitle = '';
 if (isHealthy) {
-  msgTitle = `✅ **[MDDS PRODUCTION 08:30 AM] Dữ Liệu Security Definition V3 & Bảng Giá Đầu Ngày ỔN ĐỊNH**`;
+  msgTitle = `✅ **[MDDS PRODUCTION 08:20 AM] Dữ Liệu Security Definition V3 & Bảng Giá Đầu Ngày ỔN ĐỊNH**`;
 } else if (hasDataError && hasUncleanError) {
-  msgTitle = `🚨 **[CẢNH BÁO MDDS PRODUCTION 08:30 AM] Phát Hiện Mã THIẾU DỮ LIỆU BIÊN ĐỘ VÀ CHƯA CLEAR DỮ LIỆU REALTIME!**`;
+  msgTitle = `🚨 **[CẢNH BÁO MDDS PRODUCTION 08:20 AM] Phát Hiện Mã THIẾU DỮ LIỆU BIÊN ĐỘ VÀ CHƯA CLEAR DỮ LIỆU REALTIME!**`;
 } else if (hasDataError) {
-  msgTitle = `🚨 **[CẢNH BÁO MDDS PRODUCTION 08:30 AM] Phát Hiện ${invalidSymbolsAll} Mã CHỨNG KHOÁN THIẾU Dữ Liệu Trần/Sàn/TC/Board!**`;
+  msgTitle = `🚨 **[CẢNH BÁO MDDS PRODUCTION 08:20 AM] Phát Hiện ${invalidSymbolsAll} Mã CHỨNG KHOÁN THIẾU Dữ Liệu Trần/Sàn/TC/Board!**`;
 } else {
-  msgTitle = `⚠️ **[CẢNH BÁO MDDS PRODUCTION 08:30 AM] Phát Hiện ${uncleanCount} Mã CHƯA ĐƯỢC CLEAR Trường Realtime Đầu Ngày!**`;
+  msgTitle = `⚠️ **[CẢNH BÁO MDDS PRODUCTION 08:20 AM] Phát Hiện ${uncleanCount} Mã CHƯA ĐƯỢC CLEAR Trường Realtime Đầu Ngày!**`;
 }
 
 let reportMarkdown = `${msgTitle}\n${partialWarning}\n`;
