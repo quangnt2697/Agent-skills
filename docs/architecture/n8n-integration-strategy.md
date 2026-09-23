@@ -27,8 +27,13 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 | Endpoint | Method | Persona | Mục đích | Payload Input | Response Output |
 |---|:---:|:---:|---|---|---|
 | `/webhook/jira-prep` | `POST` | BA/PO | Lấy tóm tắt và mô tả Jira sạch (bỏ ADF rác) | `{"issueKey": "G3PTP-17396"}` | `{"issueKey", "summary", "status", "assignee", "descriptionSnippet"}` |
+| `/webhook/confluence-doc` | `POST` | BA/PO | Bóc tách Confluence Storage XHTML sang Markdown tinh gọn | `{"pageUrlOrId": "..."}` | `{"title", "version", "markdownContent", "stats"}` |
+| `/webhook/securities-fixture` | `POST` | QA | Lấy Test Fixtures chứng khoán 4 sàn từ security_definition_v3 | `{}` | `{"auth", "segments": {derivatives, hose, upcom, hnx}, "sampleOrders"}` |
 | `/webhook/squash-batch` | `POST` | QA | Đẩy hàng loạt Test Cases & Gherkin lên Squash TM | `{"baseUrl", "apiToken", "folderId", "testCases": [...]}` | `{"status": "success", "importedCount": 15}` |
 | `/webhook/qa-run-test` | `POST` | QA | Kích hoạt bộ test chạy ngầm (Non-blocking) | `{"issueKey": "...", "testCommand": "pytest ..."}` | `{"jobId": "...", "status": "queued"}` |
+| `/webhook/jira-ready-to-test` | `POST` | QA / ChatOps | Nhận Webhook Jira chuyển trạng thái Ready to Test, báo Mattermost | `{"issue": {...}, "changelog": {...}}` | `{"isReadyToTest", "gherkinBadge", "autoScriptBadge", "suggestedCommand"}` |
+| `/webhook/cr-diff-clean` | `POST` | Code Reviewer | Lọc bỏ lockfiles, minified bundle, phân tầng git diff | `{"rawDiff": "..."}` | `{"summary", "categorizedFiles", "cleanedDiffText"}` |
+| `/webhook/security-scan` | `POST` | Security | Quét ngầm npm audit và rà soát secrets rò rỉ | `{"projectPath": "..."}` | `{"securityStatus", "vulnerabilities", "scorecardMarkdown"}` |
 | `/webhook/sm-standup` | `POST` | Scrum Master | Lấy báo cáo Standup và đẩy thẳng qua Mattermost | `{}` | `{"reportText", "totalIssues", "stuckCount"}` |
 
 ---
@@ -39,26 +44,62 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 - **Tại Phase 0 (Scan & Lấy Metadata):**
   Trước khi chạy `curl` tải toàn bộ JSON Jira thô, Agent chạy đoạn mã tiện ích qua `scripts/lib/n8n-client.js`:
   ```javascript
-  import { isN8nAvailable, prepJiraContext } from './scripts/lib/n8n-client.js';
+  import { isN8nAvailable, prepJiraContext, fetchConfluenceDoc } from './scripts/lib/n8n-client.js';
 
   if (await isN8nAvailable()) {
     const cleanData = await prepJiraContext(issueKey);
     // cleanData đã được lọc sạch, nạp trực tiếp vào context!
+    if (confluenceUrl) {
+      const doc = await fetchConfluenceDoc(confluenceUrl);
+      // doc.markdownContent đã được dọn sạch XHTML/CSS!
+    }
   } else {
     // Fallback sang MCP hoặc curl như bình thường
   }
   ```
 - **Lợi ích:** Tiết kiệm 85% token và rút ngắn thời gian nạp dữ liệu từ 30s xuống 0.5s.
 
-### 3.2. Phân Hệ QA (`qa-squash-push` vs `batchSquashPush`)
+### 3.2. Phân Hệ QA (`qa-auto-design`, `qa-squash-push`, `qa-run-test`)
+- **Fast-Path Dữ liệu Chứng khoán:**
+  Trong bước chuẩn bị fixture của `qa-auto-design`:
+  ```javascript
+  import { getSecuritiesFixture } from './scripts/lib/n8n-client.js';
+
+  const fixtures = await getSecuritiesFixture();
+  // fixtures.segments.derivatives -> 41I1GA0000 (tự rollover khi đáo hạn)
+  // fixtures.segments.hose -> SHB (bước giá 50đ, lô 100)
+  // fixtures.segments.upcom -> OIL (biên độ 15%, bước giá 100đ)
+  // fixtures.segments.hnx -> SHS (biên độ 10%, bước giá 100đ)
+  // fixtures.auth -> Nạp sẵn API_KEY và API_SECRET từ .env!
+  ```
 - **⚠️ Ranh giới quan trọng:**
   - Lệnh `batchSquashPush` qua n8n **CHỈ** được thiết kế để tạo nhanh hàng loạt Test Case thô (Dumb Batch Creation) từ checklist, giúp tiết kiệm thời gian (đẩy 20 test cases chỉ mất 3-4 giây). Tuy nhiên, nó **KHÔNG** chứa logic dọn dẹp rác hay liên kết Campaign.
   - Kỹ năng `/qa-squash-push` (đẩy file kịch bản Gherkin hoàn chỉnh lên hệ thống) **BẮT BUỘC phải dùng Shell Script (Tier 3: `squash-push.sh`)**, tuyệt đối KHÔNG dùng n8n Fast-Path.
   - **Lý do:** Script Shell thực thi thông qua session cookie XSRF nội bộ của hệ thống Squash TM để dọn dẹp execution cũ, dò tìm Sprint mới nhất, và gán Campaign Workspace một cách an toàn nhất, đảm bảo tính toàn vẹn dữ liệu.
 
-### 3.3. Phân Hệ Scrum Master & ChatOps (Single Router Pattern)
+### 3.3. Phân Hệ Code Reviewer (`cr-review-code-and-quality`)
+- **Fast-Path Lọc sạch Git Diff:**
+  Trước khi đưa diff vào ngữ cảnh review:
+  ```javascript
+  import { cleanDiffForReview } from './scripts/lib/n8n-client.js';
+
+  const cleanDiff = await cleanDiffForReview(rawDiffText);
+  // Loại bỏ 100% lockfiles, assets, build artifacts; phân chia theo tầng Domain, API, Database, Tests.
+  ```
+
+### 3.4. Phân Hệ Security Auditor (`security-code-audit`)
+- **Fast-Path Quét Lỗ Hổng & Secret:**
+  ```javascript
+  import { runSecurityDigest } from './scripts/lib/n8n-client.js';
+
+  const digest = await runSecurityDigest(projectPath);
+  // Trích xuất CVEs High/Critical và cảnh báo rò rỉ secret nhạy cảm.
+  ```
+
+### 3.5. Phân Hệ Scrum Master & ChatOps (Single Router Pattern & Jira Ready-to-Test Notifier)
 Hệ thống sử dụng **Mattermost** làm giao diện tương tác duy nhất (Single Entry Point):
 - **Tự động hóa Standup:** Cron workflow trên n8n kích hoạt lúc 08:30 sáng, phân tích vé Jira kẹt > 3 ngày và đẩy báo cáo Markdown vào kênh Mattermost qua Incoming Webhook.
+- **Jira Ready to Test Notifier:** Lắng nghe Webhook Jira, lọc task Board G.3.1 trong Active Sprint chuyển sang Ready to test, quét workspace local báo `✅/❌ Gherkin file` và `✅/❌ Autoscript test`, gửi card `### 🎯 READY TO TEST` kèm gợi ý lệnh lên Mattermost.
 - **Single Router (Lệnh `/agent`):** Khai báo duy nhất một Slash Command `/agent` trên Mattermost. n8n đóng vai trò là Router, hứng toàn bộ payload text, cắt chuỗi và gọi đúng Agent Skill cục bộ thay vì phải cấu hình hàng chục lệnh nhỏ nhặt.
 
 ---

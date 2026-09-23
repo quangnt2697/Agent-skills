@@ -1,0 +1,101 @@
+{
+  "name": "AgentSkills - CR Diff Cleaner",
+  "id": "CRDiffCleaner001",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-execute",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cr-diff-clean",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-webhook",
+      "name": "Webhook Trigger (cr-diff-clean)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        420
+      ],
+      "webhookId": "cr-diff-clean"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: CR Filter Diff (`scripts/n8n-nodes/cr-filter-diff.js`)\n *\n * Mục đích (WF-07):\n * - Tiền xử lý (preprocess) git diff thô trước khi đưa vào Agent Code Review (`cr-review-code-and-quality`).\n * - Loại bỏ 100% file rác (lockfiles, minified bundle, sourcemaps, SVG, ảnh, dist/, build/).\n * - Phân nhóm các thay đổi thành 5 tầng kiến trúc (Domain, API, Database, Config, Test).\n * - Áp trần (cap) các file quá lớn (>500 dòng) để chống tràn ngữ cảnh và ảo giác.\n * - KHÔNG gửi Mattermost — trả về diff ngữ nghĩa thuần túy cho agent skill.\n */\n\nconst input = $input.first();\nconst json = (input && input.json) || {};\nconst body = json.body || json;\n\nconst rawDiff = body.rawDiff || body.gitDiffText || body.diff || '';\nconst maxLinesPerFile = parseInt(body.maxLinesPerFile || '500', 10);\n\nif (!rawDiff || typeof rawDiff !== 'string') {\n  return [{\n    json: {\n      isError: true,\n      message: 'Không tìm thấy nội dung git diff thô (rawDiff).',\n      filteredDiff: '',\n      summary: { totalFiles: 0, additions: 0, deletions: 0 }\n    }\n  }];\n}\n\n// 1. Danh sách mẫu file rác (Denylist patterns)\nconst NOISE_PATTERNS = [\n  /package-lock\\.json$/i,\n  /pnpm-lock\\.yaml$/i,\n  /yarn\\.lock$/i,\n  /poetry\\.lock$/i,\n  /Cargo\\.lock$/i,\n  /Gemfile\\.lock$/i,\n  /\\.min\\.(js|css)$/i,\n  /\\.map$/i,\n  /\\.(svg|png|jpg|jpeg|gif|webp|ico)$/i,\n  /\\.(woff|woff2|eot|ttf|otf)$/i,\n  /\\.(mp3|mp4|wav|webm)$/i,\n  /\\.(pdf|zip|tar|gz)$/i,\n  /(^|\\/)(dist|build|out|\\.next|\\.nuxt|coverage|\\.turbo)\\//i\n];\n\nfunction isNoiseFile(filePath) {\n  if (!filePath) return false;\n  return NOISE_PATTERNS.some(pattern => pattern.test(filePath));\n}\n\n// 2. Phân loại file theo tầng kiến trúc\nfunction classifyFile(filePath) {\n  const p = filePath.toLowerCase();\n  if (p.includes('test') || p.includes('spec') || p.includes('__tests__') || p.endsWith('_test.go') || p.endsWith('_test.py')) {\n    return 'tests';\n  }\n  if (p.includes('migration') || p.includes('schema') || p.includes('entity') || p.includes('model') || p.includes('repository') || p.includes('dao') || p.endsWith('.sql')) {\n    return 'database_migrations';\n  }\n  if (p.includes('api') || p.includes('controller') || p.includes('route') || p.includes('handler') || p.includes('endpoint') || p.includes('grpc')) {\n    return 'api_endpoints';\n  }\n  if (p.includes('docker') || p.includes('k8s') || p.includes('.env') || p.includes('config') || p.endsWith('.yaml') || p.endsWith('.yml') || p.endsWith('.toml')) {\n    return 'config_infra';\n  }\n  if (p.includes('service') || p.includes('domain') || p.includes('core') || p.includes('logic') || p.includes('usecase') || p.includes('util') || p.includes('lib')) {\n    return 'core_domain';\n  }\n  return 'other';\n}\n\n// 3. Tách diff thành các file chunks\nconst fileChunks = rawDiff.split(/^diff --git /m);\nif (fileChunks.length > 0 && !fileChunks[0].trim()) {\n  fileChunks.shift(); // Bỏ phần rỗng đầu tiên\n}\n\nlet totalAdditions = 0;\nlet totalDeletions = 0;\nlet filteredCount = 0;\nlet keptCount = 0;\n\nconst categorized = {\n  core_domain: [],\n  api_endpoints: [],\n  database_migrations: [],\n  config_infra: [],\n  tests: [],\n  other: []\n};\n\nconst processedDiffParts = [];\n\nfor (const rawChunk of fileChunks) {\n  const fullChunk = 'diff --git ' + rawChunk;\n  const lines = fullChunk.split('\\n');\n  const headerLine = lines[0] || '';\n\n  // Bóc tách tên file: diff --git a/path/to/file b/path/to/file\n  const pathMatch = headerLine.match(/a\\/(.+?)\\s+b\\/(.+?)$/);\n  const filePath = pathMatch ? pathMatch[2] : (headerLine.split(' ').pop() || 'unknown');\n\n  // Kiểm tra blacklist rác\n  if (isNoiseFile(filePath)) {\n    filteredCount++;\n    continue;\n  }\n\n  // Đếm additions / deletions\n  let adds = 0;\n  let dels = 0;\n  for (const line of lines) {\n    if (line.startsWith('+') && !line.startsWith('+++')) adds++;\n    if (line.startsWith('-') && !line.startsWith('---')) dels++;\n  }\n\n  totalAdditions += adds;\n  totalDeletions += dels;\n  keptCount++;\n\n  const category = classifyFile(filePath);\n\n  // Áp trần dung lượng nếu file thay đổi quá lớn (>maxLinesPerFile)\n  let finalChunk = fullChunk;\n  let isTruncated = false;\n\n  if (lines.length > maxLinesPerFile) {\n    isTruncated = true;\n    const keptLines = lines.slice(0, 100);\n    finalChunk = keptLines.join('\\n') + `\\n\\n... [Đã rút gọn: File có ${lines.length} dòng diff (+${adds}/-${dels}), chỉ hiển thị 100 dòng đầu] ...\\n`;\n  }\n\n  const fileItem = {\n    filePath,\n    category,\n    additions: adds,\n    deletions: dels,\n    totalChanges: adds + dels,\n    isTruncated\n  };\n\n  categorized[category].push(fileItem);\n  processedDiffParts.push(finalChunk);\n}\n\nconst cleanedDiffText = processedDiffParts.join('\\n\\n');\n\n// 4. Tính toán độ rủi ro (Risk Score)\nlet riskLevel = 'LOW';\nif (totalAdditions + totalDeletions > 1000 || keptCount > 20) {\n  riskLevel = 'HIGH';\n} else if (totalAdditions + totalDeletions > 300 || keptCount > 8) {\n  riskLevel = 'MEDIUM';\n}\n\nreturn [{\n  json: {\n    isError: false,\n    summary: {\n      totalFilesScanned: fileChunks.length,\n      filesKept: keptCount,\n      filesFilteredNoise: filteredCount,\n      totalAdditions,\n      totalDeletions,\n      riskLevel,\n      tokenSavingsEstimatedPct: fileChunks.length > 0 ? Math.round((filteredCount / fileChunks.length) * 100) : 0\n    },\n    categorizedFiles: categorized,\n    cleanedDiffText\n  }\n}];\n"
+      },
+      "id": "code-filter-diff",
+      "name": "CR Filter Diff",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        740,
+        320
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "CR Filter Diff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (cr-diff-clean)": {
+      "main": [
+        [
+          {
+            "node": "CR Filter Diff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CR Filter Diff": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

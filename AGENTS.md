@@ -58,9 +58,11 @@ Skills áp dụng theo thứ tự: `dev-spec-driven-development` → `dev-planni
 
 ### Tối Ưu Tốc Độ Fast-Path với n8n (Optional Accelerator)
 Khi n8n đang chạy cục bộ (`npm run n8n`), các skill ưu tiên sử dụng `scripts/lib/n8n-client.js` để nạp dữ liệu:
-- **BA/PO:** Lấy tóm tắt và mô tả Jira sạch trong 1 lượt (<1s) qua `/webhook/jira-prep`, tiết kiệm 85% token.
-- **QA:** Đẩy batch test case lên Squash TM qua `/webhook/squash-batch` và kích hoạt test ngầm qua `/webhook/qa-run-test`.
+- **BA/PO:** Lấy tóm tắt và mô tả Jira sạch trong 1 lượt (<1s) qua `/webhook/jira-prep`, tiết kiệm 85% token. Bóc tách tài liệu Confluence Storage XHTML sang Markdown tinh gọn qua `/webhook/confluence-doc`.
+- **QA:** Đẩy batch test case lên Squash TM qua `/webhook/squash-batch`, kích hoạt test ngầm qua `/webhook/qa-run-test`, nạp Test Fixtures chứng khoán 4 sàn (Phái sinh `41I1GA0000`, HOSE `SHB`, UPCOM `OIL`, HNX `SHS`) kèm API auth qua `/webhook/securities-fixture`. Lắng nghe sự kiện Board G.3.1 chuyển sang Ready to Test qua `/webhook/jira-ready-to-test`.
 - **Scrum Master:** Tự động hóa Standup 08:30 sáng qua n8n Cron Workflow.
+- **Code Reviewer:** Tiền xử lý lọc bỏ 100% file rác (lockfiles, assets, minified) và phân tầng diff qua `/webhook/cr-diff-clean`.
+- **Security Auditor:** Quét ngầm phụ thuộc và rà soát secrets rò rỉ qua `/webhook/security-scan`.
 - **Nguyên tắc 3-Tier Fallback:** n8n Fast-Path → MCP Tool → Shell/curl fallback. Chi tiết xem tại `docs/architecture/n8n-integration-strategy.md`.
 - **Ranh giới Bảo mật GitLab:** Các quy trình n8n TUYỆT ĐỐI KHÔNG comment, push, merge hay gửi bất kỳ request ghi dữ liệu nào (POST/PUT/DELETE) lên GitLab của bất kỳ microservice nào. Ngoại lệ duy nhất là repo `agent-skills` nhưng chỉ commit qua Git CLI theo quy trình branch-based sau khi user phê duyệt.
 

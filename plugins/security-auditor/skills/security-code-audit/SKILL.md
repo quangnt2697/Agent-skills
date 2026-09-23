@@ -24,6 +24,8 @@ Quét toàn bộ mã nguồn để phát hiện các lỗ hổng bảo mật the
 
 ## Quy trình
 
+> ⚡ **Fast-Path Quét Lỗ Hổng & Secret:** Chạy `node scripts/lib/n8n-client.js runSecurityDigest <projectPath>` để tự động trích xuất các CVEs High/Critical từ `npm audit` và phát hiện secrets rò rỉ trong working tree trong < 3s trước khi phân tích sâu.
+
 ### 1. Scan OWASP Top 10
 
 Kiểm tra các lỗ hổng phổ biến nhất:

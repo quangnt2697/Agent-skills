@@ -1,0 +1,173 @@
+{
+  "name": "AgentSkills - Jira Ready To Test Notifier",
+  "id": "JiraReadyToTestNotifier001",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-execute",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jira-ready-to-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-webhook",
+      "name": "Webhook Trigger (jira-ready-to-test)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        420
+      ],
+      "webhookId": "jira-ready-to-test"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Jira Ready To Test Filter (`scripts/n8n-nodes/jira-ready-to-test-filter.js`)\n *\n * Mục đích (WF-11):\n * - Lắng nghe sự kiện webhook từ Jira (`jira:issue_updated`).\n * - Lọc nghiêm ngặt 3 điều kiện:\n *   1. Thuộc Board G.3.1 (mã key `G3PTP-*` hoặc project `G.3.1` / `G3PTP`).\n *   2. Thuộc Sprint hiện tại (Active Sprint: `sprint.state === 'active'`).\n *   3. Trạng thái chuyển đổi sang `\"Ready to test\"` (case-insensitive).\n * - Quét workspace local của `issueKey`:\n *   - Kiểm tra file `.feature`: có -> `\"v gherkin file\"`, không -> `\"x gherkin file\"`.\n *   - Kiểm tra file `steps/test-*.py` (hoặc `test_*.py`): có -> `\"v autoscript test\"`, không -> `\"x autoscript test\"`.\n * - Đưa ra gợi ý lệnh tương ứng tùy theo tình trạng file.\n * - Soạn thẻ Markdown gửi thông báo về Mattermost.\n */\n\nconst fs = require('fs');\nconst path = require('path');\n\nconst input = $input.first();\nconst raw = (input && input.json) || {};\nconst body = raw.body || raw;\n\n// 1. Trích xuất thông tin issue và changelog\nconst issue = body.issue || raw.issue || body;\nconst changelog = body.changelog || raw.changelog || {};\nconst issueKey = (issue.key || body.issueKey || raw.issueKey || '').toUpperCase().trim();\nconst fields = issue.fields || {};\n\n// 2. Điều kiện 1: Board G.3.1\nconst projectKey = (fields.project?.key || '').toUpperCase();\nconst projectName = (fields.project?.name || '');\nconst isBoardG31 = issueKey.startsWith('G3PTP-') || projectKey === 'G3PTP' || projectName.includes('G.3.1') || (body.boardName || '').includes('G.3.1');\n\n// 3. Điều kiện 2: Active Sprint\nlet isActiveSprint = false;\nlet sprintName = 'Active Sprint';\n\n// Jira có thể lưu sprint ở fields.sprint hoặc customfield\nconst sprintField = fields.sprint || fields.customfield_10020 || fields.customfield_10010;\nif (Array.isArray(sprintField)) {\n  const activeS = sprintField.find(s => (s.state || '').toLowerCase() === 'active');\n  if (activeS) {\n    isActiveSprint = true;\n    sprintName = activeS.name || sprintName;\n  } else if (sprintField.length > 0) {\n    sprintName = sprintField[0].name || sprintName;\n  }\n} else if (sprintField && typeof sprintField === 'object') {\n  isActiveSprint = (sprintField.state || '').toLowerCase() === 'active';\n  sprintName = sprintField.name || sprintName;\n} else if (typeof sprintField === 'string' && sprintField.toLowerCase().includes('state=active')) {\n  isActiveSprint = true;\n  const match = sprintField.match(/name=([^,]+)/);\n  if (match) sprintName = match[1];\n} else if (body.isCurrentSprint === true || body.isActiveSprint === true) {\n  // Cho phép mock/test từ payload trực tiếp\n  isActiveSprint = true;\n}\n\n// 4. Điều kiện 3: Status đổi sang \"Ready to test\"\nlet isStatusReadyToTest = false;\nconst items = Array.isArray(changelog.items) ? changelog.items : [];\n\nfor (const item of items) {\n  if ((item.field || '').toLowerCase() === 'status') {\n    const toStr = (item.toString || item.to || '').toLowerCase().trim();\n    if (toStr === 'ready to test' || toStr === 'ready for testing' || toStr === 'sẵn sàng kiểm thử') {\n      isStatusReadyToTest = true;\n      break;\n    }\n  }\n}\n\n// Nếu gửi trực tiếp qua webhook test có field status\nif (!isStatusReadyToTest && (fields.status?.name || body.status || '').toLowerCase().trim() === 'ready to test') {\n  isStatusReadyToTest = true;\n}\n\n// Kiểm tra 3 điều kiện\nif (!isBoardG31 || !isActiveSprint || !isStatusReadyToTest) {\n  return [{\n    json: {\n      isReadyToTest: false,\n      ignored: true,\n      reason: `Bỏ qua sự kiện: isBoardG31=${isBoardG31}, isActiveSprint=${isActiveSprint}, isStatusReadyToTest=${isStatusReadyToTest}`,\n      issueKey\n    }\n  }];\n}\n\n// 5. Quét Workspace Local để kiểm tra file\nconst candidateRoots = [\n  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills',\n  '/Users/qa-quangnt/Desktop/Project/Test/agent-skills'\n];\n\nlet hasGherkin = false;\nlet hasAutoScript = false;\nlet workspaceFoundPath = '';\n\nfor (const cRoot of candidateRoots) {\n  const wsDir = path.join(cRoot, 'workspace', issueKey);\n  if (fs.existsSync(wsDir)) {\n    workspaceFoundPath = wsDir;\n\n    // A. Kiểm tra file .feature (Gherkin)\n    const testDir = path.join(wsDir, 'test');\n    if (fs.existsSync(testDir)) {\n      try {\n        const files = fs.readdirSync(testDir);\n        hasGherkin = files.some(f => f.endsWith('.feature'));\n      } catch (_) {}\n    }\n    if (!hasGherkin) {\n      // Quét thêm đệ quy mức nông trong wsDir\n      try {\n        const allFiles = fs.readdirSync(wsDir);\n        hasGherkin = allFiles.some(f => f.endsWith('.feature'));\n      } catch (_) {}\n    }\n\n    // B. Kiểm tra file test script (steps/test-*.py hoặc steps/test_*.py hoặc test/test_*.py)\n    const stepsDir = path.join(wsDir, 'test', 'steps');\n    if (fs.existsSync(stepsDir)) {\n      try {\n        const stepFiles = fs.readdirSync(stepsDir);\n        hasAutoScript = stepFiles.some(f => (f.startsWith('test-') || f.startsWith('test_')) && f.endsWith('.py'));\n      } catch (_) {}\n    }\n    if (!hasAutoScript && fs.existsSync(testDir)) {\n      try {\n        const testFiles = fs.readdirSync(testDir);\n        hasAutoScript = testFiles.some(f => (f.startsWith('test-') || f.startsWith('test_')) && f.endsWith('.py'));\n      } catch (_) {}\n    }\n    break;\n  }\n}\n\n// 5. Đánh dấu icon thiếu (❌) hoặc đủ (✅) theo yêu cầu người dùng\nconst gherkinBadge = hasGherkin ? '✅ Gherkin file' : '❌ Gherkin file';\nconst autoScriptBadge = hasAutoScript ? '✅ Autoscript test' : '❌ Autoscript test';\n\n// 6. Gợi ý lệnh tùy theo tình trạng file - MỖI LỆNH ĐỨNG RIÊNG BIỆT TRÊN MỘT DÒNG\nconst commandList = [];\nlet situationSummary = '';\n\nif (!hasGherkin && !hasAutoScript) {\n  situationSummary = 'Chưa có kịch bản BDD Gherkin và chưa có mã automation testscript.';\n  commandList.push({\n    label: 'Thiết kế Checklist & Gherkin file:',\n    cmd: `/qa-test-design ${issueKey}`\n  });\n  commandList.push({\n    label: 'Thiết kế test script Playwright/Pytest:',\n    cmd: `/qa-auto-design ${issueKey}`\n  });\n} else if (hasGherkin && !hasAutoScript) {\n  situationSummary = 'Đã có kịch bản BDD Gherkin nhưng chưa có mã automation test.';\n  commandList.push({\n    label: 'Thiết kế test script Playwright/Pytest:',\n    cmd: `/qa-auto-design ${issueKey}`\n  });\n  commandList.push({\n    label: 'Thực thi kiểm thử tự động:',\n    cmd: `/qa-run-test ${issueKey}`\n  });\n} else {\n  situationSummary = 'Đã sẵn sàng đầy đủ kịch bản BDD Gherkin và mã automation test.';\n  commandList.push({\n    label: 'Thực thi kiểm thử tự động:',\n    cmd: `/qa-run-test ${issueKey}`\n  });\n  commandList.push({\n    label: 'Đồng bộ kịch bản kiểm thử lên Squash TM:',\n    cmd: `/qa-squash-push ${issueKey}`\n  });\n}\n\nconst suggestedCommand = commandList[0]?.cmd || `/qa-full-pipeline ${issueKey}`;\nconst suggestedCommands = commandList.map(c => c.cmd);\n\n// 7. Tạo thẻ thông báo Mattermost bắt mắt và chuyên nghiệp\nconst baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst jiraUrl = `${baseUrl}/browse/${issueKey}`;\nconst summary = fields.summary || body.summary || '-';\nconst assignee = fields.assignee?.displayName || body.assignee || '-';\nconst priority = fields.priority?.name || body.priority || 'Medium';\n\n// Định dạng danh sách lệnh gợi ý — mỗi lệnh đứng ở 1 dòng riêng biệt\nconst commandsBlock = commandList.map(c => `- **${c.label}**\\n  \\`${c.cmd}\\``).join('\\n');\n\nconst reportText = `### 🎯 READY TO TEST — [${issueKey}](${jiraUrl})\n\n| Thông Tin | Chi Tiết |\n| :--- | :--- |\n| 📋 **Title** | **${summary}** |\n| 👤 **Assignee** | **${assignee}** |\n| ⚡ **Sprint** | \\`${sprintName}\\` |\n| 🏷️ **Độ ưu tiên** | \\`${priority}\\` |\n| 📁 **Trạng thái Workspace** | ${gherkinBadge} ᐧ ${autoScriptBadge} |\n\n---\n\n#### 🔍 Chi Tiết Kiểm Tra Workspace Local:\n- **Kịch bản BDD:** ${hasGherkin ? '✅ **Đã có kịch bản**' : '❌ **Chưa có kịch bản**'} (\\`workspace/${issueKey}/test/*.feature\\`)\n- **Mã kiểm thử:** ${hasAutoScript ? '✅ **Đã có mã automation test**' : '❌ **Chưa có mã automation test**'} (\\`workspace/${issueKey}/test/steps/test-*.py\\`)\n> 📌 *Hiện trạng:* ${situationSummary}\n\n---\n\n#### 💡 Lệnh Đề Xuất Thực Hiện:\n${commandsBlock}`;\n\nreturn [{\n  json: {\n    isReadyToTest: true,\n    ignored: false,\n    issueKey,\n    summary,\n    assignee,\n    priority,\n    sprintName,\n    gherkinBadge,\n    autoScriptBadge,\n    hasGherkin,\n    hasAutoScript,\n    suggestedCommand,\n    suggestedCommands,\n    situationSummary,\n    reportText,\n    mattermostPayload: {\n      text: reportText\n    }\n  }\n}];\n"
+      },
+      "id": "code-filter-ready",
+      "name": "Filter Board G31 & Ready to Test",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json.isReadyToTest ? 0 : 1 }}",
+        "numberOutputs": 2
+      },
+      "id": "switch-notify",
+      "name": "Should Notify Mattermost?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        720,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env && $env.MATTERMOST_WEBHOOK_URL) || 'https://mattermost.example.com/hooks/test' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.mattermostPayload || { text: $json.reportText }) }}",
+        "options": {}
+      },
+      "id": "send-mattermost",
+      "name": "Send Mattermost Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        220
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        320
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter Board G31 & Ready to Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (jira-ready-to-test)": {
+      "main": [
+        [
+          {
+            "node": "Filter Board G31 & Ready to Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Board G31 & Ready to Test": {
+      "main": [
+        [
+          {
+            "node": "Should Notify Mattermost?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Notify Mattermost?": {
+      "main": [
+        [
+          {
+            "node": "Send Mattermost Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Mattermost Notification": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

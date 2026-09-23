@@ -183,6 +183,54 @@ export async function queryMetabase(query, options = {}) {
   return await callN8nWebhook('metabase-query', payload, 35000);
 }
 
+/**
+ * Fast-Path: Lấy Test Fixture chứng khoán từ security_definition_v3 (WF-02)
+ * Trả về 4 phân khúc: Phái sinh (41I1GA0000/rollover), HOSE (SHB), UPCOM (OIL), HNX (SHS) kèm API Key/Secret.
+ * @param {object} params { exchange, symbol, accountType }
+ * @returns {Promise<object>}
+ */
+export async function getSecuritiesFixture(params = {}) {
+  return await callN8nWebhook('securities-fixture', params, 25000);
+}
+
+/**
+ * Fast-Path: Bóc tách tài liệu Confluence Storage XHTML sang Markdown tinh gọn (WF-03)
+ * @param {string} pageUrlOrId Confluence URL hoặc Page ID
+ * @returns {Promise<object>}
+ */
+export async function fetchConfluenceDoc(pageUrlOrId) {
+  return await callN8nWebhook('confluence-doc', { pageUrlOrId }, 25000);
+}
+
+/**
+ * Fast-Path: Tiền xử lý lọc sạch git diff rác cho Code Reviewer (WF-07)
+ * @param {string} rawDiffText Nội dung raw diff
+ * @param {object} options { maxLinesPerFile: number }
+ * @returns {Promise<object>}
+ */
+export async function cleanDiffForReview(rawDiffText, options = {}) {
+  return await callN8nWebhook('cr-diff-clean', { rawDiff: rawDiffText, ...options }, 20000);
+}
+
+/**
+ * Fast-Path: Quét phụ thuộc và lỗ hổng bảo mật ngầm (WF-08)
+ * @param {string} projectPath Đường dẫn project
+ * @param {object} options { scanContent: string }
+ * @returns {Promise<object>}
+ */
+export async function runSecurityDigest(projectPath = '', options = {}) {
+  return await callN8nWebhook('security-scan', { projectPath, ...options }, 35000);
+}
+
+/**
+ * Fast-Path: Gửi sự kiện chuyển trạng thái Jira Ready To Test lên Mattermost (WF-11)
+ * @param {object} payload Dữ liệu Jira Webhook hoặc test payload
+ * @returns {Promise<object>}
+ */
+export async function notifyJiraReadyToTest(payload = {}) {
+  return await callN8nWebhook('jira-ready-to-test', payload, 20000);
+}
+
 // ── CLI ENTRYPOINT (Chống sai lệch kiến trúc) ──────────────────────────────
 // Cho phép gọi trực tiếp script này từ Bash thay vì chỉ làm JS Module
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -218,6 +266,21 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         case 'triggerAsyncTest':
           result = await triggerAsyncTest(JSON.parse(args[1] || '{}'));
           break;
+        case 'getSecuritiesFixture':
+          result = await getSecuritiesFixture(JSON.parse(args[1] || '{}'));
+          break;
+        case 'fetchConfluenceDoc':
+          result = await fetchConfluenceDoc(args[1]);
+          break;
+        case 'cleanDiffForReview':
+          result = await cleanDiffForReview(args[1], JSON.parse(args[2] || '{}'));
+          break;
+        case 'runSecurityDigest':
+          result = await runSecurityDigest(args[1], JSON.parse(args[2] || '{}'));
+          break;
+        case 'notifyJiraReadyToTest':
+          result = await notifyJiraReadyToTest(JSON.parse(args[1] || '{}'));
+          break;
         default:
           console.error(`Unknown action: ${action}`);
           process.exit(1);
@@ -229,3 +292,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     }
   })();
 }
+

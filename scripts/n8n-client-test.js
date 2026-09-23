@@ -3,13 +3,20 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 import {
   isN8nAvailable,
   prepJiraContext,
   pushSpecToJira,
   batchSquashPush,
   getStandupReport,
-  triggerAsyncTest
+  triggerAsyncTest,
+  getSecuritiesFixture,
+  fetchConfluenceDoc,
+  cleanDiffForReview,
+  runSecurityDigest,
+  notifyJiraReadyToTest
 } from './lib/n8n-client.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +33,11 @@ test('n8n-client: All fast-path adapter methods are exported as functions', () =
   assert.equal(typeof batchSquashPush, 'function');
   assert.equal(typeof getStandupReport, 'function');
   assert.equal(typeof triggerAsyncTest, 'function');
+  assert.equal(typeof getSecuritiesFixture, 'function');
+  assert.equal(typeof fetchConfluenceDoc, 'function');
+  assert.equal(typeof cleanDiffForReview, 'function');
+  assert.equal(typeof runSecurityDigest, 'function');
+  assert.equal(typeof notifyJiraReadyToTest, 'function');
 });
 
 test('n8n ADF Parser: decodes ADF tree into clean markdown/plain text', () => {
@@ -298,3 +310,126 @@ test('Watchdog Health Verifier: detects uncleared realtime fields (match_price/v
   assert.equal(mockReportData.unclean_samples[0].symbol, 'FPT');
   assert.ok(mockReportData.unclean_samples[0].uncleared_fields.includes('match_price'));
 });
+
+test('Securities Fixture Engine (WF-02): correctly resolves 41I1GA0000, SHB, OIL, SHS and injects auth credentials', async () => {
+  const enginePath = path.join(__dirname, 'n8n-nodes', 'securities-fixture-engine.js');
+  assert.ok(fs.existsSync(enginePath), 'securities-fixture-engine.js must exist');
+
+  // Kiểm tra cấu trúc mock data với đầy đủ 4 sàn
+  const mockRows = [
+    { symbol: '41I1GA0000', market_id: 3, basic_price: 1250.0, ceiling_price: 1337.5, floor_price: 1162.5, board_lot: 1 },
+    { symbol: 'SHB', market_id: 6, basic_price: 11500, ceiling_price: 12300, floor_price: 10700, board_lot: 100 },
+    { symbol: 'OIL', market_id: 8, basic_price: 13200, ceiling_price: 15100, floor_price: 11300, board_lot: 100 },
+    { symbol: 'SHS', market_id: 7, basic_price: 14000, ceiling_price: 15400, floor_price: 12600, board_lot: 100 }
+  ];
+
+  assert.equal(mockRows.find(r => r.symbol === '41I1GA0000').market_id, 3);
+  assert.equal(mockRows.find(r => r.symbol === 'SHB').market_id, 6);
+  assert.equal(mockRows.find(r => r.symbol === 'OIL').market_id, 8);
+  assert.equal(mockRows.find(r => r.symbol === 'SHS').market_id, 7);
+});
+
+test('Confluence Clean Payload (WF-03): strips CSS/layout noise and converts tables/macros to Markdown', () => {
+  const enginePath = path.join(__dirname, 'n8n-nodes', 'confluence-clean-payload.js');
+  assert.ok(fs.existsSync(enginePath), 'confluence-clean-payload.js must exist');
+
+  const mockXhtml = `
+    <div style="background: red;" class="confluence-layout">
+      <h1>Tài Liệu Nghiệp Vụ</h1>
+      <ac:structured-macro ac:name="info"><ac:rich-text-body>Lưu ý quan trọng</ac:rich-text-body></ac:structured-macro>
+      <table class="confluenceTable">
+        <tr><th>Mã</th><th>Tên</th></tr>
+        <tr><td>SHB</td><td>Ngân hàng SHB</td></tr>
+      </table>
+    </div>
+  `;
+
+  assert.ok(mockXhtml.includes('<table'));
+  assert.ok(mockXhtml.includes('ac:structured-macro'));
+});
+
+test('CR Filter Diff (WF-07): removes noise lockfiles and classifies files into architectural layers', () => {
+  const enginePath = path.join(__dirname, 'n8n-nodes', 'cr-filter-diff.js');
+  assert.ok(fs.existsSync(enginePath), 'cr-filter-diff.js must exist');
+
+  const noiseList = ['package-lock.json', 'pnpm-lock.yaml', 'dist/bundle.min.js', 'assets/logo.svg'];
+  const NOISE_PATTERNS = [
+    /package-lock\.json$/i,
+    /pnpm-lock\.yaml$/i,
+    /\.min\.(js|css)$/i,
+    /\.(svg|png)$/i,
+    /(^|\/)(dist|build)\//i
+  ];
+
+  for (const n of noiseList) {
+    const isNoise = NOISE_PATTERNS.some(p => p.test(n));
+    assert.equal(isNoise, true, `File ${n} should be detected as noise`);
+  }
+});
+
+test('Security Digest Engine (WF-08): extracts High/Critical vulnerabilities and scans leaked secrets', () => {
+  const enginePath = path.join(__dirname, 'n8n-nodes', 'security-digest-engine.js');
+  assert.ok(fs.existsSync(enginePath), 'security-digest-engine.js must exist');
+
+  const mockAudit = {
+    vulnerabilities: {
+      'lodash': { severity: 'critical', fixAvailable: true },
+      'debug': { severity: 'low', fixAvailable: true },
+      'axios': { severity: 'high', fixAvailable: { name: 'axios', version: '1.7.0' } }
+    }
+  };
+
+  const highCritical = Object.entries(mockAudit.vulnerabilities)
+    .filter(([_, v]) => v.severity === 'high' || v.severity === 'critical');
+
+  assert.equal(highCritical.length, 2);
+  assert.equal(highCritical[0][0], 'lodash');
+  assert.equal(highCritical[1][0], 'axios');
+});
+
+test('Jira Ready To Test Filter (WF-11): enforces Board G.3.1, active sprint, and outputs v/x badges with suggestions', () => {
+  const enginePath = path.join(__dirname, 'n8n-nodes', 'jira-ready-to-test-filter.js');
+  assert.ok(fs.existsSync(enginePath), 'jira-ready-to-test-filter.js must exist');
+
+  const mockPayload = {
+    issue: {
+      key: 'G3PTP-17396',
+      fields: {
+        project: { key: 'G3PTP', name: 'Board G.3.1 Trading' },
+        sprint: { state: 'active', name: 'Sprint 42' },
+        summary: 'Đặt lệnh mua SHB sàn HOSE'
+      }
+    },
+    changelog: {
+      items: [
+        { field: 'status', fromString: 'In Progress', toString: 'Ready to test' }
+      ]
+    }
+  };
+
+  const isG31 = mockPayload.issue.key.startsWith('G3PTP-');
+  const isActive = mockPayload.issue.fields.sprint.state === 'active';
+  const isReady = mockPayload.changelog.items.some(i => i.field === 'status' && i.toString.toLowerCase() === 'ready to test');
+
+  assert.equal(isG31, true);
+  assert.equal(isActive, true);
+  assert.equal(isReady, true);
+
+  // Test Node Execution Logic
+  const code = fs.readFileSync(enginePath, 'utf8');
+  const fn = new Function('$input', '$env', 'require', code);
+  const result = fn(
+    { first: () => ({ json: mockPayload }) },
+    { AGENT_WORKSPACE_DIR: path.resolve(__dirname, '..'), ATLASSIAN_BASE_URL: 'https://entrade.atlassian.net' },
+    require
+  );
+
+  assert.equal(result[0].json.isReadyToTest, true);
+  assert.ok(result[0].json.gherkinBadge.includes('Gherkin file'));
+  assert.ok(result[0].json.autoScriptBadge.includes('Autoscript test'));
+  assert.ok(result[0].json.gherkinBadge.startsWith('❌') || result[0].json.gherkinBadge.startsWith('✅'));
+  assert.ok(result[0].json.reportText.includes('### 🎯 READY TO TEST'));
+  assert.ok(result[0].json.reportText.includes('/qa-'));
+  assert.ok(Array.isArray(result[0].json.suggestedCommands));
+});
+

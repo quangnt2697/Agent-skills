@@ -1,0 +1,151 @@
+{
+  "name": "AgentSkills - Securities Fixture Generator",
+  "id": "SecuritiesFixtureGen001",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-execute",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "securities-fixture",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-webhook",
+      "name": "Webhook Trigger (securities-fixture)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        420
+      ],
+      "webhookId": "securities-fixture"
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = `\nSELECT symbol, market_id, basic_price, ceiling_price, floor_price, board_lot, maturity_date,\n       CASE \n         WHEN market_id = 3 THEN 'DERIVATIVES'\n         WHEN market_id = 6 THEN 'HOSE'\n         WHEN market_id = 7 THEN 'HNX'\n         WHEN market_id = 8 THEN 'UPCOM'\n         ELSE 'OTHER'\n       END AS exchange_name\nFROM security_definition_v3\nWHERE (\n  (market_id = 3 AND (symbol = '41I1GA0000' OR maturity_date >= CURRENT_DATE OR maturity_date IS NULL))\n  OR (market_id = 6 AND symbol = 'SHB')\n  OR (market_id = 8 AND symbol = 'OIL')\n  OR (market_id = 7 AND symbol = 'SHS')\n)\nAND basic_price > 0 AND ceiling_price > 0 AND floor_price > 0\nORDER BY market_id, COALESCE(maturity_date, '2099-12-31'::date) ASC;\n`.trim();\n\nreturn [{\n  json: {\n    query,\n    database: 'timescale',\n    environment: 'uat',\n    maxRows: 50,\n    _triggerSource: 'securities-fixture'\n  }\n}];"
+      },
+      "id": "prep-query",
+      "name": "Prepare Security Definition Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "MetabaseQueryExecutor001",
+        "mode": "wait"
+      },
+      "id": "exec-metabase",
+      "name": "Execute Metabase Query Executor",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        640,
+        320
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Securities Fixture Engine (`scripts/n8n-nodes/securities-fixture-engine.js`)\n *\n * Mục đích (WF-02):\n * - Xử lý dữ liệu từ bảng `security_definition_v3` trên TimescaleDB/Metabase UAT.\n * - Lấy đầy đủ 4 phân khúc thị trường:\n *   1. Phái sinh (market_id = 3): Ưu tiên `41I1GA0000`, tự động rollover nếu đáo hạn.\n *   2. HOSE (market_id = 6): Mã `SHB`.\n *   3. UPCOM (market_id = 8): Mã `OIL`.\n *   4. HNX (market_id = 7): Mã `SHS`.\n * - Tự động nạp `apiKey`, `apiSecret`, `baseUrl` từ biến môi trường (.env).\n * - KHÔNG gửi Mattermost — trả về JSON thuần túy để tăng tốc quy trình sinh test tự động.\n */\n\nconst input = $input.first();\nconst json = (input && input.json) || {};\n\n// 1. Nạp biến môi trường xác thực từ $env hoặc process.env\nconst baseUrl = ($env && $env.BASE_URL) || (process.env && process.env.BASE_URL) || 'https://openapi-uat.example.com';\nconst apiKey = ($env && $env.API_KEY) || (process.env && process.env.API_KEY) || '';\nconst apiSecret = ($env && $env.API_SECRET) || (process.env && process.env.API_SECRET) || '';\n\n// 2. Trích xuất danh sách rows từ kết quả query Metabase hoặc payload\nlet rows = [];\nif (Array.isArray(json.data)) {\n  rows = json.data;\n} else if (Array.isArray(json.rows)) {\n  rows = json.rows;\n} else if (json.data && Array.isArray(json.data.rows)) {\n  const cols = (json.data.cols || []).map(c => (typeof c === 'string' ? c : c.name).toLowerCase());\n  rows = json.data.rows.map(r => {\n    const obj = {};\n    cols.forEach((col, idx) => { obj[col] = r[idx]; });\n    return obj;\n  });\n} else if (json.body && Array.isArray(json.body.rows)) {\n  rows = json.body.rows;\n}\n\n// Hàm tính ngày thứ Năm thứ 3 của tháng (Ngày đáo hạn phái sinh VN30)\nfunction getThirdThursdayOfMonth(year, month) {\n  // month: 1-12\n  const firstDay = new Date(year, month - 1, 1);\n  const dayOfWeek = firstDay.getDay(); // 0: Sun, 1: Mon, ..., 4: Thu\n  let firstThursdayOffset = (4 - dayOfWeek + 7) % 7;\n  const thirdThursdayDate = 1 + firstThursdayOffset + 14;\n  return new Date(year, month - 1, thirdThursdayDate, 15, 0, 0); // 15:00 hết phiên\n}\n\nconst now = new Date();\n\n// 3. Phân loại và trích xuất 4 phân khúc\nlet derivativeSymbol = null;\nlet hoseSymbol = null;\nlet upcomSymbol = null;\nlet hnxSymbol = null;\n\nconst allDerivatives = [];\n\nfor (const row of rows) {\n  const sym = (row.symbol || '').toUpperCase().trim();\n  const mId = parseInt(row.market_id, 10);\n  const basic = parseFloat(row.basic_price) || 0;\n  const ceiling = parseFloat(row.ceiling_price) || 0;\n  const floor = parseFloat(row.floor_price) || 0;\n  const lot = parseInt(row.board_lot, 10) || (mId === 3 ? 1 : 100);\n\n  if (mId === 3 || sym.startsWith('41I1') || sym.startsWith('VN30F')) {\n    allDerivatives.push({\n      symbol: sym,\n      marketId: 3,\n      exchange: 'DERIVATIVES',\n      basicPrice: basic,\n      ceilingPrice: ceiling,\n      floorPrice: floor,\n      boardLot: 1,\n      maturityDate: row.maturity_date || null,\n      isTargetIsin: sym === '41I1GA0000'\n    });\n  }\n\n  if ((mId === 6 || sym === 'SHB') && sym === 'SHB') {\n    hoseSymbol = {\n      symbol: 'SHB',\n      marketId: 6,\n      exchange: 'HOSE',\n      basicPrice: basic || 11500,\n      ceilingPrice: ceiling || 12300,\n      floorPrice: floor || 10700,\n      boardLot: lot || 100,\n      priceStep: (basic || 11500) < 10000 ? 10 : ((basic || 11500) <= 50000 ? 50 : 100)\n    };\n  }\n\n  if ((mId === 8 || sym === 'OIL') && sym === 'OIL') {\n    upcomSymbol = {\n      symbol: 'OIL',\n      marketId: 8,\n      exchange: 'UPCOM',\n      basicPrice: basic || 13200,\n      ceilingPrice: ceiling || 15100,\n      floorPrice: floor || 11300,\n      boardLot: lot || 100,\n      priceStep: 100\n    };\n  }\n\n  if ((mId === 7 || sym === 'SHS') && sym === 'SHS') {\n    hnxSymbol = {\n      symbol: 'SHS',\n      marketId: 7,\n      exchange: 'HNX',\n      basicPrice: basic || 14000,\n      ceilingPrice: ceiling || 15400,\n      floorPrice: floor || 12600,\n      boardLot: lot || 100,\n      priceStep: 100\n    };\n  }\n}\n\n// 4. Xử lý logic Phái sinh: ưu tiên 41I1GA0000 hoặc tự động lấy mã tháng chưa đáo hạn\nconst currentMonthExpiry = getThirdThursdayOfMonth(now.getFullYear(), now.getMonth() + 1);\nconst isCurrentMonthExpired = now > currentMonthExpiry;\n\n// Tìm 41I1GA0000 trước\nconst isinMatch = allDerivatives.find(d => d.symbol === '41I1GA0000');\n\nif (isinMatch && !isCurrentMonthExpired) {\n  derivativeSymbol = {\n    ...isinMatch,\n    expiryStatus: 'ACTIVE_CURRENT_MONTH',\n    note: 'Hợp đồng 41I1GA0000 tháng hiện tại còn hiệu lực'\n  };\n} else if (allDerivatives.length > 0) {\n  // Tìm hợp đồng chưa đáo hạn gần nhất\n  const unexpired = allDerivatives\n    .filter(d => !d.maturityDate || new Date(d.maturityDate) >= now)\n    .sort((a, b) => {\n      const tA = a.maturityDate ? new Date(a.maturityDate).getTime() : 9999999999999;\n      const tB = b.maturityDate ? new Date(b.maturityDate).getTime() : 9999999999999;\n      return tA - tB;\n    });\n\n  if (unexpired.length > 0) {\n    derivativeSymbol = {\n      ...unexpired[0],\n      expiryStatus: isCurrentMonthExpired ? 'ROLLOVER_NEXT_MONTH' : 'ACTIVE_NEAREST',\n      note: isCurrentMonthExpired ? 'Tháng hiện tại đã đáo hạn, tự động lấy hợp đồng mở tiếp theo' : 'Hợp đồng gần nhất chưa đáo hạn'\n    };\n  } else {\n    derivativeSymbol = {\n      ...allDerivatives[0],\n      expiryStatus: 'ACTIVE_FALLBACK',\n      note: 'Hợp đồng phái sinh đầu tiên trong bảng'\n    };\n  }\n}\n\n// 5. Fallback chuẩn nếu môi trường DB chưa có sẵn dữ liệu đầy đủ\nif (!derivativeSymbol) {\n  derivativeSymbol = {\n    symbol: '41I1GA0000',\n    marketId: 3,\n    exchange: 'DERIVATIVES',\n    basicPrice: 1250.0,\n    ceilingPrice: 1337.5,\n    floorPrice: 1162.5,\n    boardLot: 1,\n    expiryStatus: isCurrentMonthExpired ? 'ROLLOVER_NEXT_MONTH' : 'ACTIVE_CURRENT_MONTH',\n    note: 'Dữ liệu chuẩn fallback định nghĩa sàn phái sinh'\n  };\n}\n\nif (!hoseSymbol) {\n  hoseSymbol = {\n    symbol: 'SHB',\n    marketId: 6,\n    exchange: 'HOSE',\n    basicPrice: 11500,\n    ceilingPrice: 12300,\n    floorPrice: 10700,\n    boardLot: 100,\n    priceStep: 50\n  };\n}\n\nif (!upcomSymbol) {\n  upcomSymbol = {\n    symbol: 'OIL',\n    marketId: 8,\n    exchange: 'UPCOM',\n    basicPrice: 13200,\n    ceilingPrice: 15100,\n    floorPrice: 11300,\n    boardLot: 100,\n    priceStep: 100\n  };\n}\n\nif (!hnxSymbol) {\n  hnxSymbol = {\n    symbol: 'SHS',\n    marketId: 7,\n    exchange: 'HNX',\n    basicPrice: 14000,\n    ceilingPrice: 15400,\n    floorPrice: 12600,\n    boardLot: 100,\n    priceStep: 100\n  };\n}\n\n// 6. Xây dựng bộ payload mẫu (Fixtures) cho automation test\nconst sampleOrders = {\n  validHoseBuy: {\n    symbol: hoseSymbol.symbol,\n    price: hoseSymbol.basicPrice,\n    quantity: hoseSymbol.boardLot,\n    orderType: 'LO',\n    side: 'BUY'\n  },\n  invalidHoseCeiling: {\n    symbol: hoseSymbol.symbol,\n    price: Math.round(hoseSymbol.ceilingPrice * 1.05),\n    quantity: hoseSymbol.boardLot,\n    orderType: 'LO',\n    side: 'BUY',\n    expectedError: 'ORS-0010: Vượt mức giá trần cho phép'\n  },\n  invalidHoseStep: {\n    symbol: hoseSymbol.symbol,\n    price: hoseSymbol.basicPrice + 17, // Sai bước giá 50đ\n    quantity: hoseSymbol.boardLot,\n    orderType: 'LO',\n    side: 'BUY',\n    expectedError: 'ORS-0012: Giá vi phạm bước giá quy định'\n  },\n  validDerivativeBuy: {\n    symbol: derivativeSymbol.symbol,\n    price: derivativeSymbol.basicPrice,\n    quantity: 1,\n    orderType: 'LO',\n    side: 'BUY'\n  },\n  validUpcomBuy: {\n    symbol: upcomSymbol.symbol,\n    price: upcomSymbol.basicPrice,\n    quantity: upcomSymbol.boardLot,\n    orderType: 'LO',\n    side: 'BUY'\n  },\n  validHnxBuy: {\n    symbol: hnxSymbol.symbol,\n    price: hnxSymbol.basicPrice,\n    quantity: hnxSymbol.boardLot,\n    orderType: 'LO',\n    side: 'BUY'\n  }\n};\n\nreturn [{\n  json: {\n    isError: false,\n    timestamp: now.toISOString(),\n    auth: {\n      baseUrl,\n      apiKey,\n      apiSecret,\n      hasApiKey: Boolean(apiKey),\n      hasApiSecret: Boolean(apiSecret)\n    },\n    segments: {\n      derivatives: derivativeSymbol,\n      hose: hoseSymbol,\n      upcom: upcomSymbol,\n      hnx: hnxSymbol\n    },\n    sampleOrders\n  }\n}];\n"
+      },
+      "id": "code-fixture-engine",
+      "name": "Securities Fixture Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1080,
+        320
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Security Definition Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (securities-fixture)": {
+      "main": [
+        [
+          {
+            "node": "Prepare Security Definition Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Security Definition Query": {
+      "main": [
+        [
+          {
+            "node": "Execute Metabase Query Executor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Metabase Query Executor": {
+      "main": [
+        [
+          {
+            "node": "Securities Fixture Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Securities Fixture Engine": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

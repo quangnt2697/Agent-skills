@@ -96,6 +96,7 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 
 - **Giai đoạn 1 (Khảo sát & Kế thừa SDK - Recon Gate):**
   - Đọc `plugins/qa/skills/qa-auto-design/references/sdk-map.json` để xác định class Auth/Client có sẵn — KHÔNG grep toàn repo.
+  - **Fast-Path Dữ liệu Chứng khoán:** Chạy `node scripts/lib/n8n-client.js getSecuritiesFixture` để lấy tức thì giá trần/sàn/TC chuẩn sàn cho Phái sinh (`41I1GA0000`), HOSE (`SHB`), UPCOM (`OIL`), HNX (`SHS`) kèm API Key/Secret từ `.env` mà không cần query SQL thủ công.
   - Copy template `.env` phù hợp từ `references/env-templates/{api|ws|web-ui}.env.example`.
   - Xác định task type (API / WebSocket / Web UI) từ `.feature`.
 

@@ -106,6 +106,36 @@ const mappings = [
     nodeName: 'Verify Health & Parity',
     nodeId: '5',
     scriptFile: 'scripts/n8n-nodes/watchdog-verify-health.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/securities-fixture-generator.json',
+    nodeName: 'Securities Fixture Engine',
+    nodeId: 'code-fixture-engine',
+    scriptFile: 'scripts/n8n-nodes/securities-fixture-engine.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/confluence-doc-fetcher.json',
+    nodeName: 'Confluence Clean Payload',
+    nodeId: 'code-clean-confluence',
+    scriptFile: 'scripts/n8n-nodes/confluence-clean-payload.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/cr-diff-cleaner.json',
+    nodeName: 'CR Filter Diff',
+    nodeId: 'code-filter-diff',
+    scriptFile: 'scripts/n8n-nodes/cr-filter-diff.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/security-vulnerability-digest.json',
+    nodeName: 'Security Digest Engine',
+    nodeId: 'code-security-digest',
+    scriptFile: 'scripts/n8n-nodes/security-digest-engine.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/jira-ready-to-test-notifier.json',
+    nodeName: 'Filter Board G31 & Ready to Test',
+    nodeId: 'code-filter-ready',
+    scriptFile: 'scripts/n8n-nodes/jira-ready-to-test-filter.js'
   }
 ];
 
