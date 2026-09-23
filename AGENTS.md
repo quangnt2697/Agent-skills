@@ -70,6 +70,23 @@ Khi n8n đang chạy cục bộ (`npm run n8n`), các skill ưu tiên sử dụn
 - **Dữ liệu Kiểm Thử Chứng Khoán:** BẮT BUỘC đọc từ Metabase UAT / TimescaleDB (`${METABASE_UAT_DB_TIMESCALE_ID}`). Ưu tiên bảng v3, fallback v2. NGHIÊM CẤM tự bịa mã chứng khoán hoặc hardcode giá vi phạm biên độ.
 - **Đường dẫn artifact:** Nằm dưới `workspace/{issueKey}/` trong 5 thư mục: `source/`, `spec/`, `tech/`, `test/`, `trace/`. Chi tiết: `.claude/rules/workspace-paths.md`.
 
+### 4.1. Chuẩn Mực Giao Tiếp Trực Diện & Hành Động (Action-First Communication)
+Mặc định **TỰ ĐỘNG ÁP DỤNG 100% (Always-on)** cho mọi phản hồi của Agent trong mọi phiên làm việc:
+1. **Lead With Action (Mở đầu bằng hành động):** Dòng đầu tiên luôn là thứ người dùng có thể làm ngay (chạy lệnh bash, mở file, mã sửa đổi) hoặc kết quả đã làm xong. Cấm hoàn toàn câu dạo đầu sáo rỗng (*"Chào bạn"*, *"Câu hỏi rất hay"*, *"Tôi sẽ tiến hành..."*, *"Dưới đây là..."*).
+2. **Restate State (Nhắc lại trạng thái pipeline):** Trong các tác vụ dài nhiều bước, mở đầu lượt phản hồi bằng trạng thái: `[Tiến độ: Bước X/Y] ✅ Đã xong: <tóm tắt> → ▶ Đang thực hiện: <bước hiện tại>`.
+3. **Suppress Tangents (Triệt tiêu phân tâm):** Tập trung dứt điểm mục tiêu chính của task; không tự ý lôi các vấn đề phụ ngoài lề (*"nhân tiện thì..."*) vào giữa câu trả lời làm loãng sự chú ý.
+4. **Matter-of-Fact Errors (Báo lỗi trung tính):** Báo lỗi đi thẳng vào kỹ thuật, không dùng từ cảm thán (*"Uh oh"*, *"Rất tiếc"*). Cấu trúc: `Dòng lỗi` + `Nguyên nhân cốt lõi` + `Cách khắc phục cụ thể`.
+5. **Single Next Action (Đúng 1 hành động tiếp theo):** Kết thúc phản hồi bằng **ĐÚNG 1 BƯỚC TIẾP THEO** cụ thể, rõ ràng, khả thi trong < 2 phút. Cấm các câu kết xã giao thừa thãi (*"Hy vọng giúp ích"*, *"Nếu có thắc mắc hãy hỏi..."*).
+6. **Bảo Toàn 100% Log Kỹ Thuật (QA Log Exemption):** `test-output.log` BẮT BUỘC được ghi đầy đủ 100% ra file — **KHÔNG BAO GIỜ in/embed nội dung `test-output.log` vào chat**. User tự mở file để xem log chi tiết. Chỉ tổng hợp số liệu (Passed/Failed/Skipped) và trích lỗi ngắn vào `report.md`. Tuyệt đối không cắt xén dữ liệu trong file log.
+
+### 4.2. Focus Protocol — Chế Độ Tập Trung Tuyệt Đối (Always-on)
+Mặc định **TỰ ĐỘNG ÁP DỤNG 100%** mà không cần lệnh `/focus`. Agent luôn hoạt động trong trạng thái tập trung cao độ:
+1. **Single Task Lock:** Xử lý DỨT ĐIỂM một task trước khi nhận task tiếp theo. Cấm tự mở rộng phạm vi khi chưa hoàn thành mục tiêu hiện tại.
+2. **No Rabbit Holes:** Khi gặp vấn đề phụ phát sinh trong quá trình thực thi, GHI CHÚ lại dưới dạng `<!-- TODO: {vấn đề} -->` rồi tiếp tục mạch chính. KHÔNG dừng lại để xử lý.
+3. **Interrupt Resistance:** Nếu một bước mất > 60 giây mà không có output trung gian, tự động kiểm tra tiến độ và báo ngắn gọn trạng thái trước khi tiếp tục.
+4. **Scope Guard:** Mỗi lần nhận request, ghi nội bộ `CURRENT_TASK = "{mô tả ngắn gọn}"`. Nếu trong quá trình thực thi phát sinh ý tưởng mở rộng không liên quan đến `CURRENT_TASK`, bỏ qua hoàn toàn và ghi lại vào TODO cuối phản hồi.
+5. **No Premature Optimization:** Không tự tiện refactor, cải tiến thêm hay thêm feature ngoài scope của request hiện tại.
+
 ## 5. Tự Chủ & Chủ Động
 - **Mặc định là TỰ CHẠY.** Chỉ dừng hỏi user khi rơi vào 5 trường hợp của danh sách đóng trong `.claude/rules/autonomy-contract.md`: thiếu input bắt buộc, thiếu credential, có câu hỏi 🔴 Critical, sắp commit/merge vào main, hoặc hành động không hoàn tác được bằng `git revert`.
 - Không được hỏi "có tiếp không", "đã đủ chưa", "có apply không" — mọi trường hợp đó đều tự quyết và chạy tiếp.
