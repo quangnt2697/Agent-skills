@@ -32,39 +32,66 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng cho toàn bộ quy trình.
 
-- **Giai đoạn 0 (Reuse-First Codebase Scan — BẮt buộc trước bước Recon):**
+- **Giai đoạn 0 (Reuse-First Codebase Scan — Bắt buộc trước bước Recon):**
 
-  Áp dụng **7-Rung Ladder** từ skill `cr-code-simplification` — rung 2 *"Đã có trong codebase này? → tái sử dụng"*:
+  Áp dụng **7-Rung Ladder** (`cr-code-simplification`) rung 2 *"Đã có trong codebase? → tái sử dụng"*.
+  
+  > 🛑 **Anti-Bloat Guardrails (Chống quét lan man khi có 50-100+ folders):**
+  > - **Hard Cap:** Tối đa **5 thư mục gần nhất** (`head -5`). CẤM quét toàn bộ thư mục `workspace/`.
+  > - **Path Boundary:** CHỈ quét `workspace/{target_issue}/test/steps/`, CẤM quét vào `source/`, `spec/`, `tech/`, `result/`.
+  > - **File Filter:** Chỉ quét `*.py`, bỏ qua log, json, markdown.
+  > - **Early Exit:** Tìm thấy component cần dùng $\rightarrow$ DỪNG NGAY, không quét tiếp các tier sau.
 
+  ### Chiến lược 3-Tier Quét Có Giới Hạn
+
+  **Tier 1 — Cùng prefix issueKey (Tối đa 5 folder gần nhất cùng domain):**
   ```bash
-  # 1. Quét tất cả workspace test hiện có cùng project
-  list_dir("workspace/")                         # các issueKey đã có
-  list_dir("workspace/{project}/test/steps/")    # service, pages, fixtures đã viết
+  # 1. Trích xuất prefix domain (VD: STK-201 -> prefix STK)
+  PREFIX=$(echo "{issueKey}" | cut -d'-' -f1)
 
-  # 2. Tìm fixture/helper có thể tái dùng
-  grep_search(Query="@pytest.fixture",    SearchPath="workspace/", Includes=["conftest.py"])
-  grep_search(Query="class.*Service",     SearchPath="workspace/", Includes=["*.py"])
-  grep_search(Query="class.*Page",        SearchPath="workspace/", Includes=["*.py"])
-  grep_search(Query="def assert_",        SearchPath="workspace/", Includes=["*.py"])  # custom assertions
+  # 2. Lấy tối đa 5 folder gần nhất cùng prefix có chứa test/steps
+  MATCHED_DIRS=$(ls -td workspace/${PREFIX}-*/test/steps 2>/dev/null | head -5)
+
+  # 3. Quét nhanh các thành phần có thể tái sử dụng
+  grep -rnE "(class .*Service|@pytest\.fixture|class .*Page|def assert_)" $MATCHED_DIRS 2>/dev/null | head -20
   ```
+  *(Nếu dùng tool `grep_search`: chỉ truyền `SearchPath` là từng folder cụ thể trong 5 folder trên)*
+  $\rightarrow$ **Tìm thấy match? Dừng ngay, dùng luôn. Không chuyển sang Tier 2.**
 
-  **Ra quyết định theo Ladder:**
-  | Kết quả scan | Hành động |
+  **Tier 2 — Top 5 folder gần nhất trong workspace (Fallback khi khác prefix hoặc Tier 1 rỗng):**
+  ```bash
+  # Lấy tối đa 5 folder test/steps có thời gian sửa đổi gần nhất
+  RECENT_DIRS=$(ls -td workspace/*/test/steps 2>/dev/null | head -5)
+  grep -rnE "(class .*Service|@pytest\.fixture|def assert_)" $RECENT_DIRS 2>/dev/null | head -20
+  ```
+  $\rightarrow$ **Tìm thấy match? Dừng ngay. Không quét thêm.**
+
+  **Tier 3 — Centralized SDK Map (Đọc trực tiếp, 0-hop, không quét workspace):**
+  ```bash
+  cat plugins/qa/skills/qa-auto-design/references/sdk-map.json
+  ```
+  $\rightarrow$ Class chuẩn trong SDK (`DNSEClient`, `TradingAPI`, `WSClient`, Auth) luôn có độ ưu tiên cao nhất, không tự viết lại logic xác thực hay gọi core API.
+
+  ### Quyết định theo kết quả scan
+
+  | Kết quả | Hành động |
   |---|---|
-  | Tìm thấy `class {Name}Service` trùng chức năng | Import trực tiếp, không viết lại |
-  | Tìm thấy fixture cùng tên/scope | Copy vào `conftest.py` mới, chỉnh path |
-  | Tìm thấy `def assert_api_success` | Import helper, không viết lại 10 dòng assert |
-  | Tìm thấy POM Page cùng màn hình | Extend class, chỉ override locator đã thay đổi |
-  | Không tìm thấy gì | Viết mới — chuẩn hoá để tái dùng sau |
+  | Tier 1: `class {Name}Service` trùng chức năng | Import trực tiếp, không viết lại |
+  | Tier 1: fixture cùng tên/scope | Copy vào `conftest.py` mới, chỉnh path |
+  | Tier 1: `def assert_api_success` | Import helper |
+  | Tier 1: POM Page cùng màn hình | Extend class, override locator đã đổi |
+  | Tier 2: tìm thấy ở folder gần nhất | Dùng, ghi chú nguồn rõ ràng |
+  | Tier 3: có trong sdk-map.json | Dùng SDK, không wrap thêm |
+  | Không tìm thấy ở cả 3 tier | Viết mới — chuẩn hoá để Tier 1 sau dùng lại |
 
   **Ghi kết quả scan vào comment đầu `conftest.py`:**
   ```python
-  # reuse-scan: {issueKey} — kế thừa OrderService từ STK-090/test/steps/services/order_service.py
-  # reuse-scan: fixture uat_account kế thừa từ STK-085/test/steps/conftest.py
-  # ponytail: không viết lại HMAC signing — đã có trong DNSEClient SDK
+  # reuse-scan: Tier1/STK — kế thừa OrderService từ STK-190/test/steps/services/order_service.py
+  # reuse-scan: Tier3/SDK — dùng DNSEClient, không viết lại HMAC signing
+  # ponytail: Tier1 match — không viết lại assert_order_status (đã có STK-185)
   ```
 
-  > 🔗 Liên kết skill: **`cr-code-simplification`** — 7-Rung Ladder, Never-Cut List, `ponytail:` comment convention.
+  > 🔗 Liên kết skill: **`cr-code-simplification`** — 7-Rung Ladder, Never-Cut List.
   > 🚫 **Bỏ qua bước pull code** — n8n workflow đã pull code mới nhất đầu ngày.
 
 - **Giai đoạn 1 (Khảo sát & Kế thừa SDK - Recon Gate):**

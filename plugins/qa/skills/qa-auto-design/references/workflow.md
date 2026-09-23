@@ -8,28 +8,32 @@
 5. **Chuẩn Thiết Kế Log Căn Chỉnh:** Tuân thủ 4 thẻ tiếng Việt (`[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]`).
 6. **Thẩm Định Cú Pháp & Zero-Hardcode Gate:** Bắt buộc chạy `pytest --collect-only` (0 lỗi) và xác nhận 0 hardcode trước khi bàn giao cho `qa-run-test`.
 
-## 2. Quy Trình 4 Giai Đoạn Thực Thi
+## 2. Quy Trình 5 Giai Đoạn Thực Thi
 
-### Giai đoạn 1: Khảo sát & Kế thừa
-- Setup thư mục theo Blueprint.
-- Đọc biến môi trường 3 tầng (`.env`). Nếu kịch bản cần tham số mới, BẮT BUỘC bổ sung biến vào `.env` trước.
-- Code Recon Gate: Quét thư mục `openapi-tyk/sdk/python/` và codebase DEV để import module SDK/Auth/Clients có sẵn.
+### Giai đoạn 0: Quét Tái Sử Dụng Có Giới Hạn (Reuse-First Scoped Scan)
+- Áp dụng 7-Rung Ladder (`cr-code-simplification`) rung 2.
+- Anti-Bloat Guardrail: Tối đa 5 folder gần nhất cùng prefix `${PREFIX}-*`, chỉ quét trong `test/steps/`. Early exit ngay khi có match.
+- Bỏ qua pull code (n8n đã đồng bộ đầu ngày). Ghi chú nguồn kế thừa `# reuse-scan:` vào `conftest.py`.
+
+### Giai đoạn 1: Khảo sát & Kế thừa SDK (Recon Gate)
+- Setup thư mục theo Blueprint `/project-root/workspace/{issueKey}/test/steps/`.
+- Đọc biến môi trường 3 tầng (`.env`).
+- Đọc `sdk-map.json` để import module SDK/Auth/Clients chuẩn (`DNSEClient`, Trading, MarketData).
 
 ### Giai đoạn 2: Thiết kế Kiến trúc (POM/Service)
-- Cấu hình `conftest.py` với Logging Interceptor và hàm nạp `.env` phân tầng.
-- Bổ sung SDK vào `pythonpath` trong `pytest.ini`.
-- Xây dựng Page Object (UI) hoặc Service Client (API/WS) kế thừa/wrap từ `openapi-tyk/sdk/python/`.
-- Không để Assertion lọt vào tầng này.
+- Cấu hình `conftest.py` với Logging Interceptor và nạp `.env`.
+- Xây dựng Page Object (UI) hoặc Service Client (API/WS) kế thừa từ SDK hoặc service cũ đã quét ở GĐ 0.
+- Tuyệt đối không để Assertion lọt vào tầng POM/Service.
 
 ### Giai đoạn 3: Sinh Mã Kiểm thử (`test_*.py`)
 - Ánh xạ 100% scenario từ `.feature`.
-- Toàn bộ tham số kiểm thử (account, symbol, price, quantity) gọi từ `.env` hoặc fixture động (`valid_order_symbol`), TUYỆT ĐỐI KHÔNG hardcode.
-- Gắn decorator `@pytest.mark.scenario` và `@pytest.mark.jira`.
-- Áp dụng các Testing Patterns: Smart waits, Trigger-Listen-Verify.
+- Toàn bộ tham số kiểm thử gọi từ `.env` hoặc fixture động, TUYỆT ĐỐI KHÔNG hardcode.
+- Gắn decorator `@pytest.mark.scenario`, gắn comment `# test-intent:` đầu mỗi test function.
+- Áp dụng chuẩn log 4 thẻ (`[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]`).
 
-### Giai đoạn 4: Thẩm định Cú pháp & Bàn giao
-- Static review: Xóa `print()`, xóa comment rác, rà soát quét sạch hardcoded values.
-- Chạy lệnh thu thập test:
+### Giai đoạn 4: Simplification Pass & Thẩm định Cú pháp
+- Rà soát theo `cr-code-simplification`: Never-Cut List (bảo vệ assert/fixture cốt lõi), gộp fixture thừa.
+- Thẩm định cú pháp:
   ```bash
   pytest "workspace/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only
   ```

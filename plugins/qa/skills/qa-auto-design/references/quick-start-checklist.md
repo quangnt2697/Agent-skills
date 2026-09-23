@@ -19,27 +19,38 @@
 ## BƯỚC 0 — Reuse-First Codebase Scan (Bắt buộc — trước tất cả)
 
 > 🔗 Áp dụng **7-Rung Ladder** (`cr-code-simplification`) rung 2 — *"Đã có trong codebase? Tái sử dụng."*
+> 🛑 **Anti-Bloat:** Tối đa 5 folders gần nhất, chỉ scan `test/steps/`, early exit khi có match.
 > 🚫 **Không pull code** — n8n đã pull đầu ngày.
 
 ```bash
-# Quét workspace test hiện có
-list_dir("workspace/")
-grep_search(Query="@pytest.fixture", SearchPath="workspace/", Includes=["conftest.py"])
-grep_search(Query="class.*Service",  SearchPath="workspace/", Includes=["*.py"])
-grep_search(Query="class.*Page",     SearchPath="workspace/", Includes=["*.py"])
-grep_search(Query="def assert_",     SearchPath="workspace/", Includes=["*.py"])
+# 1. Trích xuất prefix (VD: STK-201 -> STK)
+PREFIX=$(echo "{issueKey}" | cut -d'-' -f1)
+
+# 2. Tier 1: Quét tối đa 5 folder gần nhất cùng prefix
+DIRS=$(ls -td workspace/${PREFIX}-*/test/steps 2>/dev/null | head -5)
+grep -rnE "(class .*Service|@pytest\.fixture|class .*Page|def assert_)" $DIRS 2>/dev/null | head -20
+# -> Match? DỪNG NGAY, dùng luôn.
+
+# 3. Tier 2 (Fallback nếu Tier 1 rỗng): Top 5 folder gần nhất toàn workspace
+RECENT_DIRS=$(ls -td workspace/*/test/steps 2>/dev/null | head -5)
+grep -rnE "(class .*Service|@pytest\.fixture|def assert_)" $RECENT_DIRS 2>/dev/null | head -20
+
+# 4. Tier 3: SDK Map chuẩn (Auth, Client core - luôn ưu tiên)
+cat plugins/qa/skills/qa-auto-design/references/sdk-map.json
 ```
 
 | Kết quả | Hành động |
 |---|---|
-| Tìm thấy class/fixture khớp | Import, không viết lại |
-| Tìm thấy POM cùng màn hình | Extend, override locator đã đổi |
-| Không thấy gì | Viết mới, chuẩn hóa để tái dùng |
+| Tier 1/2: Tìm thấy class/fixture khớp | Import trực tiếp, không viết lại |
+| Tier 1/2: Tìm thấy POM cùng màn hình | Kế thừa (extend), chỉ override locator đổi |
+| Tier 3: Có trong sdk-map.json | Dùng SDK client chuẩn, không tự wrap thêm |
+| Không thấy gì ở cả 3 tier | Viết mới, chuẩn hóa để tái dùng |
 
 Ghi kết quả vào đầu `conftest.py`:
 ```python
-# reuse-scan: {issueKey} — kế thừa OrderService từ STK-090/services/order_service.py
-# ponytail: không viết lại HMAC — đã có trong DNSEClient
+# reuse-scan: Tier1/STK — kế thừa OrderService từ STK-090/test/steps/services/order_service.py
+# reuse-scan: Tier3/SDK — dùng DNSEClient, không viết lại HMAC signing
+# ponytail: Tier1 match — không viết lại assert_order_status
 ```
 
 ---
