@@ -16,6 +16,34 @@
 
 ---
 
+## BƯỚC 0 — Reuse-First Codebase Scan (Bắt buộc — trước tất cả)
+
+> 🔗 Áp dụng **7-Rung Ladder** (`cr-code-simplification`) rung 2 — *"Đã có trong codebase? Tái sử dụng."*
+> 🚫 **Không pull code** — n8n đã pull đầu ngày.
+
+```bash
+# Quét workspace test hiện có
+list_dir("workspace/")
+grep_search(Query="@pytest.fixture", SearchPath="workspace/", Includes=["conftest.py"])
+grep_search(Query="class.*Service",  SearchPath="workspace/", Includes=["*.py"])
+grep_search(Query="class.*Page",     SearchPath="workspace/", Includes=["*.py"])
+grep_search(Query="def assert_",     SearchPath="workspace/", Includes=["*.py"])
+```
+
+| Kết quả | Hành động |
+|---|---|
+| Tìm thấy class/fixture khớp | Import, không viết lại |
+| Tìm thấy POM cùng màn hình | Extend, override locator đã đổi |
+| Không thấy gì | Viết mới, chuẩn hóa để tái dùng |
+
+Ghi kết quả vào đầu `conftest.py`:
+```python
+# reuse-scan: {issueKey} — kế thừa OrderService từ STK-090/services/order_service.py
+# ponytail: không viết lại HMAC — đã có trong DNSEClient
+```
+
+---
+
 ## BƯỚC 1 — Xác Định Loại Task (30 giây)
 
 Đọc `{issueKey}.feature` → xác định:
@@ -29,7 +57,7 @@
 
 ---
 
-## BƯỚC 2 — Recon Gate (2 phút)
+## BƯỚC 2 — Recon Gate — Đọc SDK Map (2 phút)
 
 ```bash
 # Đọc SDK Index — nằm cùng skill, tracked bởi git, có ở mọi dự án dùng agent-skills
@@ -94,7 +122,18 @@ def test_ten_scenario(fixture_1, fixture_2):
 
 ---
 
-## BƯỚC 6 — Quality Gate Trước Bàn Giao
+## BƯỚC 6 — Simplification Pass (trước Quality Gate)
+
+Rà soát theo `cr-code-simplification` Never-Cut List:
+- [ ] Mỗi test function có `# test-intent: <mục tiêu>` ở đầu
+- [ ] Giá trị biên BVA có `# boundary: <giá trị>` trong test data
+- [ ] Không xóa `assert`, `teardown`, error-path check
+- [ ] Fixture trùng lặp đã gộp với `# simplify: lý do`
+- [ ] Xóa locator/method POM thừa chưa dùng
+
+---
+
+## BƯỚC 7 — Quality Gate Trước Bàn Giao
 
 ```bash
 pytest "workspace/{issueKey}/test/steps" \
@@ -111,3 +150,4 @@ pytest "workspace/{issueKey}/test/steps" \
 - [ ] Log format: `[TIMESTAMP] [LEVEL] [SERVICE] [TRACE_ID] - MESSAGE | CONTEXT`
 - [ ] Không dùng ký tự cây `├─`, `└─`, `▶` trong log
 - [ ] Mỗi Scenario trong `.feature` có đúng 1 test method tương ứng
+- [ ] `# reuse-scan:` comment ở đầu `conftest.py` ghi rõ nguồn kế thừa

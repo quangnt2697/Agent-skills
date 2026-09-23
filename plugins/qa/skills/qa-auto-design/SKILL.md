@@ -1,6 +1,6 @@
 ---
 name: qa-auto-design
-description: Sinh mã kiểm thử tự động (Automation Test Code) từ kịch bản Gherkin (.feature) và checklist bằng Playwright/Pytest theo chuẩn POM/Service. KHÔNG thực thi test, KHÔNG debug hệ thống.
+description: Sinh mã kiểm thử tự động (Automation Test Code) từ kịch bản Gherkin (.feature) và checklist bằng Playwright/Pytest theo chuẩn POM/Service. Áp dụng Reuse-First Scan trước khi viết bất kỳ file mới nào. KHÔNG thực thi test, KHÔNG debug hệ thống.
 trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viết test code và sinh mã automation test. Trigger bằng lệnh /qa-auto-design.
 ---
 
@@ -28,29 +28,74 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 - Chỉ cần chạy test suite và xuất báo cáo kết quả → dùng `qa-run-test`.
 - Cần debug lỗi hệ thống hoặc tìm root cause → dùng `dev-debugging` hoặc `cr-review-code-and-quality`.
 
-## 2. Quy trình 4 Giai đoạn Thực thi
+## 2. Quy trình 5 Giai đoạn Thực thi
 
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng cho toàn bộ quy trình.
 
-- **Giai đoạn 1 (Khảo sát & Kế thừa - Recon Gate):**
+- **Giai đoạn 0 (Reuse-First Codebase Scan — BẮt buộc trước bước Recon):**
+
+  Áp dụng **7-Rung Ladder** từ skill `cr-code-simplification` — rung 2 *"Đã có trong codebase này? → tái sử dụng"*:
+
+  ```bash
+  # 1. Quét tất cả workspace test hiện có cùng project
+  list_dir("workspace/")                         # các issueKey đã có
+  list_dir("workspace/{project}/test/steps/")    # service, pages, fixtures đã viết
+
+  # 2. Tìm fixture/helper có thể tái dùng
+  grep_search(Query="@pytest.fixture",    SearchPath="workspace/", Includes=["conftest.py"])
+  grep_search(Query="class.*Service",     SearchPath="workspace/", Includes=["*.py"])
+  grep_search(Query="class.*Page",        SearchPath="workspace/", Includes=["*.py"])
+  grep_search(Query="def assert_",        SearchPath="workspace/", Includes=["*.py"])  # custom assertions
+  ```
+
+  **Ra quyết định theo Ladder:**
+  | Kết quả scan | Hành động |
+  |---|---|
+  | Tìm thấy `class {Name}Service` trùng chức năng | Import trực tiếp, không viết lại |
+  | Tìm thấy fixture cùng tên/scope | Copy vào `conftest.py` mới, chỉnh path |
+  | Tìm thấy `def assert_api_success` | Import helper, không viết lại 10 dòng assert |
+  | Tìm thấy POM Page cùng màn hình | Extend class, chỉ override locator đã thay đổi |
+  | Không tìm thấy gì | Viết mới — chuẩn hoá để tái dùng sau |
+
+  **Ghi kết quả scan vào comment đầu `conftest.py`:**
+  ```python
+  # reuse-scan: {issueKey} — kế thừa OrderService từ STK-090/test/steps/services/order_service.py
+  # reuse-scan: fixture uat_account kế thừa từ STK-085/test/steps/conftest.py
+  # ponytail: không viết lại HMAC signing — đã có trong DNSEClient SDK
+  ```
+
+  > 🔗 Liên kết skill: **`cr-code-simplification`** — 7-Rung Ladder, Never-Cut List, `ponytail:` comment convention.
+  > 🚫 **Bỏ qua bước pull code** — n8n workflow đã pull code mới nhất đầu ngày.
+
+- **Giai đoạn 1 (Khảo sát & Kế thừa SDK - Recon Gate):**
   - Đọc `plugins/qa/skills/qa-auto-design/references/sdk-map.json` để xác định class Auth/Client có sẵn — KHÔNG grep toàn repo.
   - Copy template `.env` phù hợp từ `references/env-templates/{api|ws|web-ui}.env.example`.
   - Xác định task type (API / WebSocket / Web UI) từ `.feature`.
 
 - **Giai đoạn 2 (Thiết kế Kiến trúc Phân tầng):**
   - Tạo Page Object Model (Web UI) hoặc Service Client (API/WS, kế thừa SDK có sẵn).
+  - Áp dụng kết quả Reuse Scan: import trực tiếp, chỉ viết mới những thư chưa có.
   - Toàn bộ assertions BẮT BUỘC nằm ở tầng test, không để lọt vào tầng POM/Service.
 
 - **Giai đoạn 3 (Sinh Mã Kiểm thử `test_*.py`):**
   - Ánh xạ 1-1 từng Scenario Gherkin thành test case.
   - Gắn tag, decorator và áp dụng chuẩn ghi log 4 thẻ tiếng Việt (`[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]`).
+  - Gắn comment `# test-intent: <mục tiêu>` đầu mỗi test function theo quy ước `cr-code-simplification`.
   - Toàn bộ tham số kiểm thử gọi từ `.env` hoặc fixture động.
 
-- **Giai đoạn 4 (Thẩm định Cú pháp & Bàn giao):** Chạy lệnh kiểm tra cú pháp — **KHÔNG phải chạy test thực sự:**
+- **Giai đoạn 4 (Simplification Pass — trước khi bàn giao):**
+
+  Sau khi viết xong toàn bộ code, chạy lượt rà soát `cr-code-simplification` cho test code:
+  - Xác nhận **Never-Cut List**: không xóa assert, teardown, boundary `[P0]`, error-path check.
+  - Kiểm tra comment `# test-intent:` có ở đầu mỗi test function chưa.
+  - Gộp fixture trùng lặp nếu có — dán nhãn `# simplify: gộp X fixture giống nhau`.
+  - Xóa locator/method thừa trong POM chưa được dùng đến.
+
+- **Giai đoạn 5 (Thẩm định Cú pháp & Bàn giao):** Chạy lệnh kiểm tra cú pháp — **KHÔNG phải chạy test thực sự:**
   ```bash
   pytest "workspace/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only
   ```
-  Nếu có lỗi cú pháp ➔ Tự sửa (xem `references/known-errors-and-fixes.md`). Nếu Pass 100% ➔ Bàn giao cho `qa-run-test`.
+  Nếu có lỗi cú pháp ➤ Tự sửa (xem `references/known-errors-and-fixes.md`). Nếu Pass 100% ➤ Bàn giao cho `qa-run-test`.
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 
