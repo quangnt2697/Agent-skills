@@ -1,6 +1,6 @@
 ---
 name: ba-stakeholder-interview
-description: Phỏng vấn đa đối tượng liên quan (CEO, Product Manager, Tech Lead, Compliance, End User), thu thập yêu cầu từ nhiều góc nhìn và giải quyết xung đột nghiệp vụ.
+description: Phỏng vấn đa đối tượng liên quan (CEO, Product Manager, Tech Lead, Compliance, End User), thu thập yêu cầu từ nhiều góc nhìn và gỡ rối (resolve) mâu thuẫn nghiệp vụ. Không dùng để refactor code hay gỡ rối kỹ thuật.
 trigger: Khi cần thu thập yêu cầu từ nhiều phòng ban, giải quyết mâu thuẫn về phạm vi/ưu tiên hoặc nhận yêu cầu "phỏng vấn stakeholders".
 ---
 

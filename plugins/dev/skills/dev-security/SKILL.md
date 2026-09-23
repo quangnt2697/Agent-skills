@@ -1,6 +1,6 @@
 ---
 name: dev-security
-description: Gia cố mã nguồn và thiết kế phòng thủ (Security Hardening), kiểm soát ranh giới tin cậy, ngăn ngừa OWASP Top 10 và bảo vệ dữ liệu nhạy cảm.
+description: 'Gia cố, hardening code chống lỗ hổng bảo mật. Xử lý đầu vào người dùng, untrusted data, xác thực authentication, quản lý user sessions, lưu trữ dữ liệu an toàn.'
 trigger: Khi xử lý đầu vào từ người dùng, triển khai xác thực (auth), phân quyền (authz), lưu trữ dữ liệu hoặc tích hợp API bên ngoài.
 ---
 

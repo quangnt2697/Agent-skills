@@ -1,6 +1,6 @@
 ---
 name: dev-performance
-description: Tối ưu hóa hiệu năng ứng dụng toàn diện (Frontend, Backend, Database Queries), chuẩn hóa Core Web Vitals và triệt tiêu N+1 queries.
+description: Tối ưu hóa hiệu năng ứng dụng, Core Web Vitals, N+1 queries và loại bỏ các nút thắt cổ chai.
 trigger: Khi có yêu cầu tối ưu tốc độ tải trang, cải thiện Core Web Vitals (LCP, INP, CLS), phát hiện N+1 queries hoặc API bị nghẽn (bottleneck).
 ---
 

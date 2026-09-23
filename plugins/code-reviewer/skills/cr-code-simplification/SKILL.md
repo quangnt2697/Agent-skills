@@ -1,6 +1,6 @@
 ---
 name: cr-code-simplification
-description: 'Đơn giản hóa code cho rõ ràng. Phân chia logic theo persona: Dev (7-Rung Ladder trước khi viết, tối ưu hóa app code, kiến trúc) và QA (quy ước comment test-intent/simplify/boundary, tối ưu hóa automation test, BDD, data mock).'
+description: 'Đơn giản hóa, simplify code cho rõ ràng, giảm phức tạp thừa thãi, không đổi hành vi. Dùng khi code chạy tốt nhưng khó đọc, khó bảo trì. Tối ưu hóa mã nguồn, test mock dễ hiểu hơn. KHÔNG làm feature flag system.'
 trigger: Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó đọc, khó bảo trì, hoặc chứa sự phức tạp thừa thãi. Trigger bằng lệnh '/code-simplify' hoặc '/cr-simplify'.
 ---
 

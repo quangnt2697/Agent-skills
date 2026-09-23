@@ -1,6 +1,6 @@
 ---
 name: ba-refine
-description: Phân kỳ-Hội tụ (refine) Jira task thô/mơ hồ thành spec chi tiết chuẩn, push lại lên Jira. Chỉ phân tích và viết spec — KHÔNG làm QA, KHÔNG viết code.
+description: Brainstorm, phân kỳ-hội tụ (refine) các ý tưởng thô/mơ hồ thành spec chi tiết rõ ràng, sau đó cập nhật lại lên Jira. Không dùng để import Jira lần đầu khi đã có spec rõ ràng.
 trigger: /ba-refine {issueKey}", "refine jira task", "clarify requirements
 ---
 

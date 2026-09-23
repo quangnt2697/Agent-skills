@@ -1,6 +1,6 @@
 ---
 name: dev-incremental-implementation
-description: Triển khai các thay đổi theo từng bước tăng dần (incremental).
+description: Triển khai các thay đổi theo từng bước tăng dần một cách an toàn.
 trigger: Sử dụng khi implement bất kỳ tính năng hay sự thay đổi nào đụng tới nhiều hơn một file. Sử dụng khi bạn sắp phải viết một lượng lớn code cùng một lúc, hoặc khi một task có vẻ quá lớn để có thể hoàn thành trong một nhịp.
 ---
 

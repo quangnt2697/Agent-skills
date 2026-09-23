@@ -1,6 +1,6 @@
 ---
 name: qa-run-test
-description: Chạy test automation hiện có (Pytest/Playwright) và xuất báo cáo kết quả kiểm thử ngay lập tức. Không review lan man hay điều tra mã nguồn backend. Đề xuất kỹ năng debug hoặc code review khi có lỗi.
+description: 'Chạy test automation hiện có (Pytest/Playwright) và xuất báo cáo kết quả kiểm thử ngay lập tức. Không review lan man hay điều tra mã nguồn backend. Đề xuất kỹ năng debug hoặc code review khi có lỗi. Chạy lại test sau khi fix bug.'
 trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặc thẩm định kết quả sau fix bug. Trigger bằng /qa-run-test.
 ---
 

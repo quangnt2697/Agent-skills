@@ -1,6 +1,6 @@
 ---
 name: dev-refactoring
-description: Thực hiện refactoring code an toàn với checklist TDD (Red-Green-Refactor), tách hàm/lớp và tối ưu cấu trúc mà không thay đổi hành vi.
+description: Thực hiện refactoring an toàn với checklist TDD Red-Green-Refactor, tách hàm/lớp tối ưu cấu trúc mà không đổi hành vi.
 trigger: Sử dụng khi code cần cleanup, giảm duplication (DRY), cải thiện cấu trúc hoặc giải quyết nợ kỹ thuật (tech debt).
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: dev-test-driven-development
-description: Hướng dẫn phát triển dựa trên kiểm thử (TDD) theo chu trình Red-Green-Refactor, đảm bảo tính đúng đắn trước khi bàn giao.
+description: Hướng dẫn phát triển dựa trên kiểm thử TDD Red-Green-Refactor, đảm bảo tính đúng đắn trước khi bàn giao.
 trigger: Khi triển khai logic nghiệp vụ mới, sửa lỗi (bug fixing) hoặc thay đổi hành vi của chức năng hiện có.
 ---
 

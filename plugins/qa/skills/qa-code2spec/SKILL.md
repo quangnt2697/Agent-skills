@@ -1,6 +1,6 @@
 ---
 name: qa-code2spec
-description: Dịch ngược mã nguồn (Reverse Engineering) thành tài liệu đặc tả nghiệp vụ chuẩn (final.md) thông qua kiểm tra đồng bộ GitLab và truy vết đồ thị phụ thuộc (Deep Trace).
+description: 'Dịch ngược mã nguồn thành đặc tả nghiệp vụ. Đối chiếu code thực tế với spec và đọc hiểu mã nguồn developer thông qua kiểm tra đồng bộ GitLab.'
 trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có, tiếp nhận module legacy hoặc đối chiếu code thực tế với spec. Trigger bằng lệnh /qa-code2spec {đường_dẫn_file_api}.
 ---
 
