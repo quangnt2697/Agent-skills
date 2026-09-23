@@ -1,7 +1,7 @@
 ---
 name: ba-spec
 description: Tự động import, scan tài liệu tham chiếu từ Jira issue lần đầu hoặc Confluence để tạo Business-Spec (*-final.md) bàn giao cho QA và DEV. KHÔNG dùng cho Tech-Spec kiến trúc, KHÔNG code, KHÔNG làm test cases.
-trigger: "/ba-spec {issueKey}", "import jira", "/ba-spec confluence {keyword}"
+trigger: Khi cần phân tích một Jira Issue lần đầu tiên hoặc import tài liệu Confluence để tạo Business-Spec. Kích hoạt bằng lệnh /ba-spec {issueKey} hoặc /ba-spec confluence {keyword}.
 ---
 
 # Kỹ năng Phân Tích & Viết Spec (ba-spec)
@@ -60,7 +60,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 60 dòng.
 
 - **Phase 0 — Scan & Duyệt References (GATE 1):**
-  Đọc credentials từ `.env`, lấy metadata Jira thô (ưu tiên REST API curl, tránh MCP tóm tắt sai `summary`), quét Confluence links + attachments, kiểm tra cache `workspace/{issueKey}/source/refs/`, hiển thị bảng cho user duyệt → **DỪNG chờ "OK"**.
+  Đọc credentials từ `.env`, lấy metadata Jira thô (ưu tiên n8n Fast-Path qua `scripts/lib/n8n-client.js`, fallback sang REST API curl nếu n8n offline, tránh MCP tóm tắt sai `summary`), quét Confluence links + attachments, kiểm tra cache `workspace/{issueKey}/source/refs/`, hiển thị bảng cho user duyệt → **DỪNG chờ "OK"**.
   > 📖 Chi tiết API: [references/jira-api-reference.md](references/jira-api-reference.md)
 
 - **Phase 1 — Download (Chỉ tải file thiếu):**

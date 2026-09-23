@@ -63,6 +63,7 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
   - Viết duy nhất 1 file `.feature` ánh xạ 1-1 từ checklist.
   - Ngôn ngữ miền nghiệp vụ thuần túy — **cấm tuyệt đối** biến code, XPath, SQL, `.env` keys.
   - Dùng ranh giới tượng trưng: `TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`.
+  - **Tham số hóa Đa sàn / Đa mã (Multi-Symbol Parameterization):** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** phải tách riêng Scenario độc lập hoặc sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa chi tiết. **CẤM TUYỆT ĐỐI** viết scenario gộp chung làm mờ ranh giới thời gian và kênh dữ liệu.
   - Gắn thẻ bắt buộc: `@smoke/@regression`, `@happy-path/@negative`, `@JIRA-{issueKey}`, `@domain-securities`.
 
 - **Giai đoạn 3 (Xác minh Cú pháp & Bàn giao):** Chạy script kiểm tra định dạng Gherkin:

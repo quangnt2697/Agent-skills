@@ -32,7 +32,8 @@ trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặ
 - **CHẠY NGAY LẬP TỨC**, không thực hiện bất kỳ bước phân tích hay review nào trước khi chạy.
 
 ### Bước 2: Thực Thi Test Suite
-- Chạy Pytest tiêu chuẩn để ghi Full Log:
+- **Ưu tiên (n8n Fast-Path):** Sử dụng `scripts/lib/n8n-client.js` để kích hoạt test ngầm qua webhook `/webhook/qa-run-test` nhằm tối ưu tốc độ và không block tiến trình.
+- **Dự phòng (Chạy nội bộ qua CLI):** Nếu n8n offline, chạy Pytest tiêu chuẩn để ghi Full Log:
   ```bash
   pytest "$TEST_TARGET" \
     -o python_files="test_*.py *_test.py" \
@@ -41,7 +42,7 @@ trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặ
     --junitxml="workspace/{issueKey}/test/result/junit.xml" \
     2>&1 | tee "workspace/{issueKey}/test/result/test-output.log"
   ```
-- Nếu môi trường có `pytest-html`, tự động thêm cờ `--html=... --self-contained-html`.
+- Nếu môi trường có `pytest-html`, tự động thêm cờ `--html=... --self-contained-html` (khi chạy CLI).
 - Không nuốt log (cờ `-s`), toàn bộ console output được lưu vào duy nhất `test-output.log`.
 
 ### Bước 3: Trả Kết Quả Tức Thì & Đề Xuất Kỹ Năng Xử Lý

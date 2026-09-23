@@ -55,6 +55,10 @@ npm install
 echo "⚙️ Đang cấu hình n8n..."
 npm run n8n:setup
 
+# 7. Đồng bộ plugins và rules toàn cục cho Antigravity / Gemini CLI
+echo "🔌 Đang đồng bộ Agent Plugins và Global Rules (bao gồm Focus ADHD)..."
+npm run setup:plugins
+
 echo ""
 echo "🎉 XONG! TOÀN BỘ MÔI TRƯỜNG ĐÃ ĐƯỢC CÀI ĐẶT THÀNH CÔNG."
 echo "============================================================"

@@ -5,8 +5,9 @@
  * vào thư mục cấu hình toàn cục của Gemini CLI và Google Antigravity (~/.gemini/config/plugins/).
  *
  * Cách dùng:
- *   node scripts/setup-plugins.js          # Tạo symlinks cài đặt
- *   node scripts/setup-plugins.js --unlink # Gỡ bỏ symlinks
+ *   node scripts/setup-plugins.js            # Sao chép/đồng bộ plugin (khuyên dùng cho Antigravity IDE)
+ *   node scripts/setup-plugins.js --symlink  # Tạo symlink (dành cho phát triển trên Gemini CLI)
+ *   node scripts/setup-plugins.js --unlink   # Gỡ bỏ các plugin đã cài
  */
 
 import fs from 'node:fs';
@@ -18,17 +19,34 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isUnlink = process.argv.includes('--unlink');
+const isSymlink = process.argv.includes('--symlink');
 const homeDir = os.homedir();
-const targetPluginsDir = path.join(homeDir, '.gemini', 'config', 'plugins');
+const targetConfigDir = path.join(homeDir, '.gemini', 'config');
+const targetPluginsDir = path.join(targetConfigDir, 'plugins');
+const targetReferencesDir = path.join(targetConfigDir, 'references');
+const targetScriptsDir = path.join(targetConfigDir, 'scripts');
+const targetRulesDir = path.join(targetConfigDir, 'rules');
+const targetAgentsMd = path.join(targetConfigDir, 'AGENTS.md');
 const projectRoot = path.resolve(__dirname, '..');
 const sourcePluginsDir = path.join(projectRoot, 'plugins');
-
+const sourceReferencesDir = path.join(projectRoot, 'references');
+const sourceScriptsDir = path.join(projectRoot, 'scripts');
+const sourceRulesDir = path.join(projectRoot, '.agents', 'rules');
+const sourceAgentsMd = path.join(projectRoot, 'AGENTS.md');
 
 console.log('='.repeat(65));
-console.log(isUnlink ? '  GỠ BỎ AGENT-SKILLS PLUGINS' : '  THIẾT LẬP AGENT-SKILLS PLUGINS CHO GEMINI / ANTIGRAVITY');
+if (isUnlink) {
+  console.log('  GỠ BỎ AGENT-SKILLS PLUGINS KHỎI GEMINI / ANTIGRAVITY');
+} else if (isSymlink) {
+  console.log('  THIẾT LẬP SYMLINKS AGENT-SKILLS (CHẾ ĐỘ PHÁT TRIỂN)');
+} else {
+  console.log('  ĐỒNG BỘ AGENT-SKILLS PLUGINS CHO GEMINI / ANTIGRAVITY');
+}
 console.log('='.repeat(65));
-console.log(`Thư mục đích: ${targetPluginsDir}`);
+console.log(`Thư mục config: ${targetConfigDir}`);
+console.log(`Thư mục plugins đích: ${targetPluginsDir}`);
 console.log(`Nguồn plugin: ${sourcePluginsDir}`);
+console.log(`Chế độ: ${isUnlink ? 'Gỡ bỏ' : (isSymlink ? 'Symlink (Dev)' : 'Copy/Sync (An toàn đa project)')}`);
 console.log('');
 
 if (!fs.existsSync(targetPluginsDir)) {
@@ -92,18 +110,15 @@ for (const pluginDirName of subPlugins) {
   if (isUnlink) {
     if (fs.existsSync(linkDest)) {
       try {
-        const stat = fs.lstatSync(linkDest);
-        if (stat.isSymbolicLink()) {
-          fs.unlinkSync(linkDest);
-          console.log(`  - Đã gỡ bỏ: ${pluginName}`);
-          successCount++;
-        }
+        fs.rmSync(linkDest, { recursive: true, force: true });
+        console.log(`  - Đã gỡ bỏ: ${pluginName}`);
+        successCount++;
       } catch (err) {
         console.warn(`  ⚠️ Không thể gỡ bỏ ${pluginName}: ${err.message}`);
       }
     }
-  } else {
-    // Kiểm tra xem đích đã tồn tại chưa
+  } else if (isSymlink) {
+    // Chế độ Symlink (Dev)
     if (fs.existsSync(linkDest)) {
       const stat = fs.lstatSync(linkDest);
       if (stat.isSymbolicLink()) {
@@ -117,18 +132,106 @@ for (const pluginDirName of subPlugins) {
         } catch (e) {}
         fs.unlinkSync(linkDest);
       } else {
-        console.warn(`  ⚠️ Cảnh báo: ${linkDest} tồn tại nhưng không phải symlink, bỏ qua để tránh ghi đè.`);
-        continue;
+        fs.rmSync(linkDest, { recursive: true, force: true });
       }
     }
 
     try {
       fs.symlinkSync(pluginSrc, linkDest, 'dir');
-      console.log(`  ✅ Đã liên kết: ${pluginName} -> plugins/${pluginDirName}`);
+      console.log(`  ✅ Đã liên kết symlink: ${pluginName} -> plugins/${pluginDirName}`);
       successCount++;
     } catch (err) {
       console.error(`  ❌ Lỗi khi tạo symlink cho ${pluginName}: ${err.message}`);
     }
+  } else {
+    // Chế độ Copy/Sync (Default - Bắt buộc cho Antigravity IDE để tránh lỗi vi phạm ranh giới workspace)
+    if (fs.existsSync(linkDest)) {
+      try {
+        const stat = fs.lstatSync(linkDest);
+        if (stat.isSymbolicLink()) {
+          fs.unlinkSync(linkDest);
+        } else {
+          fs.rmSync(linkDest, { recursive: true, force: true });
+        }
+      } catch (e) {
+        fs.rmSync(linkDest, { recursive: true, force: true });
+      }
+    }
+
+    try {
+      fs.cpSync(pluginSrc, linkDest, { recursive: true, dereference: true, force: true });
+      console.log(`  ✅ Đã đồng bộ thư mục: ${pluginName}`);
+      successCount++;
+    } catch (err) {
+      console.error(`  ❌ Lỗi khi sao chép ${pluginName}: ${err.message}`);
+    }
+  }
+}
+
+// Đồng bộ các thư mục tài nguyên, script và quy tắc dùng chung
+if (!isUnlink) {
+  if (fs.existsSync(sourceReferencesDir)) {
+    try {
+      if (fs.existsSync(targetReferencesDir)) {
+        const stat = fs.lstatSync(targetReferencesDir);
+        if (stat.isSymbolicLink()) fs.unlinkSync(targetReferencesDir);
+      }
+      fs.cpSync(sourceReferencesDir, targetReferencesDir, { recursive: true, dereference: true, force: true });
+      console.log(`  ✅ Đã đồng bộ tài liệu dùng chung: references/ -> ~/.gemini/config/references/`);
+    } catch (err) {
+      console.warn(`  ⚠️ Cảnh báo khi sao chép references/: ${err.message}`);
+    }
+  }
+
+  if (fs.existsSync(sourceScriptsDir)) {
+    try {
+      if (fs.existsSync(targetScriptsDir)) {
+        const stat = fs.lstatSync(targetScriptsDir);
+        if (stat.isSymbolicLink()) fs.unlinkSync(targetScriptsDir);
+      }
+      fs.cpSync(sourceScriptsDir, targetScriptsDir, { recursive: true, dereference: true, force: true });
+      console.log(`  ✅ Đã đồng bộ thư mục scripts/: scripts/ -> ~/.gemini/config/scripts/`);
+    } catch (err) {
+      console.warn(`  ⚠️ Cảnh báo khi sao chép scripts/: ${err.message}`);
+    }
+  }
+
+  // Đồng bộ AGENTS.md sang ~/.gemini/config/AGENTS.md (Áp dụng Global cho Antigravity IDE)
+  if (fs.existsSync(sourceAgentsMd)) {
+    try {
+      if (fs.existsSync(targetAgentsMd)) {
+        const stat = fs.lstatSync(targetAgentsMd);
+        if (stat.isSymbolicLink()) fs.unlinkSync(targetAgentsMd);
+      }
+      fs.copyFileSync(sourceAgentsMd, targetAgentsMd);
+      console.log(`  ✅ Đã đồng bộ luật hệ thống toàn cục: AGENTS.md -> ~/.gemini/config/AGENTS.md`);
+    } catch (err) {
+      console.warn(`  ⚠️ Cảnh báo khi sao chép AGENTS.md: ${err.message}`);
+    }
+  }
+
+  // Đồng bộ thư mục rules/ sang ~/.gemini/config/rules/ (Chứa action-first-adhd.md)
+  if (fs.existsSync(sourceRulesDir)) {
+    try {
+      if (fs.existsSync(targetRulesDir)) {
+        const stat = fs.lstatSync(targetRulesDir);
+        if (stat.isSymbolicLink()) fs.unlinkSync(targetRulesDir);
+      }
+      fs.cpSync(sourceRulesDir, targetRulesDir, { recursive: true, dereference: true, force: true });
+      console.log(`  ✅ Đã đồng bộ thư mục rules toàn cục: rules/ -> ~/.gemini/config/rules/`);
+    } catch (err) {
+      console.warn(`  ⚠️ Cảnh báo khi sao chép rules/: ${err.message}`);
+    }
+  }
+} else {
+  if (fs.existsSync(targetReferencesDir)) {
+    try { fs.rmSync(targetReferencesDir, { recursive: true, force: true }); } catch (e) {}
+  }
+  if (fs.existsSync(targetScriptsDir)) {
+    try { fs.rmSync(targetScriptsDir, { recursive: true, force: true }); } catch (e) {}
+  }
+  if (fs.existsSync(targetRulesDir)) {
+    try { fs.rmSync(targetRulesDir, { recursive: true, force: true }); } catch (e) {}
   }
 }
 
@@ -139,6 +242,6 @@ if (isUnlink) {
   console.log(`🎉 Hoàn tất thiết lập ${successCount}/${subPlugins.length} plugins!`);
   console.log('');
   console.log('📌 Giờ đây khi mở bất kỳ project nào trong Gemini CLI hoặc Antigravity,');
-  console.log('   tất cả 42 skills và 7 agents sẽ được nhận diện và sử dụng tự động.');
+  console.log('   tất cả 44 skills và 7 agents sẽ được nhận diện và thực thi an toàn (không bị chặn ranh giới file).');
 }
 console.log('='.repeat(65));

@@ -33,12 +33,13 @@ npm run n8n:setup
 
 Do `agent-skills` được tổ chức theo kiến trúc modular gồm 8 plugins chuyên biệt (`ba-po`, `qa`, `dev`, `scrum-master`, v.v.), bạn cần link chúng vào công cụ Agent CLI trên máy của mình.
 
-**Bước 1: Link Plugins**
-Chạy lệnh sau để hệ thống tự động nhận diện toàn bộ skills (dùng được cho cả Antigravity CLI và Gemini CLI):
+**Bước 1: Link Plugins & Đồng Bộ Global Rules**
+Chạy lệnh sau để hệ thống tự động nhận diện toàn bộ skills và đồng bộ hệ thống Rules cốt lõi (Action-First, Focus Protocol / ADHD-Friendly):
 ```bash
 npm run setup:plugins
+# hoặc ngắn gọn: npm run setup
 ```
-*(Lệnh trên tạo các symlinks an toàn từ 8 sub-plugins vào thư mục cấu hình toàn cục `~/.gemini/config/plugins/`. Nếu muốn gỡ bỏ, chỉ cần chạy: `npm run unlink:plugins`).*
+*(Lệnh trên sẽ đồng bộ an toàn 8 sub-plugins, tài liệu tham chiếu, script hỗ trợ cùng toàn bộ luật hệ thống `AGENTS.md` và thư mục `rules/` vào cấu hình toàn cục `~/.gemini/config/`. Nếu muốn gỡ bỏ, chỉ cần chạy: `npm run unlink:plugins`).*
 
 **Bước 2: Sử dụng với AI Agent**
 Bây giờ, bạn có thể gọi trực tiếp các lệnh (slash commands) tích hợp sẵn trong khung chat của agent. Dưới đây là các lệnh phổ biến:

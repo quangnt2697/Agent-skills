@@ -48,6 +48,7 @@ Skills áp dụng theo thứ tự: `dev-spec-driven-development` → `dev-planni
   plugins/qa/skills/qa-auto-design/references/sdk-map.json
   ```
   File này chứa đường dẫn đến class Auth, Trading API, MarketData API, WS Client đã có sẵn. Đọc trước để tránh viết lại code đã tồn tại.
+- **Quy tắc Tham số hóa Đa sàn / Đa mã (Multi-Symbol Parameterization):** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** phải tách riêng Scenario độc lập hoặc sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa chi tiết. **CẤM TUYỆT ĐỐI** viết scenario gộp chung làm mờ ranh giới thời gian và kênh dữ liệu.
 
 ### BA Pipeline
 `/ba-spec {issueKey} → Scan references → Extract → Gap detection → ba-interview-me → *-final.md`

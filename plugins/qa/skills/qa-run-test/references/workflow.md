@@ -11,7 +11,8 @@
 - **CHẠY NGAY:** Tuyệt đối KHÔNG đọc spec (`final.md`), không đọc checklist, không kiểm tra lan man trước khi chạy.
 
 ### Bước 2: Thực thi Test Suite Ngay Lập Tức
-- Chạy lệnh Pytest tiêu chuẩn với cờ `-s` (không nuốt log), `-v` (chi tiết), `-rA` (tổng kết mọi test), `--tb=short`:
+- **Ưu tiên (n8n Fast-Path):** Gọi `scripts/lib/n8n-client.js` để kích hoạt n8n webhook `/webhook/qa-run-test`.
+- **Dự phòng (CLI Fallback):** Nếu n8n offline, chạy lệnh Pytest tiêu chuẩn với cờ `-s` (không nuốt log), `-v` (chi tiết), `-rA` (tổng kết mọi test), `--tb=short`:
   ```bash
   pytest "$TEST_TARGET" \
     -o python_files="test_*.py *_test.py" \

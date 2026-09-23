@@ -1,7 +1,7 @@
 ---
 name: ba-refine
 description: Brainstorm, phân kỳ-hội tụ (refine) các ý tưởng thô/mơ hồ thành spec chi tiết rõ ràng, sau đó cập nhật lại lên Jira. Không dùng để import Jira lần đầu khi đã có spec rõ ràng.
-trigger: /ba-refine {issueKey}", "refine jira task", "clarify requirements
+trigger: Khi có Jira task ý tưởng sơ khai/mơ hồ cần brainstorm hoặc làm rõ yêu cầu. Kích hoạt bằng lệnh /ba-refine {issueKey}.
 ---
 
 # Kỹ năng Mài giũa Spec (ba-refine)
@@ -39,7 +39,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành 
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng.
 
 - **Giai đoạn 0 (Scan & Tổng hợp — Gate 1):**
-  Chuẩn hóa `{issueKey}`, đọc `.env`, tải metadata Jira, quét Confluence + attachments, trình bảng cho user duyệt, tải file thiếu.
+  Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira (ưu tiên n8n Fast-Path qua `scripts/lib/n8n-client.js`), quét Confluence + attachments, trình bảng cho user duyệt, tải file thiếu.
 
 - **Giai đoạn 1 (Phân kỳ — Thấu hiểu & Mở rộng):**
   HMW statement, chất vấn user qua `ba-interview-me` (đạt ≥90% confidence), sinh 5-8 idea variations.
