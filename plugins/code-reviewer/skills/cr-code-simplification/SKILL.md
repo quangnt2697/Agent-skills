@@ -1,7 +1,7 @@
 ---
 name: cr-code-simplification
-description: 'Đơn giản hóa code cho rõ ràng. Phân chia logic theo persona: Dev (tối ưu hóa app code, kiến trúc) và QA (tối ưu hóa automation test, BDD, data mock).'
-trigger: Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó đọc, khó bảo trì, hoặc chứa sự phức tạp thừa thãi.
+description: 'Đơn giản hóa code cho rõ ràng. Phân chia logic theo persona: Dev (7-Rung Ladder trước khi viết, tối ưu hóa app code, kiến trúc) và QA (quy ước comment test-intent/simplify/boundary, tối ưu hóa automation test, BDD, data mock).'
+trigger: Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó đọc, khó bảo trì, hoặc chứa sự phức tạp thừa thãi. Trigger bằng lệnh '/code-simplify' hoặc '/cr-simplify'.
 ---
 
 # Kỹ năng: Đơn giản hóa Code (Code Simplification)
@@ -39,6 +39,27 @@ Tập trung vào **Test Scripts, Automation, BDD Gherkin, Mock Data**:
 - **Dọn dẹp Page Object Model:** Xóa các element locators không dùng tới, tránh duplicate locator.
 - **Teardown Gọn gàng:** Đơn giản hóa cơ chế dọn dẹp data rác sau khi test chạy xong.
 
+### Quy Ước Comment cho Test Code (QA-exclusive)
+
+Test code có quy ước comment **khác** với app code. Lý do: test code cần rõ **mục tiêu kiểm thử**, không chỉ giải thích code làm gì.
+
+| Convention | Vị trí áp dụng | Mục đích | Ví dụ |
+|---|---|---|---|
+| `# test-intent: <mục tiêu>` | Đầu mỗi test function | Ghi rõ test này đang kiểm tra điều gì — thay cho "# test case X" mơ hồ | `# test-intent: vượt hạn mức → hệ thống từ chối lệnh` |
+| `# simplify: <lý do>` | Trước khi gộp/rút gọn | Gộp test data/assert có chủ ý, ghi rõ tradeoff | `# simplify: gộp 3 assert status thành 1 custom helper` |
+| `# boundary: <giá trị>` | Tại giá trị biên trong test data | Phân biệt TRONG/TAI/VUOT hạn mức — tài liệu hóa BVA | `# boundary: 500_001 = VUOT_HAN_MUC_HOSE` |
+| `# fixture-scope: <scope>` | Đầu fixture phức tạp | Giải rõ lý do dùng session/module scope | `# fixture-scope: session — auth token tốn 2s khởi tạo` |
+
+**Khác với Ponytail `# ponytail: <lý do>` (chỉ dùng cho app code):**
+- Ponytail đánh dấu **simplification trong lúạ code** — áp dụng khi chọn giải pháp đơn giản hơn có chủ ý
+- Test conventions đánh dấu **ý định kiểm thử** — giúp QA khác hiểu test này cover gì và vì sao viết vậy
+
+**Never-Cut List cho Test Code** — cấm đơn giản hóa các yếu tố sau:
+- ❌ `assert` / `expect` — không xóa assertion dù nó có vẻ thừa
+- ❌ `teardown` / `finally` block — data cleanup là bắt buộc
+- ❌ Boundary test case `[P0]` — VUOT/TAI/DUOI là một bộ 3, không cắt
+- ❌ Error path assertion — kiểm tra mã lỗi là minh chứng hợp đồng phi trực tiếp
+
 ## Nguyên tắc Đơn giản hóa Chung
 
 ### 1. Giữ nguyên vẹn Hành vi (Preserve Behavior Exactly)
@@ -53,12 +74,30 @@ Tránh đơn giản hóa quá đà: gộp hàm quá hung hãn, gộp các logic 
 ### 4. Chỉ gói gọn ở Chỗ Vừa Sửa (Scope to What Changed)
 Chỉ đơn giản hóa ở những đoạn code vừa mới bị sửa đổi gần đây, tránh refactor lan man.
 
-## Quy trình Đơn giản hóa
+## 0. Kiểm Tra Trước Khi Đơn Giản Hóa — 7-Rung Ladder (Bắt buộc)
 
-1. Hiểu Hàng rào Chesterton: Tại sao nó tồn tại?
-2. Triển khai các thay đổi Từng bước một. Chạy bộ test suite sau mỗi lần sửa.
-3. Nếu test Pass → commit (hoặc đi tiếp). Nếu test Fail → Revert lại ngay.
-4. Kiểm chứng kết quả cuối cùng xem có thực sự "đơn giản hơn" không.
+Trước khi viết bất kỳ dòng code thay thế nào, dừng lại và leo theo thước:
+
+```
+1. Có cần tồn tại không?       → Không: xóa đi (YAGNI)
+2. Đã có trong codebase này?   → Tái sử dụng, không viết lại
+3. Stdlib/built-in làm được?   → Dùng ngay, không wrap thêm
+4. Platform native hỗ trợ?       → Dùng platform (vd: `input[type=date]` thay date-picker lib)
+5. Dependency đã cài có giải?  → Dùng API có sẵn
+6. Viết được 1 dòng?           → Viết 1 dòng
+7. Không có bước nào ở trên?  → Viết minimum cần thiết
+```
+
+**Ladder chạy SAU khi đã hiểu vấn đề** — không phải thay thế việc đọc code.
+**"Lazy"** nghĩa là hiệu quả, không cẩu thả: validation, error handling, security, a11y luôn được giữ nguyên.
+
+> Khi động chạm vào simplification có chủ ý (cắt tối đa nhưng vẫn đủ đúng), gọi rõ bằng comment:
+> - **App code:** `# ponytail: <lý do>` (VD: `# ponytail: browser has one`)
+> - **Test code:** xem Quy ước Comment phía dưới
+
+---
+
+## Quy Ước
 
 ## Các Biện hộ Thường gặp
 

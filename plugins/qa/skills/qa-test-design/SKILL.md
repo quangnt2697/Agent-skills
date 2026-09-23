@@ -35,6 +35,30 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
   - Gán nhãn ưu tiên `[P0]`, `[P1]`, `[P2]`. Mỗi item bắt đầu bằng **động từ hành động**, lượng hóa rõ ràng.
   - Tham chiếu kỹ thuật BVA/EP: [qa-testing-checklist.md](references/qa-testing-checklist.md).
 
+- **Giai đoạn 1.5 (Jev Severity Scoring — Optional, sau khi có checklist thô):**
+
+  Nếu `TYPESAFE_API_KEY` có trong env, agent chạy Jev để auto-label severity cho từng test case:
+
+  ```python
+  # Gửi state = nội dung test case (mô tả + điều kiện + kết quả kỳ vọng)
+  questions = [
+      score("Mức độ critical của test case này đối với hệ thống chứng khoán?",
+            legend={0: "low — UX phụ, không ảnh hưởng giao dịch",
+                    1: "medium — tính năng phụ, có workaround",
+                    2: "high — luồng chính, ảnh hưởng trải nghiệm",
+                    3: "critical — giao dịch/tiền/bảo mật bị ảnh hưởng"}),
+      choice("Test case này thuộc loại nào?",
+             options=["happy-path", "edge-case", "negative", "security", "performance", "boundary-bva"])
+  ]
+  # Mapping score → nhãn ưu tiên:
+  # score >= 2.5 → [P0], score >= 1.5 → [P1], score < 1.5 → [P2]
+  ```
+
+  **Fallback thủ công (không có API key):** Tiếp tục dùng quy tắc gán nhãn hiện tại:
+  - `[P0]`: Boundary BVA + Security + giao dịch tiền/cổ phiếu
+  - `[P1]`: Happy path chính + Negative scenario ảnh hưởng UX
+  - `[P2]`: Nice-to-have, tính năng phụ, performance không critical
+
 - **Giai đoạn 2 (Thiết kế Kịch bản BDD Gherkin `{issueKey}.feature`):**
   - Viết duy nhất 1 file `.feature` ánh xạ 1-1 từ checklist.
   - Ngôn ngữ miền nghiệp vụ thuần túy — **cấm tuyệt đối** biến code, XPath, SQL, `.env` keys.

@@ -37,3 +37,33 @@ trigger: Khi yêu cầu bị thiếu thông tin cốt lõi, người dùng gọi
   
   *Gợi ý của tôi:* Nếu là phiên bản đầu tiên trên Mobile App, ta nên ưu tiên xuất file PDF theo mẫu sao kê chuẩn. Bạn thấy phương án này có phù hợp không?
   ```
+
+## 5. Jev Confidence Gate — Đánh Giá Độ Đầy Đủ Thông Tin (Optional)
+
+Sau mỗi vòng phỏng vấn, agent tự kiểm tra bằng các câu hỏi TypeSafe Jev (**chỉ khi `TYPESAFE_API_KEY` có trong env**). Nếu không có API key, áp dụng fallback thủ công bên dưới.
+
+### Khi có TYPESAFE_API_KEY:
+```python
+# Gửi state = toàn bộ nội dung hội thoại tới giờ
+questions = [
+    noul("Câu trả lời vừa rồi đã giải quyết được câu hỏi hiện tại?"),
+    score("Mức độ đầy đủ thông tin để viết spec (0=trống, 5=đủ, 10=đầy đủ tuyệt đối)?",
+          legend={0: "không có gì", 5: "đủ viết spec cơ bản", 10: "đầy đủ mọi edge case"}),
+    choice("Bước tiếp theo tối ưu là gì?",
+           options=["đặt-câu-hỏi-tiếp", "tổng-hợp-spec", "yêu-cầu-clarify-thêm"])
+]
+# Confidence-gated routing:
+# - score >= 7 AND noul >= 0.8 → tổng hợp spec
+# - score < 7 OR noul < 0.5   → đặt thêm câu hỏi
+# - choice == "yêu-cầu-clarify-thêm" → hỏi user làm rõ điểm cụ thể
+```
+
+### Fallback thủ công (không có API key):
+Trước khi tổng hợp spec, agent tự kiểm tra checklist:
+- [ ] Đã biết **Who** (actor chính)?
+- [ ] Đã biết **What** (hành vi kỳ vọng)?
+- [ ] Đã biết **Why** (giá trị nghiệp vụ)?
+- [ ] Đã xác định **Out of Scope** rõ ràng?
+- [ ] Đã cover ít nhất 1 **edge case** hoặc **negative scenario**?
+
+Nếu ≥ 4/5 → chuyển sang tổng hợp spec. Nếu < 4/5 → đặt thêm câu hỏi.

@@ -1,7 +1,7 @@
 ---
 name: cr-review-code-and-quality
 description: 'Đánh giá code đa chiều (multi-axis code review) kết hợp kiểm soát chất lượng theo triết lý Hybrid của Alibaba Open Code Review: lọc file tất định, ruleset theo ngôn ngữ/domain, và phản tư chống ảo giác. Phân chia rõ ràng: Dev (kiến trúc, logic, hiệu năng, clean code) và QA (độ bao phủ kịch bản kiểm thử, edge cases, automation). Sử dụng trước khi merge bất kỳ thay đổi nào vào nhánh chính.'
-trigger: Khi cần thực hiện tác vụ cr-review-code-and-quality
+trigger: "Sử dụng khi: (1) chuẩn bị merge/push code vào nhánh chính, (2) nhận yêu cầu '/cr-review', 'review code', 'kiểm tra code', 'đánh giá PR', (3) sau khi DEV hoàn thành implementation cần review trước bàn giao QA, (4) phát hiện code smell, bug tiềm ẩn, hoặc vi phạm security trong codebase hiện tại."
 ---
 
 # Kỹ năng: Đánh giá Code và Chất lượng (Review Code and Quality)
