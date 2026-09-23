@@ -4,7 +4,7 @@ description: "Thực hiện đánh giá code đa chiều dựa trên Persona (De
 
 Kích hoạt kỹ năng cr-review-code-and-quality.
 
-Hãy thực hiện code review dựa trên vai trò (persona) hiện tại của bạn:
+Hãy thực hiện code review theo quy trình 3 pha chuẩn mực (Pre-filtering/Bundling -> Deep Review theo Persona -> Fact-Checking Filter):
 
 1. NẾU LÀ QA PERSONA:
 Tập trung vào:
@@ -19,6 +19,10 @@ Tập trung vào:
 - **Hiệu năng:** Có bị N+1 query không? Các luồng dữ liệu đã tối ưu chưa? Có rò rỉ bộ nhớ không?
 - **Bảo mật:** Dữ liệu đầu vào có được validate/sanitize chưa?
 - **Dọn dẹp:** Xác định các "xác chết" (dead code) hoặc "magic numbers".
+
+3. CỔNG PHẢN TƯ KIỂM CHỨNG (FACT-CHECKING):
+- Loại bỏ các nhận xét sai lệch so với diff (Ground A & Ground B).
+- Luôn trích xuất code nguyên văn từ diff (Existing Code) và đề xuất sửa đổi cụ thể để triệt tiêu lỗi lệch dòng.
 
 Mọi đánh giá phải được phân loại (Nghiêm trọng, Bắt buộc, Đề xuất).
 Xuất kết quả dưới định dạng có cấu trúc bao gồm vị trí (file:line) và khuyến nghị sửa chữa cụ thể.

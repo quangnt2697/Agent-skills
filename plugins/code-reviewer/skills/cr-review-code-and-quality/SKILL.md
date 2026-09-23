@@ -1,6 +1,6 @@
 ---
 name: cr-review-code-and-quality
-description: 'Thực hiện đánh giá code đa chiều (multi-axis code review) kết hợp kiểm soát chất lượng. Kỹ năng này phân chia nhiệm vụ review rõ ràng theo persona: Dev (tập trung vào kiến trúc, logic, hiệu năng, clean code) và QA (tập trung vào độ bao phủ test, edge cases, automation). Sử dụng trước khi merge bất kỳ thay đổi nào vào nhánh chính.'
+description: 'Đánh giá code đa chiều (multi-axis code review) kết hợp kiểm soát chất lượng theo triết lý Hybrid của Alibaba Open Code Review: lọc file tất định, ruleset theo ngôn ngữ/domain, và phản tư chống ảo giác. Phân chia rõ ràng: Dev (kiến trúc, logic, hiệu năng, clean code) và QA (độ bao phủ kịch bản kiểm thử, edge cases, automation). Sử dụng trước khi merge bất kỳ thay đổi nào vào nhánh chính.'
 trigger: Khi cần thực hiện tác vụ cr-review-code-and-quality
 ---
 
@@ -8,117 +8,121 @@ trigger: Khi cần thực hiện tác vụ cr-review-code-and-quality
 
 ## Tổng quan
 
-Đánh giá code đa chiều thông qua các cổng kiểm soát chất lượng (quality gates). Mọi thay đổi đều phải được review trước khi merge — không có ngoại lệ. Việc đánh giá (review) bao phủ năm trục: tính chính xác, khả năng đọc hiểu, kiến trúc, bảo mật, và hiệu năng.
+Đánh giá code đa chiều thông qua các cổng kiểm soát chất lượng (quality gates) áp dụng triết lý kiến trúc **Deterministic Engineering × Agent Hybrid** (kế thừa từ thực chiến của Alibaba Open Code Review). Mọi thay đổi đều phải được review trước khi merge — không có ngoại lệ.
 
-**Tiêu chuẩn phê duyệt (Approval standard):** Hãy phê duyệt một thay đổi khi nó chắc chắn cải thiện được sức khỏe tổng thể của codebase, ngay cả khi nó không hoàn hảo. Không tồn tại thứ gọi là code hoàn hảo — mục tiêu là sự cải tiến liên tục. Đừng chặn (block) một thay đổi chỉ vì nó không được viết chính xác theo cách bạn muốn. Nếu nó làm codebase tốt lên và tuân thủ các quy ước của dự án, hãy approve nó.
+Quá trình review kết hợp hài hòa giữa **kỹ thuật tất định** (lọc file rác, chia cụm ngữ nghĩa, gán ruleset chuyên biệt, kiểm chứng chống ảo giác) và **năng lực suy luận động của Agent** (phân tích logic, truy vết rủi ro, đánh giá chéo theo Persona).
+
+**Tiêu chuẩn phê duyệt (Approval standard):** Hãy phê duyệt một thay đổi khi nó chắc chắn cải thiện được sức khỏe tổng thể của codebase, ngay cả khi nó không hoàn hảo. Mục tiêu là sự cải tiến liên tục và độ tin cậy thực tế, không chặn merge vì sở thích cá nhân.
+
+---
 
 ## Khi nào sử dụng
 
-- Trước khi merge bất kỳ thay đổi nào vào nhánh chính — không có ngoại lệ
-- Review round 1: DEV tự review code mình vừa viết, trước khi trình bày kết quả cho user
-- Review round 2 (tuỳ chọn): QA review từ góc độ testability cho các thay đổi critical (thanh toán, auth, bảo mật), thay đổi phức tạp nhiều edge case, hoặc bug fix cần xác nhận đúng root cause
-- Sau khi `qa-auto-design` sinh code automation — review chất lượng test code trước khi chạy
+- Trước khi merge bất kỳ thay đổi nào vào nhánh chính — không có ngoại lệ.
+- Review round 1: DEV tự review code mình vừa viết trước khi trình bày kết quả cho user.
+- Review round 2: QA review từ góc độ testability cho các thay đổi critical (thanh toán, auth, giao dịch chứng khoán), thay đổi phức tạp nhiều edge cases, hoặc bug fix cần xác nhận đúng root cause.
+- Sau khi `qa-auto-design` sinh code automation — review chất lượng test code trước khi chạy.
 
 **KHÔNG sử dụng khi:**
-- Chỉ cần dọn dẹp code đã chạy đúng mà không tìm lỗi → dùng `code-simplification`
+- Chỉ cần dọn dẹp code đã chạy đúng mà không tìm lỗi → dùng `cr-code-simplification`
 - Cần audit toàn diện kèm tự động sửa từ đầu đến cuối → dùng `dev-audit-and-fix`
 - Chỉ cần chạy lại test đã có → dùng `qa-run-test`
 
-## Phân chia Trách nhiệm theo Persona (Persona-based Review)
+---
 
-Tuỳ thuộc vào việc bạn đang đóng vai trò (persona) nào, trọng tâm đánh giá của bạn sẽ khác nhau để đảm bảo chất lượng toàn diện mà không giẫm chân lên nhau:
+## Quy Trình Đánh Giá 3 Pha Chuẩn Mực (The 3-Phase Review Pipeline)
 
-### 1. Góc nhìn của Dev (Software Developer)
+### Pha 1: Chuẩn Bị Tất Định & Chia Cụm (Deterministic Pre-filtering & Bundling)
+
+1. **Lọc file rác (Pre-filtering):** Tự động loại trừ lockfiles (`package-lock.json`, `go.sum`...), binary, generated code (`*.min.js`, `*.pb.go`...). Không nạp các file này vào prompt để tiết kiệm token và tránh làm loãng ngữ cảnh. Chi tiết xem tại: **[file-bundling-and-filtering.md](references/file-bundling-and-filtering.md)**.
+2. **Chia cụm ngữ nghĩa (Smart File Bundling):** Nếu PR có từ 6 files trở lên, phân chia thành các nhóm tối đa 5–8 files liên quan trực tiếp (Data/Schema, Logic/Test, API/Route, Config/i18n) để review theo phương thức chia để trị (divide-and-conquer).
+3. **Phân tích Rủi ro & Lập Kế hoạch (Plan Mode):** Khi thay đổi vượt ngưỡng (>50 dòng/file hoặc >100 dòng/cụm), chạy pha đánh giá rủi ro sơ bộ: xác định các điểm nguy hiểm tiềm ẩn (breaking changes, race condition, data migration) và lập danh sách context tools (`file_read`, `grep_search`) cần tra cứu trước khi kết luận.
+4. **Nạp Ngữ Cảnh MR từ GitLab (Nếu review từ xa):** Áp dụng nguyên tắc Remote-First để lấy diff mới nhất, pipeline CI và notes thảo luận chưa giải quyết. Chi tiết tại: **[gitlab-mcp-integration.md](references/gitlab-mcp-integration.md)**.
+5. **(Tùy chọn) Fast-Path với CLI `ocr`:** Nếu máy trạm đã cài đặt `@alibaba-group/open-code-review`, Agent có thể gọi `ocr delegate preview --format json` và `ocr delegate rule <files...>` để lấy danh sách file và phân nhóm tự động.
+
+---
+
+### Pha 2: Đánh Giá Đa Chiều Theo Persona & Ngôn Ngữ (Deep Review)
+
+Áp dụng quy tắc chuyên sâu tương ứng với từng ngôn ngữ và nghiệp vụ tại: **[language-and-domain-rules.md](references/language-and-domain-rules.md)** (TypeScript/React, Python, Go, Chứng khoán KRX...).
+
+#### 1. Góc nhìn của DEV (Software Developer)
 Trọng tâm: **Chất lượng mã nguồn, Kiến trúc, và Hiệu năng.**
-- **Kiến trúc & Clean Code:** Code mới có tuân thủ SOLID, DRY không? Ranh giới module có bị phá vỡ không? Việc trừu tượng hóa (abstraction) có hợp lý hay đang over-engineering?
-- **Hiệu năng & Tối ưu:** Có bị N+1 query không? Các luồng dữ liệu (data flow) và xử lý bất đồng bộ (async/await) đã tối ưu chưa? Có rò rỉ bộ nhớ hay re-render thừa thãi trên UI không?
-- **Bảo mật:** Dữ liệu đầu vào có được sanitize không? Tránh lỗi Injection, XSS, v.v.
-- **Dọn dẹp:** Xác định "dead code", "magic numbers", code lặp lặp lại để refactor.
+- **Kiến trúc & Clean Code:** Tuân thủ SOLID, DRY, không phá vỡ module boundary, không over-engineering.
+- **Hiệu năng & Tối ưu:** Triệt tiêu N+1 query, tối ưu luồng dữ liệu async, tránh re-render và memory leak trong closure/listeners.
+- **Bảo mật:** Sanitize input tại ranh giới tin cậy, ngăn ngừa XSS/SQL Injection, bảo vệ secrets.
 
-### 2. Góc nhìn của QA / SDET
+#### 2. Góc nhìn của QA / SDET
 Trọng tâm: **Tính chính xác, Độ bao phủ kiểm thử, và Automation.**
-- **Tính chính xác (Correctness):** Code thay đổi có đáp ứng đúng Acceptance Criteria / Tech-Spec không? Các cases có thể gây lỗi (negative cases) đã được lường trước chưa?
-- **Độ bao phủ Test (Test Coverage):** Lập trình viên đã viết Unit Test cho logic mới chưa? Test có đi thẳng vào trọng tâm hay chỉ viết cho đủ coverage? Có bỏ sót edge cases hay giá trị biên nào không?
-- **Chất lượng Test Code:** Nếu PR có bao gồm code Automation Test, hãy review xem test có độc lập không, dọn dẹp dữ liệu (teardown) có sạch không, mock data có hợp lệ không.
-- **Rủi ro hồi quy (Regression Risks):** Thay đổi này có khả năng làm vỡ tính năng ở khu vực nào khác không? Cần thêm test E2E/Integration nào không?
+- **Tính chính xác (Correctness):** Bám sát Acceptance Criteria trong `*-final.md`, kiểm tra đầy đủ boundary và negative edge cases.
+- **Độ bao phủ Test (Coverage):** Có unit test cho logic mới chưa? Test có assertion thực chất hay chỉ lấy số liệu coverage? Có test regression cho bug fix không?
+- **Chất lượng Test Code:** Kiểm tra tính độc lập của test, teardown dữ liệu sạch sẽ, mock data thực tế.
 
-> 📖 **[CHỈ ĐỌC KHI REVIEW TRÊN GITLAB]:** Hướng dẫn nạp ngữ cảnh MR qua MCP, tự động lấy diff và pipeline CI tại: **[gitlab-mcp-integration.md](references/gitlab-mcp-integration.md)**
+#### 5 Trục Đánh Giá Cốt Lõi:
+1. **Tính Chính xác (Correctness):** Logic đúng spec, xử lý đủ null/undefined/edge cases, không race condition.
+2. **Khả năng Đọc hiểu (Readability):** Tên biến rõ ràng, luồng điều khiển phẳng (tránh nested if/else/ternary), không dead code.
+3. **Kiến trúc (Architecture):** Tôn trọng patterns hiện có, không rò rỉ abstraction, type boundaries chặt chẽ.
+4. **Bảo mật (Security):** Validate & sanitize user input, tham số hóa SQL, ẩn secrets, phân quyền chặt chẽ.
+5. **Hiệu năng (Performance):** Không N+1 query, không vòng lặp vô tận, endpoint danh sách có phân trang.
 
-## 5 Trục Đánh giá Cốt lõi (The Five-Axis Review)
+---
 
-Dù ở persona nào, bạn cũng cần quét qua các trục sau:
+### Pha 3: Cổng Phản Tư & Kiểm Chứng Sự Thật (Fact-Checking Filter)
 
-### 1. Tính Chính xác (Correctness)
-- Khớp với spec/task yêu cầu chưa?
-- Đã xử lý các trường hợp ngoại lệ (edge cases) chưa (null, rỗng, giá trị biên)?
-- Đã xử lý các luồng lỗi (error paths) chưa?
-- Các bài test có đang thực sự đi test đúng trọng tâm không?
-- Có bị lỗi tương tranh (race conditions) hay state bị thiếu nhất quán không?
+Trước khi in ra kết quả cho người dùng, Agent **BẮT BUỘC** chạy toàn bộ findings qua bộ lọc phản tư tại: **[fact-checking-filter.md](references/fact-checking-filter.md)**:
 
-### 2. Khả năng Đọc hiểu & Sự Đơn giản (Readability & Simplicity)
-- Tên biến có mang tính mô tả và nhất quán với quy ước của dự án không?
-- Luồng điều khiển (control flow) có dễ nhìn không (tránh dùng if/else lồng nhau quá sâu)?
-- Code có được tổ chức logic không?
-- Có thể viết bằng ít số dòng code hơn không?
-- Có các "xác chết" (dead code) cần xóa không?
+1. **Áp dụng Protected Subjects Veto:** Giữ lại 100% findings về: *An toàn bộ nhớ (null dereference, memory leak), Concurrency & Race condition, Nghiệp vụ Tiền tệ / Làm tròn chứng khoán, Lỗ hổng bảo mật / Auth, và Breaking API changes*.
+2. **Loại bỏ theo Căn cứ A (Ground A):** Hủy bỏ ngay nhận xét nếu đoạn mã bị chê không hề xuất hiện trong diff của subject file.
+3. **Loại bỏ theo Căn cứ B (Ground B):** Hủy bỏ ngay nhận xét nếu một dòng trong diff mâu thuẫn trực tiếp với nhận xét (ví dụ diff cho thấy đã validate, đã import).
+4. **Chống Lệch Dòng (Pin-point Positioning):** Trích xuất `Existing Code Snippet` nguyên văn từ diff và `Suggested Code Snippet` cụ thể để lập trình viên định vị chính xác vị trí lỗi.
 
-### 3. Kiến trúc (Architecture)
-- Tuân theo các mô hình (patterns) hiện tại hay đang đẻ ra cái mới?
-- Đoạn refactor này làm giảm độ phức tạp hay chỉ đơn giản là bê độ phức tạp đi chỗ khác?
-- Logic của một tính năng cụ thể có đang bị rò rỉ vào trong một module dùng chung (shared) không?
-- Ranh giới kiểu dữ liệu (type boundaries) có rõ ràng không?
+> 📖 **MẪU BÁO CÁO:** Xem định dạng báo cáo chuẩn, phân loại severity và quy tắc trình bày tại: **[review-templates.md](references/review-templates.md)**
 
-### 4. Bảo mật (Security)
-- Dữ liệu người dùng nhập (user input) đã được validate và làm sạch chưa?
-- Các khóa bí mật (secrets) đã được giấu khỏi code chưa?
-- Phân quyền (Auth) đã đặt đúng chỗ chưa?
-- Các câu query SQL đã được tham số hóa chưa?
-
-### 5. Hiệu năng (Performance)
-- Có N+1 query patterns nào không?
-- Có vòng lặp vô tận hay lấy dữ liệu không giới hạn nào không?
-- Endpoint lấy danh sách có quên phân trang (pagination) không?
-
-> 📖 **BẮT BUỘC ĐỌC:** Để biết cách phân loại Severity, sử dụng Checklist Đánh giá và định dạng Output chuẩn, xem tại: **[review-templates.md](references/review-templates.md)**
-
+---
 
 ## Các Biện hộ Thường gặp
 
-| Lý do biện hộ                                          | Thực tế                                                                                                                                                                  |
-|--------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| "Code chạy được rồi, review làm gì cho mất thời gian"  | Review bắt lỗi mà test không bắt được: ranh giới module bị phá, edge case chưa nghĩ tới, lỗ hổng auth. Test chỉ kiểm những gì đã nghĩ ra để kiểm.                        |
-| "PR to quá, review lướt cho nhanh"                     | PR càng to thì tỉ lệ lọt bug càng cao — đó là lý do phải review kỹ hơn, không phải lướt nhanh hơn. Nếu thực sự quá lớn, yêu cầu tách PR.                                 |
-| "Tôi tin dev này, code chắc ổn"                        | Review là về code, không phải về người. Người giỏi nhất vẫn tạo ra bug khi mệt hoặc thiếu ngữ cảnh.                                                                      |
-| "Chỗ này chưa hoàn hảo nhưng thôi, sửa sau"            | "Sửa sau" hiếm khi xảy ra. Hoặc yêu cầu sửa trước merge, hoặc tạo ticket cụ thể có người nhận — đừng để trôi.                                                            |
-| "Không đúng cách tôi hay viết nên tôi request changes" | Tiêu chuẩn là *có làm codebase tốt lên và tuân thủ quy ước dự án không*, không phải *có giống cách tôi viết không*. Sở thích cá nhân thì ghi là `nit:`, đừng chặn merge. |
-| "Bug fix nhỏ xíu, khỏi cần test regression"            | Không có test regression thì đúng bug đó sẽ quay lại. Bug fix mà không kèm test là fix chưa xong.                                                                        |
-| "QA sẽ bắt được lỗi này lúc test"                      | Bắt lỗi ở review rẻ hơn nhiều so với bắt ở khâu test, và rẻ hơn rất nhiều so với bắt ở production.                                                                       |
+| Lý do biện hộ | Thực tế |
+|---|---|
+| "Code chạy được rồi, review làm gì cho mất thời gian" | Review bắt lỗi mà test không bắt được: ranh giới module bị phá, race condition, lỗ hổng auth. Test chỉ kiểm những gì đã nghĩ ra để kiểm. |
+| "PR to quá, review lướt cho nhanh" | PR càng to thì nguy cơ lọt bug càng cao. Áp dụng Smart Bundling (chia cụm 5-8 files) để review triệt để từng cụm, không được lướt. |
+| "Tôi tin dev này, code chắc ổn" | Review là về code, không phải về người. Người giỏi nhất vẫn tạo ra bug khi mệt hoặc thiếu ngữ cảnh. |
+| "Chỗ này chưa hoàn hảo nhưng thôi, sửa sau" | "Sửa sau" hiếm khi xảy ra. Hoặc yêu cầu sửa trước khi merge, hoặc tạo ticket cụ thể có người nhận. |
+| "Không đúng cách tôi hay viết nên tôi request changes" | Tiêu chuẩn là *code có làm codebase tốt lên và tuân thủ quy ước dự án không*, không phải *có giống gu cá nhân của tôi không*. Sở thích cá nhân thì ghi `Nit:`, đừng chặn merge. |
+| "Bug fix nhỏ xíu, khỏi cần test regression" | Không có test regression thì đúng bug đó sẽ quay lại. Bug fix không kèm test là fix chưa xong. |
+| "QA sẽ bắt được lỗi này lúc test" | Bắt lỗi ở review rẻ hơn nhiều so với bắt ở khâu test, và rẻ hơn gấp hàng chục lần so với bắt ở production. |
+
+---
 
 ## Các Dấu hiệu Cảnh báo (Red Flags)
-- Type "LGTM" trong khi không có bằng chứng nào cho thấy đã thực sự đọc code.
-- Chấp nhận lời hứa "để tôi sửa sau" — yêu cầu dọn dẹp trước khi merge.
-- Thay đổi khiến một file vốn đã quá lớn trở nên lớn hơn, thay vì tách nhỏ nó ra.
-- PR fix bug mà không kèm test regression.
+
+- Gõ "LGTM" mà không có bằng chứng nào cho thấy đã đọc và đối chiếu diff.
+- Chấp nhận lời hứa "để tôi sửa sau" mà không có cam kết hoặc issue theo dõi.
 - Review chỉ đọc diff mà không mở file gốc để hiểu ngữ cảnh xung quanh.
-- Toàn bộ nhận xét đều là `nit:` — dấu hiệu chưa chạm tới correctness, kiến trúc hay bảo mật.
-- Approve một PR đụng tới auth/thanh toán/dữ liệu tiền mà không ai review trục Bảo mật.
+- Báo lỗi ảo giác (hallucination) về những đoạn code không hề có trong diff hoặc code đã được xử lý ở dòng trên.
+- Toàn bộ nhận xét đều là `Nit:` — dấu hiệu chưa rà soát trục Tính chính xác, Bảo mật, hoặc Kiến trúc.
+- Approve một PR đụng tới auth, tiền bạc, số dư tài khoản mà không kiểm tra race condition hay sai số làm tròn dấu phẩy động.
+
+---
 
 ## Xác minh
 
-Một lượt review chỉ coi là xong khi:
+Một lượt review chỉ coi là hoàn tất khi:
 
-- [ ] Đã quét đủ 5 trục (chính xác, dễ đọc, kiến trúc, bảo mật, hiệu năng) — trục nào không áp dụng thì nói rõ vì sao
-- [ ] Mỗi nhận xét đều trỏ tới `file:line` cụ thể, không có nhận xét chung chung
-- [ ] Mỗi nhận xét đã được phân loại: Blocking / Nên sửa / `nit:`
-- [ ] Mỗi nhận xét Blocking đều nêu được kịch bản hỏng cụ thể (input nào → kết quả sai nào)
-- [ ] Với PR fix bug: đã xác nhận có test regression tái hiện đúng bug đó
-- [ ] Với persona QA: đã đối chiếu thay đổi với Acceptance Criteria trong `*-final.md`
-- [ ] Kết luận cuối cùng là một trong ba trạng thái rõ ràng: Approve / Approve kèm nit / Request changes
+- [ ] Đã lọc bỏ các file rác (lockfiles, generated code) và thống kê rõ độ bao phủ (`Reviewed: X/Y files`).
+- [ ] Nếu PR lớn (>6 files), đã chia cụm ngữ nghĩa (Smart Bundling) và duyệt đủ 100% các cụm.
+- [ ] Đã quét đủ 5 trục (chính xác, dễ đọc, kiến trúc, bảo mật, hiệu năng).
+- [ ] Đã qua cổng Fact-Checking Filter: loại bỏ triệt để các nhận xét sai diff (Ground A & Ground B).
+- [ ] Mỗi nhận xét đều trích xuất đoạn code nguyên văn (`Existing Code`) và đề xuất sửa đổi cụ thể (`Suggested Fix`).
+- [ ] Mỗi nhận xét đều được dán nhãn mức độ rõ ràng: `Critical`, `Required`, `Nit`, hoặc `FYI`.
+- [ ] Kết luận cuối cùng là một trong ba trạng thái rõ ràng: **Approve**, **Approve kèm Nit**, hoặc **Request Changes**.
+
+---
 
 ## Kết hợp
-- **Kích hoạt trực tiếp khi:** user yêu cầu đánh giá chất lượng (review code) của một đoạn mã, file, hoặc một Pull Request cụ thể.
-- **Lệnh tương tác:** Gọi thông qua lệnh `/review`. Lệnh này sẽ định tuyến prompt dựa trên persona hiện tại (Dev hoặc QA) để đưa ra lăng kính đánh giá phù hợp nhất.
 
+- **Kích hoạt trực tiếp khi:** User yêu cầu đánh giá chất lượng (review code) của một đoạn mã, file, hoặc một Pull / Merge Request cụ thể.
+- **Lệnh tương tác:** Gọi thông qua lệnh `/cr-review` (hoặc `/review`). Lệnh này định tuyến prompt dựa trên persona hiện tại (Dev hoặc QA) để đưa ra lăng kính đánh giá phù hợp nhất.
 
 ---
 <CRITICAL_RULE>
