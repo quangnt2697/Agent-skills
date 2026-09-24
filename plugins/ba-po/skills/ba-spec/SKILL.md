@@ -155,7 +155,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 
 ## Xác minh (Verification)
 
-- [ ] File `workspace/{issueKey}/spec/{issueKey}-final.md` đã được tạo đầy đủ 13 sections chuẩn.
+- [ ] File `workspace/{issueKey}/spec/final.md` đã được tạo đầy đủ 13 sections chuẩn. **Gọi lại `/ba-spec {issueKey}` → ghi đè hoàn toàn file này.**
 - [ ] Mọi Business Rules đều có ID truy vết (`[BR-01]`, `[BR-02]...`).
 - [ ] Acceptance Criteria được viết theo dạng kiểm thử được (Rule-based).
 - [ ] Đã chạy phỏng vấn đạt Confidence Score >= 90%.

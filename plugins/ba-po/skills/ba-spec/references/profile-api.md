@@ -315,7 +315,7 @@ từ PDF và attachments. Profile này bao phủ cả **REST API**, **OpenAPI sp
 
 ## Template Final.md cho API
 
-Sử dụng structure sau cho file `{issueKey}-final.md`:
+Lưu file output tại `workspace/{issueKey}/spec/final.md`. Gọi lại skill → ghi đè hoàn toàn file cũ, không tạo file mới với suffix. Sử dụng structure sau:
 
 ```
 ## 1. Tổng quan

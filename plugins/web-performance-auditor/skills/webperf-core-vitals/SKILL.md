@@ -118,6 +118,15 @@ Phân tích từng category:
 
 ## Output Format
 
+> 📌 **Output duy nhất:** Ghi báo cáo vào `workspace/{issueKey}/trace/webperf-report.md` (nếu có `{issueKey}`), hoặc `reports/webperf-report.md` (nếu kiểm toàn project). Gọi lại skill → **ghi đè** file cũ, không tạo file mới.
+
+## ⚡ Quy Tắc Output File (Output File Rules)
+
+| Trường hợp | Đường dẫn chuẩn | Hành vi khi gọi lại |
+|---|---|---|
+| Audit theo issueKey | `workspace/{issueKey}/trace/webperf-report.md` | **Ghi đè** hoàn toàn |
+| Audit toàn project | `reports/webperf-report.md` | **Ghi đè** hoàn toàn |
+
 ```markdown
 # Web Performance Audit Report
 

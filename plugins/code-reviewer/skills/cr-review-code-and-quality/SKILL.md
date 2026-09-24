@@ -119,6 +119,19 @@ Một lượt review chỉ coi là hoàn tất khi:
 
 ---
 
+## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
+
+> 📌 **1 skill call = 1 lần ghi. Gọi lại skill → ghi đè hoàn toàn file cũ.**
+
+| Trường hợp | Đường dẫn chuẩn | Hành vi khi gọi lại |
+|---|---|---|
+| Review theo issueKey | `workspace/{issueKey}/trace/code-review-report.md` | **Ghi đè** hoàn toàn |
+| Review không có issueKey | `reports/code-review-report.md` | **Ghi đè** hoàn toàn |
+
+**Quy tắc:** KHÔNG tạo file mới với suffix (-v2.md, -round2.md...). KHÔNG append vào file cũ. Luôn overwrite.
+
+---
+
 ## Kết hợp
 
 - **Kích hoạt trực tiếp khi:** User yêu cầu đánh giá chất lượng (review code) của một đoạn mã, file, hoặc một Pull / Merge Request cụ thể.

@@ -15,13 +15,25 @@ const baseUrl = (body.baseUrl || json.baseUrl || ($env && $env.ATLASSIAN_BASE_UR
 const email = ($env && $env.ATLASSIAN_EMAIL) || '';
 const token = ($env && $env.ATLASSIAN_API_TOKEN) || '';
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
-const searchUrl = `${baseUrl}/rest/api/3/search?jql=sprint%20in%20openSprints()%20AND%20statusCategory%20!=%20Done&fields=summary,status,assignee,priority,updated`;
+
+// Migration: /rest/api/3/search?jql= đã bị xóa (HTTP 410, Atlassian CHANGE-2046)
+// Endpoint mới: POST /rest/api/3/search/jql với body JSON
+const searchUrl = `${baseUrl}/rest/api/3/search/jql`;
+const searchMethod = 'POST';
+const searchBody = {
+  jql: 'sprint in openSprints() AND statusCategory != Done',
+  fields: ['summary', 'status', 'assignee', 'priority', 'updated'],
+  maxResults: 100
+};
 
 return [{
   json: {
     baseUrl,
     authHeader,
     searchUrl,
+    searchMethod,
+    searchBody,
     _triggerSource: triggerSource
   }
 }];
+

@@ -72,6 +72,21 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
   ```
   Nếu có lỗi cú pháp ➔ Tự sửa (Self-fix Loop ≤ 3 vòng). Khi pass 100% ➔ Bàn giao cho `qa-auto-design` hoặc `qa-squash-push`.
 
+## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
+
+> 📌 **1 skill call = 1 lần ghi file. Gọi lại skill → ghi đè hoàn toàn file cũ.**
+
+| File Output | Đường dẫn chuẩn | Hành vi khi gọi lại |
+|---|---|---|
+| Checklist kiểm thử | `workspace/{issueKey}/test/checklist.md` | **Ghi đè** toàn bộ nội dung cũ |
+| Kịch bản BDD Gherkin | `workspace/{issueKey}/test/{issueKey}.feature` | **Ghi đè** toàn bộ nội dung cũ |
+
+**Quy tắc:**
+- **KHÔNG** tạo file mới với suffix (checklist-v2.md, STK-101-new.feature, ...).
+- **KHÔNG** append vào file cũ — luôn overwrite hoàn toàn.
+- Nếu file chưa tồn tại → tạo mới tại đúng đường dẫn trên.
+- Nếu file đã tồn tại → ghi đè không cần xác nhận.
+
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 
 - 🚀 **BẮT BUỘC ĐỌC TRƯỚC:**

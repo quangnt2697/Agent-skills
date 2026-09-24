@@ -125,6 +125,22 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
   ```
   Nếu có lỗi cú pháp ➤ Tự sửa (xem `references/known-errors-and-fixes.md`). Nếu Pass 100% ➤ Bàn giao cho `qa-run-test`.
 
+## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
+
+> 📌 **1 skill call = 1 lần ghi. Gọi lại skill → ghi đè hoàn toàn các file đã sinh.**
+
+| File Output | Đường dẫn chuẩn | Hành vi khi gọi lại |
+|---|---|---|
+| conftest.py | `workspace/{issueKey}/test/steps/conftest.py` | **Ghi đè** hoàn toàn |
+| Test steps | `workspace/{issueKey}/test/steps/test_*.py` | **Ghi đè** từng file tương ứng |
+| Service layer | `workspace/{issueKey}/test/steps/services/*.py` | **Ghi đè** từng file tương ứng |
+| Page Object (Web UI) | `workspace/{issueKey}/test/steps/pages/*.py` | **Ghi đè** từng file tương ứng |
+
+**Quy tắc:**
+- **KHÔNG** tạo file mới với suffix (_v2.py, _new.py, ...).
+- **KHÔNG** append vào file cũ — luôn overwrite hoàn toàn.
+- File chưa tồn tại → tạo mới đúng đường dẫn. File đã tồn tại → ghi đè không cần xác nhận.
+
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 
 - 🚀 **BẮT BUỘC ĐỌC TRƯỚC (task API/WS):**

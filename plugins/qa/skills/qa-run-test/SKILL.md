@@ -28,7 +28,7 @@ trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặ
   - Nếu có file/thư mục cụ thể trong tham số: Trỏ thẳng target đó.
   - Nếu có `{issueKey}`: Target mặc định là `workspace/{issueKey}/test/steps/`.
   - Nhận diện cả hai chuẩn file: `test_*.py` và `*_test.py`.
-- Chuẩn bị thư mục kết quả `workspace/{issueKey}/test/result/` và dọn dẹp kết quả cũ (nếu có).
+- Chuẩn bị thư mục kết quả `workspace/{issueKey}/test/result/`. Nếu các file kết quả cũ đã tồn tại (`test-output.log`, `report.md`, `junit.xml`) → **ghi đè hoàn toàn**, không tạo file mới với suffix.
 - **CHẠY NGAY LẬP TỨC**, không thực hiện bất kỳ bước phân tích hay review nào trước khi chạy.
 
 ### Bước 2: Thực Thi Test Suite
@@ -49,11 +49,23 @@ trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặ
 - Đọc kết quả trực tiếp từ output Pytest và `test-output.log`:
   - Tổng số test, số Passed, số Failed, số Skipped, thời gian thực thi.
   - Với các test Failed: Trích xuất tên test, dòng gây lỗi, thông báo lỗi (`AssertionError` / Exception) hiển thị trong log.
-- Xuất báo cáo độc bản ra duy nhất file `workspace/{issueKey}/test/result/report.md`.
+- Xuất báo cáo độc bản ra duy nhất file `workspace/{issueKey}/test/result/report.md`. **Ghi đè** nếu file đã tồn tại.
 - **ĐỀ XUẤT HÀNH ĐỘNG TIẾP THEO (NẾU CÓ TEST THẤT BẠI):**
   - 🛠️ **Gỡ lỗi mã nguồn / Tìm nguyên nhân gốc rễ backend:** Đề xuất chạy skill `dev-debugging` (hoặc subagent `dev`).
   - 🔍 **Đánh giá chất lượng & Review mã nguồn:** Đề xuất chạy skill `cr-review-code-and-quality` (hoặc subagent `code-reviewer`).
   - ⚙️ **Cập nhật kịch bản test (nếu test script out-of-date):** Đề xuất chạy skill `qa-auto-design`.
+
+## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
+
+> 📌 **1 skill call = 1 lần ghi. Gọi lại skill → ghi đè hoàn toàn tất cả file kết quả.**
+
+| File Output | Đường dẫn chuẩn | Hành vi khi gọi lại |
+|---|---|---|
+| Kết quả test log | `workspace/{issueKey}/test/result/test-output.log` | **Ghi đè** hoàn toàn |
+| Báo cáo kết quả | `workspace/{issueKey}/test/result/report.md` | **Ghi đè** hoàn toàn |
+| JUnit XML | `workspace/{issueKey}/test/result/junit.xml` | **Ghi đè** hoàn toàn |
+
+**Quy tắc:** KHÔNG tạo file với suffix (_run2.log, report-2024.md...). KHÔNG append. Luôn overwrite.
 
 ## 3. Tài Nguyên Mở Rộng (Level 3 - Chỉ mở khi cần)
 - 📖 **Tài liệu quy trình & Hướng dẫn kỹ thuật (references/):**
