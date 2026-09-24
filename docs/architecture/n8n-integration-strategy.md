@@ -29,6 +29,7 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 | `/webhook/jira-prep` | `POST` | BA/PO | Lấy tóm tắt và mô tả Jira sạch (bỏ ADF rác) | `{"issueKey": "G3PTP-17396"}` | `{"issueKey", "summary", "status", "assignee", "descriptionSnippet"}` |
 | `/webhook/confluence-doc` | `POST` | BA/PO | Bóc tách Confluence Storage XHTML sang Markdown tinh gọn | `{"pageUrlOrId": "..."}` | `{"title", "version", "markdownContent", "stats"}` |
 | `/webhook/securities-fixture` | `POST` | QA | Lấy Test Fixtures chứng khoán 4 sàn từ security_definition_v3 | `{}` | `{"auth", "segments": {derivatives, hose, upcom, hnx}, "sampleOrders"}` |
+| `/webhook/web-ui-locator-discovery` | `POST` | QA | Khám phá locator Web UI thật: probe URL, login thật, dump DOM | `{"issueKey": "STK-201", "targetPage": "order"}` | `{"success", "loginSuccess", "locatorCount", "outputFile", "login_locators", "page_locators"}` |
 | `/webhook/squash-batch` | `POST` | QA | Đẩy hàng loạt Test Cases & Gherkin lên Squash TM | `{"baseUrl", "apiToken", "folderId", "testCases": [...]}` | `{"status": "success", "importedCount": 15}` |
 | `/webhook/qa-run-test` | `POST` | QA | Kích hoạt bộ test chạy ngầm (Non-blocking) | `{"issueKey": "...", "testCommand": "pytest ..."}` | `{"jobId": "...", "status": "queued"}` |
 | `/webhook/jira-ready-to-test` | `POST` | QA / ChatOps | Nhận Webhook Jira chuyển trạng thái Ready to Test, báo Mattermost | `{"issue": {...}, "changelog": {...}}` | `{"isReadyToTest", "gherkinBadge", "autoScriptBadge", "suggestedCommand"}` |
@@ -71,6 +72,16 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
   // fixtures.segments.upcom -> OIL (biên độ 15%, bước giá 100đ)
   // fixtures.segments.hnx -> SHS (biên độ 10%, bước giá 100đ)
   // fixtures.auth -> Nạp sẵn API_KEY và API_SECRET từ .env!
+  ```
+- **Fast-Path Khám phá Locator Web UI (`discoverWebUILocators`):**
+  Trong bước thiết kế Page Object cho Web UI (`qa-auto-design`):
+  ```javascript
+  import { discoverWebUILocators } from './scripts/lib/n8n-client.js';
+
+  const res = await discoverWebUILocators(issueKey, targetPage);
+  // Workflow tự động probe ISSUE_KEY_URL (fallback WEB_BASE_URL),
+  // mở trình duyệt, đăng nhập thật, dump DOM và lưu locators.json vào:
+  // workspace/{issueKey}/test/fixtures/locators.json
   ```
 - **⚠️ Ranh giới quan trọng:**
   - Lệnh `batchSquashPush` qua n8n **CHỈ** được thiết kế để tạo nhanh hàng loạt Test Case thô (Dumb Batch Creation) từ checklist, giúp tiết kiệm thời gian (đẩy 20 test cases chỉ mất 3-4 giây). Tuy nhiên, nó **KHÔNG** chứa logic dọn dẹp rác hay liên kết Campaign.

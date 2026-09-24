@@ -140,24 +140,41 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - Toàn bộ phiên kiểm thử Web UI qua Playwright MCP tự động áp dụng độ phân giải chuẩn Full HD: **`1920x1080`**.
 - Không sử dụng Headless mode khi đang viết mới hoặc debug script nếu muốn trực quan hóa hành vi.
 
-### 2.2. Quy Trình Thao Tác Bắt Buộc Với Playwright MCP
-Khi làm việc với các task kiểm thử Web UI, Agent **BẮT BUỘC** thao tác theo quy trình 5 bước:
-1. **Mở trang & Tự động Đăng nhập (`playwright_navigate` / `playwright_login_*`):**
-   - Đọc URL và thông tin đăng nhập từ file `.env` (ví dụ: `DASHBOARD_URL`, `WEB_BASE_URL`).
-   - Sử dụng tool `playwright_login_dashboard` hoặc `playwright_login_trading` để tự động vượt qua màn hình đăng nhập.
-2. **Quan sát trực quan (`playwright_screenshot`):**
+### 2.2. Quy Trình Thao Tác Bắt Buộc Với Web UI Testing
+Khi làm việc với các task kiểm thử Web UI, Agent **BẮT BUỘC** thao tác theo quy trình 6 bước:
+
+1. **Resolve URL từ `.env` (Bước 0 — Trước khi mở browser):**
+   - **BẮT BUỘC** đọc URL từ file `.env` — KHÔNG hardcode:
+     - **Trading Platform (per-feature-branch):** `ISSUE_KEY_URL` (thay `{issueKey}` bằng issueKey thực tế của task, VD: `STK-201` → `https://stk-201.trading-test.dnse.com.vn`).
+     - **Trading Platform (dev/test ổn định):** `WEB_BASE_URL` (`https://dev.trading-test.dnse.com.vn`).
+     - **Dashboard/Backoffice:** `DASHBOARD_URL`.
+   - Dùng hàm `resolve_web_url(issue_key)` từ [`web_ui_pom.py`](../assets/web_ui_pom.py) để tự động probe `ISSUE_KEY_URL` trước (HTTP HEAD); nếu phản hồi tốt (< 400) thì dùng, nếu lỗi hoặc không phản hồi thì tự động fallback về `WEB_BASE_URL`.
+
+2. **Đăng nhập thật bằng TRADING_USERNAME/TRADING_PASSWORD (`playwright_navigate` → điền form login):**
+   - **BẮT BUỘC** đọc credentials từ `.env`:
+     - `TRADING_USERNAME` và `TRADING_PASSWORD` — tài khoản Trading Platform UAT.
+     - `DASHBOARD_USERNAME` và `DASHBOARD_PASSWORD` — tài khoản Backoffice/Dashboard.
+   - Navigate đến URL đăng nhập, điền thông tin thật, bấm login thật — **KHÔNG bypass hoặc mock token**.
+   - Xác nhận đăng nhập thành công (có heading hoặc element đặc trưng của màn hình chính) trước khi bước tiếp.
+   - ⚡ **n8n Fast-Path (Khuyến nghị):** Gọi `node scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}` để workflow `web-ui-locator-discovery` tự động probe URL, đăng nhập thật, dump DOM và lưu danh sách semantic locators vào `workspace/{issueKey}/test/fixtures/locators.json`.
+
+3. **Quan sát trực quan (`playwright_screenshot`):**
    - Chụp ảnh màn hình (`playwright_screenshot(name="ui_overview")`) để xác định chính xác layout, menu, và trạng thái hiển thị.
-3. **Soi DOM thật (`playwright_get_dom` & `playwright_inspect_element`):**
+
+4. **Soi DOM thật (`playwright_get_dom` & `playwright_inspect_element`):**
    - Lấy mã HTML thực tế từ DOM bằng `playwright_get_dom`.
    - Dùng `playwright_inspect_element(selector=...)` để soi thuộc tính `role`, `name`, `placeholder`, `aria-label`, `isVisible`, `isEnabled`.
-4. **Thử nghiệm tương tác (`playwright_click` & `playwright_fill`):**
+   - **NGHIÊM CẤM** tự suy đoán locator mà không inspect DOM thật.
+
+5. **Thử nghiệm tương tác (`playwright_click` & `playwright_fill`):**
    - Thực hiện bấm thử và điền thử giá trị qua MCP trước khi sinh mã code, bảo đảm selector hoạt động trơn tru.
-5. **Chốt Semantic Locators:**
+
+6. **Chốt Semantic Locators:**
    - Ưu tiên 1: `page.get_by_role()` (button, link, heading, tab, dialog).
    - Ưu tiên 2: `page.get_by_label()` (form fields).
    - Ưu tiên 3: `page.get_by_placeholder()` (search/input).
    - Ưu tiên 4: `page.get_by_test_id()` (`data-testid`).
-   - **NGHIÊM CẤM:** Tự suy đoán locator hoặc dùng XPath tuyệt đối dài dòng (`/html/body/div[1]/...`).
+   - **NGHIÊM CẤM:** Dùng XPath tuyệt đối dài dòng (`/html/body/div[1]/...`) hoặc CSS selector giòn.
 
 ### 2.3. Smart Waits & Auto-retrying Assertions
 - Tuyệt đối KHÔNG sử dụng hard sleep (`time.sleep()` hoặc `page.wait_for_timeout()`).

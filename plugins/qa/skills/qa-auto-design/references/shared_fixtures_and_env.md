@@ -216,6 +216,32 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 | **Thời gian & Timeout** | `API_TIMEOUT_MS` | Giới hạn thời gian phản hồi API (ví dụ: `2000`) |
 | | `WS_TIMEOUT_SECONDS` | Giới hạn thời gian chờ nhận message WebSocket (ví dụ: `5.0`) |
 
+### 4.3. Bảng Danh Mục Biến `.env` Chuẩn Hóa Cho Web UI (Trading Platform)
+
+> 📌 **Nguyên tắc URL Resolution (Ưu tiên theo thứ tự):**
+> 1. `ISSUE_KEY_URL` — URL per-feature-branch (`{issueKey}` được thay tự động): Probe HTTP HEAD trước (timeout 5s). Nếu alive (status < 400) thì sử dụng.
+> 2. `WEB_BASE_URL` — URL dev/test ổn định: Tự động fallback sử dụng khi probe `ISSUE_KEY_URL` thất bại/lỗi hoặc khi không có URL theo branch (`https://dev.trading-test.dnse.com.vn`).
+> 3. KHÔNG dùng `TRADING_WEB_URL` cũ (trỏ UAT public) cho automation test nội bộ.
+
+| Nhóm Biến | Tên Biến Môi Trường | Mô Tả & Ví Dụ |
+| :--- | :--- | :--- |
+| **Trading Platform URLs** | `WEB_BASE_URL` | URL dev/test ổn định cho Trading Platform (VD: `https://dev.trading-test.dnse.com.vn`) |
+| | `ISSUE_KEY_URL` | URL per-feature-branch, chứa `{issueKey}` (VD: `https://{issueKey}.trading-test.dnse.com.vn`) |
+| | `DASHBOARD_URL` | URL Dashboard/Backoffice (VD: `https://dashboard-uat.dnse.com.vn`) |
+| **Trading Platform Credentials** | `TRADING_USERNAME` | Username đăng nhập Trading Platform UAT (VD: `064CXXXXXX`) |
+| | `TRADING_PASSWORD` | Password đăng nhập Trading Platform UAT |
+| | `TRADING_INVESTOR_ID` | Investor ID (nếu cần để bypass OTP hoặc identify tài khoản) |
+| | `WEB_API_TOKEN` | Token lấy được sau khi đăng nhập (auto-populate bởi fixture hoặc n8n discoverWebUILocators) |
+| **Dashboard Credentials** | `DASHBOARD_USERNAME` | Username đăng nhập Dashboard (VD: `dnse.admin@dnse.com.vn`) |
+| | `DASHBOARD_PASSWORD` | Password đăng nhập Dashboard |
+| **Playwright Config** | `BROWSER` | `chromium` \| `firefox` \| `webkit` (mặc định: `chromium`) |
+| | `VIEWPORT_WIDTH` / `VIEWPORT_HEIGHT` | Độ phân giải chuẩn: `1920` × `1080` |
+| | `HEADLESS` | `false` khi viết mới script (để dùng Playwright MCP inspect DOM); `true` khi CI/CD |
+| | `PLAYWRIGHT_TIMEOUT_MS` | Timeout mỗi action (ms, mặc định: `30000`) |
+| | `PLAYWRIGHT_TRACE` | `retain-on-failure` — lưu trace khi test fail |
+| **Output** | `SCREENSHOT_DIR` | Thư mục ảnh chụp khi fail (VD: `workspace/{issueKey}/test/result/screenshots`) |
+| | `RESULT_DIR` | Thư mục kết quả test (VD: `workspace/{issueKey}/test/result`) |
+
 ---
 
 ## 5. Tóm Tắt Quy Trình Khi Khởi Tạo Session Mới
@@ -228,9 +254,9 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 
 ---
 
-## 5. Nạp Test Fixtures Động Từ Test-Data MCP & Điều Hướng Môi Trường
+## 6. Nạp Test Fixtures Động Từ Test-Data MCP & Điều Hướng Môi Trường
 
-### 5.1. Cơ Chế Điều Hướng Môi Trường Chuẩn Xác (OpenAPI UAT vs Sandbox)
+### 6.1. Cơ Chế Điều Hướng Môi Trường Chuẩn Xác (OpenAPI UAT vs Sandbox)
 Hệ thống kiểm thử hỗ trợ 2 môi trường độc lập với Database tương ứng:
 - **Môi trường OpenAPI UAT:** `BASE_URL` trỏ tới UAT $\rightarrow$ Database `openapi` (Metabase DB ID: `${METABASE_UAT_DB_OPENAPI_ID}`).
 - **Môi trường Sandbox:** `BASE_URL` chứa `sandbox` $\rightarrow$ Database `openapi-sandbox` (Metabase DB ID: `${METABASE_UAT_DB_OPENAPI_SANDBOX_ID}`).

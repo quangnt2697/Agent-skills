@@ -184,13 +184,27 @@ export async function queryMetabase(query, options = {}) {
 }
 
 /**
- * Fast-Path: Lấy Test Fixture chứng khoán từ security_definition_v3 (WF-02)
+ * Fast-Path: Lấy Test Fixture chứng khoán từ security_definition_v3
  * Trả về 4 phân khúc: Phái sinh (41I1GA0000/rollover), HOSE (SHB), UPCOM (OIL), HNX (SHS) kèm API Key/Secret.
  * @param {object} params { exchange, symbol, accountType }
  * @returns {Promise<object>}
  */
 export async function getSecuritiesFixture(params = {}) {
   return await callN8nWebhook('securities-fixture', params, 25000);
+}
+
+/**
+ * Fast-Path: Khám phá locator Web UI thật bằng cách mở browser, đăng nhập
+ * bằng TRADING_USERNAME/PASSWORD và dump DOM của trang chỉ định.
+ * Kết quả lưu vào workspace/{issueKey}/test/fixtures/locators.json.
+ * @param {string} issueKey  Jira issue key (VD: STK-201)
+ * @param {string} targetPage Tên màn hình cần lấy locator (VD: 'login', 'order', 'portfolio')
+ * @param {object} options   { urlOverride } — ghi đè URL nếu cần
+ * @returns {Promise<object>} { success, loginSuccess, locatorCount, outputFile, login_locators, page_locators }
+ */
+export async function discoverWebUILocators(issueKey, targetPage = 'home', options = {}) {
+  const payload = { issueKey, targetPage, ...options };
+  return await callN8nWebhook('web-ui-locator-discovery', payload, 120000); // 2 phút cho Playwright
 }
 
 /**
@@ -203,7 +217,7 @@ export async function fetchConfluenceDoc(pageUrlOrId) {
 }
 
 /**
- * Fast-Path: Tiền xử lý lọc sạch git diff rác cho Code Reviewer (WF-07)
+ * Fast-Path: Tiền xử lý lọc sạch git diff rác cho Code Reviewer
  * @param {string} rawDiffText Nội dung raw diff
  * @param {object} options { maxLinesPerFile: number }
  * @returns {Promise<object>}
@@ -213,7 +227,7 @@ export async function cleanDiffForReview(rawDiffText, options = {}) {
 }
 
 /**
- * Fast-Path: Quét phụ thuộc và lỗ hổng bảo mật ngầm (WF-08)
+ * Fast-Path: Quét phụ thuộc và lỗ hổng bảo mật ngầm
  * @param {string} projectPath Đường dẫn project
  * @param {object} options { scanContent: string }
  * @returns {Promise<object>}
@@ -268,6 +282,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           break;
         case 'getSecuritiesFixture':
           result = await getSecuritiesFixture(JSON.parse(args[1] || '{}'));
+          break;
+        case 'discoverWebUILocators':
+          // Usage: node n8n-client.js discoverWebUILocators STK-201 order
+          result = await discoverWebUILocators(args[1], args[2] || 'home', JSON.parse(args[3] || '{}'));
           break;
         case 'fetchConfluenceDoc':
           result = await fetchConfluenceDoc(args[1]);

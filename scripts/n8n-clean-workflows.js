@@ -28,6 +28,7 @@ try {
 try {
   console.log('2. Đang xóa các workflow cũ bị trùng lặp...');
   const cleanSql = `
+    DELETE FROM workflows_tags;
     DELETE FROM shared_workflow;
     DELETE FROM workflow_history;
     DELETE FROM workflow_statistics;
@@ -59,6 +60,7 @@ try {
   for (const id of ids) {
     execSync(`n8n publish:workflow --id="${id}"`, { stdio: 'ignore' });
   }
+  execSync(`sqlite3 "${dbPath}" "UPDATE workflow_entity SET active = 1;"`, { stdio: 'ignore' });
   console.log(`✅ Đã kích hoạt thành công ${ids.length} workflow!`);
 } catch (err) {
   console.warn('⚠️ Cảnh báo khi kích hoạt workflow:', err.message);

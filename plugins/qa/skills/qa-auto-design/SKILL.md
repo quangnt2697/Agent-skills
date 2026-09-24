@@ -100,6 +100,31 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
   - Copy template `.env` phù hợp từ `references/env-templates/{api|ws|web-ui}.env.example`.
   - Xác định task type (API / WebSocket / Web UI) từ `.feature`.
 
+  **🌐 Dành riêng cho Web UI task — Bắt buộc thực hiện trước khi viết POM:**
+
+  **Ưu tiên 1 — n8n Fast-Path (Tự động hoàn toàn):**
+  ```bash
+  # Chạy 1 lệnh, tự động: mở browser → đăng nhập thật → dump DOM → lưu locators.json
+  node scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}
+  # VD: node scripts/lib/n8n-client.js discoverWebUILocators STK-201 order
+  # Kết quả: workspace/{issueKey}/test/fixtures/locators.json
+  ```
+  Workflow `web-ui-locator-discovery` (n8n) tự động:
+  - Resolve URL: Probe `ISSUE_KEY_URL` trước (HTTP HEAD, timeout 5s); nếu hoạt động thì dùng, nếu lỗi thì tự động fallback về `WEB_BASE_URL` (đọc từ `.env`, không hardcode)
+  - Đăng nhập bằng `TRADING_USERNAME` / `TRADING_PASSWORD` từ `.env`
+  - Chụp screenshot trước/sau login
+  - Dump DOM + trích xuất semantic locators (role, label, placeholder, testid)
+  - Lưu kết quả vào `workspace/{issueKey}/test/fixtures/locators.json`
+
+  **Ưu tiên 2 — Playwright MCP thủ công (Khi n8n không chạy):**
+  - `playwright_navigate` → `playwright_screenshot` → `playwright_inspect_element`
+  - Điền form login bằng `TRADING_USERNAME`/`TRADING_PASSWORD` từ `.env`
+
+  **Sau khi có `locators.json`:** Đọc file và dùng `playwright_code` đã có sẵn để viết POM — **KHÔNG tự suy đoán locator.**
+
+  **Dữ liệu thị trường (giá, mã CK):** BẮT BUỘC lấy từ Metabase UAT real-time qua fixture `valid_order_symbol` — **KHÔNG hardcode, KHÔNG dùng dữ liệu tĩnh, KHÔNG mock.**
+
+
 - **Giai đoạn 2 (Thiết kế Kiến trúc Phân tầng):**
   - Tạo Page Object Model (Web UI) hoặc Service Client (API/WS, kế thừa SDK có sẵn).
   - Áp dụng kết quả Reuse Scan: import trực tiếp, chỉ viết mới những thư chưa có.

@@ -1,0 +1,127 @@
+{
+  "name": "AgentSkills - Web UI Locator Discovery",
+  "id": "WebUILocatorDiscovery001",
+  "meta": {
+    "description": "Workflow tái sử dụng: probe ISSUE_KEY_URL trước (HTTP HEAD), nếu alive thì dùng, nếu lỗi fallback WEB_BASE_URL. Đăng nhập thật bằng TRADING_USERNAME/PASSWORD, dump DOM, lưu locators.json.",
+    "version": "1.1.0"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-execute",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [200, 200]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "web-ui-locator-discovery",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-webhook",
+      "name": "Webhook Trigger (web-ui-locator-discovery)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 400],
+      "webhookId": "web-ui-locator-discovery"
+    },
+
+    {
+      "parameters": {
+        "jsCode": "// ── NODE 1: VALIDATE INPUT & PREPARE BOTH URLs ──────────────────\n// Không resolve URL ở đây — chuyển cả 2 sang Node 2 để probe\nconst body = ($input.first().json.body || $input.first().json.params || $input.first().json);\n\nconst issueKey   = (body.issueKey   || '').toUpperCase().trim();\nconst targetPage = (body.targetPage || 'home').toLowerCase().trim();\nconst urlOverride = (body.urlOverride || '').trim();\n\nif (!issueKey) {\n  return [{ json: { error: '[WebUILocator] Thiếu tham số bắt buộc: issueKey', success: false } }];\n}\n\n// Đọc cả 2 URL từ .env — KHÔNG hardcode\nconst issueKeyTemplate = ($env.ISSUE_KEY_URL || 'https://{issueKey}.trading-test.dnse.com.vn/').replace(/\\/$/, '');\nconst webBaseUrl       = ($env.WEB_BASE_URL   || 'https://dev.trading-test.dnse.com.vn').replace(/\\/$/, '');\n\n// issueKeyUrl: thay {issueKey} bằng giá trị thực (lowercase theo subdomain convention)\nconst issueKeyUrl = issueKeyTemplate.includes('{issueKey}')\n  ? issueKeyTemplate.replace('{issueKey}', issueKey.toLowerCase())\n  : issueKeyTemplate;\n\nconst tradingUsername = $env.TRADING_USERNAME || '';\nconst tradingPassword = $env.TRADING_PASSWORD || '';\n\nif (!tradingUsername || !tradingPassword) {\n  return [{ json: { error: '[WebUILocator] Thiếu TRADING_USERNAME hoặc TRADING_PASSWORD trong .env', success: false } }];\n}\n\n// Đọc Playwright browser config từ .env (tôn trọng cấu hình người dùng)\nconst headless = ($env.HEADLESS || 'false').toLowerCase() === 'true';\nconst slowMo = parseInt($env.SLOW_MO_MS || '80', 10);\nconst viewportWidth = parseInt($env.VIEWPORT_WIDTH || '1920', 10);\nconst viewportHeight = parseInt($env.VIEWPORT_HEIGHT || '1080', 10);\nconst playwrightTimeout = parseInt($env.PLAYWRIGHT_TIMEOUT_MS || '30000', 10);\n\nconst agentWorkspaceDir = ($env.AGENT_WORKSPACE_DIR || process.cwd()).replace(/\\/$/, '');\nconst fixtureDir    = `${agentWorkspaceDir}/workspace/${issueKey}/test/fixtures`;\nconst screenshotDir = `${agentWorkspaceDir}/workspace/${issueKey}/test/result/screenshots`;\nconst outputFile    = `${fixtureDir}/locators.json`;\n\nreturn [{ json: {\n  issueKey, targetPage,\n  issueKeyUrl,   // URL per-branch (cần probe trước)\n  webBaseUrl,    // Fallback luôn sẵn sàng\n  urlOverride,\n  tradingUsername, tradingPassword,\n  headless, slowMo, viewportWidth, viewportHeight, playwrightTimeout,\n  agentWorkspaceDir, fixtureDir, screenshotDir, outputFile,\n  success: true\n}}];\n"
+      },
+      "id": "validate-resolve-input",
+      "name": "1. Validate & Prepare URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300],
+      "onError": "continueRegularOutput"
+    },
+
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [{ "leftValue": "={{ $json.success }}", "rightValue": true, "operator": { "type": "boolean", "operation": "equals" } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-input-valid",
+      "name": "2. Input Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [660, 300]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "// ── NODE 3: URL PROBE → PLAYWRIGHT LOGIN & DOM DUMP ─────────────\n// Bước 1: HTTP HEAD probe ISSUE_KEY_URL (timeout 5s)\n//   - alive (2xx/3xx)  → dùng issueKeyUrl\n//   - lỗi / 4xx / 5xx  → fallback webBaseUrl\n// Bước 2: Playwright mở URL đã chọn, đăng nhập thật, dump locators\n\nconst { execSync } = require('child_process');\nconst https = require('https');\nconst http  = require('http');\nconst fs    = require('fs');\nconst path  = require('path');\n\nconst inp = $input.first().json;\nconst {\n  issueKey, targetPage, issueKeyUrl, webBaseUrl, urlOverride,\n  tradingUsername, tradingPassword,\n  headless = false, slowMo = 80, viewportWidth = 1920, viewportHeight = 1080, playwrightTimeout = 30000,\n  agentWorkspaceDir, fixtureDir, screenshotDir, outputFile\n} = inp;\n\n[fixtureDir, screenshotDir].forEach(d => {\n  if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });\n});\n\n// ── Probe helper: HTTP HEAD request với timeout 5s ───────────────\nfunction probeUrl(targetUrl) {\n  return new Promise((resolve) => {\n    try {\n      const parsed = new URL(targetUrl);\n      const lib = parsed.protocol === 'https:' ? https : http;\n      const req = lib.request(\n        { hostname: parsed.hostname, port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),\n          path: parsed.pathname || '/', method: 'HEAD',\n          timeout: 5000,\n          rejectUnauthorized: false  // UAT thường dùng self-signed cert\n        },\n        (res) => resolve({ ok: res.statusCode < 400, status: res.statusCode })\n      );\n      req.on('error',   () => resolve({ ok: false, status: 0, reason: 'connection_error' }));\n      req.on('timeout', () => { req.destroy(); resolve({ ok: false, status: 0, reason: 'timeout' }); });\n      req.end();\n    } catch (err) {\n      resolve({ ok: false, status: 0, reason: err.message });\n    }\n  });\n}\n\n// ── Resolve URL: probe ISSUE_KEY_URL → fallback WEB_BASE_URL ─────\nlet resolvedUrl, urlSource, probeStatus;\n\nif (urlOverride) {\n  resolvedUrl = urlOverride.replace(/\\/$/, '');\n  urlSource   = 'urlOverride';\n  probeStatus = { ok: true, status: 'skipped' };\n} else {\n  probeStatus = await probeUrl(issueKeyUrl);\n  if (probeStatus.ok) {\n    resolvedUrl = issueKeyUrl;\n    urlSource   = 'ISSUE_KEY_URL';\n  } else {\n    resolvedUrl = webBaseUrl;\n    urlSource   = 'WEB_BASE_URL (fallback)';\n  }\n}\n\nconst loginUrl  = `${resolvedUrl}/login`;\nconst targetUrl = targetPage === 'home' ? resolvedUrl : `${resolvedUrl}/${targetPage}`;\nconst screenshotBefore = `${screenshotDir}/${targetPage}-before-login.png`;\nconst screenshotAfter  = `${screenshotDir}/${targetPage}-after-login.png`;\n\n// ── Playwright script ─────────────────────────────────────────────\nconst script = `\nconst { chromium } = require('playwright');\nconst fs = require('fs');\n(async () => {\n  const browser = await chromium.launch({ headless: ${headless}, slowMo: ${slowMo} });\n  const ctx  = await browser.newContext({ viewport: { width: ${viewportWidth}, height: ${viewportHeight} }, locale: 'vi-VN' });\n  const page = await ctx.newPage();\n  const result = {\n    issueKey: ${JSON.stringify(issueKey)}, targetPage: ${JSON.stringify(targetPage)},\n    resolvedUrl: ${JSON.stringify(resolvedUrl)}, urlSource: ${JSON.stringify(urlSource)},\n    issueKeyUrl: ${JSON.stringify(issueKeyUrl)}, webBaseUrl: ${JSON.stringify(webBaseUrl)},\n    probeStatus: ${JSON.stringify(probeStatus)},\n    loginSuccess: false, locators: {}, errors: [],\n    capturedAt: new Date().toISOString()\n  };\n  try {\n    await page.goto(${JSON.stringify(loginUrl)}, { waitUntil: 'domcontentloaded', timeout: ${playwrightTimeout} });\n    await page.screenshot({ path: ${JSON.stringify(screenshotBefore)} });\n\n    const loginCandidates = [\n      { key: 'username_input', tries: ['getByLabel:Tên đăng nhập','getByLabel:Username','getByPlaceholder:Tên đăng nhập','locator:input[type=text]'] },\n      { key: 'password_input', tries: ['getByLabel:Mật khẩu','getByLabel:Password','locator:input[type=password]'] },\n      { key: 'login_button',   tries: ['getByRole:button|Đăng nhập','getByRole:button|Login','locator:button[type=submit]'] }\n    ];\n    const loginLoc = {};\n    for (const cand of loginCandidates) {\n      for (const t of cand.tries) {\n        const [method, ...rest] = t.split(':');\n        const arg = rest.join(':');\n        try {\n          let loc;\n          if (method === 'getByRole') { const [r,n] = arg.split('|'); loc = page.getByRole(r, { name: n }); }\n          else if (method === 'getByLabel') { loc = page.getByLabel(arg); }\n          else if (method === 'getByPlaceholder') { loc = page.getByPlaceholder(arg); }\n          else { loc = page.locator(arg); }\n          const c = await loc.count();\n          if (c > 0) {\n            const el = loc.first();\n            const attrs = await el.evaluate(n => ({\n              tag: n.tagName.toLowerCase(), role: n.getAttribute('role'),\n              ariaLabel: n.getAttribute('aria-label'), placeholder: n.getAttribute('placeholder'),\n              name: n.getAttribute('name'), type: n.getAttribute('type')\n            })).catch(() => ({}));\n            let playwright_code;\n            if (method === 'getByRole') { const [r,n]=arg.split('|'); playwright_code='page.get_by_role(\"'+r+'\", name=\"'+n+'\")';\n            } else if (method==='getByLabel') playwright_code='page.get_by_label(\"'+arg+'\")';\n            else if (method==='getByPlaceholder') playwright_code='page.get_by_placeholder(\"'+arg+'\")';\n            else playwright_code='page.locator(\"'+arg+'\")';\n            loginLoc[cand.key] = { method, arg, playwright_code, ...attrs,\n              isVisible: await el.isVisible().catch(()=>false),\n              isEnabled: await el.isEnabled().catch(()=>false) };\n            break;\n          }\n        } catch(_){}\n      }\n    }\n    result.locators.login = loginLoc;\n\n    if (loginLoc.username_input && loginLoc.password_input && loginLoc.login_button) {\n      const getEl = (info) => {\n        if (info.method==='getByRole') { const [r,n]=info.arg.split('|'); return page.getByRole(r,{name:n}); }\n        if (info.method==='getByLabel') return page.getByLabel(info.arg);\n        if (info.method==='getByPlaceholder') return page.getByPlaceholder(info.arg);\n        return page.locator(info.arg);\n      };\n      await getEl(loginLoc.username_input).fill(${JSON.stringify(tradingUsername)});\n      await getEl(loginLoc.password_input).fill(${JSON.stringify(tradingPassword)});\n      await getEl(loginLoc.login_button).click();\n      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(()=>{});\n      result.loginSuccess = true;\n    } else {\n      result.errors.push('Không tìm đủ locator login form (username/password/button)');\n    }\n    await page.screenshot({ path: ${JSON.stringify(screenshotAfter)} });\n\n    if (result.loginSuccess && ${JSON.stringify(targetUrl)} !== ${JSON.stringify(loginUrl)}) {\n      await page.goto(${JSON.stringify(targetUrl)}, { waitUntil: 'domcontentloaded', timeout: ${playwrightTimeout} });\n      await page.waitForTimeout(1500);\n    }\n    const pageElems = await page.evaluate(() => {\n      const out = [];\n      ['button','input','select','textarea','[role=tab]','[role=dialog]','[role=alert]','[role=heading]','[data-testid]'].forEach(sel => {\n        document.querySelectorAll(sel).forEach(el => {\n          const role = el.getAttribute('role') || el.tagName.toLowerCase();\n          const ariaLabel = el.getAttribute('aria-label')||'';\n          const placeholder = el.getAttribute('placeholder')||'';\n          const name = el.getAttribute('name')||'';\n          const testId = el.getAttribute('data-testid')||'';\n          const innerText = (el.innerText||'').trim().slice(0,80);\n          if (!ariaLabel&&!placeholder&&!name&&!testId&&!innerText) return;\n          let playwright_code = '';\n          if (role&&innerText) playwright_code='page.get_by_role(\"'+role+'\", name=\"'+innerText.slice(0,40)+'\")';\n          else if (ariaLabel) playwright_code='page.get_by_label(\"'+ariaLabel+'\")';\n          else if (placeholder) playwright_code='page.get_by_placeholder(\"'+placeholder+'\")';\n          else if (testId) playwright_code='page.get_by_test_id(\"'+testId+'\")';\n          else if (name) playwright_code='page.locator(\"[name=\\''+name+'\\']\")'; \n          if (playwright_code) out.push({ tag:el.tagName.toLowerCase(), role, ariaLabel, placeholder, name, testId, innerText, playwright_code, isVisible: el.offsetParent!==null });\n        });\n      });\n      return out;\n    });\n    result.locators[${JSON.stringify(targetPage)}] = pageElems.filter(e=>e.isVisible).slice(0,80);\n  } catch(e) {\n    result.errors.push(e.message);\n  } finally {\n    await browser.close();\n  }\n  fs.writeFileSync(${JSON.stringify(outputFile)}, JSON.stringify(result, null, 2), 'utf-8');\n  console.log(JSON.stringify({ success: result.loginSuccess, locatorCount: (result.locators[${JSON.stringify(targetPage)}]||[]).length, urlSource: result.urlSource }));\n})();\n`;\n\nconst tmpScript = path.join(fixtureDir, `_pw_disc_${Date.now()}.cjs`);\nfs.writeFileSync(tmpScript, script, 'utf-8');\n\nlet stdout='', stderr='', exitCode=0, locatorsData=null;\ntry {\n  stdout = execSync(`node \"${tmpScript}\"`, { cwd: agentWorkspaceDir, encoding: 'utf-8', timeout: 120000 });\n  if (fs.existsSync(outputFile)) locatorsData = JSON.parse(fs.readFileSync(outputFile, 'utf-8'));\n} catch(e) { stderr=e.stderr||e.message; exitCode=e.status||1; }\nfinally { try { fs.unlinkSync(tmpScript); } catch(_){} }\n\nreturn [{ json: {\n  issueKey, targetPage,\n  issueKeyUrl, webBaseUrl,\n  resolvedUrl, urlSource,\n  probeStatus,\n  loginUrl, targetUrl,\n  outputFile,\n  screenshotBefore, screenshotAfter,\n  stdout, stderr, exitCode,\n  loginSuccess: locatorsData?.loginSuccess || false,\n  locatorCount: (locatorsData?.locators?.[targetPage]||[]).length,\n  locatorsData,\n  success: exitCode===0 && (locatorsData?.loginSuccess||false)\n}}];\n"
+      },
+      "id": "playwright-login-dump",
+      "name": "3. Probe URL -> Playwright Login & DOM Discovery",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 200],
+      "onError": "continueRegularOutput"
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst probeInfo = d.probeStatus\n  ? `probe(${d.issueKeyUrl})=${d.probeStatus.status||d.probeStatus.reason} -> dùng: ${d.urlSource}`\n  : '';\nconst out = {\n  issueKey: d.issueKey, targetPage: d.targetPage,\n  resolvedUrl: d.resolvedUrl, urlSource: d.urlSource,\n  issueKeyUrl: d.issueKeyUrl, webBaseUrl: d.webBaseUrl,\n  probeStatus: d.probeStatus,\n  loginSuccess: d.loginSuccess, locatorCount: d.locatorCount,\n  outputFile: d.outputFile,\n  screenshotBefore: d.screenshotBefore, screenshotAfter: d.screenshotAfter,\n  success: d.success,\n  message: d.success\n    ? `[WebUILocator] ✅ ${d.locatorCount} locators cho '${d.targetPage}' (${probeInfo}) -> ${d.outputFile}`\n    : `[WebUILocator] ❌ Thất bại: login=${d.loginSuccess}, exitCode=${d.exitCode} | ${probeInfo} | err=${d.stderr?.slice(0,200)}`,\n  errors: d.locatorsData?.errors || [],\n  capturedAt: d.locatorsData?.capturedAt || new Date().toISOString(),\n  login_locators: d.locatorsData?.locators?.login || {},\n  page_locators: (d.locatorsData?.locators?.[d.targetPage] || []).slice(0, 50)\n};\nreturn [{ json: out }];\n"
+      },
+      "id": "format-response",
+      "name": "4. Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, 200],
+      "onError": "continueRegularOutput"
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const inp = $input.first().json;\nreturn [{ json: { success: false, message: inp.error || '[WebUILocator] Input validation failed', issueKey: inp.issueKey||'', targetPage: inp.targetPage||'' } }];\n"
+      },
+      "id": "handle-input-error",
+      "name": "Handle Input Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 440],
+      "onError": "continueRegularOutput"
+    },
+
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "respond-webhook",
+      "name": "5. Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1320, 300]
+    }
+  ],
+
+  "connections": {
+    "Execute Workflow Trigger":                   { "main": [[{ "node": "1. Validate & Prepare URLs", "type": "main", "index": 0 }]] },
+    "Webhook Trigger (web-ui-locator-discovery)": { "main": [[{ "node": "1. Validate & Prepare URLs", "type": "main", "index": 0 }]] },
+    "1. Validate & Prepare URLs":                 { "main": [[{ "node": "2. Input Valid?", "type": "main", "index": 0 }]] },
+    "2. Input Valid?": { "main": [
+      [{ "node": "3. Probe URL -> Playwright Login & DOM Discovery", "type": "main", "index": 0 }],
+      [{ "node": "Handle Input Error", "type": "main", "index": 0 }]
+    ]},
+    "3. Probe URL -> Playwright Login & DOM Discovery": { "main": [[{ "node": "4. Format Response", "type": "main", "index": 0 }]] },
+    "4. Format Response":  { "main": [[{ "node": "5. Respond to Webhook", "type": "main", "index": 0 }]] },
+    "Handle Input Error":  { "main": [[{ "node": "5. Respond to Webhook", "type": "main", "index": 0 }]] }
+  },
+
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
