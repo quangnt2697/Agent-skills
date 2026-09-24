@@ -1,0 +1,247 @@
+{
+  "name": "AgentSkills - TimescaleDB MDDS Core Recon (EOD 16:00)",
+  "id": "DbMddsReconCore001",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 16 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "cron-16h",
+      "name": "Cron 16:00 PM (Post-Trading Core Recon)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        180
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "exec-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        180,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "db-recon-core",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger (db-recon-core)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        180,
+        500
+      ],
+      "webhookId": "db-recon-core"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Execute Core Recon Engine\n * (`scripts/n8n-nodes/db/db-recon-core-runner.js`)\n *\n * Thực thi bộ runner `scripts/db/db-recon-core.js` qua child_process hoặc dynamic import\n * để lấy kết quả đối chiếu của 4 câu query.\n */\n\nconst { exec } = require('child_process');\nconst util = require('util');\nconst path = require('path');\nconst execAsync = util.promisify(exec);\n\nconst input = $input.first();\nconst raw = (input && input.json) || {};\nconst body = raw.body || raw;\n\nconst now = new Date();\nconst targetDate = body.date || raw.date || now.toISOString().slice(0, 10);\n\nconst workspaceDir = (typeof $env !== 'undefined' && $env.AGENT_WORKSPACE_DIR)\n  || (typeof process !== 'undefined' && process.env && process.env.AGENT_WORKSPACE_DIR)\n  || path.resolve(process.cwd());\n\nconst scriptPath = path.resolve(workspaceDir, 'scripts/db/db-recon-core.js');\n\nlet stdout = '';\ntry {\n  const envPath = (process.env && process.env.PATH) || '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin';\n  const result = await execAsync(`node \"${scriptPath}\" --date \"${targetDate}\" --json`, {\n    cwd: workspaceDir,\n    encoding: 'utf-8',\n    env: Object.assign({}, process.env, { PATH: envPath, AGENT_WORKSPACE_DIR: workspaceDir, METABASE_ENV: 'prod' }),\n    timeout: 120000\n  });\n  stdout = result.stdout || '';\n} catch (err) {\n  stdout = (err.stdout ? err.stdout.toString('utf-8') : '') || (err.message || '');\n}\n\nlet outcome = null;\ntry {\n  // Tìm khối JSON trong stdout\n  const jsonMatch = stdout.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    outcome = JSON.parse(jsonMatch[0]);\n  }\n} catch (e) {\n  outcome = {\n    date: targetDate,\n    error: `Không thể parse output từ db-recon-core.js: ${stdout.slice(0, 200)}`,\n    results: {}\n  };\n}\n\nif (!outcome) {\n  outcome = {\n    date: targetDate,\n    error: `Không nhận được dữ liệu từ db-recon-core.js (${stdout.slice(0, 200)})`,\n    results: {}\n  };\n}\n\nreturn [{\n  json: {\n    targetDate,\n    outcome\n  }\n}];\n"
+      },
+      "id": "node-runner",
+      "name": "Run Core Recon Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Format 4 Separate Messages for Core MDDS Recon (EOD 16:00)\n * (`scripts/n8n-nodes/db-recon-core-format.js`)\n *\n * Nhận kết quả từ bộ runner `runAllCoreRecon` và tách thành 4 items độc lập\n * để n8n gửi 4 tin nhắn riêng biệt lên Mattermost (1 tin nhắn cho mỗi query).\n */\n\nconst input = $input.first();\nconst rawJson = (input && input.json) || {};\nconst outcome = rawJson.outcome || rawJson;\n\nconst dateStr = outcome.date || new Date().toISOString().slice(0, 10);\nconst results = outcome.results || {};\n\nconst queryConfigs = [\n  {\n    key: 'q1',\n    num: '1️⃣',\n    title: 'Query 1: krx_mdds_v3_ticks vs prices (Trade)',\n    objective: 'Đối chiếu số lượng tick & tổng khối lượng total_volume_traded',\n    labelA: 'Tick V3',\n    labelB: 'Tick Raw',\n    colA: 'cnt_v3',\n    colB: 'cnt_raw',\n    hasVol: true,\n    volLabelA: 'Vol V3 (Sở)',\n    volLabelB: 'Vol Raw (Sở)',\n    volColA: 'total_vol_v3',\n    volColB: 'total_vol_raw'\n  },\n  {\n    key: 'q2',\n    num: '2️⃣',\n    title: 'Query 2: krx_mdds_v3_top_prices vs prices (Quote)',\n    objective: 'Đối chiếu số lượt cập nhật sổ lệnh 3/10 giá (total_volume_traded IS NULL)',\n    labelA: 'Sổ Lệnh V3',\n    labelB: 'Sổ Lệnh Raw',\n    colA: 'cnt_v3',\n    colB: 'cnt_raw',\n    hasVol: false\n  },\n  {\n    key: 'q3',\n    num: '3️⃣',\n    title: 'Query 3: krx_mdds_v3_ticks_extra vs prices (Trade)',\n    objective: 'Đối chiếu dữ liệu làm giàu chiều mua/bán (ticks_extra) so với Raw Sở',\n    labelA: 'Tick Extra',\n    labelB: 'Tick Raw',\n    colA: 'cnt_extra',\n    colB: 'cnt_raw',\n    hasVol: true,\n    volLabelA: 'Vol Extra',\n    volLabelB: 'Vol Raw',\n    volColA: 'total_vol_extra',\n    volColB: 'total_vol_raw',\n    hasSide: true\n  },\n  {\n    key: 'q4',\n    num: '4️⃣',\n    title: 'Query 4: krx_mdds_v3_ticks vs krx_mdds_v3_ticks_extra',\n    objective: 'Đối chiếu luồng xử lý nội bộ V3 (từ Ingest Ticks sang Worker Side/AvgPrice)',\n    labelA: 'Tick V3',\n    labelB: 'Tick Extra',\n    colA: 'cnt_v3_ticks',\n    colB: 'cnt_v3_extra',\n    hasVol: true,\n    volLabelA: 'Vol V3',\n    volLabelB: 'Vol Extra',\n    volColA: 'vol_v3_ticks',\n    volColB: 'vol_v3_extra',\n    hasSide: true\n  }\n];\n\nfunction formatNum(val) {\n  if (val === null || val === undefined) return '0';\n  if (typeof val === 'number') return val.toLocaleString('en-US');\n  const num = parseInt(val, 10);\n  return isNaN(num) ? String(val) : num.toLocaleString('en-US');\n}\n\nfunction formatVolCompact(val) {\n  if (!val || val === 0) return '0';\n  const num = Number(val);\n  if (isNaN(num)) return String(val);\n  if (Math.abs(num) >= 1e6) {\n    return (num / 1e6).toFixed(1) + 'M';\n  }\n  if (Math.abs(num) >= 1e3) {\n    return (num / 1e3).toFixed(1) + 'K';\n  }\n  return num.toLocaleString('en-US');\n}\n\nconst outputItems = [];\n\nqueryConfigs.forEach((cfg, idx) => {\n  const qRes = results[cfg.key] || {};\n  const rows = qRes.rows || [];\n  const rowCount = typeof qRes.rowCount === 'number' ? qRes.rowCount : rows.length;\n  const isError = Boolean(qRes.error);\n  const hasDiscrepancy = isError || rowCount > 0;\n\n  let msg = `### ${cfg.num} [MDDS EOD 16:00] ${cfg.title}\\n`;\n  msg += `- **Mục tiêu:** ${cfg.objective}\\n`;\n  msg += `- **Ngày giao dịch:** \\`${dateStr}\\` | **Môi trường:** \\`TIMESCALEDB PROD\\`\\n`;\n\n  if (isError) {\n    msg += `- **Trạng thái:** ❌ **LỖI THỰC THI TRUY VẤN**\\n`;\n    msg += `> 🚨 ${qRes.error}\\n`;\n  } else if (rowCount === 0) {\n    msg += `- **Trạng thái:** 🟢 **100% ĐỒNG BỘ**\\n`;\n    msg += `- **Kết quả:** Không phát hiện bất kỳ sai lệch nào về số bản ghi hoặc khối lượng (\\`0 mã lệch\\`).\\n`;\n  } else {\n    msg += `- **Trạng thái:** 🚨 **LỆCH DỮ LIỆU (Phát hiện ${rowCount} mã sai lệch)**\\n\\n`;\n\n    // Render table\n    let tableMd = '';\n    if (cfg.hasSide && cfg.hasVol) {\n      tableMd += `| Mã CK | ${cfg.labelA} | ${cfg.labelB} | Lệch Tick | ${cfg.volLabelA} | ${cfg.volLabelB} | Lệch Volume | Tỷ Lệ Side | Trạng Thái Phân Loại |\\n`;\n      tableMd += `| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |\\n`;\n      rows.slice(0, 20).forEach(r => {\n        const diffRec = formatNum(r.diff_records);\n        const diffVol = formatVolCompact(r.diff_total_volume);\n        const sidePct = r.side_pct !== null && r.side_pct !== undefined ? `${r.side_pct}%` : '—';\n        tableMd += `| **${r.symbol}** | ${formatNum(r[cfg.colA])} | ${formatNum(r[cfg.colB])} | **${diffRec}** | ${formatVolCompact(r[cfg.volColA])} | ${formatVolCompact(r[cfg.volColB])} | **${diffVol}** | ${sidePct} | ${r.discrepancy_status} |\\n`;\n      });\n    } else if (cfg.hasVol) {\n      tableMd += `| Mã CK | ${cfg.labelA} | ${cfg.labelB} | Lệch Tick | ${cfg.volLabelA} | ${cfg.volLabelB} | Lệch Volume | Trạng Thái Phân Loại |\\n`;\n      tableMd += `| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |\\n`;\n      rows.slice(0, 20).forEach(r => {\n        const diffRec = formatNum(r.diff_records);\n        const diffVol = formatVolCompact(r.diff_total_volume);\n        tableMd += `| **${r.symbol}** | ${formatNum(r[cfg.colA])} | ${formatNum(r[cfg.colB])} | **${diffRec}** | ${formatVolCompact(r[cfg.volColA])} | ${formatVolCompact(r[cfg.volColB])} | **${diffVol}** | ${r.discrepancy_status} |\\n`;\n      });\n    } else {\n      tableMd += `| Mã CK | ${cfg.labelA} | ${cfg.labelB} | Lệch Sổ Lệnh | Trạng Thái Phân Loại |\\n`;\n      tableMd += `| :--- | :---: | :---: | :---: | :--- |\\n`;\n      rows.slice(0, 20).forEach(r => {\n        const diffRec = formatNum(r.diff_records);\n        tableMd += `| **${r.symbol}** | ${formatNum(r[cfg.colA])} | ${formatNum(r[cfg.colB])} | **${diffRec}** | ${r.discrepancy_status} |\\n`;\n      });\n    }\n\n    if (rows.length > 20) {\n      tableMd += `\\n> *(Đã ẩn ${rows.length - 20} mã sai lệch tiếp theo. Vui lòng xem log chi tiết)*\\n`;\n    }\n\n    msg += tableMd;\n  }\n\n  outputItems.push({\n    json: {\n      queryIndex: idx + 1,\n      queryKey: cfg.key,\n      title: cfg.title,\n      hasDiscrepancy: hasDiscrepancy,\n      discrepancyCount: rowCount,\n      messageText: msg,\n      username: 'MDDS Recon Bot',\n      icon_emoji: hasDiscrepancy ? ':rotating_light:' : ':white_check_mark:',\n      date: dateStr\n    }\n  });\n});\n\nreturn outputItems;\n"
+      },
+      "id": "node-format",
+      "name": "Format 4 Separate Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ $json._triggerSource === 'webhook' ? 0 : ($json._triggerSource === 'executeWorkflow' ? 1 : 2) }}",
+        "numberOutputs": 3
+      },
+      "id": "route-by-caller",
+      "name": "Route by Caller",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        920,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1160,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "return-subworkflow",
+      "name": "Return to Sub-workflow",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  text: $json.messageText,\n  username: $json.username,\n  icon_emoji: $json.icon_emoji\n}) }}",
+        "options": {}
+      },
+      "id": "notify-mattermost",
+      "name": "Notify Mattermost (Sequential 4 Messages)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1160,
+        480
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Cron 16:00 PM (Post-Trading Core Recon)": {
+      "main": [
+        [
+          {
+            "node": "Run Core Recon Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run Core Recon Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (db-recon-core)": {
+      "main": [
+        [
+          {
+            "node": "Run Core Recon Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Core Recon Engine": {
+      "main": [
+        [
+          {
+            "node": "Format 4 Separate Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format 4 Separate Messages": {
+      "main": [
+        [
+          {
+            "node": "Route by Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Caller": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Mattermost (Sequential 4 Messages)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return to Sub-workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Mattermost (Sequential 4 Messages)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Mattermost (Sequential 4 Messages)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Ho_Chi_Minh"
+  },
+  "active": true
+}

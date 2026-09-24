@@ -25,12 +25,12 @@ Tier 2 is a **lexical approximation** of routing (stemmed TF-IDF over descriptio
 
 ```bash
 # Tier 2 — deterministic, runs in CI
-node scripts/run-evals.js
-node scripts/run-evals.js --min-rank1 80  # enforce the current routing floor
+node scripts/evals/run-evals.js
+node scripts/evals/run-evals.js --min-rank1 80  # enforce the current routing floor
 
 # Tier 3 — behavioral, runs each eval through headless claude, then grades it
-node scripts/run-evals.js --behavioral test-driven-development            # spends tokens
-node scripts/run-evals.js --behavioral test-driven-development --dry-run  # prints the plan only
+node scripts/evals/run-evals.js --behavioral test-driven-development            # spends tokens
+node scripts/evals/run-evals.js --behavioral test-driven-development --dry-run  # prints the plan only
 ```
 
 Tier 3 supports two behavioral artifact kinds. `execution` is the default: each eval runs in a throwaway git repository, real project inputs from `files[]` are materialized out of `evals/fixtures/` and committed as the baseline, and the grader judges the full `--output-format stream-json --verbose` execution trace, including tool calls. `dialogue` is reserved for skills whose deliverable is the conversation itself; it needs no fixture, and the grader judges the assistant's conversational turns without requiring file edits or commands. Claiming `dialogue` is a human-reviewed exemption, not a general escape hatch for execution skills.

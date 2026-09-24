@@ -39,7 +39,7 @@ Tùy thuộc vào cấu hình `NODE_ENV` hoặc cờ `--env`, MCP server tự đ
 
 ### 2.4. Session & SSO Token Management
 - MCP servers ưu tiên đọc token đăng nhập từ biến môi trường (`METABASE_SESSION_TOKEN`, `ATLASSIAN_API_TOKEN`, `GITLAB_PERSONAL_ACCESS_TOKEN`).
-- Khi token hết hạn, các script tiện ích (như `scripts/metabase-sso-login.js`) có thể tự động gia hạn phiên đăng nhập và ghi nhận an toàn vào file cấu hình `.env` cục bộ.
+- Khi token hết hạn, các script tiện ích (như `scripts/db/metabase-sso-login.js`) có thể tự động gia hạn phiên đăng nhập và ghi nhận an toàn vào file cấu hình `.env` cục bộ.
 
 ---
 
@@ -58,6 +58,6 @@ node .agents/test-data-mcp.js --env uat
 ### 3.2. Chạy Bộ Test Unit
 Toàn bộ logic bảo mật SQL, Auto-Limit, phân giải Database ID và Export Fixture đều được kiểm thử tự động:
 ```bash
-node --test scripts/db-mcp-test.js
-node --test scripts/test-data-mcp-test.js
+node --test scripts/tests/db-mcp-test.js
+node --test scripts/tests/test-data-mcp-test.js
 ```

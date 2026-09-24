@@ -34,10 +34,14 @@ Khi cần deliver một feature hoàn chỉnh, dùng `/e2e-delivery` để orche
 ```
 /e2e-delivery JIRA-123
 
-Phase 1-3:  BA/PO → Business-Spec (*-final.md) + Gap clarification
-Phase 4-6:  DEV → Tech-Spec + Code + Unit Test
-Phase 7-10: QA → Test Design (Checklist + Gherkin) + Automation + Run Test
-Phase 11:   DEV + QA → Review
+Phase 1: BA/PO → Business-Spec (*-final.md)
+Phase 2: DEV → Tech-Spec
+Phase 3: Meta → Cross-validation (BR → Tech-Spec)
+Phase 4: DEV → Plan (task breakdown)
+Phase 5: DEV → Build (implementation)
+Phase 6: DEV → Unit Tests
+Phase 7: QA → Full Pipeline (test design + automation + execution + traceability)
+Phase 8: DEV + QA → Final Review
 
 → Output: Production-ready code + tests
 ```
@@ -56,7 +60,7 @@ BA/PO creates *-final.md
     Gherkin           Data Model      DEV: Code + Unit tests
 ```
 
-**Chi tiết:** Xem `plugins/core/.claude/commands/e2e-delivery.md`
+**Chi tiết:** Xem `plugins/core/commands/e2e-delivery.toml` (source) → được build thành `plugins/core/.claude/commands/e2e-delivery.md`
 
 ## Kỹ năng theo Giai đoạn
 

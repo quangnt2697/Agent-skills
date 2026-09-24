@@ -11,7 +11,7 @@ description: "Quét và đối chiếu độ lệch dữ liệu TimescaleDB Prod
 - **An toàn tuyệt đối:** 100% Read-Only (chỉ cho phép SELECT/WITH, cấm DDL/DML/LOCK).
 
 ## 2. Cách Chạy Lệnh
-Agent hoặc người dùng có thể thực thi thông qua CLI script `node scripts/db-recon.js`:
+Agent hoặc người dùng có thể thực thi thông qua CLI script `node scripts/db/db-recon.js`:
 
 ```bash
 # Xem danh sách tất cả các query đối chiếu có sẵn

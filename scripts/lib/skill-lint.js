@@ -3,7 +3,7 @@
  * skill-lint.js — the skill validation rules, as a shared library.
  *
  * This is the single source of truth for what makes a SKILL.md valid
- * (docs/skill-anatomy.md). The CLI in scripts/validate-skills.js is a thin
+ * (docs/skill-anatomy.md). The CLI in scripts/validators/validate-skills.js is a thin
  * wrapper over it. Splitting the rules out of the CLI keeps them importable
  * and unit-testable without spawning a process or touching the filesystem.
  *
