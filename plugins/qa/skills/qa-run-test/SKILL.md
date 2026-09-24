@@ -19,7 +19,12 @@ trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặ
   - ❌ **KHÔNG** mở file, tìm kiếm (`grep_search`), hoặc phân tích mã nguồn backend/ứng dụng.
   - ❌ **KHÔNG** tự tạo script Python / lệnh cURL ngoài luồng để kiểm tra hay tái hiện API.
   - ❌ **KHÔNG** tự thực hiện Root Cause Analysis sâu trong kiến trúc hệ thống hay viết code sửa backend.
-- **Ranh giới trách nhiệm:** QA ghi nhận trung thực kết quả thực thi (Pass/Fail). Nếu có lỗi hệ thống, đề xuất kỹ năng chuyên trách (`dev-debugging`, `cr-review-code-and-quality`) để điều tra nguyên nhân.
+  - ❌ **KHÔNG** sửa test script khi test chạy quá lâu hoặc bị timeout — đây là việc của `qa-auto-design`.
+- **Quy tắc Timeout (Timeout Policy — Bắt buộc):**
+  - BẮT BUỘC chạy pytest với cờ `--timeout=<N>` (mặc định: **60 giây/test case** nếu không có yêu cầu khác).
+  - Khi pytest báo `TIMEOUT` hoặc toàn bộ suite vượt quá **10 phút** mà chưa kết thúc: **DỪNG NGAY**, ghi nhận TIMEOUT vào báo cáo và đề xuất skill xử lý — KHÔNG chờ thêm, KHÔNG sửa test.
+  - Kết quả TIMEOUT được báo cáo như kết quả FAILED với lý do: `TimeoutError: test case vượt giới hạn thời gian cho phép`.
+- **Ranh giới trách nhiệm:** QA ghi nhận trung thực kết quả thực thi (Pass/Fail/Timeout). Nếu có lỗi hoặc timeout, đề xuất kỹ năng chuyên trách (`dev-debugging`, `cr-review-code-and-quality`, `qa-auto-design`) để điều tra nguyên nhân.
 
 ## 2. Quy Trình Thực Thi Tinh Gọn 3 Bước
 
@@ -32,16 +37,23 @@ trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặ
 - **CHẠY NGAY LẬP TỨC**, không thực hiện bất kỳ bước phân tích hay review nào trước khi chạy.
 
 ### Bước 2: Thực Thi Test Suite
-- **Ưu tiên (n8n Fast-Path):** Sử dụng `scripts/lib/n8n-client.js` để kích hoạt test ngầm qua webhook `/webhook/qa-run-test` nhằm tối ưu tốc độ và không block tiến trình.
+- **Ưu tiên (n8n Fast-Path):** Kiểm tra n8n bằng `isN8nAvailable()`, nếu online thì gọi `triggerAsyncTest({ issueKey, testCommand, testFiles })` từ `scripts/lib/n8n-client.js` để kích hoạt test nghiệm ngầm qua webhook `/webhook/qa-run-test`.
+  ```bash
+  # CLI invocation:
+  node scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'
+  ```
 - **Dự phòng (Chạy nội bộ qua CLI):** Nếu n8n offline, chạy Pytest tiêu chuẩn để ghi Full Log:
   ```bash
   pytest "$TEST_TARGET" \
     -o python_files="test_*.py *_test.py" \
     -s -v -rA --tb=short \
+    --timeout=60 \
     -o log_cli=true -o log_cli_level=INFO \
     --junitxml="workspace/{issueKey}/test/result/junit.xml" \
     2>&1 | tee "workspace/{issueKey}/test/result/test-output.log"
   ```
+- **Cờ `--timeout=60`** (yêu cầu `pytest-timeout`): Mỗi test case bị kill tự động sau 60s. Kết quả là `FAILED (timeout)` — không cần chờ thêm.
+- **Timeout toàn suite:** Nếu sau **10 phút** test suite vẫn chạy, agent DỪNG NGAY, ghi nhận kết quả hiện tại (kể cả chưa chạy xong) và xuất báo cáo với ghi chú `Suite Timeout`.
 - Nếu môi trường có `pytest-html`, tự động thêm cờ `--html=... --self-contained-html` (khi chạy CLI).
 - Không nuốt log (cờ `-s`), toàn bộ console output được lưu vào duy nhất `test-output.log`.
 
@@ -50,10 +62,11 @@ trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặ
   - Tổng số test, số Passed, số Failed, số Skipped, thời gian thực thi.
   - Với các test Failed: Trích xuất tên test, dòng gây lỗi, thông báo lỗi (`AssertionError` / Exception) hiển thị trong log.
 - Xuất báo cáo độc bản ra duy nhất file `workspace/{issueKey}/test/result/report.md`. **Ghi đè** nếu file đã tồn tại.
-- **ĐỀ XUẤT HÀNH ĐỘNG TIẾP THEO (NẾU CÓ TEST THẤT BẠI):**
+- **ĐỀ XUẤT HÀNH ĐỘNG TIẾP THEO (NẾU CÓ TEST THẤT BẠI HOẶC TIMEOUT):**
   - 🛠️ **Gỡ lỗi mã nguồn / Tìm nguyên nhân gốc rễ backend:** Đề xuất chạy skill `dev-debugging` (hoặc subagent `dev`).
   - 🔍 **Đánh giá chất lượng & Review mã nguồn:** Đề xuất chạy skill `cr-review-code-and-quality` (hoặc subagent `code-reviewer`).
-  - ⚙️ **Cập nhật kịch bản test (nếu test script out-of-date):** Đề xuất chạy skill `qa-auto-design`.
+  - ⚙️ **Cập nhật kịch bản test (nếu test script out-of-date hoặc timeout do logic test sai):** Đề xuất chạy skill `qa-auto-design`.
+  - ⏱️ **Timeout không được tự sửa:** Khi test bị TIMEOUT, agent KHÔNG tự sửa test script. Timeout là kết quả hợp lệ — ghi nhận và bàn giao cho skill chuyên trách.
 
 ## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
 

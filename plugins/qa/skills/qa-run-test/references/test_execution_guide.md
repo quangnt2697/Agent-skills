@@ -42,6 +42,7 @@ pytest "$TEST_TARGET" \
   -v \
   -rA \
   --tb=short \
+  --timeout=60 \
   -o log_cli=true \
   -o log_cli_level=INFO \
   --junitxml="workspace/{issueKey}/test/result/junit.xml" \
@@ -54,6 +55,7 @@ pytest "$TEST_TARGET" \
 - `-v` (`--verbose`): Hiển thị chi tiết tên file, tên hàm test và trạng thái PASSED / FAILED / SKIPPED của từng test case.
 - `-rA`: Hiển thị bảng tổng hợp ngắn gọn cuối phiên cho TOÀN BỘ test case (cả Pass, Fail, Skip, XFail).
 - `--tb=short`: Rút gọn stack trace vừa đủ để xác định dòng gây lỗi, tránh traceback quá dài làm tràn log.
+- `--timeout=60`: **BẮT BUỘC** (yêu cầu gói `pytest-timeout`). Kill tự động bất kỳ test case nào chạy quá 60 giây. Kết quả là `FAILED (timeout)` — **KHÔNG chờ thêm, KHÔNG tự sửa test script**.
 - `-o log_cli=true -o log_cli_level=INFO`: Kích hoạt hiển thị log trực tiếp trong thời gian thực ở mức độ INFO trở lên.
 - `--junitxml=...`: Xuất kết quả kiểm thử theo định dạng chuẩn JUnit XML cho CI/CD.
 - `--html=... --self-contained-html`: Xuất báo cáo HTML độc lập nếu môi trường có `pytest-html`.
@@ -89,4 +91,17 @@ Khi test suite có kết quả FAILED:
    - Đề xuất user lựa chọn kỹ năng chuyên trách:
      - 🛠️ `dev-debugging`: Giao cho Developer điều tra mã nguồn backend và fix bug logic.
      - 🔍 `cr-review-code-and-quality`: Giao cho Code Reviewer review mã nguồn và kiến trúc.
-     - ⚙️ `qa-auto-design`: Giao cho QA cập nhật lại test script nếu spec có sự thay đổi.
+     - ⚙️ `qa-auto-design`: Giao cho QA cập nhật lại test script nếu spec có sự thay đổi **hoặc khi timeout xảy ra do logic test sai / threshold quá thấp**.
+
+---
+
+## 5. Quy Tắc Timeout (Timeout Policy — Bắt buộc)
+
+| Tình huống | Hành động bắt buộc |
+|---|---|
+| 1 test case chạy > 60s | pytest-timeout kill tự động → kết quả `FAILED (timeout)` |
+| Toàn suite chạy > 10 phút | Agent DỪNG NGAY → xuất báo cáo kết quả hiện tại với ghi chú `Suite Timeout` |
+| Test bị timeout | **KHÔNG tự sửa test script** → Đề xuất `qa-auto-design` hoặc `dev-debugging` |
+| pytest-timeout chưa cài | Chạy `pip install pytest-timeout` trước rồi chạy lại |
+
+> ❌ **CẤM:** Khi test timeout, tự sửa test script để tăng giá trị timeout hoặc loại bỏ assertion — đây là vi phạm nghiêm trọng nhất của skill `qa-run-test`.

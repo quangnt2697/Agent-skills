@@ -60,7 +60,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 60 dòng.
 
 - **Phase 0 — Scan & Duyệt References (GATE 1):**
-  Đọc credentials từ `.env`, lấy metadata Jira thô (ưu tiên n8n Fast-Path qua `scripts/lib/n8n-client.js`, fallback sang REST API curl nếu n8n offline, tránh MCP tóm tắt sai `summary`), quét Confluence links + attachments, kiểm tra cache `workspace/{issueKey}/source/refs/`, hiển thị bảng cho user duyệt → **DỪNG chờ "OK"**. Khi phát hiện link Confluence, ưu tiên dùng Fast-Path `fetchConfluenceDoc(urlOrId)` để lấy trực tiếp nội dung Markdown sạch (tiết kiệm 90% token).
+  Đọc credentials từ `.env`, lấy metadata Jira thô (ưu tiên n8n Fast-Path: `isN8nAvailable()` → `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` — CLI: `node scripts/lib/n8n-client.js prepJiraContext {issueKey}` — fallback sang REST API curl nếu n8n offline, tránh MCP tóm tắt sai `summary`), quét Confluence links + attachments, kiểm tra cache `workspace/{issueKey}/source/refs/`, hiển thị bảng cho user duyệt → **DỪNG chờ "OK"**. Khi phát hiện link Confluence, ưu tiên dùng Fast-Path `fetchConfluenceDoc(urlOrId)` — CLI: `node scripts/lib/n8n-client.js fetchConfluenceDoc {urlOrId}` — để lấy trực tiếp nội dung Markdown sạch (tiết kiệm 90% token).
   > 📖 Chi tiết API: [references/jira-api-reference.md](references/jira-api-reference.md)
 
 - **Phase 1 — Download (Chỉ tải file thiếu):**

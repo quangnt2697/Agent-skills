@@ -39,7 +39,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành 
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng.
 
 - **Giai đoạn 0 (Scan & Tổng hợp — Gate 1):**
-  Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira (ưu tiên n8n Fast-Path qua `scripts/lib/n8n-client.js`), quét Confluence + attachments, trình bảng cho user duyệt, tải file thiếu.
+  Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira (ưu tiên n8n Fast-Path: `isN8nAvailable()` → `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` — CLI: `node scripts/lib/n8n-client.js prepJiraContext {issueKey}`), quét Confluence + attachments, trình bảng cho user duyệt, tải file thiếu.
 
 - **Giai đoạn 1 (Phân kỳ — Thấu hiểu & Mở rộng):**
   HMW statement, chất vấn user qua `ba-interview-me` (đạt ≥90% confidence), sinh 5-8 idea variations.

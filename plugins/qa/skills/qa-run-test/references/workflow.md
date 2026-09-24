@@ -12,15 +12,20 @@
 
 ### Bước 2: Thực thi Test Suite Ngay Lập Tức
 - **Ưu tiên (n8n Fast-Path):** Gọi `scripts/lib/n8n-client.js` để kích hoạt n8n webhook `/webhook/qa-run-test`.
-- **Dự phòng (CLI Fallback):** Nếu n8n offline, chạy lệnh Pytest tiêu chuẩn với cờ `-s` (không nuốt log), `-v` (chi tiết), `-rA` (tổng kết mọi test), `--tb=short`:
+  - Kiểm tra n8n online: `isN8nAvailable()` → nếu `true`, gọi `triggerAsyncTest({ issueKey, testCommand, testFiles })`.
+  - CLI: `node scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'`
+- **Dự phòng (CLI Fallback):** Nếu n8n offline, chạy lệnh Pytest tiêu chuẩn với cờ `-s` (không nuốt log), `-v` (chi tiết), `-rA` (tổng kết mọi test), `--tb=short`, `--timeout=60`:
   ```bash
   pytest "$TEST_TARGET" \
     -o python_files="test_*.py *_test.py" \
     -s -v -rA --tb=short \
+    --timeout=60 \
     -o log_cli=true -o log_cli_level=INFO \
     --junitxml="workspace/{issueKey}/test/result/junit.xml" \
     2>&1 | tee "workspace/{issueKey}/test/result/test-output.log"
   ```
+- **Cờ `--timeout=60`** (yêu cầu gói `pytest-timeout`): Mỗi test case bị kill tự động sau 60 giây. Kết quả là `FAILED (timeout)` — không cần chờ thêm.
+- **Timeout toàn suite:** Nếu sau **10 phút** test suite vẫn chạy chưa xong, agent DỪNG NGAY, ghi nhận kết quả hiện tại và xuất báo cáo với ghi chú `Suite Timeout` — KHÔNG tự sửa test.
 - Toàn bộ stdout/stderr được ghi nguyên vẹn vào duy nhất 1 file `test-output.log`.
 - **Tuyệt đối KHÔNG lấn sân:** Không mở file backend, không grep codebase ứng dụng, không gửi curl/urllib ngoài luồng trong quá trình này.
 
@@ -43,6 +48,8 @@
 ❌ **CẤM điều tra mã nguồn backend:** Không dùng `view_file`, `grep_search` để soi code backend (Go, Java, Python service...). Việc tìm nguyên nhân gốc rễ và sửa code là của DEV/CR.  
 ❌ **CẤM tự chế request ngoài luồng:** Tuyệt đối không tự viết script Python `urllib` hay lệnh cURL để gửi request lên server nhằm "kiểm tra lại" endpoint bị fail.  
 ❌ **CẤM sửa assertion (Cheating):** Thấy test fail do lỗi hệ thống liền tự ý sửa test code hoặc nới lỏng assertion để biến FAIL thành PASS.  
+❌ **CẤM sửa test khi bị TIMEOUT:** Khi test bị timeout, KHÔNG tự sửa test script để tăng threshold hay loại bỏ assertion. Timeout là kết quả FAILED hợp lệ — ghi nhận và bàn giao cho `qa-auto-design` hoặc `dev-debugging`.  
+❌ **CẤM chờ vô hạn:** Nếu toàn bộ suite chạy quá 10 phút mà chưa kết thúc, agent DỪNG NGAY và xuất báo cáo kết quả hiện tại.  
 ❌ **CẤM sinh code mới:** Skill này CHỈ CHẠY test đã có sẵn, tuyệt đối không tự sinh test case mới.  
 ❌ **CẤM thừa thãi file báo cáo:** Tuân thủ quy tắc độc bản output (đúng 1 file `.xml`, 1 file `.html`, 1 file `.log`, 1 file `.md`).
 
@@ -54,6 +61,8 @@
 🚩 Agent tạo file Python tạm hoặc chạy lệnh curl ngoài terminal để test API.  
 🚩 Agent mở file spec đọc đi đọc lại khi thấy test fail.  
 🚩 Sửa code test để che đậy lỗi hệ thống.  
+🚩 **Agent tự sửa test script khi test bị TIMEOUT thay vì trả kết quả timeout.** ← ĐÂY LÀ VI PHẠM NGhiêm trọng nhất.  
+🚩 Agent chờ > 10 phút không xuất báo cáo.
 
 ---
 
@@ -61,10 +70,12 @@
 
 - [ ] Xác định đúng thư mục target và chạy ngay không chần chừ.
 - [ ] Chạy đủ 100% file test hợp lệ (`test_*.py` và `*_test.py`).
+- [ ] Lệnh pytest có cờ `--timeout=60` (hoặc giá trị phù hợp với task).
 - [ ] `test-output.log` có đủ full log (cờ `-s`).
 - [ ] Trả kết quả trung thực, không sửa assertion gian lận.
+- [ ] Không tự sửa test script khi bị TIMEOUT — ghi nhận và bàn giao.
 - [ ] Xuất báo cáo độc bản tại `workspace/{issueKey}/test/result/report.md`.
-- [ ] Đã đề xuất kỹ năng `dev-debugging` / `cr-review-code-and-quality` nếu phát hiện lỗi.
+- [ ] Đã đề xuất kỹ năng `dev-debugging` / `cr-review-code-and-quality` / `qa-auto-design` nếu phát hiện lỗi hoặc timeout.
 
 ---
 <CRITICAL_RULE>

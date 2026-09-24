@@ -6,7 +6,7 @@
 
 Skill này tương tác với Jira/Confluence theo **Chiến lược 3-Tier Fallback** (theo thứ tự ưu tiên):
 
-1. **Tier 1 - n8n Fast-Path Webhook (Ưu tiên số 1):** Chạy đoạn mã qua `scripts/lib/n8n-client.js` để gọi n8n Webhook. Cách này lấy dữ liệu tức thì, lọc sạch nhiễu và không tốn token LLM đọc hiểu ADF rác.
+1. **Tier 1 - n8n Fast-Path Webhook (Ưu tiên số 1):** Chạy `isN8nAvailable()` → nếu online, gọi `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` (CLI: `node scripts/lib/n8n-client.js prepJiraContext {issueKey}`). Cách này lấy dữ liệu tức thì, lọc sạch nhiễu và không tốn token LLM đọc hiểu ADF rác.
 2. **Tier 2 - MCP Tool (Ưu tiên số 2):** Nếu n8n không khả dụng, sử dụng Rovo MCP (`getJiraIssue`, `searchConfluenceUsingCql`). Hạn chế dùng `getJiraIssue` nếu có thể vì AI agent MCP có thể tóm tắt lại `summary` gây sai lệch.
 3. **Tier 3 - Shell Script / curl (Dự phòng cuối):** Nếu cả 2 cách trên thất bại hoặc cần tải binary (ví dụ PDF), agent chạy REST API qua `curl` hoặc `jira-fetch-pdf.sh` để đảm bảo độ chính xác.
 
