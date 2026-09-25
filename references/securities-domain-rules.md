@@ -20,7 +20,7 @@ Tài liệu được chia thành các module độc lập trong thư mục [`ref
    - Sở & Thị trường (MarketID), Bảng giao dịch (BoardID), Biên độ dao động giá, Bước giá, Lô chẵn/lẻ, Chu kỳ thanh toán T+2.
 
 2. **[02-sessions-and-orders.md](securities/02-sessions-and-orders.md)** — **CẤP ĐỘ 2 (TRUNG CẤP): Phiên Giao Dịch, Cờ Phiên & Các Loại Lệnh Đặt**
-   - Khung giờ phiên, Mã cờ phiên KRX (`AA1`, `BB1`, `BC1`, v.v.), Lệnh cơ sở (LO, ATO, ATC, MP, MTL, MOK, MAK, PLO), Lệnh thỏa thuận (1F/2F), Phái sinh, Quy chuẩn Sửa/Hủy lệnh, Cơ chế Random End (RE).
+   - Khung giờ phiên, Mã cờ phiên KRX (`GT1`, `AX1`, `AD1`, `AA1`, `BB1`, `BC1`, `AD2`, `AB1`, `AB2`, v.v.), Ma trận ánh xạ EventID $\rightarrow$ TradingSessionID $\rightarrow$ Loại lệnh cho phép đa sàn/nhóm sản phẩm (STO, STX, UPX, FIO, FBX, HCX), Cấu hình Web (`krxOrderTypeMap`) & App (`_getOrderType*`), Cơ chế Fallback an toàn, Quy tắc chặn lệnh thị trường MTL theo trạng thái giám sát SI (diện `CR`/`RES`), Lệnh thỏa thuận (1F/2F), Phái sinh, Quy chuẩn Sửa/Hủy lệnh, Cơ chế Random End (RE).
 
 3. **[03-order-lifecycle-and-ors.md](securities/03-order-lifecycle-and-ors.md)** — **CẤP ĐỘ 3 (TRUNG CẤP): Vòng Đời Lệnh, Trạng Thái & Lệnh Điều Kiện**
    - Máy trạng thái vòng đời lệnh, Bảng ánh xạ trạng thái đa tầng, Danh mục 15 mã lỗi ORS, Lệnh 24/7 fallback, Động cơ lệnh điều kiện (Stop, TCO, Trailing).
@@ -47,7 +47,7 @@ Tài liệu được chia thành các module độc lập trong thư mục [`ref
 | Task đang làm | Module cần đọc | Persona Gợi Ý |
 |---------------|---------------|---------------|
 | Validate giá / biên độ / bước giá | [01-market-structure](securities/01-market-structure.md) | BA, DEV, QA |
-| Phiên giao dịch, loại lệnh, sửa/hủy lệnh | [02-sessions-and-orders](securities/02-sessions-and-orders.md) | BA, DEV, QA |
+| Phiên giao dịch, loại lệnh, sửa/hủy lệnh, ma trận mapping EventID, lọc lệnh MTL theo SI | [02-sessions-and-orders](securities/02-sessions-and-orders.md) | BA, DEV, QA |
 | Vòng đời lệnh, trạng thái, mã lỗi ORS, lệnh điều kiện | [03-order-lifecycle-and-ors](securities/03-order-lifecycle-and-ors.md) | BA, DEV, QA, CR |
 | Halt / Circuit Breaker / Volatility | [04-volatility-and-halts](securities/04-volatility-and-halts.md) | DEV, QA |
 | WebSocket datafeed, MDDS, latency | [05-market-data-mdds](securities/05-market-data-mdds.md) | DEV, Perf Auditor |

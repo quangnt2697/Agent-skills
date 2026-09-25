@@ -148,6 +148,12 @@ const mappings = [
     nodeName: 'Format 4 Separate Messages',
     nodeId: 'node-format',
     scriptFile: 'scripts/n8n-nodes/db/db-recon-core-format.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/securities-domain-engine.json',
+    nodeName: 'Securities Domain Engine',
+    nodeId: 'code-domain-engine',
+    scriptFile: 'scripts/n8n-nodes/qa/securities-domain-engine.js'
   }
 ];
 

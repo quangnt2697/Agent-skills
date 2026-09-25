@@ -1,0 +1,156 @@
+{
+  "name": "AgentSkills - Securities Domain Engine",
+  "id": "SecuritiesDomainEngine001",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-execute",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "securities-domain-engine",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-webhook-engine",
+      "name": "Webhook Trigger (securities-domain-engine)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        320
+      ],
+      "webhookId": "securities-domain-engine"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "securities-rule-matrix",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-webhook-matrix",
+      "name": "Webhook Trigger (securities-rule-matrix)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        480
+      ],
+      "webhookId": "securities-rule-matrix"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "qa-domain-lint",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-webhook-lint",
+      "name": "Webhook Trigger (qa-domain-lint)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        640
+      ],
+      "webhookId": "qa-domain-lint"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Securities Domain Engine (`scripts/n8n-nodes/qa/securities-domain-engine.js`)\n *\n * Mục đích:\n * - Cung cấp Tầng Tự Động Hóa Tri Thức Domain Chứng Khoán (Securities Domain Engine) cho QA & DEV.\n * - Hỗ trợ 2 chức năng chính qua Webhook:\n *   1. `getRuleMatrix`: Truy vấn ma trận loại lệnh hợp lệ/bị cấm theo sàn, phiên, cờ SI (CR/RES filter).\n *      Tự động sinh bảng Examples đa sàn (Multi-Symbol Parameterization) cho Scenario Outline.\n *   2. `lintGherkin`: Kiểm tra tính tuân thủ quy tắc nghiệp vụ chứng khoán (Domain Linter) của file .feature.\n */\n\nconst input = typeof $input !== 'undefined' ? $input.first() : null;\nconst json = (input && input.json) || {};\nconst body = json.body || json;\n\n// ── 1. BẢNG DỮ LIỆU ĐẶC TẢ NGHIỆP VỤ KRX CHUẨN HOÁ ────────────────────────\nconst ALL_ORDER_TYPES = ['LO', 'ATO', 'ATC', 'MP', 'MTL', 'MOK', 'MAK', 'PLO'];\n\nconst krxOrderTypeMap = {\n  STO: {\n    G1: {\n      GT1: ['LO', 'ATO', 'MTL', 'ATC'],\n      AA1: ['LO', 'ATO'],\n      BB1: ['LO', 'MTL', 'ATC'],\n      BC1: ['LO', 'ATC'],\n      AC2: ['LO', 'MTL', 'ATO', 'ATC'],\n    },\n    G4: {\n      GT1: ['LO', 'ATO', 'MTL', 'ATC'],\n      AA1: ['LO', 'ATO'],\n      BB1: ['LO', 'MTL', 'ATC'],\n      BC1: ['LO', 'ATC'],\n      AD2: ['LO', 'MTL', 'ATO', 'ATC'],\n    },\n    G7: {\n      AD1: ['LO', 'MTL', 'ATO', 'ATC'],\n      AD2: ['LO', 'MTL', 'ATO', 'ATC'],\n    },\n    AL: {\n      AW8: ['LO', 'MTL', 'ATC'],\n      AW9: ['LO', 'MTL', 'ATC'],\n    },\n  },\n  STX: {\n    G1: {\n      AX1: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n      BB1: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n      BC1: ['LO', 'ATC', 'PLO'],\n      AC2: ['PLO'],\n    },\n    G3: {\n      AD1: ['PLO'], // 10p đầu sau giờ nhận lệnh\n      AB1: ['PLO'], // Khớp liên tục sau giờ\n      AB2: ['LO', 'MTL', 'ATC', 'MOK', 'MAK', 'PLO'],\n    },\n    G4: {\n      AX1: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n      BB1: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n      BC1: ['LO', 'ATC', 'PLO'],\n      AD2: ['PLO'],\n    },\n    G7: {\n      AD1: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n      AD2: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n    },\n    AL: {\n      AW8: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n      AW9: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n    },\n  },\n  UPX: {\n    G1: {\n      AB1: ['LO'],\n      AB2: ['LO'],\n    },\n    G4: {\n      AB1: ['LO'],\n      AB2: ['LO'],\n    },\n    G7: {\n      AD1: ['LO'],\n      AD2: ['LO'],\n    },\n    AL: {\n      AW8: ['LO'],\n      AW9: ['LO'],\n    },\n  },\n  FIO: {\n    G1: {\n      GT1: ['LO', 'MTL', 'ATO', 'MAK', 'MOK'],\n      AA1: ['LO', 'ATO'],\n      BB1: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n      BC1: ['LO', 'ATC'],\n      AC2: ['LO', 'MTL', 'ATO', 'ATC', 'MAK', 'MOK'],\n    },\n    AL: {\n      AW8: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n      AW9: ['LO', 'MTL', 'ATC', 'MOK', 'MAK'],\n    },\n  },\n  FBX: {\n    G1: {\n      GT1: ['LO', 'MTL', 'ATO', 'MAK', 'MOK'],\n      AA1: ['LO', 'ATO'],\n      BB1: ['LO', 'MTL', 'MAK', 'MOK'],\n      AD2: ['LO', 'MTL', 'ATO', 'MAK', 'MOK'],\n    },\n    AL: {\n      AW8: ['LO', 'MTL', 'MOK', 'MAK'],\n      AW9: ['LO', 'MTL', 'MOK', 'MAK'],\n    },\n  },\n};\n\nconst krxDefaultOrderType = {\n  STO: ['LO', 'MTL', 'ATO', 'ATC'],\n  STX: ['LO', 'MTL', 'ATC', 'MOK', 'MAK', 'PLO'],\n  UPX: ['LO'],\n  FIO: ['LO', 'MTL', 'ATO', 'ATC', 'MOK', 'MAK'],\n  FBX: ['LO', 'MTL', 'ATO', 'MOK', 'MAK'],\n  HCX: ['LO'],\n};\n\nconst sessionNameMap = {\n  AA1: 'ATO (Mở cửa định kỳ)',\n  BB1: 'CONTINUOUS (Khớp liên tục)',\n  BC1: 'ATC (Đóng cửa định kỳ)',\n  AC2: 'ATC_EXECUTION (Khớp phiên đóng cửa)',\n  AD1: 'ORDER_ACCEPT (Nhận lệnh Buy-in / Sau giờ)',\n  AD2: 'ODD_CLOSE (Đóng phiên lô lẻ / Buy-in)',\n  AB1: 'POST_CONT (Khớp liên tục sau giờ G3 / Thỏa thuận)',\n  AB2: 'BOARD_CLOSE (Đóng bảng giao dịch)',\n  AX1: 'BOARD_OPEN (Mở bảng giao dịch)',\n  AW8: 'NOON_BREAK (Nghỉ trưa)',\n  AW9: 'CONT_AFTERNOON (Liên tục chiều)',\n  GT1: 'GT_LOAD (Nạp lệnh GTC đầu ngày)',\n};\n\nfunction normalizeMarket(market) {\n  if (!market) return 'STO';\n  const m = String(market).toUpperCase().trim();\n  if (m === '6' || m === 'HOSE' || m === 'STO') return 'STO';\n  if (m === '7' || m === 'HNX' || m === 'STX') return 'STX';\n  if (m === '8' || m === 'UPCOM' || m === 'UPX') return 'UPX';\n  if (m === '3' || m === 'DERIVATIVES' || m === 'FIO' || m.startsWith('VN30')) return 'FIO';\n  if (m === 'FBX' || m === 'BOND') return 'FBX';\n  if (m === 'HCX') return 'HCX';\n  return 'STO';\n}\n\n// ── 2. XỬ LÝ ACTION: getRuleMatrix ─────────────────────────────────────────\nfunction handleGetRuleMatrix(payload) {\n  const prodGrp = normalizeMarket(payload.marketId || payload.exchange || payload.prodGrpId);\n  const boardId = (payload.boardId || 'G1').toUpperCase().trim();\n  const eventId = (payload.eventId || 'BB1').toUpperCase().trim();\n  const symbol = (payload.symbol || (prodGrp === 'STO' ? 'SSI' : prodGrp === 'STX' ? 'SHS' : prodGrp === 'UPX' ? 'OIL' : '41I1GA0000')).toUpperCase().trim();\n\n  const sanctionStatus = (payload.sanctionStatus || payload.symbolTradingSanctionStatusCode || 'NRM').toUpperCase().trim();\n  const methodStatus = (payload.methodStatus || payload.symbolTradingMethodStatusCode || 'NRM').toUpperCase().trim();\n  const adminStatus = (payload.adminStatus || payload.symbolAdminStatusCode || 'NRM').toUpperCase().trim();\n\n  // 1. Tra cứu ma trận lệnh chuẩn\n  let allowed = (krxOrderTypeMap[prodGrp] && krxOrderTypeMap[prodGrp][boardId] && krxOrderTypeMap[prodGrp][boardId][eventId])\n    ? [...krxOrderTypeMap[prodGrp][boardId][eventId]]\n    : [...(krxDefaultOrderType[prodGrp] || ['LO'])];\n\n  // 2. Áp dụng quy tắc giám sát SI: Chặn MTL khi CR/RES\n  const isSanctionNrm = sanctionStatus === 'NRM';\n  const isMethodNrmOrSls = methodStatus === 'NRM' || methodStatus === 'SLS';\n  const isAdminCrOrRes = adminStatus === 'CR' || adminStatus === 'RES';\n\n  let isMtlFiltered = false;\n  let filterReason = null;\n\n  if (isSanctionNrm && isMethodNrmOrSls && isAdminCrOrRes) {\n    if (allowed.includes('MTL')) {\n      allowed = allowed.filter(t => t !== 'MTL');\n      isMtlFiltered = true;\n      filterReason = `Mã ${symbol} đang thuộc diện Cảnh báo (${adminStatus}), hệ thống loại bỏ lệnh thị trường MTL theo quy chuẩn SI.`;\n    }\n  }\n\n  // 3. Tính toán disallowed orders\n  const disallowed = ALL_ORDER_TYPES.filter(t => !allowed.includes(t));\n\n  // 4. Sinh bảng Examples đa sàn (Multi-Symbol Fixture Table cho BDD Scenario Outline)\n  const multiSymbolExamples = [\n    {\n      symbol: 'SHB',\n      exchange: 'HOSE',\n      marketId: 'STO',\n      boardId: 'G1',\n      sessionEvent: 'BB1',\n      adminStatus: 'NRM',\n      allowedOrders: 'LO, MTL, ATC',\n      disallowedOrders: 'ATO, MOK, MAK, PLO',\n      priceStep: 50,\n      note: 'HOSE khớp liên tục thông thường'\n    },\n    {\n      symbol: 'HAG',\n      exchange: 'HOSE',\n      marketId: 'STO',\n      boardId: 'G1',\n      sessionEvent: 'BB1',\n      adminStatus: 'CR',\n      allowedOrders: 'LO, ATC',\n      disallowedOrders: 'MTL, ATO, MOK, MAK, PLO',\n      priceStep: 50,\n      note: 'HOSE diện Cảnh báo (CR) - CẤM MTL'\n    },\n    {\n      symbol: 'SHS',\n      exchange: 'HNX',\n      marketId: 'STX',\n      boardId: 'G1',\n      sessionEvent: 'BB1',\n      adminStatus: 'NRM',\n      allowedOrders: 'LO, MTL, ATC, MOK, MAK',\n      disallowedOrders: 'ATO, PLO',\n      priceStep: 100,\n      note: 'HNX khớp liên tục nhận đủ MTL, MOK, MAK'\n    },\n    {\n      symbol: 'SHS',\n      exchange: 'HNX',\n      marketId: 'STX',\n      boardId: 'G3',\n      sessionEvent: 'AB1',\n      adminStatus: 'NRM',\n      allowedOrders: 'PLO',\n      disallowedOrders: 'LO, MTL, ATC, ATO, MOK, MAK',\n      priceStep: 100,\n      note: 'HNX phiên sau giờ G3 - CHỈ NHẬN PLO'\n    },\n    {\n      symbol: 'OIL',\n      exchange: 'UPCOM',\n      marketId: 'UPX',\n      boardId: 'G1',\n      sessionEvent: 'AB1',\n      adminStatus: 'NRM',\n      allowedOrders: 'LO',\n      disallowedOrders: 'ATO, ATC, MP, MTL, MOK, MAK, PLO',\n      priceStep: 100,\n      note: 'UPCOM - DUY NHẤT LỆNH LO'\n    },\n    {\n      symbol: '41I1GA0000',\n      exchange: 'DERIVATIVES',\n      marketId: 'FIO',\n      boardId: 'G1',\n      sessionEvent: 'BB1',\n      adminStatus: 'NRM',\n      allowedOrders: 'LO, MTL, ATC, MOK, MAK',\n      disallowedOrders: 'ATO, PLO',\n      priceStep: 0.1,\n      note: 'Phái sinh VN30F khớp liên tục'\n    }\n  ];\n\n  return {\n    success: true,\n    action: 'getRuleMatrix',\n    symbol,\n    marketId: prodGrp,\n    boardId,\n    eventId,\n    sessionName: sessionNameMap[eventId] || 'CUSTOM_SESSION',\n    adminStatus,\n    sanctionStatus,\n    methodStatus,\n    allowedOrders: allowed,\n    disallowedOrders: disallowed,\n    isMtlFiltered,\n    filterReason,\n    multiSymbolExamples\n  };\n}\n\n// ── 3. XỬ LÝ ACTION: lintGherkin (Domain Rule Validator) ───────────────────\nfunction handleLintGherkin(payload) {\n  const gherkinText = payload.gherkinContent || payload.featureText || payload.content || '';\n  const issueKey = payload.issueKey || 'UNKNOWN';\n\n  if (!gherkinText.trim()) {\n    return {\n      success: false,\n      valid: false,\n      errorCount: 1,\n      errors: ['Nội dung kịch bản Gherkin (.feature) rỗng.'],\n      warnings: []\n    };\n  }\n\n  const errors = [];\n  const warnings = [];\n  const lines = gherkinText.split('\\n');\n\n  let inScenario = '';\n  let inExamples = false;\n  let examplesHeaders = [];\n\n  for (let i = 0; i < lines.length; i++) {\n    const rawLine = lines[i];\n    const line = rawLine.trim();\n    const lineNum = i + 1;\n\n    if (line.startsWith('Scenario:') || line.startsWith('Scenario Outline:')) {\n      inScenario = line;\n      inExamples = false;\n      continue;\n    }\n\n    if (line.startsWith('Examples:')) {\n      inExamples = true;\n      examplesHeaders = [];\n      continue;\n    }\n\n    // Phân tích dòng Examples\n    if (inExamples && line.startsWith('|')) {\n      const cells = line.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);\n      if (examplesHeaders.length === 0) {\n        examplesHeaders = cells.map(c => c.toLowerCase());\n      } else {\n        const row = {};\n        examplesHeaders.forEach((h, idx) => { row[h] = cells[idx] || ''; });\n\n        // Check 1: Mã diện CR/RES có bị test đặt lệnh MTL thành công không?\n        const status = (row.adminstatus || row.admin_status || '').toUpperCase();\n        const orderType = (row.ordertype || row.order_type || row.loailenh || '').toUpperCase();\n        const expected = (row.expected || row.result || '').toLowerCase();\n\n        if ((status === 'CR' || status === 'RES') && orderType === 'MTL') {\n          if (!expected.includes('reject') && !expected.includes('từ chối') && !expected.includes('lỗi') && !expected.includes('cấm')) {\n            errors.push(`Dòng ${lineNum}: Mã diện ${status} không được phép đặt lệnh MTL thành công (Phải bị từ chối hoặc disable).`);\n          }\n        }\n\n        // Check 2: UPCOM đặt lệnh khác LO\n        const exchange = (row.exchange || row.market || row.san || '').toUpperCase();\n        if ((exchange === 'UPCOM' || exchange === 'UPX') && orderType && orderType !== 'LO') {\n          if (!expected.includes('reject') && !expected.includes('từ chối') && !expected.includes('lỗi')) {\n            errors.push(`Dòng ${lineNum}: Sàn UPCOM chỉ hỗ trợ lệnh LO, không chấp nhận lệnh \"${orderType}\".`);\n          }\n        }\n\n        // Check 3: HNX/UPCOM đặt lệnh ATO\n        if ((exchange === 'HNX' || exchange === 'STX' || exchange === 'UPCOM' || exchange === 'UPX') && orderType === 'ATO') {\n          errors.push(`Dòng ${lineNum}: Sàn ${exchange} không có phiên ATO, không được định nghĩa lệnh ATO.`);\n        }\n\n        // Check 4: Sau giờ G3 đặt lệnh khác PLO\n        const board = (row.boardid || row.board || '').toUpperCase();\n        if (board === 'G3' && orderType && orderType !== 'PLO') {\n          if (!expected.includes('reject') && !expected.includes('từ chối')) {\n            errors.push(`Dòng ${lineNum}: Bảng sau giờ G3 của HNX chỉ chấp nhận lệnh PLO, không hỗ trợ \"${orderType}\".`);\n          }\n        }\n      }\n      continue;\n    }\n\n    // Kiểm tra từng step riêng lẻ\n    const stepLower = line.toLowerCase();\n\n    // Check 5: Sửa/hủy lệnh trong phiên định kỳ ATO/ATC\n    if ((stepLower.includes('hủy lệnh') || stepLower.includes('sửa lệnh') || stepLower.includes('cancel order') || stepLower.includes('amend order')) &&\n        (stepLower.includes('phiên ato') || stepLower.includes('phiên atc') || stepLower.includes('random end'))) {\n      if (!stepLower.includes('bị từ chối') && !stepLower.includes('không thành công') && !stepLower.includes('reject') && !stepLower.includes('cấm')) {\n        errors.push(`Dòng ${lineNum}: Trong phiên ATO, ATC hoặc Random End, SGDCK TUYỆT ĐỐI CẤM sửa/hủy lệnh.`);\n      }\n    }\n\n    // Check 6: Lệnh MOK/MAK trên HoSE\n    if ((stepLower.includes('hose') || stepLower.includes('sto')) && (stepLower.includes('mok') || stepLower.includes('mak'))) {\n      if (!stepLower.includes('từ chối') && !stepLower.includes('lỗi') && !stepLower.includes('reject')) {\n        warnings.push(`Dòng ${lineNum}: Lệnh MOK/MAK chỉ áp dụng trên sàn HNX và Phái sinh, không có trên sàn HoSE.`);\n      }\n    }\n  }\n\n  // Check 7: Kiểm tra quy tắc Multi-Symbol Parameterization (Bắt buộc tách sàn hoặc Scenario Outline)\n  const hasScenarioOutline = gherkinText.includes('Scenario Outline:');\n  const mentionsMultiExchange = (gherkinText.includes('HOSE') || gherkinText.includes('HoSE')) && \n                                (gherkinText.includes('HNX') || gherkinText.includes('UPCOM') || gherkinText.includes('Phái sinh'));\n  if (mentionsMultiExchange && !hasScenarioOutline) {\n    warnings.push(`Tính năng bao phủ đa sàn nhưng chưa sử dụng \"Scenario Outline\" kèm bảng \"Examples\" tham số hóa chi tiết theo quy tắc QA bắt buộc.`);\n  }\n\n  return {\n    success: true,\n    action: 'lintGherkin',\n    issueKey,\n    valid: errors.length === 0,\n    errorCount: errors.length,\n    warningCount: warnings.length,\n    errors,\n    warnings,\n    checkedRules: [\n      'RULE_CR_RES_NO_MTL: Cấm lệnh MTL cho cổ phiếu diện Cảnh báo/Hạn chế',\n      'RULE_UPCOM_ONLY_LO: Sàn UPCoM chỉ cho phép lệnh LO',\n      'RULE_HNX_UPCOM_NO_ATO: Sàn HNX và UPCoM không có lệnh ATO',\n      'RULE_HOSE_NO_MOK_MAK: Sàn HoSE không hỗ trợ lệnh MOK/MAK',\n      'RULE_PERIODIC_NO_CANCEL_AMEND: Cấm sửa/hủy lệnh trong phiên định kỳ ATO/ATC/Random End',\n      'RULE_POST_MARKET_ONLY_PLO: Bảng sau giờ G3 HNX chỉ nhận lệnh PLO',\n      'RULE_MULTI_SYMBOL_PARAM: Bắt buộc tham số hóa đa sàn/đa mã'\n    ]\n  };\n}\n\n// ── 4. MAIN ROUTER ─────────────────────────────────────────────────────────\nlet responsePayload;\n\nconst action = (body.action || '').toLowerCase().trim();\n\nif (action === 'lint' || action === 'lintgherkin' || body.gherkinContent || body.featureText) {\n  responsePayload = handleLintGherkin(body);\n} else {\n  // Mặc định là getRuleMatrix\n  responsePayload = handleGetRuleMatrix(body);\n}\n\nreturn [{\n  json: {\n    timestamp: new Date().toISOString(),\n    ...responsePayload\n  }\n}];\n"
+      },
+      "id": "code-domain-engine",
+      "name": "Securities Domain Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        820,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Securities Domain Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (securities-domain-engine)": {
+      "main": [
+        [
+          {
+            "node": "Securities Domain Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (securities-rule-matrix)": {
+      "main": [
+        [
+          {
+            "node": "Securities Domain Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (qa-domain-lint)": {
+      "main": [
+        [
+          {
+            "node": "Securities Domain Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Securities Domain Engine": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

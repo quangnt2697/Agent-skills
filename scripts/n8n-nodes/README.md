@@ -77,6 +77,7 @@ scripts/n8n-nodes/
 | **QA** | `qa/squash-format-report.js` | `n8n-workflows/squash-batch-pusher.json` | `Format Squash Report Markdown` |
 | **QA** | `qa/securities-fixture-engine.js` | `n8n-workflows/securities-fixture-generator.json` | `Securities Fixture Engine` |
 | **QA** | `qa/jira-ready-to-test-filter.js` | `n8n-workflows/jira-ready-to-test-notifier.json` | `Filter Board G31 & Ready to Test` |
+| **QA** | `qa/securities-domain-engine.js` | `n8n-workflows/securities-domain-engine.json` | `Securities Domain Engine` |
 | **DB** | `db/metabase-prepare-query.js` | `n8n-workflows/metabase-query-executor.json` | `Prepare & Sanitize Query` |
 | **DB** | `db/metabase-normalize-response.js` | `n8n-workflows/metabase-query-executor.json` | `Normalize & Format Response` |
 | **DB** | `db/watchdog-prepare-query.js` | `n8n-workflows/db-mdds-recon-watchdog.json` | `Prepare Watchdog Query` |

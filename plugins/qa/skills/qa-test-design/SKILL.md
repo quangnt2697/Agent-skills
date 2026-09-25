@@ -64,13 +64,21 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
   - Ngôn ngữ miền nghiệp vụ thuần túy — **cấm tuyệt đối** biến code, XPath, SQL, `.env` keys.
   - Dùng ranh giới tượng trưng: `TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`.
   - **Tham số hóa Đa sàn / Đa mã (Multi-Symbol Parameterization):** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** phải tách riêng Scenario độc lập hoặc sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa chi tiết. **CẤM TUYỆT ĐỐI** viết scenario gộp chung làm mờ ranh giới thời gian và kênh dữ liệu.
+  - *⚡ n8n Fast-Path Accelerator (Tuỳ chọn tối ưu):* Khi n8n khả dụng, gọi `getSecuritiesRuleMatrix` qua `scripts/lib/n8n-client.js` để lấy sẵn bảng `multiSymbolExamples` (4 sàn: HOSE, HNX, UPCOM, Phái sinh) kèm tập lệnh hợp lệ (đã tự động lọc cấm lệnh MTL nếu cổ phiếu diện `CR`/`RES`).
   - Gắn thẻ bắt buộc: `@smoke/@regression`, `@happy-path/@negative`, `@JIRA-{issueKey}`, `@domain-securities`.
 
-- **Giai đoạn 3 (Xác minh Cú pháp & Bàn giao):** Chạy script kiểm tra định dạng Gherkin:
-  ```bash
-  bash plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/{issueKey}/test/{issueKey}.feature"
-  ```
-  Nếu có lỗi cú pháp ➔ Tự sửa (Self-fix Loop ≤ 3 vòng). Khi pass 100% ➔ Bàn giao cho `qa-auto-design` hoặc `qa-squash-push`.
+- **Giai đoạn 3 (Xác minh Cú pháp, Domain Linting & Bàn giao):**
+  1. *Kiểm tra Cú pháp Gherkin:*
+     ```bash
+     bash plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/{issueKey}/test/{issueKey}.feature"
+     ```
+  2. *Kiểm tra Quy tắc Nghiệp vụ Chứng khoán (Domain Linter):*
+     Chạy kiểm định domain rules (qua n8n Fast-Path hoặc CLI):
+     ```bash
+     node scripts/lib/n8n-client.js lintDomainGherkin "{\"issueKey\":\"{issueKey}\",\"gherkinContent\":$(node -e 'console.log(JSON.stringify(require(\"fs\").readFileSync(\"workspace/{issueKey}/test/{issueKey}.feature\", \"utf8\"))')}"
+     ```
+     Phát hiện các lỗi nghiêm trọng: Đặt MTL cho mã CR/RES, lệnh MP trên UPCoM, sửa/hủy ATO/ATC, đặt sai phiên sau giờ G3.
+  3. Nếu có lỗi cú pháp hoặc vi phạm domain ➔ Tự sửa (Self-fix Loop ≤ 3 vòng). Khi pass 100% ➔ Bàn giao cho `qa-auto-design` hoặc `qa-squash-push`.
 
 ## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
 

@@ -31,20 +31,23 @@
 
 Hệ thống MDDS của KRX bắn realtime các event thay đổi trạng thái phiên qua message `35=f` (Security Status) ở cấp độ Bảng/Sàn (`Board_Event`), đồng thời bắn `Symbol_Trading_Session` độc lập cho từng mã:
 
-| BoardEventID | Tên Sự Kiện KRX | Ý Nghĩa Nghiệp Vụ | TradingSessionID (KRX Raw) | TradingSessionID (BE Enum Chuẩn Hóa) |
+| BoardEventID | Tên Sự Kiện KRX | Ý Nghĩa Nghiệp Vụ & Bảng Áp Dụng | TradingSessionID (KRX Raw) | TradingSessionID (BE Enum Chuẩn Hóa) |
 |:---|:---|:---|:---:|:---:|
-| **GT1** | `GT Order Load` | Nạp các lệnh Good-Till-Date (GTC) đầu ngày | `01` | `1` (`TRADING_SESSION_ID_01`) |
-| **AA1** | `Opening CA Open` | Bắt đầu nhận lệnh phiên ATO (09:00) | `10` | `2` (`TRADING_SESSION_ID_10`) |
-| **BB1** | `Cont.A Open for Non-PCA` | Bắt đầu phiên Khớp lệnh liên tục sáng (09:15) | `40` | `7` (`TRADING_SESSION_ID_40`) |
-| **AW8** | `Lunch Break` | Bắt đầu giờ nghỉ trưa (11:30) *(Sở không trả session ID)* | *null* | `15` (`TRADING_SESSION_ID_200`) |
-| **AW9** | `Open after Lunch Break` | Kết thúc nghỉ trưa, vào liên tục chiều (13:00) *(Sở không trả)* | *null* | `16` (`TRADING_SESSION_ID_210`) |
-| **BC1** | `Closing CA Open` | Bắt đầu nhận lệnh phiên ATC (14:30) | `30` | `6` (`TRADING_SESSION_ID_30`) |
-| **AC2** | `Closing CA Execution` | Thực hiện khớp lệnh đóng cửa ATC (14:45) | `99` | `14` (`TRADING_SESSION_ID_99`) |
-| **AB2** | `Board Trading Close` | Kết thúc toàn bộ giao dịch của bảng | `99` | `14` (`TRADING_SESSION_ID_99`) |
+| **GT1** | `GT Order Load` | Nạp các lệnh Good-Till-Date (GTC) đầu ngày (G1, G4) | `01` | `1` (`TRADING_SESSION_ID_01`) |
+| **AX1** | `Board Open` | Mở bảng (Lô lẻ, G1/G4) *(Sở không trả session ID $\rightarrow$ Fallback)* | *null* | Fallback Default |
+| **AD1** | `Order Accept Only` | Bắt đầu nhận lệnh: Buy-in (Board G7) hoặc Khớp lệnh sau giờ 10p đầu (Board G3) | `60` | `10` (`TRADING_SESSION_ID_60`) |
+| **AA1** | `Opening CA Open` | Bắt đầu nhận lệnh phiên ATO (09:00, G1/G4) | `10` | `2` (`TRADING_SESSION_ID_10`) |
+| **BB1** | `Cont.A Open for Non-PCA` | Bắt đầu phiên Khớp lệnh liên tục sáng (09:15, G1/G4) | `40` | `7` (`TRADING_SESSION_ID_40`) |
+| **AW8** | `Lunch Break` | Bắt đầu giờ nghỉ trưa (11:30, AL) *(Sở không trả session ID)* | *null* | `15` (`TRADING_SESSION_ID_200`) |
+| **AW9** | `Open after Lunch Break` | Kết thúc nghỉ trưa, vào liên tục chiều (13:00, AL) *(Sở không trả)* | *null* | `16` (`TRADING_SESSION_ID_210`) |
+| **BC1** | `Closing CA Open` | Bắt đầu nhận lệnh phiên ATC (14:30, G1/G4) | `30` | `6` (`TRADING_SESSION_ID_30`) |
+| **AC2** | `Closing CA Execution` | Thực hiện khớp lệnh đóng cửa ATC (14:45, Board G1) | `99` | `14` (`TRADING_SESSION_ID_99`) |
+| **AD2** | `Odd-lot / Buy-in Close` | Kết phiên ATC lô lẻ (G4), Kết thúc Buy-in (G7), Kết phiên Bond Future (FBX) | `99` | `14` (`TRADING_SESSION_ID_99`) |
+| **AB1** | `Post-market Cont. Open` | Khớp liên tục sau giờ (Board G3) hoặc Thỏa thuận lô chẵn/lẻ (G1/G4/AL) | `40` | `7` (`TRADING_SESSION_ID_40`) |
+| **AB2** | `Board Trading Close` | Kết thúc khớp lệnh sau giờ (Board G3) hoặc Đóng toàn bộ giao dịch bảng | `99` | `14` (`TRADING_SESSION_ID_99`) |
 | **AQ3** | `Market Final Closing` | Đóng cửa toàn bộ hệ thống giao dịch | `99` | `14` (`TRADING_SESSION_ID_99`) |
 | **CD1** | `PCA Open` | Mở phiên định kỳ nhiều đợt (Cổ phiếu Hạn chế GD) | `80` | `12` (`TRADING_SESSION_ID_80`) |
 | **CD3** | `PCA Execution` | Khớp lệnh định kỳ nhiều đợt (15 phút/lần: 09:30, 09:45...) | `80` | `12` (`TRADING_SESSION_ID_80`) |
-| **—** | `Order Accept Only` | Bắt đầu nhận lệnh sau giờ (10p đầu chỉ nhận lệnh Buy-in) | `60` | `10` (`TRADING_SESSION_ID_60`) |
 | **—** | `Trading Halt` | Dừng giao dịch mã chứng khoán | `90` | `13` (`TRADING_SESSION_ID_90`) |
 
 > 📌 **Chuyển dịch Kiến trúc phiên:** Hệ thống giao dịch hiện đại **KHÔNG** chỉ dựa vào `Board_Event.event_id` của sàn để xác định phiên cho toàn bộ cổ phiếu. Với cơ chế Random End của Sở, BE tổng hợp và phát topic `Symbol_Trading_Session` theo từng mã để phân phối phiên độc lập, bao gồm cờ `enableRE`.
@@ -317,14 +320,484 @@ enum TradingSessionID {
 
 ##### D. Cơ Chế Fallback Phiên An Toàn (Safe Session Fallback)
 Khi xảy ra các trường hợp biên (Edge cases):
-1. `tradingSessionId = null` hoặc không có trong danh mục mapping;
-2. Mất kết nối hoặc không nhận được message `Symbol_Trading_Session`;
-$\implies$ Client tự động **fallback về trạng thái phiên Khớp lệnh liên tục (Continuous)** và mở đầy đủ các loại lệnh mặc định theo từng sàn:
+1. `tradingSessionId` là `null` hoặc không có trong danh mục mapping;
+2. `tradingSessionId` là mã số chưa được hệ thống Client map;
+3. Mất kết nối hoặc không nhận được message `Symbol_Trading_Session` từ MDDS;
+$\implies$ Client tự động **fallback về trạng thái phiên Khớp lệnh liên tục (Continuous)** và mở đầy đủ các loại lệnh mặc định theo từng nhóm sản phẩm / sàn (`krxDefaultOrderType`):
 * **HoSE (STO):** `[LO, MTL, ATO, ATC]`
 * **HNX (STX):** `[LO, MTL, ATC, MOK, MAK, PLO]`
 * **UPCoM (UPX):** `[LO]`
-* **Phái sinh (FIO):** `[LO, MTL, ATO, ATC, MOK, MAK]`
-* **Trái phiếu (HCX):** `[LO]`
+* **Phái sinh Chỉ số (FIO):** `[LO, MTL, ATO, ATC, MOK, MAK]`
+* **Phái sinh Trái phiếu (FBX):** `[LO, MTL, ATO, MOK, MAK]`
+* **Trái phiếu Chuyên biệt (HCX):** `[LO]`
 
 ---
 
+### 2.8. Ma Trận Ánh Xạ Toàn Diện BoardEventID $\rightarrow$ TradingSessionID $\rightarrow$ Loại Lệnh Cho Phép (STO, STX, UPX, FIO, FBX, HCX)
+
+#### 1. Nguyên Tắc Xác Định Loại Lệnh
+Hệ thống Frontend (Web/Mobile App) và Gateway/ORS xác định danh sách các loại lệnh được phép đặt (`OrderType[]`) cho từng mã chứng khoán theo 3 cấp độ tham số:
+$$\text{OrderTypes} = f(\text{tscProdGrpId}, \text{boardIdOriginal}, \text{eventId} \lor \text{tradingSessionId})$$
+
+- **`tscProdGrpId` (Nhóm sản phẩm / Product Group ID):**
+  - `STO`: Cổ phiếu, Chứng chỉ quỹ, Chứng quyền có bảo đảm sàn HoSE.
+  - `STX`: Cổ phiếu niêm yết sàn HNX.
+  - `UPX`: Cổ phiếu đăng ký giao dịch thị trường UPCoM.
+  - `FIO`: Hợp đồng tương lai Chỉ số cổ phiếu (Index Futures - ví dụ VN30F).
+  - `FBX`: Hợp đồng tương lai Trái phiếu Chính phủ (Government Bond Futures).
+  - `HCX`: Trái phiếu doanh nghiệp / chuyên biệt HNX.
+- **`boardIdOriginal` (Mã Bảng Giao Dịch Gốc):**
+  - `G1`: Bảng Khớp lệnh lô chẵn thông thường (Round-lot).
+  - `G3`: Bảng Khớp lệnh sau giờ (Post-market PLO - chỉ áp dụng trên STX/HNX).
+  - `G4`: Bảng Khớp lệnh lô lẻ (Odd-lot).
+  - `G7`: Bảng Mua bắt buộc (Buy-in).
+  - `AL`: Toàn bộ các bảng (All Boards) / Thỏa thuận / Khung giờ nghỉ trưa.
+- **`eventId` (`BoardEventID`) / `tradingSessionId`:** Mã sự kiện sàn và định danh phiên KRX.
+
+---
+
+#### 2. Bảng Ma Trận Ánh Xạ Toàn Diện Theo Từng Phiên Giao Dịch
+
+Bảng dưới đây tổng hợp chuẩn hóa toàn bộ các phiên từ tài liệu `EN-TradingSession (Lệnh)`:
+
+| Phiên & Sự Kiện Giao Dịch | BoardID | BoardEventID | TradingSessionID (Enum) | STO (HoSE) | STX (HNX) | FIO (VN30F) | FBX (Bond Fut) | UPX (UPCoM) | Ghi Chú & Đồng Bộ Web / App |
+|:---|:---:|:---:|:---:|:---|:---|:---|:---|:---:|:---|
+| **Bắt đầu Mua bắt buộc (Buy-in)** | `G7` | `AD1` | `TRADING_SESSION_ID_60` | `LO, ATO, MTL, ATC` | `LO, MTL, ATC, MOK, MAK` | — | — | `LO` | UPX: App đã map `LO`, Web chưa map |
+| **Kết thúc Mua bắt buộc (Buy-in)** | `G7` | `AD2` | `TRADING_SESSION_ID_99` | `LO, ATO, MTL, ATC` | `LO, MTL, ATC, MOK, MAK` | — | — | `LO` | UPX: App đã map `LO`, Web chưa map |
+| **Nạp lệnh đầu ngày (GT Order Load)** | `G1, G4` | `GT1` | `TRADING_SESSION_ID_01` | `LO, ATO, MTL, ATC` | `LO, MTL, ATC, MOK, MAK` | `LO, ATO, MTL, MAK, MOK` | `LO, ATO, MTL, MAK, MOK` | `LO` | FIO/FBX: Web đã map, App chưa map |
+| **Mở bảng giao dịch (Board Open)** | `G1, G4` | `AX1` | *(Sở không trả ID)* | `LO, MTL, ATO, ATC` | `LO, MTL, ATC, MOK, MAK` | `LO, ATO, MTL, MAK, MOK` | `LO, ATO, MTL, MAK, MOK` | `LO` | Tự động rơi vào case Fallback/Default theo sàn |
+| **Bắt đầu phiên mở cửa ATO** | `G1, G4` | `AA1` | `TRADING_SESSION_ID_10` | `LO, ATO` | *(Không có ATO)* | `LO, ATO` | `LO, ATO` | *(Không có ATO)* | Chỉ áp dụng cho STO, FIO, FBX |
+| **Khớp liên tục sáng (CK bình thường)** | `G1, G4` | `BB1` | `TRADING_SESSION_ID_40` | `LO, MTL, ATC` | `LO, MTL, ATC, MOK, MAK` | `LO, MTL, ATC, MOK, MAK` | `LO, MTL, MOK, MAK` | `LO` | STO: Hỗ trợ đặt trước ATC; FBX: Không có ATC |
+| **Bắt đầu Nghỉ trưa (Lunch Break)** | `AL` | `AW8` | `TRADING_SESSION_ID_200` | `LO, MTL, ATC` | `LO, MTL, ATC, MOK, MAK` | `LO, MTL, ATC, MOK, MAK` | `LO, MTL, MOK, MAK` | `LO` | Giữ nguyên tập lệnh liên tục sáng; Hệ thống nhận/chờ |
+| **Bắt đầu khớp liên tục chiều** | `AL, G1, G4` | `AW9` | `TRADING_SESSION_ID_210` | `LO, MTL, ATC` | `LO, MTL, ATC, MOK, MAK` | `LO, MTL, ATC, MOK, MAK` | `LO, MTL, MOK, MAK` | `LO` | Kế thừa nguyên vẹn phiên liên tục sáng |
+| **Bắt đầu phiên đóng cửa ATC** | `G1, G4` | `BC1` | `TRADING_SESSION_ID_30` | `LO, ATC` | `LO, ATC, PLO` | `LO, ATC` | *(Không có ATC)* | *(Không có ATC)* | STX: Cho phép chuẩn bị trước lệnh PLO |
+| **Kết phiên ATC lô lẻ** | `G4` | `AD2` | `TRADING_SESSION_ID_99` | `LO, ATO, MTL, ATC` | `PLO` | — | — | `LO` | STX lô lẻ chuyển sang chỉ nhận PLO |
+| **Kết phiên ATC lô chẵn / chung** | `G1` | `AC2` | `TRADING_SESSION_ID_99` | `LO, ATO, MTL, ATC` | `PLO` | `LO, ATO, ATC, MTL, MAK, MOK` | `LO, ATO, MTL, MAK, MOK` | `LO` | STX lô chẵn chuyển sang chỉ nhận PLO |
+| **Bắt đầu nhận lệnh sau giờ (10p đầu)** | `G3` | `AD1` | `TRADING_SESSION_ID_60` | — | `PLO` | — | — | — | Chỉ dành riêng cho STX bảng `G3` |
+| **Bắt đầu khớp liên tục sau giờ** | `G3` | `AB1` | `TRADING_SESSION_ID_40` | — | `PLO` | — | — | — | Chỉ dành riêng cho STX bảng `G3` |
+| **Kết thúc Khớp lệnh sau giờ** | `G3` | `AB2` | `TRADING_SESSION_ID_99` | — | `LO, MTL, ATC, MOK, MAK, PLO` | — | — | — | Mở lại toàn bộ lệnh STX sau khi hết giờ PLO |
+| **Kết phiên chung toàn sàn** | `G1, G4, AL` | `AB2 / AQ3` | `TRADING_SESSION_ID_99` | `LO, MTL, ATO, ATC` | `LO, MTL, ATC, MOK, MAK, PLO` | `LO, ATO, ATC, MTL, MAK, MOK` | `LO, ATO, MTL, MAK, MOK` | `LO` | Trở về danh mục Default chuẩn bị cho ngày T+1 |
+| **Default Fallback (Mất msg/Null ID)** | Bất kỳ | Bất kỳ | `null / Chưa map` | `LO, MTL, ATO, ATC` | `LO, MTL, ATC, MOK, MAK, PLO` | `LO, ATO, ATC, MTL, MAK, MOK` | `LO, ATO, MTL, MAK, MOK` | `LO` | HCX (Trái phiếu): Default `[LO]` |
+
+---
+
+#### 3. Cấu Trúc Cấu Hình Chuẩn Hóa Trên Frontend Web
+
+##### A. Bảng Ánh Xạ `krxOrderTypeMap` (Web Component / Order Form)
+```typescript
+import { OrderType, BoardID, BoardEventID, TradingSessionId } from '@/types/trading';
+
+export const krxOrderTypeMap = {
+  // 1. Sàn HoSE (STO)
+  STO: {
+    [BoardID.G1]: {
+      [BoardEventID.GT1]: [OrderType.LO, OrderType.ATO, OrderType.MTL, OrderType.ATC],
+      [BoardEventID.AA1]: [OrderType.LO, OrderType.ATO],
+      [BoardEventID.BB1]: [OrderType.LO, OrderType.MTL, OrderType.ATC],
+      [BoardEventID.BC1]: [OrderType.LO, OrderType.ATC],
+      [BoardEventID.AC2]: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.ATC],
+    },
+    [BoardID.G4]: {
+      [BoardEventID.GT1]: [OrderType.LO, OrderType.ATO, OrderType.MTL, OrderType.ATC],
+      [BoardEventID.AA1]: [OrderType.LO, OrderType.ATO],
+      [BoardEventID.BB1]: [OrderType.LO, OrderType.MTL, OrderType.ATC],
+      [BoardEventID.BC1]: [OrderType.LO, OrderType.ATC],
+      [BoardEventID.AD2]: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.ATC],
+    },
+    [BoardID.G7]: {
+      [BoardEventID.AD1]: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.ATC],
+      [BoardEventID.AD2]: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.ATC],
+    },
+    [BoardID.AL]: {
+      [BoardEventID.AW8]: [OrderType.LO, OrderType.MTL, OrderType.ATC],
+      [BoardEventID.AW9]: [OrderType.LO, OrderType.MTL, OrderType.ATC],
+    },
+  },
+
+  // 2. Sàn HNX (STX)
+  STX: {
+    [BoardID.G1]: {
+      [BoardEventID.AX1]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+      [BoardEventID.BB1]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+      [BoardEventID.BC1]: [OrderType.LO, OrderType.ATC, OrderType.PLO],
+      [BoardEventID.AC2]: [OrderType.PLO],
+    },
+    [BoardID.G3]: {
+      [BoardEventID.AD1]: [OrderType.PLO], // 10 phút đầu nhận lệnh sau giờ
+      [BoardEventID.AB1]: [OrderType.PLO], // Khớp liên tục sau giờ
+      [BoardEventID.AB2]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK, OrderType.PLO],
+    },
+    [BoardID.G4]: {
+      [BoardEventID.AX1]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+      [BoardEventID.BB1]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+      [BoardEventID.BC1]: [OrderType.LO, OrderType.ATC, OrderType.PLO],
+      [BoardEventID.AD2]: [OrderType.PLO],
+    },
+    [BoardID.G7]: {
+      [BoardEventID.AD1]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+      [BoardEventID.AD2]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+    },
+    [BoardID.AL]: {
+      [BoardEventID.AW8]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+      [BoardEventID.AW9]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+    },
+  },
+
+  // 3. Thị trường UPCoM (UPX)
+  UPX: {
+    [BoardID.G1]: {
+      [BoardEventID.AB1]: [OrderType.LO],
+      [BoardEventID.AB2]: [OrderType.LO],
+    },
+    [BoardID.G4]: {
+      [BoardEventID.AB1]: [OrderType.LO],
+      [BoardEventID.AB2]: [OrderType.LO],
+    },
+    [BoardID.AL]: {
+      [BoardEventID.AW8]: [OrderType.LO],
+      [BoardEventID.AW9]: [OrderType.LO],
+    },
+  },
+
+  // 4. Phái sinh Chỉ số VN30 (FIO)
+  FIO: {
+    [BoardID.G1]: {
+      [BoardEventID.GT1]: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.MAK, OrderType.MOK],
+      [BoardEventID.AA1]: [OrderType.LO, OrderType.ATO],
+      [BoardEventID.BB1]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+      [BoardEventID.BC1]: [OrderType.LO, OrderType.ATC],
+      [BoardEventID.AC2]: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.ATC, OrderType.MAK, OrderType.MOK],
+    },
+    [BoardID.AL]: {
+      [BoardEventID.AW8]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+      [BoardEventID.AW9]: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+    },
+  },
+
+  // 5. Phái sinh Trái phiếu Chính phủ (FBX)
+  FBX: {
+    [BoardID.G1]: {
+      [BoardEventID.GT1]: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.MAK, OrderType.MOK],
+      [BoardEventID.AA1]: [OrderType.LO, OrderType.ATO],
+      [BoardEventID.BB1]: [OrderType.LO, OrderType.MTL, OrderType.MAK, OrderType.MOK],
+      [BoardEventID.AD2]: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.MAK, OrderType.MOK],
+    },
+    [BoardID.AL]: {
+      [BoardEventID.AW8]: [OrderType.LO, OrderType.MTL, OrderType.MOK, OrderType.MAK],
+      [BoardEventID.AW9]: [OrderType.LO, OrderType.MTL, OrderType.MOK, OrderType.MAK],
+    },
+  },
+};
+
+export const krxDefaultOrderType = {
+  STO: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.ATC],
+  STX: [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK, OrderType.PLO],
+  UPX: [OrderType.LO],
+  FIO: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.ATC, OrderType.MOK, OrderType.MAK],
+  FBX: [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.MOK, OrderType.MAK],
+  HCX: [OrderType.LO],
+};
+```
+
+##### B. Bảng Ánh Xạ `mapSessionByEventId` (Web Implementation)
+```typescript
+export const mapSessionByEventId = {
+  STO: {
+    [BoardEventID.AA1]: TradingSessionId.ATO,
+    [BoardEventID.BC1]: TradingSessionId.ATC,
+    [BoardEventID.AC2]: TradingSessionId.BOARD_CLOSING,
+    [BoardEventID.AD2]: TradingSessionId.BOARD_CLOSING,
+    [BoardEventID.BB1]: TradingSessionId.CONTINUOUS,
+    [BoardEventID.AB1]: TradingSessionId.CONTINUOUS, // Thỏa thuận lô chẵn/lẻ
+    [BoardEventID.AW9]: TradingSessionId.CONTINUOUS, // Thỏa thuận liên tục
+    [BoardEventID.CD1]: TradingSessionId.PCA,        // Khớp định kỳ nhiều đợt
+    [BoardEventID.CD3]: TradingSessionId.PCA,
+    [BoardEventID.AW8]: TradingSessionId.UNSPECIFIED,// Nghỉ trưa
+  },
+  STX: {
+    [BoardEventID.BC1]: TradingSessionId.ATC,
+    [BoardEventID.AB2]: TradingSessionId.BOARD_CLOSING,
+    [BoardEventID.AC2]: TradingSessionId.BOARD_CLOSING,
+    [BoardEventID.AX1]: TradingSessionId.CONTINUOUS, // Lô lẻ
+    [BoardEventID.BB1]: TradingSessionId.CONTINUOUS, // Lô chẵn, thỏa thuận
+    [BoardEventID.AW9]: TradingSessionId.CONTINUOUS,
+    [BoardEventID.AW8]: TradingSessionId.UNSPECIFIED,
+  },
+  UPX: {
+    [BoardEventID.AB1]: TradingSessionId.CONTINUOUS, // Lô chẵn, lẻ, thỏa thuận
+    [BoardEventID.AW9]: TradingSessionId.CONTINUOUS,
+    [BoardEventID.AB2]: TradingSessionId.BOARD_CLOSING,
+    [BoardEventID.AW8]: TradingSessionId.UNSPECIFIED,
+  },
+  FIO: {
+    [BoardEventID.AA1]: TradingSessionId.ATO,
+    [BoardEventID.BC1]: TradingSessionId.ATC,
+    [BoardEventID.AC2]: TradingSessionId.BOARD_CLOSING,
+    [BoardEventID.AB2]: TradingSessionId.BOARD_CLOSING,
+    [BoardEventID.BB1]: TradingSessionId.CONTINUOUS,
+    [BoardEventID.AW9]: TradingSessionId.CONTINUOUS,
+    [BoardEventID.AW8]: TradingSessionId.UNSPECIFIED,
+  },
+  FBX: {
+    [BoardEventID.AA1]: TradingSessionId.ATC, // Hoặc ATO tùy đặc thù bond
+    [BoardEventID.AD2]: TradingSessionId.BOARD_CLOSING,
+    [BoardEventID.BB1]: TradingSessionId.CONTINUOUS,
+    [BoardEventID.AW9]: TradingSessionId.CONTINUOUS,
+    [BoardEventID.AW8]: TradingSessionId.UNSPECIFIED,
+  },
+};
+```
+
+---
+
+#### 4. Cấu Trúc Mã Nguồn Mobile App Chuẩn Hóa (Dart / Flutter)
+
+```dart
+/// 1. HoSE Stock (STO)
+List<OrderType> _getOrderTypeSTO({BoardID? boardOriginId, BoardEventID? eventId}) {
+  final ids = [boardOriginId, eventId];
+
+  // Bắt đầu hoặc kết thúc Buy-in
+  if (listEquals(ids, [BoardID.BOARD_ID_G7, BoardEventID.BOARD_EVENT_ID_AD1]) ||
+      listEquals(ids, [BoardID.BOARD_ID_G7, BoardEventID.BOARD_EVENT_ID_AD2])) {
+    return [OrderType.LO, OrderType.ATO, OrderType.MTL, OrderType.ATC];
+  }
+  // Nạp lệnh GTC đầu ngày
+  if (ids.contains(BoardEventID.BOARD_EVENT_ID_GT1)) {
+    return [OrderType.LO, OrderType.ATO, OrderType.MTL, OrderType.ATC];
+  }
+  // Phiên ATO
+  if (ids.contains(BoardEventID.BOARD_EVENT_ID_AA1)) {
+    return [OrderType.LO, OrderType.ATO];
+  }
+  // Phiên liên tục sáng, Nghỉ trưa, Liên tục chiều
+  if (ids.contains(BoardEventID.BOARD_EVENT_ID_BB1) ||
+      ids.contains(BoardEventID.BOARD_EVENT_ID_AW8) ||
+      ids.contains(BoardEventID.BOARD_EVENT_ID_AW9)) {
+    return [OrderType.LO, OrderType.MTL, OrderType.ATC];
+  }
+  // Phiên ATC
+  if (ids.contains(BoardEventID.BOARD_EVENT_ID_BC1)) {
+    return [OrderType.LO, OrderType.ATC];
+  }
+  // Kết phiên ATC lô lẻ (G4) hoặc lô chẵn (AC2)
+  if (listEquals(ids, [BoardID.BOARD_ID_G4, BoardEventID.BOARD_EVENT_ID_AD2]) ||
+      ids.contains(BoardEventID.BOARD_EVENT_ID_AC2)) {
+    return [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.ATC];
+  }
+  return [OrderType.LO, OrderType.MTL, OrderType.ATO, OrderType.ATC];
+}
+
+/// 2. HNX Stock (STX)
+List<OrderType> _getOrderTypeSTX({BoardID? boardOriginId, BoardEventID? eventId}) {
+  final ids = [boardOriginId, eventId];
+  final defaultOrders = [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK];
+
+  // Buy-in G7, Mở bảng AX1, Liên tục BB1, Nghỉ trưa AW8, Chiều AW9
+  if (listEquals(ids, [BoardID.BOARD_ID_G7, BoardEventID.BOARD_EVENT_ID_AD1]) ||
+      listEquals(ids, [BoardID.BOARD_ID_G7, BoardEventID.BOARD_EVENT_ID_AD2]) ||
+      ids.contains(BoardEventID.BOARD_EVENT_ID_BB1) ||
+      ids.contains(BoardEventID.BOARD_EVENT_ID_AX1) ||
+      ids.contains(BoardEventID.BOARD_EVENT_ID_AW8) ||
+      ids.contains(BoardEventID.BOARD_EVENT_ID_AW9)) {
+    return defaultOrders;
+  }
+  // Phiên ATC
+  if (ids.contains(BoardEventID.BOARD_EVENT_ID_BC1)) {
+    return [OrderType.LO, OrderType.ATC, OrderType.PLO];
+  }
+  // Kết phiên ATC lô lẻ (G4-AD2) hoặc lô chẵn (G1-AC2)
+  if (listEquals(ids, [BoardID.BOARD_ID_G4, BoardEventID.BOARD_EVENT_ID_AD2]) ||
+      listEquals(ids, [BoardID.BOARD_ID_G1, BoardEventID.BOARD_EVENT_ID_AC2])) {
+    return [OrderType.PLO];
+  }
+  // Khớp lệnh sau giờ G3 (10p đầu nhận lệnh AD1, hoặc khớp liên tục AB1)
+  if (listEquals(ids, [BoardID.BOARD_ID_G3, BoardEventID.BOARD_EVENT_ID_AD1]) ||
+      listEquals(ids, [BoardID.BOARD_ID_G3, BoardEventID.BOARD_EVENT_ID_AB1])) {
+    return [OrderType.PLO];
+  }
+  // Kết thúc khớp lệnh sau giờ G3
+  if (listEquals(ids, [BoardID.BOARD_ID_G3, BoardEventID.BOARD_EVENT_ID_AB2])) {
+    return [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK, OrderType.PLO];
+  }
+  return [OrderType.LO, OrderType.MTL, OrderType.ATC, OrderType.MOK, OrderType.MAK, OrderType.PLO];
+}
+
+/// 3. UPCoM Stock (UPX)
+List<OrderType> _getOrderTypeUPX({BoardID? boardOriginId, BoardEventID? eventId}) {
+  return [OrderType.LO]; // UPCoM chỉ áp dụng duy nhất lệnh LO trong mọi trường hợp
+}
+
+/// 4. Phái sinh Chỉ số VN30 (FIO)
+List<OrderType> _getOrderTypeFIO({BoardEventID? eventId}) {
+  switch (eventId) {
+    case BoardEventID.BOARD_EVENT_ID_AA1:
+      return [OrderType.LO, OrderType.ATO];
+    case BoardEventID.BOARD_EVENT_ID_BB1:
+    case BoardEventID.BOARD_EVENT_ID_AW8:
+    case BoardEventID.BOARD_EVENT_ID_AW9:
+      return [OrderType.LO, OrderType.ATC, OrderType.MTL, OrderType.MOK, OrderType.MAK];
+    case BoardEventID.BOARD_EVENT_ID_BC1:
+      return [OrderType.LO, OrderType.ATC];
+    case BoardEventID.BOARD_EVENT_ID_AC2:
+    default:
+      return [OrderType.LO, OrderType.ATO, OrderType.ATC, OrderType.MTL, OrderType.MAK, OrderType.MOK];
+  }
+}
+
+/// 5. Phái sinh Trái phiếu Chính phủ (FBX)
+List<OrderType> _getOrderTypeFBX({BoardEventID? eventId}) {
+  switch (eventId) {
+    case BoardEventID.BOARD_EVENT_ID_AA1:
+      return [OrderType.LO, OrderType.ATO];
+    case BoardEventID.BOARD_EVENT_ID_BB1:
+    case BoardEventID.BOARD_EVENT_ID_AW8:
+    case BoardEventID.BOARD_EVENT_ID_AW9:
+      return [OrderType.LO, OrderType.MTL, OrderType.MOK, OrderType.MAK]; // Không có ATC
+    case BoardEventID.BOARD_EVENT_ID_AD2:
+    default:
+      return [OrderType.LO, OrderType.ATO, OrderType.MTL, OrderType.MAK, OrderType.MOK];
+  }
+}
+```
+
+---
+
+#### 5. Phân Tích Độ Lệch & Ma Trận Đồng Bộ (Gap Analysis & Alignment Matrix giữa Web và App)
+
+Qua rà soát đối chiếu tài liệu `EN-TradingSession (Lệnh)` giữa Web và Mobile App, các điểm lệch cần lưu ý:
+
+| Nghiệp Vụ / Phiên | Trạng Thái Trên Web | Trạng Thái Trên Mobile App | Khuyến Nghị Đồng Bộ (Alignment) |
+|:---|:---|:---|:---|
+| **GT Order Load (`GT1`) trên FIO/FBX** | Đã map chi tiết: `[LO, ATO, MTL, MAK, MOK]` | **Chưa map riêng**, rơi vào switch `default` | Bổ sung case `GT1` vào `_getOrderTypeFIO` và `_getOrderTypeFBX` trên Mobile App |
+| **Buy-in (`AD1`/`AD2` trên `G7`) sàn UPX** | Chưa map bảng `G7` cho UPX trong `krxOrderTypeMap` | Đã map trả về `[OrderType.LO]` | Bổ sung nhóm `[BoardID.G7]` vào cấu hình `UPX` của Web |
+| **Sau giờ (`G3`) trên sàn HNX** | Nhận `PLO` trong `AD1`/`AB1`; mở lại đủ lệnh sau `AB2` | Đồng bộ 100% giống Web | Đạt chuẩn nhất quán đa nền tảng |
+| **Đặt trước lệnh ATC trong phiên liên tục HoSE** | Cho phép `[LO, MTL, ATC]` | Cho phép `[LO, MTL, ATC]` | Thống nhất cho phép nhà đầu tư đặt trước lệnh ATC ngay từ phiên sáng |
+
+---
+
+### 2.9. Quy Tắc Kiểm Soát Lệnh Thị Trường Theo Trạng Thái Giám Sát Cổ Phiếu Từ SI (Sanction, Method & Admin Status Rules)
+
+#### 1. Bối Cảnh Nghiệp Vụ & Cơ Chế Giám Sát Thị Trường
+Bên cạnh cờ trạng thái phiên giao dịch của sàn (`BoardEvent`), hệ thống ORS và Client (Web/App) **BẮT BUỘC** phải kiểm tra đồng thời 3 trường trạng thái realtime của từng mã cổ phiếu phát ra từ nguồn **SI (Stock Information / MDDS)** trước khi hiển thị form đặt lệnh và trước khi đẩy lệnh vào Gateway.
+
+Quy định này nhằm đảm bảo tuân thủ nghiêm ngặt quy chế SGDCK: **Các cổ phiếu đang chịu sự giám sát đặc biệt không được phép sử dụng lệnh thị trường (MTL) để tránh rủi ro thanh khoản ảo và thao túng giá.**
+
+#### 2. Đặc Tả 3 Trường Trạng Thái Cốt Lõi Từ SI
+
+| Trường Dữ Liệu SI | Tên Nghiệp Vụ | Ý Nghĩa & Các Giá Trị Thường Gặp |
+|:---|:---|:---|
+| **`symbolTradingSanctionStatusCode`** | Mã Xử Lý Vi Phạm Giao Dịch | - `NRM` (`Normal`): Mã giao dịch bình thường, không có chế tài xử phạt.<br>- Khác: Bị cảnh cáo, đình chỉ, v.v. |
+| **`symbolTradingMethodStatusCode`** | Phương Thức Giao Dịch Của Mã | - `NRM` (`Normal`): Phương thức khớp lệnh thông thường.<br>- `SLS` (`Short-selling / Marginable`): Được phép giao dịch ký quỹ / bán khống. |
+| **`symbolAdminStatusCode`** | Trạng Thái Quản Trị / Diện Giám Sát | - `CR` (`Cautionary`): **Diện Cảnh Báo** (do vi phạm công bố thông tin, lỗ lũy kế...).<br>- `RES` (`Restriction`): **Diện Hạn Chế Giao Dịch** (chỉ được giao dịch phiên chiều hoặc bị phong tỏa từng phần).<br>- `NRM`: Mã không thuộc diện quản trị đặc biệt. |
+
+---
+
+#### 3. Quy Tắc Nghiệp Vụ Chặn Lệnh MTL Cốt Lõi (The MTL Filter Rule)
+
+$$\text{Điều Kiện Kích Hoạt Chặn:} \quad (\text{Sanction} == \mathbf{NRM}) \;\land\; (\text{Method} \in \{\mathbf{NRM}, \mathbf{SLS}\}) \;\land\; (\text{Admin} \in \{\mathbf{CR}, \mathbf{RES}\})$$
+
+$$\implies \mathbf{LOẠI\ BỎ\ HOÀN\ TOÀN\ LỆNH\ THỊ\ TRƯỜNG\ MTL}\ (\text{Disable / Filter Out } OrderType.MTL)$$
+
+> ⚠️ **Hành vi bắt buộc trên toàn hệ thống:**
+> 1. **Trên Giao diện (Web/App Form):** Khi mã thỏa mãn điều kiện trên, dropdown/button chọn loại lệnh **KHÔNG ĐƯỢC HIỂN THỊ** hoặc phải **DISABLE** loại lệnh `MTL`. Nhà đầu tư chỉ được đặt lệnh `LO` (hoặc ATO/ATC tùy phiên).
+> 2. **Trên Gateway / ORS Backend:** Nếu nhận được request đặt lệnh `MTL` cho mã đang thuộc diện `CR` hoặc `RES`, ORS **LẬP TỨC TỪ CHỐI (REJECT)** với mã lỗi chuẩn: `ORD_ERR_SANCTION_MTL_DISALLOWED` - *"Mã chứng khoán thuộc diện cảnh báo/hạn chế giao dịch, không được phép đặt lệnh thị trường MTL"*.
+
+---
+
+#### 4. Đặc Tả Thuật Toán Code Chuẩn Hóa (`getListOrderTypesKrx`)
+
+Hàm chuẩn hóa dùng chung trong core giao dịch (Web TypeScript):
+
+```typescript
+import { IBoardEvent, GetListOrderTypesKrxOptions, OrderType } from '@/types/trading';
+import { 
+  SymbolTradingSanctionStatusCode, 
+  SymbolTradingMethodStatusCode, 
+  SymbolAdminStatusCode 
+} from '@/types/securities-info';
+import { krxOrderTypeMap, krxDefaultOrderType } from './krxOrderTypeConfig';
+
+export const getListOrderTypesKrx = (
+  boardEvent?: IBoardEvent,
+  options?: GetListOrderTypesKrxOptions
+): OrderType[] => {
+  // 1. Kiểm tra tham số đầu vào cơ bản
+  if (!boardEvent || !boardEvent.eventId || !boardEvent.boardIdOriginal || !boardEvent.tscProdGrpId) {
+    return [OrderType.LO, OrderType.ATO, OrderType.ATC];
+  }
+
+  const { boardIdOriginal, eventId, tscProdGrpId } = boardEvent;
+
+  // 2. Lấy danh sách lệnh theo bảng ánh xạ ma trận hoặc fallback default
+  const list: OrderType[] = 
+    krxOrderTypeMap?.[tscProdGrpId]?.[boardIdOriginal]?.[eventId] ?? 
+    krxDefaultOrderType[tscProdGrpId] ?? 
+    [OrderType.LO];
+
+  // 3. Trích xuất các trường trạng thái giám sát từ SI
+  const sanctionStatus = options?.symbolTradingSanctionStatusCode;
+  const methodStatus = options?.symbolTradingMethodStatusCode;
+  const adminStatus = options?.symbolAdminStatusCode;
+
+  const isSanctionNrm = sanctionStatus === SymbolTradingSanctionStatusCode.NRM;
+  const isMethodNrmOrSls =
+    methodStatus === SymbolTradingMethodStatusCode.NRM ||
+    methodStatus === SymbolTradingMethodStatusCode.SLS;
+  const isAdminCrOrRes =
+    adminStatus === SymbolAdminStatusCode.CR ||
+    adminStatus === SymbolAdminStatusCode.RES;
+
+  // 4. Nếu cổ phiếu diện Cảnh báo (CR) hoặc Hạn chế (RES) -> LỌC BỎ LỆNH MTL
+  if (isSanctionNrm && isMethodNrmOrSls && isAdminCrOrRes) {
+    return list.filter(type => type !== OrderType.MTL);
+  }
+
+  return list;
+};
+```
+
+---
+
+#### 5. Ma Trận Kịch Bản Kiểm Thử QA / Automation (BDD Gherkin)
+
+```gherkin
+Feature: Kiểm soát loại lệnh đặt theo phiên KRX và trạng thái giám sát SI
+
+  Background:
+    Given Tài khoản khách hàng đã đăng nhập thành công và có đủ sức mua
+
+  Scenario Outline: Xác định danh sách lệnh theo phiên chuẩn trên sàn HoSE và HNX
+    Given Mã chứng khoán "<symbol>" thuộc nhóm sản phẩm "<prodGrp>" trên bảng "<boardId>"
+    When Sàn phát sinh sự kiện BoardEvent "<eventId>" với TradingSessionID "<sessionId>"
+    Then Danh sách loại lệnh cho phép hiển thị trên form đặt lệnh phải là "<expectedOrders>"
+
+    Examples:
+      | symbol | prodGrp | boardId | eventId | sessionId               | expectedOrders            |
+      | SSI    | STO     | G1      | AA1     | TRADING_SESSION_ID_10   | LO, ATO                   |
+      | SSI    | STO     | G1      | BB1     | TRADING_SESSION_ID_40   | LO, MTL, ATC              |
+      | SSI    | STO     | G1      | BC1     | TRADING_SESSION_ID_30   | LO, ATC                   |
+      | SHS    | STX     | G1      | BB1     | TRADING_SESSION_ID_40   | LO, MTL, ATC, MOK, MAK    |
+      | SHS    | STX     | G3      | AB1     | TRADING_SESSION_ID_40   | PLO                       |
+      | OIL    | UPX     | G1      | AB1     | TRADING_SESSION_ID_40   | LO                        |
+
+  Scenario: Cổ phiếu thuộc diện Cảnh báo (CR) bị loại bỏ lệnh MTL trong phiên liên tục
+    Given Mã chứng khoán "HAG" thuộc sàn HoSE nhóm "STO" trên bảng "G1"
+    And Sàn đang ở phiên khớp lệnh liên tục "BB1"
+    And Trạng thái SI của mã "HAG" có:
+      | symbolTradingSanctionStatusCode | NRM |
+      | symbolTradingMethodStatusCode   | NRM |
+      | symbolAdminStatusCode           | CR  |
+    When Người dùng mở form đặt lệnh cho mã "HAG"
+    Then Danh sách loại lệnh được phép chọn là "LO, ATC"
+    And Loại lệnh "MTL" tuyệt đối không được xuất hiện hoặc bị vô hiệu hóa (disabled)
+
+  Scenario: Cổ phiếu thuộc diện Hạn chế giao dịch (RES) bị loại bỏ lệnh MTL
+    Given Mã chứng khoán "NVL" thuộc sàn HoSE nhóm "STO" trên bảng "G1"
+    And Sàn đang ở phiên khớp lệnh liên tục "BB1"
+    And Trạng thái SI của mã "NVL" có:
+      | symbolTradingSanctionStatusCode | NRM |
+      | symbolTradingMethodStatusCode   | SLS |
+      | symbolAdminStatusCode           | RES |
+    When Khách hàng cố tình gửi API đặt lệnh "MTL" cho mã "NVL"
+    Then Gateway ORS từ chối lệnh với mã lỗi "ORD_ERR_SANCTION_MTL_DISALLOWED"

@@ -433,3 +433,94 @@ test('Jira Ready To Test Filter (WF-11): enforces Board G.3.1, active sprint, an
   assert.ok(Array.isArray(result[0].json.suggestedCommands));
 });
 
+test('Securities Domain Engine (WF-18 / WF-19): evaluates rule matrix, filters MTL on CR/RES, and lints domain Gherkin', () => {
+  const enginePath = path.join(__dirname, '..', 'n8n-nodes', 'qa', 'securities-domain-engine.js');
+  const wfPath = path.join(__dirname, '..', '..', 'n8n-workflows', 'securities-domain-engine.json');
+  assert.ok(fs.existsSync(enginePath), 'securities-domain-engine.js must exist');
+  assert.ok(fs.existsSync(wfPath), 'securities-domain-engine.json must exist');
+
+  const code = fs.readFileSync(enginePath, 'utf8');
+
+  // Test 1: getRuleMatrix with CR filter on STO
+  const fnMatrix = new Function('$input', code);
+  const matrixRes = fnMatrix({
+    first: () => ({
+      json: {
+        action: 'getRuleMatrix',
+        marketId: 'STO',
+        boardId: 'G1',
+        eventId: 'BB1',
+        symbol: 'HAG',
+        adminStatus: 'CR'
+      }
+    })
+  });
+
+  const matrixJson = matrixRes[0].json;
+  assert.equal(matrixJson.success, true);
+  assert.equal(matrixJson.marketId, 'STO');
+  assert.equal(matrixJson.isMtlFiltered, true);
+  assert.deepEqual(matrixJson.allowedOrders, ['LO', 'ATC']);
+  assert.ok(matrixJson.disallowedOrders.includes('MTL'));
+  assert.ok(Array.isArray(matrixJson.multiSymbolExamples));
+  assert.equal(matrixJson.multiSymbolExamples.length, 6);
+
+  // Test 2: getRuleMatrix with UPX (only LO)
+  const upxRes = fnMatrix({
+    first: () => ({
+      json: {
+        action: 'getRuleMatrix',
+        marketId: 'UPX',
+        boardId: 'G1',
+        eventId: 'AB1'
+      }
+    })
+  });
+  assert.deepEqual(upxRes[0].json.allowedOrders, ['LO']);
+
+  // Test 3: lintGherkin detects violations
+  const fnLint = new Function('$input', code);
+  const badGherkin = `Feature: Test dat lenh
+  Scenario Outline: Dat lenh CR
+    Given Ma <symbol> co trang thai <adminStatus> tren san <exchange>
+    When Dat lenh <orderType>
+    Then Ket qua thanh cong
+    Examples:
+      | symbol | exchange | adminStatus | orderType |
+      | HAG | HOSE | CR | MTL |
+      | OIL | UPCOM | NRM | MP |
+  `;
+  const lintResBad = fnLint({
+    first: () => ({
+      json: {
+        action: 'lintGherkin',
+        gherkinContent: badGherkin
+      }
+    })
+  });
+  assert.equal(lintResBad[0].json.valid, false);
+  assert.ok(lintResBad[0].json.errorCount >= 2);
+
+  // Test 4: lintGherkin passes clean gherkin
+  const goodGherkin = `Feature: Test dat lenh hop le
+  Scenario Outline: Dat lenh
+    Given Ma <symbol> thuoc san <exchange>
+    When Dat lenh <orderType>
+    Then Lenh thanh cong
+    Examples:
+      | symbol | exchange | orderType |
+      | SHB | HOSE | LO |
+      | SHS | HNX | LO |
+  `;
+  const lintResGood = fnLint({
+    first: () => ({
+      json: {
+        action: 'lintGherkin',
+        gherkinContent: goodGherkin
+      }
+    })
+  });
+  assert.equal(lintResGood[0].json.valid, true);
+  assert.equal(lintResGood[0].json.errorCount, 0);
+});
+

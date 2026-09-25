@@ -245,6 +245,29 @@ export async function notifyJiraReadyToTest(payload = {}) {
   return await callN8nWebhook('jira-ready-to-test', payload, 20000);
 }
 
+/**
+ * Fast-Path: Lấy ma trận loại lệnh hợp lệ và bảng Examples tham số hóa đa sàn (WF-18)
+ * Tra cứu theo sàn, phiên, và cờ trạng thái SI (CR/RES filter).
+ * @param {object} params { marketId, boardId, eventId, symbol, adminStatus, sanctionStatus, methodStatus }
+ * @returns {Promise<object>} { allowedOrders, disallowedOrders, sessionName, isMtlFiltered, multiSymbolExamples }
+ */
+export async function getSecuritiesRuleMatrix(params = {}) {
+  return await callN8nWebhook('securities-rule-matrix', { action: 'getRuleMatrix', ...params }, 20000);
+}
+
+/**
+ * Fast-Path: Kiểm tra tính tuân thủ quy tắc nghiệp vụ chứng khoán (Domain Linter) của file Gherkin (WF-19)
+ * Phát hiện vi phạm: MTL trên mã CR/RES, lệnh cấm trên UPCoM, sửa/hủy ATO/ATC, PLO sau giờ...
+ * @param {string|object} gherkinOrParams Nội dung .feature hoặc object { gherkinContent, issueKey }
+ * @returns {Promise<object>} { valid, errorCount, warningCount, errors, warnings, checkedRules }
+ */
+export async function lintDomainGherkin(gherkinOrParams) {
+  const payload = typeof gherkinOrParams === 'string'
+    ? { action: 'lintGherkin', gherkinContent: gherkinOrParams }
+    : { action: 'lintGherkin', ...gherkinOrParams };
+  return await callN8nWebhook('qa-domain-lint', payload, 25000);
+}
+
 // ── CLI ENTRYPOINT (Chống sai lệch kiến trúc) ──────────────────────────────
 // Cho phép gọi trực tiếp script này từ Bash thay vì chỉ làm JS Module
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -298,6 +321,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           break;
         case 'notifyJiraReadyToTest':
           result = await notifyJiraReadyToTest(JSON.parse(args[1] || '{}'));
+          break;
+        case 'getSecuritiesRuleMatrix':
+          result = await getSecuritiesRuleMatrix(JSON.parse(args[1] || '{}'));
+          break;
+        case 'lintDomainGherkin':
+          result = await lintDomainGherkin(args[1] && args[1].startsWith('{') ? JSON.parse(args[1]) : args[1]);
           break;
         default:
           console.error(`Unknown action: ${action}`);

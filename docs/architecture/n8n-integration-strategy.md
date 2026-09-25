@@ -35,6 +35,8 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 | `/webhook/jira-ready-to-test` | `POST` | QA / ChatOps | Nhận Webhook Jira chuyển trạng thái Ready to Test, báo Mattermost | `{"issue": {...}, "changelog": {...}}` | `{"isReadyToTest", "gherkinBadge", "autoScriptBadge", "suggestedCommand"}` |
 | `/webhook/cr-diff-clean` | `POST` | Code Reviewer | Lọc bỏ lockfiles, minified bundle, phân tầng git diff | `{"rawDiff": "..."}` | `{"summary", "categorizedFiles", "cleanedDiffText"}` |
 | `/webhook/security-scan` | `POST` | Security | Quét ngầm npm audit và rà soát secrets rò rỉ | `{"projectPath": "..."}` | `{"securityStatus", "vulnerabilities", "scorecardMarkdown"}` |
+| `/webhook/securities-rule-matrix` | `POST` | QA | Lấy ma trận loại lệnh hợp lệ và bảng Examples tham số hóa đa sàn | `{"marketId": "STO", "boardId": "G1", "symbol": "SSI", "adminStatus": "CR"}` | `{"allowedOrders", "disallowedOrders", "isMtlFiltered", "multiSymbolExamples"}` |
+| `/webhook/qa-domain-lint` | `POST` | QA | Kiểm định kịch bản Gherkin (.feature) tuân thủ quy tắc nghiệp vụ chứng khoán | `{"issueKey": "STK-100", "gherkinContent": "..."}` | `{"valid", "errorCount", "errors", "warnings", "checkedRules"}` |
 | `/webhook/sm-standup` | `POST` | Scrum Master | Lấy báo cáo Standup và đẩy thẳng qua Mattermost | `{}` | `{"reportText", "totalIssues", "stuckCount"}` |
 
 ---
@@ -60,7 +62,35 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
   ```
 - **Lợi ích:** Tiết kiệm 85% token và rút ngắn thời gian nạp dữ liệu từ 30s xuống 0.5s.
 
-### 3.2. Phân Hệ QA (`qa-auto-design`, `qa-squash-push`, `qa-run-test`)
+### 3.2. Phân Hệ QA (`qa-test-design`, `qa-auto-design`, `qa-squash-push`, `qa-run-test`)
+- **Fast-Path Thiết Kế Kịch Bản Kiểm Thử (`qa-test-design`):**
+  1. *Nạp Ma Trận Quy Tắc & Multi-Symbol Examples:*
+     Khi thiết kế `Scenario Outline`, thay vì tự đoán hoặc đọc thủ công toàn bộ spec, Agent gọi nhanh qua `n8n-client.js`:
+     ```javascript
+     import { getSecuritiesRuleMatrix } from './scripts/lib/n8n-client.js';
+
+     const matrix = await getSecuritiesRuleMatrix({
+       marketId: 'STO',
+       boardId: 'G1',
+       eventId: 'BB1',
+       symbol: 'HAG',
+       adminStatus: 'CR' // Cổ phiếu diện Cảnh báo -> Tự động filter bỏ MTL!
+     });
+     // matrix.allowedOrders -> ['LO', 'ATC']
+     // matrix.multiSymbolExamples -> Bảng mẫu 4 sàn chuẩn xác 100% để paste vào Examples!
+     ```
+  2. *Kiểm Định Quy Tắc Nghiệp Vụ Chứng Khoán Gherkin (Domain Linter):*
+     Tại Giai đoạn 3 (Xác minh & Bàn giao), song song với `qa-validate.sh` (kiểm tra cú pháp), Agent kích hoạt linter nghiệp vụ:
+     ```javascript
+     import { lintDomainGherkin } from './scripts/lib/n8n-client.js';
+
+     const lintResult = await lintDomainGherkin({
+       issueKey,
+       gherkinContent: fs.readFileSync(`workspace/${issueKey}/test/${issueKey}.feature`, 'utf8')
+     });
+     // Tự động bắt lỗi: Đặt MTL cho mã CR/RES, lệnh MP trên UPCoM, sửa/hủy trong ATO/ATC...
+     ```
+
 - **Fast-Path Dữ liệu Chứng khoán:**
   Trong bước chuẩn bị fixture của `qa-auto-design`:
   ```javascript
