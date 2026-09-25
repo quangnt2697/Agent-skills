@@ -16,24 +16,19 @@ const email = ($env && $env.ATLASSIAN_EMAIL) || '';
 const token = ($env && $env.ATLASSIAN_API_TOKEN) || '';
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
 
-// Migration: /rest/api/3/search?jql= đã bị xóa (HTTP 410, Atlassian CHANGE-2046)
-// Endpoint mới: POST /rest/api/3/search/jql với body JSON
-const searchUrl = `${baseUrl}/rest/api/3/search/jql`;
-const searchMethod = 'POST';
-const searchBody = {
-  jql: 'sprint in openSprints() AND statusCategory != Done',
-  fields: ['summary', 'status', 'assignee', 'priority', 'updated', 'customfield_10020', 'customfield_10016'],
-  maxResults: 100
-};
+// Board 61: "G.3.1 - Partners & Open API" (Project G3PTP)
+// URL chuẩn: https://entrade.atlassian.net/jira/software/c/projects/G3PTP/boards/61/backlog
+const boardId = body.boardId || json.boardId || 61;
+
+// Bước 1: Lấy Sprint đang hoạt động (active sprint) của riêng Board 61
+const sprintUrl = `${baseUrl}/rest/agile/1.0/board/${boardId}/sprint?state=active`;
 
 return [{
   json: {
     baseUrl,
+    boardId,
     authHeader,
-    searchUrl,
-    searchMethod,
-    searchBody,
+    sprintUrl,
     _triggerSource: triggerSource
   }
 }];
-

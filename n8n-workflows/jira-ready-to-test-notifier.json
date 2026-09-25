@@ -26,21 +26,90 @@
       "typeVersion": 2,
       "position": [
         200,
-        420
+        380
       ],
       "webhookId": "jira-ready-to-test"
     },
     {
       "parameters": {
-        "jsCode": "/**\n * Node Script: Jira Ready To Test Filter (`scripts/n8n-nodes/jira-ready-to-test-filter.js`)\n *\n * Mục đích (WF-11):\n * - Lắng nghe sự kiện webhook từ Jira (`jira:issue_updated`).\n * - Lọc nghiêm ngặt 3 điều kiện:\n *   1. Thuộc Board G.3.1 (mã key `G3PTP-*` hoặc project `G.3.1` / `G3PTP`).\n *   2. Thuộc Sprint hiện tại (Active Sprint: `sprint.state === 'active'`).\n *   3. Trạng thái chuyển đổi sang `\"Ready to test\"` (case-insensitive).\n * - Quét workspace local của `issueKey`:\n *   - Kiểm tra file `.feature`: có -> `\"v gherkin file\"`, không -> `\"x gherkin file\"`.\n *   - Kiểm tra file `steps/test-*.py` (hoặc `test_*.py`): có -> `\"v autoscript test\"`, không -> `\"x autoscript test\"`.\n * - Đưa ra gợi ý lệnh tương ứng tùy theo tình trạng file.\n * - Soạn thẻ Markdown gửi thông báo về Mattermost.\n */\n\nconst fs = require('fs');\nconst path = require('path');\n\nconst input = $input.first();\nconst raw = (input && input.json) || {};\nconst body = raw.body || raw;\n\n// 1. Trích xuất thông tin issue và changelog\nconst issue = body.issue || raw.issue || body;\nconst changelog = body.changelog || raw.changelog || {};\nconst issueKey = (issue.key || body.issueKey || raw.issueKey || '').toUpperCase().trim();\nconst fields = issue.fields || {};\n\n// 2. Điều kiện 1: Board G.3.1\nconst projectKey = (fields.project?.key || '').toUpperCase();\nconst projectName = (fields.project?.name || '');\nconst isBoardG31 = issueKey.startsWith('G3PTP-') || projectKey === 'G3PTP' || projectName.includes('G.3.1') || (body.boardName || '').includes('G.3.1');\n\n// 3. Điều kiện 2: Active Sprint\nlet isActiveSprint = false;\nlet sprintName = 'Active Sprint';\n\n// Jira có thể lưu sprint ở fields.sprint hoặc customfield\nconst sprintField = fields.sprint || fields.customfield_10020 || fields.customfield_10010;\nif (Array.isArray(sprintField)) {\n  const activeS = sprintField.find(s => (s.state || '').toLowerCase() === 'active');\n  if (activeS) {\n    isActiveSprint = true;\n    sprintName = activeS.name || sprintName;\n  } else if (sprintField.length > 0) {\n    sprintName = sprintField[0].name || sprintName;\n  }\n} else if (sprintField && typeof sprintField === 'object') {\n  isActiveSprint = (sprintField.state || '').toLowerCase() === 'active';\n  sprintName = sprintField.name || sprintName;\n} else if (typeof sprintField === 'string' && sprintField.toLowerCase().includes('state=active')) {\n  isActiveSprint = true;\n  const match = sprintField.match(/name=([^,]+)/);\n  if (match) sprintName = match[1];\n} else if (body.isCurrentSprint === true || body.isActiveSprint === true) {\n  // Cho phép mock/test từ payload trực tiếp\n  isActiveSprint = true;\n}\n\n// 4. Điều kiện 3: Status đổi sang \"Ready to test\"\nlet isStatusReadyToTest = false;\nconst items = Array.isArray(changelog.items) ? changelog.items : [];\n\nfor (const item of items) {\n  if ((item.field || '').toLowerCase() === 'status') {\n    const toStr = (item.toString || item.to || '').toLowerCase().trim();\n    if (toStr === 'ready to test' || toStr === 'ready for testing' || toStr === 'sẵn sàng kiểm thử') {\n      isStatusReadyToTest = true;\n      break;\n    }\n  }\n}\n\n// Nếu gửi trực tiếp qua webhook test có field status\nif (!isStatusReadyToTest && (fields.status?.name || body.status || '').toLowerCase().trim() === 'ready to test') {\n  isStatusReadyToTest = true;\n}\n\n// Kiểm tra 3 điều kiện\nif (!isBoardG31 || !isActiveSprint || !isStatusReadyToTest) {\n  return [{\n    json: {\n      isReadyToTest: false,\n      ignored: true,\n      reason: `Bỏ qua sự kiện: isBoardG31=${isBoardG31}, isActiveSprint=${isActiveSprint}, isStatusReadyToTest=${isStatusReadyToTest}`,\n      issueKey\n    }\n  }];\n}\n\n// 5. Quét Workspace Local để kiểm tra file\nconst candidateRoots = [\n  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills',\n  '/Users/qa-quangnt/Desktop/Project/Test/agent-skills'\n];\n\nlet hasGherkin = false;\nlet hasAutoScript = false;\nlet workspaceFoundPath = '';\n\nfor (const cRoot of candidateRoots) {\n  const wsDir = path.join(cRoot, 'workspace', issueKey);\n  if (fs.existsSync(wsDir)) {\n    workspaceFoundPath = wsDir;\n\n    // A. Kiểm tra file .feature (Gherkin)\n    const testDir = path.join(wsDir, 'test');\n    if (fs.existsSync(testDir)) {\n      try {\n        const files = fs.readdirSync(testDir);\n        hasGherkin = files.some(f => f.endsWith('.feature'));\n      } catch (_) {}\n    }\n    if (!hasGherkin) {\n      // Quét thêm đệ quy mức nông trong wsDir\n      try {\n        const allFiles = fs.readdirSync(wsDir);\n        hasGherkin = allFiles.some(f => f.endsWith('.feature'));\n      } catch (_) {}\n    }\n\n    // B. Kiểm tra file test script (steps/test-*.py hoặc steps/test_*.py hoặc test/test_*.py)\n    const stepsDir = path.join(wsDir, 'test', 'steps');\n    if (fs.existsSync(stepsDir)) {\n      try {\n        const stepFiles = fs.readdirSync(stepsDir);\n        hasAutoScript = stepFiles.some(f => (f.startsWith('test-') || f.startsWith('test_')) && f.endsWith('.py'));\n      } catch (_) {}\n    }\n    if (!hasAutoScript && fs.existsSync(testDir)) {\n      try {\n        const testFiles = fs.readdirSync(testDir);\n        hasAutoScript = testFiles.some(f => (f.startsWith('test-') || f.startsWith('test_')) && f.endsWith('.py'));\n      } catch (_) {}\n    }\n    break;\n  }\n}\n\n// 5. Đánh dấu icon thiếu (❌) hoặc đủ (✅) theo yêu cầu người dùng\nconst gherkinBadge = hasGherkin ? '✅ Gherkin file' : '❌ Gherkin file';\nconst autoScriptBadge = hasAutoScript ? '✅ Autoscript test' : '❌ Autoscript test';\n\n// 6. Gợi ý lệnh tùy theo tình trạng file - MỖI LỆNH ĐỨNG RIÊNG BIỆT TRÊN MỘT DÒNG\nconst commandList = [];\nlet situationSummary = '';\n\nif (!hasGherkin && !hasAutoScript) {\n  situationSummary = 'Chưa có kịch bản BDD Gherkin và chưa có mã automation testscript.';\n  commandList.push({\n    label: 'Thiết kế Checklist & Gherkin file:',\n    cmd: `/qa-test-design ${issueKey}`\n  });\n  commandList.push({\n    label: 'Thiết kế test script Playwright/Pytest:',\n    cmd: `/qa-auto-design ${issueKey}`\n  });\n} else if (hasGherkin && !hasAutoScript) {\n  situationSummary = 'Đã có kịch bản BDD Gherkin nhưng chưa có mã automation test.';\n  commandList.push({\n    label: 'Thiết kế test script Playwright/Pytest:',\n    cmd: `/qa-auto-design ${issueKey}`\n  });\n  commandList.push({\n    label: 'Thực thi kiểm thử tự động:',\n    cmd: `/qa-run-test ${issueKey}`\n  });\n} else {\n  situationSummary = 'Đã sẵn sàng đầy đủ kịch bản BDD Gherkin và mã automation test.';\n  commandList.push({\n    label: 'Thực thi kiểm thử tự động:',\n    cmd: `/qa-run-test ${issueKey}`\n  });\n  commandList.push({\n    label: 'Đồng bộ kịch bản kiểm thử lên Squash TM:',\n    cmd: `/qa-squash-push ${issueKey}`\n  });\n}\n\nconst suggestedCommand = commandList[0]?.cmd || `/qa-full-pipeline ${issueKey}`;\nconst suggestedCommands = commandList.map(c => c.cmd);\n\n// 7. Tạo thẻ thông báo Mattermost bắt mắt và chuyên nghiệp\nconst baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst jiraUrl = `${baseUrl}/browse/${issueKey}`;\nconst summary = fields.summary || body.summary || '-';\nconst assignee = fields.assignee?.displayName || body.assignee || '-';\nconst priority = fields.priority?.name || body.priority || 'Medium';\n\n// Định dạng danh sách lệnh gợi ý — mỗi lệnh đứng ở 1 dòng riêng biệt\nconst commandsBlock = commandList.map(c => `- **${c.label}**\\n  \\`${c.cmd}\\``).join('\\n');\n\nconst reportText = `### 🎯 READY TO TEST — [${issueKey}](${jiraUrl})\n\n| Thông Tin | Chi Tiết |\n| :--- | :--- |\n| 📋 **Title** | **${summary}** |\n| 👤 **Assignee** | **${assignee}** |\n| ⚡ **Sprint** | \\`${sprintName}\\` |\n| 🏷️ **Độ ưu tiên** | \\`${priority}\\` |\n| 📁 **Trạng thái Workspace** | ${gherkinBadge} ᐧ ${autoScriptBadge} |\n\n---\n\n#### 🔍 Chi Tiết Kiểm Tra Workspace Local:\n- **Kịch bản BDD:** ${hasGherkin ? '✅ **Đã có kịch bản**' : '❌ **Chưa có kịch bản**'} (\\`workspace/${issueKey}/test/*.feature\\`)\n- **Mã kiểm thử:** ${hasAutoScript ? '✅ **Đã có mã automation test**' : '❌ **Chưa có mã automation test**'} (\\`workspace/${issueKey}/test/steps/test-*.py\\`)\n> 📌 *Hiện trạng:* ${situationSummary}\n\n---\n\n#### 💡 Lệnh Đề Xuất Thực Hiện:\n${commandsBlock}`;\n\nreturn [{\n  json: {\n    isReadyToTest: true,\n    ignored: false,\n    issueKey,\n    summary,\n    assignee,\n    priority,\n    sprintName,\n    gherkinBadge,\n    autoScriptBadge,\n    hasGherkin,\n    hasAutoScript,\n    suggestedCommand,\n    suggestedCommands,\n    situationSummary,\n    reportText,\n    mattermostPayload: {\n      text: reportText\n    }\n  }\n}];\n"
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/5 8-18 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "trigger-schedule",
+      "name": "Schedule Trigger (Every 5 min Mon-Fri)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst email = ($env && $env.ATLASSIAN_EMAIL) || '';\nconst token = ($env && $env.ATLASSIAN_API_TOKEN) || '';\nconst authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');\n\n// Board 61: \"G.3.1 - Partners & Open API\" (Project G3PTP)\n// JQL tìm các task thuộc Board 61 trong open sprints có trạng thái Ready to Test\nconst searchUrl = `${baseUrl}/rest/api/3/search/jql`;\nconst searchBody = {\n  jql: \"project = G3PTP AND \\\"G3 Team[Dropdown]\\\" = 3.1 AND sprint in openSprints() AND status in ('Ready to test', 'Ready to Test', 'Ready for Testing') ORDER BY updated DESC\",\n  fields: [\"summary\", \"status\", \"assignee\", \"priority\", \"updated\", \"created\", \"customfield_10020\", \"customfield_10010\", \"sprint\"],\n  maxResults: 25\n};\n\nreturn [{\n  json: {\n    baseUrl,\n    authHeader,\n    searchUrl,\n    searchBody,\n    _triggerSource: 'schedule'\n  }\n}];\n"
+      },
+      "id": "prep-poll",
+      "name": "Prepare Jira Polling Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.searchUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json.authHeader }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.searchBody) }}",
+        "options": {}
+      },
+      "id": "query-board-ready",
+      "name": "Query Board 61 Ready Issues",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        540
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Jira Ready To Test Filter (`scripts/n8n-nodes/jira-ready-to-test-filter.js`)\n *\n * Mục đích (WF-11):\n * - Hỗ trợ cả 2 chế độ:\n *   1. Webhook thời gian thực từ Jira (`jira:issue_updated` hoặc webhook test)\n *   2. Scheduled Poller (định kỳ 5 phút quét Board 61 active sprint)\n * - Lọc nghiêm ngặt 3 điều kiện:\n *   1. Thuộc Board G.3.1 (mã key `G3PTP-*` hoặc project `G.3.1` / `G3PTP`).\n *   2. Thuộc Sprint hiện tại (Active Sprint: `sprint.state === 'active'`).\n *   3. Trạng thái chuyển đổi sang `\"Ready to test\"` (case-insensitive).\n * - Cơ chế Cache chống trùng lặp: Lưu vào `.cache/notified-ready-to-test.json`\n * - Quét workspace local của `issueKey`:\n *   - Kiểm tra file `.feature`: có -> `✅ Gherkin file`, không -> `❌ Gherkin file`.\n *   - Kiểm tra file `steps/test-*.py` (hoặc `test_*.py`): có -> `✅ Autoscript test`, không -> `❌ Autoscript test`.\n * - Đưa ra gợi ý lệnh tương ứng tùy theo tình trạng file (mỗi lệnh trên 1 dòng riêng biệt).\n * - Soạn thẻ Markdown gửi thông báo về Mattermost.\n */\n\nconst fs = require('fs');\nconst path = require('path');\n\nconst firstInput = (typeof $input !== 'undefined' && typeof $input.first === 'function') ? $input.first() : null;\nconst rawFirst = (firstInput && firstInput.json) || {};\nconst bodyFirst = rawFirst.body || rawFirst;\n\nlet procCwd = '';\ntry {\n  const proc = require('process');\n  if (proc && typeof proc.cwd === 'function') procCwd = proc.cwd();\n} catch (_) {}\n\nconst candidateRoots = [\n  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills',\n  procCwd,\n  '/Users/qa-quangnt/Desktop/Project/Test/agent-skills'\n].filter(Boolean);\n\nlet primaryRoot = candidateRoots[0];\nfor (const r of candidateRoots) {\n  if (fs.existsSync(r)) {\n    primaryRoot = r;\n    break;\n  }\n}\n\n// Khởi tạo hoặc đọc cache các issue đã gửi thông báo\nconst cacheDir = path.join(primaryRoot, '.cache');\nconst cacheFile = path.join(cacheDir, 'notified-ready-to-test.json');\nlet notifiedCache = {};\nlet cacheUpdated = false;\n\ntry {\n  if (!fs.existsSync(cacheDir)) {\n    fs.mkdirSync(cacheDir, { recursive: true });\n  }\n  if (fs.existsSync(cacheFile)) {\n    notifiedCache = JSON.parse(fs.readFileSync(cacheFile, 'utf8') || '{}');\n  }\n} catch (_) {}\n\n// Thu thập danh sách candidate issues (từ webhook payload đơn lẻ hoặc batch issues từ Jira search)\nconst candidateItems = [];\n\n// Trường hợp 1: Nhận payload từ Jira Search / Poller ({ issues: [...] })\nif (Array.isArray(bodyFirst.issues)) {\n  for (const iss of bodyFirst.issues) {\n    candidateItems.push({\n      issue: iss,\n      changelog: iss.changelog || {},\n      isPolled: true\n    });\n  }\n} else if (Array.isArray(rawFirst.issues)) {\n  for (const iss of rawFirst.issues) {\n    candidateItems.push({\n      issue: iss,\n      changelog: iss.changelog || {},\n      isPolled: true\n    });\n  }\n} else {\n  // Trường hợp 2: Nhận payload đơn lẻ qua Webhook hoặc Execute Workflow\n  candidateItems.push(bodyFirst);\n}\n\nconst outputResults = [];\n\nfor (const rawItem of candidateItems) {\n  const item = rawItem.body || rawItem;\n  const issue = item.issue || rawItem.issue || item;\n  const changelog = item.changelog || rawItem.changelog || {};\n  const issueKey = (issue.key || item.issueKey || rawItem.issueKey || '').toUpperCase().trim();\n  const fields = issue.fields || {};\n\n  if (!issueKey) continue;\n\n  // 1. Điều kiện 1: Board G.3.1 (Project G3PTP hoặc chứa G.3.1)\n  const projectKey = (fields.project?.key || '').toUpperCase();\n  const projectName = (fields.project?.name || '');\n  const isBoardG31 = issueKey.startsWith('G3PTP-') || projectKey === 'G3PTP' || projectName.includes('G.3.1') || (item.boardName || '').includes('G.3.1');\n\n  // 2. Điều kiện 2: Active Sprint\n  let isActiveSprint = false;\n  let sprintName = 'Active Sprint';\n\n  const sprintField = fields.sprint || fields.customfield_10020 || fields.customfield_10010;\n  if (Array.isArray(sprintField)) {\n    const activeS = sprintField.find(s => (s.state || '').toLowerCase() === 'active');\n    if (activeS) {\n      isActiveSprint = true;\n      sprintName = activeS.name || sprintName;\n    } else if (sprintField.length > 0) {\n      sprintName = sprintField[0].name || sprintName;\n      // Nếu polling theo JQL sprint in openSprints(), coi như thuộc open sprint\n      if (rawItem.isPolled) isActiveSprint = true;\n    }\n  } else if (sprintField && typeof sprintField === 'object') {\n    isActiveSprint = (sprintField.state || '').toLowerCase() === 'active';\n    sprintName = sprintField.name || sprintName;\n  } else if (typeof sprintField === 'string' && sprintField.toLowerCase().includes('state=active')) {\n    isActiveSprint = true;\n    const match = sprintField.match(/name=([^,]+)/);\n    if (match) sprintName = match[1];\n  } else if (item.isCurrentSprint === true || item.isActiveSprint === true || rawItem.isPolled) {\n    isActiveSprint = true;\n  }\n\n  // 3. Điều kiện 3: Status đổi sang hoặc đang ở \"Ready to test\"\n  let isStatusReadyToTest = false;\n  const items = Array.isArray(changelog.items) ? changelog.items : [];\n\n  for (const ch of items) {\n    if ((ch.field || '').toLowerCase() === 'status') {\n      const toStr = (ch.toString || ch.to || '').toLowerCase().trim();\n      if (toStr === 'ready to test' || toStr === 'ready for testing' || toStr === 'sẵn sàng kiểm thử') {\n        isStatusReadyToTest = true;\n        break;\n      }\n    }\n  }\n\n  if (!isStatusReadyToTest && (fields.status?.name || item.status || '').toLowerCase().trim().includes('ready to test')) {\n    isStatusReadyToTest = true;\n  }\n\n  // Kiểm tra 3 điều kiện\n  if (!isBoardG31 || !isActiveSprint || !isStatusReadyToTest) {\n    if (candidateItems.length === 1 && !rawItem.isPolled) {\n      outputResults.push({\n        json: {\n          isReadyToTest: false,\n          ignored: true,\n          reason: `Bỏ qua sự kiện: isBoardG31=${isBoardG31}, isActiveSprint=${isActiveSprint}, isStatusReadyToTest=${isStatusReadyToTest}`,\n          issueKey\n        }\n      });\n    }\n    continue;\n  }\n\n  // 4. Kiểm tra Cache chống thông báo lặp lại\n  const updatedTime = fields.updated || item.updated || new Date().toISOString();\n  if (notifiedCache[issueKey]) {\n    const lastNotified = new Date(notifiedCache[issueKey]);\n    const issueUpdated = new Date(updatedTime);\n    // Nếu đã thông báo và ticket không đổi trạng thái sau đó -> bỏ qua\n    if (issueUpdated <= lastNotified) {\n      if (candidateItems.length === 1 && !rawItem.isPolled) {\n        outputResults.push({\n          json: {\n            isReadyToTest: false,\n            ignored: true,\n            reason: `Issue ${issueKey} đã được thông báo trước đó vào ${lastNotified.toISOString()}`,\n            issueKey\n          }\n        });\n      }\n      continue;\n    }\n  }\n\n  // 5. Quét Workspace Local để kiểm tra file\n  let hasGherkin = false;\n  let hasAutoScript = false;\n  let workspaceFoundPath = '';\n\n  for (const cRoot of candidateRoots) {\n    const wsDir = path.join(cRoot, 'workspace', issueKey);\n    if (fs.existsSync(wsDir)) {\n      workspaceFoundPath = wsDir;\n\n      // A. Kiểm tra file .feature (Gherkin)\n      const testDir = path.join(wsDir, 'test');\n      if (fs.existsSync(testDir)) {\n        try {\n          const files = fs.readdirSync(testDir);\n          hasGherkin = files.some(f => f.endsWith('.feature'));\n        } catch (_) {}\n      }\n      if (!hasGherkin) {\n        try {\n          const allFiles = fs.readdirSync(wsDir);\n          hasGherkin = allFiles.some(f => f.endsWith('.feature'));\n        } catch (_) {}\n      }\n\n      // B. Kiểm tra file test script\n      const stepsDir = path.join(wsDir, 'test', 'steps');\n      if (fs.existsSync(stepsDir)) {\n        try {\n          const stepFiles = fs.readdirSync(stepsDir);\n          hasAutoScript = stepFiles.some(f => (f.startsWith('test-') || f.startsWith('test_')) && f.endsWith('.py'));\n        } catch (_) {}\n      }\n      if (!hasAutoScript && fs.existsSync(testDir)) {\n        try {\n          const testFiles = fs.readdirSync(testDir);\n          hasAutoScript = testFiles.some(f => (f.startsWith('test-') || f.startsWith('test_')) && f.endsWith('.py'));\n        } catch (_) {}\n      }\n      break;\n    }\n  }\n\n  // 6. Đánh dấu badge trạng thái file\n  const gherkinBadge = hasGherkin ? '✅ Gherkin file' : '❌ Gherkin file';\n  const autoScriptBadge = hasAutoScript ? '✅ Autoscript test' : '❌ Autoscript test';\n\n  // 7. Gợi ý lệnh tùy theo tình trạng file\n  const commandList = [];\n  let situationSummary = '';\n\n  if (!hasGherkin && !hasAutoScript) {\n    situationSummary = 'Chưa có kịch bản BDD Gherkin và chưa có mã automation testscript.';\n    commandList.push({\n      label: 'Thiết kế Checklist & Gherkin file:',\n      cmd: `/qa-test-design ${issueKey}`\n    });\n    commandList.push({\n      label: 'Thiết kế test script Playwright/Pytest:',\n      cmd: `/qa-auto-design ${issueKey}`\n    });\n  } else if (hasGherkin && !hasAutoScript) {\n    situationSummary = 'Đã có kịch bản BDD Gherkin nhưng chưa có mã automation test.';\n    commandList.push({\n      label: 'Thiết kế test script Playwright/Pytest:',\n      cmd: `/qa-auto-design ${issueKey}`\n    });\n    commandList.push({\n      label: 'Thực thi kiểm thử tự động:',\n      cmd: `/qa-run-test ${issueKey}`\n    });\n  } else {\n    situationSummary = 'Đã sẵn sàng đầy đủ kịch bản BDD Gherkin và mã automation test.';\n    commandList.push({\n      label: 'Thực thi kiểm thử tự động:',\n      cmd: `/qa-run-test ${issueKey}`\n    });\n    commandList.push({\n      label: 'Đồng bộ kịch bản kiểm thử lên Squash TM:',\n      cmd: `/qa-squash-push ${issueKey}`\n    });\n  }\n\n  const suggestedCommands = commandList.map(c => c.cmd);\n  const suggestedCommand = suggestedCommands[0] || '';\n\n  // 8. Tạo thẻ thông báo Mattermost bắt mắt\n  const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\n  const jiraUrl = `${baseUrl}/browse/${issueKey}`;\n  const summary = fields.summary || item.summary || '-';\n  const assignee = fields.assignee?.displayName || item.assignee || '-';\n  const priority = fields.priority?.name || item.priority || 'Medium';\n\n  const reportText = `### 🎯 READY TO TEST — [${issueKey}](${jiraUrl})\\n\\n| Thông Tin | Chi Tiết |\\n| :--- | :--- |\\n| 📋 **Title** | **${summary}** |\\n| 👤 **Assignee** | **${assignee}** |\\n| ⚡ **Sprint** | \\`${sprintName}\\` |\\n| 🏷️ **Độ ưu tiên** | \\`${priority}\\` |\\n| 📁 **Trạng thái Workspace** | ${gherkinBadge} ᐧ ${autoScriptBadge} |\\n| 💡 **Lệnh đề xuất** | \\`${suggestedCommand}\\` |\\n`;\n\n  outputResults.push({\n    json: {\n      isReadyToTest: true,\n      ignored: false,\n      issueKey,\n      summary,\n      assignee,\n      priority,\n      sprintName,\n      gherkinBadge,\n      autoScriptBadge,\n      hasGherkin,\n      hasAutoScript,\n      suggestedCommand,\n      suggestedCommands,\n      situationSummary,\n      reportText,\n      mattermostPayload: {\n        text: reportText,\n        username: 'Jira QA Bot',\n        icon_emoji: ':dart:'\n      }\n    }\n  });\n\n  // Ghi nhận vào cache\n  notifiedCache[issueKey] = new Date().toISOString();\n  cacheUpdated = true;\n}\n\n// Lưu cache mới vào disk\nif (cacheUpdated) {\n  try {\n    fs.writeFileSync(cacheFile, JSON.stringify(notifiedCache, null, 2), 'utf8');\n  } catch (_) {}\n}\n\nif (outputResults.length === 0) {\n  return [{\n    json: {\n      isReadyToTest: false,\n      ignored: true,\n      reason: 'Không có issue nào mới chuyển sang Ready to test.',\n      issueKey: ''\n    }\n  }];\n}\n\nreturn outputResults;\n"
       },
       "id": "code-filter-ready",
       "name": "Filter Board G31 & Ready to Test",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        460,
-        320
+        920,
+        380
       ]
     },
     {
@@ -54,8 +123,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        720,
-        320
+        1160,
+        380
       ]
     },
     {
@@ -73,7 +142,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json.mattermostPayload || { text: $json.reportText }) }}",
+        "jsonBody": "={{ JSON.stringify($json.mattermostPayload || { text: $json.reportText, username: 'Jira QA Bot', icon_emoji: ':dart:' }) }}",
         "options": {}
       },
       "id": "send-mattermost",
@@ -81,8 +150,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        960,
-        220
+        1400,
+        280
       ],
       "onError": "continueRegularOutput"
     },
@@ -97,8 +166,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1200,
-        320
+        1640,
+        380
       ]
     }
   ],
@@ -115,6 +184,39 @@
       ]
     },
     "Webhook Trigger (jira-ready-to-test)": {
+      "main": [
+        [
+          {
+            "node": "Filter Board G31 & Ready to Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger (Every 5 min Mon-Fri)": {
+      "main": [
+        [
+          {
+            "node": "Prepare Jira Polling Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Jira Polling Query": {
+      "main": [
+        [
+          {
+            "node": "Query Board 61 Ready Issues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Board 61 Ready Issues": {
       "main": [
         [
           {
@@ -168,6 +270,7 @@
   },
   "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "timezone": "Asia/Ho_Chi_Minh"
   }
 }

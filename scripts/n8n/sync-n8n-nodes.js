@@ -90,10 +90,28 @@ const mappings = [
     scriptFile: 'scripts/n8n-nodes/ba/jira-push-format-response.js'
   },
   {
+    workflowFile: 'n8n-workflows/daily-repo-sync-cron.json',
+    nodeName: 'Execute & Parse Daily Sync',
+    nodeId: '3',
+    scriptFile: 'scripts/n8n-nodes/sync/daily-repo-sync-node.js'
+  },
+  {
     workflowFile: 'n8n-workflows/sm-daily-standup-cron.json',
     nodeName: 'Prepare Standup Request',
     nodeId: 'prep-standup',
     scriptFile: 'scripts/n8n-nodes/sm/sm-prepare-standup.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/sm-daily-standup-cron.json',
+    nodeName: 'Prepare Sprint Issues Request',
+    nodeId: 'prep-issues',
+    scriptFile: 'scripts/n8n-nodes/sm/sm-prepare-issues.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/sm-daily-standup-cron.json',
+    nodeName: 'Analyze Velocity & Blockers',
+    nodeId: 'analyze-standup',
+    scriptFile: 'scripts/n8n-nodes/sm/sm-analyze-standup.js'
   },
   {
     workflowFile: 'n8n-workflows/db-mdds-recon-watchdog.json',
@@ -130,6 +148,12 @@ const mappings = [
     nodeName: 'Security Digest Engine',
     nodeId: 'code-security-digest',
     scriptFile: 'scripts/n8n-nodes/security/security-digest-engine.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/jira-ready-to-test-notifier.json',
+    nodeName: 'Prepare Jira Polling Query',
+    nodeId: 'prep-poll',
+    scriptFile: 'scripts/n8n-nodes/qa/jira-poll-prepare.js'
   },
   {
     workflowFile: 'n8n-workflows/jira-ready-to-test-notifier.json',

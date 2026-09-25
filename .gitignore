@@ -19,6 +19,7 @@ export.json
 .n8n/
 
 # Caches & Temp data
+.cache/
 .claude/.simplify-ignore-cache/
 .claude/sdd-cache/
 .agents/cache/
