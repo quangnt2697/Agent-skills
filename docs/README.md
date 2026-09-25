@@ -57,15 +57,10 @@ Phân tích ai nên viết BDD Gherkin scenarios:
 - Industry best practice: ATDD workflow
 - Ranh giới: BA = WHAT must be true, QA = HOW to test
 
-### [architecture/gitlab-mcp-integration-roadmap.md](architecture/gitlab-mcp-integration-roadmap.md)
-**Lộ trình tích hợp GitLab MCP vào quy trình**
+### [architecture/n8n-integration-strategy.md](architecture/n8n-integration-strategy.md)
+**Chiến Lược Tích Hợp n8n Fast-Path**
 
-Chi tiết tích hợp Phase A (Code Reviewer đọc MR thật, pipeline, threads) và Phase B (Traceability).
-
-### [architecture/mcp-overview.md](architecture/mcp-overview.md)
-**Kiến trúc các MCP Servers (.agents/)**
-
-Tổng hợp thiết kế, vai trò, tiêu chuẩn bảo mật (SQL Sanitizer, Auto-limit, Session/Token) cho 6 MCP servers trong `.agents/`.
+Tích hợp n8n Webhook phục vụ tự động hóa toàn bộ quy trình cho BA, QA, Scrum Master, Code Reviewer và Security.
 
 ---
 

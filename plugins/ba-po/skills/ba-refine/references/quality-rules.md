@@ -228,7 +228,7 @@ Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
 ## Xem thêm
 
 - [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](../../../../../references/securities-domain-rules.md)
-- [Quy trình Quản lý Tài liệu Atlassian](../../../../../docs/architecture/atlassian-mcp-strategy.md)
+- [Chiến Lược Tích Hợp n8n](../../../../../docs/architecture/n8n-integration-strategy.md)
 - [Ví dụ Refine Chất lượng Cao](examples.md)
 - [Jira Description Template](../assets/jira-description-template.md)
 

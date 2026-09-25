@@ -137,7 +137,7 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 ## 2. Quy Tắc Chuyên Biệt Cho Web UI Testing (Desktop & Webview)
 
 ### 2.1. Cấu hình Browser & Viewport Chuẩn
-- Toàn bộ phiên kiểm thử Web UI qua Playwright MCP tự động áp dụng độ phân giải chuẩn Full HD: **`1920x1080`**.
+- Toàn bộ phiên kiểm thử Web UI tự động áp dụng độ phân giải chuẩn Full HD: **`1920x1080`**.
 - Không sử dụng Headless mode khi đang viết mới hoặc debug script nếu muốn trực quan hóa hành vi.
 
 ### 2.2. Quy Trình Thao Tác Bắt Buộc Với Web UI Testing
@@ -167,7 +167,7 @@ Khi làm việc với các task kiểm thử Web UI, Agent **BẮT BUỘC** thao
    - **NGHIÊM CẤM** tự suy đoán locator mà không inspect DOM thật.
 
 5. **Thử nghiệm tương tác (`playwright_click` & `playwright_fill`):**
-   - Thực hiện bấm thử và điền thử giá trị qua MCP trước khi sinh mã code, bảo đảm selector hoạt động trơn tru.
+   - Thực hiện bấm thử và điền thử giá trị trước khi sinh mã code, bảo đảm selector hoạt động trơn tru.
 
 6. **Chốt Semantic Locators:**
    - Ưu tiên 1: `page.get_by_role()` (button, link, heading, tab, dialog).
@@ -257,7 +257,7 @@ Mỗi Test Case API **BẮT BUỘC** thực hiện đủ **7 bước assertions:
 ## 6. Quy Chuẩn Nghiệp Vụ Chứng Khoán (Securities Domain Standards)
 
 Khi thiết kế và viết code automation test cho domain chứng khoán, Agent **BẮT BUỘC** tham chiếu và tuân thủ nghiêm ngặt cẩm nang nghiệp vụ tại [references/securities-domain-rules.md](../../../../../references/securities-domain-rules.md):
-- **Dữ liệu thật từ TimescaleDB (V3 > V2):** Tra cứu qua MCP `test-data` (DB 644). Tuyệt đối cấm tự bịa mã chứng khoán hoặc giá vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$) và bước giá (tick size).
+- **Dữ liệu thật từ TimescaleDB (V3 > V2):** Tra cứu qua Metabase UAT / TimescaleDB (`${METABASE_UAT_DB_TIMESCALE_ID}`) hoặc n8n Fast-Path (`getSecuritiesFixture`). Tuyệt đối cấm tự bịa mã chứng khoán hoặc giá vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$) và bước giá (tick size).
 - **Kiểm thử 25 kịch bản Random End (RE):** Kiểm chứng nhận diện mã RE tại ATO (`expected_price != 0`) và ATC (`expected_price != 0 & expected_quantity != 0`), mã RE giữ nguyên phiên ATO sau 09:15 cho đến khi nhận tín hiệu kết thúc từ `Prices` (`trading_session_id = 40` hoặc `type = 2 & trading_session_id = 10`), tự động reset `enableRE = false`, chặn lệnh MTL/MP và cấm sửa/hủy lệnh trong khoảng 09:15-09:17.
 - **Bao phủ 15 mã lỗi ORS & Fallback Lệnh 24/7:** Kiểm tra các ca biên sinh đúng 15 mã lỗi ORS và luồng tự động Fallback sang Lệnh 24/7 khi đặt lệnh ngoài phiên hoặc khi thị trường Halt.
 - **Kiểm thử biên Sửa Lệnh (Replace Order):** $newQuantity = filledQuantity$ (bị từ chối), $newQuantity = filledQuantity + 1$ (chấp nhận), sửa lệnh ngoài phiên liên tục, sửa lệnh thị trường.

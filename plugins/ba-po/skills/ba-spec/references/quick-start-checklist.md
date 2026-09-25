@@ -43,7 +43,7 @@
 
 1. **Phase 0 — Scan & Duyệt (GATE 1):**
    - Đọc credentials từ `.env` (`ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`).
-   - Lấy metadata Jira thô (REST API curl, tránh MCP làm sai lệch `summary`).
+   - Lấy metadata Jira sạch qua n8n Fast-Path `prepJiraContext(issueKey)`.
    - Quét link Confluence + attachments + kiểm tra cache trong `workspace/{issueKey}/source/refs/`.
    - Trình bảng danh sách cho user → **DỪNG chờ "OK"**.
 

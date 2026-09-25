@@ -1,5 +1,5 @@
 /**
- * Node Script: Confluence Clean Payload (`scripts/n8n-nodes/confluence-clean-payload.js`)
+ * Node Script: Confluence Clean Payload (`scripts/n8n-nodes/ba/confluence-clean-payload.js`)
  *
  * Mục đích (WF-03):
  * - Nhận payload trả về từ Confluence Cloud REST API (v1 hoặc v2).

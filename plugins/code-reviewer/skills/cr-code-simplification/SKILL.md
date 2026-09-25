@@ -1,6 +1,6 @@
 ---
 name: cr-code-simplification
-description: 'Đơn giản hóa, simplify code cho rõ ràng, giảm phức tạp thừa thãi, không đổi hành vi. Dùng khi code chạy tốt nhưng khó đọc, khó bảo trì. Tối ưu hóa mã nguồn, test mock dễ hiểu hơn. KHÔNG làm feature flag system.'
+description: 'Đơn giản hóa, simplify code cho rõ ràng, giảm bớt sự phức tạp thừa thãi, tối ưu hóa mã nguồn và test mock nhưng không thay đổi hành vi logic. Dùng khi code chạy tốt nhưng khó đọc, khó bảo trì.'
 trigger: Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó đọc, khó bảo trì, hoặc chứa sự phức tạp thừa thãi. Trigger bằng lệnh '/code-simplify' hoặc '/cr-simplify'.
 ---
 

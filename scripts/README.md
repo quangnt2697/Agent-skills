@@ -12,14 +12,12 @@ scripts/
 │
 ├── tests/                    # Toàn bộ Unit Test Suite (Node.js native test runner)
 │   ├── ba-refine-push-spec-test.js
-│   ├── db-mcp-test.js
 │   ├── db-recon-core-test.js
 │   ├── db-recon-test.js
 │   ├── n8n-client-test.js
 │   ├── repo-sync-test.js
 │   ├── run-evals-test.js
 │   ├── skill-lint-test.js
-│   ├── test-data-mcp-test.js
 │   ├── validate-artifact-paths-test.js
 │   ├── validate-commands-test.js
 │   ├── validate-reference-links-test.js
@@ -42,7 +40,7 @@ scripts/
 │   ├── setup-mac.sh                 # Script bootstrap môi trường macOS (asdf, tools, config)
 │   ├── setup-plugins.js             # Symlink/copy plugins vào thư mục cấu hình của agent
 │   ├── setup-n8n.js                 # Khởi tạo n8n workspace, webhook tunnel và workflow import
-│   └── build-commands.js            # Tạo tự động các twin commands TOML từ Claude commands
+│   └── build-commands.js            # Tạo tự động .claude/commands/*.md từ commands/*.toml của plugins
 │
 ├── sync/                     # Bộ công cụ đồng bộ mã nguồn các microservices trong hệ thống
 │   ├── repo-sync.js                 # Smart Git pull đa repo, tự động stash/reset & chuyển nhánh
@@ -56,7 +54,7 @@ scripts/
 │   └── run-evals.js                 # Runner thực thi Tier 2 (lexical trigger) & Tier 3 (behavioral)
 │
 ├── lib/                      # Các thư viện dùng chung cốt lõi (Core Libraries)
-│   ├── n8n-client.js                # Client giao tiếp n8n Fast-Path (HTTP Webhooks & Fallback)
+│   ├── n8n-client.js                # Client giao tiếp n8n Fast-Path (HTTP Webhooks n8n-only)
 │   └── skill-lint.js                # Bộ parser và ruleset kiểm tra cấu trúc SKILL.md (đa ngôn ngữ)
 │
 └── n8n-nodes/                # Clean JavaScript source code của các Code Node trong n8n workflows

@@ -1,5 +1,5 @@
 /**
- * Node Script: Security Digest Engine (`scripts/n8n-nodes/security-digest-engine.js`)
+ * Node Script: Security Digest Engine (`scripts/n8n-nodes/security/security-digest-engine.js`)
  *
  * Mục đích (WF-08):
  * - Phân tích kết quả quét phụ thuộc (Dependency Audit: `npm audit --json`) và quét secret rò rỉ.

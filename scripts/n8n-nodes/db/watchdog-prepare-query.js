@@ -1,6 +1,5 @@
-/**
  * Node Script: Prepare Watchdog Query — Step 1: Security Definition V3
- * (`scripts/n8n-nodes/watchdog-prepare-query.js`)
+ * (`scripts/n8n-nodes/db/watchdog-prepare-query.js`)
  *
  * Mục đích:
  * Chuẩn bị câu SQL BƯỚC 1 — Kiểm tra bảng `security_definition_v3`:

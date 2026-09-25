@@ -1,6 +1,6 @@
 ---
 name: dev-frontend-engineering
-description: Xây dựng UI frontend, refactor UI thành reusable components với state management chuẩn. Thiết kế giao diện React/CSS.
+description: Xây dựng UI frontend, thiết kế giao diện page responsive trên mobile và desktop, chuẩn WCAG accessible compliant. Tạo reusable components với state management React/CSS.
 trigger: Sử dụng khi xây dựng hoặc sửa đổi giao diện và trang web, tạo component, triển khai bố cục (layout), đáp ứng yêu cầu WCAG, quản lý trạng thái, hoặc khi đầu ra cần có giao diện chất lượng cao thay vì trông như do AI tạo ra.
 ---
 

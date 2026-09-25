@@ -47,7 +47,7 @@ Chỉ chọn cách này khi các đánh giá **độc lập** có thể chạy s
 
 - `/dev-audit` → chạy song song `code-reviewer` + `security-auditor` + `qa`, sau đó tổng hợp các báo cáo của chúng thành quyết định có nên duyệt (go/no-go) hay không.
 
-Đây là mô hình điều phối duy nhất mà kho lưu trữ này ủng hộ. Hãy xem [references/orchestration-patterns.md](../../references/orchestration-patterns.md) để biết thêm danh mục đầy đủ các mẫu và phản mẫu.
+Đây là mô hình điều phối duy nhất mà kho lưu trữ này ủng hộ. Hãy xem [orchestration-patterns.md](../architecture/orchestration-patterns.md) để biết thêm danh mục đầy đủ các mẫu và phản mẫu.
 
 ## Ma trận quyết định
 
@@ -114,7 +114,7 @@ Các personas trong repo này được thiết kế để hoạt động như Cl
 - **Dưới dạng subagents:** Tự động nhận diện khi plugin này được kích hoạt. Hãy sử dụng công cụ Agent với `subagent_type: code-reviewer` (hoặc `security-auditor`, `qa`). `/dev-audit` là ví dụ tiêu chuẩn.
 - **Dưới dạng đồng đội trong Agent Teams** (đang thử nghiệm, yêu cầu `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`): tham chiếu cùng tên persona khi gọi một đồng đội. Nội dung của persona được **nối thêm vào** system prompt của đồng đội dưới dạng chỉ dẫn bổ sung (không phải thay thế), vì vậy text của persona sẽ đè lên trên các chỉ dẫn phối hợp nhóm (SendMessage, task-list tools, v.v.).
 
-Subagents chỉ báo cáo kết quả về lại cho agent chính. Agent Teams cho phép đồng đội nhắn tin trực tiếp với nhau. Hãy dùng subagents khi bạn chỉ cần các báo cáo; dùng Agent Teams khi subagents cần đối chất về các kết quả của nhau (VD: debug các giả thuyết cạnh tranh nhau). Xem [references/orchestration-patterns.md](../../references/orchestration-patterns.md) để xem chi tiết.
+Subagents chỉ báo cáo kết quả về lại cho agent chính. Agent Teams cho phép đồng đội nhắn tin trực tiếp với nhau. Hãy dùng subagents khi bạn chỉ cần các báo cáo; dùng Agent Teams khi subagents cần đối chất về các kết quả của nhau (VD: debug các giả thuyết cạnh tranh nhau). Xem [orchestration-patterns.md](../architecture/orchestration-patterns.md) để xem chi tiết.
 
 Các plugin agents không hỗ trợ frontmatter `hooks`, `mcpServers`, hoặc `permissionMode` — các trường này bị bỏ qua một cách âm thầm. Tránh phụ thuộc vào chúng khi tạo personas mới ở đây.
 
@@ -124,4 +124,4 @@ Các plugin agents không hỗ trợ frontmatter `hooks`, `mcpServers`, hoặc `
 2. Định nghĩa vai trò, phạm vi, định dạng đầu ra và các quy tắc.
 3. Thêm một phần **Composition** ở cuối.
 4. Thêm persona vào bảng ở đầu file này.
-5. Nếu persona kích hoạt một mô hình điều phối mới, hãy viết tài liệu cho nó trong `references/orchestration-patterns.md` thay vì sáng chế ra mẫu điều phối đó bên trong chính file persona.
+5. Nếu persona kích hoạt một mô hình điều phối mới, hãy viết tài liệu cho nó trong `docs/architecture/orchestration-patterns.md` thay vì sáng chế ra mẫu điều phối đó bên trong chính file persona.

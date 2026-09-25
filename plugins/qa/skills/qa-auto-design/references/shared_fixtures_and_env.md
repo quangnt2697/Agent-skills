@@ -236,7 +236,7 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 | | `DASHBOARD_PASSWORD` | Password đăng nhập Dashboard |
 | **Playwright Config** | `BROWSER` | `chromium` \| `firefox` \| `webkit` (mặc định: `chromium`) |
 | | `VIEWPORT_WIDTH` / `VIEWPORT_HEIGHT` | Độ phân giải chuẩn: `1920` × `1080` |
-| | `HEADLESS` | `false` khi viết mới script (để dùng Playwright MCP inspect DOM); `true` khi CI/CD |
+| | `HEADLESS` | `false` khi debug hoặc kiểm tra UI trực tiếp; `true` khi CI/CD |
 | | `PLAYWRIGHT_TIMEOUT_MS` | Timeout mỗi action (ms, mặc định: `30000`) |
 | | `PLAYWRIGHT_TRACE` | `retain-on-failure` — lưu trace khi test fail |
 | **Output** | `SCREENSHOT_DIR` | Thư mục ảnh chụp khi fail (VD: `workspace/{issueKey}/test/result/screenshots`) |
@@ -254,7 +254,7 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 
 ---
 
-## 6. Nạp Test Fixtures Động Từ Test-Data MCP & Điều Hướng Môi Trường
+## 6. Nạp Test Fixtures Động Từ n8n Fast-Path & Điều Hướng Môi Trường
 
 ### 6.1. Cơ Chế Điều Hướng Môi Trường Chuẩn Xác (OpenAPI UAT vs Sandbox)
 Hệ thống kiểm thử hỗ trợ 2 môi trường độc lập với Database tương ứng:
@@ -282,7 +282,7 @@ def target_environment():
 ```
 
 ### 5.2. Nạp Dữ Liệu Thị Trường Thật Từ `fixtures/market_data.json`
-Trước khi thực thi test, skill `qa-auto-design` gọi MCP `test-data` tool `td_export_fixture` để snapshot dữ liệu thị trường thật vào file:
+Trước khi thực thi test, n8n Fast-Path gọi `getSecuritiesFixture` qua `node scripts/lib/n8n-client.js getSecuritiesFixture` để snapshot dữ liệu thị trường thật vào file:
 `workspace/{issueKey}/test/fixtures/market_data.json`
 
 Fixture `market_fixture` và `valid_order_symbol` tự động nạp dữ liệu này:

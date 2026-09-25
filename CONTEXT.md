@@ -92,6 +92,6 @@ Jira Issue (issueKey)
 ## ADR (Architecture Decision Records)
 
 Các quyết định kiến trúc quan trọng được lưu tại `docs/architecture/`:
-- [n8n-integration-strategy.md](docs/architecture/n8n-integration-strategy.md) — 3-Tier fallback strategy
-- [mcp-overview.md](docs/architecture/mcp-overview.md) — MCP server mapping
-- [gitlab-mcp-strategy.md](docs/architecture/gitlab-mcp-strategy.md) — GitLab boundary rules
+- [n8n-integration-strategy.md](docs/architecture/n8n-integration-strategy.md) — n8n Fast-Path integration strategy
+- [orchestration-patterns.md](docs/architecture/orchestration-patterns.md) — Orchestration patterns & workflows
+- [ba-workflow-detail.md](docs/architecture/ba-workflow-detail.md) — BA/PO workflow detail

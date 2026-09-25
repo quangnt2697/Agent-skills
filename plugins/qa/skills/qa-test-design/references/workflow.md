@@ -34,7 +34,7 @@ bash plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/{issueKey
 
 ## 3. Anti-patterns (Cấm kỵ)
 ❌ Nhảy thẳng vào viết Gherkin bỏ qua checklist.
-❌ Tự động gọi MCP push Squash TM.
+❌ Tự động push Squash TM (đó là trách nhiệm của qa-squash-push).
 ❌ Để lộ biến kỹ thuật, selector UI, hoặc SQL vào kịch bản BDD.
 ❌ Hardcode các số chết cho quota thay vì dùng ranh giới tượng trưng.
 ❌ Tự bịa mã chứng khoán hoặc giá vi phạm biên độ sàn của Sở giao dịch.

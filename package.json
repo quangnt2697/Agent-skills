@@ -46,7 +46,6 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
     "dotenv": "^17.4.2",
     "md-to-adf": "^0.6.4",
     "pg": "^8.23.0",

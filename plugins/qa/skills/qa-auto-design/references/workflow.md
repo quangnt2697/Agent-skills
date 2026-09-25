@@ -1,7 +1,7 @@
 # Quy trình Sinh Mã Automation Test (qa-auto-design)
 
 ## 1. 6 Nguyên Tắc Vàng Khi Sinh Mã
-1. **Khảo sát Thực tế (Recon First):** Web UI bắt buộc soi DOM thật qua MCP; API/WS bắt buộc quét folder `openapi-tyk/sdk/python/` và codebase DEV để tái sử dụng SDK (`DNSEClient`, `trading-api`, `websocket-trading`, v.v.) và module auth/token.
+1. **Khảo sát Thực tế (Recon First):** Web UI bắt buộc soi DOM thật (qua discoverWebUILocators hoặc browser devtools); API/WS bắt buộc quét folder `openapi-tyk/sdk/python/` và codebase DEV để tái sử dụng SDK (`DNSEClient`, `trading-api`, `websocket-trading`, v.v.) và module auth/token.
 2. **Phân Tầng Nghiêm Ngặt:** Toàn bộ Assertions BẮT BUỘC nằm ở tầng Test (`steps/test_*.py`). Tầng Page/Service chỉ chứa tương tác.
 3. **No-Mock & Zero-Hardcode Policy trên UAT:** Tuyệt đối không mock server, gọi trực tiếp `BASE_URL` và `WS_URL` từ `.env`. Toàn bộ giá trị biến (URLs, credentials, account numbers, symbols, amounts, timeouts) BẮT BUỘC tạo và lưu trong `.env`; test script chỉ gọi từ `.env`, CẤM hardcode.
 4. **Metabase UAT & Zero-Mutation Policy:** Tra cứu dữ liệu qua Metabase UAT (TimescaleDB V3 > V2). Cấm chạy auto trên Prod.

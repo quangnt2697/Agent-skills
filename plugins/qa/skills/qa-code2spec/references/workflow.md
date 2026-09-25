@@ -5,7 +5,7 @@
 ### Bước 0: Pre-flight GitLab Check (BẮT BUỘC)
 - Kiểm tra `git status` xem có uncommitted changes không (báo user nếu có).
 - Chạy `git fetch origin` và so sánh local branch với remote tracking branch.
-- Nếu input là MR/Branch xa: Dùng GitLab MCP tool để đọc nội dung code.
+- Nếu input là MR/Branch xa: Dùng git CLI (`git fetch`/`checkout` hoặc `repo-group-sync`) để đọc nội dung code.
 - Ghi nhận Metadata nguồn (Repo, Branch, Commit SHA).
 
 ### Bước 1: Deep Trace (Phân tích cấu trúc & 5 Yếu tố Backend)

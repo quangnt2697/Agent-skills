@@ -37,25 +37,13 @@ trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặ
 - **CHẠY NGAY LẬP TỨC**, không thực hiện bất kỳ bước phân tích hay review nào trước khi chạy.
 
 ### Bước 2: Thực Thi Test Suite
-- **Ưu tiên (n8n Fast-Path):** Kiểm tra n8n bằng `isN8nAvailable()`, nếu online thì gọi `triggerAsyncTest({ issueKey, testCommand, testFiles })` từ `scripts/lib/n8n-client.js` để kích hoạt test nghiệm ngầm qua webhook `/webhook/qa-run-test`.
+- **n8n Fast-Path (Bắt buộc):** Gọi `triggerAsyncTest({ issueKey, testCommand, testFiles })` từ `scripts/lib/n8n-client.js` để kích hoạt test qua webhook `/webhook/qa-run-test`.
   ```bash
-  # CLI invocation:
   node scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'
   ```
-- **Dự phòng (Chạy nội bộ qua CLI):** Nếu n8n offline, chạy Pytest tiêu chuẩn để ghi Full Log:
-  ```bash
-  pytest "$TEST_TARGET" \
-    -o python_files="test_*.py *_test.py" \
-    -s -v -rA --tb=short \
-    --timeout=60 \
-    -o log_cli=true -o log_cli_level=INFO \
-    --junitxml="workspace/{issueKey}/test/result/junit.xml" \
-    2>&1 | tee "workspace/{issueKey}/test/result/test-output.log"
-  ```
-- **Cờ `--timeout=60`** (yêu cầu `pytest-timeout`): Mỗi test case bị kill tự động sau 60s. Kết quả là `FAILED (timeout)` — không cần chờ thêm.
-- **Timeout toàn suite:** Nếu sau **10 phút** test suite vẫn chạy, agent DỪNG NGAY, ghi nhận kết quả hiện tại (kể cả chưa chạy xong) và xuất báo cáo với ghi chú `Suite Timeout`.
-- Nếu môi trường có `pytest-html`, tự động thêm cờ `--html=... --self-contained-html` (khi chạy CLI).
-- Không nuốt log (cờ `-s`), toàn bộ console output được lưu vào duy nhất `test-output.log`.
+  > Nếu n8n không phản hồi (connection refused / timeout): báo ngay cho user "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**. Không tự ý fallback sang CLI.
+- **Cờ `--timeout=60`** được n8n node `qa-run-pytest.js` áp dụng tự động. Mỗi test case bị kill sau 60s.
+- **Timeout toàn suite:** Nếu sau **10 phút** webhook chưa trả kết quả, agent ghi nhận `Suite Timeout` vào báo cáo.
 
 ### Bước 3: Trả Kết Quả Tức Thì & Đề Xuất Kỹ Năng Xử Lý
 - Đọc kết quả trực tiếp từ output Pytest và `test-output.log`:

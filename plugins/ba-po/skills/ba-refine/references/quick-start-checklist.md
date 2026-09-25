@@ -48,7 +48,7 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 
 ## BƯỚC 2 — Lấy Metadata & Quét Tài Liệu
 
-1. Lấy Jira metadata: MCP `getJiraIssue({issueKey})` → fallback `curl REST API`
+1. Lấy Jira metadata: n8n Fast-Path `prepJiraContext({issueKey})`
 2. Trích xuất `fields.summary` làm Tiêu đề Task (KHÔNG dùng chuỗi placeholder)
 3. Quét: `issuelinks` (Confluence), `attachment`, `description` (URL pattern `*/wiki/*`)
 4. Kiểm tra cache: `workspace/{issueKey}/source/refs/` đã có file nào chưa

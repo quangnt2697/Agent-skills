@@ -1,5 +1,5 @@
 /**
- * Node Script: Securities Fixture Engine (`scripts/n8n-nodes/securities-fixture-engine.js`)
+ * Node Script: Securities Fixture Engine (`scripts/n8n-nodes/qa/securities-fixture-engine.js`)
  *
  * Mục đích (WF-02):
  * - Xử lý dữ liệu từ bảng `security_definition_v3` trên TimescaleDB/Metabase UAT.

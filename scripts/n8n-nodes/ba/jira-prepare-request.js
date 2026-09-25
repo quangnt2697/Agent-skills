@@ -22,7 +22,7 @@ const email = ($env && $env.ATLASSIAN_EMAIL) || '';
 const token = ($env && $env.ATLASSIAN_API_TOKEN) || '';
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
 
-const fields = 'summary,description,status,assignee,priority,attachment,issuelinks,reporter,labels,sprint,issuetype,components,subtasks';
+const fields = 'summary,description,status,assignee,priority,attachment,issuelinks,reporter,labels,sprint,customfield_10018,customfield_10020,customfield_10016,issuetype,components,subtasks';
 const jiraApiUrl = `${baseUrl}/rest/api/3/issue/${issueKey}?fields=${fields}`;
 
 return [{

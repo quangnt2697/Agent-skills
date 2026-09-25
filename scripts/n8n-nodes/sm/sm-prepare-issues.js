@@ -25,7 +25,7 @@ const sprintId = activeSprint.id;
 const sprintName = activeSprint.name;
 
 // Bước 2: Lấy toàn bộ issues của active sprint thuộc Board 61 kèm customfield_10022 (Story Points) và changelog
-const issuesUrl = `${baseUrl}/rest/agile/1.0/board/${boardId}/sprint/${sprintId}/issue?maxResults=200&fields=summary,status,assignee,customfield_10016,customfield_10022,timeoriginalestimate,priority,created,updated&expand=changelog`;
+const issuesUrl = `${baseUrl}/rest/agile/1.0/board/${boardId}/sprint/${sprintId}/issue?maxResults=200&fields=summary,status,assignee,customfield_10016,customfield_10022,timeoriginalestimate,priority,created,updated,issuetype&expand=changelog,names`;
 
 return [{
   json: {

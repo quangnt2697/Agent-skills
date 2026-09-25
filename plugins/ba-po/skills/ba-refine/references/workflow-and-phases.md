@@ -31,21 +31,13 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
    [ -f "${PROJECT_ROOT}/.env" ] && source "${PROJECT_ROOT}/.env"
    ```
 
-3. **Lấy metadata Jira issue** (chưa tải PDF) theo **Chiến lược 3-Tier Fallback**:
-   - **Ưu tiên 1 (n8n Fast-Path):** Import và chạy hàm `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`. Hệ thống tự động gọi webhook `/webhook/jira-prep` để lấy metadata JSON siêu sạch (có cả `attachments` và `issueLinks`). BẮT BUỘC dùng `summary` từ đây làm Tiêu đề Task.
-   - **Ưu tiên 2 (MCP):** Nếu n8n lỗi, gọi MCP tool `getJiraIssue(issueKey)`. Cẩn thận trích xuất chính xác trường `fields.summary`.
-   - **Ưu tiên 3 (REST API - Fallback cuối):** Dùng `curl` gọi API:
-     ```bash
-     curl -s -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
-       -H "Accept: application/json" \
-       "${ATLASSIAN_BASE_URL}/rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels"
-     ```
+3. **Lấy metadata Jira issue** (chưa tải PDF) theo **n8n Fast-Path**:
+   - **n8n Fast-Path (Bắt buộc):** Import và chạy hàm `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`. Hệ thống tự động gọi webhook `/webhook/jira-prep` để lấy metadata JSON siêu sạch (có cả `attachments` và `issueLinks`). BẮT BUỘC dùng `summary` từ đây làm Tiêu đề Task.
+   - Nếu n8n offline: báo ngay cho user "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**.
 
 4. **Trích xuất danh sách liên kết tham chiếu:**
    - Từ `issuelinks`: Lấy Confluence pages được link
-   - **Gọi Remote Links:**
-     - **Ưu tiên (MCP):** Gọi `getJiraIssue_remote_links(issueKey)` (nếu MCP có) hoặc tự map từ `getJiraIssue`
-     - **Fallback:** `GET /rest/api/3/issue/{issueKey}/remotelink` → Lấy link Confluence
+   - **Gọi Remote Links:** Dùng danh sách `issueLinks` từ payload n8n hoặc gọi `GET /rest/api/3/issue/{issueKey}/remotelink` → Lấy link Confluence.
    - Từ `description`: Regex quét URL pattern `*/wiki/spaces/*` hoặc `*/wiki/pages/*`
    - Từ `attachment`: Lấy danh sách file đính kèm (tên, dung lượng, định dạng)
 

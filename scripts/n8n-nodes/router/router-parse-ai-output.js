@@ -218,7 +218,7 @@ const parsedFallback = parseCommand(originalText);
 
 // Nếu Gemini API gặp lỗi hoặc không khả dụng
 if (response.error || (response.status && response.status >= 400)) {
-  const ackMessage = buildAckMessage(parsedFallback.intent, parsedFallback.params, originalText, userName);
+  const ackMessage = buildAckMessage(parsedFallback.intent, parsedFallback.params, originalText);
   return [{
     json: {
       ...parsedFallback,
@@ -263,7 +263,7 @@ try {
     data.params.userQuestion = parsedFallback.params.userQuestion || originalText;
   }
   
-  const ackMessage = buildAckMessage(data.intent, data.params, originalText, userName);
+  const ackMessage = buildAckMessage(data.intent, data.params, originalText);
   return [{
     json: {
       ...data,
@@ -275,7 +275,7 @@ try {
     }
   }];
 } catch(e) {
-  const ackMessage = buildAckMessage(parsedFallback.intent, parsedFallback.params, originalText, userName);
+  const ackMessage = buildAckMessage(parsedFallback.intent, parsedFallback.params, originalText);
   return [{
     json: {
       ...parsedFallback,

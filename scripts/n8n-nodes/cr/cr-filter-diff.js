@@ -1,5 +1,5 @@
 /**
- * Node Script: CR Filter Diff (`scripts/n8n-nodes/cr-filter-diff.js`)
+ * Node Script: CR Filter Diff (`scripts/n8n-nodes/cr/cr-filter-diff.js`)
  *
  * Mục đích (WF-07):
  * - Tiền xử lý (preprocess) git diff thô trước khi đưa vào Agent Code Review (`cr-review-code-and-quality`).
@@ -127,8 +127,9 @@ for (const rawChunk of fileChunks) {
 
   if (lines.length > maxLinesPerFile) {
     isTruncated = true;
-    const keptLines = lines.slice(0, 100);
-    finalChunk = keptLines.join('\n') + `\n\n... [Đã rút gọn: File có ${lines.length} dòng diff (+${adds}/-${dels}), chỉ hiển thị 100 dòng đầu] ...\n`;
+    const MAX_PREVIEW_LINES = 100;
+    const keptLines = lines.slice(0, MAX_PREVIEW_LINES);
+    finalChunk = keptLines.join('\n') + `\n\n... [Đã rút gọn: File có ${lines.length} dòng diff (+${adds}/-${dels}), chỉ hiển thị ${MAX_PREVIEW_LINES} dòng đầu] ...\n`;
   }
 
   const fileItem = {

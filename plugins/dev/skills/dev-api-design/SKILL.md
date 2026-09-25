@@ -1,6 +1,6 @@
 ---
 name: dev-api-design
-description: Hướng dẫn thiết kế API và giao diện interface ổn định.
+description: Hướng dẫn thiết kế API endpoint REST/GraphQL và giao diện public interface ổn định. Giúp define schema, hợp đồng contract giữa frontend và backend service, xác định ranh giới module.
 trigger: Sử dụng khi thiết kế API, ranh giới module, hoặc bất kỳ giao diện công khai nào. Sử dụng khi tạo các endpoint REST hoặc GraphQL, định nghĩa hợp đồng kiểu (type contracts) giữa các module, hoặc thiết lập ranh giới giữa frontend và backend.
 ---
 

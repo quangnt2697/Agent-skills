@@ -4,18 +4,10 @@
 
 > **Tham chiếu đầy đủ:** `../../../../../docs/architecture/n8n-integration-strategy.md`
 
-Skill này tương tác với Jira/Confluence theo **Chiến lược 3-Tier Fallback** (theo thứ tự ưu tiên):
+Skill này tương tác với Jira/Confluence theo **Chiến lược n8n Fast-Path**:
 
-1. **Tier 1 - n8n Fast-Path Webhook (Ưu tiên số 1):** Chạy `isN8nAvailable()` → nếu online, gọi `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` (CLI: `node scripts/lib/n8n-client.js prepJiraContext {issueKey}`). Cách này lấy dữ liệu tức thì, lọc sạch nhiễu và không tốn token LLM đọc hiểu ADF rác.
-2. **Tier 2 - MCP Tool (Ưu tiên số 2):** Nếu n8n không khả dụng, sử dụng Rovo MCP (`getJiraIssue`, `searchConfluenceUsingCql`). Hạn chế dùng `getJiraIssue` nếu có thể vì AI agent MCP có thể tóm tắt lại `summary` gây sai lệch.
-3. **Tier 3 - Shell Script / curl (Dự phòng cuối):** Nếu cả 2 cách trên thất bại hoặc cần tải binary (ví dụ PDF), agent chạy REST API qua `curl` hoặc `jira-fetch-pdf.sh` để đảm bảo độ chính xác.
-
-**Lưu ý:** Lớp xử lý (Phase 2–5: phân tích, interview, tổng hợp) hoạt động **giống nhau** bất kể nguồn dữ liệu là MCP hay REST API.
-
-**Các hành động GIỮ NGUYÊN shell script** (MCP không hỗ trợ):
-- Tải Jira PDF (`jira-fetch-pdf.sh`) — MCP không export binary
-- Tải Confluence PDF (`flyingpdf`) — MCP không export PDF
-- Download binary attachment — MCP trả metadata, không stream file
+- **n8n Fast-Path Webhook:** Gọi `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` (CLI: `node scripts/lib/n8n-client.js prepJiraContext {issueKey}`). Cách này lấy dữ liệu tức thì, lọc sạch nhiễu và không tốn token LLM đọc hiểu ADF rác.
+- **Nếu n8n offline:** Báo người dùng khởi động n8n bằng `npm run n8n` và **DỪNG** (không fallback).
 
 ---
 
@@ -46,9 +38,8 @@ danh sách                                 loại task          theo profile
 **Các bước:**
 
 1. **Lấy metadata Jira issue** (chưa tải PDF):
-   - **Ưu tiên (n8n Fast-Path):** Import và chạy hàm `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`. Hệ thống sẽ tự động gọi n8n webhook `/webhook/jira-prep` để trả về JSON siêu sạch gồm các trường quan trọng và danh sách `attachments`, `issueLinks`.
-   - **Fallback 1 (MCP):** Dùng `getJiraIssue(issueKey)` nhưng BẮT BUỘC cẩn thận với trường `summary` bị LLM tóm tắt sai.
-   - **Fallback 2 (REST API):** Chạy `curl GET /rest/api/3/issue/{issueKey}?fields=summary,description,attachment,issuelinks,status,priority,assignee,reporter,labels,sprint`.
+   - **n8n Fast-Path (Bắt buộc):** Import và chạy hàm `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`. Hệ thống sẽ tự động gọi n8n webhook `/webhook/jira-prep` để trả về JSON siêu sạch gồm các trường quan trọng và danh sách `attachments`, `issueLinks`.
+   - Nếu n8n offline: báo ngay cho user "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**.
 
 2. **Trích xuất danh sách liên kết tham chiếu:**
    - Từ field `issuelinks`: Lấy các Confluence page được link.
@@ -59,12 +50,12 @@ danh sách                                 loại task          theo profile
 3. **Tìm kiếm mở rộng bằng Tên Task (Summary):**
    - Lấy giá trị trường `summary` của Jira.
    - Lọc các từ khóa chính từ `summary` để tạo `{keyword}`.
-   - **Tìm kiếm Confluence:** (Ưu tiên MCP: `searchConfluenceUsingCql`, fallback: `GET /wiki/rest/api/search`).
-   - **Tìm kiếm Jira task liên quan:** (Ưu tiên MCP: `searchJiraIssuesUsingJql`, fallback: `GET /rest/api/3/search`).
+   - **Tìm kiếm Confluence:** Gọi `/webhook/confluence-doc` qua `fetchConfluenceDoc(pageUrlOrId)` hoặc CQL REST `GET /wiki/rest/api/search`.
+   - **Tìm kiếm Jira task liên quan:** Jira REST API `GET /rest/api/3/search`.
    - Gộp các kết quả tìm được vào danh sách tài liệu cần duyệt.
 
 4. **Kiểm tra Cache — file đã tải trước đó:**
-   - Với mỗi Confluence pageId → Quét `/project-root/workspace/{issueKey}/source/refs/` xem đã có file `*-{pageId}.pdf` chưa.
+   - Với mỗi Confluence pageId → Quét `/project-root/workspace/{issueKey}/source/refs/` xem đã có file `*-{pageId}.pdf` hoặc `*-{pageId}.md` chưa.
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại chưa.
 
 5. **Trình bảng Danh sách cho User duyệt:** (Hiển thị Markdown Table các file sẽ tải / bỏ qua / đã có).
@@ -75,7 +66,7 @@ danh sách                                 loại task          theo profile
 
 Sau khi User đồng ý:
 1. **Tải Jira task thành PDF:** Gọi endpoint HTML view → dùng `wkhtmltopdf` convert thành PDF (hoặc script Python). *LƯU Ý: Tạo file tạm trong `/tmp/`, KHÔNG tạo thư mục `scratch/` trong dự án.*
-2. **Tải các Confluence page chưa có:** Dùng MCP `getConfluencePage(pageId)` (lưu Markdown) hoặc Export PDF (`pdfpageexport.action`). Tải attachment.
+2. **Tải các Confluence page chưa có:** Dùng n8n Fast-Path `fetchConfluenceDoc(pageUrlOrId)` qua `/webhook/confluence-doc` (bóc tách thành Markdown sạch) hoặc Export PDF (`pdfpageexport.action`). Tải attachment.
 3. **Tải các file attachment Jira chưa có.**
 4. **Tạo `metadata.json`** liệt kê chi tiết các references và trạng thái.
 5. **Lưu tất cả vào:** `/project-root/workspace/{issueKey}/source/` và `source/refs/`.
@@ -105,7 +96,7 @@ Tạo file `/project-root/workspace/{issueKey}/spec/final.md`. Ghi đè nếu đ
 ## 3. LUỒNG B: `/ba-spec confluence {keyword}` — Import từ Confluence
 
 **Phase 1A: Tìm kiếm & Xác nhận (APPROVAL GATE)**
-Tìm kiếm bằng CQL (MCP hoặc REST). Hiển thị top 3-5 kết quả. Dừng chờ User chọn.
+Tìm kiếm bằng CQL REST API hoặc n8n `/webhook/confluence-doc`. Hiển thị top 3-5 kết quả. Dừng chờ User chọn.
 
 **Phase 1B: Scan & Duyệt References (APPROVAL GATE)**
 Quét trang đã chọn (Depth=1) tìm link/attachments. Trình danh sách duyệt. Dừng chờ User đồng ý.

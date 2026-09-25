@@ -11,19 +11,11 @@
 - **CHẠY NGAY:** Tuyệt đối KHÔNG đọc spec (`final.md`), không đọc checklist, không kiểm tra lan man trước khi chạy.
 
 ### Bước 2: Thực thi Test Suite Ngay Lập Tức
-- **Ưu tiên (n8n Fast-Path):** Gọi `scripts/lib/n8n-client.js` để kích hoạt n8n webhook `/webhook/qa-run-test`.
-  - Kiểm tra n8n online: `isN8nAvailable()` → nếu `true`, gọi `triggerAsyncTest({ issueKey, testCommand, testFiles })`.
-  - CLI: `node scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'`
-- **Dự phòng (CLI Fallback):** Nếu n8n offline, chạy lệnh Pytest tiêu chuẩn với cờ `-s` (không nuốt log), `-v` (chi tiết), `-rA` (tổng kết mọi test), `--tb=short`, `--timeout=60`:
+- **Kích hoạt n8n Webhook (/webhook/qa-run-test):** Gọi `triggerAsyncTest({ issueKey, testCommand, testFiles })` qua `scripts/lib/n8n-client.js`:
   ```bash
-  pytest "$TEST_TARGET" \
-    -o python_files="test_*.py *_test.py" \
-    -s -v -rA --tb=short \
-    --timeout=60 \
-    -o log_cli=true -o log_cli_level=INFO \
-    --junitxml="workspace/{issueKey}/test/result/junit.xml" \
-    2>&1 | tee "workspace/{issueKey}/test/result/test-output.log"
+  node scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'
   ```
+- **Nếu n8n offline:** Báo người dùng khởi động n8n bằng `npm run n8n` và **DỪNG** (không chạy fallback).
 - **Cờ `--timeout=60`** (yêu cầu gói `pytest-timeout`): Mỗi test case bị kill tự động sau 60 giây. Kết quả là `FAILED (timeout)` — không cần chờ thêm.
 - **Timeout toàn suite:** Nếu sau **10 phút** test suite vẫn chạy chưa xong, agent DỪNG NGAY, ghi nhận kết quả hiện tại và xuất báo cáo với ghi chú `Suite Timeout` — KHÔNG tự sửa test.
 - Toàn bộ stdout/stderr được ghi nguyên vẹn vào duy nhất 1 file `test-output.log`.

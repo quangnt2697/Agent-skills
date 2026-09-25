@@ -1,10 +1,12 @@
 /**
  * n8n Client Adapter (`scripts/lib/n8n-client.js`)
  *
- * Tiện ích kết nối n8n Fast-Path cho các AI Agent Skills:
- * - Kiểm tra trạng thái n8n (Fast healthcheck)
- * - Gửi Webhook với timeout và fallback an toàn
- * - Cung cấp các hàm chuyên biệt: prepJiraContext, pushSpecToJira, batchSquashPush, runAsyncTest
+ * Adapter kết nối n8n Fast-Path cho các AI Agent Skills:
+ * - Gửi Webhook với timeout và error handling rõ ràng
+ * - Các hàm chuyên biệt: prepJiraContext, pushSpecToJira, batchSquashPush, triggerAsyncTest...
+ *
+ * **Lưu ý:** n8n là BẮT BUỘC phải đang chạy. Không có fallback MCP hay shell.
+ * Khởi động n8n bằng: `npm run n8n` hoặc `npm run n8n:bg` (background via PM2)
  */
 
 import dotenv from 'dotenv';
@@ -18,45 +20,18 @@ const projectRoot = path.join(__dirname, '..', '..');
 // Đảm bảo nạp .env
 dotenv.config({ path: path.join(projectRoot, '.env') });
 
-const N8N_ENABLED = (process.env.N8N_ENABLED || 'true').toLowerCase() === 'true';
 const N8N_BASE_URL = (process.env.N8N_BASE_URL || 'http://localhost:5678').replace(/\/$/, '');
 const DEFAULT_TIMEOUT_MS = parseInt(process.env.N8N_WEBHOOK_TIMEOUT_MS || '8000', 10);
 
 /**
- * Kiểm tra xem n8n có đang chạy và sẵn sàng nhận webhook hay không.
- * @returns {Promise<boolean>}
- */
-export async function isN8nAvailable() {
-  if (!N8N_ENABLED) return false;
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1500); // 1.5s fast ping
-    
-    // n8n exposes /healthz or check base endpoint
-    const res = await fetch(`${N8N_BASE_URL}/healthz`, {
-      method: 'GET',
-      signal: controller.signal
-    }).catch(async () => {
-      // Fallback: ping root
-      return await fetch(N8N_BASE_URL, { method: 'HEAD', signal: controller.signal });
-    });
-
-    clearTimeout(timeout);
-    return res && (res.ok || res.status < 500);
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Gửi webhook đến n8n với timeout và error handling.
- * @param {string} path Webhook path (VD: 'jira-prep' hoặc 'webhook/jira-prep')
+ * @param {string} webhookPath Webhook path (VD: 'jira-prep' hoặc 'webhook/jira-prep')
  * @param {object} payload Dữ liệu gửi đi
  * @param {number} timeoutMs Thời gian chờ tối đa
  * @returns {Promise<object|null>}
  */
-export async function callN8nWebhook(path, payload = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
-  const cleanPath = path.replace(/^\//, '');
+export async function callN8nWebhook(webhookPath, payload = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  const cleanPath = webhookPath.replace(/^\//, '');
   const url = cleanPath.startsWith('webhook') 
     ? `${N8N_BASE_URL}/${cleanPath}` 
     : `${N8N_BASE_URL}/webhook/${cleanPath}`;
@@ -282,9 +257,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     try {
       let result;
       switch(action) {
-        case 'ping':
-          result = await isN8nAvailable();
-          break;
         case 'prepJiraContext':
           result = await prepJiraContext(args[1]);
           break;

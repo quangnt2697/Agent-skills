@@ -6,38 +6,42 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 import {
-  isN8nAvailable,
+  callN8nWebhook,
   prepJiraContext,
   pushSpecToJira,
   batchSquashPush,
   getStandupReport,
   triggerAsyncTest,
+  queryMetabase,
   getSecuritiesFixture,
+  discoverWebUILocators,
   fetchConfluenceDoc,
   cleanDiffForReview,
   runSecurityDigest,
-  notifyJiraReadyToTest
+  notifyJiraReadyToTest,
+  getSecuritiesRuleMatrix,
+  lintDomainGherkin
 } from '../lib/n8n-client.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-test('n8n-client: isN8nAvailable returns boolean', async () => {
-  const available = await isN8nAvailable();
-  assert.equal(typeof available, 'boolean');
-});
-
 test('n8n-client: All fast-path adapter methods are exported as functions', () => {
+  assert.equal(typeof callN8nWebhook, 'function');
   assert.equal(typeof prepJiraContext, 'function');
   assert.equal(typeof pushSpecToJira, 'function');
   assert.equal(typeof batchSquashPush, 'function');
   assert.equal(typeof getStandupReport, 'function');
   assert.equal(typeof triggerAsyncTest, 'function');
+  assert.equal(typeof queryMetabase, 'function');
   assert.equal(typeof getSecuritiesFixture, 'function');
+  assert.equal(typeof discoverWebUILocators, 'function');
   assert.equal(typeof fetchConfluenceDoc, 'function');
   assert.equal(typeof cleanDiffForReview, 'function');
   assert.equal(typeof runSecurityDigest, 'function');
   assert.equal(typeof notifyJiraReadyToTest, 'function');
+  assert.equal(typeof getSecuritiesRuleMatrix, 'function');
+  assert.equal(typeof lintDomainGherkin, 'function');
 });
 
 test('n8n ADF Parser: decodes ADF tree into clean markdown/plain text', () => {
@@ -425,12 +429,37 @@ test('Jira Ready To Test Filter (WF-11): enforces Board G.3.1, active sprint, an
   );
 
   assert.equal(result[0].json.isReadyToTest, true);
+  assert.equal(result[0].json.sprintName, 'Sprint 42');
   assert.ok(result[0].json.gherkinBadge.includes('Gherkin file'));
   assert.ok(result[0].json.autoScriptBadge.includes('Autoscript test'));
   assert.ok(result[0].json.gherkinBadge.startsWith('❌') || result[0].json.gherkinBadge.startsWith('✅'));
   assert.ok(result[0].json.reportText.includes('### 🎯 READY TO TEST'));
   assert.ok(result[0].json.reportText.includes('/qa-'));
   assert.ok(Array.isArray(result[0].json.suggestedCommands));
+
+  // Test real Jira Cloud Entrade customfield_10018
+  const mockEntrade = {
+    issue: {
+      key: 'G3PTP-17485',
+      fields: {
+        project: { key: 'G3PTP', name: 'G.3.1 Partners & Open API' },
+        status: { name: 'Ready to test' },
+        summary: 'APP - Test',
+        customfield_10018: [
+          { id: 7080, name: 'EnTrade Sprint 300', state: 'closed' },
+          { id: 7090, name: 'EnTrade Sprint 301', state: 'active' }
+        ]
+      }
+    }
+  };
+  const resEntrade = fn(
+    { first: () => ({ json: mockEntrade }) },
+    { AGENT_WORKSPACE_DIR: path.resolve(__dirname, '..', '..') },
+    require
+  );
+  assert.equal(resEntrade[0].json.isReadyToTest, true);
+  assert.equal(resEntrade[0].json.sprintName, 'EnTrade Sprint 301');
+  assert.ok(resEntrade[0].json.reportText.includes('`EnTrade Sprint 301`'));
 });
 
 test('Securities Domain Engine (WF-18 / WF-19): evaluates rule matrix, filters MTL on CR/RES, and lints domain Gherkin', () => {

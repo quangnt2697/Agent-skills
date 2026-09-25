@@ -21,23 +21,17 @@ trigger: Khi cần tạo báo cáo daily standup tự động cho team hoặc ph
 3. Dữ liệu các Issues trong Open Sprint trên Jira REST API.
 
 ## 3. Quy trình Thực hiện 3 Bước
-- **Bước 1 (Tạo Báo cáo Daily Standup):** Áp dụng Chiến lược 3-Tier Fallback:
-  - **Tier 1 (Ưu tiên - n8n Fast-Path):** Import và chạy hàm `getStandupReport()` từ `scripts/lib/n8n-client.js`. Cách này lấy dữ liệu siêu nhanh từ webhook `/webhook/sm-standup` và trả về ngay báo cáo text (hiển thị trực tiếp vào chat).
-  - **Tier 3 (Dự phòng / Full Report):** Nếu n8n không khả dụng hoặc user muốn render file Markdown và tự động gửi webhook Mattermost, chạy script Python:
-    ```bash
-    python3 plugins/scrum-master/skills/sm-daily-standup/assets/generate_report.py --project-root "."
-    ```
-    Script tự động tính toán số ngày còn lại của Sprint, tỷ lệ hoàn thành Story Points, số ngày ticket tồn đọng, render báo cáo theo `assets/daily-standup-report.md` và bắn webhook lên Mattermost.
-- **Bước 2 (Gửi lại Báo cáo - Tùy chọn):** Nếu cần gửi lại thông báo sau khi chỉnh sửa thủ công (chỉ áp dụng nếu dùng Tier 3):
+- **Bước 1 (Tạo Báo cáo Daily Standup):** Gọi `getStandupReport()` từ `scripts/lib/n8n-client.js`.
   ```bash
-  python3 plugins/scrum-master/skills/sm-daily-standup/assets/send_mattermost.py --project-root "."
+  node scripts/lib/n8n-client.js getStandupReport
   ```
+  Webhook `/webhook/sm-standup` trả về ngay báo cáo text và gửi Mattermost tự động.
+  > Nếu n8n không phản hồi: báo ngay "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**.
+- **Bước 2 (Gửi lại Báo cáo - Tùy chọn):** Call lại webhook `sm-standup` qua n8n Client nếu cần gửi lại.
 - **Bước 3 (Tóm tắt Kết quả):** Kiểm tra file báo cáo tại `workspace/sprint/trace/daily-standup-report.md` và thông báo ngắn gọn cho người dùng.
 
 ## 4. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 - 🛠️ **Công cụ & File mẫu thực thi (assets/):**
-  - [generate_report.py](assets/generate_report.py): Script Python chính lấy dữ liệu Jira và render báo cáo.
-  - [send_mattermost.py](assets/send_mattermost.py): Script gửi nội dung báo cáo lên Mattermost qua webhook.
   - [daily-standup-report.md](assets/daily-standup-report.md): Template Markdown chuẩn của báo cáo Daily Standup.
 
 ## 5. Ví dụ mẫu (Few-shot Example)

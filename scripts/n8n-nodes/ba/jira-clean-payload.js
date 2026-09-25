@@ -159,12 +159,16 @@ const reporter = fields.reporter?.displayName || 'Chưa rõ';
 const labels = fields.labels || [];
 const components = (fields.components || []).map(c => c.name);
 
-// Sprint info
+// Sprint info — Jira Cloud Entrade dùng customfield_10018, các bản khác dùng customfield_10020, Server/DC dùng fields.sprint
 let sprintName = 'Không có Sprint';
-if (Array.isArray(fields.sprint)) {
-  sprintName = fields.sprint.map(s => s.name).join(', ') || sprintName;
-} else if (fields.sprint && typeof fields.sprint === 'object') {
-  sprintName = fields.sprint.name || sprintName;
+const sprintRaw = fields.customfield_10018 || fields.sprint || fields.customfield_10020;
+if (Array.isArray(sprintRaw)) {
+  sprintName = sprintRaw.map(s => s.name).filter(Boolean).join(', ') || sprintName;
+} else if (sprintRaw && typeof sprintRaw === 'object') {
+  sprintName = sprintRaw.name || sprintName;
+} else if (typeof sprintRaw === 'string' && sprintRaw.includes('name=')) {
+  const m = sprintRaw.match(/name=([^,\]]+)/);
+  if (m) sprintName = m[1].trim();
 }
 
 // Attachments

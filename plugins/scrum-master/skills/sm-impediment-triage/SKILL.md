@@ -20,10 +20,7 @@ trigger: Use when cần khơi thông luồng công việc Sprint.
 
 ## Chiến lược Truy cập Jira/Confluence
 
-> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/atlassian-mcp-strategy.md`
-
-Skill này ưu tiên dùng **MCP Tool** (`searchJiraIssuesUsingJql`) nếu Atlassian MCP khả dụng.
-Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
+Skill này truy xuất dữ liệu ticket từ Jira REST API với cấu hình xác thực từ `.env`.
 
 ---
 
@@ -31,9 +28,8 @@ Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
 1. **Đọc config & credentials**:
    - Đọc `{PLUGIN_DIR}/sm-config.yaml` để lấy danh sách team và cấu hình Sprint.
    - Đọc `{PLUGIN_DIR}/.env` (nguồn chính, cố định trong plugin) để lấy `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`. Nếu `{PROJECT_ROOT}/.env` tồn tại → các biến trùng tên sẽ ghi đè.
-2. **Lấy dữ liệu từ Jira**:
-   - **Ưu tiên (MCP):** Dùng `searchJiraIssuesUsingJql` với JQL `sprint in openSprints() AND statusCategory != Done` để lấy toàn bộ ticket chưa hoàn thành.
-   - **Fallback (REST API):** Gọi Jira REST API để lấy danh sách tương tự.
+2. **Lấy dữ liệu từ Jira REST API**:
+   - Gọi Jira REST API với JQL `sprint in openSprints() AND statusCategory != Done` để lấy toàn bộ ticket chưa hoàn thành.
 3. **Phát hiện nút thắt**:
    - Lọc ra các ticket có thời gian nằm ở một trạng thái (`Open`, `In Progress`, `Ready to test`, v.v.) **vượt quá 3 ngày**.
 4. **Phân loại**:

@@ -282,7 +282,7 @@ async function main() {
                 console.log(`✅ Đã lưu cấu hình vào ${envPath}!`);
 
                 await browser.close();
-                console.log(`\n✨ Hoàn tất! Bạn có thể bắt đầu sử dụng db-mcp và test-data-mcp ngay bây giờ.\n`);
+                console.log(`\n✨ Hoàn tất! Bạn có thể bắt đầu sử dụng db:recon và n8n workflows ngay bây giờ.\n`);
                 return;
             }
         }

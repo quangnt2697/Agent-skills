@@ -67,52 +67,42 @@ Lập kế hoạch cho Sprint tiếp theo dựa trên dữ liệu từ Jira.
 
 ## Chiến lược Truy cập Jira/Confluence
 
-> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/atlassian-mcp-strategy.md`
-
-Skill này ưu tiên dùng **MCP Tool** (`searchJiraIssuesUsingJql`) nếu Atlassian MCP khả dụng.
-Do MCP không có Agile API (`getSprint`, `getBoard`), ta dùng JQL để lấy dữ liệu thay thế.
-Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
+Skill này truy xuất dữ liệu Backlog và Sprint từ Jira REST API với cấu hình xác thực từ `.env`.
 
 ---
 
 #### 1.2. Tìm Sprint trên Jira
-- **Ưu tiên (MCP):** Dùng `searchJiraIssuesUsingJql` với JQL tương ứng:
-  - Sprint active: `searchJiraIssuesUsingJql(jql="sprint in openSprints()")` → Lấy thông tin sprint từ field `sprint` của một issue bất kỳ.
-- **Fallback (REST API):** Gọi Jira Agile REST API để lấy Sprint `active` và `future` (dùng Board ID đọc từ `sm-config.yaml`):
-  ```bash
-  # Sprint active (đang chạy)
-  curl -s \
-    -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
-    -H "Accept: application/json" \
-    "${ATLASSIAN_BASE_URL}/rest/agile/1.0/board/{boardId}/sprint?state=active"
+Gọi Jira Agile REST API để lấy Sprint `active` và `future` (dùng Board ID đọc từ `sm-config.yaml`):
+```bash
+# Sprint active (đang chạy)
+curl -s \
+  -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
+  -H "Accept: application/json" \
+  "${ATLASSIAN_BASE_URL}/rest/agile/1.0/board/{boardId}/sprint?state=active"
 
-  # Sprint future (sprint tiếp theo)
-  curl -s \
-    -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
-    -H "Accept: application/json" \
-    "${ATLASSIAN_BASE_URL}/rest/agile/1.0/board/{boardId}/sprint?state=future"
-  ```
-  - Lấy `sprint.id` và `sprint.name` từ kết quả.
+# Sprint future (sprint tiếp theo)
+curl -s \
+  -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
+  -H "Accept: application/json" \
+  "${ATLASSIAN_BASE_URL}/rest/agile/1.0/board/{boardId}/sprint?state=future"
+```
+- Lấy `sprint.id` và `sprint.name` từ kết quả.
 
 #### 1.3. Lấy ticket trong Sprint & Backlog
-- **Ưu tiên (MCP):** Dùng `searchJiraIssuesUsingJql`:
-  - Ticket trong Sprint hiện tại: `searchJiraIssuesUsingJql(jql="sprint = {sprintId}")`
-  - Ticket trong Backlog: `searchJiraIssuesUsingJql(jql="sprint is EMPTY AND statusCategory != Done")`
-- **Fallback (REST API):**
-  - **Ticket trong Sprint hiện tại** (chỉ khi cần carry-over — xem Bước 2):
-    ```bash
-    curl -s \
-      -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
-      -H "Accept: application/json" \
-      "${ATLASSIAN_BASE_URL}/rest/agile/1.0/sprint/{sprintId}/issue?maxResults=200&fields=summary,status,assignee,customfield_10016,priority,created,updated"
-    ```
-  - **Ticket trong Backlog**:
-    ```bash
-    curl -s \
-      -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
-      -H "Accept: application/json" \
-      "${ATLASSIAN_BASE_URL}/rest/agile/1.0/board/{boardId}/backlog?maxResults=200&fields=summary,status,assignee,customfield_10016,priority,labels"
-    ```
+- **Ticket trong Sprint hiện tại** (chỉ khi cần carry-over — xem Bước 2):
+  ```bash
+  curl -s \
+    -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
+    -H "Accept: application/json" \
+    "${ATLASSIAN_BASE_URL}/rest/agile/1.0/sprint/{sprintId}/issue?maxResults=200&fields=summary,status,assignee,customfield_10016,priority,created,updated"
+  ```
+- **Ticket trong Backlog**:
+  ```bash
+  curl -s \
+    -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
+    -H "Accept: application/json" \
+    "${ATLASSIAN_BASE_URL}/rest/agile/1.0/board/{boardId}/backlog?maxResults=200&fields=summary,status,assignee,customfield_10016,priority,labels"
+  ```
     - `customfield_10022` = Story Points (field thực tế trên workspace này). Fallback về `customfield_10016` nếu `customfield_10022` là null (Jira Cloud mặc định).
 - **Fallback bằng JQL** nếu không có Board ID:
   ```bash

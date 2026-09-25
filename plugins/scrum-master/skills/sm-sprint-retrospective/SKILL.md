@@ -20,10 +20,7 @@ Tổng kết Sprint khi đến ngày cuối cùng của chu kỳ để đưa ra 
 
 ## Chiến lược Truy cập Jira/Confluence
 
-> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/atlassian-mcp-strategy.md`
-
-Skill này ưu tiên dùng **MCP Tool** (`searchJiraIssuesUsingJql`) nếu Atlassian MCP khả dụng.
-Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
+Skill này truy xuất dữ liệu Sprint từ Jira REST API với cấu hình xác thực từ `.env`.
 
 ---
 
@@ -35,11 +32,10 @@ Nếu MCP không khả dụng, fallback về `curl` gọi REST API.
    - Tính toán Sprint End Date dựa trên `sm-config.yaml` (anchor_start_date & duration_days).
    - Nếu hôm nay chưa phải cuối Sprint (vẫn đang ở giữa chừng), hãy xuất ra thông báo: "Sprint vẫn đang diễn ra, dữ liệu Retro có thể chưa hoàn chỉnh".
 3. **Tổng hợp dữ liệu Jira**:
-   - **Ưu tiên (MCP):** Dùng `searchJiraIssuesUsingJql` với JQL `sprint in openSprints()` để lấy toàn bộ issues. Dựa vào `statusCategory` và `customfield_10016` (Story Points) để tính:
+   - Gọi Jira REST API với JQL `sprint in openSprints()` để lấy toàn bộ issues. Dựa vào `statusCategory` và `customfield_10016` (Story Points) để tính:
      - Velocity: Điểm đã cam kết (Committed Points) vs Điểm hoàn thành (Completed Points).
      - Cycle Time trung bình của các ticket.
      - Số lượng bug phát sinh trong Sprint.
-   - **Fallback (REST API):** Dùng `curl` gọi REST API để lấy dữ liệu tương tự.
 4. **Đánh giá & Insight**:
    - **What went well**: Điểm sáng của Sprint này (chẳng hạn không có blocker quá hạn lâu, hoặc nhóm Backend chia việc đều).
    - **What needs improvement**: Các vấn đề kẹt ticket, mất cân bằng tải, scope creep. Tham khảo lại dữ liệu từ `{PROJECT_ROOT}/workspace/sprint/trace/blockers-triage.md` nếu có.

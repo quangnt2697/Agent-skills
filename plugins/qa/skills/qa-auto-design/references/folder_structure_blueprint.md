@@ -15,7 +15,7 @@ workspace/{issueKey}/test/
 ├── {issueKey}.feature                  # Kịch bản BDD Gherkin (sinh bởi qa-test-design)
 ├── .env                                # Task-level config (kế thừa từ Root/Shared & ghi đè riêng)
 ├── pytest.ini                          # Cấu hình test runner chuẩn (pythonpath, log_cli, reporting)
-├── fixtures/                           # Test data fixtures từ TimescaleDB (sinh bởi test-data MCP / td_export_fixture)
+├── fixtures/                           # Test data fixtures từ TimescaleDB (sinh bởi n8n securities-fixture)
 │   └── *.json                          # Dữ liệu snapshot, price limits, tick samples chuẩn hóa
 ├── steps/                              # Toàn bộ mã nguồn thực thi test
 │   ├── conftest.py                     # Root fixtures: nạp env phân tầng, auth token, shared fixture

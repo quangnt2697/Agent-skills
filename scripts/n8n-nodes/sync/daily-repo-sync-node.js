@@ -77,7 +77,8 @@ summaryParts.forEach(part => {
 let emoji = '✅';
 if (errCount > 0 || dirtyCount > 0) emoji = '⚠️';
 
-let msg = emoji + ' **[Daily Repo Sync - 09:00]**\n';
+const runTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
+let msg = emoji + ` **[Daily Repo Sync - ${runTime}]**\n`;
 let skippedDetail = '';
 if (noGitCount > 0 || localCount > 0) {
   skippedDetail = ' | Bỏ qua (phi-git/local): ' + (noGitCount + localCount);

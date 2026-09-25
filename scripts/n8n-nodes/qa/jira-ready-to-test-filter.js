@@ -1,5 +1,5 @@
 /**
- * Node Script: Jira Ready To Test Filter (`scripts/n8n-nodes/jira-ready-to-test-filter.js`)
+ * Node Script: Jira Ready To Test Filter (`scripts/n8n-nodes/qa/jira-ready-to-test-filter.js`)
  *
  * Mục đích (WF-11):
  * - Hỗ trợ cả 2 chế độ:
@@ -102,28 +102,68 @@ for (const rawItem of candidateItems) {
 
   // 2. Điều kiện 2: Active Sprint
   let isActiveSprint = false;
-  let sprintName = 'Active Sprint';
+  let sprintName = '';
 
-  const sprintField = fields.sprint || fields.customfield_10020 || fields.customfield_10010;
-  if (Array.isArray(sprintField)) {
-    const activeS = sprintField.find(s => (s.state || '').toLowerCase() === 'active');
-    if (activeS) {
-      isActiveSprint = true;
-      sprintName = activeS.name || sprintName;
-    } else if (sprintField.length > 0) {
-      sprintName = sprintField[0].name || sprintName;
-      // Nếu polling theo JQL sprint in openSprints(), coi như thuộc open sprint
+  // Ưu tiên tìm sprintField:
+  // - Jira Cloud Entrade dùng customfield_10018 (schema: com.pyxis.greenhopper.jira:gh-sprint)
+  // - Các Jira instance khác: fields.sprint, customfield_10020, customfield_10010, customfield_10016
+  let sprintField = fields.customfield_10018 || fields.sprint || fields.customfield_10020 || fields.customfield_10010 || fields.customfield_10016;
+
+  // Nếu chưa thấy, duyệt dynamic qua toàn bộ fields tìm object/array chứa sprint metadata
+  if (!sprintField && typeof fields === 'object') {
+    for (const [k, v] of Object.entries(fields)) {
+      if (k.toLowerCase().includes('sprint') || (Array.isArray(v) && v[0] && (v[0].state || v[0].boardId))) {
+        sprintField = v;
+        break;
+      }
+    }
+  }
+
+  if (Array.isArray(sprintField) && sprintField.length > 0) {
+    if (typeof sprintField[0] === 'string') {
+      const activeStr = sprintField.find(s => s.toLowerCase().includes('state=active')) || sprintField[sprintField.length - 1];
+      if (activeStr) {
+        if (activeStr.toLowerCase().includes('state=active')) isActiveSprint = true;
+        const m = activeStr.match(/name=([^,\]]+)/);
+        if (m) sprintName = m[1].trim();
+      }
       if (rawItem.isPolled) isActiveSprint = true;
+    } else {
+      // 1. Tìm sprint có state === 'active'
+      const activeS = sprintField.find(s => s && (s.state || '').toLowerCase() === 'active');
+      if (activeS) {
+        isActiveSprint = true;
+        sprintName = activeS.name || '';
+      } else {
+        // 2. Lấy sprint mới nhất (phần tử cuối cùng)
+        const latestS = sprintField[sprintField.length - 1];
+        if (latestS && latestS.name) {
+          sprintName = latestS.name;
+          if ((latestS.state || '').toLowerCase() === 'active') isActiveSprint = true;
+        }
+        if (rawItem.isPolled) isActiveSprint = true;
+      }
     }
   } else if (sprintField && typeof sprintField === 'object') {
     isActiveSprint = (sprintField.state || '').toLowerCase() === 'active';
-    sprintName = sprintField.name || sprintName;
-  } else if (typeof sprintField === 'string' && sprintField.toLowerCase().includes('state=active')) {
+    sprintName = sprintField.name || '';
+  } else if (typeof sprintField === 'string' && sprintField.toLowerCase().includes('name=')) {
+    if (sprintField.toLowerCase().includes('state=active')) isActiveSprint = true;
+    const match = sprintField.match(/name=([^,\]]+)/);
+    if (match) sprintName = match[1].trim();
+  }
+
+  // Fallback từ item root nếu payload có
+  if (!sprintName) {
+    sprintName = item.sprintName || rawItem.sprintName || (fields && fields.sprintName) || '';
+  }
+
+  if (item.isCurrentSprint === true || item.isActiveSprint === true || rawItem.isPolled) {
     isActiveSprint = true;
-    const match = sprintField.match(/name=([^,]+)/);
-    if (match) sprintName = match[1];
-  } else if (item.isCurrentSprint === true || item.isActiveSprint === true || rawItem.isPolled) {
-    isActiveSprint = true;
+  }
+
+  if (!sprintName) {
+    sprintName = 'Active Sprint';
   }
 
   // 3. Điều kiện 3: Status đổi sang hoặc đang ở "Ready to test"
@@ -273,7 +313,8 @@ for (const rawItem of candidateItems) {
   const assignee = fields.assignee?.displayName || item.assignee || '-';
   const priority = fields.priority?.name || item.priority || 'Medium';
 
-  const reportText = `### 🎯 READY TO TEST — [${issueKey}](${jiraUrl})\n\n| Thông Tin | Chi Tiết |\n| :--- | :--- |\n| 📋 **Title** | **${summary}** |\n| 👤 **Assignee** | **${assignee}** |\n| ⚡ **Sprint** | \`${sprintName}\` |\n| 🏷️ **Độ ưu tiên** | \`${priority}\` |\n| 📁 **Trạng thái Workspace** | ${gherkinBadge} ᐧ ${autoScriptBadge} |\n| 💡 **Lệnh đề xuất** | \`${suggestedCommand}\` |\n`;
+  const suggestedCmdDisplay = suggestedCommand ? `\`${suggestedCommand}\`` : '*Chưa có gợi ý lệnh*';
+  const reportText = `### 🎯 READY TO TEST — [${issueKey}](${jiraUrl})\n\n| Thông Tin | Chi Tiết |\n| :--- | :--- |\n| 📋 **Title** | **${summary}** |\n| 👤 **Assignee** | **${assignee}** |\n| ⚡ **Sprint** | \`${sprintName}\` |\n| 🏷️ **Độ ưu tiên** | \`${priority}\` |\n| 📁 **Trạng thái Workspace** | ${gherkinBadge} ᐧ ${autoScriptBadge} |\n| 💡 **Lệnh đề xuất** | ${suggestedCmdDisplay} |\n`;
 
   outputResults.push({
     json: {

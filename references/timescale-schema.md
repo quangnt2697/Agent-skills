@@ -5,7 +5,7 @@
 - **Database ID trên Metabase PROD:** `${METABASE_PROD_DB_TIMESCALE_ID}` (Mặc định: `7`)
 - **Hệ quản trị CSDL:** TimescaleDB (PostgreSQL Extension)
 - **Tổng số bảng trong schema public:** `114` bảng
-- **Vị trí file Cache dữ liệu máy (Zero-Latency):** [`.agents/cache/`](../.agents/cache/)
+- **Công cụ đối chiếu & kiểm định dữ liệu:** `npm run db:recon`, `npm run db:recon:core`, `npm run db:recon:prod`
 - **Tài liệu tham chiếu chuẩn:** [`references/securities-domain-rules.md`](./securities-domain-rules.md)
 
 > [!CAUTION]
@@ -16,19 +16,20 @@
 
 ---
 
-## 2. Cách Tra Cứu Nhanh Bằng DB MCP Server
+## 2. Cách Tra Cứu & Đối Chiếu Dữ Liệu
 
 ```bash
-# Liệt kê tất cả 114 bảng (chạy từ cache trong 0.2s):
-node .agents/db-mcp.js --list-tables --db timescale
+# Đối chiếu tổng quan TimescaleDB KRX MDDS (Master Dashboard):
+npm run db:recon
 
-# Xem chi tiết cấu trúc cột & kiểu dữ liệu của bất kỳ bảng nào:
-node .agents/db-mcp.js --describe krx_mdds_v2_ticks --db timescale
-node .agents/db-mcp.js --describe krx_mdds_v2_top_prices --db timescale
-node .agents/db-mcp.js --describe security_definitions --db timescale
+# Chạy đối chiếu 4 query cốt lõi & volume traded (16:00 daily):
+npm run db:recon:core
 
-# Làm mới cache từ Metabase API khi có schema mới:
-node .agents/db-mcp.js --list-tables --db timescale --refresh
+# Đối chiếu dữ liệu trực tiếp trên Production:
+npm run db:recon:prod
+
+# Truy vấn qua n8n Fast-Path:
+node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_v3 LIMIT 10;"
 ```
 
 ---

@@ -15,10 +15,10 @@ trigger: Khi đã có file .feature hoàn chỉnh và cần đồng bộ test ca
 - Chưa có file `final.md` để lấy thông tin `namejira` (tên task).
 
 ## 2. Quy trình Thực thi 3 Bước
-> **⚠️ LƯU Ý VỀ N8N FAST-PATH:** Tuyệt đối KHÔNG dùng hàm `batchSquashPush` qua `n8n-client.js` cho kỹ năng này. Hàm đó chỉ dành cho tạo test case thô cơ bản. Việc đẩy kịch bản Gherkin BẮT BUỘC phải qua script shell (Tier 3) để đảm bảo tính toàn vẹn dữ liệu (Xóa rác, dò Sprint, gán Campaign).
+> **ℹ️ Lưu ý:** Skill này dùng `squash-push.sh` — script shell duy nhất xử lý đầy đủ: xóa rác cũ, dò Sprint mới nhất, tạo test case, gán Campaign. Đây là phương thức duy nhất được hỗ trợ.
 
 - **Bước 1 (Kiểm tra Đầu vào):** Xác định `issueKey`, trích xuất `namejira` từ `final.md`, kiểm tra file `{issueKey}.feature` tồn tại.
-- **Bước 2 (Chạy Script Đồng bộ Tập trung - Tier 3):** Thực thi script duy nhất:
+- **Bước 2 (Chạy Script Đồng bộ):** Thực thi script duy nhất:
   ```bash
   bash plugins/qa/skills/qa-squash-push/assets/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
   ```

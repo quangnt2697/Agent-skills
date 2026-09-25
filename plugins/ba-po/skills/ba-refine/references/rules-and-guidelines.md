@@ -55,14 +55,13 @@ ATLASSIAN_API_TOKEN=your-api-token
 
 ## 4. Chiến lược Truy cập Jira/Confluence
 
-> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/atlassian-mcp-strategy.md`
+> **Tham chiếu đầy đủ:** `../../../../../docs/architecture/n8n-integration-strategy.md`
 
-Skill này tương tác với Jira/Confluence qua **2 phương thức** (theo thứ tự ưu tiên):
+Skill này tương tác với Jira/Confluence qua **n8n Fast-Path**:
 
-1. **MCP Tool** (ưu tiên): Nếu Atlassian Rovo MCP server đã cài (`mcp_config.json`), agent SẼ sử dụng các MCP tool (`getJiraIssue`, v.v.) để lấy dữ liệu thay vì gọi `curl`.
-2. **Shell Script / curl** (fallback): Nếu MCP không khả dụng, agent gọi REST API qua `curl` hoặc shell scripts có sẵn. Đọc credentials từ `.env`.
+- **n8n Fast-Path Webhook:** Sử dụng `scripts/lib/n8n-client.js` để đẩy spec (`pushSpecToJira`) hoặc lấy context (`prepJiraContext`).
+- **Nếu n8n offline:** Báo người dùng khởi động n8n bằng `npm run n8n` và **DỪNG** (không fallback).
 
-**Lưu ý:** Lớp xử lý Markdown→ADF (`jira-push-spec.sh`/`js`) **GIỮ NGUYÊN** vì MCP không cung cấp API tự parse Markdown sang format ADF của Jira. Kịch bản này nằm trong thư mục `assets/` của kỹ năng.
 
 ## 5. Triết lý (Philosophy)
 

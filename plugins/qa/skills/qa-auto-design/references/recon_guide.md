@@ -7,9 +7,9 @@ Tài liệu này hướng dẫn chi tiết quy trình khảo sát thực tế (R
 
 ---
 
-## 1. Web UI Recon (Quy Trình 5 Bước Với MCP Playwright)
+## 1. Web UI Recon (Quy Trình Khảo Sát DOM Thật & Semantic Locators)
 
-Đối với các task kiểm thử Web UI (`🌐 WEB`), Agent **BẮT BUỘC** thực hiện quy trình trinh sát trên trình duyệt thật thông qua Playwright MCP trước khi viết Page Object Model (POM):
+Đối với các task kiểm thử Web UI (`🌐 WEB`), Agent **BẮT BUỘC** thực hiện quy trình trinh sát trên trình duyệt thật thông qua n8n Fast-Path `discoverWebUILocators` hoặc kiểm tra DOM thật trước khi viết Page Object Model (POM):
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -61,7 +61,7 @@ Tài liệu này hướng dẫn chi tiết quy trình khảo sát thực tế (R
      + Trạng thái: `disabled`, `readonly`, bounding box và độ hiển thị (`visible`).
 
 4. **Thử nghiệm tương tác trước (`playwright_click` & `playwright_fill`):**
-   - Thử click hoặc fill dữ liệu mẫu qua tool MCP để đảm bảo phần tử nhận sự kiện bình thường, không bị chặn bởi animation hoặc z-index layer.
+   - Thử click hoặc fill dữ liệu mẫu qua trình duyệt để đảm bảo phần tử nhận sự kiện bình thường, không bị chặn bởi animation hoặc z-index layer.
 
 5. **Chốt Semantic Locators đưa vào Page Object (POM):**
    - Ưu tiên số 1: `page.get_by_role("button", name="...")`

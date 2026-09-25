@@ -72,7 +72,7 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 - Verification: [Test results if any]
 ```
 
-> 📖 **LƯU Ý QUAN TRỌNG:** Tuân thủ quy định Action Over Chat và giới hạn Autonomy tại **[AGENTS.md](../../../../../AGENTS.md#ranh-gioi)**
+> 📖 **LƯU Ý QUAN TRỌNG:** Tuân thủ quy định Action Over Chat và giới hạn Autonomy tại **[AGENTS.md](../../../../AGENTS.md#ranh-gioi)**
 
 ## Các Biện hộ Thường gặp
 

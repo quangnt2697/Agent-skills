@@ -116,9 +116,7 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
   - Dump DOM + trích xuất semantic locators (role, label, placeholder, testid)
   - Lưu kết quả vào `workspace/{issueKey}/test/fixtures/locators.json`
 
-  **Ưu tiên 2 — Playwright MCP thủ công (Khi n8n không chạy):**
-  - `playwright_navigate` → `playwright_screenshot` → `playwright_inspect_element`
-  - Điền form login bằng `TRADING_USERNAME`/`TRADING_PASSWORD` từ `.env`
+  > Nếu n8n offline: báo ngay cho user "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**.
 
   **Sau khi có `locators.json`:** Đọc file và dùng `playwright_code` đã có sẵn để viết POM — **KHÔNG tự suy đoán locator.**
 

@@ -4,19 +4,20 @@
 
 Hệ thống `agent-skills` áp dụng mô hình kiến trúc lai giữa **Tầng Tích Hợp Tự Động Hóa (n8n Fast-Path Fabric)** và **Tầng Nhận Thức (Cognitive Agent Layer)** nhằm đạt tốc độ thực thi tối đa (Wall-clock Time) và giảm thiểu tối đa token tiêu tốn.
 
-### Nguyên Tắc 3-Tier Fallback
+### Nguyên Tắc n8n-Only Fabric
 
-Mọi kỹ năng (Skill) cần tương tác với dịch vụ bên ngoài (Jira, Confluence, Squash TM, GitLab, Mattermost, TimescaleDB) đều tuân theo chuỗi ưu tiên 3 tầng:
+Mọi kỹ năng (Skill) cần tương tác với dịch vụ bên ngoài (Jira, Confluence, Squash TM, Mattermost, TimescaleDB) đều đi qua n8n Fast-Path Fabric:
 
 ```
-[Tier 1: n8n Fast-Path Webhook] (Ưu tiên số 1 - Tức thời, payload lọc sạch, 0 token rác)
-          │ (Nếu n8n offline / timeout / lỗi)
-          ▼
-[Tier 2: MCP Tools] (Ưu tiên số 2 - Atlassian Rovo MCP / GitLab MCP)
-          │ (Nếu MCP chưa cài / không khả dụng)
-          ▼
-[Tier 3: Shell Script / curl] (Ưu tiên số 3 - Fallback truyền thống qua .env)
+[Agent Skill / CLI] ──(HTTP JSON)──▶ [n8n Fast-Path Webhook] ──▶ [External Service]
+                                             │
+                       (Nếu n8n offline → Báo user "npm run n8n" và DỪNG)
 ```
+
+**Nguyên tắc cốt lõi:**
+- **n8n-Only:** 100% tích hợp dữ liệu bên ngoài đi qua n8n Webhooks (`scripts/lib/n8n-client.js`). Không sử dụng MCP servers.
+- **Fail-Fast:** Nếu n8n offline hoặc timeout, báo ngay cho user khởi động bằng `npm run n8n` (hoặc `npm run n8n:bg`) và DỪNG.
+- **Ngoại lệ duy nhất cho Squash TM Sync:** Kỹ năng `/qa-squash-push` sử dụng shell script chuyên dụng `squash-push.sh` để quản lý session XSRF cookie nội bộ, dọn dẹp execution cũ và gán Campaign tự động.
 
 ---
 
@@ -45,19 +46,15 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 
 ### 3.1. Phân Hệ BA/PO (`ba-refine` & `ba-spec`)
 - **Tại Phase 0 (Scan & Lấy Metadata):**
-  Trước khi chạy `curl` tải toàn bộ JSON Jira thô, Agent chạy đoạn mã tiện ích qua `scripts/lib/n8n-client.js`:
+  Agent gọi trực tiếp n8n client qua `scripts/lib/n8n-client.js`:
   ```javascript
-  import { isN8nAvailable, prepJiraContext, fetchConfluenceDoc } from './scripts/lib/n8n-client.js';
+  import { prepJiraContext, fetchConfluenceDoc } from './scripts/lib/n8n-client.js';
 
-  if (await isN8nAvailable()) {
-    const cleanData = await prepJiraContext(issueKey);
-    // cleanData đã được lọc sạch, nạp trực tiếp vào context!
-    if (confluenceUrl) {
-      const doc = await fetchConfluenceDoc(confluenceUrl);
-      // doc.markdownContent đã được dọn sạch XHTML/CSS!
-    }
-  } else {
-    // Fallback sang MCP hoặc curl như bình thường
+  const cleanData = await prepJiraContext(issueKey);
+  // cleanData đã được lọc sạch, nạp trực tiếp vào context!
+  if (confluenceUrl) {
+    const doc = await fetchConfluenceDoc(confluenceUrl);
+    // doc.markdownContent đã được dọn sạch XHTML/CSS!
   }
   ```
 - **Lợi ích:** Tiết kiệm 85% token và rút ngắn thời gian nạp dữ liệu từ 30s xuống 0.5s.
@@ -115,7 +112,7 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
   ```
 - **⚠️ Ranh giới quan trọng:**
   - Lệnh `batchSquashPush` qua n8n **CHỈ** được thiết kế để tạo nhanh hàng loạt Test Case thô (Dumb Batch Creation) từ checklist, giúp tiết kiệm thời gian (đẩy 20 test cases chỉ mất 3-4 giây). Tuy nhiên, nó **KHÔNG** chứa logic dọn dẹp rác hay liên kết Campaign.
-  - Kỹ năng `/qa-squash-push` (đẩy file kịch bản Gherkin hoàn chỉnh lên hệ thống) **BẮT BUỘC phải dùng Shell Script (Tier 3: `squash-push.sh`)**, tuyệt đối KHÔNG dùng n8n Fast-Path.
+  - Kỹ năng `/qa-squash-push` (đẩy file kịch bản Gherkin hoàn chỉnh lên hệ thống) **sử dụng Shell Script chuyên dụng (`squash-push.sh`)**, tuyệt đối KHÔNG dùng n8n Fast-Path.
   - **Lý do:** Script Shell thực thi thông qua session cookie XSRF nội bộ của hệ thống Squash TM để dọn dẹp execution cũ, dò tìm Sprint mới nhất, và gán Campaign Workspace một cách an toàn nhất, đảm bảo tính toàn vẹn dữ liệu.
 
 ### 3.3. Phân Hệ Code Reviewer (`cr-review-code-and-quality`)

@@ -471,7 +471,7 @@ def dashboard_auth_token(dashboard_url, dashboard_username, dashboard_password):
 
 
 # ==========================================================
-# 3. DYNAMIC TEST DATA & ENVIRONMENT FIXTURES (TEST-DATA MCP)
+# 3. DYNAMIC TEST DATA & ENVIRONMENT FIXTURES (SECURITIES FIXTURES / TIMESCALEDB)
 # ==========================================================
 
 @pytest.fixture
@@ -507,7 +507,7 @@ def target_environment():
 @pytest.fixture(scope="session")
 def market_fixture():
     """
-    Nạp dữ liệu thị trường thật được export bởi test-data-mcp
+    Nạp dữ liệu thị trường thật được export bởi n8n securities-fixture / Metabase
     tại workspace/{issueKey}/test/fixtures/market_data.json.
     """
     test_dir = Path(__file__).resolve().parent.parent

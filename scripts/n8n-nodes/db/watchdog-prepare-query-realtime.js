@@ -1,6 +1,6 @@
 /**
  * Node Script: Prepare Watchdog Query — Step 2: Realtime Clear Check
- * (`scripts/n8n-nodes/watchdog-prepare-query-realtime.js`)
+ * (`scripts/n8n-nodes/db/watchdog-prepare-query-realtime.js`)
  *
  * Mục đích:
  * Chuẩn bị câu SQL BƯỚC 2 — Kiểm tra bảng `krx_mdds_v2_stock_infos`:

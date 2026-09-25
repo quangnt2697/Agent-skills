@@ -4,7 +4,7 @@
 # ==========================================================
 # Áp dụng:
 # 1. Mô hình Page Object Model (POM) chuẩn mực
-# 2. Semantic Locators — PHẢI lấy từ DOM thật sau khi đăng nhập (Playwright MCP)
+# 2. Semantic Locators — PHẢI lấy từ DOM thật sau khi đăng nhập (discoverWebUILocators / browser DOM)
 # 3. Web-First Auto-Retrying Assertions (expect)
 # 4. Gherkin Traceability Binding (@pytest.mark.scenario, @pytest.mark.jira)
 # 5. Data-Driven BVA/EP với @pytest.mark.parametrize
@@ -14,7 +14,7 @@
 # ⚠️  QUY TẮC BẮT BUỘC:
 #   - TUYỆT ĐỐI KHÔNG hardcode credentials / URL vào code.
 #   - Mọi giá trị đọc từ .env qua os.getenv().
-#   - Locator PHẢI được xác thực qua Playwright MCP sau khi đăng nhập thật.
+#   - Locator PHẢI được xác thực qua discoverWebUILocators hoặc DOM thật sau khi đăng nhập.
 #   - Dữ liệu thị trường (giá, mã CK) lấy từ fixture Metabase UAT, không tự bịa.
 # ==========================================================
 
@@ -86,14 +86,14 @@ class LoginPage(BasePage):
     NGUYÊN TẮC: Chỉ chứa locators và action methods. TUYỆT ĐỐI KHÔNG assert trong class này.
 
     ⚠️ LOCATOR POLICY:
-    - Locator BẮT BUỘC được xác thực bằng Playwright MCP (playwright_inspect_element)
+    - Locator BẮT BUỘC được xác thực từ DOM thật qua discoverWebUILocators / browser devtools
       sau khi đăng nhập thật bằng TRADING_USERNAME/TRADING_PASSWORD từ .env.
     - KHÔNG tự suy đoán locator — soi DOM thật trước khi code.
     """
     def __init__(self, page: Page):
         super().__init__(page)
-        # ── Locators dưới đây cần được xác nhận lại qua Playwright MCP ──
-        # Quy trình: navigate → screenshot → inspect_element → chốt locator chính xác
+        # ── Locators dưới đây cần được xác nhận lại qua DOM thật / discoverWebUILocators ──
+        # Quy trình: navigate → screenshot → inspect DOM → chốt locator chính xác
         self.username_input = page.get_by_label("Tên đăng nhập")
         self.password_input = page.get_by_label("Mật khẩu")
         self.login_button = page.get_by_role("button", name="Đăng nhập")
@@ -110,7 +110,7 @@ class OrderPage(BasePage):
     """
     Page Object cho màn hình Đặt lệnh Chứng khoán.
 
-    ⚠️ LOCATOR POLICY: Xác thực qua Playwright MCP sau khi auth_page fixture đăng nhập thật.
+    ⚠️ LOCATOR POLICY: Xác thực qua DOM thật sau khi auth_page fixture đăng nhập thật.
     """
     def __init__(self, page: Page):
         super().__init__(page)
@@ -177,9 +177,9 @@ def auth_page(page: Page, trading_web_url: str, trading_credentials: dict):
     Fixture tiền điều kiện — Đăng nhập vào Trading Platform thật.
 
     ⚠️ QUY TRÌNH BẮT BUỘC KHI VIẾT MỚI SCRIPT:
-    1. Dùng Playwright MCP để navigate đến trading_web_url.
+    1. Navigate đến trading_web_url.
     2. Chụp screenshot để quan sát layout.
-    3. Inspect DOM (playwright_inspect_element) từng phần tử login.
+    3. Inspect DOM thật (qua discoverWebUILocators hoặc browser inspect) từng phần tử login.
     4. Xác nhận locator hoạt động thật rồi mới đưa vào LoginPage class.
     KHÔNG tự suy đoán hoặc dùng XPath tuyệt đối.
     """
@@ -192,7 +192,7 @@ def auth_page(page: Page, trading_web_url: str, trading_credentials: dict):
         password=trading_credentials["password"],
     )
 
-    # Verify đăng nhập thành công (locator cần xác nhận qua Playwright MCP)
+    # Verify đăng nhập thành công (locator cần xác nhận qua DOM thật)
     expect(page.get_by_role("heading", name="Bảng giá trực tuyến")).to_be_visible(
         timeout=int(os.getenv("PLAYWRIGHT_TIMEOUT_MS", "30000"))
     )
@@ -218,7 +218,7 @@ def test_login_success(page: Page, trading_web_url: str, trading_credentials: di
       When nhập TRADING_USERNAME và TRADING_PASSWORD từ .env
       Then hệ thống chuyển hướng đến Dashboard "Bảng giá trực tuyến"
 
-    ⚠️ LOCATOR NOTE: Xác thực locator qua Playwright MCP trước khi chạy.
+    ⚠️ LOCATOR NOTE: Xác thực locator qua DOM thật / discoverWebUILocators trước khi chạy.
     URL: Đọc từ WEB_BASE_URL hoặc ISSUE_KEY_URL trong .env.
     """
     # test-intent: Xác minh luồng đăng nhập thành công trên hệ thống thật

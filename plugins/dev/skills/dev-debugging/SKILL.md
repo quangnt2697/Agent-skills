@@ -1,6 +1,6 @@
 ---
 name: dev-debugging
-description: Hướng dẫn debug gỡ lỗi tìm nguyên nhân gốc rễ có hệ thống.
+description: Hướng dẫn debug gỡ lỗi, diagnose và khắc phục sự cố hệ thống. Dùng khi test fail, unit test failing với exception, lỗi null pointer, build broke, phân tích tìm nguyên nhân gốc rễ (root cause analysis).
 trigger: Sử dụng khi test fail, build hỏng, hành vi không đúng như mong đợi, hoặc khi bạn gặp bất kỳ lỗi bất ngờ nào. Sử dụng khi bạn cần một phương pháp tiếp cận có hệ thống để tìm và sửa nguyên nhân gốc thay vì chỉ đoán mò.
 ---
 

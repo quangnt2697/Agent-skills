@@ -60,7 +60,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 60 dòng.
 
 - **Phase 0 — Scan & Duyệt References (GATE 1):**
-  Đọc credentials từ `.env`, lấy metadata Jira thô (ưu tiên n8n Fast-Path: `isN8nAvailable()` → `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` — CLI: `node scripts/lib/n8n-client.js prepJiraContext {issueKey}` — fallback sang REST API curl nếu n8n offline, tránh MCP tóm tắt sai `summary`), quét Confluence links + attachments, kiểm tra cache `workspace/{issueKey}/source/refs/`, hiển thị bảng cho user duyệt → **DỪNG chờ "OK"**. Khi phát hiện link Confluence, ưu tiên dùng Fast-Path `fetchConfluenceDoc(urlOrId)` — CLI: `node scripts/lib/n8n-client.js fetchConfluenceDoc {urlOrId}` — để lấy trực tiếp nội dung Markdown sạch (tiết kiệm 90% token).
+  Đọc credentials từ `.env`, lấy metadata Jira thô (n8n Fast-Path: `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` — CLI: `node scripts/lib/n8n-client.js prepJiraContext {issueKey}` — nếu n8n offline báo user và DỪNG), quét Confluence links + attachments, kiểm tra cache `workspace/{issueKey}/source/refs/`, hiển thị bảng cho user duyệt → **DỪNG chờ "OK"**. Khi phát hiện link Confluence, ưu tiên dùng Fast-Path `fetchConfluenceDoc(urlOrId)` — CLI: `node scripts/lib/n8n-client.js fetchConfluenceDoc {urlOrId}` — để lấy trực tiếp nội dung Markdown sạch (tiết kiệm 90% token).
   > 📖 Chi tiết API: [references/jira-api-reference.md](references/jira-api-reference.md)
 
 - **Phase 1 — Download (Chỉ tải file thiếu):**
@@ -148,7 +148,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 ## Dấu hiệu Cảnh báo (Red Flags)
 
 - Tự ý tải file đính kèm mà chưa qua Gate 1 (chờ user duyệt bảng tài liệu).
-- Bỏ qua việc đọc tài liệu tham chiếu đính kèm hoặc đọc lướt qua MCP summary.
+- Bỏ qua việc đọc tài liệu tham chiếu đính kèm hoặc đọc lướt qua tóm tắt sơ sài.
 - Tự ý đoán yêu cầu thay vì phỏng vấn từng câu một qua `ba-interview-me`.
 - Bỏ trống các section trong template chuẩn 13 sections của `*-final.md`.
 - Dừng lại hỏi user "có tiếp tục sang QA không" thay vì tự động chuyển tiếp theo quy trình tự chủ.

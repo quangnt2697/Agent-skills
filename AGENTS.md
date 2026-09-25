@@ -63,7 +63,7 @@ Khi n8n đang chạy cục bộ (`npm run n8n`), các skill ưu tiên sử dụn
 - **Scrum Master:** Tự động hóa Standup 08:30 sáng qua n8n Cron Workflow.
 - **Code Reviewer:** Tiền xử lý lọc bỏ 100% file rác (lockfiles, assets, minified) và phân tầng diff qua `/webhook/cr-diff-clean`.
 - **Security Auditor:** Quét ngầm phụ thuộc và rà soát secrets rò rỉ qua `/webhook/security-scan`.
-- **Nguyên tắc 3-Tier Fallback:** n8n Fast-Path → MCP Tool → Shell/curl fallback. Chi tiết xem tại `docs/architecture/n8n-integration-strategy.md`.
+- **Nguyên tắc n8n-Only:** Mọi quy trình chỉ đi qua n8n Fast-Path. Không có fallback MCP hay shell/curl. Nếu n8n offline → báo user khởi động `npm run n8n` và DỪNG.
 - **Ranh giới Bảo mật GitLab:** Các quy trình n8n TUYỆT ĐỐI KHÔNG comment, push, merge hay gửi bất kỳ request ghi dữ liệu nào (POST/PUT/DELETE) lên GitLab của bất kỳ microservice nào. Ngoại lệ duy nhất là repo `agent-skills` nhưng chỉ commit qua Git CLI theo quy trình branch-based sau khi user phê duyệt.
 
 ## 4. Chuẩn Mực Đầu Ra (Output Standards)

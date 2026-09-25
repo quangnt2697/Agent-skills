@@ -1,6 +1,6 @@
 ---
 name: dev-browser-testing-with-devtools
-description: Hỗ trợ kiểm thử trên trình duyệt thực thông qua Chrome DevTools MCP.
+description: Kiểm thử và debug trên trình duyệt thực với Chrome DevTools (inspect DOM, bắt lỗi console, phân tích network requests và đo hiệu năng runtime).
 trigger: Sử dụng khi xây dựng hoặc debug bất kỳ thứ gì chạy trên trình duyệt. Sử dụng khi bạn cần soi (inspect) cây DOM, bắt lỗi trên console, phân tích network requests, đo đạc hiệu năng (profiling), hoặc xác minh kết quả hiển thị bằng dữ liệu chạy thực (runtime data). Yêu cầu phải cài đặt server chrome-devtools MCP.
 ---
 

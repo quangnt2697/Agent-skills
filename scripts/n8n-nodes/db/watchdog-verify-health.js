@@ -1,6 +1,6 @@
 /**
  * Node Script: Verify Health & Parity — Merge 2 Steps
- * (`scripts/n8n-nodes/watchdog-verify-health.js`)
+ * (`scripts/n8n-nodes/db/watchdog-verify-health.js`)
  *
  * Mục đích:
  * Merge kết quả từ 2 node query riêng biệt và xuất báo cáo tổng hợp:

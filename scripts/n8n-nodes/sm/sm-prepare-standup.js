@@ -4,7 +4,8 @@ const body = json.body || json;
 
 let triggerSource = 'mattermost';
 try {
-  if ($('Webhook Trigger (sm-standup)').first()) {
+  const trigNode = $('Webhook Trigger (sm-standup)').first();
+  if (trigNode && trigNode.json && Object.keys(trigNode.json).length > 0) {
     triggerSource = 'webhook';
   }
 } catch (e) {
