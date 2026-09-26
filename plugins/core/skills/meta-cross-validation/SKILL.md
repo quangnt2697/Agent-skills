@@ -273,26 +273,27 @@ Trước khi xuất report:
 
 ## Tích hợp với Pipeline
 
-Skill này nằm ở **Phase 2.5** (giữa qa-test-design và qa-auto-design):
+Skill này nằm ở **Phase 3** trong `e2e-delivery` (sau tech-spec, trước plan):
 
 ```
-Phase 1: /ba-spec
+Phase 2: /tech-spec (DEV)
    ↓
-Phase 1.5: /tech-spec (DEV)
+Phase 3: /meta-cross-validation ← YOU ARE HERE
    ↓
-Phase 2: /qa-test-design
+Phase 4: /plan (DEV)
    ↓
-Phase 2.5: /meta-cross-validation ← YOU ARE HERE
+Phase 5: /build (DEV)
    ↓
-Phase 3: /qa-auto-design (chỉ khi coverage ≥90%)
-   ↓
-Phase 4: /qa-run-test
+Phase 7: /qa-full-pipeline (QA)
 ```
 
 **Khi nào invoke:**
-- Sau khi QA thiết kế test xong
-- Trước khi QA sinh automation code
-- Nếu coverage < 90% → STOP, fix gaps trước
+- Sau khi DEV viết Tech-Spec, trước khi phân chia task
+- Sau khi QA thiết kế test xong, trước khi sinh automation code
+
+**Khi coverage < 90%:**
+Ghi cảnh báo rõ ở đầu `trace/gaps.md`, liệt kê gap cần fix, rồi **chạy tiếp** — không chặn luồng.
+> Theo `autonomy-contract.md`: Confidence/coverage chỉ dùng để báo cáo, không phải cổng chặn.
 
 ## Dấu hiệu Cảnh báo (Red Flags)
 

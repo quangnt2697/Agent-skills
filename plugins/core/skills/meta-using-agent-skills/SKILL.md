@@ -106,65 +106,65 @@ Luôn xem xét ngữ cảnh của domain và platform:
 - **Domain (Fintech/Ngân hàng/Chứng khoán):** Đảm bảo tuân thủ nghiêm ngặt về Bảo mật (Auth/Quyền), Độ chính xác tài chính (không làm tròn tùy tiện), và yêu cầu giao dịch ACID.
 - **Nền tảng (Đa nền tảng/OpenAPI):** Đảm bảo thiết kế API-first. Hợp đồng API (API Contract) phải được thiết kế và thống nhất trước khi các bên Web/App bắt đầu lập trình.
 
-## Những Lỗi Thất bại cần Tránh
-
-Đây là những lỗi tinh vi có vẻ như mang lại năng suất nhưng thực chất lại tạo ra vấn đề:
-
-1. Đưa ra giả định sai mà không kiểm chứng.
-2. Không quản lý sự bối rối của bản thân — cứ thế đâm đầu làm khi đang bị lạc hướng.
-3. Không phơi bày những sự không nhất quán mà bạn nhận ra.
-4. Không trình bày các sự đánh đổi (tradeoffs) đối với những quyết định không mấy hiển nhiên.
-5. Quá "nịnh nọt" ("Tất nhiên rồi!") trước những cách tiếp cận có vấn đề rõ ràng.
-6. Làm phức tạp hóa code và APIs.
-7. Sửa đổi code hoặc comments không liên quan đến task.
-8. Xóa những thứ mà bạn không hiểu rõ.
-9. Xây dựng không cần spec vì "nó quá hiển nhiên".
-10. Bỏ qua khâu xác minh vì "trông có vẻ đúng".
-
-## Quy tắc Kỹ năng
-
-1. **Kiểm tra xem có kỹ năng nào áp dụng được không trước khi bắt đầu làm việc.** Các kỹ năng mã hóa quy trình giúp ngăn ngừa các lỗi phổ biến.
-
-2. **Kỹ năng là các luồng quy trình, không phải là lời khuyên.** Hãy tuân theo các bước theo thứ tự. Đừng bỏ qua các bước xác minh.
-
-3. **Nhiều kỹ năng có thể được áp dụng cùng lúc.** Một lần xử lý yêu cầu có thể liên quan đến chuỗi: `ba-spec` → `ba-interview-me` → `ba-refine` → `qa-test-design` → `qa-auto-design` → `cr-review-code-and-quality`.
-
-4. **Khi băn khoăn, hãy bắt đầu với việc hiểu rõ yêu cầu.** Nếu task chưa rõ ràng, hãy gọi `ba-interview-me` hoặc `ba-spec` (nếu có link/mã Jira) trước khi làm bất kỳ việc gì khác.
-
 ## Trình tự Vòng đời (Lifecycle Sequence)
 
 Đối với một tính năng hoàn chỉnh, trình tự kỹ năng điển hình là:
 
 ```text
-1.  ba-spec                     → Download và tổng hợp issue Jira thành Spec ban đầu
-2.  ba-interview-me             → Phỏng vấn bổ sung để bịt các lỗ hổng logic hoặc yêu cầu mờ ám
-3.  ba-refine                   → Mài giũa ý tưởng thành User Story/BDD sắc bén
-4.  qa-code2spec                → (Tùy chọn) Đọc code có sẵn để bóc tách luồng nghiệp vụ
-5.  qa-test-design              → Thiết kế checklist kiểm thử và kịch bản BDD chi tiết
-6.  qa-auto-design              → Sinh code automation test (Playwright/Pytest)
-7.  cr-code-simplification         → (Tùy chọn) Làm sạch và tối giản code test vừa sinh ra
-8.  cr-review-code-and-quality     → Đánh giá code (Code Review) code sinh ra chất lượng bộ test trước khi merge
-9.  meta-context                → (Chạy bất cứ lúc nào) Nạp và reset lại ngữ cảnh làm việc
+── BA/PO ──────────────────────────────────────────────────────────────
+1.  ba-spec                          → Import Jira/Confluence → final.md
+2.  ba-interview-me                  → Phỏng vấn gap → đạt confidence ≥90%
+3.  ba-refine         (Tùy chọn)     → Brainstorm/refine ý tưởng thô
+
+── DEV ────────────────────────────────────────────────────────────────
+4.  dev-spec-driven-development      → Tech-Spec: Architecture, API, Data Model
+5.  meta-cross-validation            → Kiểm tra BR → Tech-Spec mapping
+6.  dev-planning-and-task-breakdown  → Plan + task breakdown
+7.  dev-incremental-implementation   → Build từng increment (TDD)
+8.  dev-test-driven-development      → Unit tests (Red → Green → Refactor)
+
+── QA ─────────────────────────────────────────────────────────────────
+9.  qa-code2spec      (Tùy chọn)     → Đọc code có sẵn → spec
+10. qa-test-design                   → Checklist + BDD Gherkin
+11. qa-squash-push    (Tùy chọn)     → Đồng bộ .feature lên Squash TM
+12. qa-auto-design                   → Sinh automation test code
+13. qa-run-test                      → Thực thi + báo cáo
+
+── Review & Polish ────────────────────────────────────────────────────
+14. cr-code-simplification (Tùy chọn) → Làm sạch code test
+15. cr-review-code-and-quality        → Code Review trước merge
+16. meta-context      (Bất cứ lúc nào) → Reset/nạp lại ngữ cảnh
 ```
 
-Không phải task nào cũng cần mọi kỹ năng. Một task chỉ viết test cho API có sẵn có thể chỉ cần: `qa-code2spec` → `qa-test-design` → `qa-auto-design`.
+Không phải task nào cũng cần mọi kỹ năng. Task chỉ viết test API có sẵn: `qa-code2spec → qa-test-design → qa-auto-design → qa-run-test`.
 
 ## Bảng Tra cứu Nhanh (Quick Reference)
 
-| Giai đoạn         | Kỹ năng                    | Tóm tắt                                                              |
-|-------------------|----------------------------|----------------------------------------------------------------------|
-| Phân tích (BA)    | ba-spec                    | Download Jira issue và tổng hợp thành tài liệu markdown              |
-| Phân tích (BA)    | ba-interview-me            | Phỏng vấn user để khai thác tận cùng những gì họ thực sự cần         |
-| Phân tích (BA)    | ba-refine                  | Mài giũa ý tưởng thô thành các bản concept/User Story/BDD sắc bén    |
-| Phân tích (BA)    | qa-code2spec               | Dịch ngược mã nguồn (API/code) thành tài liệu đặc tả                 |
-| Thiết kế (QA)     | qa-test-design             | Thiết kế test artifacts: checklist kiểm thử và BDD scenarios         |
-| Sinh Code (QA)    | qa-auto-design             | Viết code automation test (Playwright/Pytest) dựa trên BDD/Checklist |
-| Đánh giá (Review) | cr-review-code-and-quality | Đánh giá code test tự động dựa trên standards                        |
-| Đánh giá (Review) | cr-code-simplification     | Đơn giản hóa và làm sạch code mà không đổi hành vi                   |
-| Đánh giá (Review) | dev-audit-and-fix          | Kiểm toán toàn diện kiến trúc, tìm bug và tự động sửa (Auto-Fix)     |
-| Siêu kỹ năng      | meta-context               | Tối ưu hóa ngữ cảnh làm việc cho agent                               |
-| Siêu kỹ năng      | meta-using-agent-skills    | Khám phá và sử dụng các kỹ năng khác                                 |
+| Giai đoạn | Kỹ năng | Tóm tắt |
+|---|---|---|
+| **BA** | `ba-spec` | Import Jira/Confluence → final.md |
+| **BA** | `ba-interview-me` | Phỏng vấn từng câu → bịt gap logic |
+| **BA** | `ba-refine` | Brainstorm ý tưởng thô → User Story/BDD |
+| **BA** | `qa-code2spec` | Dịch ngược code → đặc tả |
+| **DEV** | `dev-spec-driven-development` | Tech-Spec: kiến trúc, API, Data Model |
+| **DEV** | `dev-planning-and-task-breakdown` | Chia task + dependencies |
+| **DEV** | `dev-incremental-implementation` | Build an toàn từng bước |
+| **DEV** | `dev-test-driven-development` | Unit test (TDD cycle) |
+| **DEV** | `dev-audit-and-fix` | Audit toàn diện + tự sửa |
+| **QA** | `qa-test-design` | Checklist + BDD Gherkin |
+| **QA** | `qa-auto-design` | Automation test code (Playwright/Pytest) |
+| **QA** | `qa-run-test` | Chạy test + báo cáo |
+| **QA** | `qa-squash-push` | Push .feature lên Squash TM |
+| **QA** | `qa-full-pipeline` | Full QA workflow 1 lệnh |
+| **Review** | `cr-review-code-and-quality` | Code review đa chiều |
+| **Review** | `cr-code-simplification` | Đơn giản hóa code |
+| **Meta** | `meta-context` | Tối ưu ngữ cảnh làm việc |
+| **Meta** | `meta-cross-validation` | Kiểm tra traceability BR → Test |
+| **Meta** | `meta-using-agent-skills` | Khám phá và dùng đúng skill |
+| **Meta** | `db-timescale-reconciler` | Đối chiếu dữ liệu TimescaleDB |
 
+
+---
 
 ---
 <CRITICAL_RULE>

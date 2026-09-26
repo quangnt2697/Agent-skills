@@ -42,6 +42,9 @@ Agent chỉ được dừng luồng để hỏi khi rơi vào đúng một trong
 
 **Mọi trường hợp khác: TỰ QUYẾT.** Ghi giả định vào output rồi chạy tiếp.
 
+> **Ghi chú (ba-spec):** Gate 1 ("Hiển thị bảng tài liệu chờ user duyệt") và Gate 2 ("Chờ OK trước khi sinh spec") trong `ba-spec` là các instance hợp lệ của **trường hợp #3** (câu hỏi 🔴 Critical, câu trả lời thay đổi bản chất output). Không phải ngoại lệ đặc biệt — chúng thuộc danh sách đóng sẵn có.
+
+
 ---
 
 ## 3. Những thứ TUYỆT ĐỐI KHÔNG được coi là lý do dừng
