@@ -35,6 +35,22 @@ Mọi đóng góp Plugin và Skill mới trong repository này **BẮT BUỘC** 
 
 *Xem thêm: [docs/guides/skill-anatomy.md](docs/guides/skill-anatomy.md) để nắm rõ cấu phẫu chuẩn của tệp `SKILL.md`.*
 
+## 3. Quy tắc Vị trí Rule Files
+
+Khi tạo hoặc cập nhật rule:
+
+| Thư mục | Dùng cho | Ai đọc |
+|---|---|---|
+| `.claude/rules/` | Source of truth — nơi soạn thảo và cập nhật | Claude Code, Cursor, Copilot |
+| `.agents/rules/` | Mirror của `.claude/rules/` — **PHẢI đồng bộ** | Antigravity IDE, Gemini |
+
+**Quy trình bắt buộc:** Sau mỗi lần sửa file trong `.claude/rules/`, phải chạy:
+```bash
+cp .claude/rules/<file>.md .agents/rules/<file>.md
+```
+
+Rule mới tạo trong `.claude/rules/` **phải được copy ngay** vào `.agents/rules/` trong cùng commit.
+
 ## 3. Chỉnh sửa Kỹ năng hiện có
 
 - Khi cập nhật `business-spec` hoặc các lệnh trong chuỗi workflow (`tech-spec`, `planning`, `qa`), phải đảm bảo đầu ra (output) của bước trước là đầu vào (input) hợp lệ cho bước sau.

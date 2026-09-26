@@ -81,7 +81,7 @@ git commit -m "[{issueKey}] {Short description}
 - {Chi tiết thay đổi 1}
 - {Chi tiết thay đổi 2}
 
-Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
+Co-Authored-By: AI Agent <noreply@ai-agent.local>"
 
 # Switch về main
 git checkout main

@@ -60,7 +60,7 @@ BA/PO creates *-final.md
     Gherkin           Data Model      DEV: Code + Unit tests
 ```
 
-**Chi tiết:** Xem `plugins/core/commands/e2e-delivery.toml` (source) → được build thành `plugins/core/.claude/commands/e2e-delivery.md`
+**Chi tiết:** Xem [`plugins/core/commands/e2e-delivery.toml`](plugins/core/commands/e2e-delivery.toml)
 
 ## Kỹ năng theo Giai đoạn
 
