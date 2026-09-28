@@ -51,8 +51,19 @@ fi
 echo "📦 Cài đặt các thư viện Node.js (Dependencies)..."
 npm install
 
-# 6. Chạy setup n8n (Tự động tải workflows vào n8n)
-echo "⚙️ Đang cấu hình n8n..."
+# 6. Khởi động n8n lần đầu để tạo database, sau đó import workflows
+echo "⚙️ Khởi động n8n lần đầu để khởi tạo cơ sở dữ liệu..."
+# Cần chạy n8n 1 lần để tạo file database.sqlite trước khi import workflow
+n8n start &
+N8N_INIT_PID=$!
+echo "⏳ Đợi n8n khởi tạo DB (8 giây)..."
+sleep 8
+kill $N8N_INIT_PID 2>/dev/null || true
+wait $N8N_INIT_PID 2>/dev/null || true
+echo "✅ Database n8n đã được khởi tạo."
+
+# 6b. Import workflows mẫu
+echo "⚙️ Đang nạp các Workflow mẫu vào n8n..."
 npm run n8n:setup
 
 # 7. Đồng bộ plugins và rules toàn cục cho Antigravity / Gemini CLI

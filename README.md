@@ -315,14 +315,14 @@ Business Rule → Tech Spec → Code → Unit Test → Integration Test → E2E 
 
 ### 3. Confidence-Based Gating
 Skills report confidence level (90%+ = auto-approve, 70-89% = ask, <70% = stop).  
-Xem: [.claude/rules/confidence-level.md](.claude/rules/confidence-level.md)
+Xem: [.agents/rules/confidence-level.md](.agents/rules/confidence-level.md)
 
 ### 4. Git Workflow Safety
 - Branch-based development (no direct commits to main)
 - Commit SAU KHI user approve
 - Clear commit messages với Co-Authored-By
 
-Xem: [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md)
+Xem: [.agents/rules/git-workflow.md](.agents/rules/git-workflow.md)
 
 ---
 

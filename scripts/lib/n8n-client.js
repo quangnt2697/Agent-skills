@@ -11,7 +11,7 @@
 
 import dotenv from 'dotenv';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -245,7 +245,8 @@ export async function lintDomainGherkin(gherkinOrParams) {
 
 // ── CLI ENTRYPOINT (Chống sai lệch kiến trúc) ──────────────────────────────
 // Cho phép gọi trực tiếp script này từ Bash thay vì chỉ làm JS Module
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Dùng pathToFileURL để đảm bảo portable trên Windows (path separator khác nhau)
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2);
   const action = args[0];
   if (!action) {

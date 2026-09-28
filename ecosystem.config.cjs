@@ -40,14 +40,16 @@ const apps = [
 
 const ngrokDomain = process.env.NGROK_DOMAIN;
 const n8nPort = process.env.N8N_PORT;
-apps.push({
-  name: 'ngrok-tunnel',
-  cwd: __dirname,
-  script: 'ngrok',
-  args: `http --domain=${ngrokDomain} ${n8nPort}`,
-  interpreter: 'none',
-  watch: false,
-  autorestart: true
-});
+if (ngrokDomain) {
+  apps.push({
+    name: 'ngrok-tunnel',
+    cwd: __dirname,
+    script: 'ngrok',
+    args: `http --domain=${ngrokDomain} ${n8nPort}`,
+    interpreter: 'none',
+    watch: false,
+    autorestart: true
+  });
+}
 
 module.exports = { apps };

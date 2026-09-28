@@ -12,6 +12,14 @@ import os from 'node:os';
 const dbPath = path.join(os.homedir(), '.n8n', 'database.sqlite');
 const workflowsDir = path.resolve('n8n-workflows');
 
+// Guard: kiểm tra sqlite3 CLI
+try {
+  execSync('which sqlite3', { stdio: 'pipe' });
+} catch {
+  console.error('\u274c Chưa cài sqlite3 CLI. Chạy: brew install sqlite3');
+  process.exit(1);
+}
+
 console.log('='.repeat(65));
 console.log('  DỌN DẸP WORKFLOW CŨ VÀ IMPORT LẠI BỘ WORKFLOW MỚI CHUẨN HÓA');
 console.log('='.repeat(65));
@@ -52,16 +60,12 @@ try {
   process.exit(1);
 }
 
-// 4. Kích hoạt (publish) toàn bộ workflow để Webhook và Cron sẵn sàng
+// 4. Kích hoạt (activate) toàn bộ workflow qua SQLite
 try {
-  console.log('\n4. Đang kích hoạt (publish) các workflow...');
-  const idsOutput = execSync(`sqlite3 "${dbPath}" "SELECT id FROM workflow_entity;"`, { encoding: 'utf-8' }).trim();
-  const ids = idsOutput.split('\n').filter(Boolean);
-  for (const id of ids) {
-    execSync(`n8n publish:workflow --id="${id}"`, { stdio: 'ignore' });
-  }
+  console.log('\n4. Đang kích hoạt (activate) các workflow...');
   execSync(`sqlite3 "${dbPath}" "UPDATE workflow_entity SET active = 1;"`, { stdio: 'ignore' });
-  console.log(`✅ Đã kích hoạt thành công ${ids.length} workflow!`);
+  const countOut = execSync(`sqlite3 "${dbPath}" "SELECT COUNT(*) FROM workflow_entity;"`, { encoding: 'utf-8' }).trim();
+  console.log(`✅ Đã kích hoạt thành công ${countOut} workflow!`);
 } catch (err) {
   console.warn('⚠️ Cảnh báo khi kích hoạt workflow:', err.message);
 }

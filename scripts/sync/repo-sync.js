@@ -655,6 +655,30 @@ export function formatReport(results) {
   return md;
 }
 
+// ─── PARALLEL EXECUTION HELPER ───────────────────────────────────────────────────
+
+/**
+ * Chạy mảng các Promise-factory với giới hạn concurrency (Semaphore pattern)
+ * @param {Array<Function>} tasks Mảng các hàm () => Promise<T>
+ * @param {number} concurrency Số task tối đa chạy song song
+ * @returns {Promise<Array<T>>} Kết quả theo đúng thứ tự đầu vào
+ */
+async function runWithConcurrency(tasks, concurrency = 5) {
+  const results = new Array(tasks.length);
+  let index = 0;
+
+  async function worker() {
+    while (index < tasks.length) {
+      const i = index++;
+      results[i] = await tasks[i]();
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(concurrency, tasks.length) }, worker);
+  await Promise.all(workers);
+  return results;
+}
+
 // ─── MAIN EXECUTION ──────────────────────────────────────────────────────────
 
 export async function run(rawArgs = process.argv.slice(2)) {
@@ -687,14 +711,27 @@ export async function run(rawArgs = process.argv.slice(2)) {
     return;
   }
 
-  console.log(`🚀 Bắt đầu đồng bộ ${targets.length} repository...`);
+  console.log(`🚀 Bắt đầu đồng bộ ${targets.length} repository${targets.length > 1 ? ' (song song, concurrency=5)' : ''}...`);
   const results = [];
 
-  for (const target of targets) {
-    process.stdout.write(`  ⏳ Đang kiểm tra ${target.name}... `);
-    const res = syncSingleRepo(target.path, options);
-    results.push(res);
-    console.log(`[${res.status}]`);
+  if (targets.length <= 1) {
+    // Độc lập: chạy tuần tự cho 1 repo
+    for (const target of targets) {
+      process.stdout.write(`  ⏳ Đang kiểm tra ${target.name}... `);
+      const res = syncSingleRepo(target.path, options);
+      results.push(res);
+      console.log(`[${res.status}]`);
+    }
+  } else {
+    // Nhiều repo: chạy song song với giới hạn concurrency=5
+    const tasks = targets.map(target => async () => {
+      const res = syncSingleRepo(target.path, options);
+      // In kết quả ngay sau khi xong (có thể không theo thứ tự)
+      console.log(`  [${res.status}] ${target.name}`);
+      return res;
+    });
+    const parallelResults = await runWithConcurrency(tasks, 5);
+    results.push(...parallelResults);
   }
 
   const report = formatReport(results);

@@ -28,7 +28,7 @@
     "db:recon:prod": "node scripts/db/db-recon-prod.js",
     "db:recon:core": "node scripts/db/db-recon-core.js",
     "repo:sync": "node scripts/sync/repo-sync.js",
-    "sync": "node scripts/sync/repo-sync.js",
+    "sync": "npm run repo:sync",
     "n8n": "n8n start",
     "n8n:tunnel": "n8n start --tunnel",
     "n8n:setup": "node scripts/setup/setup-n8n.js",
@@ -50,9 +50,7 @@
     "md-to-adf": "^0.6.4",
     "pg": "^8.23.0",
     "playwright": "^1.62.1",
+    "pm2": "^7.0.4",
     "smol-toml": "^1.8.0"
-  },
-  "devDependencies": {
-    "pm2": "^7.0.4"
   }
 }

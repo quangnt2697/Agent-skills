@@ -183,16 +183,26 @@ if (!isUnlink) {
     }
   }
 
+  // Chỉ đồng bộ các thư mục script cần thiết cho skills (lib/ và sync/)
+  // Không copy toàn bộ scripts/ để tránh nhúng test files, n8n-nodes, db scripts vào global config
+  const SCRIPTS_SUBDIRS_TO_SYNC = ['lib', 'sync'];
   if (fs.existsSync(sourceScriptsDir)) {
-    try {
-      if (fs.existsSync(targetScriptsDir)) {
-        const stat = fs.lstatSync(targetScriptsDir);
-        if (stat.isSymbolicLink()) fs.unlinkSync(targetScriptsDir);
+    for (const subDir of SCRIPTS_SUBDIRS_TO_SYNC) {
+      const srcSub = path.join(sourceScriptsDir, subDir);
+      const dstSub = path.join(targetScriptsDir, subDir);
+      if (!fs.existsSync(srcSub)) continue;
+      try {
+        if (fs.existsSync(dstSub)) {
+          const stat = fs.lstatSync(dstSub);
+          if (stat.isSymbolicLink()) fs.unlinkSync(dstSub);
+          else fs.rmSync(dstSub, { recursive: true, force: true });
+        }
+        if (!fs.existsSync(targetScriptsDir)) fs.mkdirSync(targetScriptsDir, { recursive: true });
+        fs.cpSync(srcSub, dstSub, { recursive: true, dereference: true, force: true });
+        console.log(`  ✅ Đã đồng bộ scripts/${subDir}/ -> ~/.gemini/config/scripts/${subDir}/`);
+      } catch (err) {
+        console.warn(`  ⚠️ Cảnh báo khi sao chép scripts/${subDir}/: ${err.message}`);
       }
-      fs.cpSync(sourceScriptsDir, targetScriptsDir, { recursive: true, dereference: true, force: true });
-      console.log(`  ✅ Đã đồng bộ thư mục scripts/: scripts/ -> ~/.gemini/config/scripts/`);
-    } catch (err) {
-      console.warn(`  ⚠️ Cảnh báo khi sao chép scripts/: ${err.message}`);
     }
   }
 
@@ -242,6 +252,6 @@ if (isUnlink) {
   console.log(`🎉 Hoàn tất thiết lập ${successCount}/${subPlugins.length} plugins!`);
   console.log('');
   console.log('📌 Giờ đây khi mở bất kỳ project nào trong Gemini CLI hoặc Antigravity,');
-  console.log('   tất cả 44 skills và 7 agents sẽ được nhận diện và thực thi an toàn (không bị chặn ranh giới file).');
+  console.log('   tất cả 44 skills và 8 agents sẽ được nhận diện và thực thi an toàn (không bị chặn ranh giới file).');
 }
 console.log('='.repeat(65));
