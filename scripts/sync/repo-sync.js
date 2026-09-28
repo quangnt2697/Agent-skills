@@ -307,20 +307,25 @@ export function syncSingleRepo(repoPath, options = {}) {
     const isDirty = statusOut.length > 0;
 
     if (isDirty) {
-      if (options.noReset) {
-        if (!options.stash) {
-          result.status = 'DIRTY_SKIPPED';
-          result.message = 'Có thay đổi chưa commit (--no-reset). Đã bỏ qua để tránh mất code.';
-          result.durationMs = Date.now() - startTime;
-          return result;
-        } else {
-          // Tự động stash nếu bật cờ --stash
+      if (options.stash) {
+        try {
           execSync('git stash push -u -m "auto-stash-before-repo-sync"', {
             cwd: repoPath,
             stdio: ['pipe', 'pipe', 'pipe']
           });
           result.didStash = true;
+          result.stashMessage = 'Đã tự động stash thay đổi chưa commit';
+        } catch (sErr) {
+          result.status = 'DIRTY_SKIPPED';
+          result.message = `Lỗi stash: ${sErr.message.split('\n')[0]}`;
+          result.durationMs = Date.now() - startTime;
+          return result;
         }
+      } else if (options.noReset) {
+        result.status = 'DIRTY_SKIPPED';
+        result.message = 'Có thay đổi chưa commit (--no-reset). Đã bỏ qua để tránh mất code.';
+        result.durationMs = Date.now() - startTime;
+        return result;
       } else {
         // MẶC ĐỊNH: Tự động reset working tree về trạng thái sạch sẽ ban đầu
         const dirtyFilesCount = statusOut.split('\n').filter(Boolean).length;
@@ -356,16 +361,30 @@ export function syncSingleRepo(repoPath, options = {}) {
       localBranches = [result.initialBranch];
     }
 
-    // Nếu có cờ -b <branch> chỉ định và nhánh chưa có ở local nhưng có trên origin
-    if (options.branch && !localBranches.includes(options.branch)) {
-      try {
-        execSync(`git checkout ${options.branch}`, {
-          cwd: repoPath,
-          stdio: ['pipe', 'pipe', 'pipe']
-        });
-        localBranches.push(options.branch);
-      } catch {
-        // Bỏ qua nếu không checkout được
+    // Danh sách các nhánh chính được phép quét và pull tự động: main/master, uat, dev, develop
+    const PRIMARY_BRANCHES = ['main', 'master', 'uat', 'dev', 'develop'];
+
+    let targetBranches = [];
+    if (options.branch) {
+      // Nếu có cờ -b <branch> chỉ định nhánh cụ thể
+      if (!localBranches.includes(options.branch)) {
+        try {
+          execSync(`git checkout ${options.branch}`, {
+            cwd: repoPath,
+            stdio: ['pipe', 'pipe', 'pipe']
+          });
+          targetBranches.push(options.branch);
+        } catch {
+          // Bỏ qua nếu không checkout được
+        }
+      } else {
+        targetBranches.push(options.branch);
+      }
+    } else {
+      // Chỉ lọc các nhánh chính: main/master, uat, dev. Bỏ qua các nhánh feature
+      targetBranches = localBranches.filter(b => PRIMARY_BRANCHES.includes(b.toLowerCase()));
+      if (targetBranches.length === 0) {
+        targetBranches = [result.initialBranch];
       }
     }
 
@@ -375,8 +394,8 @@ export function syncSingleRepo(repoPath, options = {}) {
     let hasDiverged = false;
     let hasError = false;
 
-    // 5. Duyệt và kéo code (Pull) cho TOÀN BỘ các nhánh
-    for (const branch of localBranches) {
+    // 5. Duyệt và kéo code (Pull) cho các nhánh chính (hoặc nhánh chỉ định)
+    for (const branch of targetBranches) {
       const bRes = {
         name: branch,
         status: 'UNKNOWN',
@@ -591,22 +610,10 @@ export function formatReport(results) {
   let totalBranchesPulled = 0;
 
   for (const r of results) {
-    const iconLabel = statusIcons[r.status] || r.status;
-    const deltaStr = r.behind > 0 ? `+${r.behind}` : (r.ahead > 0 ? `^${r.ahead}` : '0');
-    const sha = r.latestSha || '-';
-    const dur = `${(r.durationMs / 1000).toFixed(1)}s`;
-
-    let branchDisplay = `\`${r.currentBranch}\``;
-    if (r.branches && r.branches.length > 1) {
-      branchDisplay = r.branches.map(b => `\`${b.name}\``).join(', ');
-    }
-
     if (r.branches) {
       totalBranchesSynced += r.branches.length;
       totalBranchesPulled += r.branches.filter(b => b.status === 'PULLED').length;
     }
-
-    md += `| **${r.name}** | ${branchDisplay} | ${iconLabel} | \`${deltaStr}\` | \`${sha}\` | ${dur} | ${r.message} |\n`;
   }
 
   const pulledCount = results.filter(r => r.status === 'PULLED').length;
@@ -614,6 +621,34 @@ export function formatReport(results) {
   const skippedCount = results.filter(r => ['DIRTY_SKIPPED', 'UNBORN', 'LOCAL_ONLY'].includes(r.status)).length;
   const resetCount = results.filter(r => r.wasReset).length;
   const errCount = results.filter(r => ['ERROR', 'DIVERGED', 'BRANCH_CHECKOUT_FAILED'].includes(r.status)).length;
+
+  // Khi danh sách > 15 repos và có nhiều repo UP_TO_DATE: tách bảng repo có thay đổi / lỗi và tóm tắt repo up-to-date
+  const activeOrIssueRepos = results.filter(r => r.status !== 'UP_TO_DATE');
+  const upToDateRepos = results.filter(r => r.status === 'UP_TO_DATE');
+
+  const shouldCollapseUpToDate = results.length > 15 && upToDateRepos.length > 5;
+  const tableRepos = shouldCollapseUpToDate ? activeOrIssueRepos : results;
+
+  if (tableRepos.length > 0) {
+    for (const r of tableRepos) {
+      const iconLabel = statusIcons[r.status] || r.status;
+      const deltaStr = r.behind > 0 ? `+${r.behind}` : (r.ahead > 0 ? `^${r.ahead}` : '0');
+      const sha = r.latestSha || '-';
+      const dur = `${(r.durationMs / 1000).toFixed(1)}s`;
+
+      let branchDisplay = `\`${r.currentBranch}\``;
+      if (r.branches && r.branches.length > 1) {
+        branchDisplay = r.branches.map(b => `\`${b.name}\``).join(', ');
+      }
+
+      md += `| **${r.name}** | ${branchDisplay} | ${iconLabel} | \`${deltaStr}\` | \`${sha}\` | ${dur} | ${r.message} |\n`;
+    }
+  }
+
+  if (shouldCollapseUpToDate && upToDateRepos.length > 0) {
+    const names = upToDateRepos.map(r => `\`${r.name}\``).join(', ');
+    md += `\n> ⚪ **Repos đã mới nhất (${upToDateRepos.length}):** ${names}\n`;
+  }
 
   md += `\n**Tổng kết:** ${results.length} repos (${totalBranchesSynced || results.length} nhánh) | 🟢 Cập nhật: ${pulledCount} (${totalBranchesPulled} nhánh pulled) | ⚪ Mới nhất: ${upToDateCount} | 🔄 Đã reset: ${resetCount} | ⚠️ Bỏ qua: ${skippedCount} | ❌ Cảnh báo/Lỗi: ${errCount}\n`;
 

@@ -14,19 +14,54 @@ const workspaceDir = (typeof $env !== 'undefined' && $env.AGENT_WORKSPACE_DIR)
   || procEnv.AGENT_WORKSPACE_DIR
   || path.resolve(process.cwd());
 
-let scriptPath = path.resolve(workspaceDir, 'scripts/sync/daily-repo-sync.sh');
-if (!fs.existsSync(scriptPath)) {
-  scriptPath = path.resolve(workspaceDir, 'scripts/daily-repo-sync.sh');
+const input = $input.first();
+const json = (input && input.json) || {};
+const body = json.body || json;
+const params = json.params || body.params || {};
+
+// Trích xuất target project / group nếu được truyền vào từ caller
+let targetProject = (params.project || body.project || json.project || '').trim();
+let targetBranch = (params.branch || body.branch || json.branch || '').trim();
+
+// Trích xuất _triggerSource để phân luồng response
+let triggerSource = json._triggerSource || body._triggerSource || 'cron';
+try {
+  const trigNode = $('Schedule Trigger (09:00 Mon-Fri)').first();
+  if (trigNode && trigNode.json && Object.keys(trigNode.json).length > 0) {
+    triggerSource = 'cron';
+  }
+} catch (_) {}
+
+try {
+  const execTrig = $('Execute Workflow Trigger').first();
+  if (execTrig && execTrig.json && Object.keys(execTrig.json).length > 0) {
+    triggerSource = 'executeWorkflow';
+  }
+} catch (_) {}
+
+// Xây dựng lệnh gọi repo-sync.js engine
+const repoSyncScript = path.resolve(workspaceDir, 'scripts/sync/repo-sync.js');
+let syncCmd = `node "${repoSyncScript}"`;
+
+if (targetProject) {
+  syncCmd += ` -p "${targetProject}"`;
+  if (targetBranch) {
+    syncCmd += ` -b "${targetBranch}"`;
+  }
+  syncCmd += ` --stash`;
+} else {
+  // Mặc định cron đầu ngày: quét và pull toàn bộ các nhánh cho tất cả các repos
+  syncCmd += ` --all --stash`;
 }
 
 let stdout = '';
 try {
   const envPath = procEnv.PATH || '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin';
-  const result = await execAsync(`/bin/bash "${scriptPath}"`, {
+  const result = await execAsync(syncCmd, {
     cwd: workspaceDir,
     encoding: 'utf-8',
     env: Object.assign({}, procEnv, { PATH: envPath, AGENT_WORKSPACE_DIR: workspaceDir }),
-    timeout: 180000
+    timeout: 300000 // 5 phút cho multi-repo fetch & pull
   });
   stdout = result.stdout || '';
 } catch (err) {
@@ -35,84 +70,50 @@ try {
   stdout = outStr + '\n' + errStr;
 }
 
-const lines = stdout.split('\n');
-let summaryStr = '';
-const pulled = [];
-const dirty = [];
-const errors = [];
-
-for (const line of lines) {
-  if (line.startsWith('SUMMARY:')) {
-    summaryStr = line.replace('SUMMARY:', '');
-  } else if (line.startsWith('PULLED|')) {
-    pulled.push(...line.split('|').slice(1));
-  } else if (line.startsWith('DIRTY|')) {
-    dirty.push(...line.split('|').slice(1));
-  } else if (line.startsWith('ERRORS|')) {
-    errors.push(...line.split('|').slice(1));
-  }
+// Bóc tách bảng Markdown Báo Cáo từ stdout
+let reportText = '';
+const reportIndex = stdout.indexOf('### 📊 Báo Cáo');
+if (reportIndex !== -1) {
+  reportText = stdout.substring(reportIndex).trim();
+} else {
+  reportText = stdout.trim() || 'Không có kết quả từ repo-sync engine.';
 }
 
-// Xử lý trường hợp script lỗi không sinh được SUMMARY
-if (!summaryStr) {
-  const errDetail = stdout.trim() || 'Không nhận được dữ liệu từ daily-repo-sync.sh';
-  const errMsg = '🚨 **[Daily Repo Sync - Lỗi Tiến Trình]**\n> ' + errDetail.split('\n')[0] + '\n\n*Vui lòng kiểm tra log: npm run n8n:logs*';
-  return [{ json: { msg: errMsg, reportText: errMsg, total: 0, pulledCount: 0, upToDateCount: 0, dirtyCount: 0, errCount: 1, noGitCount: 0, localCount: 0, error: errDetail } }];
+// Trích xuất thống kê tổng kết
+let totalCount = 0;
+let pulledCount = 0;
+let upToDateCount = 0;
+let resetCount = 0;
+let errCount = 0;
+
+const summaryMatch = reportText.match(/\*\*Tổng kết:\*\*\s*(\d+)\s*repos.*🟢\s*Cập nhật:\s*(\d+).*⚪\s*Mới nhất:\s*(\d+).*🔄\s*Đã reset:\s*(\d+).*❌\s*Cảnh báo\/Lỗi:\s*(\d+)/i);
+if (summaryMatch) {
+  totalCount = parseInt(summaryMatch[1], 10) || 0;
+  pulledCount = parseInt(summaryMatch[2], 10) || 0;
+  upToDateCount = parseInt(summaryMatch[3], 10) || 0;
+  resetCount = parseInt(summaryMatch[4], 10) || 0;
+  errCount = parseInt(summaryMatch[5], 10) || 0;
 }
-
-// Parse summary
-const summaryParts = summaryStr.split(',');
-let total = 0, pulledCount = 0, upToDateCount = 0, dirtyCount = 0, errCount = 0, noGitCount = 0, localCount = 0;
-summaryParts.forEach(part => {
-  const [k, v] = part.split('=');
-  if (k === 'total') total = parseInt(v) || 0;
-  if (k === 'pulled') pulledCount = parseInt(v) || 0;
-  if (k === 'up_to_date') upToDateCount = parseInt(v) || 0;
-  if (k === 'dirty') dirtyCount = parseInt(v) || 0;
-  if (k === 'errors') errCount = parseInt(v) || 0;
-  if (k === 'no_git') noGitCount = parseInt(v) || 0;
-  if (k === 'local_only') localCount = parseInt(v) || 0;
-});
-
-let emoji = '✅';
-if (errCount > 0 || dirtyCount > 0) emoji = '⚠️';
 
 const runTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
-let msg = emoji + ` **[Daily Repo Sync - ${runTime}]**\n`;
-let skippedDetail = '';
-if (noGitCount > 0 || localCount > 0) {
-  skippedDetail = ' | Bỏ qua (phi-git/local): ' + (noGitCount + localCount);
-}
-msg += '> Đã quét **' + total + '** repos. Up-to-date: ' + upToDateCount + ' | Đã pull mới: ' + pulledCount + ' | Cần chú ý: ' + dirtyCount + ' | Lỗi: ' + errCount + skippedDetail + '\n';
+const targetLabel = targetProject ? `Target: \`${targetProject}\`` : 'Toàn Bộ Repos';
+let headerEmoji = '✅';
+if (errCount > 0) headerEmoji = '⚠️';
+if (pulledCount > 0) headerEmoji = '🚀';
 
-if (pulled.length > 0) {
-  msg += '\n✅ **Repos đã cập nhật code mới:**\n';
-  pulled.forEach(item => {
-    const parts = item.split(':');
-    if (parts.length >= 3) {
-      msg += '- `' + parts[0] + '`: pulled ' + parts[1].replace('↓', '') + ' commits → `' + parts.slice(2).join(':') + '`\n';
-    }
-  });
-}
+let finalMessage = `${headerEmoji} **[Repo Sync - ${runTime}]** (${targetLabel})\n\n` + reportText;
 
-if (dirty.length > 0) {
-  msg += '\n⚠️ **Repos chưa commit (bỏ qua pull):**\n';
-  dirty.forEach(item => {
-    const parts = item.split(':');
-    if (parts.length >= 2) {
-      msg += '- `' + parts[0] + '`: ' + parts.slice(1).join(':') + '\n';
-    }
-  });
-}
-
-if (errors.length > 0) {
-  msg += '\n❌ **Repos gặp lỗi (Fetch/Pull fail):**\n';
-  errors.forEach(item => {
-    const parts = item.split(':');
-    if (parts.length >= 2) {
-      msg += '- `' + parts[0] + '`: ' + parts.slice(1).join(':') + '\n';
-    }
-  });
-}
-
-return [{ json: { msg, reportText: msg, total, pulledCount, upToDateCount, dirtyCount, errCount, noGitCount, localCount } }];
+return [{
+  json: {
+    msg: finalMessage,
+    reportText: finalMessage,
+    targetProject,
+    targetBranch,
+    total: totalCount,
+    pulledCount,
+    upToDateCount,
+    resetCount,
+    errCount,
+    _triggerSource: triggerSource
+  }
+}];
