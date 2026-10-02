@@ -208,7 +208,9 @@ File template là **skeleton thuần** — mọi dòng trong đó đều là n�
 - Placeholder `[...]` còn sót chưa thay
 - Đường kẻ ngang `---` giữa các section
 
-**LƯU Ý QUAN TRỌNG:** KHÔNG bao gồm: "Giả định & Rủi ro", "Ngoài Phạm vi", "Đánh giá Độ tin cậy". Các phần này CHỈ dùng nội bộ.
+**LƯU Ý QUAN TRỌNG:**
+- **Business Context chuẩn mực:** BẮT BUỘC viết súc tích bằng 3 gạch đầu dòng (`Vấn đề`, `Mục tiêu`, `Tính cấp thiết`), tối đa 3-4 câu đúng trọng tâm. Tuyệt đối KHÔNG chia sub-heading H3 rườm rà, KHÔNG viết văn dài dòng lặp lại User Story.
+- **Nội dung nội bộ:** KHÔNG bao gồm: "Giả định & Rủi ro", "Ngoài Phạm vi", "Đánh giá Độ tin cậy". Các phần này CHỈ dùng nội bộ.
 
 ### Bước 3.2: Trình bày bản nháp cho User duyệt (APPROVAL GATE — BẮT BUỘC)
 
@@ -226,10 +228,41 @@ File template là **skeleton thuần** — mọi dòng trong đó đều là n�
 1. Copy `refined-draft.md` → `refined.md` (bản cuối cùng)
 2. **Làm giàu nội dung Spec bằng các Kỹ năng Bổ trợ (Sub-processes):**
    - Gọi kỹ năng `/ba-user-story-writing` để tinh chỉnh User Story + AC. **AC BẮT BUỘC** viết trong codeblock `gherkin` với ≥3 Scenario (Happy, Edge, Validation).
-   - **Diagram Preference Gate (BẮT BUỘC HỎI USER TRƯỚC KHI TẠO FLOW):**
-     - Đề xuất loại flow (Sơ đồ Editorial chuẩn HTML/SVG, Text, Không cần).
-     - Nếu user chọn sơ đồ Editorial: Gọi `/ba-process-modeling` để phân tích nghiệp vụ, sau đó gọi `/ba-design-flowchart` để sinh mã sơ đồ dạng HTML tĩnh. Vì Jira cần ảnh, BẮT BUỘC dùng lệnh export trong `ba-design-flowchart` (`python scripts/export.py`) để xuất file HTML thành PNG, lưu vào thư mục `diagrams/` và gắn placeholder vào tài liệu.
-     - Nếu user chọn Text: Viết list có đánh số.
+   - **HỦY BỎ Mermaid User Flow:** Tuyệt đối KHÔNG sinh sơ đồ flow dạng Mermaid trong `ba-refine`. Nếu cần làm rõ luồng thao tác của người dùng, sử dụng danh sách Text có đánh số ngắn gọn trong mục Ghi chú Tương tác.
+   - **Quy tắc Thiết kế Giao diện có Điều kiện (Conditional UI Design Gate):**
+     * **Điều kiện kiểm tra:** Xác định task có thay đổi UI/Frontend hay không (màn hình, component, form, controls, bảng dữ liệu, modal, layout...).
+     * **Nếu KHÔNG liên quan UI (Backend, API, Service ngầm, DB, Cronjob):** BỎ QUA bước thiết kế giao diện, mục UI Design trong `refined.md` ghi `N/A (Task không liên quan giao diện)`.
+     * **Nếu CÓ liên quan UI (Bắt buộc thiết kế mẫu giao diện bám sát Codebase):**
+       Thực hiện tuần tự 4 bước sau để tạo giao diện chính xác giống app thật:
+
+       **Bước 3.3.1: Quét và Bóc tách Mã nguồn (Codebase UI Inspection)**
+       - Với Web (React/Vite): Đọc `:root` CSS variables, `tailwind.config.js`, ThemeProvider, font chữ, mã màu sàn/trần/tham chiếu, và component cha đang chứa UI cần sửa.
+       - Với Mobile (Flutter): Đọc `AppColors`, `AppTextStyles`, `ThemeData` từ `lib/presentation/theme/` hoặc `packages/ui_kit/`.
+       - Asset & Icon: Quét và lấy file SVG icon thực tế từ `assets/icons/` hoặc `public/` (không tự bịa icon generic).
+       - Mock Data: Đọc fixture từ `__mocks__/` để lấy dữ liệu mã chứng khoán/số dư thật.
+
+       **Bước 3.3.2: Tích hợp Figma (Tùy chọn - nếu có Link Figma & FIGMA_API_TOKEN)**
+       - Nếu task có link Figma hoặc node ID, tải ảnh frame thiết kế gốc về làm baseline đối chiếu:
+         ```bash
+         node scripts/lib/figma-client.js exportImage "{figmaUrl}" "{nodeId}" "workspace/{issueKey}/tech/figma-base.png"
+         ```
+         *(Hoặc qua n8n Fast-Path: `node scripts/lib/n8n-client.js downloadFigmaFrame "{figmaUrl}" "{nodeId}" "workspace/{issueKey}/tech/figma-base.png"`)*
+
+       **Bước 3.3.3: Dựng File Mockup Tương Tác (HTML Mockup Assembly)**
+       - Sử dụng template chuẩn: `plugins/ba-po/skills/ba-refine/assets/mockup-harness.html`.
+       - Tạo file: `workspace/{issueKey}/tech/mockup.html`.
+       - Lựa chọn mode: Mobile Frame (khung iPhone 15 Pro, Status bar, Dynamic Island) hoặc Desktop Frame (Web Portal).
+       - Áp dụng các Design Tokens bóc tách từ codebase và bổ sung các controls/fields/validation theo đúng User Story và AC Gherkin.
+       - Lưu vết mapping vào `workspace/{issueKey}/tech/ui-mapping.json` (ghi nhận các tokens, components, file icon đã tái sử dụng).
+
+       **Bước 3.3.4: Xuất Bản Ảnh Snapshot Nét Cao (Playwright Automation)**
+       - Chạy script render để chụp snapshot chuẩn 2x Retina:
+         ```bash
+         node plugins/ba-po/skills/ba-refine/scripts/render-mockup.js \
+           "workspace/{issueKey}/tech/mockup.html" \
+           "workspace/{issueKey}/tech/mockup.png" fit 2
+         ```
+       - Cập nhật section `## 🎨 UI Design / Mockup` trong `refined.md` với link file HTML, ảnh PNG preview và ghi chú tương tác.
 
 3. **Tính confidence score.**
    > 📖 **Xem công thức tính và quy tắc chất lượng tại:** [quality-rules.md](quality-rules.md)

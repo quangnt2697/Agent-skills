@@ -87,6 +87,10 @@ const LEGACY_PATHS = [
     re: /docs\/stakeholder-interviews/g,
     hint: 'workspace/{issueKey}/spec/stakeholders.md',
   },
+  {
+    re: /(?<![\w\/.])reports\/(?!mdds-watchdog)/g,
+    hint: 'workspace/{issueKey}/trace/ or workspace/{slug}/trace/ (reports/ at repo root is forbidden)',
+  },
 ];
 
 // Lines that continue an ASCII directory tree are relative to the root printed
@@ -173,6 +177,9 @@ function findWorkspaceViolations(relPath) {
   const violations = [];
   const lines = fs.readFileSync(abs, 'utf8').split(/\r?\n/);
   lines.forEach((line, i) => {
+    // Skip prohibition statements that warn against using forbidden paths
+    if (/cấm|không được tạo|forbidden|tuyệt đối không/i.test(line)) return;
+
     // Any surviving mention of the old layout, tree lines included.
     for (const { re, hint } of LEGACY_PATHS) {
       re.lastIndex = 0;

@@ -446,21 +446,9 @@ So that **cung cấp tài liệu tuân thủ cho kiểm toán viên và giảm r
 
 ## 💼 Business Context
 
-### Tình trạng Hiện tại / Nỗi đau
-
-87 ticket hỗ trợ trong Q3 yêu cầu tính năng export. 60% liên quan compliance (cần chứng minh lịch sử giao dịch cho kiểm toán viên, cơ quan thuế).
-
-Giải pháp tạm: Chụp màn hình thủ công (dễ sai, không kiểm toán được).
-
-### Cơ hội / Tác động
-
-Giải quyết nỗi đau compliance cho trader chuyên nghiệp, giảm ~60% tải hỗ trợ.
-
-### Tại sao Bây giờ
-
-- Mùa thuế Q4 đang tới (nhu cầu cao)
-- Theo kịp đối thủ (3 đối thủ lớn đã ra tính năng export)
-- Giảm thiểu rủi ro (đội pháp chế cảnh báo thiếu audit trail)
+- **Vấn đề:** 87 ticket hỗ trợ trong Q3 yêu cầu export báo cáo phục vụ kiểm toán thuế; giải pháp chụp màn hình thủ công dễ sai lệch và không có giá trị pháp lý.
+- **Mục tiêu:** Cung cấp tính năng export báo cáo kèm audit trail chống giả mạo, giúp giảm ~60% tải hỗ trợ và đáp ứng yêu cầu compliance của trader chuyên nghiệp.
+- **Tính cấp thiết:** Mùa quyết toán thuế Q4 đang tới gần và cần đóng lỗ hổng thiếu audit trail theo cảnh báo của pháp chế.
 
 ## ✅ Acceptance Criteria
 
@@ -489,9 +477,9 @@ Scenario: Truy vấn audit trail
   And tôi có thể lọc theo user, khoảng thời gian, loại báo cáo
 ```
 
-## 🎨 User Flow / Design
+## 🎨 UI Design / Mockup
 
-### User Flow
+### Ghi chú Tương tác (UX Flow)
 
 1. User truy cập trang Báo cáo
 2. Chọn loại báo cáo (P&L Hàng ngày, Lịch sử Giao dịch, Tổng hợp Danh mục)
@@ -502,10 +490,13 @@ Scenario: Truy vấn audit trail
 7. User nhận link tải mã hóa
 8. User nhấn link → PDF được tải về
 
-### Ghi chú Thiết kế
+### UI Requirements & Codebase Mapping
 
-- Nút export: Hành động phụ (không phải CTA chính)
-- Indicator tiến trình: Spinner vô hạn nếu <5s, thanh tiến trình nếu lâu hơn
+- **Component bị ảnh hưởng:** `ReportExportModal.tsx`, `ExportButton.tsx` (tái sử dụng từ design system)
+- **Tái sử dụng Design Tokens:** Màu primary và spinner indicator có sẵn trong theme
+- **Nút export:** Hành động phụ (secondary button, không phải CTA chính)
+- **Indicator tiến trình:** Spinner vô hạn nếu <5s, thanh tiến trình nếu lâu hơn
+- **Mockup Artifact:** `workspace/STK-402/tech/mockup.html` (đã chụp snapshot `mockup.png`)
 
 ## ☀️ Success Criteria & Tracking
 

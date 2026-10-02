@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[ISSUE-KEY] UI Mockup Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── DESIGN SYSTEM TOKENS (Trích xuất từ Codebase Dự án) ── */
+    :root {
+      /* Theme Dark (Mặc định cho Trading / Fintech) */
+      --bg-app: #0e1114;
+      --bg-surface: #14181d;
+      --bg-card: #1c2127;
+      --bg-card-hover: #242b33;
+      --bg-input: #1a1f26;
+
+      --text-primary: #f0f3f6;
+      --text-secondary: #9aa4b2;
+      --text-muted: #647082;
+      --text-disabled: #434c59;
+
+      --border-subtle: #252c36;
+      --border-focus: #3d7fff;
+
+      /* Màu nghiệp vụ Chứng khoán (KRX / MDDS Standard) */
+      --stock-purple: #c80096; /* Giá Trần (Ceiling) */
+      --stock-cyan: #00ced1;   /* Giá Sàn (Floor) */
+      --stock-yellow: #f5a623; /* Giá Tham chiếu (Reference) */
+      --stock-green: #00d084;  /* Giá Tăng (Gain) */
+      --stock-red: #ff4d4f;    /* Giá Giảm (Loss) */
+
+      /* Nút bấm & Nhận diện thương hiệu */
+      --brand-primary: #1068eb;
+      --brand-primary-hover: #0c56c7;
+      --brand-accent: #f59e0b;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+      --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    [data-theme="light"] {
+      --bg-app: #f4f6f8;
+      --bg-surface: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f8fafc;
+      --bg-input: #f1f4f8;
+
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+      --text-disabled: #d1d5db;
+
+      --border-subtle: #e5e7eb;
+      --border-focus: #1068eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER THANH CÔNG CỤ XEM TRƯỚC ── */
+    .preview-toolbar {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+    }
+
+    .badge-task {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(16, 104, 235, 0.15);
+      color: #60a5fa;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-toggle.active, .btn-toggle:hover {
+      background: var(--brand-primary);
+      color: #ffffff;
+      border-color: var(--brand-primary);
+    }
+
+    /* ── KHUNG CHỨA CANVAS ── */
+    #mockup-canvas {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    /* ── KHUNG ĐIỆN THOẠI (MOBILE DEVICE FRAME) ── */
+    .device-frame.mobile-mode {
+      width: 393px;
+      height: 852px;
+      background: var(--bg-surface);
+      border: 10px solid #282d35;
+      border-radius: 50px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Dynamic Island & Status Bar */
+    .mobile-status-bar {
+      height: 48px;
+      padding: 12px 24px 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      position: relative;
+      z-index: 10;
+      color: var(--text-primary);
+    }
+
+    .dynamic-island {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 28px;
+      background: #000000;
+      border-radius: 20px;
+    }
+
+    .mobile-app-header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .mobile-content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .home-indicator {
+      width: 134px;
+      height: 5px;
+      background: var(--text-muted);
+      border-radius: 3px;
+      margin: 12px auto 8px auto;
+    }
+
+    /* ── KHUNG MÁY TÍNH (DESKTOP WEB FRAME) ── */
+    .device-frame.desktop-mode {
+      width: 100%;
+      max-width: 1180px;
+      min-height: 720px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .desktop-app-header {
+      height: 56px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+    }
+
+    .desktop-body {
+      display: flex;
+      flex: 1;
+    }
+
+    .desktop-sidebar {
+      width: 220px;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      padding: 16px 12px;
+    }
+
+    .desktop-content-area {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    /* ── CÁC COMPONENT UI MẪU CHUẨN (UI KIT) ── */
+    .ui-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--border-focus);
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--brand-primary);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-primary-hover);
+    }
+
+    .status-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-tag.gain { background: rgba(0, 208, 132, 0.15); color: var(--stock-green); }
+    .status-tag.loss { background: rgba(255, 77, 79, 0.15); color: var(--stock-red); }
+  </style>
+</head>
+<body>
+
+  <!-- Thanh công cụ điều khiển Mockup -->
+  <div class="preview-toolbar">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="badge-task">[ISSUE-KEY]</span>
+      <strong style="font-size: 14px;">[TIÊU ĐỀ GIAO DIỆN CẦN THIẾT KẾ]</strong>
+    </div>
+    <div class="toolbar-actions">
+      <button class="btn-toggle active" id="btnModeMobile" onclick="switchView('mobile')">📱 Mobile</button>
+      <button class="btn-toggle" id="btnModeDesktop" onclick="switchView('desktop')">💻 Desktop</button>
+      <button class="btn-toggle" onclick="toggleTheme()">🌗 Dark/Light</button>
+    </div>
+  </div>
+
+  <!-- Vùng vẽ Mockup chính (Canvas) -->
+  <div id="mockup-canvas">
+
+    <!-- KHUNG HIỂN THỊ (Mặc định: Mobile) -->
+    <div class="device-frame mobile-mode" id="deviceFrame">
+      
+      <!-- Mobile Bar -->
+      <div class="mobile-status-bar" id="mobileHeader">
+        <span>09:41</span>
+        <div class="dynamic-island"></div>
+        <span>5G 🔋</span>
+      </div>
+
+      <!-- Tiêu đề Header Màn hình -->
+      <div class="mobile-app-header">
+        <span style="font-weight: 600; font-size: 15px;">← Chi tiết Giao dịch</span>
+        <span style="color: var(--text-muted); cursor: pointer;">•••</span>
+      </div>
+
+      <!-- NỘI DUNG MÀN HÌNH (INJECT COMPONENT TỪ CODEBASE VÀ YÊU CẦU MỚI TẠI ĐÂY) -->
+      <div class="mobile-content-area" id="screenContent">
+        <!-- VÍ DỤ SLOT NỘI DUNG -->
+        <div class="ui-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong style="font-size: 16px;">VND (VNDIRECT)</strong>
+            <span class="status-tag gain">+2.45%</span>
+          </div>
+          <div style="display: flex; gap: 16px; font-size: 13px; color: var(--text-secondary);">
+            <span>Giá: <b style="color: var(--stock-green);">24,500</b></span>
+            <span>Khối lượng: <b>1,240,500</b></span>
+          </div>
+        </div>
+
+        <div class="ui-card">
+          <div class="form-group">
+            <label class="form-label">Loại Lệnh</label>
+            <input type="text" class="form-input" value="Lệnh giới hạn (LO)" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Khối Lượng Đặt</label>
+            <input type="number" class="form-input" placeholder="Nhập bội số 100" value="1000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Giá Đặt (x 1,000 đ)</label>
+            <input type="number" class="form-input" value="24.5">
+          </div>
+          <button class="btn-primary" style="margin-top: 8px;">Xác Nhận Đặt Lệnh Mua</button>
+        </div>
+      </div>
+
+      <!-- Mobile Home Indicator -->
+      <div class="home-indicator" id="mobileFooter"></div>
+    </div>
+
+  </div>
+
+  <script>
+    function switchView(mode) {
+      const frame = document.getElementById('deviceFrame');
+      const mobileHeader = document.getElementById('mobileHeader');
+      const mobileFooter = document.getElementById('mobileFooter');
+      const btnMobile = document.getElementById('btnModeMobile');
+      const btnDesktop = document.getElementById('btnModeDesktop');
+
+      if (mode === 'desktop') {
+        frame.className = 'device-frame desktop-mode';
+        mobileHeader.style.display = 'none';
+        mobileFooter.style.display = 'none';
+        btnDesktop.classList.add('active');
+        btnMobile.classList.remove('active');
+      } else {
+        frame.className = 'device-frame mobile-mode';
+        mobileHeader.style.display = 'flex';
+        mobileFooter.style.display = 'block';
+        btnMobile.classList.add('active');
+        btnDesktop.classList.remove('active');
+      }
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+
+    // Đánh dấu để Playwright biết giao diện đã render xong
+    window.__MOCKUP_READY__ = true;
+  </script>
+</body>
+</html>

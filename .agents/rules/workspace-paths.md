@@ -151,9 +151,14 @@ vai trò issueKey** — không bao giờ được rơi về gốc repo:
 |----------------------------|-------------------------------|---------------------------------------------------------------|
 | `qa-code2spec`             | Tên file/module               | `/project-root/workspace/{tên_file}/spec/final.md`            |
 | `ba-stakeholder-interview` | Tên project/feature dạng slug | `/project-root/workspace/{project-slug}/spec/stakeholders.md` |
+| `cr-review-code-and-quality`| Tên branch/module hoặc `code-review` | `/project-root/workspace/{slug}/trace/code-review-report.md` |
+| `webperf-core-vitals`      | Tên page slug hoặc `webperf`  | `/project-root/workspace/{slug}/trace/webperf-report.md`      |
+| `security-code-audit`      | Tên project slug hoặc `security` | `/project-root/workspace/{slug}/trace/security-audit-report.md` |
 
 **Slug hoá:** viết thường, bỏ dấu tiếng Việt, thay khoảng trắng bằng `-`
 (VD: `"Mobile Trading App"` → `mobile-trading-app`).
+
+> ⚠️ **CẤM TUYỆT ĐỐI:** Không bao giờ tạo thư mục `reports/`, `docs/`, `output/` ở gốc repo của bất kỳ dự án nào. Mọi báo cáo trace/audit/review đều BẮT BUỘC nằm trong thư mục `workspace/` theo cấu trúc trên.
 
 ---
 

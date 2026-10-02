@@ -243,10 +243,28 @@ export async function lintDomainGherkin(gherkinOrParams) {
   return await callN8nWebhook('qa-domain-lint', payload, 25000);
 }
 
+/**
+ * Fast-Path: Kéo ảnh render frame từ Figma làm giao diện chuẩn đối chiếu
+ * @param {string} fileKeyOrUrl Link Figma hoặc File Key
+ * @param {string} nodeId ID của Node/Frame
+ * @param {string} outputPath Đường dẫn lưu ảnh
+ * @param {object} options { scale, format }
+ * @returns {Promise<object>}
+ */
+export async function downloadFigmaFrame(fileKeyOrUrl, nodeId, outputPath, options = {}) {
+  try {
+    const payload = { fileKeyOrUrl, nodeId, outputPath, ...options };
+    return await callN8nWebhook('ui-design-mockup', payload, 30000);
+  } catch (err) {
+    const { exportFigmaImage } = await import('./figma-client.js');
+    return await exportFigmaImage(fileKeyOrUrl, nodeId, outputPath, options);
+  }
+}
+
 // ── CLI ENTRYPOINT (Chống sai lệch kiến trúc) ──────────────────────────────
 // Cho phép gọi trực tiếp script này từ Bash thay vì chỉ làm JS Module
 // Dùng pathToFileURL để đảm bảo portable trên Windows (path separator khác nhau)
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2);
   const action = args[0];
   if (!action) {
@@ -258,6 +276,9 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     try {
       let result;
       switch(action) {
+        case 'downloadFigmaFrame':
+          result = await downloadFigmaFrame(args[1], args[2], args[3], JSON.parse(args[4] || '{}'));
+          break;
         case 'prepJiraContext':
           result = await prepJiraContext(args[1]);
           break;

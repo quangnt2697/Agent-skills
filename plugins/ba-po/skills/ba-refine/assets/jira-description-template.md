@@ -6,17 +6,9 @@
 
 ## 💼 Business Context
 
-### Current Situation / Pain Point
-
-[Mô tả tình trạng hiện tại, vấn đề đang gặp phải]
-
-### Opportunity / Impact
-
-[Cơ hội kinh doanh, tác động khi giải quyết]
-
-### Why Now
-
-[Tính cấp thiết, tại sao cần làm ngay]
+- **Vấn đề (Problem):** [1-2 câu nêu đúng nỗi đau/tình trạng hiện tại, kèm số liệu nếu có]
+- **Mục tiêu (Goal):** [1 câu về kết quả kỳ vọng và giá trị mang lại]
+- **Tính cấp thiết (Urgency):** [1 câu ngắn giải thích lý do cần làm ngay]
 
 ## ✅ Acceptance Criteria
 
@@ -40,16 +32,21 @@ Feature: [Tên chức năng nghiệp vụ]
     Then [validation error message]
 ```
 
-## 🎨 User Flow / Design
+## 🎨 UI Design / Mockup
 
-### User Flow
+<!-- LƯU Ý: Phần này CHỈ áp dụng đối với task có thay đổi Giao diện người dùng (UI/Frontend).
+Nếu task thuần Backend/API/Logic ngầm/Database: Ghi "N/A (Task không liên quan giao diện)" hoặc lược bỏ.
+HỦY BỎ hoàn toàn User Flow dạng Mermaid. -->
 
-[Mermaid Flowchart được sinh tự động bởi ba-process-modeling]
+### UI Requirements & Codebase Mapping
+- **Màn hình / Component bị ảnh hưởng:** [Tên component/screen hiện hữu trong codebase cần sửa hoặc tạo mới]
+- **Tái sử dụng Design Tokens:** [Color tokens, Typography, Spacing, Theme có sẵn trong codebase]
+- **Cập nhật mới theo task:** [Mô tả các trường dữ liệu, controls, validation states hoặc layout mới]
 
-### Design
-
-- [Link Figma/Prototype]
-- [Wireframe / screenshot mockup]
+### Mockup / Prototype Deliverables
+- **Interactive Mockup (HTML):** [workspace/{issueKey}/tech/mockup.html hoặc Link Figma]
+- **Preview Snapshot (PNG):** [workspace/{issueKey}/tech/mockup.png hoặc ảnh đính kèm]
+- **Ghi chú Tương tác (UX):** [Mô tả ngắn gọn luồng thao tác/action của người dùng dạng text step-by-step nếu có]
 
 ## ☀️ Success Criteria & Tracking
 

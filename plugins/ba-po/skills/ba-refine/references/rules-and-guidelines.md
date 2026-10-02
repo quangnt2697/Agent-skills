@@ -89,7 +89,7 @@ Skill này tương tác với Jira/Confluence qua **n8n Fast-Path**:
 - Không stress-test các hướng đi
 - Không surface hidden assumptions
 - Push lên Jira mà chưa có user approval
-- Spec thiếu User Flow, Success Metrics, hoặc Acceptance Criteria
+- Spec thiếu UI Design/Mockup (đối với task liên quan giao diện), Success Metrics, hoặc Acceptance Criteria
 - Ignore constraints của codebase hiện tại
 - Nhảy cóc sang Phase 4 mà không chạy Phase 1-3
 - **Không show nội dung draft cho user trước khi chốt (Bước 3.2 bị bỏ qua)**

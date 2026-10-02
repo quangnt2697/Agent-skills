@@ -95,11 +95,12 @@ Bước 3.2: TRÌNH TOÀN BỘ NỘI DUNG cho user
 
 Bước 3.3: Copy refined-draft.md → refined.md
           → Gọi ba-user-story-writing để tinh chỉnh AC
-          → Hỏi user có muốn tạo flow diagram không (Mermaid/Text/Skip)
+          → [HỦY BỎ Mermaid] Nếu task liên quan UI: Quét tokens codebase (hoặc Figma nếu có) → Dựng mockup.html (mockup-harness.html) → Chụp mockup.png bằng Playwright (Task non-UI: ghi N/A)
           → Tính Confidence Score (ngưỡng ≥ 90%)
 ```
 
 **Checklist refined.md trước khi push:**
+- [ ] Business Context ngắn gọn đúng trọng tâm (đúng 3 gạch đầu dòng: Vấn đề, Mục tiêu, Tính cấp thiết; không dùng sub-heading H3 lan man)
 - [ ] Không có placeholder `[...]` còn sót
 - [ ] AC có ≥ 3 Scenario (Happy, Edge, Validation) dạng Given/When/Then
 - [ ] Không có heading nội bộ: "Giả định & Rủi ro", "Đánh giá Độ tin cậy"
