@@ -8,8 +8,8 @@ Lệnh đồng bộ nhanh mã nguồn: TẬP TRUNG DUY NHẤT VÀO CHỨC NĂNG 
 Trích xuất các cờ từ câu lệnh:
 - `-p <tên>`, `--project <tên>`, `project: <tên>`: Tên alias dự án trong `projects.json` hoặc đường dẫn thư mục.
 - `-b <nhánh>`, `--branch <nhánh>`, `branch: <nhánh>`: Nhánh cần pull bổ sung.
-- `--no-reset`: Tắt tính năng tự động reset working tree khi phát hiện thay đổi chưa commit.
-- `--stash`: Tự động stash thay đổi dở dang trước khi pull và pop lại (khi dùng kèm `--no-reset`).
+- `--force`: Cho phép `git reset --hard` + `git clean -fd` khi có thay đổi chưa commit (mặc định: bỏ qua repo dirty để tránh mất code).
+- `--stash`: Tự động stash thay đổi dở dang trước khi pull và pop lại .
 - `--dry-run`: Chỉ kiểm tra độ lệch commit mà không pull thật.
 - `--all`: Đồng bộ toàn bộ các dự án trong cấu hình.
 - `--list`: Liệt kê danh sách các dự án có trong cấu hình.

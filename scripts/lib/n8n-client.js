@@ -30,52 +30,63 @@ const DEFAULT_TIMEOUT_MS = parseInt(process.env.N8N_WEBHOOK_TIMEOUT_MS || '8000'
  * @param {number} timeoutMs Thời gian chờ tối đa
  * @returns {Promise<object|null>}
  */
-export async function callN8nWebhook(webhookPath, payload = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
+export async function callN8nWebhook(webhookPath, payload = {}, timeoutMs = DEFAULT_TIMEOUT_MS, { retries = 0 } = {}) {
   const cleanPath = webhookPath.replace(/^\//, '');
   const url = cleanPath.startsWith('webhook') 
     ? `${N8N_BASE_URL}/${cleanPath}` 
     : `${N8N_BASE_URL}/webhook/${cleanPath}`;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    let res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
-
-    // Nếu webhook production chưa Publish (404), thử gọi webhook-test (khi user đang test trên UI)
-    if (res.status === 404 && !cleanPath.includes('webhook-test')) {
-      const testUrl = `${N8N_BASE_URL}/webhook-test/${cleanPath.replace(/^webhook\//, '')}`;
-      const testRes = await fetch(testUrl, {
+  // Mỗi request có AbortController + timer riêng để lần gọi sau không bị trừ thời gian của lần trước
+  const post = async (targetUrl) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(targetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(payload),
         signal: controller.signal
-      }).catch(() => null);
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  const attempt = async () => {
+    const res = await post(url);
+
+    // Nếu webhook production chưa Publish (404), thử gọi webhook-test (khi user đang test trên UI)
+    if (res.status === 404 && !cleanPath.includes('webhook-test')) {
+      const testUrl = `${N8N_BASE_URL}/webhook-test/${cleanPath.replace(/^webhook\//, '')}`;
+      const testRes = await post(testUrl).catch(() => null);
       if (testRes && testRes.ok) {
-        clearTimeout(timer);
         return await testRes.json();
       }
     }
 
-    clearTimeout(timer);
-
     if (!res.ok) {
       const errText = await res.text().catch(() => '');
-      throw new Error(`n8n HTTP ${res.status}: ${errText}`);
+      const err = new Error(`n8n HTTP ${res.status}: ${errText}`);
+      err.status = res.status;
+      throw err;
     }
 
     return await res.json();
-  } catch (err) {
-    clearTimeout(timer);
-    throw err;
+  };
+
+  // Retry chỉ dành cho webhook idempotent (retries > 0); lỗi mạng tạm thời hoặc 502/503/504
+  const isTransient = (err) =>
+    [502, 503, 504].includes(err.status) ||
+    ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err.cause?.code || err.code);
+  const backoff = [300, 900];
+
+  for (let i = 0; ; i++) {
+    try {
+      return await attempt();
+    } catch (err) {
+      if (i >= retries || !isTransient(err)) throw err;
+      await new Promise(r => setTimeout(r, backoff[Math.min(i, backoff.length - 1)]));
+    }
   }
 }
 
@@ -85,7 +96,7 @@ export async function callN8nWebhook(webhookPath, payload = {}, timeoutMs = DEFA
  * @returns {Promise<object|null>}
  */
 export async function prepJiraContext(issueKey) {
-  return await callN8nWebhook('jira-prep', { issueKey });
+  return await callN8nWebhook('jira-prep', { issueKey }, 15000, { retries: 2 });
 }
 
 /**
@@ -165,7 +176,7 @@ export async function queryMetabase(query, options = {}) {
  * @returns {Promise<object>}
  */
 export async function getSecuritiesFixture(params = {}) {
-  return await callN8nWebhook('securities-fixture', params, 25000);
+  return await callN8nWebhook('securities-fixture', params, 25000, { retries: 2 });
 }
 
 /**

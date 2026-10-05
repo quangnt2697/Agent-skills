@@ -39,7 +39,7 @@ const apps = [
 ];
 
 const ngrokDomain = process.env.NGROK_DOMAIN;
-const n8nPort = process.env.N8N_PORT;
+const n8nPort = process.env.N8N_PORT || '5678';
 if (ngrokDomain) {
   apps.push({
     name: 'ngrok-tunnel',

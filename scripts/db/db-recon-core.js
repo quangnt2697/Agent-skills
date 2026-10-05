@@ -40,7 +40,12 @@ import {
 } from '../../.agents/db-client.js';
 
 loadEnv(path.join(projectRoot, '.env'));
-process.env.METABASE_ENV = 'prod';
+// Recon quét cả ngày dữ liệu: timeout mặc định 5s của db-client là quá thấp
+const RECON_TIMEOUT_MS = parseInt(process.env.RECON_STATEMENT_TIMEOUT || '180000', 10);
+
+function todayVN() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' });
+}
 
 const CORE_QUERIES = {
   q1: {
@@ -58,6 +63,7 @@ WITH isin_map AS (
   SELECT DISTINCT ON (isin) symbol, isin 
   FROM security_definition_v3 
   WHERE isin IS NOT NULL
+  ORDER BY isin, symbol
 ),
 raw_trades AS (
   SELECT 
@@ -75,8 +81,9 @@ v3_ticks AS (
   SELECT 
     symbol,
     COUNT(*)::int AS cnt_v3,
-    MAX(total_volume_traded)::bigint AS max_vol_v3,
-    SUM(match_qtty)::bigint AS sum_match_qtty_v3
+    -- V3 theo lô 10, prices theo lô 1 (chuẩn KRX) → nhân 10 để cùng đơn vị
+    (MAX(total_volume_traded) * 10)::bigint AS max_vol_v3,
+    (SUM(match_qtty) * 10)::bigint AS sum_match_qtty_v3
   FROM krx_mdds_v3_ticks
   WHERE sending_time >= '{{date}}'::date 
     AND sending_time <  '{{date}}'::date + INTERVAL '1 day'
@@ -96,7 +103,8 @@ SELECT
     WHEN COALESCE(v3.max_vol_v3, 0) != COALESCE(r.max_vol_raw, 0) THEN '🚨 SAI LỆCH NỘI DUNG TOTAL VOLUME'
     WHEN v3.cnt_v3 != r.cnt_raw THEN '⚠️ LỆCH SỐ BẢN GHI (VOLUME KHỚP)'
     ELSE '🟢 KHỚP HOÀN TOÀN'
-  END AS discrepancy_status
+  END AS discrepancy_status,
+  COUNT(*) OVER() AS total_mismatch
 FROM v3_ticks v3
 FULL OUTER JOIN raw_trades r ON v3.symbol = r.symbol
 WHERE v3.symbol IS NULL 
@@ -121,6 +129,7 @@ WITH isin_map AS (
   SELECT DISTINCT ON (isin) symbol, isin 
   FROM security_definition_v3 
   WHERE isin IS NOT NULL
+  ORDER BY isin, symbol
 ),
 raw_quotes AS (
   SELECT 
@@ -152,7 +161,8 @@ SELECT
     WHEN v3.symbol IS NOT NULL AND r.symbol IS NULL THEN '🟡 CHỈ CÓ TRÊN V3 TOPPRICE (THIẾU RAW)'
     WHEN v3.cnt_v3 != r.cnt_raw THEN '⚠️ LỆCH SỐ LƯỢT CẬP NHẬT SỔ LỆNH'
     ELSE '🟢 KHỚP HOÀN TOÀN'
-  END AS discrepancy_status
+  END AS discrepancy_status,
+  COUNT(*) OVER() AS total_mismatch
 FROM v3_topprice v3
 FULL OUTER JOIN raw_quotes r ON v3.symbol = r.symbol
 WHERE v3.symbol IS NULL 
@@ -178,6 +188,7 @@ WITH isin_map AS (
   SELECT DISTINCT ON (isin) symbol, isin 
   FROM security_definition_v3 
   WHERE isin IS NOT NULL
+  ORDER BY isin, symbol
 ),
 raw_trades AS (
   SELECT 
@@ -196,8 +207,9 @@ extra AS (
     symbol,
     COUNT(*)::int AS cnt_extra,
     COUNT(CASE WHEN side IS NOT NULL AND side != 0 THEN 1 END)::int AS cnt_side_ok,
-    SUM(match_qtty)::bigint AS sum_vol_extra,
-    MAX(total_volume_traded)::bigint AS max_vol_extra
+    -- V3 theo lô 10, prices theo lô 1 (chuẩn KRX) → nhân 10 để cùng đơn vị
+    (SUM(match_qtty) * 10)::bigint AS sum_vol_extra,
+    (MAX(total_volume_traded) * 10)::bigint AS max_vol_extra
   FROM krx_mdds_v3_ticks_extra
   WHERE sending_time >= '{{date}}'::date 
     AND sending_time <  '{{date}}'::date + INTERVAL '1 day'
@@ -219,7 +231,8 @@ SELECT
     WHEN e.cnt_extra != r.cnt_raw THEN '⚠️ LỆCH SỐ BẢN GHI (VOLUME KHỚP)'
     WHEN (COALESCE(e.cnt_side_ok, 0)::numeric / NULLIF(e.cnt_extra, 0)) < 0.95 THEN '⚠️ TỶ LỆ SIDE THẤP (<95%)'
     ELSE '🟢 KHỚP HOÀN TOÀN'
-  END AS discrepancy_status
+  END AS discrepancy_status,
+  COUNT(*) OVER() AS total_mismatch
 FROM extra e
 FULL OUTER JOIN raw_trades r ON e.symbol = r.symbol
 WHERE e.symbol IS NULL 
@@ -282,7 +295,8 @@ SELECT
     WHEN COALESCE(v3.max_vol_v3, v3.sum_vol_v3, 0) != COALESCE(e.max_vol_extra, e.sum_vol_extra, 0) THEN '🚨 SAI LỆCH NỘI DUNG TOTAL VOLUME'
     WHEN v3.cnt_v3 != e.cnt_extra THEN '⚠️ LỆCH SỐ BẢN GHI (VOLUME KHỚP)'
     ELSE '🟢 KHỚP HOÀN TOÀN'
-  END AS discrepancy_status
+  END AS discrepancy_status,
+  COUNT(*) OVER() AS total_mismatch
 FROM v3
 FULL OUTER JOIN extra e ON v3.symbol = e.symbol
 WHERE v3.symbol IS NULL 
@@ -312,6 +326,7 @@ async function executeSingleQuery(queryKey, dateStr) {
   const start = Date.now();
   const result = await metabaseFetch('/api/dataset', {
     method: 'POST',
+    timeout: RECON_TIMEOUT_MS,
     body: JSON.stringify({
       database: dbId,
       type: 'native',
@@ -338,17 +353,30 @@ async function executeSingleQuery(queryKey, dateStr) {
     name: qDef.name,
     durationMs,
     rowCount: rows.length,
+    totalMismatch: rows.length ? Number(rows[0].total_mismatch ?? rows.length) : 0,
     rows
   };
 }
 
+// Replica có thể hủy query dài do xung đột replication: thử lại tối đa 2 lần
+async function withRecoveryRetry(fn, retries = 2) {
+  for (let i = 0; ; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (i >= retries || !/conflict with recovery/i.test(err.message)) throw err;
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+}
+
 export async function runAllCoreRecon(targetDate) {
-  const dateStr = targetDate || new Date().toISOString().slice(0, 10);
+  const dateStr = targetDate || todayVN();
   const results = {};
 
-  for (const qKey of ['q1', 'q2', 'q3', 'q4']) {
+  const runOne = async (qKey) => {
     try {
-      results[qKey] = await executeSingleQuery(qKey, dateStr);
+      results[qKey] = await withRecoveryRetry(() => executeSingleQuery(qKey, dateStr));
     } catch (err) {
       results[qKey] = {
         queryKey: qKey,
@@ -359,7 +387,14 @@ export async function runAllCoreRecon(targetDate) {
         rows: []
       };
     }
-  }
+  };
+
+  // Mặc định tuần tự: chạy song song gây 'conflict with recovery' trên replica.
+  // Đặt RECON_CONCURRENCY=2 để chạy 2 luồng khi DB cho phép.
+  const lanes = process.env.RECON_CONCURRENCY === '2'
+    ? [['q1', 'q3'], ['q2', 'q4']]
+    : [['q1', 'q2', 'q3', 'q4']];
+  await Promise.all(lanes.map(async (lane) => { for (const k of lane) await runOne(k); }));
 
   return {
     date: dateStr,
@@ -380,7 +415,7 @@ function parseCliArgs() {
 
 async function main() {
   const args = parseCliArgs();
-  const dateStr = args.date || new Date().toISOString().slice(0, 10);
+  const dateStr = args.date || todayVN();
 
   console.log(`\n==============================================================`);
   console.log(`🔍 TIMESCALEDB MDDS CORE RECONCILIATION RUNNER (4 QUERIES)`);
@@ -404,12 +439,12 @@ async function main() {
     } else if (qRes.rowCount === 0) {
       console.log(`   🟢 100% ĐỒNG BỘ — Không phát hiện mã lệch nào.`);
     } else {
-      console.log(`   🚨 PHÁT HIỆN ${qRes.rowCount} MÃ SAI LỆCH:`);
+      console.log(`   🚨 PHÁT HIỆN ${qRes.totalMismatch} MÃ SAI LỆCH (hiển thị top ${qRes.rowCount}):`);
       qRes.rows.slice(0, 10).forEach(r => {
         console.log(`     - [${r.symbol}]: ${r.discrepancy_status} (Lệch bản ghi: ${r.diff_records || 0} | Lệch volume: ${r.diff_total_volume || 0})`);
       });
-      if (qRes.rowCount > 10) {
-        console.log(`     ... và ${qRes.rowCount - 10} mã khác.`);
+      if (qRes.totalMismatch > 10) {
+        console.log(`     ... và ${qRes.totalMismatch - 10} mã khác.`);
       }
     }
     console.log('');

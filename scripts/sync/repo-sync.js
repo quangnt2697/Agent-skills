@@ -17,9 +17,39 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
+
+const execFileAsync = promisify(execFile);
+
+/**
+ * Chạy lệnh git không qua shell (chống command injection), bất đồng bộ.
+ * Trả về stdout (đã trim). Ném lỗi kèm stderr khi thất bại.
+ */
+async function git(cmd, { cwd, timeout } = {}) {
+  const argv = [...cmd.replace(/^git\s+/, '').matchAll(/"([^"]*)"|'([^']*)'|(\S+)/g)]
+    .map(m => m[1] ?? m[2] ?? m[3]);
+  try {
+    const { stdout } = await execFileAsync('git', argv, { cwd, timeout, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+    return stdout.trim();
+  } catch (err) {
+    const stderr = (err.stderr || '').toString().trim();
+    err.message = stderr ? `${err.message.split('\n')[0]}\n${stderr}` : err.message;
+    throw err;
+  }
+}
+
+async function isValidBranchName(name) {
+  if (!name || name.startsWith('-')) return false;
+  try {
+    await execFileAsync('git', ['check-ref-format', '--branch', name]);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,6 +76,7 @@ export function parseArgs(rawArgs) {
     des: '',
     stash: false,
     noReset: false,
+    force: false,
     dryRun: false,
     all: false,
     list: false,
@@ -57,6 +88,7 @@ export function parseArgs(rawArgs) {
   // 1. Kiểm tra boolean flags
   if (/(?:^|\s)--stash(?:\s|$)/i.test(text)) options.stash = true;
   if (/(?:^|\s)--no-reset(?:\s|$)/i.test(text)) options.noReset = true;
+  if (/(?:^|\s)--force(?:\s|$)/i.test(text)) options.force = true;
   if (/(?:^|\s)--dry-run(?:\s|$)/i.test(text)) options.dryRun = true;
   if (/(?:^|\s)--all(?:\s|$)/i.test(text)) options.all = true;
   if (/(?:^|\s)--list(?:\s|$)/i.test(text)) options.list = true;
@@ -238,7 +270,7 @@ function inspectPathAndCollect(name, targetPath, targetList) {
 
 // ─── GIT SYNC ENGINE ─────────────────────────────────────────────────────────
 
-export function syncSingleRepo(repoPath, options = {}) {
+export async function syncSingleRepo(repoPath, options = {}) {
   const result = {
     name: path.basename(repoPath),
     path: repoPath,
@@ -262,7 +294,7 @@ export function syncSingleRepo(repoPath, options = {}) {
   try {
     // 0. Kiểm tra repo có commit nào chưa (Unborn branch do mới git init)
     try {
-      execSync('git rev-parse --verify HEAD', { cwd: repoPath, stdio: ['pipe', 'pipe', 'pipe'] });
+      await git('git rev-parse --verify HEAD', { cwd: repoPath });
     } catch {
       result.status = 'UNBORN';
       result.message = 'Repo mới khởi tạo (git init), chưa có commit nào.';
@@ -273,11 +305,7 @@ export function syncSingleRepo(repoPath, options = {}) {
     // 0.1. Kiểm tra remote origin
     let remote = '';
     try {
-      remote = execSync('git remote get-url origin', {
-        cwd: repoPath,
-        encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'pipe']
-      }).trim();
+      remote = await git('git remote get-url origin', { cwd: repoPath });
     } catch {
       // Không có remote origin
     }
@@ -290,29 +318,18 @@ export function syncSingleRepo(repoPath, options = {}) {
     }
 
     // 1. Lấy tên branch ban đầu
-    result.initialBranch = execSync('git rev-parse --abbrev-ref HEAD', {
-      cwd: repoPath,
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe']
-    }).trim();
+    result.initialBranch = await git('git rev-parse --abbrev-ref HEAD', { cwd: repoPath });
     result.currentBranch = result.initialBranch;
 
     // 2. Kiểm tra trạng thái Working Tree (Dirty check)
-    const statusOut = execSync('git status --porcelain', {
-      cwd: repoPath,
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe']
-    }).trim();
+    const statusOut = await git('git status --porcelain', { cwd: repoPath });
 
     const isDirty = statusOut.length > 0;
 
     if (isDirty) {
       if (options.stash) {
         try {
-          execSync('git stash push -u -m "auto-stash-before-repo-sync"', {
-            cwd: repoPath,
-            stdio: ['pipe', 'pipe', 'pipe']
-          });
+          await git('git stash push -u -m "auto-stash-before-repo-sync"', { cwd: repoPath });
           result.didStash = true;
           result.stashMessage = 'Đã tự động stash thay đổi chưa commit';
         } catch (sErr) {
@@ -321,40 +338,26 @@ export function syncSingleRepo(repoPath, options = {}) {
           result.durationMs = Date.now() - startTime;
           return result;
         }
-      } else if (options.noReset) {
+      } else if (!options.force) {
         result.status = 'DIRTY_SKIPPED';
-        result.message = 'Có thay đổi chưa commit (--no-reset). Đã bỏ qua để tránh mất code.';
+        result.message = 'Có thay đổi chưa commit. Đã bỏ qua để tránh mất code (dùng --stash hoặc --force để reset).';
         result.durationMs = Date.now() - startTime;
         return result;
       } else {
-        // MẶC ĐỊNH: Tự động reset working tree về trạng thái sạch sẽ ban đầu
+        // CHỈ KHI --force: reset working tree về trạng thái sạch (không hoàn tác được)
         const dirtyFilesCount = statusOut.split('\n').filter(Boolean).length;
-        execSync('git reset --hard HEAD', {
-          cwd: repoPath,
-          stdio: ['pipe', 'pipe', 'pipe']
-        });
-        execSync('git clean -fd', {
-          cwd: repoPath,
-          stdio: ['pipe', 'pipe', 'pipe']
-        });
+        await git('git reset --hard HEAD', { cwd: repoPath });
+        await git('git clean -fd', { cwd: repoPath });
         result.wasReset = true;
         result.resetMessage = `Đã reset ${dirtyFilesCount} file modified/untracked`;
       }
     }
 
     // 3. Fetch toàn bộ các nhánh từ remote
-    execSync('git fetch --all --prune', {
-      cwd: repoPath,
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 60000
-    });
+    await git('git fetch --all --prune', { cwd: repoPath, timeout: 60000 });
 
     // 4. Lấy danh sách toàn bộ các nhánh local
-    const branchListOut = execSync("git for-each-ref --format='%(refname:short)' refs/heads/", {
-      cwd: repoPath,
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe']
-    }).trim();
+    const branchListOut = await git("git for-each-ref --format='%(refname:short)' refs/heads/", { cwd: repoPath });
 
     let localBranches = branchListOut.split('\n').map(b => b.trim()).filter(Boolean);
     if (localBranches.length === 0) {
@@ -367,12 +370,12 @@ export function syncSingleRepo(repoPath, options = {}) {
     let targetBranches = [];
     if (options.branch) {
       // Nếu có cờ -b <branch> chỉ định nhánh cụ thể
+      if (!(await isValidBranchName(options.branch))) {
+        throw new Error(`Tên nhánh không hợp lệ: ${options.branch}`);
+      }
       if (!localBranches.includes(options.branch)) {
         try {
-          execSync(`git checkout ${options.branch}`, {
-            cwd: repoPath,
-            stdio: ['pipe', 'pipe', 'pipe']
-          });
+          await git(`git checkout ${options.branch}`, { cwd: repoPath });
           targetBranches.push(options.branch);
         } catch {
           // Bỏ qua nếu không checkout được
@@ -407,19 +410,12 @@ export function syncSingleRepo(repoPath, options = {}) {
 
       try {
         // Chuyển sang nhánh cần pull
-        execSync(`git checkout ${branch}`, {
-          cwd: repoPath,
-          stdio: ['pipe', 'pipe', 'pipe']
-        });
+        await git(`git checkout ${branch}`, { cwd: repoPath });
 
         // Kiểm tra upstream tracking
         let upstream = '';
         try {
-          upstream = execSync('git rev-parse --abbrev-ref @{u}', {
-            cwd: repoPath,
-            encoding: 'utf8',
-            stdio: ['pipe', 'pipe', 'pipe']
-          }).trim();
+          upstream = await git('git rev-parse --abbrev-ref @{u}', { cwd: repoPath });
         } catch {
           // Chưa có tracking
         }
@@ -427,14 +423,8 @@ export function syncSingleRepo(repoPath, options = {}) {
         if (!upstream) {
           // Thử tìm origin/<branch> để set-upstream
           try {
-            execSync(`git rev-parse --verify origin/${branch}`, {
-              cwd: repoPath,
-              stdio: ['pipe', 'pipe', 'pipe']
-            });
-            execSync(`git branch --set-upstream-to=origin/${branch} ${branch}`, {
-              cwd: repoPath,
-              stdio: ['pipe', 'pipe', 'pipe']
-            });
+            await git(`git rev-parse --verify origin/${branch}`, { cwd: repoPath });
+            await git(`git branch --set-upstream-to=origin/${branch} ${branch}`, { cwd: repoPath });
             upstream = `origin/${branch}`;
           } catch {
             // Nhánh chỉ có ở local
@@ -444,21 +434,13 @@ export function syncSingleRepo(repoPath, options = {}) {
         if (!upstream) {
           bRes.status = 'NO_UPSTREAM';
           bRes.message = 'Chưa có remote tracking';
-          bRes.latestSha = execSync('git rev-parse --short HEAD', {
-            cwd: repoPath,
-            encoding: 'utf8',
-            stdio: ['pipe', 'pipe', 'pipe']
-          }).trim();
+          bRes.latestSha = await git('git rev-parse --short HEAD', { cwd: repoPath });
           result.branches.push(bRes);
           continue;
         }
 
         // So sánh commit delta: HEAD vs @{u}
-        const deltaStr = execSync('git rev-list --left-right --count HEAD...@{u}', {
-          cwd: repoPath,
-          encoding: 'utf8',
-          stdio: ['pipe', 'pipe', 'pipe']
-        }).trim();
+        const deltaStr = await git('git rev-list --left-right --count HEAD...@{u}', { cwd: repoPath });
 
         const [aheadCount, behindCount] = deltaStr.split(/\s+/).map(n => parseInt(n, 10) || 0);
         bRes.ahead = aheadCount;
@@ -481,21 +463,14 @@ export function syncSingleRepo(repoPath, options = {}) {
             bRes.status = 'BEHIND';
             bRes.message = `[Dry-run] Có ${behindCount} commit mới`;
           } else {
-            execSync('git pull --ff-only', {
-              cwd: repoPath,
-              stdio: ['pipe', 'pipe', 'pipe']
-            });
+            await git('git pull --ff-only', { cwd: repoPath });
             bRes.status = 'PULLED';
             bRes.message = `Đã kéo +${behindCount} commit`;
             hasPulled = true;
           }
         }
 
-        bRes.latestSha = execSync('git rev-parse --short HEAD', {
-          cwd: repoPath,
-          encoding: 'utf8',
-          stdio: ['pipe', 'pipe', 'pipe']
-        }).trim();
+        bRes.latestSha = await git('git rev-parse --short HEAD', { cwd: repoPath });
 
       } catch (err) {
         bRes.status = 'ERROR';
@@ -508,10 +483,7 @@ export function syncSingleRepo(repoPath, options = {}) {
 
     // 6. Trở lại nhánh ban đầu
     try {
-      execSync(`git checkout ${result.initialBranch}`, {
-        cwd: repoPath,
-        stdio: ['pipe', 'pipe', 'pipe']
-      });
+      await git(`git checkout ${result.initialBranch}`, { cwd: repoPath });
       result.currentBranch = result.initialBranch;
     } catch {
       // Bỏ qua nếu có lỗi checkout quay lại
@@ -520,7 +492,7 @@ export function syncSingleRepo(repoPath, options = {}) {
     // 7. Khôi phục stash nếu có
     if (result.didStash) {
       try {
-        execSync('git stash pop', { cwd: repoPath, stdio: ['pipe', 'pipe', 'pipe'] });
+        await git('git stash pop', { cwd: repoPath });
         result.stashMessage = 'Đã khôi phục stash';
       } catch {
         result.stashMessage = '⚠️ Xung đột stash (dữ liệu trong stash list)';
@@ -529,11 +501,7 @@ export function syncSingleRepo(repoPath, options = {}) {
 
     // Lấy SHA mới nhất của nhánh hiện tại
     try {
-      result.latestSha = execSync('git rev-parse --short HEAD', {
-        cwd: repoPath,
-        encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'pipe']
-      }).trim();
+      result.latestSha = await git('git rev-parse --short HEAD', { cwd: repoPath });
     } catch {
       result.latestSha = '-';
     }
@@ -711,21 +679,21 @@ export async function run(rawArgs = process.argv.slice(2)) {
     return;
   }
 
-  console.log(`🚀 Bắt đầu đồng bộ ${targets.length} repository${targets.length > 1 ? ' (song song, concurrency=5)' : ''}...`);
+  console.log(`🚀 Bắt đầu đồng bộ ${targets.length} repository${targets.length > 1 ? ' (song song thực sự, concurrency=5)' : ''}...`);
   const results = [];
 
   if (targets.length <= 1) {
     // Độc lập: chạy tuần tự cho 1 repo
     for (const target of targets) {
       process.stdout.write(`  ⏳ Đang kiểm tra ${target.name}... `);
-      const res = syncSingleRepo(target.path, options);
+      const res = await syncSingleRepo(target.path, options);
       results.push(res);
       console.log(`[${res.status}]`);
     }
   } else {
     // Nhiều repo: chạy song song với giới hạn concurrency=5
     const tasks = targets.map(target => async () => {
-      const res = syncSingleRepo(target.path, options);
+      const res = await syncSingleRepo(target.path, options);
       // In kết quả ngay sau khi xong (có thể không theo thứ tự)
       console.log(`  [${res.status}] ${target.name}`);
       return res;

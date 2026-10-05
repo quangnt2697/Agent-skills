@@ -1,6 +1,6 @@
 ---
 name: repo-group-sync
-description: Đồng bộ, fetch và pull mã nguồn mới nhất của các dự án hoặc microservices trong group về máy cục bộ. Tự động reset working tree nếu dirty, fetch toàn bộ các nhánh (--all --prune) và pull code toàn bộ các nhánh local (--ff-only). Sử dụng khi cần cập nhật code trước khi phân tích spec, viết test, review code hoặc chạy pipeline e2e-delivery.
+description: Đồng bộ, fetch và pull mã nguồn mới nhất của các dự án hoặc microservices trong group về máy cục bộ. Bỏ qua repo dirty (chỉ reset working tree khi có --force), fetch toàn bộ các nhánh (--all --prune) và pull code toàn bộ các nhánh local (--ff-only). Sử dụng khi cần cập nhật code trước khi phân tích spec, viết test, review code hoặc chạy pipeline e2e-delivery.
 ---
 
 # Kỹ Năng: Đồng Bộ Mã Nguồn Dự Án (repo-group-sync)
@@ -41,8 +41,9 @@ Kỹ năng `repo-group-sync` tự động hóa việc đưa working tree về tr
             ▼
 [BƯỚC 2: TỰ ĐỘNG RESET WORKING TREE (NẾU DIRTY)]
   ├── Kiểm tra git status --porcelain
-  ├── Mặc định: git reset --hard HEAD && git clean -fd (đưa về sạch như ban đầu)
-  └── Nếu bật --no-reset: SKIP (hoặc git stash nếu có thêm --stash)
+  ├── Mặc định: SKIP (DIRTY_SKIPPED) để tránh mất code
+  ├── Nếu bật --stash: git stash trước khi pull, pop lại sau
+  └── Nếu bật --force: git reset --hard HEAD && git clean -fd (KHÔNG hoàn tác được)
             │
             ▼
 [BƯỚC 3: FETCH TOÀN BỘ CÁC NHÁNH]
@@ -71,8 +72,9 @@ Tại từng repository mục tiêu:
 1. Lưu lại nhánh làm việc ban đầu (`git rev-parse --abbrev-ref HEAD`).
 2. Kiểm tra trạng thái: `git status --porcelain`.
 3. Nếu phát hiện file sửa dở hoặc untracked files (dirty working tree):
-   - **Mặc định:** Thực thi `git reset --hard HEAD` và `git clean -fd` để dọn sạch toàn bộ thay đổi dở dang, đưa repository về đúng trạng thái sạch ban đầu.
-   - **Khi có cờ `--no-reset`:** Bỏ qua repo này (`DIRTY_SKIPPED`), trừ khi có kèm `--stash` thì tiến hành auto-stash.
+   - **Mặc định:** Bỏ qua repo này (`DIRTY_SKIPPED`).
+   - **Khi có cờ `--stash`:** auto-stash rồi pop lại sau khi pull.
+   - **Khi có cờ `--force`:** Thực thi `git reset --hard HEAD` và `git clean -fd` (không hoàn tác được).
 
 ### Bước 3: Fetch Toàn Bộ Các Nhánh Từ Remote
 1. Thực hiện kéo metadata và commits mới nhất của tất cả các nhánh: `git fetch --all --prune`.
@@ -100,8 +102,8 @@ Kỹ năng hỗ trợ trọn bộ cú pháp cờ tương thích:
 | **Project** | `-p <name>`, `--project <name>`, `project: <name>` | Chỉ định alias dự án từ `projects.json` hoặc đường dẫn |
 | **Branch** | `-b <name>`, `--branch <name>`, `branch: <name>` | Chỉ định thêm nhánh muốn checkout và pull |
 | **Ghi chú** | `-d <text>`, `--des <text>`, `des: <text>` | Mô tả thêm mục đích đồng bộ |
-| **No-reset**| `--no-reset` | Không tự động reset working tree khi phát hiện có thay đổi chưa commit |
-| **Auto-stash**| `--stash` | Tự động stash thay đổi chưa commit trước khi pull (khi dùng cùng `--no-reset`) |
+| **Force**| `--force` | Reset --hard + clean -fd working tree dirty (không hoàn tác được) |
+| **Auto-stash**| `--stash` | Tự động stash thay đổi chưa commit trước khi pull  |
 | **Dry-run** | `--dry-run` | Chỉ kiểm tra chênh lệch commit, không pull thật |
 | **Toàn bộ** | `--all` | Đồng bộ toàn bộ các dự án trong cấu hình |
 | **Danh sách** | `--list` | Liệt kê danh sách các dự án có trong cấu hình |
@@ -110,7 +112,7 @@ Kỹ năng hỗ trợ trọn bộ cú pháp cờ tương thích:
 - `/sync -p order-service`
 - `/repo-sync project: order-service`
 - `/sync -p 3.1`
-- `/sync -p backend --no-reset --stash`
+- `/sync -p backend --stash`
 - CLI: `npm run repo:sync -- -p order-service`
 - Mattermost: `/agent sync -p order-service`
 

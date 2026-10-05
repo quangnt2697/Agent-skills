@@ -108,20 +108,18 @@ for (const pluginDirName of subPlugins) {
   const linkDest = path.join(targetPluginsDir, pluginName);
 
   if (isUnlink) {
-    if (fs.existsSync(linkDest)) {
-      try {
-        fs.rmSync(linkDest, { recursive: true, force: true });
-        console.log(`  - Đã gỡ bỏ: ${pluginName}`);
-        successCount++;
-      } catch (err) {
-        console.warn(`  ⚠️ Không thể gỡ bỏ ${pluginName}: ${err.message}`);
-      }
+    try {
+      fs.rmSync(linkDest, { recursive: true, force: true });
+      console.log(`  - Đã gỡ bỏ: ${pluginName}`);
+      successCount++;
+    } catch (err) {
+      console.warn(`  ⚠️ Không thể gỡ bỏ ${pluginName}: ${err.message}`);
     }
   } else if (isSymlink) {
     // Chế độ Symlink (Dev)
-    if (fs.existsSync(linkDest)) {
-      const stat = fs.lstatSync(linkDest);
-      if (stat.isSymbolicLink()) {
+    try {
+      const stat = fs.lstatSync(linkDest, { throwIfNoEntry: false });
+      if (stat && stat.isSymbolicLink()) {
         try {
           const currentTarget = fs.readlinkSync(linkDest);
           if (path.resolve(targetPluginsDir, currentTarget) === pluginSrc) {
@@ -130,11 +128,9 @@ for (const pluginDirName of subPlugins) {
             continue;
           }
         } catch (e) {}
-        fs.unlinkSync(linkDest);
-      } else {
-        fs.rmSync(linkDest, { recursive: true, force: true });
       }
-    }
+      fs.rmSync(linkDest, { recursive: true, force: true });
+    } catch (e) {}
 
     try {
       fs.symlinkSync(pluginSrc, linkDest, 'dir');
@@ -145,18 +141,9 @@ for (const pluginDirName of subPlugins) {
     }
   } else {
     // Chế độ Copy/Sync (Default - Bắt buộc cho Antigravity IDE để tránh lỗi vi phạm ranh giới workspace)
-    if (fs.existsSync(linkDest)) {
-      try {
-        const stat = fs.lstatSync(linkDest);
-        if (stat.isSymbolicLink()) {
-          fs.unlinkSync(linkDest);
-        } else {
-          fs.rmSync(linkDest, { recursive: true, force: true });
-        }
-      } catch (e) {
-        fs.rmSync(linkDest, { recursive: true, force: true });
-      }
-    }
+    try {
+      fs.rmSync(linkDest, { recursive: true, force: true });
+    } catch (e) {}
 
     try {
       fs.cpSync(pluginSrc, linkDest, { recursive: true, dereference: true, force: true });
@@ -172,14 +159,16 @@ for (const pluginDirName of subPlugins) {
 if (!isUnlink) {
   if (fs.existsSync(sourceReferencesDir)) {
     try {
-      if (fs.existsSync(targetReferencesDir)) {
-        const stat = fs.lstatSync(targetReferencesDir);
-        if (stat.isSymbolicLink()) fs.unlinkSync(targetReferencesDir);
+      fs.rmSync(targetReferencesDir, { recursive: true, force: true });
+      if (isSymlink) {
+        fs.symlinkSync(sourceReferencesDir, targetReferencesDir, 'dir');
+        console.log(`  ✅ Đã liên kết symlink tài liệu dùng chung: references/ -> ~/.gemini/config/references`);
+      } else {
+        fs.cpSync(sourceReferencesDir, targetReferencesDir, { recursive: true, dereference: true, force: true });
+        console.log(`  ✅ Đã đồng bộ tài liệu dùng chung: references/ -> ~/.gemini/config/references/`);
       }
-      fs.cpSync(sourceReferencesDir, targetReferencesDir, { recursive: true, dereference: true, force: true });
-      console.log(`  ✅ Đã đồng bộ tài liệu dùng chung: references/ -> ~/.gemini/config/references/`);
     } catch (err) {
-      console.warn(`  ⚠️ Cảnh báo khi sao chép references/: ${err.message}`);
+      console.warn(`  ⚠️ Cảnh báo khi liên kết/sao chép references/: ${err.message}`);
     }
   }
 
@@ -192,16 +181,17 @@ if (!isUnlink) {
       const dstSub = path.join(targetScriptsDir, subDir);
       if (!fs.existsSync(srcSub)) continue;
       try {
-        if (fs.existsSync(dstSub)) {
-          const stat = fs.lstatSync(dstSub);
-          if (stat.isSymbolicLink()) fs.unlinkSync(dstSub);
-          else fs.rmSync(dstSub, { recursive: true, force: true });
-        }
+        fs.rmSync(dstSub, { recursive: true, force: true });
         if (!fs.existsSync(targetScriptsDir)) fs.mkdirSync(targetScriptsDir, { recursive: true });
-        fs.cpSync(srcSub, dstSub, { recursive: true, dereference: true, force: true });
-        console.log(`  ✅ Đã đồng bộ scripts/${subDir}/ -> ~/.gemini/config/scripts/${subDir}/`);
+        if (isSymlink) {
+          fs.symlinkSync(srcSub, dstSub, 'dir');
+          console.log(`  ✅ Đã liên kết symlink scripts/${subDir}/ -> ~/.gemini/config/scripts/${subDir}`);
+        } else {
+          fs.cpSync(srcSub, dstSub, { recursive: true, dereference: true, force: true });
+          console.log(`  ✅ Đã đồng bộ scripts/${subDir}/ -> ~/.gemini/config/scripts/${subDir}/`);
+        }
       } catch (err) {
-        console.warn(`  ⚠️ Cảnh báo khi sao chép scripts/${subDir}/: ${err.message}`);
+        console.warn(`  ⚠️ Cảnh báo khi liên kết/sao chép scripts/${subDir}/: ${err.message}`);
       }
     }
   }
@@ -209,40 +199,39 @@ if (!isUnlink) {
   // Đồng bộ AGENTS.md sang ~/.gemini/config/AGENTS.md (Áp dụng Global cho Antigravity IDE)
   if (fs.existsSync(sourceAgentsMd)) {
     try {
-      if (fs.existsSync(targetAgentsMd)) {
-        const stat = fs.lstatSync(targetAgentsMd);
-        if (stat.isSymbolicLink()) fs.unlinkSync(targetAgentsMd);
+      fs.rmSync(targetAgentsMd, { recursive: true, force: true });
+      if (isSymlink) {
+        fs.symlinkSync(sourceAgentsMd, targetAgentsMd, 'file');
+        console.log(`  ✅ Đã liên kết symlink luật hệ thống: AGENTS.md -> ~/.gemini/config/AGENTS.md`);
+      } else {
+        fs.copyFileSync(sourceAgentsMd, targetAgentsMd);
+        console.log(`  ✅ Đã đồng bộ luật hệ thống toàn cục: AGENTS.md -> ~/.gemini/config/AGENTS.md`);
       }
-      fs.copyFileSync(sourceAgentsMd, targetAgentsMd);
-      console.log(`  ✅ Đã đồng bộ luật hệ thống toàn cục: AGENTS.md -> ~/.gemini/config/AGENTS.md`);
     } catch (err) {
-      console.warn(`  ⚠️ Cảnh báo khi sao chép AGENTS.md: ${err.message}`);
+      console.warn(`  ⚠️ Cảnh báo khi liên kết/sao chép AGENTS.md: ${err.message}`);
     }
   }
 
   // Đồng bộ thư mục rules/ sang ~/.gemini/config/rules/ (Chứa action-first-adhd.md)
   if (fs.existsSync(sourceRulesDir)) {
     try {
-      if (fs.existsSync(targetRulesDir)) {
-        const stat = fs.lstatSync(targetRulesDir);
-        if (stat.isSymbolicLink()) fs.unlinkSync(targetRulesDir);
+      fs.rmSync(targetRulesDir, { recursive: true, force: true });
+      if (isSymlink) {
+        fs.symlinkSync(sourceRulesDir, targetRulesDir, 'dir');
+        console.log(`  ✅ Đã liên kết symlink thư mục rules: rules/ -> ~/.gemini/config/rules`);
+      } else {
+        fs.cpSync(sourceRulesDir, targetRulesDir, { recursive: true, dereference: true, force: true });
+        console.log(`  ✅ Đã đồng bộ thư mục rules toàn cục: rules/ -> ~/.gemini/config/rules/`);
       }
-      fs.cpSync(sourceRulesDir, targetRulesDir, { recursive: true, dereference: true, force: true });
-      console.log(`  ✅ Đã đồng bộ thư mục rules toàn cục: rules/ -> ~/.gemini/config/rules/`);
     } catch (err) {
-      console.warn(`  ⚠️ Cảnh báo khi sao chép rules/: ${err.message}`);
+      console.warn(`  ⚠️ Cảnh báo khi liên kết/sao chép rules/: ${err.message}`);
     }
   }
 } else {
-  if (fs.existsSync(targetReferencesDir)) {
-    try { fs.rmSync(targetReferencesDir, { recursive: true, force: true }); } catch (e) {}
-  }
-  if (fs.existsSync(targetScriptsDir)) {
-    try { fs.rmSync(targetScriptsDir, { recursive: true, force: true }); } catch (e) {}
-  }
-  if (fs.existsSync(targetRulesDir)) {
-    try { fs.rmSync(targetRulesDir, { recursive: true, force: true }); } catch (e) {}
-  }
+  try { fs.rmSync(targetReferencesDir, { recursive: true, force: true }); } catch (e) {}
+  try { fs.rmSync(targetScriptsDir, { recursive: true, force: true }); } catch (e) {}
+  try { fs.rmSync(targetAgentsMd, { recursive: true, force: true }); } catch (e) {}
+  try { fs.rmSync(targetRulesDir, { recursive: true, force: true }); } catch (e) {}
 }
 
 console.log('');
