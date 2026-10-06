@@ -35,3 +35,6 @@ workspace/
 scratch*.*
 *.patch.*
 test-*.cjs
+
+# Báo cáo runtime ở gốc repo — vi phạm quy tắc Zero Pollution, dùng workspace/
+reports/
