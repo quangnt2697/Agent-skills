@@ -16,7 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..', '..');
 
-const mappings = [
+export const mappings = [
   {
     workflowFile: 'n8n-workflows/qa-run-test-workflow.json',
     nodeName: 'Extract issueKey',
@@ -181,46 +181,72 @@ const mappings = [
   }
 ];
 
-console.log('🔄 Đang đồng bộ các node script vào n8n workflows...');
+/**
+ * Đồng bộ code từ script vào `parameters.jsCode` của node trong workflow.
+ * @param {{root?: string, items?: typeof mappings, write?: boolean, log?: (m: string) => void}} [opts]
+ *   write=false → chỉ kiểm tra (không ghi file), dùng cho `--check`.
+ * @returns {{synced: number, drifted: string[], errors: string[]}}
+ *   drifted: các node có jsCode khác script nguồn (trước khi ghi).
+ */
+export function syncNodes({ root = projectRoot, items = mappings, write = true, log = () => {} } = {}) {
+  let synced = 0;
+  const drifted = [];
+  const errors = [];
+  const cache = new Map();
 
-let syncedCount = 0;
-const cache = new Map();
+  for (const item of items) {
+    const workflowPath = path.join(root, item.workflowFile);
+    const scriptPath = path.join(root, item.scriptFile);
 
-for (const item of mappings) {
-  const workflowPath = path.join(projectRoot, item.workflowFile);
-  const scriptPath = path.join(projectRoot, item.scriptFile);
+    if (!fs.existsSync(workflowPath)) {
+      errors.push(`Không tìm thấy workflow: ${item.workflowFile}`);
+      continue;
+    }
+    if (!fs.existsSync(scriptPath)) {
+      errors.push(`Không tìm thấy script: ${item.scriptFile}`);
+      continue;
+    }
 
-  if (!fs.existsSync(workflowPath)) {
-    console.error(`❌ Không tìm thấy workflow: ${item.workflowFile}`);
-    continue;
+    if (!cache.has(workflowPath)) {
+      cache.set(workflowPath, JSON.parse(fs.readFileSync(workflowPath, 'utf8')));
+    }
+
+    const workflowJson = cache.get(workflowPath);
+    const codeContent = fs.readFileSync(scriptPath, 'utf8');
+
+    const targetNode = workflowJson.nodes.find(n => n.id === item.nodeId || n.name === item.nodeName);
+    if (!targetNode) {
+      errors.push(`Không tìm thấy node [${item.nodeName}] trong ${item.workflowFile}`);
+      continue;
+    }
+
+    if (!targetNode.parameters) targetNode.parameters = {};
+    if (targetNode.parameters.jsCode !== codeContent) {
+      drifted.push(`${item.workflowFile} -> "${item.nodeName}"`);
+    }
+    targetNode.parameters.jsCode = codeContent;
+    synced++;
+    log(`  ✅ [${item.workflowFile}] -> node "${item.nodeName}" updated từ ${item.scriptFile}`);
   }
-  if (!fs.existsSync(scriptPath)) {
-    console.error(`❌ Không tìm thấy script: ${item.scriptFile}`);
-    continue;
+
+  if (write) {
+    for (const [wfPath, wfData] of cache.entries()) {
+      fs.writeFileSync(wfPath, JSON.stringify(wfData, null, 2) + '\n', 'utf8');
+    }
   }
-
-  if (!cache.has(workflowPath)) {
-    const raw = fs.readFileSync(workflowPath, 'utf8');
-    cache.set(workflowPath, JSON.parse(raw));
-  }
-
-  const workflowJson = cache.get(workflowPath);
-  const codeContent = fs.readFileSync(scriptPath, 'utf8');
-
-  let targetNode = workflowJson.nodes.find(n => n.id === item.nodeId || n.name === item.nodeName);
-  if (!targetNode) {
-    console.warn(`⚠️ Không tìm thấy node [${item.nodeName}] trong ${item.workflowFile}`);
-    continue;
-  }
-
-  if (!targetNode.parameters) targetNode.parameters = {};
-  targetNode.parameters.jsCode = codeContent;
-  syncedCount++;
-  console.log(`  ✅ [${item.workflowFile}] -> node "${item.nodeName}" updated từ ${item.scriptFile}`);
+  return { synced, drifted, errors };
 }
 
-for (const [wfPath, wfData] of cache.entries()) {
-  fs.writeFileSync(wfPath, JSON.stringify(wfData, null, 2) + '\n', 'utf8');
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  const check = process.argv.includes('--check');
+  console.log(check ? '🔍 Kiểm tra lệch giữa node scripts và n8n workflows...' : '🔄 Đang đồng bộ các node script vào n8n workflows...');
+  const { synced, drifted, errors } = syncNodes({ write: !check, log: check ? undefined : console.log });
+  errors.forEach(e => console.error(`❌ ${e}`));
+  if (check) {
+    drifted.forEach(d => console.error(`⚠️ Lệch: ${d}`));
+    if (errors.length || drifted.length) process.exit(1);
+    console.log(`✅ ${synced} code nodes đồng bộ.`);
+  } else {
+    console.log(`✨ Hoàn tất đồng bộ ${synced} n8n code nodes thành công!\n`);
+  }
 }
-
-console.log(`✨ Hoàn tất đồng bộ ${syncedCount} n8n code nodes thành công!\n`);
