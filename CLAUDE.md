@@ -2,7 +2,7 @@
 
 Đây là dự án agent-skills — bộ sưu tập kỹ năng (skills) cấp sản xuất cho các AI coding agents.
 
-> **Phạm vi:** File này cấu hình agent Claude làm việc trong repo [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills). Không copy file này vào dự án khác hay cấu hình agent toàn cục; tài sản tái sử dụng được nằm trong `plugins/`.
+> **Phạm vi:** File này cấu hình agent Claude làm việc trong repo `agent-skills` (fork nội bộ của [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)). Không copy file này vào dự án khác hay cấu hình agent toàn cục; tài sản tái sử dụng được nằm trong `plugins/`.
 
 ## Cấu trúc Dự án
 
@@ -25,7 +25,7 @@ docs/                             → Hướng dẫn cài đặt và thiết k�
 
 ## Quy Tắc Dùng Chung (Shared Rules)
 
-> 📖 **Toàn bộ định nghĩa 7 Personas, Pipelines, Ma trận trách nhiệm, Git Workflow và Confidence Level System được chuẩn hóa tập trung tại:** **[AGENTS.md](AGENTS.md)**
+> 📖 **Toàn bộ định nghĩa 8 vai trò (Personas), Pipelines, Ma trận trách nhiệm, Git Workflow và Confidence Level System được chuẩn hóa tập trung tại:** **[AGENTS.md](AGENTS.md)**
 
 ## Pipeline Tích hợp (E2E Delivery)
 
