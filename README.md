@@ -53,10 +53,20 @@ Do dự án bao gồm nhiều hệ sinh thái (Agent Plugins, n8n Fast-Path, Ngr
 
 👉 **Mời bạn xem: [Cẩm Nang Cài Đặt & Tích Hợp (Installation Guide)](docs/guides/installation-guide.md)**
 
+**Bắt đầu nhanh (macOS):**
+```bash
+git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
+cd agent-skills
+npm run setup:mac     # cài công cụ, tạo .env, nạp n8n workflows, đồng bộ plugins
+npm test              # kiểm tra cài đặt
+```
+Windows/Linux: làm thủ công theo "Tùy chọn B" trong guide.
+
 *Tài liệu trên bao gồm:*
-- *Kịch bản cài đặt A-Z chỉ với 1 lệnh cho macOS (`npm run setup:mac`).*
+- *Yêu cầu hệ thống và hai mức cài đặt: Tối thiểu (chỉ dùng skills) và Đầy đủ (kèm ChatOps).*
 - *Hướng dẫn kết nối Agent Plugins cho Antigravity / Gemini CLI.*
-- *Hướng dẫn tích hợp hệ thống ChatOps qua n8n và Mattermost Slash Command.*
+- *Tích hợp ChatOps qua n8n, ngrok và Mattermost Slash Command, kèm tự khởi động n8n cùng macOS.*
+- *Bảng xử lý sự cố thường gặp.*
 - [docs/guides/adoption-guide.md](docs/guides/adoption-guide.md) — Cẩm nang áp dụng theo quy trình Agile/Scrum
 
 ### Workflow cơ bản

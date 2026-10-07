@@ -1,104 +1,160 @@
 # Hướng Dẫn Cài Đặt (Installation Guide)
 
-Tài liệu này là "Single Source of Truth" (nguồn chân lý duy nhất) cho toàn bộ quy trình thiết lập dự án `agent-skills`. Quy trình được chia thành các giai đoạn từ cơ bản (Quick Start) đến nâng cao (n8n, Ngrok, Mattermost) để bạn dễ dàng theo dõi.
+Tài liệu này là nguồn chân lý duy nhất cho việc thiết lập `agent-skills` trên máy mới. Chọn mức độ cài đặt bạn cần:
+
+| Mức | Bạn muốn | Làm các giai đoạn | Thời gian |
+|---|---|---|---|
+| **Tối thiểu** | Dùng skills/slash commands trong AI Agent (Antigravity / Gemini CLI) | 0 → 1 → 2 | ~5 phút |
+| **Đầy đủ** | Thêm n8n Fast-Path + ChatOps Mattermost `/agent` | 0 → 1 → 2 → 3 (→ 4 nếu muốn tự chạy cùng máy) | ~20 phút |
 
 ---
 
-## Giai đoạn 1: Chuẩn bị Môi trường (Quick Start)
+## Giai đoạn 0: Yêu cầu hệ thống
 
-Dự án yêu cầu **Node.js >= v20** và công cụ quản lý tiến trình **PM2** (sẽ được tự động cài cục bộ).
+| Thành phần | Yêu cầu | Kiểm tra | Bắt buộc cho |
+|---|---|---|---|
+| Git + quyền truy cập GitLab (SSH key) | — | `git --version` | Mọi mức |
+| Node.js | **>= 20** | `node -v` | Mọi mức |
+| n8n CLI | Cài toàn cục (script tự cài) | `n8n --version` | Mức đầy đủ |
+| ngrok | Tài khoản ngrok miễn phí | `ngrok version` | Chỉ ChatOps/Mattermost |
+| Hệ điều hành | macOS (tự động hoá hoàn toàn); Windows/Linux làm thủ công (Tuỳ chọn B) | — | — |
 
-### Tùy chọn A: Cài đặt Tất Cả Từ A-Z (Khuyên dùng cho macOS)
-Nếu đây là một thiết bị macOS mới tinh, bạn chỉ cần chạy duy nhất 1 lệnh này sau khi clone repo:
+> PM2 **không cần cài riêng**: đã nằm trong `dependencies`, các lệnh `npm run n8n:*` tự dùng bản cục bộ.
 
+---
+
+## Giai đoạn 1: Cài đặt dự án
+
+### Tùy chọn A: Một lệnh cho macOS (khuyên dùng)
 ```bash
-git clone https://gitlab.example.com/org/agent-skills.git
+git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
 cd agent-skills
 npm run setup:mac
 ```
-Kịch bản tự động này sẽ cài đặt Homebrew, Node.js, Ngrok, copy `.env.example` thành `.env`, chạy `npm install` và nạp sẵn toàn bộ Workflows mẫu vào n8n.
+Script tự động: cài Homebrew/Node/ngrok/n8n nếu thiếu → tạo `.env`, `projects.json`, `sm-config.yaml` từ file mẫu → `npm install` → khởi tạo database n8n và nạp workflows mẫu → đồng bộ plugins + rules vào `~/.gemini/config/` (Giai đoạn 2).
 
-### Tùy chọn B: Cài đặt Thủ Công (Cho Windows/Linux)
+### Tùy chọn B: Thủ công (Windows/Linux, hoặc macOS đã có sẵn công cụ)
 ```bash
-git clone https://gitlab.example.com/org/agent-skills.git
+git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
 cd agent-skills
 cp .env.example .env
+cp projects.json.example projects.json
+cp sm-config.example.yaml sm-config.yaml
 npm install
-npm run n8n:setup
+npm run n8n:setup        # cài n8n nếu thiếu và nạp workflows mẫu (chỉ cần cho mức Đầy đủ)
 ```
+
+### Điền file `.env`
+Mở `.env` và điền theo mức bạn dùng. File `.env`, `projects.json`, `sm-config.yaml` đã nằm trong `.gitignore` — **không commit**.
+
+| Biến | Cần cho | Ghi chú |
+|---|---|---|
+| `AGENT_WORKSPACE_DIR` | Mọi mức | Đường dẫn tuyệt đối tới thư mục repo này |
+| `PROJECT_SCAN_DIRS` | Tuỳ chọn | Các thư mục chứa repo cần agent scan, phân tách bằng dấu phẩy |
+| `GEMINI_API_KEY` | ChatOps | Lấy miễn phí tại [Google AI Studio](https://aistudio.google.com/app/apikey) |
+| `MATTERMOST_WEBHOOK_URL` | ChatOps | Incoming Webhook của Mattermost |
+| `NGROK_DOMAIN` | ChatOps | Static domain ngrok, không gồm `https://` |
+| `ATLASSIAN_*`, `SQUASH_*`, `GITLAB_*`, `METABASE_*` | Skill tương ứng | Chỉ điền cho tích hợp bạn thực sự dùng |
+
+### Kiểm tra cài đặt
+```bash
+npm test      # validate skills/commands/links + unit tests + evals
+```
+Tất cả phải PASS trước khi chuyển sang giai đoạn tiếp theo.
 
 ---
 
-## Giai đoạn 2: Tích hợp AI Agent CLI (Antigravity/Gemini/Claude)
+## Giai đoạn 2: Tích hợp AI Agent CLI (Antigravity / Gemini)
 
-Do `agent-skills` được tổ chức theo kiến trúc modular gồm 8 plugins chuyên biệt (`ba-po`, `qa`, `dev`, `scrum-master`, v.v.), bạn cần link chúng vào công cụ Agent CLI trên máy của mình.
+`agent-skills` gồm 8 plugins (`ba-po`, `qa`, `dev`, `scrum-master`, `code-reviewer`, `security-auditor`, `web-performance-auditor`, `core`). Cần đồng bộ chúng vào cấu hình toàn cục của Agent CLI.
 
-**Bước 1: Link Plugins & Đồng Bộ Global Rules**
-Chạy lệnh sau để hệ thống tự động nhận diện toàn bộ skills và đồng bộ hệ thống Rules cốt lõi (Action-First, Focus Protocol / ADHD-Friendly):
+**Bước 1: Đồng bộ plugins & rules** *(Tuỳ chọn A đã chạy sẵn bước này; chạy lại khi pull bản mới)*
 ```bash
 npm run setup:plugins
-# hoặc ngắn gọn: npm run setup
 ```
-*(Lệnh trên sẽ đồng bộ an toàn 8 sub-plugins, tài liệu tham chiếu, script hỗ trợ cùng toàn bộ luật hệ thống `AGENTS.md` và thư mục `rules/` vào cấu hình toàn cục `~/.gemini/config/`. Nếu muốn gỡ bỏ, chỉ cần chạy: `npm run unlink:plugins`).*
+Lệnh này sao chép plugins, `references/`, một số script, `AGENTS.md` và `.agents/rules/` vào `~/.gemini/config/`. Gỡ bỏ: `npm run unlink:plugins`. Dành cho người phát triển skill: `npm run setup:plugins:symlink` để sửa trong repo là có hiệu lực ngay.
 
-**Bước 2: Sử dụng với AI Agent**
-Bây giờ, bạn có thể gọi trực tiếp các lệnh (slash commands) tích hợp sẵn trong khung chat của agent. Dưới đây là các lệnh phổ biến:
+> Sau khi `git pull`, hãy chạy lại `npm run setup:plugins` để máy bạn nhận skills mới.
 
-| Lệnh | Chức năng | Kích hoạt skill tương ứng |
+**Bước 2: Dùng trong khung chat của agent** — mở lại Agent CLI/IDE, gõ các slash command:
+
+| Lệnh | Chức năng | Skill tương ứng |
 |---|---|---|
-| `/tech-spec` | Viết đặc tả cấu trúc trước khi code | `dev-spec-driven-development` |
+| `/tech-spec` | Viết đặc tả kỹ thuật trước khi code | `dev-spec-driven-development` |
 | `/plan` | Chia nhỏ công việc | `dev-planning-and-task-breakdown` |
-| `/build` | Code từng bước (incrementally) | `dev-incremental-implementation` |
-| `/unit-test` | Chạy workflow TDD | `dev-test-driven-development` |
+| `/build` | Code từng bước | `dev-incremental-implementation` |
+| `/unit-test` | Workflow TDD | `dev-test-driven-development` |
 | `/review` | Review code 5 phương diện | `cr-review-code-and-quality` |
+
+Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` có đủ 8 plugin và khởi động lại agent.
 
 ---
 
-## Giai đoạn 3: Tích hợp ChatOps (n8n + Mattermost + Ngrok)
+## Giai đoạn 3: Tích hợp ChatOps (n8n + Mattermost + ngrok)
 
-Hệ thống n8n giúp bạn xây dựng **Mattermost Slash Command** `/agent` với chi phí $0, tăng tốc xử lý (Fast-Path) với thời gian < 1s.
+*Bỏ qua giai đoạn này nếu bạn chỉ dùng skills trong Agent CLI.*
 
-### Bước 1: Khởi động n8n chạy ngầm (Background Daemon)
-```bash
-npm run n8n:bg
-```
-*Ghi chú: Lệnh này dùng PM2 (được tự động cài ở Giai đoạn 1) ẩn dưới nền với lượng RAM rất nhỏ (~100MB). Bạn có thể tắt Terminal thoải mái.*
+n8n giúp tạo **Mattermost Slash Command** `/agent` với chi phí $0 và phản hồi < 1s (Fast-Path).
 
-### Bước 2: Thiết lập Ngrok Static Domain
-Để Mattermost Cloud gọi được webhook về máy tính cục bộ của bạn, bạn cần một Webhook URL công khai và cố định.
+### Bước 1: Thiết lập ngrok Static Domain
 1. Đăng ký tài khoản miễn phí tại [ngrok.com](https://ngrok.com/).
-2. Lấy **Authtoken** và chạy lệnh: `ngrok config add-authtoken <TOKEN_CỦA_BẠN>`
-3. Tạo 1 **Static Domain** miễn phí trên giao diện web của Ngrok (VD: `dinosaur-cute.ngrok-free.app`).
-4. Khởi động Ngrok chạy ngầm qua PM2 để nó luôn sống chung với n8n:
-   ```bash
-   npx pm2 start ngrok --name "ngrok-tunnel" -- http --domain=TEN_DOMAIN_CUA_BAN 5678
-   ```
+2. Lấy **Authtoken** và chạy: `ngrok config add-authtoken <TOKEN_CỦA_BẠN>`
+3. Tạo 1 **Static Domain** miễn phí trên giao diện web ngrok (VD: `dinosaur-cute.ngrok-free.app`).
+4. Điền vào `.env`: `NGROK_DOMAIN=dinosaur-cute.ngrok-free.app`
 
-### Bước 3: Cấu hình File `.env`
-Mở file `.env` tại thư mục gốc của dự án và điền các thông tin quan trọng:
+### Bước 2: Điền khoá tích hợp vào `.env`
 ```env
-# Lấy miễn phí tại: https://aistudio.google.com/app/apikey
-GEMINI_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-# Webhook lấy từ Mattermost (Incoming Webhooks) để n8n trả lời tin nhắn
+GEMINI_API_KEY=...                    # https://aistudio.google.com/app/apikey
 MATTERMOST_WEBHOOK_URL=https://mattermost.example.com/hooks/xxx-yyy-zzz
+NGROK_DOMAIN=dinosaur-cute.ngrok-free.app
 ```
-Sau khi lưu file `.env`, bắt buộc phải khởi động lại n8n để nạp cấu hình mới:
+
+### Bước 3: Khởi động n8n (+ ngrok) chạy ngầm
 ```bash
-npm run n8n:restart
+npm run n8n:bg        # n8n và ngrok-tunnel (nếu có NGROK_DOMAIN) chạy dưới PM2
+npm run n8n:status    # cả hai phải ở trạng thái "online"
 ```
+Mở http://localhost:5678 để vào giao diện n8n (lần đầu sẽ yêu cầu tạo tài khoản owner cục bộ). Bạn có thể tắt Terminal thoải mái. **Mỗi lần sửa `.env` phải chạy `npm run n8n:restart`** để nạp cấu hình mới.
+
+> Không tự chạy thêm `pm2 start ngrok` thủ công — `ecosystem.config.cjs` đã quản lý tiến trình ngrok, chạy thêm sẽ bị trùng.
 
 ### Bước 4: Tạo Slash Command `/agent` trên Mattermost
 1. Đăng nhập Mattermost (yêu cầu quyền Admin).
 2. Vào **Main Menu** (☰) → **Integrations** → **Slash Commands** → **Add Slash Command**.
 3. Điền thông tin:
    - **Command Trigger Word:** `agent`
-   - **Request URL:** `https://TEN_DOMAIN_CUA_BAN/webhook/mattermost-router` *(Nhớ thay bằng domain Ngrok của bạn và bắt buộc dùng `https://`)*.
+   - **Request URL:** `https://<NGROK_DOMAIN>/webhook/mattermost-router` *(thay bằng domain ngrok của bạn, bắt buộc `https://`)*.
    - **Request Method:** `POST`
    - **Autocomplete Hint:** `[standup|jira <ISSUE-KEY>|test|squash|help]`
 4. Lưu lại.
 
-Bây giờ vào bất kỳ kênh nào trên Mattermost và gõ: `/agent help`. Nếu hệ thống trả lời ngay lập tức, chúc mừng bạn đã cấu hình hoàn tất toàn bộ hệ sinh thái!
+Vào bất kỳ kênh nào trên Mattermost và gõ: `/agent help`. Nếu hệ thống trả lời ngay, ChatOps đã hoạt động.
+
+---
+
+## Giai đoạn 4 (Tuỳ chọn): Tự khởi động n8n cùng macOS
+
+Mặc định, sau khi reboot máy thì n8n **không** tự chạy lại. Để bật tự khởi động (PM2 + launchd):
+```bash
+npm run n8n:autostart
+```
+Script sẽ in ra 1 lệnh bắt đầu bằng `sudo ...` — **copy và chạy lệnh đó trong terminal** (cần mật khẩu admin). Kiểm tra: `ls ~/Library/LaunchAgents | grep pm2` phải thấy file `pm2.<tên-user>.plist`. Gỡ bỏ: `npm run n8n:autostart:off`.
+
+> Nếu bạn thêm/xoá tiến trình PM2 sau đó, chạy lại `npx pm2 save` để cập nhật danh sách khởi động.
+
+---
+
+## Xử lý sự cố thường gặp
+
+| Triệu chứng | Nguyên nhân | Cách khắc phục |
+|---|---|---|
+| `n8n: command not found` | Chưa cài n8n toàn cục | `npm run n8n:setup` hoặc `npm install -g n8n` |
+| `EADDRINUSE :5678` | n8n đã chạy (PM2 hoặc `npm run n8n`) | `npm run n8n:status`; dừng bản trùng bằng `npm run n8n:stop` |
+| Mattermost báo timeout/404 | ngrok chưa chạy hoặc sai domain | `npm run n8n:status` phải có `ngrok-tunnel online`; kiểm tra `NGROK_DOMAIN` rồi `npm run n8n:restart` |
+| Sửa `.env` nhưng không có tác dụng | n8n chưa nạp lại cấu hình | `npm run n8n:restart` |
+| Lỗi `sqlite3`/native build khi import workflow | n8n thiếu binary sqlite3 | `npm run n8n:setup` (tự biên dịch lại) |
+| `sudo ... pm2: No such file or directory` | Dùng lệnh `pm2 startup` tự gõ | Chạy `npm run n8n:autostart` và dùng đúng lệnh script in ra |
+| Agent không thấy skills mới sau `git pull` | Chưa đồng bộ plugins | `npm run setup:plugins` rồi khởi động lại agent |
 
 ---
 
