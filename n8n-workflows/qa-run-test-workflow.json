@@ -74,8 +74,8 @@
     {
       "parameters": {
         "mode": "expression",
-        "output": "={{ $json._triggerSource === 'webhook' ? 0 : 1 }}",
-        "numberOutputs": 2
+        "output": "={{ $json._triggerSource === 'webhook' ? 0 : ($json._triggerSource === 'executeWorkflow' ? 1 : 2) }}",
+        "numberOutputs": 3
       },
       "id": "route-by-caller",
       "name": "Route by Caller",
@@ -127,6 +127,19 @@
         400
       ],
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "qa-return-to-sub-workflow",
+      "name": "Return to Sub-workflow",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1700,
+        500
+      ]
     }
   ],
   "connections": {
@@ -190,6 +203,13 @@
         [
           {
             "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return to Sub-workflow",
             "type": "main",
             "index": 0
           }
