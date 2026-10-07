@@ -6,6 +6,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import os from 'node:os';
+import path from 'node:path';
 
 const mode = process.argv[2];
 if (!['on', 'off'].includes(mode)) {
@@ -17,8 +18,11 @@ if (process.platform !== 'darwin') {
   process.exit(1);
 }
 
-const run = (args) => spawnSync('pm2', args, { encoding: 'utf8' });
+const run = (args) => spawnSync(pm2Bin, args, { encoding: 'utf8' });
 const user = os.userInfo().username;
+// sudo không có node_modules/.bin trong PATH → thay `pm2` bằng đường dẫn tuyệt đối.
+const pm2Bin = path.resolve('node_modules', '.bin', 'pm2');
+const withAbsPm2 = (cmd) => cmd.trim().replace(/ pm2 /, ` ${pm2Bin} `);
 
 if (mode === 'on') {
   const start = run(['start', 'ecosystem.config.cjs']);
@@ -39,7 +43,7 @@ if (mode === 'on') {
   const cmd = out.split('\n').find((l) => l.trim().startsWith('sudo '));
   if (cmd) {
     console.log('\n▶ Chạy lệnh sau trong terminal (cần quyền admin) để hoàn tất:\n');
-    console.log(`  ${cmd.trim()}\n`);
+    console.log(`  ${withAbsPm2(cmd)}\n`);
   } else if (startup.status === 0) {
     console.log('✅ Startup launchd đã được cấu hình.');
   } else {
@@ -52,7 +56,7 @@ if (mode === 'on') {
   const cmd = out.split('\n').find((l) => l.trim().startsWith('sudo '));
   if (cmd) {
     console.log('▶ Chạy lệnh sau trong terminal để gỡ autostart:\n');
-    console.log(`  ${cmd.trim()}\n`);
+    console.log(`  ${withAbsPm2(cmd)}\n`);
   } else {
     console.log(res.status === 0 ? '✅ Đã gỡ autostart.' : `⚠️ ${out.trim()}`);
   }
