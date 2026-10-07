@@ -51,6 +51,18 @@ fi
 echo "📦 Cài đặt các thư viện Node.js (Dependencies)..."
 npm install
 
+# 5b. Cài n8n CLI toàn cục (cần có trước khi khởi tạo database)
+if ! command -v n8n &> /dev/null; then
+    echo "📦 n8n chưa được cài đặt. Đang cài n8n (npm install -g n8n)..."
+    npm install -g n8n
+else
+    echo "✅ n8n đã sẵn sàng ($(n8n --version))."
+fi
+
+# 5c. Tạo file cấu hình cục bộ từ mẫu (nếu chưa có)
+[ -f projects.json ] || { [ -f projects.json.example ] && cp projects.json.example projects.json && echo "📄 Tạo projects.json từ mẫu."; }
+[ -f sm-config.yaml ] || { [ -f sm-config.example.yaml ] && cp sm-config.example.yaml sm-config.yaml && echo "📄 Tạo sm-config.yaml từ mẫu."; }
+
 # 6. Khởi động n8n lần đầu để tạo database, sau đó import workflows
 echo "⚙️ Khởi động n8n lần đầu để khởi tạo cơ sở dữ liệu..."
 # Cần chạy n8n 1 lần để tạo file database.sqlite trước khi import workflow
@@ -74,11 +86,13 @@ echo ""
 echo "🎉 XONG! TOÀN BỘ MÔI TRƯỜNG ĐÃ ĐƯỢC CÀI ĐẶT THÀNH CÔNG."
 echo "============================================================"
 echo "Các bước tiếp theo dành cho bạn:"
-echo "1. Cập nhật thông tin (API Keys, Token) vào file .env vừa được tạo."
-echo "2. Lấy Authtoken tại ngrok.com và chạy lệnh:"
+echo "1. Điền API keys/token vào file .env (tối thiểu: GEMINI_API_KEY, MATTERMOST_WEBHOOK_URL)."
+echo "2. (Chỉ khi dùng ChatOps) Lấy Authtoken tại ngrok.com:"
 echo "   ngrok config add-authtoken <TOKEN_CỦA_BẠN>"
-echo "3. Khởi động n8n chạy ngầm bằng lệnh:"
+echo "   rồi điền NGROK_DOMAIN=<static-domain>.ngrok-free.app vào .env"
+echo "3. Khởi động n8n (+ ngrok nếu có NGROK_DOMAIN) chạy ngầm:"
 echo "   npm run n8n:bg"
-echo "4. Khởi động ngrok chạy ngầm bằng lệnh:"
-echo "   npx pm2 start ngrok --name 'ngrok-tunnel' -- http --domain=TEN_DOMAIN_CUA_BAN 5678"
+echo "4. (Tuỳ chọn) Tự khởi động cùng macOS:"
+echo "   npm run n8n:autostart   # rồi chạy lệnh sudo mà script in ra"
+echo "Chi tiết: docs/guides/installation-guide.md"
 echo "============================================================"
