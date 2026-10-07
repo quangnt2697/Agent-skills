@@ -34,6 +34,8 @@
     "n8n:tunnel": "n8n start --tunnel",
     "n8n:setup": "node scripts/setup/setup-n8n.js",
     "n8n:bg": "pm2 start ecosystem.config.cjs",
+    "n8n:autostart": "node scripts/setup/n8n-autostart.js on",
+    "n8n:autostart:off": "node scripts/setup/n8n-autostart.js off",
     "n8n:stop": "pm2 stop ecosystem.config.cjs",
     "n8n:restart": "pm2 restart ecosystem.config.cjs",
     "n8n:status": "pm2 status",

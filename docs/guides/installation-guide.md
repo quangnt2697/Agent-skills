@@ -110,6 +110,8 @@ Tất cả các lệnh đều được tích hợp sẵn qua hệ thống `npm r
 |---|---|
 | `npm run n8n:setup` | Chạy lại nạp workflows nếu vô tình xoá |
 | `npm run n8n:bg` | Khởi động n8n chạy ngầm |
+| `npm run n8n:autostart` | Tự khởi động n8n cùng macOS (PM2 + launchd). Cần chạy thêm 1 lệnh `sudo` do script in ra |
+| `npm run n8n:autostart:off` | Gỡ tự khởi động |
 | `npm run n8n:status` | Kiểm tra trạng thái n8n & ngrok |
 | `npm run n8n:logs` | Xem Logs thời gian thực của n8n |
 | `npm run n8n:restart`| Khởi động lại (cần thiết khi sửa `.env`) |
