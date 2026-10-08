@@ -17,7 +17,7 @@ Trích xuất các cờ từ câu lệnh:
 ## 2. Thực Thi Kéo Code Trực Tiếp
 Agent BẮT BUỘC chỉ thực thi lệnh kéo code qua script:
 ```bash
-node scripts/sync/repo-sync.js $ARGUMENTS
+node ${AGENT_SKILLS_HOME:-.}/scripts/sync/repo-sync.js $ARGUMENTS
 ```
 Tuyệt đối KHÔNG phân tích sâu kiến trúc, không đọc logic nghiệp vụ, không sinh spec hay test — chỉ tập trung kéo code mới nhất về máy cục bộ và xuất kết quả.
 

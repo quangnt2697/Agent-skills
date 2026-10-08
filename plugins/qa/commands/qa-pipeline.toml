@@ -41,7 +41,7 @@ Bộ cờ giống hệt `/qa-full-pipeline` — xem bảng trong `.claude/comman
 
 > Cú pháp `--mode semi-auto|full-auto|manual` cũ **không còn dùng**. Confidence Level
 > chỉ dùng để **báo cáo chất lượng**, không còn chặn luồng — xem
-> `.claude/rules/confidence-level.md` và `.claude/rules/autonomy-contract.md`.
+> `${AGENT_SKILLS_HOME:-.}/.agents/rules/confidence-level.md` và `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md`.
 
 ## Khi nào dùng lệnh nào
 
@@ -80,5 +80,5 @@ LƯU Ý: Mọi output bằng TIẾNG VIỆT (trừ code và tags).
 
 - `plugins/qa/skills/qa-full-pipeline/SKILL.md` — quy trình QA đầy đủ (nguồn sự thật)
 - `plugins/ba-po/skills/ba-spec/SKILL.md` — quy trình import Jira/Confluence
-- `.claude/rules/autonomy-contract.md` — cổng dừng/chạy tiếp
+- `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md` — cổng dừng/chạy tiếp
 """

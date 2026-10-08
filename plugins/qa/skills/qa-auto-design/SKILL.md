@@ -96,7 +96,7 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 
 - **Giai đoạn 1 (Khảo sát & Kế thừa SDK - Recon Gate):**
   - Đọc `plugins/qa/skills/qa-auto-design/references/sdk-map.json` để xác định class Auth/Client có sẵn — KHÔNG grep toàn repo.
-  - **Fast-Path Dữ liệu Chứng khoán:** Chạy `node scripts/lib/n8n-client.js getSecuritiesFixture` để lấy tức thì giá trần/sàn/TC chuẩn sàn cho Phái sinh (`41I1GA0000`), HOSE (`SHB`), UPCOM (`OIL`), HNX (`SHS`) kèm API Key/Secret từ `.env` mà không cần query SQL thủ công.
+  - **Fast-Path Dữ liệu Chứng khoán:** Chạy `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js getSecuritiesFixture` để lấy tức thì giá trần/sàn/TC chuẩn sàn cho Phái sinh (`41I1GA0000`), HOSE (`SHB`), UPCOM (`OIL`), HNX (`SHS`) kèm API Key/Secret từ `.env` mà không cần query SQL thủ công.
   - Copy template `.env` phù hợp từ `references/env-templates/{api|ws|web-ui}.env.example`.
   - Xác định task type (API / WebSocket / Web UI) từ `.feature`.
 
@@ -105,8 +105,8 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
   **Ưu tiên 1 — n8n Fast-Path (Tự động hoàn toàn):**
   ```bash
   # Chạy 1 lệnh, tự động: mở browser → đăng nhập thật → dump DOM → lưu locators.json
-  node scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}
-  # VD: node scripts/lib/n8n-client.js discoverWebUILocators STK-201 order
+  node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}
+  # VD: node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators STK-201 order
   # Kết quả: workspace/{issueKey}/test/fixtures/locators.json
   ```
   Workflow `web-ui-locator-discovery` (n8n) tự động:

@@ -43,7 +43,7 @@ Bạn BẮT BUỘC phải thực hiện quy trình này một cách tuần tự,
 - Trình bày tóm tắt bản Audit và Kế hoạch (Plan) cho người dùng một cách rõ ràng.
 - Đặt câu hỏi rõ ràng: *"Tôi đã lập xong kế hoạch tối ưu. Bạn có đồng ý với đề xuất này không? Vui lòng gõ **'OK'** để tôi tự động tiến hành sửa toàn bộ các mục (Auto-Fix)."*
 - DỪNG LẠI và chờ phản hồi từ người dùng bằng cách kết thúc lượt trả lời tại đây. Tuyệt đối KHÔNG viết mã hoặc chạy lệnh thay đổi code khi chưa có "OK".
-  (Đây là cổng dừng hợp lệ theo trường hợp 5 của `.claude/rules/autonomy-contract.md` — sửa code hàng loạt là hành động khó hoàn tác. Sau khi có "OK", Bước 4 chạy thẳng đến hết, KHÔNG hỏi lại lần nào nữa.)
+  (Đây là cổng dừng hợp lệ theo trường hợp 5 của `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md` — sửa code hàng loạt là hành động khó hoàn tác. Sau khi có "OK", Bước 4 chạy thẳng đến hết, KHÔNG hỏi lại lần nào nữa.)
 
 ### Bước 4: Tự động Thực thi (Auto-Fix / Build Auto)
 *Tận dụng lăng kính của `dev-incremental-implementation`, `dev-test-driven-development`, `dev-source-driven-development`, `dev-frontend-engineering`, `dev-api-design`.*
@@ -96,7 +96,7 @@ Sau khi hoàn thành Bước 4:
 - [ ] `git diff` chỉ chạm vào phạm vi đã khai báo ở Bước 1 — không lan sang module khác
 - [ ] Mọi thay đổi được áp bằng tool call, không có đoạn nào chỉ in ra màn hình chờ user dán
 - [ ] Mỗi fix có dòng báo cáo theo Output Format (File / Issue / Solution / Verification)
-- [ ] Chưa commit — chờ user approve theo `.claude/rules/git-workflow.md`
+- [ ] Chưa commit — chờ user approve theo `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md`
 
 ## Nguyên tắc Chất lượng
 - **Đóng khung Phạm vi:** Đừng lan man sang các module không liên quan. Nếu Audit phần Thanh toán, chỉ tập trung vào Thanh toán.

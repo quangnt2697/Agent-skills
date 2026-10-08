@@ -39,7 +39,7 @@ trigger: Khi cần chạy test automation đã có sẵn, regression test, hoặ
 ### Bước 2: Thực Thi Test Suite
 - **n8n Fast-Path (Bắt buộc):** Gọi `triggerAsyncTest({ issueKey, testCommand, testFiles })` từ `scripts/lib/n8n-client.js` để kích hoạt test qua webhook `/webhook/qa-run-test`.
   ```bash
-  node scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'
+  node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'
   ```
   > Nếu n8n không phản hồi (connection refused / timeout): báo ngay cho user "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**. Không tự ý fallback sang CLI.
 - **Cờ `--timeout=60`** được n8n node `qa-run-pytest.js` áp dụng tự động. Mỗi test case bị kill sau 60s.

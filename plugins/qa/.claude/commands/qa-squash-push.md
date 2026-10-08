@@ -11,7 +11,7 @@ $ARGUMENTS chứa Issue Key (VD: PROJ-123).
 2. Xác nhận file `.feature` có tồn tại ở `/project-root/workspace/{issueKey}/test/{issueKey}.feature` hay không.
 3. Chạy script bash:
    ```bash
-   bash plugins/qa/skills/qa-squash-push/assets/squash-push.sh {issueKey} {namejira} /project-root/workspace/{issueKey}/test/{issueKey}.feature
+   bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-squash-push/assets/squash-push.sh {issueKey} {namejira} /project-root/workspace/{issueKey}/test/{issueKey}.feature
    ```
 
 4. Phân tích output từ bash script và thông báo cho người dùng.

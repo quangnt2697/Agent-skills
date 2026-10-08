@@ -70,12 +70,12 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 - **Giai đoạn 3 (Xác minh Cú pháp, Domain Linting & Bàn giao):**
   1. *Kiểm tra Cú pháp Gherkin:*
      ```bash
-     bash plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/{issueKey}/test/{issueKey}.feature"
+     bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/{issueKey}/test/{issueKey}.feature"
      ```
   2. *Kiểm tra Quy tắc Nghiệp vụ Chứng khoán (Domain Linter):*
      Chạy kiểm định domain rules (qua n8n Fast-Path hoặc CLI):
      ```bash
-     node scripts/lib/n8n-client.js lintDomainGherkin "{\"issueKey\":\"{issueKey}\",\"gherkinContent\":$(node -e 'console.log(JSON.stringify(require(\"fs\").readFileSync(\"workspace/{issueKey}/test/{issueKey}.feature\", \"utf8\"))')}"
+     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js lintDomainGherkin "{\"issueKey\":\"{issueKey}\",\"gherkinContent\":$(node -e 'console.log(JSON.stringify(require(\"fs\").readFileSync(\"workspace/{issueKey}/test/{issueKey}.feature\", \"utf8\"))')}"
      ```
      Phát hiện các lỗi nghiêm trọng: Đặt MTL cho mã CR/RES, lệnh MP trên UPCoM, sửa/hủy ATO/ATC, đặt sai phiên sau giờ G3.
   3. Nếu có lỗi cú pháp hoặc vi phạm domain ➔ Tự sửa (Self-fix Loop ≤ 3 vòng). Khi pass 100% ➔ Bàn giao cho `qa-auto-design` hoặc `qa-squash-push`.

@@ -3,11 +3,21 @@
   "version": "1.0.0",
   "description": "Production-grade engineering skills for AI coding agents — covering the full software development lifecycle from spec to ship.",
   "author": {
-    "name": "Addy Osmani"
+    "name": "QuangNT"
   },
   "homepage": "https://github.com/addyosmani/agent-skills",
   "repository": "https://github.com/addyosmani/agent-skills",
   "license": "MIT",
+  "skills": [
+    "./plugins/ba-po/skills",
+    "./plugins/code-reviewer/skills",
+    "./plugins/core/skills",
+    "./plugins/dev/skills",
+    "./plugins/qa/skills",
+    "./plugins/scrum-master/skills",
+    "./plugins/security-auditor/skills",
+    "./plugins/web-performance-auditor/skills"
+  ],
   "commands": [
     "./plugins/ba-po/.claude/commands",
     "./plugins/code-reviewer/.claude/commands",
@@ -18,5 +28,13 @@
     "./plugins/security-auditor/.claude/commands",
     "./plugins/web-performance-auditor/.claude/commands"
   ],
-  "skills": "./plugins"
+  "agents": [
+    "./plugins/ba-po/agents/ba-po.md",
+    "./plugins/code-reviewer/agents/code-reviewer.md",
+    "./plugins/dev/agents/dev.md",
+    "./plugins/qa/agents/qa.md",
+    "./plugins/scrum-master/agents/scrum-master.md",
+    "./plugins/security-auditor/agents/security-auditor.md",
+    "./plugins/web-performance-auditor/agents/web-performance-auditor.md"
+  ]
 }

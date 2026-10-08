@@ -61,8 +61,8 @@ Bộ cờ giống hệt `/qa-full-pipeline` và `/qa-pipeline`. Cú pháp
 `--mode semi-auto|full-auto|manual` cũ **không còn dùng**.
 
 **Chỉ dừng luồng** khi rơi vào một trong 5 trường hợp của
-`.claude/rules/autonomy-contract.md` — trong đó phase 8 (trước khi merge vào
-`main`) là cổng người bắt buộc theo `.claude/rules/git-workflow.md`.
+`${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md` — trong đó phase 8 (trước khi merge vào
+`main`) là cổng người bắt buộc theo `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md`.
 Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 ## Detailed Phase Breakdown
@@ -214,7 +214,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 **Gate Check:**
 - If 0 critical findings → DONE ✅
 - If has critical findings → STOP, fix, re-review
-- Phase 8 là cổng người bắt buộc theo `.claude/rules/git-workflow.md` (trước khi merge)
+- Phase 8 là cổng người bắt buộc theo `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md` (trước khi merge)
 
 ---
 

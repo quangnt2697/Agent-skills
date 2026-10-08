@@ -10,7 +10,7 @@
 ### Bước 2: Thực thi Script Đồng bộ (squash-push.sh)
 - Chạy 1 lệnh bash duy nhất để thực hiện Phase A (REST API) và Phase B (Campaign Workspace):
   ```bash
-  bash plugins/qa/skills/qa-squash-push/assets/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
+  bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-squash-push/assets/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
   ```
 - Script tự động nạp `.env`, dò Sprint mới nhất trên đa workspace (Test Case, Requirement, Campaign), quét và xóa sạch test case/execution cũ của `{issueKey}` ở bất kỳ thư mục nào trên toàn dự án, rồi tạo mới sạch sẽ tại Sprint mới nhất và đồng bộ vào Campaign.
 

@@ -13,7 +13,7 @@
 ### Bước 2: Thực thi Test Suite Ngay Lập Tức
 - **Kích hoạt n8n Webhook (/webhook/qa-run-test):** Gọi `triggerAsyncTest({ issueKey, testCommand, testFiles })` qua `scripts/lib/n8n-client.js`:
   ```bash
-  node scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'
+  node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'
   ```
 - **Nếu n8n offline:** Báo người dùng khởi động n8n bằng `npm run n8n` và **DỪNG** (không chạy fallback).
 - **Cờ `--timeout=60`** (yêu cầu gói `pytest-timeout`): Mỗi test case bị kill tự động sau 60 giây. Kết quả là `FAILED (timeout)` — không cần chờ thêm.

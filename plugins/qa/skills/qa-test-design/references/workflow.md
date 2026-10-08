@@ -27,7 +27,7 @@
 ### Giai đoạn 3: Xác minh Cú pháp & Bàn giao
 Chạy script kiểm tra định dạng Gherkin:
 ```bash
-bash plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/{issueKey}/test/{issueKey}.feature"
+bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/{issueKey}/test/{issueKey}.feature"
 ```
 - Nếu lỗi: Kích hoạt Self-fix Loop (sửa lỗi $\le$ 3 vòng).
 - Nếu pass: Gợi ý chạy `/qa-auto-design {issueKey}` hoặc `/qa-squash-push {issueKey}`.

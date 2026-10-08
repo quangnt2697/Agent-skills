@@ -23,7 +23,7 @@ trigger: Khi cần tạo báo cáo daily standup tự động cho team hoặc ph
 ## 3. Quy trình Thực hiện 3 Bước
 - **Bước 1 (Tạo Báo cáo Daily Standup):** Gọi `getStandupReport()` từ `scripts/lib/n8n-client.js`.
   ```bash
-  node scripts/lib/n8n-client.js getStandupReport
+  node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js getStandupReport
   ```
   Webhook `/webhook/sm-standup` trả về ngay báo cáo text và gửi Mattermost tự động.
   > Nếu n8n không phản hồi: báo ngay "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**.

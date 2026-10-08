@@ -44,7 +44,7 @@ Cho từng lát cắt:
 
 > **Lưu ý Git Workflow:** Incremental implementation KHÔNG có nghĩa là incremental commits.
 > Verify nhiều lần trong quá trình code, nhưng chỉ commit 1 lần khi task hoàn thành.
-> Xem `.claude/rules/git-workflow.md` cho chi tiết.
+> Xem `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md` cho chi tiết.
 
 ## Chiến lược Cắt lát & Quy tắc Triển khai
 
@@ -56,7 +56,7 @@ Cho từng lát cắt:
 |-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | "Tí làm xong tôi test một thể"                                        | Lỗi sẽ tự động sinh lãi kép (compound). Bug ở Lát cắt 1 sẽ kéo theo Lát cắt 2-5 sai bét. Hãy test từng lát cắt.                                      |
 | "Cứ làm gộp hết lại một lượt cho nhanh"                               | Nghe *có vẻ* nhanh cho đến khi code lăn ra chết và bạn không thể tìm ra trong 500 dòng code vừa đổi dòng nào đã giết nó.                             |
-| "Mấy cái thay đổi cỏn con này có gì đâu mà phải tách ra commit riêng" | Incremental implementation ≠ incremental commits. Verify nhiều lần, commit 1 lần khi task xong. Xem `.claude/rules/git-workflow.md`.                 |
+| "Mấy cái thay đổi cỏn con này có gì đâu mà phải tách ra commit riêng" | Incremental implementation ≠ incremental commits. Verify nhiều lần, commit 1 lần khi task xong. Xem `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md`.                 |
 | "Tính năng làm xong rồi, để tẹo tôi thêm feature flag sau"            | Nếu tính năng chưa trọn vẹn, không được để user nhìn thấy nó. Thêm flag ngay bây giờ đi.                                                             |
 | "Tiện tay refactor một tí cũng không sao"                             | Trộn lẫn refactor với tính năng mới làm cho cả hai thứ đều khó review và khó debug. Tách nó ra.                                                      |
 | "Để tôi chạy lại lệnh build một lần nữa cho chắc"                     | Sau khi chạy pass một lần, chạy lại lần hai vô nghĩa trừ khi bạn vừa đổi code. Chỉ chạy lại nếu code đã thay đổi, đừng chạy chỉ để trấn an bản thân. |
@@ -82,7 +82,7 @@ Sau khi hoàn thành tất cả increments cho một task:
 - [ ] Toàn bộ test suite pass 100%
 - [ ] Build thành công sạch sẽ
 - [ ] Tính năng hoạt động end-to-end đúng như đặc tả (spec)
-- [ ] Đã trình bày kết quả cho user và CHỜ approve trước khi commit & merge (xem `.claude/rules/git-workflow.md`)
+- [ ] Đã trình bày kết quả cho user và CHỜ approve trước khi commit & merge (xem `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md`)
 
 ## Xem thêm
 

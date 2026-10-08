@@ -112,11 +112,11 @@ Bước 3.3: Copy refined-draft.md → refined.md
 
 ```bash
 # 1. Dry-run preview (không gọi Jira)
-DRY_RUN=1 bash plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
+DRY_RUN=1 bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
   "workspace/{issueKey}/spec/refined.md" | head -40
 
 # 2. Push thật sau khi xác nhận ADF đúng
-bash plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
+bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
   "workspace/{issueKey}/spec/refined.md"
 ```
 

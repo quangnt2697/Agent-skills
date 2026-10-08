@@ -26,7 +26,7 @@ ATLASSIAN_EMAIL=your-email@company.com
 ATLASSIAN_API_TOKEN=your-api-token
 ```
 
-Chỉ báo lỗi khi không tìm thấy `.env` ở cả plugin dir lẫn project root, hoặc file có nhưng thiếu biến — khi đó dừng theo **trường hợp 2** của `.claude/rules/autonomy-contract.md`. Tuyệt đối không dừng lại để xin phép truy cập file.
+Chỉ báo lỗi khi không tìm thấy `.env` ở cả plugin dir lẫn project root, hoặc file có nhưng thiếu biến — khi đó dừng theo **trường hợp 2** của `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md`. Tuyệt đối không dừng lại để xin phép truy cập file.
 
 ---
 
@@ -107,6 +107,6 @@ Trước khi bàn giao spec cho QA hoặc DEV:
 
 ## 7. Sau khi hoàn thành (Next Steps)
 
-**BẮT BUỘC:** Không dừng lại hỏi user muốn tiếp tục với pipeline nào. Tự động chuyển sang kỹ năng `qa-test-design` để bắt đầu làm Checklist, và chạy tiếp xuyên suốt theo `.claude/rules/autonomy-contract.md` — bao gồm cả cổng Giai đoạn 1 → Giai đoạn 2 của `qa-test-design`.
+**BẮT BUỘC:** Không dừng lại hỏi user muốn tiếp tục với pipeline nào. Tự động chuyển sang kỹ năng `qa-test-design` để bắt đầu làm Checklist, và chạy tiếp xuyên suốt theo `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md` — bao gồm cả cổng Giai đoạn 1 → Giai đoạn 2 của `qa-test-design`.
 
 > Chỉ dừng khi rơi vào danh sách đóng 5 trường hợp của `autonomy-contract.md`, hoặc khi user chạy với `--step`.
