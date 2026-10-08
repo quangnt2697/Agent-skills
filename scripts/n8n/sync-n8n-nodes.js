@@ -37,6 +37,12 @@ export const mappings = [
   },
   {
     workflowFile: 'n8n-workflows/mattermost-single-router.json',
+    nodeName: 'Verify Mattermost Token',
+    nodeId: 'node-verify-token',
+    scriptFile: 'scripts/n8n-nodes/router/router-verify-token.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/mattermost-single-router.json',
     nodeName: 'Parse AI Output',
     nodeId: '3',
     scriptFile: 'scripts/n8n-nodes/router/router-parse-ai-output.js'

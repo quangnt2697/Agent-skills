@@ -21,14 +21,31 @@
     },
     {
       "parameters": {
+        "jsCode": "// Cổng xác thực cho webhook /agent: n8n được public qua ngrok nên mọi request\n// phải chứng minh đến từ Mattermost Slash Command trước khi chạy bất kỳ workflow nào.\n//   MATTERMOST_SLASH_TOKEN   — token Mattermost cấp khi tạo Slash Command (bắt buộc)\n//   MATTERMOST_ALLOWED_USERS — danh sách user_name cách nhau bởi dấu phẩy (tuỳ chọn)\nconst crypto = require('crypto');\n\nconst expected = ($env.MATTERMOST_SLASH_TOKEN || '').trim();\nif (!expected) {\n  throw new Error('MATTERMOST_SLASH_TOKEN chưa được cấu hình trong .env — từ chối mọi request /agent.');\n}\n\nconst item = $input.first();\nconst json = (item && item.json) || {};\nconst body = json.body || json;\n\nconst provided = String(body.token || '');\nconst a = Buffer.from(provided);\nconst b = Buffer.from(expected);\nif (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {\n  throw new Error('Token Mattermost không hợp lệ — request bị từ chối.');\n}\n\nconst allowed = ($env.MATTERMOST_ALLOWED_USERS || '')\n  .split(',')\n  .map(u => u.trim().toLowerCase())\n  .filter(Boolean);\nconst userName = String(body.user_name || '').toLowerCase();\nif (allowed.length && !allowed.includes(userName)) {\n  throw new Error(`User \"${body.user_name || ''}\" không nằm trong MATTERMOST_ALLOWED_USERS.`);\n}\n\nreturn $input.all();\n"
+      },
+      "id": "node-verify-token",
+      "name": "Verify Mattermost Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        140
+      ]
+    },
+    {
+      "parameters": {
         "method": "POST",
-        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $env.GEMINI_AGENT_MODEL || 'antigravity' }}:generateContent?key={{ $env.GEMINI_API_KEY }}",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $env.GEMINI_AGENT_MODEL || 'antigravity' }}:generateContent",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Content-Type",
               "value": "application/json"
+            },
+            {
+              "name": "x-goog-api-key",
+              "value": "={{ $env.GEMINI_API_KEY }}"
             }
           ]
         },
@@ -356,7 +373,7 @@
       "main": [
         [
           {
-            "node": "Antigravity Intent Recognition",
+            "node": "Verify Mattermost Token",
             "type": "main",
             "index": 0
           }
@@ -592,6 +609,17 @@
         [
           {
             "node": "Check Router Execution Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Mattermost Token": {
+      "main": [
+        [
+          {
+            "node": "Antigravity Intent Recognition",
             "type": "main",
             "index": 0
           }

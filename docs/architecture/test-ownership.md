@@ -148,7 +148,7 @@ def step_impl(context):
   - Readability (code dễ đọc không?)
   - Architecture (design tốt không?)
   - Performance (có bottleneck không?)
-- **Command:** `/review` với persona=dev
+- **Command:** `/cr-review` với persona=dev
 
 #### Round 2: QA Review (Optional)
 - **Khi nào:** Sau DEV self-review, trước merge
@@ -158,7 +158,7 @@ def step_impl(context):
   - Edge cases (có miss scenario nào không?)
   - Error handling (handle lỗi đúng không?)
   - Logging (đủ log để debug không?)
-- **Command:** `/review` với persona=qa
+- **Command:** `/cr-review` với persona=qa
 
 **Không bắt buộc QA review mọi PR** — chỉ review:
 - Critical features (payment, auth, security)

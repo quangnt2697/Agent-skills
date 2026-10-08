@@ -10,7 +10,7 @@ trigger: Sử dụng khi độ chính xác quan trọng hơn tốc độ, khi l�
 
 Một câu trả lời tự tin không hẳn là một câu trả lời đúng. Những phiên làm việc dài tích tụ bối cảnh, âm thầm biến các giả định thành "sự thật" mà không ai để ý. Phát triển hướng hoài nghi là kỷ luật về việc tạo ra một người đánh giá có bối cảnh mới (fresh-context reviewer) — với khuynh hướng **bác bỏ**, chứ không phải phê duyệt — trước khi bất kỳ kết quả phức tạp nào được chấp nhận.
 
-Đây không phải là `/review`. `/review` là phán quyết cuối cùng về một tạo tác đã hoàn thành. Đây là một tư thế trong quá trình làm việc (in-flight posture): các quyết định phức tạp sẽ bị chất vấn chéo trong khi việc điều chỉnh hướng đi vẫn còn rẻ.
+Đây không phải là `/cr-review`. `/cr-review` là phán quyết cuối cùng về một tạo tác đã hoàn thành. Đây là một tư thế trong quá trình làm việc (in-flight posture): các quyết định phức tạp sẽ bị chất vấn chéo trong khi việc điều chỉnh hướng đi vẫn còn rẻ.
 
 ## Khi nào sử dụng
 
@@ -146,7 +146,7 @@ Nếu 3 chu kỳ là "hiển nhiên không đủ" vì artifact quá lớn: nghĩ
 | "Tôi tự tin rồi, bỏ qua bước hoài nghi đi"                          | Sự tự tin hiếm khi đồng nghĩa với sự chính xác đối với các vấn đề mới lạ. Những lúc bạn chắc chắn nhất lại là lúc có nhiều điểm mù nhất.                                                                                                                                                                              |
 | "Sinh ra reviewer tốn tài nguyên quá"                               | Việc gỡ lỗi do commit sai trên production còn tốn kém hơn. Bài kiểm tra này có giới hạn vòng lặp; nhưng con bug thì không giới hạn tác hại.                                                                                                                                                                           |
 | "Reviewer sẽ bới lông tìm vết"                                      | Chỉ khi prompt không được giới hạn. Hãy giới hạn prompt vào "các vấn đề sẽ làm artifact thất bại dưới hợp đồng (contract) này".                                                                                                                                                                                       |
-| "Tôi sẽ dùng hoài nghi ở cuối cùng bằng lệnh `/review`"             | `/review` là cánh cửa (gate) cuối cùng. Phát triển hướng hoài nghi giúp phát hiện việc đi sai hướng từ rất sớm khi sửa sai còn rẻ. Tới lúc tạo PR thì đã quá muộn.                                                                                                                                                    |
+| "Tôi sẽ dùng hoài nghi ở cuối cùng bằng lệnh `/cr-review`"             | `/cr-review` là cánh cửa (gate) cuối cùng. Phát triển hướng hoài nghi giúp phát hiện việc đi sai hướng từ rất sớm khi sửa sai còn rẻ. Tới lúc tạo PR thì đã quá muộn.                                                                                                                                                    |
 | "Nếu bước nào tôi cũng hoài nghi thì chẳng bao giờ ship được"       | Kỹ năng này chỉ áp dụng cho quyết định không hề đơn giản, không áp dụng cho mọi lần gõ phím. Đọc lại "Khi KHÔNG sử dụng".                                                                                                                                                                                             |
 | "Hai ý kiến thì luôn tốt hơn một"                                   | Không đúng khi ý kiến thứ hai ít bối cảnh hơn và chỉ gây nhiễu. Hãy đối chiếu, đừng phục tùng.                                                                                                                                                                                                                        |
 | "Reviewer không đồng ý nên tôi sai rồi"                             | Reviewer thiếu bối cảnh của bạn — sự không đồng ý là luồng thông tin, không phải phán quyết. Hãy đọc lại artifact, phân loại, rồi mới quyết định.                                                                                                                                                                     |
@@ -162,7 +162,7 @@ Nếu 3 chu kỳ là "hiển nhiên không đủ" vì artifact quá lớn: nghĩ
 - Bỏ qua quá trình hoài nghi dưới áp lực thời gian đối với một quyết định rủi ro cao
 - Khởi tạo lại fresh-context với một artifact không hề thay đổi (bạn sẽ nhận lại cùng các lỗi; bạn chỉ đang câu giờ)
 - **Kịch kịch tính (Doubt theater) (dấu hiệu có thể kiểm chứng)**: qua 2 vòng lặp trở lên mà reviewer tìm thấy vấn đề quan trọng, nhưng KHÔNG CÓ vấn đề nào được phân loại là "có thể hành động" (actionable). Bạn đang chỉ xác nhận chứ không phải đang hoài nghi. Hãy dừng lại và leo thang (escalate).
-- Chỉ hoài nghi sau khi đã commit — cái đó gọi là `/review`, không phải doubt-driven development
+- Chỉ hoài nghi sau khi đã commit — cái đó gọi là `/cr-review`, không phải doubt-driven development
 - Mã cứng (hardcode) một câu lệnh external CLI mà không xác nhận với người dùng xem công cụ đó có tồn tại, đã được cài đặt, và có chấp nhận cú pháp đó không
 - **Âm thầm bỏ qua cross-model trong vòng lặp hoài nghi tương tác.** Kể cả khi bạn không khuyến nghị nó, thì tùy chọn vẫn phải được hiển thị. Bỏ qua (skip) thì được; âm thầm bỏ qua thì không.
 - Âm thầm fallback khi một external CLI bị lỗi hoặc không có sẵn — hãy hiển thị lỗi đó và để người dùng chuyển hướng
@@ -171,7 +171,7 @@ Nếu 3 chu kỳ là "hiển nhiên không đủ" vì artifact quá lớn: nghĩ
 
 ## Tương tác với Các Kỹ năng khác
 
-- **`qa-code-review` / `/review`**: bổ sung cho nhau. `/review` là phán quyết cuối cùng của PR; doubt-driven là quá trình kiểm tra trong lúc đang làm (in-flight) cho từng quyết định. Hãy dùng cả hai.
+- **`qa-code-review` / `/cr-review`**: bổ sung cho nhau. `/cr-review` là phán quyết cuối cùng của PR; doubt-driven là quá trình kiểm tra trong lúc đang làm (in-flight) cho từng quyết định. Hãy dùng cả hai.
 - **`source-driven-development`**: SDD kiểm chứng *các sự kiện về framework* dựa trên tài liệu chính thức. Doubt-driven kiểm chứng *suy luận của bạn về artifact*. SDD kiểm tra API có tồn tại không; doubt-driven kiểm tra xem bạn dùng nó có đúng hợp đồng không.
 - **`dev-test-driven-development`**: Bước RED của TDD chính là sự hoài nghi được cụ thể hóa — một bài test fail chính là nỗ lực bác bỏ (disproof attempt). Khi áp dụng TDD, chính bài test fail đó *là* bước hoài nghi (doubt step) cho những lời khẳng định về hành vi (behavioral claims).
 - **`dev-debugging`**: khi reviewer phát hiện ra một dạng lỗi có thật, chuyển sang kỹ năng gỡ lỗi để khoanh vùng và sửa.

@@ -20,7 +20,7 @@ Có ba tầng (layers), mỗi tầng đảm nhiệm một công việc riêng bi
 |--------------------|---------------------------------------------------|---------------------------|--------------------------------------------------------------------------|
 | **Skill**          | Một quy trình với các bước và tiêu chí hoàn thành | `review-code-and-quality` | Từ *như thế nào* (how) — được gọi từ bên trong một persona hoặc một lệnh |
 | **Persona**        | Một vai trò với góc nhìn và định dạng đầu ra      | `code-reviewer`           | Từ *ai* (who) — nhận một góc nhìn, đưa ra một báo cáo                    |
-| **Lệnh (Command)** | Điểm bắt đầu dành cho người dùng                  | `/review`, `/dev-audit`   | Từ *khi nào* (when) — kết hợp personas và skills                         |
+| **Lệnh (Command)** | Điểm bắt đầu dành cho người dùng                  | `/cr-review`, `/dev-audit`   | Từ *khi nào* (when) — kết hợp personas và skills                         |
 
 Người dùng (hoặc một slash command) đóng vai trò điều phối (orchestrator). **Personas không gọi các personas khác.** Skills là các bước bắt buộc bên trong quy trình làm việc của một persona.
 
@@ -37,8 +37,8 @@ Hãy chọn cách này khi bạn muốn có một góc nhìn cho thay đổi hi�
 ### Slash command (chỉ có 1 persona đứng sau)
 Hãy chọn cách này khi có một quy trình lặp đi lặp lại mà bình thường bạn sẽ phải giải thích lại mỗi lần.
 
-- `/review` → bọc `code-reviewer` với skill review của dự án
-- `/unit-test` → bọc `qa` với skill TDD
+- `/cr-review` → bọc `code-reviewer` với skill review của dự án
+- `/dev-unit-test` → bọc `qa` với skill TDD
 - `/qa` → bọc `qa` với skill qa-test-design để thiết kế checklist + BDD Gherkin
 - `/webperf` → bọc `web-performance-auditor` để audit chuyên sâu hiệu năng trên web apps
 
@@ -56,7 +56,7 @@ Công việc có phải là một góc nhìn duy nhất trên một tài liệu/
 ├── Có → Gọi trực tiếp persona
 └── Không  → Các công việc con có độc lập không (không chia sẻ trạng thái, không phụ thuộc thứ tự)?
          ├── Có → Slash command với chạy song song (VD: /dev-audit)
-         └── Không  → Slash commands chạy tuần tự bởi người dùng (/tech-spec → /plan → /qa → /build → /unit-test → /review)
+         └── Không  → Slash commands chạy tuần tự bởi người dùng (/dev-tech-spec → /dev-plan → /qa → /dev-build → /dev-unit-test → /cr-review)
 ```
 
 ## Ví dụ thực tiễn: Điều phối hợp lệ
@@ -97,7 +97,7 @@ Một persona `meta-orchestrator` có nhiệm vụ "quyết định xem nên g�
 Tại sao cách này thất bại:
 - Chỉ là tầng điều hướng (routing) thuần túy không mang lại giá trị thực tế
 - Thêm hai vòng tóm tắt (paraphrasing hops) → làm mất thông tin + gấp 2 lần chi phí token
-- Người dùng đã biết họ muốn review; hãy để họ trực tiếp gọi `/review`
+- Người dùng đã biết họ muốn review; hãy để họ trực tiếp gọi `/cr-review`
 - Lặp lại công việc mà slash commands và cấu hình ý định trong `AGENTS.md` đã làm tốt.
 
 ## Quy tắc dành cho personas

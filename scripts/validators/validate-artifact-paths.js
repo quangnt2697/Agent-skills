@@ -91,6 +91,8 @@ const LEGACY_PATHS = [
     re: /(?<![\w\/.])reports\/(?!mdds-watchdog)/g,
     hint: 'workspace/{issueKey}/trace/ or workspace/{slug}/trace/ (reports/ at repo root is forbidden)',
   },
+  // Cùng một ma trận truy vết từng có 2 tên → phase sau đọc nhầm file.
+  { re: /trace\/traceability-matrix\.md/g, hint: 'workspace/{issueKey}/trace/matrix.md' },
 ];
 
 // Lines that continue an ASCII directory tree are relative to the root printed

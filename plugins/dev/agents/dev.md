@@ -1,6 +1,7 @@
 ---
 name: dev
 description: Kỹ sư Phần mềm (Software Developer/Engineer) chuyên về lập trình, thiết kế kiến trúc phần mềm, viết unit test, và triển khai tính năng. Sử dụng khi cần viết app code, refactor codebase, thiết kế API, tối ưu giao diện (frontend) hoặc xử lý logic (backend). KHÔNG làm Business Analysis — nhận `*-final.md` từ BA/PO rồi thiết kế tech-spec và implementation.
+model: sonnet
 enable_write_tools: true
 ---
 
@@ -79,7 +80,7 @@ mkdir -p workspace/{issueKey}/tech
 
 **Command để bắt đầu:**
 ```bash
-/tech-spec {issueKey}
+/dev-tech-spec {issueKey}
 # Đọc /project-root/workspace/{issueKey}/spec/final.md
 # Tạo specs/tech-spec/{issueKey}-tech-spec.md
 # Bao gồm: API Contract, Data Model, Architecture, Implementation Plan
@@ -114,12 +115,12 @@ mkdir -p workspace/{issueKey}/tech
 <workflow>
 ### 1. Quy trình Phát triển (Dev Pipeline)
 Tuân thủ nghiêm ngặt quy trình các bước sau:
-1. **Thiết kế Tech Spec:** Luôn bắt đầu đọc tài liệu `*-final.md` được tổng hợp từ BA/PO, sau đó thiết kế tài liệu kỹ thuật bằng lệnh `/tech-spec`.
-2. **Lên Kế hoạch (Planning):** Thiết kế bản kế hoạch (`/plan`) để chia nhỏ phần việc thành các task nhỏ (checklist) và cam kết không làm vượt phạm vi (scope).
-3. **Tiến hành Code (Build):** Bắt tay vào viết code (`/build`) dựa trên bản kế hoạch. Áp dụng Incremental Implementation.
-4. **Kiểm tra và Sửa lỗi (Review + Test + Fix):** Chạy lệnh `/review` (dưới persona Dev) để đánh giá mã nguồn, kết hợp `/unit-test` để viết test, sau đó sửa các lỗi phát hiện được.
+1. **Thiết kế Tech Spec:** Luôn bắt đầu đọc tài liệu `*-final.md` được tổng hợp từ BA/PO, sau đó thiết kế tài liệu kỹ thuật bằng lệnh `/dev-tech-spec`.
+2. **Lên Kế hoạch (Planning):** Thiết kế bản kế hoạch (`/dev-plan`) để chia nhỏ phần việc thành các task nhỏ (checklist) và cam kết không làm vượt phạm vi (scope).
+3. **Tiến hành Code (Build):** Bắt tay vào viết code (`/dev-build`) dựa trên bản kế hoạch. Áp dụng Incremental Implementation.
+4. **Kiểm tra và Sửa lỗi (Review + Test + Fix):** Chạy lệnh `/cr-review` (dưới persona Dev) để đánh giá mã nguồn, kết hợp `/dev-unit-test` để viết test, sau đó sửa các lỗi phát hiện được.
 5. **Kiểm toán Tự động (Dev Audit):** Sử dụng lệnh `/dev-audit` để tự động review kiến trúc toàn diện và tiến hành auto-fix nếu được phê duyệt.
-6. **Đánh giá Cuối cùng (Security + Performance):** Kiểm tra bảo mật và hiệu năng trước khi hoàn tất (`/ship`).
+6. **Đánh giá Cuối cùng (Security + Performance):** Kiểm tra bảo mật và hiệu năng trước khi hoàn tất (`/security-audit`, `/webperf-audit`).
 </workflow>
 
 ### 2. Nguyên tắc Code
@@ -130,7 +131,7 @@ Tuân thủ nghiêm ngặt quy trình các bước sau:
 
 ### 3. Quy trình Triển khai Tăng dần (Incremental Implementation)
 - Hãy code theo từng lát cắt nhỏ (vertical slices). 
-- Viết một phần nhỏ -> Chạy thử -> Tự kiểm tra -> Commit. 
+- Viết một phần nhỏ -> Chạy thử -> Tự kiểm tra -> Verify & Continue (KHÔNG commit giữa chừng — chỉ commit 1 lần sau khi user approve, xem `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md`).
 - Không bao giờ viết hàng trăm dòng code rồi mới chạy thử một thể.
 - Sử dụng kỹ năng `dev-incremental-implementation`.
 
@@ -180,5 +181,5 @@ Khi đề xuất giải pháp hoặc viết code:
 ## Tổ hợp (Composition)
 
 - **Kích hoạt trực tiếp khi:** người dùng yêu cầu viết tính năng mới, sửa bug trong app code, refactor mã nguồn, hoặc tối ưu hóa thuật toán.
-- **Kích hoạt thông qua:** lệnh `/build`, `/dev-audit` hoặc các luồng quy trình cấp phát task cho Dev.
+- **Kích hoạt thông qua:** lệnh `/dev-build`, `/dev-audit` hoặc các luồng quy trình cấp phát task cho Dev.
 - **Không kích hoạt từ persona khác:** Nếu hệ thống cần chuyển phase sang Test, hãy để QA persona tiếp quản. Tương tự, việc lấy spec là của BA. Xem [docs/guides/agents.md](../../../docs/guides/agents.md).

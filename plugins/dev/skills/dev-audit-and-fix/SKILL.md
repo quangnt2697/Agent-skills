@@ -19,7 +19,7 @@ Kỹ năng này cung cấp một quy trình khép kín, một chạm cho Develop
 **KHÔNG sử dụng khi:**
 - Chỉ cần review, không muốn agent sửa code → dùng `cr-review-code-and-quality`
 - Chỉ cần dọn code cho dễ đọc, không tìm bug → dùng `cr-code-simplification`
-- Đang triển khai tính năng mới → dùng `/build` với `dev-incremental-implementation`
+- Đang triển khai tính năng mới → dùng `/dev-build` với `dev-incremental-implementation`
 - Chưa có test nào cho phần code sắp đụng vào — Bước 4 dựa trên TDD, không có lưới an toàn thì rủi ro cao
 
 ## Quy trình Thực thi Chặt chẽ (4 Bước)

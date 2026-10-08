@@ -49,7 +49,7 @@ $ARGUMENTS có thể chứa:
 **Handoff**: Sau khi đạt ≥90% confidence, suggest:
 - `/ba-spec {issueKey}` → Tổng hợp lại final.md với thông tin đã clarify
 - `/qa-test-design {issueKey}` → Nếu đã có đủ thông tin, handoff to QA
-- `/tech-spec {issueKey}` → Nếu đã có đủ thông tin, handoff to DEV
+- `/dev-tech-spec {issueKey}` → Nếu đã có đủ thông tin, handoff to DEV
 
 LƯU Ý: Tất cả câu hỏi và câu trả lời phải bằng TIẾNG VIỆT.
 """

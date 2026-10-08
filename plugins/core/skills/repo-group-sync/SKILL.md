@@ -18,7 +18,7 @@ Kỹ năng `repo-group-sync` tự động hóa việc đưa working tree về tr
 ## Khi nào sử dụng
 
 - Trước khi bắt đầu phân tích mã nguồn để dịch ngược đặc tả (`/qa-code2spec`).
-- Trước khi thiết kế kỹ thuật (`/tech-spec`) hoặc thực hiện kiểm thử toàn trình (`/e2e-delivery`).
+- Trước khi thiết kế kỹ thuật (`/dev-tech-spec`) hoặc thực hiện kiểm thử toàn trình (`/e2e-delivery`).
 - Khi tiếp nhận một tính năng mới cần đảm bảo các microservices phụ thuộc đều ở commit mới nhất.
 - Khi người dùng yêu cầu "pull code mới", "sync repo", "cập nhật code dự án", "fetch code mới nhất về local".
 - Khi điều phối Agent từ xa qua Mattermost thông qua lệnh `/agent sync -p <project>`.

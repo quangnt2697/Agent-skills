@@ -63,7 +63,7 @@ $ARGUMENTS có thể chứa:
 **Handoff**: Sau khi hoàn thành User Stories:
 - `/ba-ac {issueKey}` → Viết Acceptance Criteria chi tiết cho từng User Story
 - `/ba-prioritize {issueKey}` → Ưu tiên backlog theo MoSCoW/WSJF
-- `/tech-spec {issueKey}` → DEV transform User Stories thành Tech-Spec
+- `/dev-tech-spec {issueKey}` → DEV transform User Stories thành Tech-Spec
 - `/qa-test-design {issueKey}` → QA transform User Stories thành Test Cases
 
 LƯU Ý: Tất cả User Stories phải bằng TIẾNG VIỆT.

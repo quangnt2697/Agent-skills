@@ -213,7 +213,7 @@ Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
 
 2. **Viết tech spec:**
    ```
-   /tech-spec {issueKey}
+   /dev-tech-spec {issueKey}
    ```
    → Transform thành API contract + data model
 

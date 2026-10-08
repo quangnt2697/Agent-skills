@@ -68,9 +68,9 @@ $ARGUMENTS có thể chứa:
 - ❌ KHÔNG làm effort estimation chi tiết cho từng task (đó là việc của DEV/QA)
 
 **Handoff**: Sau khi hoàn thành Gap Analysis:
-- **Planning:** `/plan {issueKey}` → Breakdown roadmap thành tasks
+- **Planning:** `/dev-plan {issueKey}` → Breakdown roadmap thành tasks
 - **Prioritization:** `/ba-prioritize {issueKey}` → Prioritize gaps theo MoSCoW/WSJF
-- **DEV:** `/tech-spec {issueKey}` → Transform gaps thành Tech-Spec
+- **DEV:** `/dev-tech-spec {issueKey}` → Transform gaps thành Tech-Spec
 - **Stakeholder:** Present Gap Analysis document cho leadership approval (budget + timeline)
 
 LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT.

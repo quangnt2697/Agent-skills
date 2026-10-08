@@ -19,28 +19,34 @@ Command này orchestrate cả 2 personas (QA/BA và DEV) để deliver một fea
 - ✅ Code reviewed
 - ✅ Ready for merge
 
-## Pipeline Flow (8 Phases — Optimized)
+## Pipeline Flow (8 Phases — 2 track song song)
 
 ```
-Phase 1:  ba-spec                    [BA/PO] Import & analyze Jira
+Phase 1:  ba-spec                    [BA/PO] Import & analyze Jira → spec/final.md
+   │
+   ├──────────── DEV track ─────────────┐   ┌──────── QA track ────────┐
+   │ Phase 2: tech-spec        [DEV]    │   │ Phase 7a-7b: test design │
+   │ Phase 3: trace-check.js   [script] │   │  (chỉ cần final.md)      │
+   │ Phase 4: plan             [DEV]    │   │  --no-automation         │
+   │ Phase 5: build + TDD      [DEV]    │   └──────────────────────────┘
+   │ Phase 6: verify unit test [script] │
+   └─────────────────┬──────────────────┘
+                     ▼   (chờ cả 2 track xong)
+Phase 7c-7e: automation → run test → trace-check.js --stage=all   [QA]
    ↓
-Phase 2:  tech-spec                  [DEV]   Design technical solution
-   ↓
-Phase 3:  cross-validation           [Meta]  Verify BR → Tech-Spec mapping
-   ↓
-Phase 4:  plan                       [DEV]   Break down into tasks
-   ↓
-Phase 5:  build                      [DEV]   Implement code
-   ↓
-Phase 6:  unit-test                  [DEV]   Write & run unit tests
-   ↓
-Phase 7:  qa-full-pipeline           [QA]    Full QA workflow (design → automation → execution)
-         (replaces old Phases 7-10)
-   ↓
-Phase 8:  review                     [DEV+QA] Final review before merge
+Phase 8:  review                     [DEV+QA] Final review — cổng người trước merge
 ```
 
-**Major change:** Phases 7-10 consolidated into single `/qa-full-pipeline` command for efficiency.
+**Song song hoá:** test design (7a-7b) chỉ phụ thuộc `final.md`, nên chạy cùng lúc với DEV track
+thay vì đợi build xong. Sau Phase 1, gọi **2 subagent trong CÙNG một lượt Agent tool**:
+- `agent-skills:dev` — Phase 2 → 6 (prompt: issueKey + đường dẫn `final.md`, trả về đường dẫn artifact)
+- `agent-skills:qa` — `/qa-full-pipeline {issueKey} --no-automation --no-squash`
+
+Hai track ghi vào thư mục khác nhau (`tech/` vs `test/`) nên không xung đột.
+Khi cả hai xong, chạy `/qa-full-pipeline {issueKey} --resume=phase2` cho 7c-7e.
+
+**Phase chỉ cơ học → script, không dùng LLM:** Phase 3 và 7e dùng `trace-check.js`,
+Phase 6 chỉ chạy lại test suite (TDD đã viết test trong Phase 5).
 
 ## Cú pháp
 
@@ -101,21 +107,20 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 ---
 
-### Phase 3: meta-cross-validation (Meta) — Traceability Check #1
+### Phase 3: Traceability Check #1 (script — không dùng LLM)
 
-**Invoke:** `meta-cross-validation`
+**Invoke:**
+```bash
+node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/scripts/trace-check.js \
+  workspace/JIRA-123 --stage=tech
+```
 
-**Input:**
-- `/project-root/workspace/JIRA-123/spec/final.md` (Business Rules)
-- `/project-root/workspace/JIRA-123/tech/tech-spec.md` (Tech-Spec)
+**Output:** `/project-root/workspace/JIRA-123/trace/matrix.md` (BR/AC → Tech-Spec, khớp mã chính xác)
 
-**Output:**
-- Traceability matrix: BR → Tech-Spec
-- Gap report
-
-**Gate Check:**
-- If coverage ≥ 90% → Continue
-- If coverage < 90% → Tự bổ sung gaps vào Tech-Spec rồi chạy tiếp
+**Gate Check (theo exit code):**
+- `0` (≥ 90%) → Continue
+- `1` (< 90%) → DEV bổ sung mã BR/AC còn thiếu vào Tech-Spec (≤ 3 vòng), chạy lại script, rồi Continue
+- `2` (final.md không có mã BR/AC) → ghi gap vào `trace/gaps.md`, Continue — không đoán bằng keyword
 
 ---
 
@@ -136,48 +141,50 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 ### Phase 5: dev-incremental-implementation (DEV) — Build
 
-**Invoke:** `/build auto`
+**Invoke:** `/dev-build auto`
 
 **Input:**
 - Plan từ Phase 4
 - Tech-Spec từ Phase 2
 
 **Output:**
-- Application code trong feature branch
-- Git commits (1 commit sau khi done)
+- Application code + unit test (viết theo vòng TDD của `/dev-build`) trong feature branch
+- Chưa commit — commit 1 lần sau khi user approve ở Phase 8
 
 **Gate Check:**
 - If build success + no syntax errors → Continue
-- If build fails → Tự sửa lỗi và chạy lại
+- If build fails → Tự sửa lỗi và chạy lại (tối đa 3 vòng, sau đó STOP báo lỗi)
 
 ---
 
-### Phase 6: dev-test-driven-development (DEV) — Unit Tests
+### Phase 6: Verify Unit Tests (không sinh test mới)
 
-**Invoke:** Skill `dev-test-driven-development`
+`/dev-build` đã chạy vòng TDD ở Phase 5, nên Phase 6 **chỉ chạy lại toàn bộ test suite** của dự án
+(`pytest` / `npm test` …) để bắt regression — không gọi `dev-test-driven-development` lần nữa.
 
-**Output:**
-- Unit test files (`tests/unit/test_*.py` hoặc `*.spec.ts`)
-- Test coverage report
+**Output:** Kết quả test suite + coverage report (nếu dự án có cấu hình)
 
 **Gate Check:**
 - All tests pass → Continue
-- If tests fail → Tự debug và sửa test (tối đa 3 vòng theo `autonomy-contract.md`)
+- If tests fail → Tự debug và sửa (tối đa 3 vòng theo `autonomy-contract.md`)
 
 ---
 
 ### Phase 7: qa-full-pipeline (QA) — Full QA Workflow
 
-**Invoke:** `/qa-full-pipeline {issueKey}` (truyền tiếp `--step` nếu có)
+**Invoke:**
+- 7a-7b: chạy song song với DEV track — `/qa-full-pipeline {issueKey} --no-automation --no-squash`
+- 7c-7e: sau khi DEV track xong — `/qa-full-pipeline {issueKey} --resume=phase2`
+- Truyền tiếp `--step` nếu có
 
-**Input:** Business-Spec từ Phase 1
+**Input:** Business-Spec từ Phase 1 (7a-7b); code từ Phase 5 (7c-7e)
 
 **Includes 5 sub-phases:**
 - Phase 7a: Test Design (Checklist + Gherkin)
 - Phase 7b: [CỔNG TỰ ĐỘNG] Kiểm tra checklist + P0 + không có [Blocked] → chạy tiếp
 - Phase 7c: Test Automation (Generate test code)
 - Phase 7d: Test Execution (Run tests + report)
-- Phase 7e: Final Traceability Check (meta-cross-validation — BR → Tech-Spec → Tests)
+- Phase 7e: Final Traceability Check (`trace-check.js --stage=all` — BR → Tech-Spec → Tests)
 
 **Output:**
 - `/project-root/workspace/JIRA-123/test/checklist.md`
@@ -187,11 +194,10 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 - `/project-root/workspace/JIRA-123/trace/matrix.md` (end-to-end traceability)
 
 **Gate Check:**
-- If pass rate ≥ 90% AND traceability coverage ≥ 90% → Continue
-- If pass rate < 90% → STOP
-  - Automation tests fail → QA fix test code
-  - Need re-run → `/qa-full-pipeline JIRA-123 --resume=phase3`
-- If traceability coverage < 90% → STOP, fix gaps in test design
+- If pass rate ≥ 90% AND `trace-check.js` exit 0 → Continue
+- If pass rate < 90% → tự debug (≤ 3 vòng theo `autonomy-contract.md`), vẫn < 90% → STOP báo cáo
+  - Re-run → `/qa-full-pipeline JIRA-123 --resume=phase3`
+- If `trace-check.js` exit 1 → bổ sung scenario cho mã thiếu (≤ 3 vòng), vẫn thiếu → STOP báo cáo
 
 **Why consolidated:**
 - Old layout had Phases 7-10 as separate steps; now unified into `/qa-full-pipeline`
@@ -203,7 +209,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 ### Phase 8: review (DEV + QA) — Final Review
 
-**Invoke:** `/review` với persona=dev, sau đó persona=qa
+**Invoke:** `/cr-review` với persona=dev, sau đó persona=qa
 
 **Input:** All code từ Phase 5, 6, 7 + traceability matrix từ Phase 7e
 
@@ -213,7 +219,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 **Gate Check:**
 - If 0 critical findings → DONE ✅
-- If has critical findings → STOP, fix, re-review
+- If has critical findings → fix, re-review (tối đa 3 vòng), vẫn còn → STOP báo cáo
 - Phase 8 là cổng người bắt buộc theo `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md` (trước khi merge)
 
 ---
@@ -319,12 +325,8 @@ Sau khi hoàn thành 8 phases thành công:
    - 2 High + 8 Medium findings
    - ETA: 30 phút
 
-2. ✅ **Merge to main**
-   ```bash
-   git checkout main
-   git merge --no-ff feature/JIRA-123-order-management
-   git push origin main
-   ```
+2. ⏸️ **Chờ user approve** rồi commit & merge theo `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md`
+   (agent không tự push lên `main`)
 
 3. ✅ **Deploy** (if CI/CD configured)
    - Run deployment pipeline
@@ -362,12 +364,12 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 | Phase | Error | Action |
 |-------|-------|--------|
 | 1-2 | Spec incomplete | STOP, run ba-interview-me, re-run from Phase 1 |
-| 3 | Traceability gaps | Fix Phase 2 (Tech-Spec), re-run Phase 3 |
+| 3 | `trace-check.js` exit 1 | Fix Phase 2 (Tech-Spec), re-run script |
 | 5 | Build fails | Fix code, re-run Phase 5 only |
-| 6 | Unit tests fail | Fix app code or tests, re-run Phase 6 |
+| 6 | Unit tests fail | Fix app code, re-run test suite |
 | 7a-7b | Test design gaps | Fix checklist/Gherkin, re-run Phase 7 |
 | 7c-7d | Tests fail (automation) | QA fix test code, re-run `/qa-full-pipeline --resume=phase3` |
-| 7e | Traceability gaps | Fix test design, re-run Phase 7 |
+| 7e | `trace-check.js` exit 1 | Fix test design, re-run script |
 | 8 | Critical findings | Fix code, re-run Phase 8 (review) |
 
 **Partial Restart:**
@@ -376,7 +378,7 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 /qa-full-pipeline JIRA-123 --resume=phase3
 
 # Nếu fail ở Phase 5, re-run từ Phase 5 onwards
-/build auto
+/dev-build auto
 # ... then continue manually or re-run full pipeline
 ```
 
@@ -397,8 +399,8 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 ```bash
 # Bug fix thường không cần full pipeline
 # Chỉ cần: fix code → unit test → qa test
-/build auto    # Fix bug
-/unit-test     # Verify unit tests
+/dev-build auto    # Fix bug
+/dev-unit-test     # Verify unit tests
 /qa-run-test   # Regression test
 ```
 
@@ -455,7 +457,7 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 **Solution:**
 - Break down issue thành sub-tasks nhỏ hơn
 - Run `/e2e-delivery` cho từng sub-task
-- Hoặc: dùng `/plan` + `/build` riêng với manual control
+- Hoặc: dùng `/dev-plan` + `/dev-build` riêng với manual control
 
 ### "Phase 7 (qa-full-pipeline) fails at test execution"
 
@@ -482,6 +484,6 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 ## Xem thêm
 
 - `/qa-full-pipeline` — QA-only pipeline (Phases 7a-7c consolidated)
-- `/build` — DEV-only implementation (Phase 4-6)
+- `/dev-build` — DEV-only implementation (Phase 4-6)
 - `meta-cross-validation` — Traceability validation
 """

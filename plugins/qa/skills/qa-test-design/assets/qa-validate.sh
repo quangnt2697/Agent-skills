@@ -179,3 +179,6 @@ else
 fi
 
 echo "{\"status\": \"$STATUS\", \"total\": $FILE_COUNT, \"passed\": $TOTAL_PASS, \"failed\": $TOTAL_FAIL, \"failures\": [$VIOLATIONS]}"
+
+# Exit code là cổng tự động (autonomy-contract §1): fail phải ≠ 0.
+[ "$TOTAL_FAIL" -eq 0 ] || exit 1

@@ -21,17 +21,17 @@ Tech-Spec nằm ở **Giai đoạn 1** trong DEV pipeline:
 
 ```
 Giai đoạn 1         Giai đoạn 2         Giai đoạn 3
-/tech-spec     →    /plan          →    /build
+/dev-tech-spec     →    /dev-plan          →    /dev-build
 Thiết kế kỹ thuật  Chia task nhỏ      Code implementation
 ```
 
 **Sau khi Tech-Spec approved:**
-- Chuyển sang `/plan` để chia nhỏ thành tasks
-- Hoặc nếu đơn giản, chuyển thẳng sang `/build`
+- Chuyển sang `/dev-plan` để chia nhỏ thành tasks
+- Hoặc nếu đơn giản, chuyển thẳng sang `/dev-build`
 
 ## Dấu hiệu Cảnh báo (Red Flags)
 
-Các triệu chứng cho thấy Tech-Spec chưa sẵn sàng bàn giao cho `/plan` và `/build`:
+Các triệu chứng cho thấy Tech-Spec chưa sẵn sàng bàn giao cho `/dev-plan` và `/dev-build`:
 
 - Có Business Rule trong `*-final.md` không tìm được chỗ nào trong Tech-Spec nhắc tới
 - Non-Functional Requirement viết bằng tính từ: "nhanh", "ổn định", "chịu tải tốt"
