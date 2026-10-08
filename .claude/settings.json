@@ -2,15 +2,23 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
-      "Bash(bash plugins/qa/skills/qa-test-design/scripts/qa-init.sh:*)",
-      "Bash(bash plugins/qa/skills/qa-test-design/scripts/qa-validate.sh:*)",
-      "Bash(bash plugins/qa/skills/qa-squash-push/scripts/squash-push.sh:*)",
-      "Bash(bash plugins/ba-po/skills/ba-spec/scripts/jira-auth-check.sh:*)",
-      "Bash(bash plugins/ba-po/skills/ba-spec/scripts/jira-fetch-pdf.sh:*)",
-      "Bash(bash plugins/ba-po/skills/ba-refine/scripts/jira-push-spec.sh:*)",
-      "Bash(node plugins/ba-po/skills/ba-design-flowchart/scripts/render.mjs:*)",
+      "Bash(bash plugins/qa/skills/qa-test-design/assets/qa-init.sh:*)",
+      "Bash(bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-init.sh:*)",
+      "Bash(bash plugins/qa/skills/qa-test-design/assets/qa-validate.sh:*)",
+      "Bash(bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh:*)",
+      "Bash(bash plugins/qa/skills/qa-squash-push/assets/squash-push.sh:*)",
+      "Bash(bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-squash-push/assets/squash-push.sh:*)",
+      "Bash(bash plugins/ba-po/skills/ba-spec/assets/jira-auth-check.sh:*)",
+      "Bash(bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-spec/assets/jira-auth-check.sh:*)",
+      "Bash(bash plugins/ba-po/skills/ba-spec/assets/jira-fetch-pdf.sh:*)",
+      "Bash(bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-spec/assets/jira-fetch-pdf.sh:*)",
+      "Bash(bash plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh:*)",
+      "Bash(bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh:*)",
+      "Bash(python3 plugins/ba-po/skills/ba-design-flowchart/scripts/export.py:*)",
+      "Bash(python3 ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-flowchart/scripts/export.py:*)",
+      "Bash(node plugins/core/skills/meta-cross-validation/scripts/trace-check.js:*)",
+      "Bash(node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/scripts/trace-check.js:*)",
       "Bash(bash hooks/claude/session-start.sh)",
-
       "Bash(pytest:*)",
       "Bash(python3 -m pytest:*)",
       "Bash(behave:*)",
@@ -23,7 +31,6 @@
       "Bash(node scripts/validators/validate-reference-links.js:*)",
       "Bash(node scripts/validators/validate-artifact-paths.js:*)",
       "Bash(node scripts/evals/run-evals.js:*)",
-
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
@@ -32,7 +39,6 @@
       "Bash(git checkout -b:*)",
       "Bash(git add:*)",
       "Bash(git stash list:*)",
-
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
@@ -40,8 +46,6 @@
       "Bash(wc:*)",
       "Bash(jq:*)",
       "Bash(mkdir -p:*)",
-
-      "Read(./.env)",
       "Read(./**)"
     ],
     "deny": [
@@ -53,7 +57,12 @@
       "Bash(rm -rf /:*)",
       "Bash(rm -rf ~:*)",
       "Bash(curl * | bash)",
-      "Bash(curl * | sh)"
+      "Bash(curl * | sh)",
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.*.local)",
+      "Bash(cat .env:*)",
+      "Bash(cat ./.env:*)"
     ]
   },
   "hooks": {

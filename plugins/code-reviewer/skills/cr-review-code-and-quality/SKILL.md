@@ -136,7 +136,7 @@ Một lượt review chỉ coi là hoàn tất khi:
 ## Kết hợp
 
 - **Kích hoạt trực tiếp khi:** User yêu cầu đánh giá chất lượng (review code) của một đoạn mã, file, hoặc một Pull / Merge Request cụ thể.
-- **Lệnh tương tác:** Gọi thông qua lệnh `/cr-review` (hoặc `/review`). Lệnh này định tuyến prompt dựa trên persona hiện tại (Dev hoặc QA) để đưa ra lăng kính đánh giá phù hợp nhất.
+- **Lệnh tương tác:** Gọi thông qua lệnh `/cr-review`. Lệnh này định tuyến prompt dựa trên persona hiện tại (Dev hoặc QA) để đưa ra lăng kính đánh giá phù hợp nhất.
 
 ---
 <CRITICAL_RULE>

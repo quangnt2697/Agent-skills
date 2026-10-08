@@ -124,7 +124,7 @@ Nếu một task có size từ L trở lên, nó nên được băm nhỏ thành
 - **Tài liệu Kế hoạch:** Lưu bản kế hoạch triển khai (implementation plan) vào `/project-root/workspace/{issueKey}/tech/plan.md`.
 - **Danh sách Task:** Lưu danh sách task theo kiểu checklist vào `/project-root/workspace/{issueKey}/tech/todo.md`.
 
-Hãy tự tạo thư mục `/project-root/workspace/{issueKey}/tech/` nếu nó chưa tồn tại. Đường dẫn này là quy ước tiêu chuẩn để lệnh `/build` và các tool hạ nguồn (downstream tooling) có thể đọc được.
+Hãy tự tạo thư mục `/project-root/workspace/{issueKey}/tech/` nếu nó chưa tồn tại. Đường dẫn này là quy ước tiêu chuẩn để lệnh `/dev-build` và các tool hạ nguồn (downstream tooling) có thể đọc được.
 
 ## Template Tài liệu Kế hoạch (Plan Document Template)
 

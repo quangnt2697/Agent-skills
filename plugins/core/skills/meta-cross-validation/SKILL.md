@@ -41,6 +41,19 @@ Phát hiện **gaps** (thiếu sót) và **redundancies** (trùng lặp) để �
 
 ## Quy trình 4 Phase
 
+### Phase 0: Ma trận xác định bằng script (BẮT BUỘC chạy trước)
+
+```bash
+node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/scripts/trace-check.js \
+  workspace/{issueKey} --stage=tech   # sau Tech-Spec (e2e Phase 3)
+#                     --stage=all     # sau test design / automation (e2e Phase 7e)
+```
+
+Script khớp **chính xác** mã `[BR-xx]`/`[AC-xx]` của `spec/final.md` với tech-spec và `test/` (bỏ qua `test/result/`), ghi `trace/matrix.md` và trả exit code: `0` = coverage ≥ 90%, `1` = dưới ngưỡng, `2` = `final.md` không có mã BR/AC.
+
+- **Exit 2** → không đoán bằng keyword. Ghi gap "final.md thiếu mã BR/AC — chạy lại `ba-spec` để gắn mã" vào `trace/gaps.md`.
+- **Exit 0/1** → con số coverage của script là số chính thức. Phase 1–4 bên dưới chỉ dùng để đánh giá **chất lượng** của các mã đã khớp (có nhánh phủ định chưa, có map nhầm không) và viết `trace/gaps.md`; không được tự chấm lại tỷ lệ coverage.
+
 ### Phase 1: Extract Business Rules
 
 Đọc Business-Spec và trích xuất tất cả Business Rules:
@@ -263,6 +276,7 @@ Tổng hợp tất cả vào 1 bảng:
 
 Trước khi xuất report:
 
+- [ ] Đã chạy `trace-check.js` và dùng đúng con số coverage của script (không tự chấm lại)
 - [ ] Đã đọc đầy đủ Business-Spec, Tech-Spec, Test Checklist, Gherkin
 - [ ] Extract được tất cả Business Rules (không bỏ sót)
 - [ ] Map từng Business Rule vào Tech-Spec (có hoặc không)
@@ -276,13 +290,13 @@ Trước khi xuất report:
 Skill này nằm ở **Phase 3** trong `e2e-delivery` (sau tech-spec, trước plan):
 
 ```
-Phase 2: /tech-spec (DEV)
+Phase 2: /dev-tech-spec (DEV)
    ↓
 Phase 3: /meta-cross-validation ← YOU ARE HERE
    ↓
-Phase 4: /plan (DEV)
+Phase 4: /dev-plan (DEV)
    ↓
-Phase 5: /build (DEV)
+Phase 5: /dev-build (DEV)
    ↓
 Phase 7: /qa-full-pipeline (QA)
 ```
@@ -315,7 +329,7 @@ Các triệu chứng cho thấy kết quả cross-validation không đáng tin �
 - Chạy cross-validation mà chưa có Tech-Spec
 - Bỏ qua negative test cases khi đánh giá coverage
 - Chấp nhận gaps mà không có action plan
-- Map dựa trên keyword matching đơn giản (sai nhiều)
+- Map dựa trên keyword matching đơn giản (sai nhiều) — khi `final.md` không có mã BR/AC, báo gap thay vì đoán
 
 ✅ **NÊN:**
 - Đọc kỹ từng artifact

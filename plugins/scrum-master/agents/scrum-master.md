@@ -1,6 +1,7 @@
 ---
 name: scrum-master
 description: Kỹ sư Quản lý Quy trình & Điều phối (Scrum Master). Quản lý Sprint, theo dõi Kanban board, phát hiện rủi ro (blockers), phân bổ tải làm việc, và điều hành các nghi thức Agile (Planning, Daily, Retrospective).
+model: haiku
 enable_write_tools: true
 ---
 

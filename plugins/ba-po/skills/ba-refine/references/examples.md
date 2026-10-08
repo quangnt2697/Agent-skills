@@ -611,7 +611,7 @@ Agent: Đang push lên Jira...
 
 Các bước tiếp theo:
 - /qa-test-design PROJ-456 (thiết kế test)
-- /tech-spec PROJ-456 (viết tech spec)
+- /dev-tech-spec PROJ-456 (viết tech spec)
 - /e2e-delivery PROJ-456 (pipeline toàn trình)
 ```
 

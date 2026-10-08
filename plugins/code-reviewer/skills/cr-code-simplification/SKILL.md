@@ -1,7 +1,7 @@
 ---
 name: cr-code-simplification
 description: 'Đơn giản hóa, simplify code cho rõ ràng, giảm bớt sự phức tạp thừa thãi, tối ưu hóa mã nguồn và test mock nhưng không thay đổi hành vi logic. Dùng khi code chạy tốt nhưng khó đọc, khó bảo trì.'
-trigger: Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó đọc, khó bảo trì, hoặc chứa sự phức tạp thừa thãi. Trigger bằng lệnh '/code-simplify' hoặc '/cr-simplify'.
+trigger: Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó đọc, khó bảo trì, hoặc chứa sự phức tạp thừa thãi. Trigger bằng lệnh '/cr-code-simplify' hoặc '/cr-simplify'.
 ---
 
 # Kỹ năng: Đơn giản hóa Code (Code Simplification)
@@ -128,7 +128,7 @@ Chỉ coi là hoàn thành khi tất cả các mục sau đúng:
 - Refactor trộn chung PR với chức năng mới.
 
 ## Kết hợp
-- **Kích hoạt trực tiếp qua:** lệnh `/code-simplify` (áp dụng tự động tuỳ thuộc vào persona hiện tại).
+- **Kích hoạt trực tiếp qua:** lệnh `/cr-code-simplify` (áp dụng tự động tuỳ thuộc vào persona hiện tại).
 
 
 ---

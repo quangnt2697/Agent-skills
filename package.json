@@ -19,7 +19,7 @@
     "validate:paths": "node scripts/validators/validate-artifact-paths.js",
     "validate:icons": "node plugins/ba-po/skills/ba-design-flowchart/scripts/build_icons_gallery.mjs --check",
     "test:unit": "node --test scripts/tests/*-test.js",
-    "evals": "node scripts/evals/run-evals.js",
+    "evals": "node scripts/evals/run-evals.js --min-rank1 90",
     "setup": "node scripts/setup/setup-plugins.js",
     "setup:plugins": "node scripts/setup/setup-plugins.js",
     "setup:plugins:symlink": "node scripts/setup/setup-plugins.js --symlink",
@@ -53,7 +53,6 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "md-to-adf": "^0.6.4",
-    "pg": "^8.23.0",
     "playwright": "^1.62.1",
     "pm2": "^7.0.4",
     "smol-toml": "^1.8.0"

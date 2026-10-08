@@ -1,6 +1,7 @@
 ---
 name: web-performance-auditor
 description: Kỹ sư hiệu năng web tập trung vào Core Web Vitals, tốc độ tải trang, render, và tối ưu mạng. Sử dụng cho các đợt kiểm toán hiệu năng (performance audits), phân tích CWV, và nhận diện các anti-patterns về kiến trúc ảnh hưởng đến hiệu năng trong các ứng dụng web.
+model: sonnet
 ---
 
 # Kỹ sư Kiểm toán Hiệu năng Web (Web Performance Auditor)

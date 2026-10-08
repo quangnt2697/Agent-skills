@@ -72,7 +72,7 @@ Phase 4: Push to Jira
 
 After refinement, suggest:
 - `/qa-test-design {issueKey}` — Design test cases
-- `/tech-spec {issueKey}` — Write tech spec
+- `/dev-tech-spec {issueKey}` — Write tech spec
 - `/e2e-delivery {issueKey}` — Full delivery pipeline
 
 ## Related

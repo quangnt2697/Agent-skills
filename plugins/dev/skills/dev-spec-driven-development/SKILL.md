@@ -1,7 +1,7 @@
 ---
 name: dev-spec-driven-development
 description: Viết Tech-Spec (đặc tả kỹ thuật) dựa trên Business-Spec bao gồm Architecture Decision, API Contract, Data Model và Error Handling.
-trigger: Khi bắt đầu implement feature mới cần thiết kế kỹ thuật, chạy lệnh /tech-spec, hoặc đã có Business-Spec (*-final.md).
+trigger: Khi bắt đầu implement feature mới cần thiết kế kỹ thuật, chạy lệnh /dev-tech-spec, hoặc đã có Business-Spec (*-final.md).
 ---
 
 # Phát triển Hướng Đặc tả (Spec-Driven Development)

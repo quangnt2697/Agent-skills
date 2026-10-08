@@ -94,11 +94,11 @@ Lệnh này sao chép plugins, `references/`, một số script, `AGENTS.md` và
 
 | Lệnh | Chức năng | Skill tương ứng |
 |---|---|---|
-| `/tech-spec` | Viết đặc tả kỹ thuật trước khi code | `dev-spec-driven-development` |
-| `/plan` | Chia nhỏ công việc | `dev-planning-and-task-breakdown` |
-| `/build` | Code từng bước | `dev-incremental-implementation` |
-| `/unit-test` | Workflow TDD | `dev-test-driven-development` |
-| `/review` | Review code 5 phương diện | `cr-review-code-and-quality` |
+| `/dev-tech-spec` | Viết đặc tả kỹ thuật trước khi code | `dev-spec-driven-development` |
+| `/dev-plan` | Chia nhỏ công việc | `dev-planning-and-task-breakdown` |
+| `/dev-build` | Code từng bước | `dev-incremental-implementation` |
+| `/dev-unit-test` | Workflow TDD | `dev-test-driven-development` |
+| `/cr-review` | Review code 5 phương diện | `cr-review-code-and-quality` |
 
 Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` có đủ 8 plugin và khởi động lại agent.
 

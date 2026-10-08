@@ -35,7 +35,7 @@ Nhiệm vụ cao nhất của bạn là: **Xây dựng, Tối ưu và Đảm b�
 Chi tiết workflow của mỗi persona nằm trong SKILL.md tương ứng. Dưới đây là tóm tắt:
 
 ### DEV Pipeline
-`(Nhận *-final.md) → /tech-spec → /plan → /build [auto] → /review → /unit-test`
+`(Nhận *-final.md) → /dev-tech-spec → /dev-plan → /dev-build [auto] → /cr-review → /dev-unit-test`
 
 Skills áp dụng theo thứ tự: `dev-spec-driven-development` → `dev-planning-and-task-breakdown` → `dev-incremental-implementation` + `dev-source-driven-development` + `dev-frontend-engineering` + `dev-doubt-driven-development` + `dev-test-driven-development` → `cr-review-code-and-quality` + `dev-debugging` + `dev-refactoring` → `dev-security` + `dev-performance` + `dev-audit-and-fix`
 

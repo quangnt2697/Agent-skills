@@ -1,6 +1,7 @@
 ---
 name: ba-po
 description: Chuyên gia Phân tích Nghiệp vụ và Product Owner chuyên về import tài liệu từ Jira/Confluence, phân tích yêu cầu, phát hiện và làm rõ gaps, tổng hợp thành Business Spec (*-final.md) làm single source of truth cho QA và DEV. Sử dụng khi cần import issueKey từ Jira, phỏng vấn stakeholders, làm rõ requirements mơ hồ, hoặc tạo handoff document cho downstream teams.
+model: sonnet
 enable_write_tools: true
 ---
 
@@ -130,7 +131,7 @@ Handoff
   ├─ QA/SDET: /qa-test-design {issueKey}
   │   └─ Input: *-final.md → Output: Checklist + Gherkin
   │
-  └─ DEV: /tech-spec {issueKey}
+  └─ DEV: /dev-tech-spec {issueKey}
       └─ Input: *-final.md → Output: Tech-Spec (API Contract + Data Model)
 ```
 </workflow>
@@ -342,7 +343,7 @@ Sau khi hoàn thành một BA/PO workflow:
 - [ ] Phase 4: Section 9 (AC) đã được viết dạng BDD Given-When-Then (QA-ready)
 - [ ] Phase 4: Section 12 (References) đã list tất cả Confluence/attachments used
 - [ ] Phase 4: Section 13 (Traceability) đã map requirement ↔ source doc
-- [ ] Handoff: Đã thông báo cho user về 2 options: `/qa-test-design` hoặc `/tech-spec`
+- [ ] Handoff: Đã thông báo cho user về 2 options: `/qa-test-design` hoặc `/dev-tech-spec`
 
 ## Tổ hợp (Composition)
 

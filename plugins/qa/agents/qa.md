@@ -1,6 +1,7 @@
 ---
 name: qa
 description: Kỹ sư QA/SDET chuyên về chiến lược kiểm thử, viết test, phân tích độ bao phủ, thiết kế checklist, và thiết kế BDD Gherkin test case cho domain chứng khoán, fintech, ngân hàng. Sử dụng để thiết kế bộ test, viết test, đánh giá chất lượng test, tạo checklist thực thi, hoặc thiết kế kịch bản BDD. KHÔNG làm Business Analysis — nhận spec/final.md từ BA/PO rồi transform thành test artifacts.
+model: sonnet
 enable_write_tools: true
 ---
 
@@ -98,7 +99,7 @@ SPEC/final.md
 |  +- Transform checklist -> .feature scenarios            |
 |  +- Moi scenario map 1:1 voi >=1 checklist item          |
 |  +- Ghi workspace/{issueKey}/test/{issueKey}.feature     |
-|  +- Auto-push len Squash TM (neu da cau hinh)            |
+|  +- qa-validate.sh exit 0                                |
 +---------------------------+------------------------------+
                             | PASS
                             v
@@ -120,7 +121,7 @@ SPEC/final.md
 |  +- Pre-flight: env vars, dependencies, test target      |
 |  +- Run: pytest --junitxml --html --cov                  |
 |  +- Analyze: failures phan loai (flaky/real/env)         |
-|  +- Self-fix loop (<=3 lan): fix test code neu loi       |
+|  +- Self-fix (<=3 lan): loi test code -> qa-auto-design   |
 |  +- Generate: summary.md + junit.xml + report.html       |
 +---------------------------+------------------------------+
                             |
@@ -165,7 +166,7 @@ SPEC/final.md
 | **G1** (checklist) | ≥1 P0, 0 [Blocked], mọi BR → ≥1 item | STOP — list items cần bổ sung |
 | **G2** (automation) | Scripts parse OK (không syntax error) | Self-fix ≤3 lần → nếu vẫn fail, STOP |
 | **G3** (execution) | Pass rate ≥ 90% | Self-fix ≤3 lần → nếu <90%, STOP + bug report |
-| **G4** (traceability) | Traceability coverage ≥ 90% | STOP — list AC/items chưa được test |
+| **G4** (traceability) | `trace-check.js --stage=all` exit 0 | Bổ sung scenario ≤3 lần → vẫn thiếu, STOP — list mã BR/AC chưa được test |
 
 ---
 
@@ -658,11 +659,11 @@ with patch('app.services.order_service.OrderService._calculate_fee') as mock_fee
 
 ## Squash TM Integration
 
-Sau khi hoàn thành Giai đoạn 1B (Gherkin), **BẮT BUỘC** tự động push lên Squash TM:
+Chỉ push lên Squash TM ở **Phase 4**, sau khi G3 PASS (pass rate ≥ 90%) và không có cờ `--no-squash`:
 ```bash
-# Auto-push (khong can hoi user neu Squash TM da duoc cau hinh)
 /qa-squash-push {issueKey}
 ```
+Lý do: `squash-push.sh` xoá test case/execution cũ theo issueKey — không hoàn tác được. Không push `.feature` chưa qua thực thi.
 Nếu Squash TM chưa được cấu hình → log warning, tiếp tục pipeline bình thường.
 
 ---
@@ -670,7 +671,7 @@ Nếu Squash TM chưa được cấu hình → log warning, tiếp tục pipelin
 ## Tổ hợp (Composition)
 
 - **Kích hoạt trực tiếp khi:** user yêu cầu thiết kế test, phân tích bao phủ, test Prove-It cho bug cụ thể, thiết kế checklist, hoặc kịch bản BDD Gherkin.
-- **Kích hoạt thông qua:** `/qa-test-design {issueKey}`, `/qa-auto-design {issueKey}`, `/qa-full-pipeline {issueKey}`, hoặc `/ship` (fan-out song song cùng `code-reviewer` và `security-auditor`).
+- **Kích hoạt thông qua:** `/qa-test-design {issueKey}`, `/qa-auto-design {issueKey}`, `/qa-full-pipeline {issueKey}`, hoặc Phase 7 của `/e2e-delivery {issueKey}`.
 - **Không kích hoạt từ persona khác.** Đề xuất thêm tests thuộc về báo cáo của bạn; user hoặc slash command quyết định khi nào hành động. Xem [docs/guides/agents.md](../../../docs/guides/agents.md).
 
 ## Verification Checklist

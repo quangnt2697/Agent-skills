@@ -55,7 +55,7 @@ BA/PO creates *-final.md
     *-final.md        *-final.md        *-final.md
          │                 │                 │
          ▼                 ▼                 ▼
-    /qa-test-design   /tech-spec      Parallel work
+    /qa-test-design   /dev-tech-spec  Parallel work
     Checklist +       API Contract +  QA: Test artifacts
     Gherkin           Data Model      DEV: Code + Unit tests
 ```

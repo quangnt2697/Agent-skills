@@ -82,7 +82,7 @@ Tuân theo chuẩn Editorial HTML/inline SVG (`plugins/ba-po/skills/ba-design-fl
 **Handoff**: Sau khi hoàn thành Process Modeling:
 - **Gap Analysis:** `/ba-gap-analysis` → Dùng AS-IS diagram để identify gaps
 - **User Stories:** `/ba-user-stories` → Transform TO-BE process thành User Stories
-- **DEV:** `/tech-spec` → DEV đọc TO-BE diagram để hiểu target architecture
+- **DEV:** `/dev-tech-spec` → DEV đọc TO-BE diagram để hiểu target architecture
 - **Stakeholders:** Present diagrams trong review meeting để align understanding
 
 **Tips:**

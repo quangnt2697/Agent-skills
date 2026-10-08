@@ -89,7 +89,8 @@ if (missingSteps.length === 2) {
       timestamp: now.toISOString(),
       isHealthy: false,
       totalScanned: 0,
-      message: alertMsg
+      message: alertMsg,
+      reportText: alertMsg
     }
   }];
 }
@@ -116,7 +117,8 @@ if (totalScanned === 0 && step1Data) {
       timestamp: now.toISOString(),
       isHealthy: false,
       totalScanned: 0,
-      message: emptyAlert
+      message: emptyAlert,
+      reportText: emptyAlert
     }
   }];
 }
@@ -376,6 +378,7 @@ return [{
     physicalFilePath: physicalFilePath,
     fileName: fileName,
     fileContent: txtContent,
-    message: reportMarkdown
+    message: reportMarkdown,
+    reportText: reportMarkdown
   }
 }];

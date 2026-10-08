@@ -85,9 +85,9 @@ Windows/Linux: làm thủ công theo "Tùy chọn B" trong guide.
 
 **3. DEV: Xây dựng tính năng**
 ```bash
-/tech-spec JIRA-123    # Viết tech-spec từ business-spec
-/plan JIRA-123         # Chia nhỏ thành tasks
-/build JIRA-123 auto   # Implement với TDD
+/dev-tech-spec JIRA-123    # Viết tech-spec từ business-spec
+/dev-plan JIRA-123         # Chia nhỏ thành tasks
+/dev-build JIRA-123 auto   # Implement với TDD
 ```
 
 **4. End-to-end delivery**
@@ -231,15 +231,15 @@ plugins/dev/
 /ba-interview PROJ-456  # If gaps found
 
 # DEV: Design & build
-/tech-spec PROJ-456
-/plan PROJ-456
-/build PROJ-456 auto
+/dev-tech-spec PROJ-456
+/dev-plan PROJ-456
+/dev-build PROJ-456 auto
 
 # QA: Test
 /qa-full-pipeline PROJ-456 --auto
 
 # Review
-/review
+/cr-review
 ```
 
 **Scenario 2: Bug Fix với Full Traceability**
