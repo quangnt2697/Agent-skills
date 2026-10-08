@@ -43,7 +43,7 @@ và làm theo, không tự diễn giải lại ở đây.
 
 `/project-root/workspace/{issueKey}/spec/final.md`
 
-Thiếu file này → dừng theo trường hợp 1 của `.claude/rules/autonomy-contract.md`,
+Thiếu file này → dừng theo trường hợp 1 của `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md`,
 hướng dẫn user chạy `/ba-spec {issueKey}` trước. Nếu muốn chạy cả bước import
 Jira trong cùng một lệnh, dùng `/qa-pipeline {issueKey}`.
 
@@ -63,4 +63,4 @@ Jira trong cùng một lệnh, dùng `/qa-pipeline {issueKey}`.
 - `plugins/qa/skills/qa-full-pipeline/references/pipeline-states.md` — sơ đồ trạng thái
 - `/qa-pipeline` — bao gồm cả bước `ba-spec` phía trước
 - `/e2e-delivery` — pipeline SDLC đầy đủ (BA → DEV → QA)
-- `.claude/rules/autonomy-contract.md` — cổng dừng/chạy tiếp
+- `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md` — cổng dừng/chạy tiếp

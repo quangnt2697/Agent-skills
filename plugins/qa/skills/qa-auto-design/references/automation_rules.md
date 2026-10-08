@@ -156,7 +156,7 @@ Khi làm việc với các task kiểm thử Web UI, Agent **BẮT BUỘC** thao
      - `DASHBOARD_USERNAME` và `DASHBOARD_PASSWORD` — tài khoản Backoffice/Dashboard.
    - Navigate đến URL đăng nhập, điền thông tin thật, bấm login thật — **KHÔNG bypass hoặc mock token**.
    - Xác nhận đăng nhập thành công (có heading hoặc element đặc trưng của màn hình chính) trước khi bước tiếp.
-   - ⚡ **n8n Fast-Path (Khuyến nghị):** Gọi `node scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}` để workflow `web-ui-locator-discovery` tự động probe URL, đăng nhập thật, dump DOM và lưu danh sách semantic locators vào `workspace/{issueKey}/test/fixtures/locators.json`.
+   - ⚡ **n8n Fast-Path (Khuyến nghị):** Gọi `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}` để workflow `web-ui-locator-discovery` tự động probe URL, đăng nhập thật, dump DOM và lưu danh sách semantic locators vào `workspace/{issueKey}/test/fixtures/locators.json`.
 
 3. **Quan sát trực quan (`playwright_screenshot`):**
    - Chụp ảnh màn hình (`playwright_screenshot(name="ui_overview")`) để xác định chính xác layout, menu, và trạng thái hiển thị.

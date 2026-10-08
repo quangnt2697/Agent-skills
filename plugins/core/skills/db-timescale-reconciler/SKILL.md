@@ -84,7 +84,7 @@ Gọi tool `db_query` với:
 
 > [!IMPORTANT]
 > **Skill này LUÔN truy vấn môi trường PRODUCTION.**
-> Dùng script chuyên dụng: `node scripts/db/db-recon-prod.js <query_id>` hoặc `npm run db:recon:prod`.
+> Dùng script chuyên dụng: `node ${AGENT_SKILLS_HOME:-.}/scripts/db/db-recon-prod.js <query_id>` hoặc `npm run db:recon:prod`.
 > **KHÔNG** dùng `npm run db:recon` (script chung, phụ thuộc vào `METABASE_ENV` trong `.env`, có thể trỏ sang UAT).
 
 ### Bước 4 — Đánh giá kết quả

@@ -24,6 +24,8 @@
     "setup:plugins": "node scripts/setup/setup-plugins.js",
     "setup:plugins:symlink": "node scripts/setup/setup-plugins.js --symlink",
     "unlink:plugins": "node scripts/setup/setup-plugins.js --unlink",
+    "setup:claude": "node scripts/setup/setup-claude.js",
+    "unlink:claude": "node scripts/setup/setup-claude.js --unlink",
     "metabase:login": "node scripts/db/metabase-sso-login.js",
     "db:recon": "node scripts/db/db-recon.js",
     "db:recon:prod": "node scripts/db/db-recon-prod.js",

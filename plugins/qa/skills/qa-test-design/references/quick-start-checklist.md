@@ -29,7 +29,7 @@ Nếu chưa có spec → Dừng, yêu cầu dùng `ba-spec` hoặc `ba-interview
 ## BƯỚC 1 — Khởi Tạo Thư Mục (tự động)
 
 ```bash
-bash plugins/qa/skills/qa-test-design/assets/qa-init.sh {issueKey}
+bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-init.sh {issueKey}
 ```
 
 Tạo sẵn: `workspace/{issueKey}/test/steps/` và `workspace/{issueKey}/test/result/`
@@ -99,7 +99,7 @@ Tham khảo mẫu theo task type: [gherkin-patterns.md](gherkin-patterns.md)
 ## BƯỚC 5 — Xác Minh Cú Pháp & Bàn Giao
 
 ```bash
-bash plugins/qa/skills/qa-test-design/assets/qa-validate.sh \
+bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh \
   "workspace/{issueKey}/test/{issueKey}.feature"
 ```
 

@@ -12,7 +12,7 @@ Lấy task chưa hoàn thành tiếp theo từ kế hoạch hiện tại (ví d�
 4. Xác minh tất cả test đều pass và build thành công
 5. Đánh dấu task đã hoàn thành và dừng lại, sẵn sàng cho task tiếp theo
 6. KHÔNG commit — commit và merge chỉ xảy ra một lần SAU KHI hoàn thành toàn bộ kế hoạch
-   và user approve (xem `.claude/rules/git-workflow.md`)
+   và user approve (xem `${AGENT_SKILLS_HOME:-.}/.agents/rules/git-workflow.md`)
 
 Chỉ triển khai MỘT task duy nhất.
 

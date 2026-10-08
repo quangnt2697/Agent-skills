@@ -79,7 +79,7 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
 
    - **Tải Jira task PDF:** Dùng script từ ba-spec (cập nhật đường dẫn script):
      ```bash
-     bash plugins/ba-po/skills/ba-spec/assets/jira-fetch-pdf.sh {issueKey} workspace
+     bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-spec/assets/jira-fetch-pdf.sh {issueKey} workspace
      ```
 
    - **Tải Confluence pages chưa có:**
@@ -244,9 +244,9 @@ File template là **skeleton thuần** — mọi dòng trong đó đều là n�
        **Bước 3.3.2: Tích hợp Figma (Tùy chọn - nếu có Link Figma & FIGMA_API_TOKEN)**
        - Nếu task có link Figma hoặc node ID, tải ảnh frame thiết kế gốc về làm baseline đối chiếu:
          ```bash
-         node scripts/lib/figma-client.js exportImage "{figmaUrl}" "{nodeId}" "workspace/{issueKey}/tech/figma-base.png"
+         node ${AGENT_SKILLS_HOME:-.}/scripts/lib/figma-client.js exportImage "{figmaUrl}" "{nodeId}" "workspace/{issueKey}/tech/figma-base.png"
          ```
-         *(Hoặc qua n8n Fast-Path: `node scripts/lib/n8n-client.js downloadFigmaFrame "{figmaUrl}" "{nodeId}" "workspace/{issueKey}/tech/figma-base.png"`)*
+         *(Hoặc qua n8n Fast-Path: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js downloadFigmaFrame "{figmaUrl}" "{nodeId}" "workspace/{issueKey}/tech/figma-base.png"`)*
 
        **Bước 3.3.3: Dựng File Mockup Tương Tác (HTML Mockup Assembly)**
        - Sử dụng template chuẩn: `plugins/ba-po/skills/ba-refine/assets/mockup-harness.html`.
@@ -258,7 +258,7 @@ File template là **skeleton thuần** — mọi dòng trong đó đều là n�
        **Bước 3.3.4: Xuất Bản Ảnh Snapshot Nét Cao (Playwright Automation)**
        - Chạy script render để chụp snapshot chuẩn 2x Retina:
          ```bash
-         node plugins/ba-po/skills/ba-refine/scripts/render-mockup.js \
+         node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/scripts/render-mockup.js \
            "workspace/{issueKey}/tech/mockup.html" \
            "workspace/{issueKey}/tech/mockup.png" fit 2
          ```
@@ -280,7 +280,7 @@ File template là **skeleton thuần** — mọi dòng trong đó đều là n�
 
 2. **Xem trước ADF (khuyến nghị, không gọi Jira)**
    ```bash
-   DRY_RUN=1 bash plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
+   DRY_RUN=1 bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
      "/project-root/workspace/{issueKey}/spec/refined.md" | head -40
    ```
 
@@ -290,12 +290,12 @@ File template là **skeleton thuần** — mọi dòng trong đó đều là n�
 4. **Cập nhật Jira description (3-Tier Fallback)**
    - **Ưu tiên 1 (n8n Fast-Path - Tức thời & đồng bộ Mattermost):**
      ```bash
-     node scripts/lib/n8n-client.js pushSpecToJira {issueKey} "/project-root/workspace/{issueKey}/spec/refined.md"
+     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js pushSpecToJira {issueKey} "/project-root/workspace/{issueKey}/spec/refined.md"
      ```
      *(Hoặc gõ từ Mattermost: `/agent [project hoặc cluster] push-jira {issueKey}`)*
    - **Ưu tiên 2 (Fallback - Script Shell nội bộ):**
      ```bash
-     bash plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
+     bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh {issueKey} \
        "/project-root/workspace/{issueKey}/spec/refined.md"
      ```
 

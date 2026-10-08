@@ -282,7 +282,7 @@ def target_environment():
 ```
 
 ### 5.2. Nạp Dữ Liệu Thị Trường Thật Từ `fixtures/market_data.json`
-Trước khi thực thi test, n8n Fast-Path gọi `getSecuritiesFixture` qua `node scripts/lib/n8n-client.js getSecuritiesFixture` để snapshot dữ liệu thị trường thật vào file:
+Trước khi thực thi test, n8n Fast-Path gọi `getSecuritiesFixture` qua `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js getSecuritiesFixture` để snapshot dữ liệu thị trường thật vào file:
 `workspace/{issueKey}/test/fixtures/market_data.json`
 
 Fixture `market_fixture` và `valid_order_symbol` tự động nạp dữ liệu này:

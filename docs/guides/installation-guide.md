@@ -4,7 +4,7 @@ Tài liệu này là nguồn chân lý duy nhất cho việc thiết lập `agen
 
 | Mức | Bạn muốn | Làm các giai đoạn | Thời gian |
 |---|---|---|---|
-| **Tối thiểu** | Dùng skills/slash commands trong AI Agent (Antigravity / Gemini CLI) | 0 → 1 → 2 | ~5 phút |
+| **Tối thiểu** | Dùng skills/slash commands trong AI Agent (Claude Code / Antigravity / Gemini CLI) | 0 → 1 → 2 | ~5 phút |
 | **Đầy đủ** | Thêm n8n Fast-Path + ChatOps Mattermost `/agent` | 0 → 1 → 2 → 3 (→ 4 nếu muốn tự chạy cùng máy) | ~20 phút |
 
 ---
@@ -64,10 +64,24 @@ Tất cả phải PASS trước khi chuyển sang giai đoạn tiếp theo.
 
 ---
 
-## Giai đoạn 2: Tích hợp AI Agent CLI (Antigravity / Gemini)
+## Giai đoạn 2: Tích hợp AI Agent CLI (Claude Code / Antigravity / Gemini)
 
 `agent-skills` gồm 8 plugins (`ba-po`, `qa`, `dev`, `scrum-master`, `code-reviewer`, `security-auditor`, `web-performance-auditor`, `core`). Cần đồng bộ chúng vào cấu hình toàn cục của Agent CLI.
 
+### Claude Code (toàn máy, tự cập nhật)
+```bash
+npm run setup:claude
+```
+Lệnh này (idempotent, `setup:mac` đã chạy sẵn) làm 2 việc:
+1. Tạo symlink `~/.claude/skills/agent-skills` → thư mục repo. Claude Code nạp nó như plugin `agent-skills@skills-dir` ở **mọi project**, gồm 82 skill/command và 7 subagent (`agent-skills:qa`, `agent-skills:dev`…).
+2. Ghi `env.AGENT_SKILLS_HOME` vào `~/.claude/settings.json` để skill gọi được script của repo (`node ${AGENT_SKILLS_HOME}/scripts/...`) từ bất kỳ thư mục làm việc nào. Bản sao lưu: `settings.json.agent-skills.bak`.
+
+Vì là symlink nên **sửa nội dung skill trong repo là có hiệu lực ngay** ở mọi project (phiên mới). Thêm/xoá skill thì gõ `/reload-plugins` trong phiên đang mở. `git pull` cũng tự cập nhật, không cần chạy lại lệnh nào. Gỡ bỏ: `npm run unlink:claude`.
+
+> Mỗi máy chỉ cần chạy 1 lần. Nếu di chuyển thư mục repo, chạy lại `npm run setup:claude`.
+> Không cài qua `/plugin marketplace add`: cách đó sao chép plugin vào cache và phải `plugin update` mỗi lần đổi.
+
+### Antigravity / Gemini CLI
 **Bước 1: Đồng bộ plugins & rules** *(Tuỳ chọn A đã chạy sẵn bước này; chạy lại khi pull bản mới)*
 ```bash
 npm run setup:plugins
@@ -154,7 +168,9 @@ Script sẽ in ra 1 lệnh bắt đầu bằng `sudo ...` — **copy và chạy 
 | Sửa `.env` nhưng không có tác dụng | n8n chưa nạp lại cấu hình | `npm run n8n:restart` |
 | Lỗi `sqlite3`/native build khi import workflow | n8n thiếu binary sqlite3 | `npm run n8n:setup` (tự biên dịch lại) |
 | `sudo ... pm2: No such file or directory` | Dùng lệnh `pm2 startup` tự gõ | Chạy `npm run n8n:autostart` và dùng đúng lệnh script in ra |
-| Agent không thấy skills mới sau `git pull` | Chưa đồng bộ plugins | `npm run setup:plugins` rồi khởi động lại agent |
+| Agent không thấy skills mới sau `git pull` | Chưa đồng bộ plugins | Gemini/Antigravity: `npm run setup:plugins` rồi khởi động lại agent. Claude Code: `/reload-plugins` |
+| Claude Code ở project khác không thấy skill | Chưa chạy setup Claude | `npm run setup:claude`, rồi mở phiên mới. Kiểm tra: `claude plugin list` phải có `agent-skills@skills-dir ✔ loaded` |
+| Skill báo `No such file` khi gọi script ở project khác | Thiếu `AGENT_SKILLS_HOME` | `npm run setup:claude` rồi mở phiên mới; kiểm tra `~/.claude/settings.json` có `env.AGENT_SKILLS_HOME` |
 
 ---
 

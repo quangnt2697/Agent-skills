@@ -82,6 +82,10 @@ npm run n8n:setup
 echo "🔌 Đang đồng bộ Agent Plugins và Global Rules (bao gồm Focus ADHD)..."
 npm run setup:plugins
 
+# 8. Cài skills cho Claude Code (toàn máy, tự cập nhật qua symlink)
+echo "🔌 Đang cài agent-skills cho Claude Code..."
+npm run setup:claude
+
 echo ""
 echo "🎉 XONG! TOÀN BỘ MÔI TRƯỜNG ĐÃ ĐƯỢC CÀI ĐẶT THÀNH CÔNG."
 echo "============================================================"

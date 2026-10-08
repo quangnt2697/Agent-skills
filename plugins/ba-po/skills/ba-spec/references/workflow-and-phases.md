@@ -6,7 +6,7 @@
 
 Skill này tương tác với Jira/Confluence theo **Chiến lược n8n Fast-Path**:
 
-- **n8n Fast-Path Webhook:** Gọi `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` (CLI: `node scripts/lib/n8n-client.js prepJiraContext {issueKey}`). Cách này lấy dữ liệu tức thì, lọc sạch nhiễu và không tốn token LLM đọc hiểu ADF rác.
+- **n8n Fast-Path Webhook:** Gọi `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` (CLI: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js prepJiraContext {issueKey}`). Cách này lấy dữ liệu tức thì, lọc sạch nhiễu và không tốn token LLM đọc hiểu ADF rác.
 - **Nếu n8n offline:** Báo người dùng khởi động n8n bằng `npm run n8n` và **DỪNG** (không fallback).
 
 ---

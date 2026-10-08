@@ -54,7 +54,7 @@ mkdir -p /project-root/workspace/{issueKey}/spec
 
 **Quan trọng**: Sau khi tạo mã Mermaid, BẮT BUỘC gọi lệnh render qua script:
 ```bash
-node plugins/ba-po/skills/ba-design-flowchart/scripts/render.mjs --input <file_mmd_tạm> --output <file_png_kết_quả> --format png --bg '#ffffff' --fg '#000000'
+node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-flowchart/scripts/render.mjs --input <file_mmd_tạm> --output <file_png_kết_quả> --format png --bg '#ffffff' --fg '#000000'
 ```
 (Nếu có lỗi, tự động đọc lỗi và sửa lại cú pháp Mermaid).
 

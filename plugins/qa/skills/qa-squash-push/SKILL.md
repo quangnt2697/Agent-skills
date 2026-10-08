@@ -20,7 +20,7 @@ trigger: Khi đã có file .feature hoàn chỉnh và cần đồng bộ test ca
 - **Bước 1 (Kiểm tra Đầu vào):** Xác định `issueKey`, trích xuất `namejira` từ `final.md`, kiểm tra file `{issueKey}.feature` tồn tại.
 - **Bước 2 (Chạy Script Đồng bộ):** Thực thi script duy nhất:
   ```bash
-  bash plugins/qa/skills/qa-squash-push/assets/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
+  bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-squash-push/assets/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
   ```
   Script tự nạp cấu hình `.env`, tự động quét và xác định Sprint mới nhất trên cả 3 workspace (Test Case, Requirement, Campaign), quét dọn sạch toàn bộ test case và execution cũ của `{issueKey}` ở bất kỳ thư mục nào trên toàn bộ dự án, tạo mới test case sạch sẽ tại Sprint mới nhất, và liên kết vào Campaign Workspace tương ứng với Sprint.
 - **Bước 3 (Phân tích Kết quả & Lưu Metadata):** Đọc kết quả từ console, lưu thông tin đồng bộ vào `workspace/{issueKey}/test/squash_sync.json` và báo cáo cho người dùng.
