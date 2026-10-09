@@ -203,8 +203,8 @@ const uniqueConfluenceLinks = Array.from(new Set(confluenceMatches));
 
 // 5. Quét trạng thái Workspace Local
 const candidateRoots = [
-  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills',
-  '/Users/qa-quangnt/Desktop/Project/Test/agent-skills'
+  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills',
+  '/Users/qa-quangnt/Projects/agent-skills'
 ];
 
 const scanDirsRaw = ($env && $env.PROJECT_SCAN_DIRS) || '';

@@ -142,7 +142,7 @@ if (fs.existsSync(diagramDir)) {
 }
 
 // 4. Chuyển đổi Markdown sang ADF (Atlassian Document Format)
-const projectRoot = ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills';
+const projectRoot = ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills';
 let adfContent = null;
 
 try {

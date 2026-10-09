@@ -9,6 +9,7 @@
 const input = $input.first();
 const rawJson = (input && input.json) || {};
 const outcome = rawJson.outcome || rawJson;
+const triggerSource = rawJson._triggerSource || outcome._triggerSource || 'cron';
 
 const dateStr = outcome.date || new Date().toISOString().slice(0, 10);
 const results = outcome.results || {};
@@ -161,7 +162,8 @@ queryConfigs.forEach((cfg, idx) => {
       messageText: msg,
       username: 'MDDS Recon Bot',
       icon_emoji: hasDiscrepancy ? ':rotating_light:' : ':white_check_mark:',
-      date: dateStr
+      date: dateStr,
+      _triggerSource: triggerSource
     }
   });
 });

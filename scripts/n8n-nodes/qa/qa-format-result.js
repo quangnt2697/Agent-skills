@@ -5,12 +5,15 @@ const project = extractNode.project || input.json.project || '';
 const targetLabel = project ? (project + ' / ' + issueKey) : issueKey;
 
 // Xử lý lỗi Extract
+const triggerSource = extractNode._triggerSource || 'webhook';
+
 if (!issueKey || extractNode.error) {
   return [{
     json: {
       success: false,
       message: '🚨 **[QA Automation Lỗi]** Không tìm thấy issueKey hợp lệ trong yêu cầu.\n' +
-               '> Cú pháp hợp lệ: `/agent [project] run-test <issueKey>` (trong đó [project] là tùy chọn).'
+               '> Cú pháp hợp lệ: `/agent [project] run-test <issueKey>` (trong đó [project] là tùy chọn).',
+      _triggerSource: triggerSource
     }
   }];
 }
@@ -38,4 +41,4 @@ const message = '🚀 **[QA Automation]** Kết quả chạy kiểm thử cho ti
                 '- Trạng thái: ' + statusIcon + ' **' + statusText + '**\n\n' +
                 '```text\n' + logSnippet + '\n```';
 
-return [{ json: { success, message, issueKey, project } }];
+return [{ json: { success, message, issueKey, project, _triggerSource: triggerSource } }];

@@ -60,11 +60,11 @@ try {
   process.exit(1);
 }
 
-// 4. Kích hoạt (activate) toàn bộ workflow qua SQLite
+// 4. Kích hoạt (activate) toàn bộ workflow qua SQLite (kèm activeVersionId cho n8n v2+)
 try {
   console.log('\n4. Đang kích hoạt (activate) các workflow...');
-  execSync(`sqlite3 "${dbPath}" "UPDATE workflow_entity SET active = 1;"`, { stdio: 'ignore' });
-  const countOut = execSync(`sqlite3 "${dbPath}" "SELECT COUNT(*) FROM workflow_entity;"`, { encoding: 'utf-8' }).trim();
+  execSync(`sqlite3 "${dbPath}" "UPDATE workflow_entity SET active = 1, activeVersionId = versionId;"`, { stdio: 'ignore' });
+  const countOut = execSync(`sqlite3 "${dbPath}" "SELECT COUNT(*) FROM workflow_entity WHERE active = 1 AND activeVersionId IS NOT NULL;"`, { encoding: 'utf-8' }).trim();
   console.log(`✅ Đã kích hoạt thành công ${countOut} workflow!`);
 } catch (err) {
   console.warn('⚠️ Cảnh báo khi kích hoạt workflow:', err.message);

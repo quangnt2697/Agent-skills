@@ -117,14 +117,44 @@ function cleanConfluenceXhtml(html) {
   text = text.replace(/<hr\s*\/?>/gi, '\n---\n');
   text = text.replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '\n$1\n');
 
-  // I. Dọn dẹp toàn bộ thẻ HTML còn sót lại và entity HTML
+  // I. Dọn dẹp thẻ HTML còn sót lại và giải mã HTML Entities (kể cả tiếng Việt và Unicode)
   text = text.replace(/<[^>]+>/g, '');
-  text = text.replace(/&nbsp;/g, ' ');
-  text = text.replace(/&amp;/g, '&');
-  text = text.replace(/&lt;/g, '<');
-  text = text.replace(/&gt;/g, '>');
-  text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&#39;/g, "'");
+
+  // Giải mã entities dạng số (thập phân &#1234; và hex &#xABCD;)
+  text = text.replace(/&#(\d+);/g, (_, dec) => {
+    try { return String.fromCharCode(parseInt(dec, 10)); } catch (_) { return _; }
+  });
+  text = text.replace(/&#x([0-9a-fA-F]+);/gi, (_, hex) => {
+    try { return String.fromCharCode(parseInt(hex, 16)); } catch (_) { return _; }
+  });
+
+  // Giải mã entities thông dụng
+  const htmlEntityMap = {
+    '&nbsp;': ' ',
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&apos;': "'",
+    '&hellip;': '...',
+    '&ndash;': '–',
+    '&mdash;': '—',
+    '&lsquo;': '‘',
+    '&rsquo;': '’',
+    '&ldquo;': '“',
+    '&rdquo;': '”',
+    '&bull;': '•',
+    '&copy;': '©',
+    '&reg;': '®',
+    '&trade;': '™',
+    '&times;': '×',
+    '&divide;': '÷',
+    '&plusmn;': '±',
+  };
+  for (const [entity, replacement] of Object.entries(htmlEntityMap)) {
+    text = text.split(entity).join(replacement);
+  }
 
   // J. Chuẩn hóa khoảng trắng & dòng trống
   text = text.replace(/[ \t]+/g, ' ');

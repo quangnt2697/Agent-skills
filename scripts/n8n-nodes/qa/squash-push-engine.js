@@ -37,7 +37,7 @@ if (resolveRes.isError || !resolveRes.found) {
   }];
 }
 
-const projectRoot = resolveRes.projectRoot || (($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills');
+const projectRoot = resolveRes.projectRoot || (($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills');
 const matchedFiles = resolveRes.matchedFiles || [];
 const featureFile = matchedFiles.find(f => f.endsWith('.feature'));
 
@@ -69,10 +69,10 @@ if (fs.existsSync(finalMdPath)) {
 }
 
 // Xác định đường dẫn script engine squash-push.sh từ repo agent-skills
-const agentSkillsRoot = ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills';
+const agentSkillsRoot = ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills';
 const scriptCandidates = [
   path.join(agentSkillsRoot, 'plugins/qa/skills/qa-squash-push/assets/squash-push.sh'),
-  '/Users/qa-quangnt/Desktop/Project/Test/agent-skills/plugins/qa/skills/qa-squash-push/assets/squash-push.sh',
+  '/Users/qa-quangnt/Projects/agent-skills/plugins/qa/skills/qa-squash-push/assets/squash-push.sh',
   path.join(projectRoot, 'plugins/qa/skills/qa-squash-push/assets/squash-push.sh')
 ];
 

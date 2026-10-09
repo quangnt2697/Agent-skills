@@ -31,9 +31,9 @@ try {
 } catch (_) {}
 
 const candidateRoots = [
-  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Desktop/Project/Test/agent-skills',
+  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills',
   procCwd,
-  '/Users/qa-quangnt/Desktop/Project/Test/agent-skills'
+  '/Users/qa-quangnt/Projects/agent-skills'
 ].filter(Boolean);
 
 let primaryRoot = candidateRoots[0];

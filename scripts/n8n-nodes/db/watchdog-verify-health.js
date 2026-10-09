@@ -17,15 +17,21 @@ const now = new Date();
 const dateStr = now.toISOString().split('T')[0];
 const timeStr = now.toTimeString().split(' ')[0] + ' ICT';
 
-// ── Helper: parse report_data từ 1 item Metabase response ────────────────────
-function parseReportData(item) {
-  if (!item) return null;
-  const row = (item.data && item.data[0]) || item;
-  let rd = row.report_data || row.result || row;
-  if (typeof rd === 'string') {
-    try { rd = JSON.parse(rd); } catch (_) { rd = {}; }
+// ── Helper: bóc tách danh sách report_data từ 1 item Metabase response ───────
+function extractReportsFromItem(item) {
+  if (!item) return [];
+  const reports = [];
+  const rows = Array.isArray(item.data) ? item.data : [item];
+  for (const row of rows) {
+    let rd = row.report_data || row.result || row;
+    if (typeof rd === 'string') {
+      try { rd = JSON.parse(rd); } catch (_) { rd = null; }
+    }
+    if (rd && typeof rd === 'object') {
+      reports.push(rd);
+    }
   }
-  return rd;
+  return reports;
 }
 
 // ── Helper: lấy tất cả items từ 1 node theo tên ──────────────────────────────
@@ -39,37 +45,31 @@ function getNodeItems(nodeName) {
 }
 
 // ── 1. Thu thập output từ cả 2 bước query ────────────────────────────────────
-// Strategy: lấy tất cả input items, phân loại theo checkStep
 const allInputs = $input.all().map(i => i.json);
 
-// Thử lấy trực tiếp từ tên node nếu có
+// Thử lấy trực tiếp từ tên node nếu có (hỗ trợ backward-compatibility)
 const step1Items = getNodeItems('Run Query 1 - SecDef');
 const step2Items = getNodeItems('Run Query 2 - Realtime');
 
-// Gộp: ưu tiên named node, fallback về allInputs nếu dùng Merge node
 let step1Data = null;
 let step2Data = null;
 
-if (step1Items.length > 0) {
-  step1Data = parseReportData(step1Items[0]);
-}
-if (step2Items.length > 0) {
-  step2Data = parseReportData(step2Items[0]);
+const allCandidateReports = [];
+if (step1Items.length > 0) allCandidateReports.push(...extractReportsFromItem(step1Items[0]));
+if (step2Items.length > 0) allCandidateReports.push(...extractReportsFromItem(step2Items[0]));
+
+for (const inputItem of allInputs) {
+  allCandidateReports.push(...extractReportsFromItem(inputItem));
 }
 
-// Fallback: phân loại từ allInputs theo field checkStep hoặc step trong report_data
-if (!step1Data || !step2Data) {
-  for (const item of allInputs) {
-    const rd = parseReportData(item);
-    if (!rd) continue;
-
-    // Nhận diện theo checkStep trên input item
-    const cs = item.checkStep || (rd && rd.step) || '';
-    if (cs === 'step1_sec_def_v3' || rd.total_scanned !== undefined) {
-      if (!step1Data) step1Data = rd;
-    } else if (cs === 'step2_realtime_clear' || rd.unclean_count !== undefined) {
-      if (!step2Data) step2Data = rd;
-    }
+for (const rd of allCandidateReports) {
+  if (!rd || typeof rd !== 'object') continue;
+  const step = rd.step || '';
+  if (step === 'sec_def_v3' || rd.total_scanned !== undefined) {
+    if (!step1Data) step1Data = rd;
+  }
+  if (step === 'realtime_clear' || rd.unclean_count !== undefined) {
+    if (!step2Data) step2Data = rd;
   }
 }
 
@@ -77,6 +77,18 @@ if (!step1Data || !step2Data) {
 const missingSteps = [];
 if (!step1Data) missingSteps.push('Step 1 (security_definition_v3)');
 if (!step2Data) missingSteps.push('Step 2 (krx_mdds_v2_stock_infos)');
+
+// Lấy triggerSource từ input hoặc node trước
+let triggerSource = 'cron';
+try {
+  const prepNode = $('Prepare Watchdog Query').first();
+  if (prepNode && prepNode.json && prepNode.json._triggerSource) {
+    triggerSource = prepNode.json._triggerSource;
+  }
+} catch (_) {}
+for (const item of allInputs) {
+  if (item._triggerSource) triggerSource = item._triggerSource;
+}
 
 if (missingSteps.length === 2) {
   // Cả 2 đều lỗi — có thể Metabase timeout hoàn toàn
@@ -90,7 +102,8 @@ if (missingSteps.length === 2) {
       isHealthy: false,
       totalScanned: 0,
       message: alertMsg,
-      reportText: alertMsg
+      reportText: alertMsg,
+      _triggerSource: triggerSource
     }
   }];
 }
@@ -379,6 +392,7 @@ return [{
     fileName: fileName,
     fileContent: txtContent,
     message: reportMarkdown,
-    reportText: reportMarkdown
+    reportText: reportMarkdown,
+    _triggerSource: triggerSource
   }
 }];

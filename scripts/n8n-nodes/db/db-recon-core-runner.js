@@ -61,9 +61,24 @@ if (!outcome) {
   };
 }
 
+let triggerSource = raw._triggerSource || body._triggerSource || 'cron';
+try {
+  const trigWebhook = $('Webhook Trigger (db-recon-core)').first();
+  if (trigWebhook && trigWebhook.json) {
+    triggerSource = 'webhook';
+  }
+} catch (_) {}
+try {
+  const trigExec = $('Execute Workflow Trigger').first();
+  if (trigExec && trigExec.json && Object.keys(trigExec.json).length > 0) {
+    triggerSource = 'executeWorkflow';
+  }
+} catch (_) {}
+
 return [{
   json: {
     targetDate,
-    outcome
+    outcome,
+    _triggerSource: triggerSource
   }
 }];

@@ -16,6 +16,7 @@ const apps = [
     interpreter: 'none',
     env: {
       ...process.env,
+      NODE_TLS_REJECT_UNAUTHORIZED: '0',
       AGENT_WORKSPACE_DIR: __dirname,
       N8N_PORT: process.env.N8N_PORT || '5678',
       N8N_PROTOCOL: 'http',

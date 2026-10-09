@@ -18,13 +18,29 @@ if (!issueKey && json.issueKey) {
   issueKey = json.issueKey;
 }
 
+// 1. Nhận diện nguồn gọi
+let triggerSource = json._triggerSource || (json.body && json.body._triggerSource) || 'webhook';
+try {
+  const trigWebhook = $('Webhook').first();
+  if (trigWebhook && trigWebhook.json) {
+    triggerSource = 'webhook';
+  }
+} catch (_) {}
+try {
+  const trigExec = $('Execute Workflow Trigger').first();
+  if (trigExec && trigExec.json && Object.keys(trigExec.json).length > 0) {
+    triggerSource = 'executeWorkflow';
+  }
+} catch (_) {}
+
 if (!issueKey) {
   return [{
     json: {
       error: 'Thiếu tham số issueKey.',
       issueKey: '',
       project: project,
-      skill: skill
+      skill: skill,
+      _triggerSource: triggerSource
     }
   }];
 }
@@ -33,6 +49,7 @@ return [{
   json: {
     issueKey: issueKey.toUpperCase(),
     project: (project || '').trim(),
-    skill: (skill || 'run-test').trim()
+    skill: (skill || 'run-test').trim(),
+    _triggerSource: triggerSource
   }
 }];

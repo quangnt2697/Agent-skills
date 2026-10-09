@@ -367,17 +367,45 @@ function handleLintGherkin(payload) {
     const stepLower = line.toLowerCase();
 
     // Check 5: Sửa/hủy lệnh trong phiên định kỳ ATO/ATC
-    if ((stepLower.includes('hủy lệnh') || stepLower.includes('sửa lệnh') || stepLower.includes('cancel order') || stepLower.includes('amend order')) &&
-        (stepLower.includes('phiên ato') || stepLower.includes('phiên atc') || stepLower.includes('random end'))) {
-      if (!stepLower.includes('bị từ chối') && !stepLower.includes('không thành công') && !stepLower.includes('reject') && !stepLower.includes('cấm')) {
+    if (/(hủy lệnh|huy lenh|sửa lệnh|sua lenh|cancel order|amend order)/i.test(stepLower) &&
+        /(phiên ato|phien ato|phiên atc|phien atc|random end)/i.test(stepLower)) {
+      if (!/(bị từ chối|bi tu choi|không thành công|khong thanh cong|reject|cấm|cam)/i.test(stepLower)) {
         errors.push(`Dòng ${lineNum}: Trong phiên ATO, ATC hoặc Random End, SGDCK TUYỆT ĐỐI CẤM sửa/hủy lệnh.`);
       }
     }
 
     // Check 6: Lệnh MOK/MAK trên HoSE
     if ((stepLower.includes('hose') || stepLower.includes('sto')) && (stepLower.includes('mok') || stepLower.includes('mak'))) {
-      if (!stepLower.includes('từ chối') && !stepLower.includes('lỗi') && !stepLower.includes('reject')) {
+      if (!/(từ chối|tu choi|lỗi|loi|reject)/i.test(stepLower)) {
         warnings.push(`Dòng ${lineNum}: Lệnh MOK/MAK chỉ áp dụng trên sàn HNX và Phái sinh, không có trên sàn HoSE.`);
+      }
+    }
+
+    // Check 8: Lệnh MTL trên mã diện Cảnh báo (CR) / Kiểm soát (RES)
+    if (stepLower.includes('mtl') && /(cảnh báo|canh bao|kiểm soát|kiem soat|hạn chế|han che|diện cr|dien cr|diện res|dien res)/i.test(stepLower)) {
+      if (!/(từ chối|tu choi|reject|không thành công|khong thanh cong|cấm|cam|lỗi|loi)/i.test(stepLower)) {
+        errors.push(`Dòng ${lineNum}: Mã diện Cảnh báo (CR) / Kiểm soát (RES) không được phép đặt lệnh MTL.`);
+      }
+    }
+
+    // Check 9: Lệnh phi-LO trên UPCoM
+    if ((stepLower.includes('upcom') || stepLower.includes('upx')) && /\b(ato|atc|mp|mtl|mok|mak|plo)\b/i.test(stepLower)) {
+      if (!/(từ chối|tu choi|reject|không thành công|khong thanh cong|lỗi|loi)/i.test(stepLower)) {
+        errors.push(`Dòng ${lineNum}: Sàn UPCoM chỉ cho phép lệnh LO, không chấp nhận các lệnh ATO/ATC/MP/MTL/MOK/MAK/PLO.`);
+      }
+    }
+
+    // Check 10: Lệnh ATO trên sàn HNX
+    if ((stepLower.includes('hnx') || stepLower.includes('stx')) && /\bato\b/i.test(stepLower)) {
+      if (!/(từ chối|tu choi|reject|không thành công|khong thanh cong|lỗi|loi)/i.test(stepLower)) {
+        errors.push(`Dòng ${lineNum}: Sàn HNX không có phiên ATO, không được đặt lệnh ATO.`);
+      }
+    }
+
+    // Check 11: Phiên sau giờ G3 HNX
+    if (/(sau giờ|sau gio|bảng g3|bang g3)/i.test(stepLower) && /\b(lo|mp|mtl|mok|mak|ato|atc)\b/i.test(stepLower)) {
+      if (!/(từ chối|tu choi|reject|không thành công|khong thanh cong|lỗi|loi)/i.test(stepLower)) {
+        errors.push(`Dòng ${lineNum}: Phiên sau giờ G3 HNX chỉ hỗ trợ lệnh PLO.`);
       }
     }
   }
