@@ -32,53 +32,32 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 - **Giai đoạn 1 (Phân tích Spec & Thiết kế Checklist `checklist.md`):**
   - Đọc `workspace/{issueKey}/spec/final.md` và `../../../../references/securities-domain-rules.md` (nếu domain fintech/chứng khoán).
   - Phân tích theo 6 chiều kiểm thử (Bảo mật, Quy tắc nghiệp vụ, Toàn vẹn dữ liệu, Đường dẫn chuẩn, Ngoại lệ, Ranh giới BVA).
-  - Gán nhãn ưu tiên `[P0]`, `[P1]`, `[P2]`. Mỗi item bắt đầu bằng **động từ hành động**, lượng hóa rõ ràng.
-  - Tham chiếu kỹ thuật BVA/EP: [qa-testing-checklist.md](references/qa-testing-checklist.md).
-
-- **Giai đoạn 1.5 (Jev Severity Scoring — Optional, sau khi có checklist thô):**
-
-  Nếu `TYPESAFE_API_KEY` có trong env, agent chạy Jev để auto-label severity cho từng test case:
-
-  ```python
-  # Gửi state = nội dung test case (mô tả + điều kiện + kết quả kỳ vọng)
-  questions = [
-      score("Mức độ critical của test case này đối với hệ thống chứng khoán?",
-            legend={0: "low — UX phụ, không ảnh hưởng giao dịch",
-                    1: "medium — tính năng phụ, có workaround",
-                    2: "high — luồng chính, ảnh hưởng trải nghiệm",
-                    3: "critical — giao dịch/tiền/bảo mật bị ảnh hưởng"}),
-      choice("Test case này thuộc loại nào?",
-             options=["happy-path", "edge-case", "negative", "security", "performance", "boundary-bva"])
-  ]
-  # Mapping score → nhãn ưu tiên:
-  # score >= 2.5 → [P0], score >= 1.5 → [P1], score < 1.5 → [P2]
-  ```
-
-  **Fallback thủ công (không có API key):** Tiếp tục dùng quy tắc gán nhãn hiện tại:
-  - `[P0]`: Boundary BVA + Security + giao dịch tiền/cổ phiếu
-  - `[P1]`: Happy path chính + Negative scenario ảnh hưởng UX
-  - `[P2]`: Nice-to-have, tính năng phụ, performance không critical
+  - Gán nhãn ưu tiên `[P0]`, `[P1]`, `[P2]` và **gán ID ổn định** (VD: `CL-001`). Mỗi item bắt đầu bằng **động từ hành động**, lượng hóa rõ ràng.
+  - *Fallback thủ công (Quy tắc ưu tiên):*
+    - `[P0]`: Boundary BVA + Security + giao dịch tiền/cổ phiếu
+    - `[P1]`: Happy path chính + Negative scenario ảnh hưởng UX
+    - `[P2]`: Nice-to-have, tính năng phụ, performance không critical
 
 - **Giai đoạn 2 (Thiết kế Kịch bản BDD Gherkin `{issueKey}.feature`):**
   - Viết duy nhất 1 file `.feature` ánh xạ 1-1 từ checklist.
+  - Gắn tag **`@CL-xxx`** tương ứng với ID checklist.
   - Ngôn ngữ miền nghiệp vụ thuần túy — **cấm tuyệt đối** biến code, XPath, SQL, `.env` keys.
   - Dùng ranh giới tượng trưng: `TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`.
-  - **Tham số hóa Đa sàn / Đa mã (Multi-Symbol Parameterization):** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** phải tách riêng Scenario độc lập hoặc sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa chi tiết. **CẤM TUYỆT ĐỐI** viết scenario gộp chung làm mờ ranh giới thời gian và kênh dữ liệu.
-  - *⚡ n8n Fast-Path Accelerator (Tuỳ chọn tối ưu):* Khi n8n khả dụng, gọi `getSecuritiesRuleMatrix` qua `scripts/lib/n8n-client.js` để lấy sẵn bảng `multiSymbolExamples` (4 sàn: HOSE, HNX, UPCOM, Phái sinh) kèm tập lệnh hợp lệ (đã tự động lọc cấm lệnh MTL nếu cổ phiếu diện `CR`/`RES`).
-  - Gắn thẻ bắt buộc: `@smoke/@regression`, `@happy-path/@negative`, `@JIRA-{issueKey}`, `@domain-securities`.
+  - **Tham số hóa Đa sàn / Đa mã:** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa. **CẤM TUYỆT ĐỐI** gộp chung.
+  - Gắn thẻ bắt buộc: `@smoke` hoặc `@regression`, `@happy-path` hoặc `@negative` hoặc `@edge-case`, `@JIRA-{issueKey}`, `@domain-securities`.
 
-- **Giai đoạn 3 (Xác minh Cú pháp, Domain Linting & Bàn giao):**
-  1. *Kiểm tra Cú pháp Gherkin:*
+- **Giai đoạn 3 (GATE: Xác minh, Linter & Bàn giao):**
+  1. *Kiểm tra Cú pháp & Traceability:*
      ```bash
-     bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/{issueKey}/test/{issueKey}.feature"
+     node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-validate.js --checklist workspace/{issueKey}/test/checklist.md "workspace/{issueKey}/test/{issueKey}.feature"
      ```
   2. *Kiểm tra Quy tắc Nghiệp vụ Chứng khoán (Domain Linter):*
-     Chạy kiểm định domain rules (qua n8n Fast-Path hoặc CLI):
      ```bash
      node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js lintDomainGherkin "{\"issueKey\":\"{issueKey}\",\"gherkinContent\":$(node -e 'console.log(JSON.stringify(require(\"fs\").readFileSync(\"workspace/{issueKey}/test/{issueKey}.feature\", \"utf8\"))')}"
      ```
-     Phát hiện các lỗi nghiêm trọng: Đặt MTL cho mã CR/RES, lệnh MP trên UPCoM, sửa/hủy ATO/ATC, đặt sai phiên sau giờ G3.
-  3. Nếu có lỗi cú pháp hoặc vi phạm domain ➔ Tự sửa (Self-fix Loop ≤ 3 vòng). Khi pass 100% ➔ Bàn giao cho `qa-auto-design` hoặc `qa-squash-push`.
+  3. Ghi kết quả ma trận traceability ra `workspace/{issueKey}/trace/matrix.md`.
+  4. Ghi trạng thái và SHA256 của feature file vào `workspace/{issueKey}/.pipeline-state.json`.
+  5. Tự sửa lỗi (≤ 3 vòng) nếu không qua linter. Sau khi pass, bàn giao cho `qa-auto-design`.
 
 ## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
 
@@ -117,14 +96,14 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 **Output Giai đoạn 1 — checklist.md (trích):**
 ```markdown
 ## Ranh giới [P0]
-- [P0] Xác minh hệ thống TỪ CHỐI lệnh mua khi khối lượng = 500,001 cổ phiếu (VUOT_HAN_MUC) trên sàn HOSE
-- [P0] Xác minh hệ thống CHẤP NHẬN lệnh mua khi khối lượng = 500,000 cổ phiếu (TAI_HAN_MUC) trên sàn HOSE
-- [P1] Xác minh hệ thống CHẤP NHẬN lệnh mua khi khối lượng = 499,900 cổ phiếu (DUOI_HAN_MUC) trên sàn HOSE
+- [P0] CL-001 Xác minh hệ thống TỪ CHỐI lệnh mua khi khối lượng = 500,001 cổ phiếu (VUOT_HAN_MUC) trên sàn HOSE
+- [P0] CL-002 Xác minh hệ thống CHẤP NHẬN lệnh mua khi khối lượng = 500,000 cổ phiếu (TAI_HAN_MUC) trên sàn HOSE
+- [P1] CL-003 Xác minh hệ thống CHẤP NHẬN lệnh mua khi khối lượng = 499,900 cổ phiếu (DUOI_HAN_MUC) trên sàn HOSE
 ```
 
 **Output Giai đoạn 2 — STK-101.feature (trích):**
 ```gherkin
-@regression @boundary @domain-securities @JIRA-STK-101
+@regression @boundary @domain-securities @JIRA-STK-101 @CL-001
 Scenario: Từ chối đặt lệnh mua khi khối lượng vượt hạn mức sàn HOSE
   Given Nhà đầu tư đã đăng nhập vào tài khoản giao dịch tiểu khoản đuôi 1
   And Số dư tiền mặt khả dụng đáp ứng đủ giá trị lệnh

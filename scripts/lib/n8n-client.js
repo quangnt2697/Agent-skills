@@ -130,7 +130,7 @@ export async function getStandupReport() {
  * @returns {Promise<object>}
  */
 export async function triggerAsyncTest(params) {
-  return await callN8nWebhook('qa-run-test', params);
+  return await callN8nWebhook('qa-run-test', params, 650000);
 }
 
 /**

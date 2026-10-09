@@ -60,7 +60,9 @@ Agent chỉ được dừng luồng để hỏi khi rơi vào đúng một trong
 | "File đã tồn tại, có ghi đè không?"              | Ghi đè. File cũ đã nằm trong git history                                  |
 | "Có 2 cách làm, bạn chọn cách nào?"              | Chọn cách đơn giản hơn, ghi lý do vào output. Chỉ hỏi nếu rơi vào mục 2.3 |
 | "Tôi đã xong phase 2, có tiếp phase 3 không?"    | Tiếp. Pipeline nghĩa là chạy hết                                          |
-| "Test fail 3/28, có tiếp không?"                 | Tự debug và sửa test. Chỉ báo cáo khi đã hết cách                         |
+| "Test fail 3/28, có tiếp không?"                 | Nếu là `qa-run-test`, **DỪNG** và báo cáo nguyên văn (xem ngoại lệ). Các skill sinh code khác: tự sửa |
+
+> ⚠️ **Ngoại lệ cho `qa-run-test`:** Đây là skill **đo lường**, không phải skill sửa code. Khi `qa-run-test` chạy lỗi (test fail, lỗi cú pháp, thiếu môi trường), agent BẮT BUỘC ghi nhận nguyên văn, dừng luồng, và đề xuất user gọi skill chuyên trách (`qa-auto-design`, `dev-debugging`). Tuyệt đối KHÔNG tự ý sửa test, cài package hay đổi cấu hình để "thử cho qua". Vòng lặp sửa lỗi phải do Pipeline Orchestrator hoặc User quyết định.
 
 ---
 

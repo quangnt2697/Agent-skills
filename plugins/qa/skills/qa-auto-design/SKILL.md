@@ -28,125 +28,48 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 - Chỉ cần chạy test suite và xuất báo cáo kết quả → dùng `qa-run-test`.
 - Cần debug lỗi hệ thống hoặc tìm root cause → dùng `dev-debugging` hoặc `cr-review-code-and-quality`.
 
-## 2. Quy trình 5 Giai đoạn Thực thi
+## 2. Quy trình 6 Giai đoạn Thực thi
 
-> 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng cho toàn bộ quy trình.
+> 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng.
 
-- **Giai đoạn 0 (Reuse-First Codebase Scan — Bắt buộc trước bước Recon):**
+- **Giai đoạn 0 (Preflight Gate):**
+  - Kiểm tra `sha256` của `.feature` so với `workspace/{issueKey}/.pipeline-state.json`.
+  - Chạy tất định SDK preflight (1 lệnh): `node ${AGENT_SKILLS_HOME:-.}/scripts/qa/check-sdk.js`. Dừng nếu thiếu dependency.
 
-  Áp dụng **7-Rung Ladder** (`cr-code-simplification`) rung 2 *"Đã có trong codebase? → tái sử dụng"*.
-  
-  > 🛑 **Anti-Bloat Guardrails (Chống quét lan man khi có 50-100+ folders):**
-  > - **Hard Cap:** Tối đa **5 thư mục gần nhất** (`head -5`). CẤM quét toàn bộ thư mục `workspace/`.
-  > - **Path Boundary:** CHỈ quét `workspace/{target_issue}/test/steps/`, CẤM quét vào `source/`, `spec/`, `tech/`, `result/`.
-  > - **File Filter:** Chỉ quét `*.py`, bỏ qua log, json, markdown.
-  > - **Early Exit:** Tìm thấy component cần dùng $\rightarrow$ DỪNG NGAY, không quét tiếp các tier sau.
-
-  ### Chiến lược 3-Tier Quét Có Giới Hạn
-
-  **Tier 1 — Cùng prefix issueKey (Tối đa 5 folder gần nhất cùng domain):**
-  ```bash
-  # 1. Trích xuất prefix domain (VD: STK-201 -> prefix STK)
-  PREFIX=$(echo "{issueKey}" | cut -d'-' -f1)
-
-  # 2. Lấy tối đa 5 folder gần nhất cùng prefix có chứa test/steps
-  MATCHED_DIRS=$(ls -td workspace/${PREFIX}-*/test/steps 2>/dev/null | head -5)
-
-  # 3. Quét nhanh các thành phần có thể tái sử dụng
-  grep -rnE "(class .*Service|@pytest\.fixture|class .*Page|def assert_)" $MATCHED_DIRS 2>/dev/null | head -20
-  ```
-  *(Nếu dùng tool `grep_search`: chỉ truyền `SearchPath` là từng folder cụ thể trong 5 folder trên)*
-  $\rightarrow$ **Tìm thấy match? Dừng ngay, dùng luôn. Không chuyển sang Tier 2.**
-
-  **Tier 2 — Top 5 folder gần nhất trong workspace (Fallback khi khác prefix hoặc Tier 1 rỗng):**
-  ```bash
-  # Lấy tối đa 5 folder test/steps có thời gian sửa đổi gần nhất
-  RECENT_DIRS=$(ls -td workspace/*/test/steps 2>/dev/null | head -5)
-  grep -rnE "(class .*Service|@pytest\.fixture|def assert_)" $RECENT_DIRS 2>/dev/null | head -20
-  ```
-  $\rightarrow$ **Tìm thấy match? Dừng ngay. Không quét thêm.**
-
-  **Tier 3 — Centralized SDK Map (Đọc trực tiếp, 0-hop, không quét workspace):**
-  ```bash
-  cat plugins/qa/skills/qa-auto-design/references/sdk-map.json
-  ```
-  $\rightarrow$ Class chuẩn trong SDK (`DNSEClient`, `TradingAPI`, `WSClient`, Auth) luôn có độ ưu tiên cao nhất, không tự viết lại logic xác thực hay gọi core API.
-
-  ### Quyết định theo kết quả scan
-
-  | Kết quả | Hành động |
-  |---|---|
-  | Tier 1: `class {Name}Service` trùng chức năng | Import trực tiếp, không viết lại |
-  | Tier 1: fixture cùng tên/scope | Copy vào `conftest.py` mới, chỉnh path |
-  | Tier 1: `def assert_api_success` | Import helper |
-  | Tier 1: POM Page cùng màn hình | Extend class, override locator đã đổi |
-  | Tier 2: tìm thấy ở folder gần nhất | Dùng, ghi chú nguồn rõ ràng |
-  | Tier 3: có trong sdk-map.json | Dùng SDK, không wrap thêm |
-  | Không tìm thấy ở cả 3 tier | Viết mới — chuẩn hoá để Tier 1 sau dùng lại |
-
-  **Ghi kết quả scan vào comment đầu `conftest.py`:**
-  ```python
-  # reuse-scan: Tier1/STK — kế thừa OrderService từ STK-190/test/steps/services/order_service.py
-  # reuse-scan: Tier3/SDK — dùng DNSEClient, không viết lại HMAC signing
-  # ponytail: Tier1 match — không viết lại assert_order_status (đã có STK-185)
-  ```
-
-  > 🔗 Liên kết skill: **`cr-code-simplification`** — 7-Rung Ladder, Never-Cut List.
-  > 🚫 **Bỏ qua bước pull code** — n8n workflow đã pull code mới nhất đầu ngày.
-
-- **Giai đoạn 1 (Khảo sát & Kế thừa SDK - Recon Gate):**
-  - Đọc `plugins/qa/skills/qa-auto-design/references/sdk-map.json` để xác định class Auth/Client có sẵn — KHÔNG grep toàn repo.
-  - **Fast-Path Dữ liệu Chứng khoán:** Chạy `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js getSecuritiesFixture` để lấy tức thì giá trần/sàn/TC chuẩn sàn cho Phái sinh (`41I1GA0000`), HOSE (`SHB`), UPCOM (`OIL`), HNX (`SHS`) kèm API Key/Secret từ `.env` mà không cần query SQL thủ công.
-  - Copy template `.env` phù hợp từ `references/env-templates/{api|ws|web-ui}.env.example`.
-  - Xác định task type (API / WebSocket / Web UI) từ `.feature`.
-
-  **🌐 Dành riêng cho Web UI task — Bắt buộc thực hiện trước khi viết POM:**
-
-  **Ưu tiên 1 — n8n Fast-Path (Tự động hoàn toàn):**
-  ```bash
-  # Chạy 1 lệnh, tự động: mở browser → đăng nhập thật → dump DOM → lưu locators.json
-  node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}
-  # VD: node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators STK-201 order
-  # Kết quả: workspace/{issueKey}/test/fixtures/locators.json
-  ```
-  Workflow `web-ui-locator-discovery` (n8n) tự động:
-  - Resolve URL: Probe `ISSUE_KEY_URL` trước (HTTP HEAD, timeout 5s); nếu hoạt động thì dùng, nếu lỗi thì tự động fallback về `WEB_BASE_URL` (đọc từ `.env`, không hardcode)
-  - Đăng nhập bằng `TRADING_USERNAME` / `TRADING_PASSWORD` từ `.env`
-  - Chụp screenshot trước/sau login
-  - Dump DOM + trích xuất semantic locators (role, label, placeholder, testid)
-  - Lưu kết quả vào `workspace/{issueKey}/test/fixtures/locators.json`
-
-  > Nếu n8n offline: báo ngay cho user "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**.
-
-  **Sau khi có `locators.json`:** Đọc file và dùng `playwright_code` đã có sẵn để viết POM — **KHÔNG tự suy đoán locator.**
-
-  **Dữ liệu thị trường (giá, mã CK):** BẮT BUỘC lấy từ Metabase UAT real-time qua fixture `valid_order_symbol` — **KHÔNG hardcode, KHÔNG dùng dữ liệu tĩnh, KHÔNG mock.**
-
+- **Giai đoạn 1 (Reuse Scan & Recon):**
+  - Khảo sát mã nguồn tái sử dụng bằng script tất định:
+    ```bash
+    node ${AGENT_SKILLS_HOME:-.}/scripts/qa/reuse-scan.js {issueKey} "từ_khóa_từ_feature"
+    ```
+  - Ghi kết quả vào `workspace/{issueKey}/test/reuse-scan.json`. Dùng code tái sử dụng theo JSON này.
+  - Lấy dữ liệu chứng khoán: chuỗi ưu tiên bắt buộc là `fixture valid_order_symbol` (nguồn Metabase UAT) → `getSecuritiesFixture` (n8n) → `.env`.
+  - Web UI: Dùng n8n `discoverWebUILocators` hoặc Playwright thủ công, verify locators trước khi dùng.
 
 - **Giai đoạn 2 (Thiết kế Kiến trúc Phân tầng):**
   - Tạo Page Object Model (Web UI) hoặc Service Client (API/WS, kế thừa SDK có sẵn).
-  - Áp dụng kết quả Reuse Scan: import trực tiếp, chỉ viết mới những thư chưa có.
+  - Áp dụng kết quả Reuse Scan (`reuse-scan.json`): import trực tiếp, chỉ viết mới những thứ chưa có.
   - Toàn bộ assertions BẮT BUỘC nằm ở tầng test, không để lọt vào tầng POM/Service.
 
 - **Giai đoạn 3 (Sinh Mã Kiểm thử `test_*.py`):**
-  - Ánh xạ 1-1 từng Scenario Gherkin thành test case.
+  - Ánh xạ 1-1 từng Scenario Gherkin thành test case. Sử dụng marker ID liên kết: `@pytest.mark.cl("CL-xxx")`.
   - Gắn tag, decorator và áp dụng chuẩn ghi log 4 thẻ tiếng Việt (`[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]`).
-  - Gắn comment `# test-intent: <mục tiêu>` đầu mỗi test function theo quy ước `cr-code-simplification`.
-  - Toàn bộ tham số kiểm thử gọi từ `.env` hoặc fixture động.
+  - Gắn comment `# test-intent: <mục tiêu>` đầu mỗi test function.
+  - Toàn bộ tham số kiểm thử gọi từ `.env` hoặc fixture động. Cấm hardcode (`https?://`, `wss?://` ngoài `.env`).
 
 - **Giai đoạn 4 (Simplification Pass — trước khi bàn giao):**
-
-  Sau khi viết xong toàn bộ code, chạy lượt rà soát `cr-code-simplification` cho test code:
   - Xác nhận **Never-Cut List**: không xóa assert, teardown, boundary `[P0]`, error-path check.
   - Kiểm tra comment `# test-intent:` có ở đầu mỗi test function chưa.
-  - Gộp fixture trùng lặp nếu có — dán nhãn `# simplify: gộp X fixture giống nhau`.
   - Xóa locator/method thừa trong POM chưa được dùng đến.
 
-- **Giai đoạn 5 (Thẩm định Cú pháp & Bàn giao):** Chạy lệnh kiểm tra cú pháp — **KHÔNG phải chạy test thực sự:**
-  ```bash
-  pytest "workspace/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only
-  ```
-  Nếu có lỗi cú pháp ➤ Tự sửa (xem `references/known-errors-and-fixes.md`). Nếu Pass 100% ➤ Bàn giao cho `qa-run-test`.
+- **Giai đoạn 5 (GATE: Thẩm định Cú pháp, Lint & Bàn giao):**
+  - Chạy lệnh kiểm tra cú pháp và ngữ nghĩa test:
+    ```bash
+    pytest "workspace/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only
+    node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-lint.js {issueKey}
+    ```
+  - `qa-lint.js` sẽ kiểm tra: Phủ đủ Scenario, cấm sleep/mock/hardcode, assert đúng tầng.
+  - Nếu có lỗi cú pháp/lint ➤ Tự sửa (≤ 3 vòng).
+  - Cập nhật kết quả vào `workspace/{issueKey}/.pipeline-state.json` và bàn giao cho `qa-run-test`.
 
 ## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
 
@@ -195,6 +118,7 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
   import pytest
 
   @pytest.mark.scenario("Đặt lệnh mua cổ phiếu hợp lệ")
+  @pytest.mark.cl("CL-001")
   @pytest.mark.jira("STK-101")
   @pytest.mark.happy_path
   def test_buy_order_success(order_service, uat_account, valid_order_symbol):
@@ -205,7 +129,8 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
       """
       # [KỊCH BẢN] Đặt lệnh mua cổ phiếu hợp lệ
       symbol = os.getenv("TEST_ORDER_SYMBOL", valid_order_symbol.get("symbol"))
-      price = float(os.getenv("TEST_ORDER_PRICE", valid_order_symbol.get("reference_price", 28500)))
+      price = float(os.getenv("TEST_ORDER_PRICE", valid_order_symbol.get("reference_price")))
+
       qty = int(os.getenv("TEST_ORDER_QTY", "100"))
 
       # [ĐẦU VÀO] Gửi yêu cầu đặt lệnh mua
