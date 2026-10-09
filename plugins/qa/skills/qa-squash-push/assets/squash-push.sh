@@ -5,15 +5,17 @@
 # PHASE A — Dò Sprint Mới Nhất & Tạo Mới Test Case Sạch Sẽ
 #   1. Quét tìm Sprint mới nhất trên ĐA WORKSPACE (Test Case, Requirement, Campaign).
 #   2. Tự động khởi tạo thư mục Sprint mới nhất bên Test Case Workspace (nếu chưa có).
-#   3. QUÉT & XÓA TEST CASE CŨ Ở BẤT KỲ ĐÂU: Quét toàn project, xóa executions & xóa
-#      hoàn toàn test case cũ liên quan đến ISSUE_KEY trước khi push mới.
+#   3. QUÉT & XÓA TEST CASE CŨ CỦA ISSUE_KEY: Quét toàn project, chỉ xoá test case có tên
+#      đúng "ISSUE_KEY" hoặc "ISSUE_KEY-…" (mẫu tên script tạo ra) cùng executions của nó.
+#      Test case của task khác — kể cả task có số bắt đầu giống (PROJ-1234 khi push
+#      PROJ-123) hay test case chỉ nhắc tới key giữa tên — được giữ nguyên.
 #   4. Khởi tạo Test Case mới tinh tại thư mục Sprint mới nhất.
 #   5. Nạp nội dung kịch bản Gherkin (.feature) qua PATCH.
 #
 # PHASE B — Campaign Workspace
 #   6. Dò node Sprint tương ứng trong Campaign Workspace.
 #   7. Đọc sprint-view, tìm requirement có reference == ISSUE_KEY.
-#   8. XÓA SẠCH TEST PLAN ITEM CŨ: Quét test-plan-items và xóa sạch (nếu có).
+#   8. XOÁ TEST PLAN ITEM CŨ CỦA ISSUE_KEY: chỉ item trỏ tới test case của issue này.
 #   9. Gán Test Case mới vào test plan của sprint-req-version đó.
 #  10. Lưu thông tin đồng bộ vào workspace/{ISSUE_KEY}/test/squash_sync.json.
 #
@@ -40,9 +42,16 @@ if [[ $# -lt 3 ]]; then
     exit 1
 fi
 
-ISSUE_KEY="$1"
+ISSUE_KEY="$(printf '%s' "$1" | tr '[:lower:]' '[:upper:]')"
 NAME_JIRA="$2"
 GHERKIN_FILE="$3"
+
+# issueKey là khoá để chọn test case cần XOÁ: phải đúng dạng PROJ-123. Key rỗng hoặc chỉ có
+# mã project ("G3PTP") sẽ khớp mọi test case "G3PTP-*" của dự án → chặn trước khi gọi API.
+if [[ ! "$ISSUE_KEY" =~ ^[A-Z][A-Z0-9]+-[0-9]+$ ]]; then
+    echo "❌ ISSUE_KEY không hợp lệ: '$1' (cần dạng PROJ-123)"
+    exit 1
+fi
 TEST_CASE_NAME="${ISSUE_KEY}-${NAME_JIRA}"
 
 # --- Đọc .env ---
@@ -299,6 +308,41 @@ delete_test_case_executions() {
     fi
 }
 
+# Lọc test case thuộc ĐÚNG issue: tên bằng ISSUE_KEY hoặc bắt đầu bằng "ISSUE_KEY-"
+# (đúng mẫu TEST_CASE_NAME = "${ISSUE_KEY}-${NAME_JIRA}" mà script tạo ra).
+# - "G3PTP-1234-…" không khớp khi push G3PTP-123 (prefix có dấu "-" ngay sau key).
+# - Test case chỉ "nhắc tới" key ở giữa tên ("Regression G3PTP-123", "Smoke G3PTP-123 + G3PTP-456")
+#   KHÔNG bị xoá — đó là test case của người khác / task khác.
+# stdin: mảng test case JSON; stdout: [{id, name}] cần xoá.
+match_issue_test_cases() {
+    jq -c --arg key "$1" '
+      [ .[]? | select(
+          (.name? // "" | ascii_upcase) as $n
+          | ($n == $key) or ($n | startswith($key + "-"))
+        )
+        | {id: .id, name: .name}
+      ]
+    ' 2>/dev/null || echo "[]"
+}
+
+# Lọc test plan item thuộc issue: item khớp khi test case nó trỏ tới có tên thuộc issue
+# (cùng quy tắc match_issue_test_cases) hoặc nằm trong danh sách vừa purge ở Phase A.
+# Item không xác định được test case → KHÔNG xoá (thà để sót bản cũ còn hơn xoá nhầm task khác).
+# $1 = ISSUE_KEY, $2 = JSON mảng ID test case đã purge; stdin: response test-plan-items.
+select_issue_plan_items() {
+    jq -r --arg key "$1" --argjson purged "${2:-[]}" '
+      ( if type == "array" then .[]
+        elif type == "object" then (.content // ._embedded[]? // .items // [])[]?
+        else empty end )
+      | select(type == "object" and .id != null)
+      | ( .testCaseName // .referencedTestCase.name // .testCase.name // .name // "" | ascii_upcase ) as $n
+      | ( .testCaseId // .referencedTestCase.id // .testCase.id ) as $tc
+      | select( ($n == $key) or ($n | startswith($key + "-")) or ($tc != null and ($purged | index($tc)) != null) )
+      | .id
+    ' 2>/dev/null | sort -u || true
+}
+
+PURGED_TC_IDS="[]"
 purge_old_test_cases_anywhere() {
     local issue_key="$1"
     local proj_id="$2"
@@ -318,16 +362,7 @@ purge_old_test_cases_anywhere() {
         fi
 
         local matched
-        matched=$(echo "$tcs" | jq -c --arg key "$issue_key" '
-          [ .[]? | select(
-              (.name? // "") as $n
-              | ($n == $key)
-                or ($n | startswith($key + "-"))
-                or ($n | test("(^|[^A-Za-z0-9])" + $key + "([^A-Za-z0-9]|$)"; "i"))
-            )
-            | {id: .id, name: .name}
-          ]
-        ' 2>/dev/null || echo "[]")
+        matched=$(echo "$tcs" | match_issue_test_cases "$issue_key")
 
         found_tcs=$(jq -c -s '.[0] + .[1]' <(echo "$found_tcs") <(echo "$matched"))
 
@@ -346,6 +381,7 @@ purge_old_test_cases_anywhere() {
         log_warn "Phát hiện $count test case cũ liên quan đến '${issue_key}' trên dự án:"
         local tc_ids
         tc_ids=$(echo "$found_tcs" | jq -r '.[].id')
+        PURGED_TC_IDS=$(echo "$found_tcs" | jq -c '[.[].id]')
         for old_id in $tc_ids; do
             local old_name
             old_name=$(echo "$found_tcs" | jq -r --argjson oid "$old_id" '.[] | select(.id == $oid) | .name')
@@ -560,21 +596,22 @@ assign_test_case_to_campaign() {
 
     log_ok "Tìm thấy Sprint Requirement Version (ID: $SPRINT_REQ_VERSION_ID)"
 
-    # XÓA SẠCH TEST PLAN ITEM CŨ (THEO YÊU CẦU USER)
-    log_info "6. Quét và xoá test plan items cũ trong requirement..."
+    # XOÁ TEST PLAN ITEM CŨ CỦA CHÍNH ISSUE NÀY — giữ nguyên item trỏ tới test case của task khác
+    # (vd. bộ regression QA gắn tay vào requirement).
+    log_info "6. Quét test plan items cũ của '${ISSUE_KEY}' trong requirement..."
     local OLD_ITEMS_JSON
     OLD_ITEMS_JSON=$(call_backend "GET" "/backend/sprint-req-version/${SPRINT_REQ_VERSION_ID}/test-plan-items")
-    
+
     local OLD_ITEM_IDS
-    OLD_ITEM_IDS=$(echo "$OLD_ITEMS_JSON" | jq -r '
-      if type == "array" then
-        .[].id?
-      elif type == "object" then
-        (.content[]?.id? // ._embedded[][]?.id? // .items[]?.id?)
-      else
-        empty
-      end | select(. != null)
-    ' 2>/dev/null | sort -u || true)
+    OLD_ITEM_IDS=$(echo "$OLD_ITEMS_JSON" | select_issue_plan_items "$ISSUE_KEY" "$PURGED_TC_IDS")
+    log_debug "test-plan-items response: ${OLD_ITEMS_JSON}"
+
+    local TOTAL_ITEMS KEPT_ITEMS
+    TOTAL_ITEMS=$(echo "$OLD_ITEMS_JSON" | jq '[ if type == "array" then .[] elif type == "object" then (.content // ._embedded[]? // .items // [])[]? else empty end ] | length' 2>/dev/null || echo 0)
+    KEPT_ITEMS=$(( TOTAL_ITEMS - $(printf '%s' "$OLD_ITEM_IDS" | grep -c . || true) ))
+    if [[ "$KEPT_ITEMS" -gt 0 ]]; then
+        log_info "Giữ nguyên ${KEPT_ITEMS} test plan item không thuộc '${ISSUE_KEY}' (chạy SQUASH_DEBUG=1 để xem chi tiết)."
+    fi
 
     if [[ -n "$OLD_ITEM_IDS" ]]; then
         for OLD_ITEM_ID in $OLD_ITEM_IDS; do

@@ -12,7 +12,7 @@
   ```bash
   bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-squash-push/assets/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
   ```
-- Script tự động nạp `.env`, dò Sprint mới nhất trên đa workspace (Test Case, Requirement, Campaign), quét và xóa sạch test case/execution cũ của `{issueKey}` ở bất kỳ thư mục nào trên toàn dự án, rồi tạo mới sạch sẽ tại Sprint mới nhất và đồng bộ vào Campaign.
+- Script tự động nạp `.env`, dò Sprint mới nhất trên đa workspace (Test Case, Requirement, Campaign), quét và xoá test case/execution cũ (chỉ test case tên `{issueKey}` hoặc `{issueKey}-…`) của `{issueKey}` ở bất kỳ thư mục nào trên toàn dự án, rồi tạo mới sạch sẽ tại Sprint mới nhất và đồng bộ vào Campaign.
 
 ### Bước 3: Phân tích Output & Báo cáo
 - Đọc kỹ kết quả Phase B trong output: `- Campaign Workspace:`.
@@ -25,6 +25,7 @@
 ❌ **Chạy lệnh curl rời rạc:** Dễ thất thoát session. Bắt buộc dùng `squash-push.sh`.
 ❌ **Lộ thông tin nhạy cảm:** Hardcode token/cookie vào console/chat.
 ❌ **Để sót test case cũ ở Sprint khác:** Khi đẩy mới, bắt buộc phải quét xóa bản cũ trên toàn dự án để tránh trùng lặp dữ liệu.
+❌ **Xoá nhầm test case của task khác:** Chỉ xoá theo tên đúng mẫu `{issueKey}` / `{issueKey}-…`. Không đổi bộ lọc sang "tên có chứa issueKey" — sẽ xoá cả regression suite và task có số bắt đầu giống.
 
 ## 3. Cờ Đỏ Cảnh Báo (Red Flags)
 - Đẩy file `.feature` rỗng hoặc chưa validate.
@@ -37,6 +38,7 @@
 - [ ] File kịch bản `*.feature` hợp lệ trước khi đẩy.
 - [ ] Đã quét và đối chiếu Sprint mới nhất trên cả 3 workspace (Test Case, Requirement, Campaign).
 - [ ] Đã quét toàn bộ dự án và dọn sạch test case/execution cũ của `{issueKey}` trước khi tạo mới.
+- [ ] Log không có dòng "Đã xóa hoàn toàn Test Case cũ" nào cho test case của task khác.
 - [ ] Test Case mới đã được tạo và nạp kịch bản tại đúng thư mục Sprint mới nhất.
 - [ ] Script kết thúc với exit code 0.
 - [ ] `- Test Case Workspace:` xác nhận tạo mới và nạp script thành công.

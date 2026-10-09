@@ -55,7 +55,7 @@ Phase A kết hợp REST API chính thức của Squash TM (`/api/rest/latest/..
 ┌────────────────────────────────────────────────────────────────────────┐
 │ Bước 3: Cơ Chế Clean-Old-Anywhere (Quét Xóa Test Case Cũ Toàn Dự Án)   │
 │ GET /api/rest/latest/projects/{projectId}/test-cases (pagination loop) │
-│ ➔ Quét mọi thư mục/Sprint cũ để tìm test case của {issueKey}           │
+│ ➔ Quét mọi thư mục/Sprint, chỉ khớp tên == {issueKey} / {issueKey}-…   │
 │ ➔ Xóa sạch executions cũ của từng test case tìm thấy                   │
 │ ➔ DELETE /test-cases/{old_id} xóa hoàn toàn test case cũ khỏi hệ thống │
 └───────────────────────────────────┬────────────────────────────────────┘
@@ -111,7 +111,7 @@ Phase B là luồng **Best-effort**: kết nối với API nội bộ của UI S
 │ Bước 7: Tìm Requirement & Làm Sạch Test Plan (Clean-Before-Add)        │
 │ GET /backend/sprint-view/{sprintId} ➔ Tìm reference == {issueKey}      │
 │ Lấy sprintReqVersionId ➔ Quét /test-plan-items                         │
-│ ➔ DELETE xóa sạch executions và test plan items cũ                     │
+│ ➔ DELETE chỉ test plan items trỏ tới test case của {issueKey}          │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
