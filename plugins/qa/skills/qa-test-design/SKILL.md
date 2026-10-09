@@ -12,6 +12,7 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 |---|---|
 | Đọc spec/final.md, phân tích yêu cầu | Viết code Python/Pytest/Playwright |
 | Thiết kế `checklist.md` theo 6 chiều | Chạy test thực sự lên server |
+| Tra cứu dữ liệu thật UAT (read-only) | Debug lỗi hệ thống backend |
 | Viết kịch bản BDD Gherkin `.feature` | Debug lỗi hệ thống backend |
 | Chạy `qa-validate.sh` (kiểm tra cú pháp Gherkin) | Tạo file conftest.py, services/, pages/ |
 | Bàn giao artifacts cho `qa-auto-design` | Viết báo cáo kết quả test |
@@ -37,6 +38,12 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
     - `[P0]`: Boundary BVA + Security + giao dịch tiền/cổ phiếu
     - `[P1]`: Happy path chính + Negative scenario ảnh hưởng UX
     - `[P2]`: Nice-to-have, tính năng phụ, performance không critical
+
+- **Giai đoạn 1.5 (Data Grounding):**
+  - Đọc file [data-grounding.md](references/data-grounding.md) để hiểu quy trình.
+  - Liệt kê các dữ liệu định danh cần cho test (VD: số tài khoản, mã CK, mã order).
+  - Sử dụng các Tool Call để lấy dữ liệu có THẬT từ UAT (qua DB/Metabase hoặc API).
+  - Ghi thông tin dữ liệu đã verify vào `workspace/{issueKey}/test/fixtures/data-grounding.json`.
 
 - **Giai đoạn 2 (Thiết kế Kịch bản BDD Gherkin `{issueKey}.feature`):**
   - Viết duy nhất 1 file `.feature` ánh xạ 1-1 từ checklist.
@@ -84,7 +91,8 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
   - [qa-validate.sh](assets/qa-validate.sh): Script thẩm định cú pháp file Gherkin (6 quy tắc cứng).
 
 - 📖 **Tài liệu quy trình & Kỹ thuật (references/):**
-  - [workflow.md](references/workflow.md): 5 Nguyên Tắc Vàng, Anti-patterns, Verification checklist.
+  - [data-grounding.md](references/data-grounding.md): Quy trình Grounding dữ liệu thật UAT.
+  - [workflow.md](references/workflow.md): 7 Nguyên Tắc Vàng, Anti-patterns, Verification checklist.
   - [qa-testing-checklist.md](references/qa-testing-checklist.md): Kỹ thuật BVA, EP, mẫu kịch bản theo domain.
   - [gherkin-patterns.md](references/gherkin-patterns.md): Mẫu Gherkin chuẩn cho từng loại task (API, WS, Web UI, Securities).
   - [securities-domain-rules.md](../../../../references/securities-domain-rules.md): Cẩm nang nghiệp vụ chứng khoán.

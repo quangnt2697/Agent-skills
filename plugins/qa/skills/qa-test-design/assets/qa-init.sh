@@ -36,12 +36,14 @@ if [ -d "$OUTPUT_DIR" ]; then
 fi
 
 # Create standardized directory structure
+mkdir -p "$OUTPUT_DIR/fixtures"
 mkdir -p "$OUTPUT_DIR/steps"
 mkdir -p "$OUTPUT_DIR/result"
 
 echo "Created QA output directory at: $OUTPUT_DIR" >&2
+echo "  ├── fixtures/      (data-grounding.json)" >&2
 echo "  ├── checklist.md   (written by qa-test-design)" >&2
 echo "  ├── steps/         (test_*.py automation scripts)" >&2
 echo "  └── result/        (test result reports)" >&2
 
-echo "{\"status\": \"ready\", \"issue_key\": \"$ISSUE_KEY\", \"output_dir\": \"$OUTPUT_DIR\", \"structure\": {\"steps\": \"$OUTPUT_DIR/steps\", \"result\": \"$OUTPUT_DIR/result\"}}"
+echo "{\"status\": \"ready\", \"issue_key\": \"$ISSUE_KEY\", \"output_dir\": \"$OUTPUT_DIR\", \"structure\": {\"fixtures\": \"$OUTPUT_DIR/fixtures\", \"steps\": \"$OUTPUT_DIR/steps\", \"result\": \"$OUTPUT_DIR/result\"}}"

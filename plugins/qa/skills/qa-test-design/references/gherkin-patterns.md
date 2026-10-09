@@ -196,3 +196,24 @@ Then SELECT status FROM orders WHERE id = "123" trả về "FILLED"
 When Nhà đầu tư đặt lệnh mua mã "VNM" với khối lượng "VUOT_HAN_MUC_SAN"
 Then Hệ thống từ chối và trả về thông báo lỗi "Khối lượng vượt quá giới hạn sàn HOSE"
 ```
+
+---
+
+## 8. Grounding Dữ Liệu Thật — Before/After
+
+Dữ liệu định danh thực tế (account, symbol, ID) BẮT BUỘC phải lấy từ UAT, không tự bịa (Trừ negative testing).
+
+```gherkin
+# ❌ SAI — Tự bịa ID không có thật cho luồng Happy Path
+Given tài khoản có mã "ACC_001" và orderId "ORD_12345"
+
+# ✅ ĐÚNG — Dữ liệu đã lấy từ Metabase UAT (Grounding)
+Given tiểu khoản "0001170086" có lệnh mua đang chờ khớp với orderId "8820300"
+
+# ✅ ĐÚNG (Có Fallback) — Metabase không lấy được, tự bịa nhưng PHẢI có comment [DATA-ASSUMED]
+# [DATA-ASSUMED] accountNo=1234567890 chưa verify trong UAT
+Given tiểu khoản "1234567890" có lệnh mua đang chờ khớp với orderId "ORD_999"
+
+# ✅ ĐÚNG (Negative Dummy) — Không tồn tại thật để test case lỗi (Không cần grounding/comment)
+Given tiểu khoản không tồn tại "9999999999" thực hiện đặt lệnh
+```

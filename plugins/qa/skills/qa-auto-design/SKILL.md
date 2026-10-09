@@ -37,6 +37,7 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
   - Chạy tất định SDK preflight (1 lệnh): `node ${AGENT_SKILLS_HOME:-.}/scripts/qa/check-sdk.js`. Dừng nếu thiếu dependency.
 
 - **Giai đoạn 1 (Reuse Scan & Recon):**
+  - Đọc `workspace/{issueKey}/test/fixtures/data-grounding.json` nếu tồn tại. Sử dụng dữ liệu định danh đã grounding.
   - Khảo sát mã nguồn tái sử dụng bằng script tất định:
     ```bash
     node ${AGENT_SKILLS_HOME:-.}/scripts/qa/reuse-scan.js {issueKey} "từ_khóa_từ_feature"

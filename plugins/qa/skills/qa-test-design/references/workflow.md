@@ -1,12 +1,13 @@
 # Quy trình Thiết kế Kịch bản BDD (qa-test-design)
 
-## 1. 6 Nguyên Tắc Vàng Khi Thiết Kế Test
+## 1. 7 Nguyên Tắc Vàng Khi Thiết Kế Test
 1. **Nghiệp Vụ Là Trung Tâm (Domain-Driven):** Mọi test case cho chứng khoán, fintech bắt buộc tuân thủ quy tắc thị trường (biên độ trần/sàn, bước giá, cờ phiên). Tham chiếu [Cẩm nang nghiệp vụ chứng khoán](../../../../../references/securities-domain-rules.md).
 2. **Ngôn Ngữ Miền Thuần Nghiệp Vụ (Ubiquitous Language):** Tuyệt đối KHÔNG đưa biến code, tên file cấu hình (như `MAX_CONNECTOR`, `.env`, `WS_URL`) hay selector automation (`xpath`, `url`) vào Gherkin.
 3. **Mô Hình Ranh Giới Tượng Trưng (Symbolic Boundaries):** Kiểm thử biên cho quota/rate limit phải dùng các vị trí biên tượng trưng (`TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`, `VUOT_NGUONG`) thay vì số cứng.
 4. **Chuẩn BVA 3 Giá Trị (3-Value BVA):** Giá trị tài chính, khối lượng, tiền phải test đủ bộ: `{Boundary - ε, Boundary, Boundary + ε}`.
 5. **Tham Số Hóa Đa Sàn / Đa Mã (Multi-Symbol Parameterization):** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** phải tách riêng Scenario độc lập hoặc sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa chi tiết. **CẤM TUYỆT ĐỐI** viết scenario gộp chung làm mờ ranh giới thời gian và kênh dữ liệu.
-6. **Cổng Kiểm Tra Tự Động:** File `.feature` bắt buộc chạy qua script `qa-validate.sh` và tự sửa lỗi (Self-fix Loop ≤ 3 vòng) trước khi bàn giao.
+6. **Grounding Dữ Liệu Định Danh Thật:** Mọi dữ liệu định danh (accountNo, symbol, orderId) dùng trong test happy-path/precondition (loại a) phải được tra cứu từ môi trường UAT thật và ghi nhận vào `data-grounding.json`. Nếu không thể, BẮT BUỘC gắn thẻ `[DATA-ASSUMED]` cảnh báo.
+7. **Cổng Kiểm Tra Tự Động:** File `.feature` bắt buộc chạy qua script `qa-validate.sh` và tự sửa lỗi (Self-fix Loop ≤ 3 vòng) trước khi bàn giao.
 
 ## 2. Quy Trình 3 Giai Đoạn Thiết Kế
 
@@ -48,9 +49,11 @@ bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate
 
 ## 5. Xác minh (Verification Checklist)
 - [ ] Tồn tại `checklist.md` (đủ 6 chiều, gán P0/P1/P2).
+- [ ] Đã thực hiện data grounding, có file `data-grounding.json` trong `test/fixtures/`.
 - [ ] Tồn tại `{issueKey}.feature` (1 khối Feature, có User Story).
 - [ ] Mọi Scenario ánh xạ 1-1 về checklist, có gắn tags chuẩn.
 - [ ] Dùng ranh giới tượng trưng (`TAI_HAN_MUC`).
+- [ ] Dữ liệu định danh đã được grounded vào UAT hoặc có nhãn `[DATA-ASSUMED]`.
 - [ ] Sạch bóng biến code, selector, query SQL.
 - [ ] Pass 100% khi chạy `qa-validate.sh`.
 

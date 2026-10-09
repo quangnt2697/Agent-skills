@@ -101,6 +101,7 @@ test case theo tên file).
 │   └── diagrams/
 │
 ├── test/                       # QA sở hữu
+│   ├── fixtures/               # data-grounding.json và các test data khác
 │   ├── checklist.md
 │   ├── {issueKey}.feature
 │   ├── steps/                  # code automation

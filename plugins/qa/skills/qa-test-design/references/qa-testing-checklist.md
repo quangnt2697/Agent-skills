@@ -161,7 +161,7 @@ Scenario Outline: Hiển thị dữ liệu theo thị trường <thị_trường
 | Thứ tự             | Given → When → Then (không lặp vòng)                                       |
 | Tham số chuỗi      | Đặt trong ngoặc kép: `"giá trị"`                                           |
 | Payload nhiều dòng | Dùng doc strings `"""..."""`                                               |
-| Dữ liệu mẫu        | Cụ thể, thực tế: `"VNM"`, `"50000"`, `"SSI"` — KHÔNG dùng `"foo"`, `"bar"` |
+| Dữ liệu mẫu        | **Loại (a) Precondition**: Phải lấy từ UAT, VD: `"0001170086"`. <br>**Loại (b) Negative**: Giá trị giả để test lỗi, VD: `"99999"`. <br>**Loại (c) Ranh giới**: Giữ nhãn, VD: `"TAI_HAN_MUC"`. |
 
 ---
 

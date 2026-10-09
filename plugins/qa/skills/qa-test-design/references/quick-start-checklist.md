@@ -79,6 +79,16 @@ Phân bổ vào **6 chiều** (mỗi item: động từ hành động + lượng
 
 ---
 
+## BƯỚC 3.5 — Data Grounding
+
+- Xác định các loại **(a) Dữ liệu định danh/precondition** cần thiết (account, symbol, orderId...).
+- Truy vấn lấy giá trị thật từ UAT theo chuỗi ưu tiên (n8n `getSecuritiesFixture`, Metabase SQL `metabaseRunSql`, API GET).
+- Zero-mutation: TUYỆT ĐỐI không gọi các lệnh thay đổi dữ liệu (POST, UPDATE, DELETE).
+- Lưu kết quả vào `workspace/{issueKey}/test/fixtures/data-grounding.json`.
+- Ghi chú: Nếu timeout/lỗi, chuyển sang fallback và nhớ gắn nhãn `[DATA-ASSUMED]` khi viết Gherkin ở Bước 4.
+
+---
+
 ## BƯỚC 4 — Viết `{issueKey}.feature`
 
 **Quy tắc cứng khi viết Gherkin:**
