@@ -32,7 +32,21 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 
 - **Giai đoạn 1 (Phân tích Spec & Thiết kế Checklist `checklist.md`):**
   - Đọc `workspace/{issueKey}/spec/final.md` và `../../../../references/securities-domain-rules.md` (nếu domain fintech/chứng khoán).
+  - **BẮT BUỘC nhận diện loại API trước khi thiết kế checklist:**
+    - Scan keyword trong Jira description theo bảng dưới. Sai loại → checklist thiếu nhóm test quan trọng.
+
+    | Keyword nhận diện trong Jira | Loại API | Nhóm kịch bản bắt buộc bổ sung |
+    |---|:---:|---|
+    | `GET/POST/PUT/DELETE`, `endpoint`, `HTTP status`, `curl`, `Request Body` | **REST** | Happy path, Negative (4xx), Security, BVA input |
+    | `query { }`, `mutation { }`, `GraphQL`, `operation`, `selection set`, `variables` | **GraphQL** | Full query, Partial query, Empty query, Invalid query |
+    | `WebSocket`, `subscribe`, `event`, `channel`, `stream`, `msgpack` | **WebSocket** | Connect/Auth, Event payload, Disconnect, Isolation |
+    | Không rõ → | **Dừng, hỏi user** | Đây là Critical Input, không được suy diễn |
+
   - Phân tích theo 6 chiều kiểm thử (Bảo mật, Quy tắc nghiệp vụ, Toàn vẹn dữ liệu, Đường dẫn chuẩn, Ngoại lệ, Ranh giới BVA).
+  - Ghi nhận **loại API đã xác định** vào dòng đầu tiên của `checklist.md`:
+    ```markdown
+    <!-- API_TYPE: REST | GraphQL | WebSocket | Mixed -->
+    ```
   - Gán nhãn ưu tiên `[P0]`, `[P1]`, `[P2]` và **gán ID ổn định** (VD: `CL-001`). Mỗi item bắt đầu bằng **động từ hành động**, lượng hóa rõ ràng.
   - *Fallback thủ công (Quy tắc ưu tiên):*
     - `[P0]`: Boundary BVA + Security + giao dịch tiền/cổ phiếu
@@ -44,6 +58,11 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
   - Liệt kê các dữ liệu định danh cần cho test (VD: số tài khoản, mã CK, mã order).
   - Sử dụng các Tool Call để lấy dữ liệu có THẬT từ UAT (qua DB/Metabase hoặc API).
   - Ghi thông tin dữ liệu đã verify vào `workspace/{issueKey}/test/fixtures/data-grounding.json`.
+  - **Nhận diện & chuẩn bị cho Data Accuracy Verification (nếu task yêu cầu):**
+    - Trigger khi Jira có keyword: `"chính xác"`, `"trúng khớp"`, `"match"`, `"consistency"`, `"so sánh"`, `"verify data"`.
+    - BẮT BUỘC tra cứu sẵn **giá trị reference** từ Metabase UAT cho từng field cần verify.
+    - Ghi reference value vào `data-grounding.json` với `"kind": "accuracy-reference"`.
+    - Thiết kế nhóm kịch bản `@data-accuracy` trong checklist và feature (mẫu tại [quick-start-checklist.md Bước 3.5](references/quick-start-checklist.md)).
 
 - **Giai đoạn 2 (Thiết kế Kịch bản BDD Gherkin `{issueKey}.feature`):**
   - Viết duy nhất 1 file `.feature` ánh xạ 1-1 từ checklist.
@@ -51,6 +70,13 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
   - Ngôn ngữ miền nghiệp vụ thuần túy — **cấm tuyệt đối** biến code, XPath, SQL, `.env` keys.
   - Dùng ranh giới tượng trưng: `TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`.
   - **Tham số hóa Đa sàn / Đa mã:** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa. **CẤM TUYỆT ĐỐI** gộp chung.
+  - **GraphQL Task — BẮT BUỘC thiết kế đủ 4 nhóm kịch bản tham số query:**
+    1. `@graphql-full-query` — Gửi query với đầy đủ tất cả fields/arguments theo spec Jira.
+    2. `@graphql-partial-query` — Gửi query với tập field tối giản (bỏ optional fields).
+    3. `@graphql-no-query` — Gửi body rỗng, `query=""`, hoặc thiếu trường `query` hoàn toàn.
+    4. `@graphql-invalid-query` — Gửi query sai syntax, sai tên field, sai kiểu dữ liệu argument.
+    - **Tham khảo mẫu:** [gherkin-patterns.md Section 9](references/gherkin-patterns.md#9-graphql-api--tham-s%E1%BB%91-query-full--partial--empty--invalid).
+    - **QUY TẮC `Then` — Tuyệt đối không được tự suy diễn kết quả:** Nội dung `Then` phải lấy **nguyên văn** từ Acceptance Criteria hoặc mô tả task Jira. Nếu Jira không mô tả rõ expected value → đánh dấu `# NEEDS-SPEC` và dừng, không tự đưa ra giá trị mặc định.
   - Gắn thẻ bắt buộc: `@smoke` hoặc `@regression`, `@happy-path` hoặc `@negative` hoặc `@edge-case`, `@JIRA-{issueKey}`, `@domain-securities`.
 
 - **Giai đoạn 3 (GATE: Xác minh, Linter & Bàn giao):**

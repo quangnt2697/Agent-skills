@@ -57,14 +57,19 @@ Ghi kết quả vào đầu `conftest.py`:
 
 ## BƯỚC 1 — Xác Định Loại Task (30 giây)
 
-Đọc `{issueKey}.feature` → xác định:
+Đọc `{issueKey}.feature` và Jira description → xác định:
 
-| Feature chứa từ nào? | Task Type | Template `.env` cần dùng |
-|---|---|---|
-| `API`, `REST`, `HTTP`, `endpoint`, `status_code` | 🔌 REST API | `env-templates/api.env.example` |
-| `WebSocket`, `WS`, `subscribe`, `event`, `stream` | ⚡ WebSocket | `env-templates/ws.env.example` |
-| `trang web`, `màn hình`, `click`, `Sidebar`, `Playwright` | 🌐 Web UI | `env-templates/web-ui.env.example` |
-| `màn hình di động`, `Mobile`, `Appium`, `app` | 📱 Mobile | `env-templates/web-ui.env.example` |
+| Feature chứa từ nào? | Task Type | Template `.env` cần dùng | Quy tắc riêng |
+|---|---|---|---|
+| `API`, `REST`, `HTTP`, `endpoint`, `status_code`, `curl` | 🔌 REST API | `env-templates/api.env.example` | 7 assertions bắt buộc |
+| `query {`, `mutation {`, `GraphQL`, `graphql`, `operation`, `variables` | 🔷 GraphQL | `env-templates/api.env.example` + `GRAPHQL_ENDPOINT` | 4 nhóm query + 8 assertions, xem [automation_rules.md Section 3.5](automation_rules.md) |
+| `WebSocket`, `WS`, `subscribe`, `event`, `stream` | ⚡ WebSocket | `env-templates/ws.env.example` | `@pytest.mark.asyncio`, fail-fast timeout |
+| `trang web`, `màn hình`, `click`, `Sidebar`, `Playwright` | 🌐 Web UI | `env-templates/web-ui.env.example` | POM, semantic locators |
+| `màn hình di động`, `Mobile`, `Appium`, `app` | 📱 Mobile | `env-templates/web-ui.env.example` | SOM, Appium capabilities |
+| `data-accuracy`, `accuracy-reference` trong `data-grounding.json` | 🔍 Data Accuracy | Cùng loại API chính | Verify field-level từ Metabase UAT, xem Quy tắc 3.6 |
+
+> ⚠️ **Nếu feature chưa có tag `@graphql` hay `@rest` rõ ràng:** Scan thêm `checklist.md` dòng `API_TYPE:` (comment đầu file). Nếu vẫn không rõ → hỏi user trước.
+
 
 ---
 
@@ -129,7 +134,27 @@ def test_ten_scenario(fixture_1, fixture_2):
     # [KẾT QUẢ] Assert + Log verdict
 ```
 
-**7 Assertions bắt buộc (API):** Request Schema → Status Code → Response Schema → Business Fields → Error Detail → SLA → Headers
+**7 Assertions bắt buộc (REST API):** Request Schema → Status Code → Response Schema → Business Fields → Error Detail → SLA → Headers
+
+**8 Assertions bắt buộc (GraphQL):** HTTP Status Code → `errors` field → Response Schema → Selection Set Coverage → Business Fields → Error Message → SLA → Content-Type
+
+**Đối với Scenario `@data-accuracy` (Verify tính chính xác dữ liệu so với Metabase UAT):**
+- Đọc `data-grounding.json` → lấy tất cả item có `"kind": "accuracy-reference"`.
+- Với mỗi field cần verify:
+  1. Trước khi gọi API: query Metabase UAT lấy `current_value` (READ-ONLY, SELECT dữ liệu mới nhất).
+  2. Gọi API lấy `api_value = response[field]`.
+  3. Assert: `assert api_value == current_value, f"[DATA-MISMATCH] {field}: API={api_value}, Metabase={current_value}"`
+- **NGHIÊM CẤM:**
+  - So sánh API response với giá trị cũ trong `data-grounding.json` (có thể stale).
+  - Hardcode expected value thay vì query Metabase lúc runtime.
+  - Bỏ qua assert khi field = null (phải báo lỗi rõ ràng).
+- Log format bắt buộc cho data accuracy assertion:
+  ```
+  [KỊCH BẢN] Verify accuracy trường {field}
+  [ĐẦU VÀO] Query Metabase: {sql_query}
+  [HỆ THỐNG TRẢ RA] Metabase value={current_value} | API value={api_value}
+  [KẾT QUẢ] MATCH / MISMATCH
+  ```
 
 ---
 

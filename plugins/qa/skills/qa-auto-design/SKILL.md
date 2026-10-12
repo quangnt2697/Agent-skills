@@ -16,6 +16,12 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 | Tạo `.env` từ template, ghi biến cần thiết | Sửa code để ép test từ FAIL → PASS |
 | Bàn giao mã hoàn chỉnh cho `qa-run-test` | Thực thi test và viết báo cáo kết quả |
 
+> ⚠️ **QUY TẮC KHÔNG TỰ SUY DIỄN (No-Inference Rule — luôn bật):**
+> - **NGHIÊM CẤM** tự số suy diễn / assumed / guess expected value trong assertions khi không có cơ sở trong Jira.
+> - **Nguồn duy nhất hợp lệ** cho giá trị `assert ... == X`: Acceptance Criteria / mô tả task Jira / Gherkin `Then` đã thiết kế.
+> - Nếu Jira chưa mô tả rõ → ghi comment `# NEEDS-SPEC` và dừng để hỏi lại trước khi tiếp tục.
+> - Đây là tương đương với quy tắc 1.9 (Self-fix Loop): không bao giờ sửa assertion để ép match response thực tế (green-washing).
+
 **Khi có test fail sau khi `qa-run-test` chạy:** Bàn giao cho `dev-debugging` (lỗi hệ thống) hoặc cập nhật script qua `qa-auto-design` nếu script bị lỗi kỹ thuật (ImportError, fixture sai).
 
 ## 1. Khi nào dùng?
@@ -56,6 +62,10 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
   - Gắn tag, decorator và áp dụng chuẩn ghi log 4 thẻ tiếng Việt (`[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]`).
   - Gắn comment `# test-intent: <mục tiêu>` đầu mỗi test function.
   - Toàn bộ tham số kiểm thử gọi từ `.env` hoặc fixture động. Cấm hardcode (`https?://`, `wss?://` ngoài `.env`).
+  - **GraphQL Task — BẮT BUỘC tham chiếu [automation_rules.md Section 3.5](references/automation_rules.md) trước khi sinh mã:**
+    - Thiết kế đủ 4 nhóm: `full_query`, `partial_query`, `empty_query`, `invalid_query`.
+    - Thực hiện đủ 8 bước assertions cho mỗi test case.
+    - Assertions lấy expected value **nguyên văn** từ Jira. **NGHIÊM CẤM** tự suy diễn hoặc green-washing.
 
 - **Giai đoạn 4 (Simplification Pass — trước khi bàn giao):**
   - Xác nhận **Never-Cut List**: không xóa assert, teardown, boundary `[P0]`, error-path check.

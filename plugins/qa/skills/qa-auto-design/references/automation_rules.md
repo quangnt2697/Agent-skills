@@ -204,6 +204,200 @@ Mỗi Test Case API **BẮT BUỘC** thực hiện đủ **7 bước assertions:
 
 ---
 
+## 3.5. Quy Tắc Chuyên Biệt Cho GraphQL API Testing
+
+### Phân Loại Bắt Buộc 4 Nhóm Kịch Bản Tham Số Query
+
+Khi task Jira liên quan đến GraphQL, Agent **BẮT BUỘC** thiết kế đủ 4 nhóm kịch bản kiểm thử tham số query. Thiếu bất kỳ nhóm nào sẽ bị đánh trượt Quality Gate:
+
+| Nhóm | Mô tả | Test function tương ướng |
+|---|---|---|
+| **Full Query** | Gửi query với đầy đủ tất cả fields và arguments theo spec | `test_graphql_{op}_full_query_*` |
+| **Partial Query** | Gửi query với tập field tối giản (bỏ optional fields) | `test_graphql_{op}_partial_query_*` |
+| **Empty / No Query** | Gửi body rỗng, `query=""`, thiếu trường `query` | `test_graphql_{op}_empty_query_*` |
+| **Invalid Query** | Gửi query sai syntax, sai field, sai kiểu dữ liệu argument | `test_graphql_{op}_invalid_query_*` |
+
+### 8 Bước Assertions Bắt BuỘc Cho Mỗi GraphQL Test
+
+Mỗi test case GraphQL **BẮT BUỘC** thực hiện đủ **8 bước assertions** sau:
+
+1. **HTTP Status Code:** Kiểm tra `200 OK` (GraphQL convention) hoặc `400`/`415` cho số trường hợp syntax error cấp HTTP.
+2. **`errors` field check:**
+   - Happy path: `assert response_body.get("errors") is None or response_body["errors"] == []`
+   - Error path: `assert len(response_body["errors"]) > 0`
+3. **Response Schema:** Validate cấu trúc JSON trả về khớp GraphQL schema (đối chiếu Pydantic model).
+4. **Selection Set Coverage:** Với Full Query: kiểm tra tất cả fields đã request có mặt trong response. Với Partial Query: kiểm tra chỉ những field yêu cầu xuất hiện.
+5. **Key Business Fields:** Assert giá trị cụ thể của các field nghiệp vụ quan trọng (exact value hoặc pattern).
+6. **Error Message (Error Cases):** Kiểm tra chính xác nội dung `errors[0].message`, `errors[0].extensions.code` theo spec Jira.
+7. **Response Time / SLA:** Kiểm tra latency nằm trong ngưỡng cho phép nếu có yêu cầu SLA.
+8. **Content-Type Header:** Kiểm tra response header `Content-Type: application/json`.
+
+### Quy Tắc Không Tự Suy Diễn Kết Quả (No-Inference Rule — BẮT BUỘC)
+
+Khi viết assertion cho GraphQL test, Agent **TUYỆT ĐỐI KHÔNG được tự suy diễn** (infer, assume, guess) kết quả mong đợi. Điều kiện bắt buộc:
+
+- **Nguồn duy nhất cho `Then`:** Nội dung mô tả task Jira (Acceptance Criteria, mô tả API, Gherkin đã thiết kế từ `qa-test-design`).
+- **Nếu Jira không có mô tả rõ kết quả:** Dừng lại và đánh dấu `# NEEDS-SPEC: Thiếu mô tả expected value từ Jira`. Không tự đặt giá trị mặc định.
+- **NGHIÊM CẤM:** Tự sửa assertion để kết quả match với response thực tế (thay vì từ Jira). Đây là hành vi "green-washing" làm mất giá trị kiểm thử.
+
+```python
+# ❌ SAI — Tự suy diễn structure response không có trong Jira
+assert response_body["data"]["orders"][0]["status"] == "NEW"  # tự đoán
+
+# ❌ SAI — Tự sửa expected vào match response thực tế (green-washing)
+assert response_body["errors"][0]["message"] == "some error"  # lấy từ response debug rồi paste vào
+
+# ✅ ĐÚNG — Lấy expected value nguyên văn từ Acceptance Criteria Jira
+assert response_body["errors"][0]["message"] == "Field 'nonExistentField' doesn't exist on type 'Query'"
+#  ^--- Lấy chính xác từ Jira AC: "errors[0].message = Field 'nonExistentField' doesn't exist on type 'Query'"
+
+# ✅ ĐÚNG — Đánh dấu khi Jira chưa có mô tả
+assert response_body.get("data") is not None  # NEEDS-SPEC: Jira chưa định nghĩa expected fields
+```
+
+### Quy Tắc Gửi Request GraphQL
+
+```python
+import os
+import pytest
+import httpx
+
+# ✅ Cấu trúc request GraphQL chuẩn (dùng httpx hoặc requests, lấy endpoint từ .env)
+def send_graphql(query: str, variables: dict = None, headers: dict = None):
+    endpoint = os.getenv("GRAPHQL_ENDPOINT")  # ← Lấy từ .env, không hardcode
+    payload = {"query": query}
+    if variables:
+        payload["variables"] = variables
+    response = httpx.post(endpoint, json=payload, headers=headers or {})
+    return response
+
+# ✅ Empty query test
+def test_graphql_empty_query_returns_400(graphql_service, auth_headers):
+    # [KỊCH BẢN] Gửi body rỗng — Jira AC: Hệ thống trả về HTTP 400 và message lỗi
+    response = graphql_service.send(query="", headers=auth_headers)
+    # [HỆ THỐNG TRẢ RA]
+    # [KẾT QUẢ] Lấy expected từ Jira AC
+    assert response.status_code == 400
+    body = response.json()
+    assert "errors" in body
+    assert body["errors"][0]["message"] == "Must provide query string."  # Lấy nguyên văn từ Jira
+```
+
+---
+
+## 3.6. Quy Tắc Data Accuracy Verification (Verify Tính Chính Xác Dữ Liệu Response so với Metabase UAT)
+
+### Khi nào kích hoạt?
+
+Bắt buộc áp dụng khi Scenario có tag `@data-accuracy` (xuất phát từ `qa-test-design` phát hiện keyword `"chính xác"`, `"match"`, `"consistency"`, `"verify data"` trong Jira).
+
+### Nguyên tắc Runtime Query (Bắt buộc)
+
+> **KHÔNG** so sánh API response với giá trị đã lưu trong `data-grounding.json` (có thể stale).
+> **BẮT BUỘC** query Metabase UAT **lúc runtime** để lấy `current_value` mới nhất trước khi assert.
+
+**Quy trình 3 bước bắt buộc cho mỗi field cần verify:**
+
+```python
+import os
+import httpx
+import pytest
+
+# ✅ Pattern chuẩn cho Data Accuracy Verification
+def verify_field_accuracy(field_name: str, api_value, metabase_query: str, logger):
+    """
+    Verify tính chính xác của 1 field: so sánh API response với Metabase UAT runtime.
+    """
+    metabase_url = os.getenv("METABASE_UAT_URL")
+    db_id = int(os.getenv("METABASE_UAT_DB_ID"))
+
+    # Bước 1: Query Metabase UAT lấy current_value (READ-ONLY)
+    payload = {"database": db_id, "type": "native", "native": {"query": metabase_query}}
+    headers = {"X-Metabase-Session": os.getenv("METABASE_SESSION_TOKEN")}
+
+    # Kiểm tra không phải Production (Security Gate bắt buộc)
+    if "prod" in metabase_url.lower():
+        raise ValueError("[SECURITY_VIOLATION] Không được query Metabase Production trong automation test!")
+
+    resp = httpx.post(f"{metabase_url}/api/dataset", json=payload, headers=headers)
+    rows = resp.json().get("data", {}).get("rows", [])
+    assert rows, f"[DATA-MISSING] Metabase không trả về dữ liệu cho query: {metabase_query}"
+    current_value = rows[0][0]  # Lấy giá trị cột đầu tiên
+
+    # Bước 2: Log đầy đủ cả 2 giá trị
+    logger.info(
+        f"[KỊCH BẢN] Verify accuracy trường {field_name} | "
+        f"[ĐẦU VÀO] Query={metabase_query} | "
+        f"[HỆ THỐNG TRẢ RA] Metabase={current_value} | API={api_value}"
+    )
+
+    # Bước 3: Assert field-level
+    assert str(api_value) == str(current_value), (
+        f"[DATA-MISMATCH] Trường '{field_name}': "
+        f"API trả về '{api_value}', Metabase UAT có '{current_value}'"
+    )
+    logger.info(f"[KẾT QUẢ] MATCH — {field_name}: {api_value}")
+```
+
+### Quy Tắc Assert Toàn Bộ Fields (Full-Field Coverage)
+
+```python
+@pytest.mark.scenario("Tất cả fields trong response khớp với Metabase UAT")
+@pytest.mark.cl("CL-xxx")
+@pytest.mark.data_accuracy
+def test_data_accuracy_full_match(api_service, auth_headers, logger):
+    # test-intent: Xác minh từng field response khớp chính xác với Metabase UAT (runtime)
+
+    # [KỊCH BẢN] Gọi API
+    status_code, body, _, elapsed_ms = api_service.get_entity(headers=auth_headers)
+
+    # [HỆ THỐNG TRẢ RA]
+    assert status_code == 200
+
+    # [KẾT QUẢ] Verify từng field bắt buộc — lấy query từ data-grounding.json
+    grounding = load_data_grounding()  # đọc data-grounding.json
+    for item in grounding["items"]:
+        if item["kind"] == "accuracy-reference":
+            verify_field_accuracy(
+                field_name=item["field"],
+                api_value=body["data"].get(item["field"]),
+                metabase_query=item["query"],  # query LUÔN chạy runtime
+                logger=logger
+            )
+
+    # Kiểm tra không có field null khi Metabase có giá trị
+    for item in grounding["items"]:
+        if item["kind"] == "accuracy-reference":
+            assert body["data"].get(item["field"]) is not None, (
+                f"[NULL-FIELD] Trường '{item['field']}' = null trong response, "
+                f"nhưng Metabase UAT có giá trị '{item['value']}'"
+            )
+```
+
+### NGHIÊM CẤM (Anti-patterns)
+
+```python
+# ❌ SAI — So sánh với giá trị cũ từ data-grounding.json (stale)
+assert body["balance"] == grounding_item["value"]  # value có thể đã thay đổi!
+
+# ❌ SAI — Hardcode expected value
+assert body["balance"] == 5000000  # không bền vững
+
+# ❌ SAI — Bỏ qua khi field null
+if body.get("status") is not None:
+    assert body["status"] == current_value  # bỏ qua case null!
+
+# ❌ SAI — Query Metabase Production
+metabase_url = "https://metabase.prod.company.com"  # SECURITY VIOLATION!
+
+# ✅ ĐÚNG — Runtime query + assert kể cả null
+current_value = query_metabase_uat(item["query"])  # query runtime
+assert body.get(item["field"]) is not None, f"[NULL-FIELD] {item['field']} = null"
+assert str(body[item["field"]]) == str(current_value), f"[MISMATCH] ..."
+```
+
+---
+
 ## 4. Quy Tắc Chuyên Biệt Cho WebSocket Testing (Event-driven)
 
 1. **Connection State:** Kiểm tra kết nối thành công với Auth chuẩn. Có báo lỗi (401/403) khi Auth sai. Xử lý kịch bản disconnect/reconnect.

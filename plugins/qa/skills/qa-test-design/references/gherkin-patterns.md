@@ -217,3 +217,245 @@ Given tiểu khoản "1234567890" có lệnh mua đang chờ khớp với orderI
 # ✅ ĐÚNG (Negative Dummy) — Không tồn tại thật để test case lỗi (Không cần grounding/comment)
 Given tiểu khoản không tồn tại "9999999999" thực hiện đặt lệnh
 ```
+
+---
+
+## 9. GraphQL API — Tham số Query (Full / Partial / Empty / Invalid)
+
+> ⚠️ **QUY TẮC BẮT BUỘC cho GraphQL:**
+> - BẮT BUỘC thiết kế đủ 4 nhóm kịch bản tham số query theo mô tả Jira (xem bảng dưới).
+> - **NGHIÊM CẤM** bỏ qua kịch bản `empty query` hoặc `missing required args`.
+> - Kết quả mong đợi (`Then`) phải lấy **nguyên văn** từ mô tả Jira task — **KHÔNG được tự suy diễn**.
+
+### Bảng 4 nhóm tham số GraphQL bắt buộc kiểm thử
+
+| Nhóm | Mô tả | Tag bắt buộc |
+|---|---|:---:|
+| **Full Query** | Gửi query với đầy đủ tất cả fields / arguments theo spec | `@graphql-full-query` |
+| **Partial Query** | Gửi query chỉ với một số fields (bỏ optional fields) | `@graphql-partial-query` |
+| **Empty / No Query** | Gửi body rỗng, query `""`, hoặc thiếu trường `query` hoàn toàn | `@graphql-no-query` |
+| **Invalid Query** | Gửi query sai syntax, sai tên field, sai kiểu dữ liệu argument | `@graphql-invalid-query` |
+
+### Mẫu Gherkin GraphQL Happy Path (Full Query)
+
+```gherkin
+@domain-securities @graphql @JIRA-{issueKey} @graphql-full-query
+Feature: [GraphQL] {Tên query/mutation}
+  As a {vai trò}
+  I want to gọi GraphQL {query|mutation} "{tên operation}"
+  So that {giá trị nghiệp vụ}
+
+  Background:
+    Given client đã xác thực với token hợp lệ
+
+  @happy-path @smoke
+  Scenario: Truy vấn thành công với đầy đủ tham số (full query)
+    Given operation GraphQL là "{tên query/mutation}"
+    And body request chứa đầy đủ arguments: {liệt kê từng argument theo spec Jira}
+    And body request chứa đầy đủ selection set fields: {liệt kê từng field theo spec Jira}
+    When client gửi GraphQL request
+    Then API trả về mã HTTP "200"
+    And trường "errors" trong response KHÔNG tồn tại hoặc rỗng
+    And response chứa trường "data.{tên operation}" với cấu trúc khớp schema định nghĩa
+    And {trường kết quả cụ thể} mang giá trị {expected value — lấy nguyên văn từ Jira}
+```
+
+### Mẫu Gherkin GraphQL Partial Query
+
+```gherkin
+  @happy-path @graphql-partial-query
+  Scenario Outline: Truy vấn thành công với tập fields tối giản (partial query)
+    Given operation GraphQL là "{tên query/mutation}"
+    And body request chứa chỉ <selected_fields> (bỏ qua các optional fields)
+    And các required arguments được cung cấp đầy đủ
+    When client gửi GraphQL request
+    Then API trả về mã HTTP "200"
+    And response chứa chính xác <selected_fields> theo yêu cầu
+    And các field không yêu cầu KHÔNG xuất hiện trong response hoặc được trả về null
+
+    Examples:
+      | selected_fields                        |
+      | id, name                               |
+      | id, status, createdAt                  |
+```
+
+### Mẫu Gherkin GraphQL Empty / No Query
+
+```gherkin
+  @negative @graphql-no-query
+  Scenario Outline: Hệ thống từ chối khi body request thiếu hoặc rỗng
+    Given client gửi request với body <body_variant>
+    When client gửi GraphQL request đến endpoint "{/graphql}"
+    Then API trả về mã HTTP "<expected_status>"
+    And response chứa trường "errors" với message "{thông báo lỗi — lấy nguyên văn từ Jira}"
+
+    Examples:
+      | body_variant                        | expected_status |
+      | body hoàn toàn rỗng "{}"           | 400             |
+      | trường query = chuỗi rỗng \"\"      | 400             |
+      | thiếu trường query trong body       | 400             |
+      | content-type không phải JSON        | 415             |
+```
+
+### Mẫu Gherkin GraphQL Invalid Query
+
+```gherkin
+  @negative @edge-case @graphql-invalid-query
+  Scenario Outline: Hệ thống trả về lỗi khi query không hợp lệ
+    Given operation GraphQL có lỗi <invalid_type>
+    When client gửi GraphQL request
+    Then API trả về mã HTTP "200" (GraphQL convention) hoặc "<expected_status>"
+    And response chứa trường "errors" không rỗng
+    And errors[0].message phù hợp với "{pattern lỗi — lấy nguyên văn từ Jira}"
+
+    Examples:
+      | invalid_type                                   | expected_status |
+      | syntax error (thiếu dấu ngoặc đóng)           | 400             |
+      | field không tồn tại trong schema               | 200             |
+      | argument sai kiểu dữ liệu (String thay Int)    | 200             |
+      | thiếu required argument bắt buộc               | 200             |
+      | giá trị argument vượt giới hạn cho phép        | 200             |
+```
+
+### ⚠️ Anti-patterns GraphQL — Cấm Kỵ
+
+```gherkin
+# ❌ SAI — Tự suy diễn kết quả không có trong Jira
+Then hệ thống trả về danh sách lệnh (tự đoán response structure)
+
+# ❌ SAI — Gộp chung full query và partial query vào 1 scenario
+When gửi query với fields tùy ý
+Then response có dữ liệu
+
+# ❌ SAI — Bỏ qua kịch bản empty/no query
+# (không thiết kế Scenario cho body rỗng hoặc query="")
+
+# ✅ ĐÚNG — Kết quả mong đợi lấy nguyên văn từ mô tả Jira task
+Then response chứa trường "errors[0].message" với giá trị "Field 'xxx' doesn't exist on type 'Query'"
+
+# ✅ ĐÚNG — Tách biệt 4 nhóm kịch bản query rõ ràng
+# (4 scenario riêng: full, partial, empty, invalid)
+```
+
+---
+
+## 10. Verify Data Accuracy — So sánh Response API với Metabase UAT
+
+> ⚠️ **KÍCH HOẠT khi Jira có keyword:** `"chính xác"`, `"trúng khớp"`, `"match"`, `"consistency"`, `"so sánh"`, `"verify data"`
+>
+> **QUY TẮC BẮT BUỘC:**
+> - Giá trị reference trong `Then` PHẢI lấy từ Metabase UAT (đã grounding vào `data-grounding.json`), KHÔNG hardcode.
+> - Dùng ranh giới tượng trưng `REF_VALUE_{FIELD}` thay vì số cụ thể trong Gherkin.
+> - Phủ đủ 4 kịch bản: (a) Khớp đầy đủ, (b) Field mismatch, (c) Field null/missing, (d) Freshness.
+
+### Bảng kịch bản Data Accuracy bắt buộc
+
+| Kịch bản | Tag | Mô tả |
+|---|:---:|---|
+| **Data Match (Full)** | `@data-accuracy @happy-path` | Tất cả fields trong response khớp với Metabase UAT |
+| **Field Mismatch** | `@data-accuracy @negative` | Ít nhất 1 field response sai so với Metabase UAT |
+| **Null / Missing Field** | `@data-accuracy @edge-case` | Field trong response null/thiếu khi Metabase có giá trị |
+| **Data Freshness** | `@data-accuracy @edge-case` | Response trả về record mới nhất, không phải cũ |
+
+### Mẫu Gherkin Data Accuracy
+
+```gherkin
+@domain-securities @api @JIRA-{issueKey} @data-accuracy
+Feature: [Data Accuracy] {Tên API} — Xác minh tính chính xác dữ liệu response
+
+  Background:
+    Given client đã xác thực với token hợp lệ
+    And dữ liệu reference cho {tên entity} đã được tra cứu từ Metabase UAT
+
+  @data-accuracy @happy-path @smoke
+  Scenario: Tất cả fields trong response khớp với giá trị trong Metabase UAT
+    Given tồn tại {entity} với {id/điều kiện} trong Metabase UAT
+    When client gọi API {METHOD} "{/endpoint}" với {tham số}
+    Then API trả về mã HTTP "200"
+    And trường "{field_1}" trong response khớp với giá trị "REF_{FIELD_1}" từ Metabase UAT
+    And trường "{field_2}" trong response khớp với giá trị "REF_{FIELD_2}" từ Metabase UAT
+    And trường "{field_3}" trong response khớp với giá trị "REF_{FIELD_3}" từ Metabase UAT
+    And không có trường nào bị null khi Metabase UAT có giá trị
+
+  @data-accuracy @negative
+  Scenario: Phát hiện mismatch khi dữ liệu nguồn thay đổi
+    Given {entity} với {id} có trường "{field}" mang giá trị "REF_{FIELD}_OLD" trong Metabase UAT
+    And dữ liệu đã được cập nhật thành giá trị "REF_{FIELD}_NEW"
+    When client gọi API {METHOD} "{/endpoint}"
+    Then API trả về mã HTTP "200"
+    And trường "{field}" trong response phản ánh giá trị mới "REF_{FIELD}_NEW"
+    And trường "{field}" KHÔNG còn mang giá trị cũ "REF_{FIELD}_OLD"
+
+  @data-accuracy @edge-case
+  Scenario Outline: Phát hiện field null/thiếu trong response khi Metabase có giá trị
+    Given trường "<field_name>" của {entity} có giá trị hợp lệ trong Metabase UAT
+    When client gọi API {METHOD} "{/endpoint}"
+    Then API trả về mã HTTP "200"
+    And trường "<field_name>" trong response KHÔNG được null hoặc thiếu
+
+    Examples:
+      | field_name   |
+      | {field_1}    |
+      | {field_2}    |
+      | {field_3}    |
+
+  @data-accuracy @edge-case
+  Scenario: Response trả về record mới nhất (Data Freshness)
+    Given {entity} có 2 records: record cũ (created_at T-1) và record mới (created_at T)
+    When client gọi API {METHOD} "{/endpoint}"
+    Then API trả về mã HTTP "200"
+    And trường "{timestamp_field}" trong response khớp với thời điểm của record mới nhất
+    And dữ liệu response không phải từ cache cũ hơn "{freshness_threshold}"
+```
+
+### Mẫu Data Grounding cho Data Accuracy
+
+Ghi vào `data-grounding.json` trước khi viết Gherkin:
+
+```json
+{
+  "items": [
+    {
+      "field": "accountBalance",
+      "value": "5000000",
+      "kind": "accuracy-reference",
+      "source": "metabase-uat",
+      "query": "SELECT balance FROM accounts WHERE account_no = '0001170086'",
+      "verified": true,
+      "usedIn": ["@data-accuracy @happy-path"],
+      "symbolicName": "REF_ACCOUNT_BALANCE"
+    },
+    {
+      "field": "lastUpdatedAt",
+      "value": "2026-10-10T08:30:00+07:00",
+      "kind": "accuracy-reference",
+      "source": "metabase-uat",
+      "query": "SELECT updated_at FROM accounts WHERE account_no = '0001170086'",
+      "verified": true,
+      "usedIn": ["@data-accuracy @freshness"],
+      "symbolicName": "REF_LAST_UPDATED"
+    }
+  ]
+}
+```
+
+### ⚠️ Anti-patterns Data Accuracy — Cấm Kỵ
+
+```gherkin
+# ❌ SAI — Hardcode giá trị so sánh mà không grounding từ Metabase
+Then trường "balance" trong response bằng "5000000"
+
+# ❌ SAI — Chỉ check HTTP 200, không verify field value
+Then API trả về mã HTTP "200"
+# (bỏ qua kiểm tra field-level accuracy)
+
+# ❌ SAI — Dùng giá trị tự đoán không có trong data-grounding.json
+And trường "status" khớp với "ACTIVE"  # tự đoán
+
+# ✅ ĐÚNG — Dùng tên symbolic, giá trị thật từ data-grounding.json
+And trường "balance" trong response khớp với giá trị "REF_ACCOUNT_BALANCE" từ Metabase UAT
+# REF_ACCOUNT_BALANCE = 5000000 (đã verify tại data-grounding.json)
+
+# ✅ ĐÚNG — Cover cả null/missing field
+And không có trường nào bị null khi Metabase UAT có giá trị
+```

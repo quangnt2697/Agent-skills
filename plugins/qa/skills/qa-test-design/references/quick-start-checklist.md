@@ -49,6 +49,26 @@ Tạo sẵn: `workspace/{issueKey}/test/steps/` và `workspace/{issueKey}/test/r
 | Luồng nghiệp vụ nhiều bước | State Transition Testing |
 | Quy tắc kết hợp (VD: tier × quota) | Decision Table |
 
+### ⚠️ Nhận Diện Loại API (BẮT BUỘC trước khi viết checklist)
+
+Xác định rõ loại API từ spec Jira theo bảng dưới. Sai loại → checklist thiếu nhóm test.
+
+| Dấu hiệu nhận diện trong Jira/Spec | Loại API | Tag Gherkin bắt buộc | Nhóm kịch bản bắt buộc |
+|---|:---:|---|---|
+| Mô tả `GET/POST/PUT/DELETE`, `endpoint`, `HTTP status`, `Request Body`, `Response JSON`, `curl` | **REST API** | `@api @rest` | Happy path, Negative (4xx/5xx), Security (auth), BVA (input params) |
+| Mô tả `query { }`, `mutation { }`, `GraphQL`, `operation`, `selection set`, `__schema`, `variables` | **GraphQL** | `@api @graphql` | Full query, Partial query, Empty/No query, Invalid query (4 nhóm bắt buộc) |
+| Mô tả `WebSocket`, `subscribe`, `event`, `stream`, `channel`, `msgpack` | **WebSocket** | `@websocket` | Connect/Auth, Event payload, Disconnect, Data isolation |
+| Mô tả cả REST lấn GraphQL trong cùng task | **Mixed** | `@api @rest @graphql` | Bắt buộc cover đủ nhóm kịch bản của cả 2 loại |
+
+**Cách nhận diện nhanh — scan keyword trong Jira description:**
+```
+REST  : "endpoint", "status code", "curl", "Request Body", "HTTP"
+GraphQL: "query {", "mutation {", "graphql", "operation name", "variables", "__typename"
+WS    : "subscribe", "event", "channel", "stream", "disconnect"
+```
+
+> ℹ️ **Nếu không xác định được loại:** Hỏi user trước khi tiếp tục. Đây là Critical Input — sai loại sẽ dẫn đến thiết kế test sai toàn bộ.
+
 ---
 
 ## BƯỚC 3 — Thiết Kế `checklist.md`
@@ -86,6 +106,22 @@ Phân bổ vào **6 chiều** (mỗi item: động từ hành động + lượng
 - Zero-mutation: TUYỆT ĐỐI không gọi các lệnh thay đổi dữ liệu (POST, UPDATE, DELETE).
 - Lưu kết quả vào `workspace/{issueKey}/test/fixtures/data-grounding.json`.
 - Ghi chú: Nếu timeout/lỗi, chuyển sang fallback và nhớ gắn nhãn `[DATA-ASSUMED]` khi viết Gherkin ở Bước 4.
+
+### ⚠️ Verify Tính Chính Xác Dữ Liệu Response (Response Data Accuracy — BẮT BUỘC khi Jira yêu cầu)
+
+Nhận diện task cần verify data accuracy khi Jira có bất kỳ từ khóa nào:
+`"chính xác"`, `"trúng khớp"`, `"consistency"`, `"so sánh"`, `"match"`, `"dữ liệu đúng"`, `"verify data"`
+
+Khi nhận diện → BẮT BUỘC thiết kế thêm nhóm kịch bản `@data-accuracy` trong checklist và feature:
+
+```markdown
+## Toàn vẹn dữ liệu [P0] — Data Accuracy
+- [P0] Xác minh từng trường dữ liệu trong response API khớp với giá trị tương ứng trong Metabase UAT
+- [P0] Xác minh không có trường nào trong response bị null/thiếu khi Metabase UAT có giá trị
+- [P1] Xác minh dữ liệu mới nhất (freshness) — response khớp record mới nhất từ Metabase
+```
+
+Muốn Gherkin mẫu → xem [gherkin-patterns.md Section 10](gherkin-patterns.md#10-verify-data-accuracy-so-s%C3%A1nh-response-api-v%E1%BB%9Bi-metabase-uat).
 
 ---
 
