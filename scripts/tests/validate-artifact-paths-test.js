@@ -195,3 +195,41 @@ test('catches the legacy layout inside an ASCII tree line', () => {
   assert.equal(result.status, 1, result.stdout + result.stderr);
   assert.match(result.stdout, /legacy layout — use workspace\/\{issueKey\}\/test\//);
 });
+
+test('passes when per-issue artifacts use tiered workspace/issues/{issueKey}/ layout', () => {
+  const root = makeSandbox();
+  writeFile(
+    root,
+    'plugins/core/skills/ba-spec/SKILL.md',
+    [
+      'Output: `workspace/issues/{issueKey}/spec/final.md`.',
+      'Downloads land in `workspace/issues/{issueKey}/source/refs/`.',
+      'DEV writes `workspace/issues/{issueKey}/tech/tech-spec.md`.',
+      'QA writes `workspace/issues/{issueKey}/test/checklist.md`.',
+      'Traceability: `workspace/issues/{issueKey}/trace/matrix.md`.',
+      'Sprint: `workspace/sprints/sprint/tech/sprint-plan.md`.',
+      'Adhoc: `workspace/adhoc/reports/summary.md`.',
+      '',
+    ].join('\n'),
+  );
+
+  const result = run(root);
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /1 files checked — 0 error\(s\) — PASSED/);
+});
+
+test('flags an invalid root under tiered workspace/issues/{issueKey}/', () => {
+  const root = makeSandbox();
+  writeFile(
+    root,
+    'plugins/core/skills/ba-x/SKILL.md',
+    'Save to `workspace/issues/{issueKey}/output/report.md`.\n',
+  );
+
+  const result = run(root);
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /"output" is not a workspace root/);
+});
+

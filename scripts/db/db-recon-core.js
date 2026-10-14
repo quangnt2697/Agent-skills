@@ -37,7 +37,7 @@ import {
   applyLimit,
   getMetabaseConfig,
   formatErrorMessage
-} from '../../.agents/db-client.js';
+} from '../lib/db-client.js';
 
 loadEnv(path.join(projectRoot, '.env'));
 // Recon quét cả ngày dữ liệu: timeout mặc định 5s của db-client là quá thấp

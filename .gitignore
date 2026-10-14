@@ -29,7 +29,7 @@ export.json
 evals/results/
 
 # Artifact sinh ra bởi skill — chạy lại được, không commit
-workspace/
+/workspace/
 
 # Scratch & temporary scripts
 scratch*.*
@@ -37,4 +37,4 @@ scratch*.*
 test-*.cjs
 
 # Báo cáo runtime ở gốc repo — vi phạm quy tắc Zero Pollution, dùng workspace/
-reports/
+/reports/

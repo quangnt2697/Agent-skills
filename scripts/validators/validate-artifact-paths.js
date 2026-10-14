@@ -57,15 +57,17 @@ const PATH_SEGMENT = '[\\p{L}\\p{N}._{}$[\\]-]+';
 // allowed directly under workspace/<key>/. Keep in sync with the canonical tree
 // in .claude/rules/workspace-paths.md.
 const WORKSPACE_ROOTS = ['source', 'spec', 'tech', 'test', 'trace'];
+const WORKSPACE_TIERS = ['issues', 'sprints', 'adhoc', 'archive'];
 
-// Finds `workspace/<key>/<next>` and captures <next>, so a skill that invents a
-// sixth root (workspace/{issueKey}/output/) is caught. Deliberately anchored on
-// the literal `workspace/` prefix: after flattening, the roots are generic words
-// ("spec", "test", "source") that appear all over ordinary prose, so matching
-// them bare would drown real drift in false positives. Regression to the OLD
-// layout is caught by LEGACY_PATHS below instead.
+// Finds `workspace/<first>/<second>`
 const WORKSPACE_CHILD_RE = new RegExp(
-  `workspace\\/${PATH_SEGMENT}\\/(${PATH_SEGMENT})`,
+  `workspace\\/(${PATH_SEGMENT})\\/(${PATH_SEGMENT})`,
+  'gu'
+);
+
+// Finds `workspace/<tier>/<key>/<next>` for tiered layout
+const TIERED_CHILD_RE = new RegExp(
+  `workspace\\/(issues|sprints|archive)\\/${PATH_SEGMENT}\\/(${PATH_SEGMENT})`,
   'gu'
 );
 
@@ -198,7 +200,22 @@ function findWorkspaceViolations(relPath) {
 
     WORKSPACE_CHILD_RE.lastIndex = 0;
     for (const m of line.matchAll(WORKSPACE_CHILD_RE)) {
-      const child = m[1];
+      const first = m[1];
+      const second = m[2];
+      if (second.startsWith('.')) continue; // .pipeline-state.json et al
+      if (WORKSPACE_TIERS.includes(first)) continue; // Handled by TIERED_CHILD_RE or adhoc
+      if (!WORKSPACE_ROOTS.includes(second)) {
+        violations.push({
+          line: i + 1,
+          match: m[0],
+          detail: `"${second}" is not a workspace root (${WORKSPACE_ROOTS.join(', ')})`,
+        });
+      }
+    }
+
+    TIERED_CHILD_RE.lastIndex = 0;
+    for (const m of line.matchAll(TIERED_CHILD_RE)) {
+      const child = m[2];
       if (child.startsWith('.')) continue; // .pipeline-state.json et al
       if (!WORKSPACE_ROOTS.includes(child)) {
         violations.push({

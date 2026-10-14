@@ -2,7 +2,7 @@
 
 ## Các Mẫu Phòng ngừa OWASP Top 10
 
-Đây là các pattern phòng ngừa, không phải là bảng xếp hạng. Để xem thứ tự năm 2021, hãy xem bảng tham chiếu nhanh trong `../../../security-auditor/skills/security-code-audit/references/security-checklist.md`.
+Đây là các pattern phòng ngừa, không phải là bảng xếp hạng. Để xem thứ tự năm 2021, hãy xem bảng tham chiếu nhanh trong `../../../code-reviewer/skills/security-code-audit/references/security-checklist.md`.
 
 ### Injection (SQL, NoSQL, Lệnh Hệ điều hành)
 
@@ -228,7 +228,7 @@ Khi bạn trì hoãn một bản sửa lỗi, hãy tài liệu hóa lý do và �
 
 Đừng mặc định nghĩ là đang dùng `npm` hoặc lấy file manifest gần nhất làm gốc cài đặt. Hãy áp dụng thứ tự này:
 
-1. **Tìm ranh giới cài đặt và trình quản lý.** Dùng gốc workspace chứa file lockfile, hoặc dự án con độc lập chỉ khi nó nằm ngoài workspace đó. Ở đó, đối chiếu `packageManager` (nếu có), file lockfile, và CI; dừng lại nếu có sự mâu thuẫn hoặc có nhiều lockfile cạnh tranh. Ghim cứng (Pin) phiên bản của package manager và sử dụng bảng ma trận trong `../../../security-auditor/skills/security-code-audit/references/security-checklist.md`.
+1. **Tìm ranh giới cài đặt và trình quản lý.** Dùng gốc workspace chứa file lockfile, hoặc dự án con độc lập chỉ khi nó nằm ngoài workspace đó. Ở đó, đối chiếu `packageManager` (nếu có), file lockfile, và CI; dừng lại nếu có sự mâu thuẫn hoặc có nhiều lockfile cạnh tranh. Ghim cứng (Pin) phiên bản của package manager và sử dụng bảng ma trận trong `../../../code-reviewer/skills/security-code-audit/references/security-checklist.md`.
 2. **Chặn (Block) dependency scripts trước lần chạy đầu tiên.** Chạy cài đặt ban đầu (Bootstrap) với các scripts bị vô hiệu hóa hoặc theo chính sách "fail-closed" (đóng nếu có lỗi) đã được ghi lại, xem xét mã nguồn của script đang chờ duyệt, CHỈ CHO PHÉP những package tối thiểu được duyệt, lưu chính sách lại, sau đó xác minh bằng việc chạy cài đặt sạch (clean frozen/immutable install). Tuyệt đối không bao giờ cho phép chạy vô tội vạ toàn bộ script (blanket-approve scripts).
 
 Audit chỉ tìm ra các cảnh báo đã được biết đến; chúng không bắt được các package vừa trở nên độc hại hoặc bị lập tên na ná để đánh lừa (typosquatted). Do đó:

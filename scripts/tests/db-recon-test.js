@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..', '..');
 
-import { sanitizeQuery } from '../../.agents/db-client.js';
+import { sanitizeQuery } from '../lib/db-client.js';
 import {
     loadCatalog,
     replaceParams,

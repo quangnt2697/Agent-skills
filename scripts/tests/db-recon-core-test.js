@@ -8,11 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..', '..');
 
-import { sanitizeQuery } from '../../.agents/db-client.js';
+import { sanitizeQuery } from '../lib/db-client.js';
 
 test('Core Recon: Workflow db-mdds-recon-core.json tồn tại và có đủ 4 node chính', () => {
-  const wfPath = path.join(projectRoot, 'n8n-workflows', 'db-mdds-recon-core.json');
-  assert.ok(fs.existsSync(wfPath), 'File n8n-workflows/db-mdds-recon-core.json phải tồn tại');
+  const wfPath = path.join(projectRoot, 'n8n-workflows', 'data-recon', 'db-mdds-recon-core.json');
+  assert.ok(fs.existsSync(wfPath), 'File n8n-workflows/data-recon/db-mdds-recon-core.json phải tồn tại');
 
   const wf = JSON.parse(fs.readFileSync(wfPath, 'utf8'));
   assert.equal(wf.id, 'DbMddsReconCore001');

@@ -18,169 +18,169 @@ const projectRoot = path.resolve(__dirname, '..', '..');
 
 export const mappings = [
   {
-    workflowFile: 'n8n-workflows/qa-run-test-workflow.json',
+    workflowFile: 'n8n-workflows/qa-squash/qa-run-test-workflow.json',
     nodeName: 'Extract issueKey',
     nodeId: 'code-extract-issuekey',
     scriptFile: 'scripts/n8n-nodes/qa/qa-extract-issuekey.js'
   },
   {
-    workflowFile: 'n8n-workflows/qa-run-test-workflow.json',
+    workflowFile: 'n8n-workflows/qa-squash/qa-run-test-workflow.json',
     nodeName: 'Run Pytest',
     nodeId: 'execute-command',
     scriptFile: 'scripts/n8n-nodes/qa/qa-run-pytest.js'
   },
   {
-    workflowFile: 'n8n-workflows/qa-run-test-workflow.json',
+    workflowFile: 'n8n-workflows/qa-squash/qa-run-test-workflow.json',
     nodeName: 'Format Result',
     nodeId: 'code-format-result',
     scriptFile: 'scripts/n8n-nodes/qa/qa-format-result.js'
   },
   {
-    workflowFile: 'n8n-workflows/mattermost-single-router.json',
+    workflowFile: 'n8n-workflows/ops/mattermost-single-router.json',
     nodeName: 'Verify Mattermost Token',
     nodeId: 'node-verify-token',
     scriptFile: 'scripts/n8n-nodes/router/router-verify-token.js'
   },
   {
-    workflowFile: 'n8n-workflows/mattermost-single-router.json',
+    workflowFile: 'n8n-workflows/ops/mattermost-single-router.json',
     nodeName: 'Parse AI Output',
     nodeId: '3',
     scriptFile: 'scripts/n8n-nodes/router/router-parse-ai-output.js'
   },
   {
-    workflowFile: 'n8n-workflows/squash-batch-pusher.json',
+    workflowFile: 'n8n-workflows/qa-squash/squash-batch-pusher.json',
     nodeName: 'Execute Squash Push Engine',
     nodeId: '5',
     scriptFile: 'scripts/n8n-nodes/qa/squash-push-engine.js'
   },
   {
-    workflowFile: 'n8n-workflows/squash-batch-pusher.json',
+    workflowFile: 'n8n-workflows/qa-squash/squash-batch-pusher.json',
     nodeName: 'Format Squash Report Markdown',
     nodeId: '6',
     scriptFile: 'scripts/n8n-nodes/qa/squash-format-report.js'
   },
   {
-    workflowFile: 'n8n-workflows/metabase-query-executor.json',
+    workflowFile: 'n8n-workflows/data-recon/metabase-query-executor.json',
     nodeName: 'Prepare & Sanitize Query',
     nodeId: '3',
     scriptFile: 'scripts/n8n-nodes/db/metabase-prepare-query.js'
   },
   {
-    workflowFile: 'n8n-workflows/metabase-query-executor.json',
+    workflowFile: 'n8n-workflows/data-recon/metabase-query-executor.json',
     nodeName: 'Normalize & Format Response',
     nodeId: '6',
     scriptFile: 'scripts/n8n-nodes/db/metabase-normalize-response.js'
   },
   {
-    workflowFile: 'n8n-workflows/jira-fast-ingestor.json',
+    workflowFile: 'n8n-workflows/atlassian/jira-fast-ingestor.json',
     nodeName: 'Prepare Jira Request',
     nodeId: 'prep-jira',
     scriptFile: 'scripts/n8n-nodes/ba/jira-prepare-request.js'
   },
   {
-    workflowFile: 'n8n-workflows/jira-fast-ingestor.json',
+    workflowFile: 'n8n-workflows/atlassian/jira-fast-ingestor.json',
     nodeName: 'Filter & Clean Payload',
     nodeId: '3',
     scriptFile: 'scripts/n8n-nodes/ba/jira-clean-payload.js'
   },
   {
-    workflowFile: 'n8n-workflows/jira-spec-pusher.json',
+    workflowFile: 'n8n-workflows/atlassian/jira-spec-pusher.json',
     nodeName: 'Pre-flight Gate & ADF Converter',
     nodeId: '3',
     scriptFile: 'scripts/n8n-nodes/ba/jira-push-preflight.js'
   },
   {
-    workflowFile: 'n8n-workflows/jira-spec-pusher.json',
+    workflowFile: 'n8n-workflows/atlassian/jira-spec-pusher.json',
     nodeName: 'Format Response & Audit',
     nodeId: '6',
     scriptFile: 'scripts/n8n-nodes/ba/jira-push-format-response.js'
   },
   {
-    workflowFile: 'n8n-workflows/daily-repo-sync-cron.json',
+    workflowFile: 'n8n-workflows/ops/daily-repo-sync-cron.json',
     nodeName: 'Execute & Parse Daily Sync',
     nodeId: '3',
     scriptFile: 'scripts/n8n-nodes/sync/daily-repo-sync-node.js'
   },
   {
-    workflowFile: 'n8n-workflows/sm-daily-standup-cron.json',
+    workflowFile: 'n8n-workflows/ops/sm-daily-standup-cron.json',
     nodeName: 'Prepare Standup Request',
     nodeId: 'prep-standup',
     scriptFile: 'scripts/n8n-nodes/sm/sm-prepare-standup.js'
   },
   {
-    workflowFile: 'n8n-workflows/sm-daily-standup-cron.json',
+    workflowFile: 'n8n-workflows/ops/sm-daily-standup-cron.json',
     nodeName: 'Prepare Sprint Issues Request',
     nodeId: 'prep-issues',
     scriptFile: 'scripts/n8n-nodes/sm/sm-prepare-issues.js'
   },
   {
-    workflowFile: 'n8n-workflows/sm-daily-standup-cron.json',
+    workflowFile: 'n8n-workflows/ops/sm-daily-standup-cron.json',
     nodeName: 'Analyze Velocity & Blockers',
     nodeId: 'analyze-standup',
     scriptFile: 'scripts/n8n-nodes/sm/sm-analyze-standup.js'
   },
   {
-    workflowFile: 'n8n-workflows/db-mdds-recon-watchdog.json',
+    workflowFile: 'n8n-workflows/data-recon/db-mdds-recon-watchdog.json',
     nodeName: 'Prepare Watchdog Query',
     nodeId: '3',
     scriptFile: 'scripts/n8n-nodes/db/watchdog-prepare-query.js'
   },
   {
-    workflowFile: 'n8n-workflows/db-mdds-recon-watchdog.json',
+    workflowFile: 'n8n-workflows/data-recon/db-mdds-recon-watchdog.json',
     nodeName: 'Verify Health & Parity',
     nodeId: '5',
     scriptFile: 'scripts/n8n-nodes/db/watchdog-verify-health.js'
   },
   {
-    workflowFile: 'n8n-workflows/securities-fixture-generator.json',
+    workflowFile: 'n8n-workflows/data-recon/securities-fixture-generator.json',
     nodeName: 'Securities Fixture Engine',
     nodeId: 'code-fixture-engine',
     scriptFile: 'scripts/n8n-nodes/qa/securities-fixture-engine.js'
   },
   {
-    workflowFile: 'n8n-workflows/confluence-doc-fetcher.json',
+    workflowFile: 'n8n-workflows/atlassian/confluence-doc-fetcher.json',
     nodeName: 'Confluence Clean Payload',
     nodeId: 'code-clean-confluence',
     scriptFile: 'scripts/n8n-nodes/ba/confluence-clean-payload.js'
   },
   {
-    workflowFile: 'n8n-workflows/cr-diff-cleaner.json',
+    workflowFile: 'n8n-workflows/ops/cr-diff-cleaner.json',
     nodeName: 'CR Filter Diff',
     nodeId: 'code-filter-diff',
     scriptFile: 'scripts/n8n-nodes/cr/cr-filter-diff.js'
   },
   {
-    workflowFile: 'n8n-workflows/security-vulnerability-digest.json',
+    workflowFile: 'n8n-workflows/ops/security-vulnerability-digest.json',
     nodeName: 'Security Digest Engine',
     nodeId: 'code-security-digest',
     scriptFile: 'scripts/n8n-nodes/security/security-digest-engine.js'
   },
   {
-    workflowFile: 'n8n-workflows/jira-ready-to-test-notifier.json',
+    workflowFile: 'n8n-workflows/atlassian/jira-ready-to-test-notifier.json',
     nodeName: 'Prepare Jira Polling Query',
     nodeId: 'prep-poll',
     scriptFile: 'scripts/n8n-nodes/qa/jira-poll-prepare.js'
   },
   {
-    workflowFile: 'n8n-workflows/jira-ready-to-test-notifier.json',
+    workflowFile: 'n8n-workflows/atlassian/jira-ready-to-test-notifier.json',
     nodeName: 'Filter Board G31 & Ready to Test',
     nodeId: 'code-filter-ready',
     scriptFile: 'scripts/n8n-nodes/qa/jira-ready-to-test-filter.js'
   },
   {
-    workflowFile: 'n8n-workflows/db-mdds-recon-core.json',
+    workflowFile: 'n8n-workflows/data-recon/db-mdds-recon-core.json',
     nodeName: 'Run Core Recon Engine',
     nodeId: 'node-runner',
     scriptFile: 'scripts/n8n-nodes/db/db-recon-core-runner.js'
   },
   {
-    workflowFile: 'n8n-workflows/db-mdds-recon-core.json',
+    workflowFile: 'n8n-workflows/data-recon/db-mdds-recon-core.json',
     nodeName: 'Format 4 Separate Messages',
     nodeId: 'node-format',
     scriptFile: 'scripts/n8n-nodes/db/db-recon-core-format.js'
   },
   {
-    workflowFile: 'n8n-workflows/securities-domain-engine.json',
+    workflowFile: 'n8n-workflows/data-recon/securities-domain-engine.json',
     nodeName: 'Securities Domain Engine',
     nodeId: 'code-domain-engine',
     scriptFile: 'scripts/n8n-nodes/qa/securities-domain-engine.js'
@@ -201,8 +201,22 @@ export function syncNodes({ root = projectRoot, items = mappings, write = true, 
   const cache = new Map();
 
   for (const item of items) {
-    const workflowPath = path.join(root, item.workflowFile);
+    let workflowPath = path.join(root, item.workflowFile);
     const scriptPath = path.join(root, item.scriptFile);
+
+    if (!fs.existsSync(workflowPath)) {
+      const basename = path.basename(item.workflowFile);
+      const candidates = [
+        path.join(root, 'n8n-workflows', 'atlassian', basename),
+        path.join(root, 'n8n-workflows', 'qa-squash', basename),
+        path.join(root, 'n8n-workflows', 'data-recon', basename),
+        path.join(root, 'n8n-workflows', 'ops', basename),
+      ];
+      const found = candidates.find(c => fs.existsSync(c));
+      if (found) {
+        workflowPath = found;
+      }
+    }
 
     if (!fs.existsSync(workflowPath)) {
       errors.push(`Không tìm thấy workflow: ${item.workflowFile}`);

@@ -32,7 +32,7 @@ import {
     applyLimit,
     getMetabaseConfig,
     formatErrorMessage
-} from '../../.agents/db-client.js';
+} from '../lib/db-client.js';
 
 
 // Nạp .env
@@ -41,7 +41,7 @@ loadEnv(path.join(projectRoot, '.env'));
 const catalogPath = path.join(
     projectRoot,
     'plugins',
-    'core',
+    'fintech-data',
     'skills',
     'db-timescale-reconciler',
     'assets',

@@ -1,6 +1,6 @@
 ---
 name: qa-run-test
-description: 'Chạy test automation hiện có (Pytest). ĐO LƯỜNG trung thực, KHÔNG sửa lỗi. Báo cáo kết quả nguyên văn (Pass/Fail/Error/Timeout) và đề xuất skill xử lý nếu có lỗi.'
+description: 'Chạy test automation hiện có (Pytest), regression test, chạy lại test sau khi fix bug. ĐO LƯỜNG trung thực, KHÔNG sửa lỗi. Báo cáo kết quả nguyên văn (Pass/Fail/Error/Timeout) và đề xuất skill xử lý nếu có lỗi.'
 trigger: Khi cần chạy test automation, regression test, hoặc thẩm định kết quả sau fix bug. Trigger bằng /qa-run-test.
 ---
 
@@ -52,7 +52,7 @@ Người nhận: qa-auto-design
 Bước tiếp theo: Chạy `/qa-auto-design {issueKey}` để sửa script.
 ```
 
-## 5. Quy Tắc Output File (Bắt buộc)
+## 5. Quy Tắc Output File & Xác Minh (Verification)
 > 📌 Do n8n runner tự ghi, agent không dùng file edit tool để sửa.
 - `workspace/{issueKey}/test/result/test-output.log` (Nguyên văn)
 - `workspace/{issueKey}/test/result/report.md` (Báo cáo tổng hợp)

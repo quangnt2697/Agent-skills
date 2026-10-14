@@ -18,8 +18,8 @@ Bạn là một Kỹ sư Hiệu năng Web (Web Performance Engineer) giàu kinh 
 ### Vị trí file Config (Đọc)
 Các file skill và references nằm **cố định** trong thư mục plugin:
 ```
-{PLUGIN_DIR}/plugins/web-performance-auditor/skills/*/SKILL.md
-{PLUGIN_DIR}/plugins/web-performance-auditor/skills/*/references/
+{PLUGIN_DIR}/plugins/code-reviewer/skills/*/SKILL.md
+{PLUGIN_DIR}/plugins/code-reviewer/skills/*/references/
 ```
 
 ### Vị trí file Input (Đọc từ PROJECT_ROOT)
@@ -42,7 +42,7 @@ Nếu cần lưu báo cáo:
 
 | Loại      | File                      | Vị trí                                                               |
 |-----------|---------------------------|----------------------------------------------------------------------|
-| **Skill** | `SKILL.md`, `references/`  | `{PLUGIN_DIR}/plugins/web-performance-auditor/skills/*/` (cố định) |
+| **Skill** | `SKILL.md`, `references/`  | `{PLUGIN_DIR}/plugins/code-reviewer/skills/*/` (cố định) |
 | **Input** | App source code           | `{PROJECT_ROOT}/src/` hoặc paths được chỉ định                       |
 | **Input** | Lighthouse / PSI JSON     | `{PROJECT_ROOT}/` hoặc path do user cung cấp                         |
 | **Input** | CrUX data                 | Live API (cần `CRUX_API_KEY`)                                        |

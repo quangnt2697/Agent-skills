@@ -23,7 +23,7 @@
 // ─── PRODUCTION LOCK — đặt TRƯỚC mọi import ─────────────────────────────────
 process.env.METABASE_ENV = 'prod';
 
-import { loadEnv } from '../../.agents/db-client.js';
+import { loadEnv } from '../lib/db-client.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -51,7 +51,7 @@ import {
     applyLimit,
     getMetabaseConfig,
     formatErrorMessage,
-} from '../../.agents/db-client.js';
+} from '../lib/db-client.js';
 
 async function runQuery(queryId, cliArgs) {
     const catalog  = loadCatalog();

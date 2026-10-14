@@ -78,7 +78,7 @@
 ```
 ## Xem thêm
 
-Để xem toàn bộ checklist bảo mật chi tiết cũng như các bước kiểm chứng pre-commit, xem `../../../security-auditor/skills/security-code-audit/references/security-checklist.md`.
+Để xem toàn bộ checklist bảo mật chi tiết cũng như các bước kiểm chứng pre-commit, xem `../../../code-reviewer/skills/security-code-audit/references/security-checklist.md`.
 
 ## Các Biện hộ Thường gặp
 

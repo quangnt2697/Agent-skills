@@ -35,8 +35,7 @@ const MANIFEST_PATHS = [
   "plugins/dev/plugin.json",
   "plugins/qa/plugin.json",
   "plugins/scrum-master/plugin.json",
-  "plugins/security-auditor/plugin.json",
-  "plugins/web-performance-auditor/plugin.json",
+  "plugins/fintech-data/plugin.json",
 ];
 
 function readManifestVersion(manifestPath) {

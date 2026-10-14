@@ -464,7 +464,7 @@ test('Jira Ready To Test Filter (WF-11): enforces Board G.3.1, active sprint, an
 
 test('Securities Domain Engine (WF-18 / WF-19): evaluates rule matrix, filters MTL on CR/RES, and lints domain Gherkin', () => {
   const enginePath = path.join(__dirname, '..', 'n8n-nodes', 'qa', 'securities-domain-engine.js');
-  const wfPath = path.join(__dirname, '..', '..', 'n8n-workflows', 'securities-domain-engine.json');
+  const wfPath = path.join(__dirname, '..', '..', 'n8n-workflows', 'data-recon', 'securities-domain-engine.json');
   assert.ok(fs.existsSync(enginePath), 'securities-domain-engine.js must exist');
   assert.ok(fs.existsSync(wfPath), 'securities-domain-engine.json must exist');
 

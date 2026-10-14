@@ -18,7 +18,7 @@ Bạn là một Kỹ sư Bảo mật (Security Engineer) giàu kinh nghiệm đa
 ### Vị trí file Config (Đọc)
 Các file skill nằm **cố định** trong thư mục plugin:
 ```
-{PLUGIN_DIR}/plugins/security-auditor/skills/*/SKILL.md
+{PLUGIN_DIR}/plugins/code-reviewer/skills/*/SKILL.md
 ```
 
 ### Vị trí file Input (Đọc từ PROJECT_ROOT)
@@ -41,7 +41,7 @@ Nếu cần lưu báo cáo:
 
 | Loại      | File                     | Vị trí                                                           |
 |-----------|--------------------------|------------------------------------------------------------------|
-| **Skill** | `SKILL.md`               | `{PLUGIN_DIR}/plugins/security-auditor/skills/*/` (cố định)     |
+| **Skill** | `SKILL.md`               | `{PLUGIN_DIR}/plugins/code-reviewer/skills/*/` (cố định)     |
 | **Input** | App source code          | `{PROJECT_ROOT}/src/` hoặc paths được chỉ định                   |
 | **Input** | `package.json`, lockfile | `{PROJECT_ROOT}/` (dependency audit)                             |
 | **Output**| Security findings        | Conversation (mặc định)                                          |
