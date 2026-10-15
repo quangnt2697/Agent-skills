@@ -6,344 +6,55 @@ trigger: Sử dụng khi cần kiểm tra độ bao phủ của test cases so v�
 
 # Cross-Validation — Xác thực Truy vết (Meta)
 
-## Tổng quan
+## Overview (Tổng quan)
 
-Xác thực truy vết (traceability) giữa các artifacts trong SDLC: Business-Spec → Tech-Spec → Test Cases. Tạo ma trận ánh xạ để đảm bảo mọi Business Rule đều được:
-1. Translate sang Tech-Spec (thiết kế kỹ thuật)
-2. Cover bởi Test Cases (kiểm thử)
+Xác thực truy vết (traceability) đa tầng giữa các artifacts trong SDLC: Business-Spec (`spec/final.md`) → Tech-Spec (`tech/tech-spec.md`) → Test Cases (`test/checklist.md`, `test/*.feature`). Tạo ma trận ánh xạ 1-1 để phát hiện gaps (thiếu sót) và redundancies (trùng lặp), đảm bảo 100% Business Rules được kiểm thử.
 
-Phát hiện **gaps** (thiếu sót) và **redundancies** (trùng lặp) để đảm bảo độ bao phủ 100%.
+## When to Use (Khi nào sử dụng)
 
-## Khi nào sử dụng
-
-- Sau khi DEV viết Tech-Spec, trước khi code
-- Sau khi QA thiết kế Test Cases, trước khi automation
-- Trước release, kiểm tra toàn bộ feature có bao phủ đủ không
-- Code review hoặc QA review muốn verify completeness
-- Audit compliance (ISO, FDA, SOX) yêu cầu traceability matrix
+- Sau khi DEV viết Tech-Spec, trước khi code (e2e Phase 3).
+- Sau khi QA thiết kế Test Cases và sinh automation code (e2e Phase 7e).
+- Trước release hoặc khi audit compliance yêu cầu ma trận truy vết.
 
 **Khi KHÔNG sử dụng:**
-- Chưa có Business-Spec hoặc Tech-Spec → tạo chúng trước
-- Feature quá đơn giản (1 rule, 1 test case) → overkill
-- Prototype hoặc spike (không cần đầy đủ)
+- Chưa có Business-Spec (`final.md`) hoặc Tech-Spec.
+- Feature dạng spike/prototype không yêu cầu bàn giao sản xuất.
 
-## Input & Output
+## Quy trình 4 Bước (Execution Workflow)
 
-**Input (bắt buộc):**
-1. Business-Spec: `/project-root/workspace/{issueKey}/spec/final.md` hoặc `/project-root/workspace/{issueKey}/spec/`
-2. Tech-Spec: `/project-root/workspace/{issueKey}/tech/tech-spec.md`
-3. Test Checklist: `/project-root/workspace/{issueKey}/test/checklist.md`
-4. Test Feature: `/project-root/workspace/{issueKey}/test/{issueKey}.feature`
-
-**Output:**
-- Traceability Matrix: `/project-root/workspace/{issueKey}/trace/matrix.md`
-- Gap Analysis Report: `/project-root/workspace/{issueKey}/trace/gaps.md`
-
-## Quy trình 4 Phase
-
-### Phase 0: Ma trận xác định bằng script (BẮT BUỘC chạy trước)
+### Bước 0: Ma trận xác định bằng script (BẮT BUỘC)
 
 ```bash
-node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/scripts/trace-check.js \
-  workspace/{issueKey} --stage=tech   # sau Tech-Spec (e2e Phase 3)
-#                     --stage=all     # sau test design / automation (e2e Phase 7e)
+# Chạy script xác định theo mã BR/AC (từ assets/ hoặc scripts/):
+node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/assets/trace-check.js \
+  workspace/{issueKey} --stage=tech   # sau Tech-Spec
+#                     --stage=all     # sau test design / automation
 ```
 
-Script khớp **chính xác** mã `[BR-xx]`/`[AC-xx]` của `spec/final.md` với tech-spec và `test/` (bỏ qua `test/result/`), ghi `trace/matrix.md` và trả exit code: `0` = coverage ≥ 90%, `1` = dưới ngưỡng, `2` = `final.md` không có mã BR/AC.
+- **Exit 0:** Coverage ≥ 90% ở mọi stage được kiểm tra.
+- **Exit 1:** Coverage < 90% → bổ sung test scenario cho mã thiếu.
+- **Exit 2:** `final.md` thiếu mã `[BR-xx]`/`[AC-xx]` → ghi gap vào `trace/gaps.md`.
 
-- **Exit 2** → không đoán bằng keyword. Ghi gap "final.md thiếu mã BR/AC — chạy lại `ba-spec` để gắn mã" vào `trace/gaps.md`.
-- **Exit 0/1** → con số coverage của script là số chính thức. Phase 1–4 bên dưới chỉ dùng để đánh giá **chất lượng** của các mã đã khớp (có nhánh phủ định chưa, có map nhầm không) và viết `trace/gaps.md`; không được tự chấm lại tỷ lệ coverage.
+### Bước 1–4: Chi tiết trích xuất & đánh giá chất lượng
+Xem cẩm nang chi tiết và mẫu báo cáo đầy đủ tại: [references/traceability-guide.md](references/traceability-guide.md).
 
-### Phase 1: Extract Business Rules
+## Verification (Xác minh)
 
-Đọc Business-Spec và trích xuất tất cả Business Rules:
+- [ ] Đã chạy `trace-check.js` và dùng con số coverage của script (không tự chấm lại).
+- [ ] Ma trận `workspace/{issueKey}/trace/matrix.md` ghi nhận đủ các mã `[BR-xx]`/`[AC-xx]`.
+- [ ] Báo cáo `workspace/{issueKey}/trace/gaps.md` phân loại rõ gaps P0/P1 kèm Action Items cụ thể.
 
-```markdown
-## Business Rules từ Business-Spec
+## Red Flags (Cờ đỏ)
 
-| Rule ID   | Rule Name           | Description                               | Priority   | Source      |
-|-----------|---------------------|-------------------------------------------|------------|-------------|
-| BR-001    | Quantity Validation | Khối lượng phải > 0 và bội số của 100     | P0         | Section 3.1 |
-| BR-002    | Price Ceiling/Floor | Giá trong khoảng ±7% giá tham chiếu       | P0         | Section 3.1 |
-| BR-003    | Buying Power Check  | Sức mua phải đủ để đặt lệnh               | P0         | Section 3.2 |
-| BR-004    | Trading Hours       | Chỉ cho phép đặt lệnh 09:00-15:00         | P1         | Section 3.3 |
-| BR-005    | Order Status FSM    | Lệnh chuyển trạng thái theo state machine | P0         | Section 3.4 |
-```
+- Coverage đạt 100% ngay lần chạy đầu tiên mà không phát hiện bất kỳ gap nào.
+- Map dựa trên keyword ngẫu nhiên thay vì mã `[BR-xx]`/`[AC-xx]` xác định.
+- Business Rule chỉ có kịch bản Happy Path, hoàn toàn thiếu kịch bản phủ định (Negative Cases).
+- Tự ý hạ độ nghiêm trọng của Critical Gap xuống để kịp tiến độ release.
 
-**Cách detect Business Rules:**
-- Section có tiêu đề: "Business Rules", "Validation Rules", "Acceptance Criteria"
-- Câu có động từ: "PHẢI", "BẮT BUỘC", "KHÔNG ĐƯỢC", "CHỈ KHI"
-- Câu định nghĩa constraint: "X >= Y", "X nằm trong [A, B]"
-- Error scenarios (negative cases)
+## Common Rationalizations (Ngụy biện thường gặp)
 
-### Phase 2: Map Tech-Spec Coverage
-
-Đọc Tech-Spec và ánh xạ từng Business Rule đã được cover ở đâu:
-
-```markdown
-## Tech-Spec Coverage Matrix
-
-| Rule ID   | Covered in Tech-Spec   | Section              | Implementation Note                            |
-|-----------|------------------------|----------------------|------------------------------------------------|
-| BR-001    | ✅ YES                 | 5.2 Validation Rules | Function `validate_quantity()`                 |
-| BR-002    | ✅ YES                 | 5.2 Validation Rules | Function `validate_price()` with floor/ceiling |
-| BR-003    | ✅ YES                 | 5.2 Business Logic   | Function `check_buying_power()`                |
-| BR-004    | ❌ NO                  | —                    | **GAP: Trading hours check missing**           |
-| BR-005    | ✅ YES                 | 4.3 State Machine    | Diagram + transitions table                    |
-```
-
-**Cách map:**
-- Grep trong Tech-Spec với keywords từ Business Rule
-- Check từng section: API Contract, Data Model, Business Logic, Error Handling
-- Nếu không tìm thấy → đánh dấu GAP
-
-### Phase 3: Map Test Coverage
-
-Đọc Test Checklist và Gherkin Feature file, ánh xạ test cases:
-
-```markdown
-## Test Coverage Matrix
-
-| Rule ID   | Covered by Test   | Test Case ID   | Test Type  | Gherkin Scenario                               |
-|-----------|-------------------|----------------|------------|------------------------------------------------|
-| BR-001    | ✅ YES            | TC-001         | Positive   | Scenario: Đặt lệnh với quantity=100            |
-| BR-001    | ✅ YES            | TC-002         | Negative   | Scenario: Từ chối lệnh với quantity=50         |
-| BR-002    | ✅ YES            | TC-003         | Negative   | Scenario: Từ chối lệnh giá vượt trần           |
-| BR-003    | ✅ YES            | TC-004         | Negative   | Scenario: Từ chối lệnh khi sức mua không đủ    |
-| BR-004    | ❌ NO             | —              | —          | **GAP: No test for trading hours**             |
-| BR-005    | ⚠️ PARTIAL        | TC-005         | Positive   | Only PENDING→FILLED, missing other transitions |
-```
-
-**Cách map:**
-- Parse Gherkin file, extract scenarios
-- Match Scenario description với Business Rule
-- Check cả positive và negative test cases
-- Nếu thiếu negative case → đánh dấu PARTIAL
-
-### Phase 4: Generate Traceability Matrix & Gap Report
-
-Tổng hợp tất cả vào 1 bảng:
-
-```markdown
-## Full Traceability Matrix
-
-| Rule ID   | Rule Name           | Business-Spec   | Tech-Spec Coverage   | Test Coverage       | Status            |
-|-----------|---------------------|-----------------|----------------------|---------------------|-------------------|
-| BR-001    | Quantity Validation | Section 3.1     | ✅ Section 5.2       | ✅ TC-001, TC-002   | ✅ COMPLETE       |
-| BR-002    | Price Ceiling/Floor | Section 3.1     | ✅ Section 5.2       | ✅ TC-003           | ✅ COMPLETE       |
-| BR-003    | Buying Power Check  | Section 3.2     | ✅ Section 5.2       | ✅ TC-004           | ✅ COMPLETE       |
-| BR-004    | Trading Hours       | Section 3.3     | ❌ Missing           | ❌ Missing          | ❌ GAP (Critical) |
-| BR-005    | Order Status FSM    | Section 3.4     | ✅ Section 4.3       | ⚠️ TC-005 (partial) | ⚠️ INCOMPLETE     |
-
-**Summary:**
-- Total Business Rules: 5
-- Complete: 3 (60%)
-- Incomplete: 1 (20%)
-- Gap: 1 (20%)
-```
-
-## Gap Analysis Report
-
-```markdown
-# Gap Analysis Report
-
-**Project:** Order Management System
-**Issue Key:** JIRA-123
-**Date:** 2024-01-15
-**Status:** ❌ NOT READY FOR RELEASE
-
----
-
-## Executive Summary
-
-**Coverage:**
-- Business Rules: 5 total
-- Tech-Spec Coverage: 4/5 (80%)
-- Test Coverage: 3/5 (60%)
-- **Overall Completeness: 60%**
-
-**Gaps Found:** 2 (1 Critical, 1 High)
-
----
-
-## Critical Gaps (Blocking Release)
-
-### GAP-001: Trading Hours Validation Missing
-
-**Business Rule:** BR-004 — Trading Hours
-**Description:** Lệnh chỉ được đặt trong giờ 09:00-15:00
-
-**Missing in:**
-- ❌ Tech-Spec: Không có section nào đề cập
-- ❌ Test Cases: Không có test scenario
-
-**Impact:** 
-- User có thể đặt lệnh ngoài giờ → lệnh bị từ chối bởi Exchange → bad UX
-- Không có error message rõ ràng
-
-**Action Required:**
-1. **DEV:** Thêm vào Tech-Spec Section 5.2:
-   ```python
-   def check_trading_hours():
-       now = datetime.now(timezone('Asia/Ho_Chi_Minh'))
-       if not (9 <= now.hour < 15):
-           raise BusinessRuleError("OUTSIDE_TRADING_HOURS", ...)
-   ```
-2. **QA:** Thêm test case:
-   - Positive: Đặt lệnh lúc 10:00 → thành công
-   - Negative: Đặt lệnh lúc 16:00 → từ chối với error code OUTSIDE_TRADING_HOURS
-
-**Priority:** P0 (Must Fix Before Release)
-
----
-
-## High Gaps (Should Fix)
-
-### GAP-002: Order Status FSM Incomplete Test Coverage
-
-**Business Rule:** BR-005 — Order Status State Machine
-**Description:** Lệnh chuyển trạng thái theo: PENDING → FILLED/PARTIAL_FILLED/CANCELLED
-
-**Tech-Spec:** ✅ Covered (Section 4.3 có diagram đầy đủ)
-**Test Coverage:** ⚠️ PARTIAL — chỉ test PENDING→FILLED
-
-**Missing Test Cases:**
-- PENDING → PARTIAL_FILLED
-- PARTIAL_FILLED → FILLED
-- PARTIAL_FILLED → CANCELLED
-- Invalid transitions (FILLED → CANCELLED)
-
-**Action Required:**
-1. **QA:** Thêm scenarios trong Gherkin file:
-   ```gherkin
-   Scenario: Lệnh khớp 1 phần
-     Given user đặt lệnh mua 1000 VNM
-     When hệ thống khớp được 500
-     Then status = PARTIAL_FILLED
-
-   Scenario: Lệnh không được chuyển từ FILLED sang CANCELLED
-     Given lệnh đã FILLED
-     When user cancel lệnh
-     Then hệ thống từ chối với error INVALID_STATE_TRANSITION
-   ```
-
-**Priority:** P1 (High)
-
----
-
-## Recommendations
-
-### Immediate Actions (Before Release)
-1. ✅ Fix GAP-001 (Trading Hours) — ETA: 2 hours
-   - DEV: Add validation logic
-   - QA: Add 2 test cases
-2. ✅ Fix GAP-002 (FSM Test Coverage) — ETA: 1 hour
-   - QA: Add 4 scenarios
-
-### Process Improvements
-1. **Mandatory Traceability Check:** Chạy cross-validation SAU mỗi phase:
-   - After Tech-Spec → check vs Business-Spec
-   - After Test Design → check vs Tech-Spec
-2. **Definition of Done:** Feature chỉ considered "done" khi:
-   - Traceability Matrix = 100% coverage
-   - No Critical or High gaps
-3. **Automation:** Tích hợp cross-validation vào CI/CD pipeline
-
----
-
-## Metrics
-
-| Metric             | Value  | Target   | Status      |
-|--------------------|--------|----------|-------------|
-| Tech-Spec Coverage | 80%    | 100%     | ❌ Below    |
-| Test Coverage      | 60%    | 100%     | ❌ Below    |
-| Critical Gaps      | 1      | 0        | ❌ Blocking |
-| High Gaps          | 1      | 0        | ⚠️ Warning  |
-
----
-
-## Sign-off
-
-- [ ] DEV fixed GAP-001 (Trading Hours)
-- [ ] QA added test cases for GAP-001
-- [ ] QA added test cases for GAP-002 (FSM)
-- [ ] Re-run cross-validation → 100% coverage
-- [ ] Approved by Tech Lead
-- [ ] Approved by QA Lead
-```
-
-## Checklist Xác minh
-
-Trước khi xuất report:
-
-- [ ] Đã chạy `trace-check.js` và dùng đúng con số coverage của script (không tự chấm lại)
-- [ ] Đã đọc đầy đủ Business-Spec, Tech-Spec, Test Checklist, Gherkin
-- [ ] Extract được tất cả Business Rules (không bỏ sót)
-- [ ] Map từng Business Rule vào Tech-Spec (có hoặc không)
-- [ ] Map từng Business Rule vào Test Cases (complete/partial/missing)
-- [ ] Phân loại gaps theo priority (P0/P1/P2)
-- [ ] Action items cụ thể cho mỗi gap
-- [ ] Metrics và summary chính xác
-
-## Tích hợp với Pipeline
-
-Skill này nằm ở **Phase 3** trong `e2e-delivery` (sau tech-spec, trước plan):
-
-```
-Phase 2: /dev-tech-spec (DEV)
-   ↓
-Phase 3: /meta-cross-validation ← YOU ARE HERE
-   ↓
-Phase 4: /dev-plan (DEV)
-   ↓
-Phase 5: /dev-build (DEV)
-   ↓
-Phase 7: /qa-full-pipeline (QA)
-```
-
-**Khi nào invoke:**
-- Sau khi DEV viết Tech-Spec, trước khi phân chia task
-- Sau khi QA thiết kế test xong, trước khi sinh automation code
-
-**Khi coverage < 90%:**
-Ghi cảnh báo rõ ở đầu `trace/gaps.md`, liệt kê gap cần fix, rồi **chạy tiếp** — không chặn luồng.
-> Theo `autonomy-contract.md`: Confidence/coverage chỉ dùng để báo cáo, không phải cổng chặn.
-
-## Dấu hiệu Cảnh báo (Red Flags)
-
-Các triệu chứng cho thấy kết quả cross-validation không đáng tin — coverage nhìn thì đẹp nhưng không phản ánh thực tế:
-
-- Coverage đạt 100% ngay từ lần chạy đầu tiên mà không tìm ra gap nào
-- Một Business Rule map tới test case chỉ vì trùng từ khoá, đọc kỹ thì test đang kiểm thứ khác
-- Business Rule map tới test case chỉ có happy path, không có nhánh phủ định
-- Gap được đánh dấu "đã fix" nhưng chưa chạy lại cross-validation để xác nhận
-- Một test case được tính cho nhiều Business Rule để đẩy con số coverage lên
-- Business Rule trong `*-final.md` mơ hồ tới mức không thể map dứt khoát, nhưng vẫn được tính là "covered"
-- Ma trận truy vết có ô trống nhưng báo cáo tổng kết không nhắc tới
-- Gap Critical được hạ xuống High vì sắp tới ngày release
-- Tech-Spec coverage cao nhưng Test coverage thấp — code đã viết mà chưa ai kiểm
-
-## Anti-patterns (Tránh)
-
-❌ **KHÔNG:**
-- Chạy cross-validation mà chưa có Tech-Spec
-- Bỏ qua negative test cases khi đánh giá coverage
-- Chấp nhận gaps mà không có action plan
-- Map dựa trên keyword matching đơn giản (sai nhiều) — khi `final.md` không có mã BR/AC, báo gap thay vì đoán
-
-✅ **NÊN:**
-- Đọc kỹ từng artifact
-- Phân loại gaps theo priority
-- Action items cụ thể với owner và ETA
-- Re-run sau khi fix để verify
-
-## Xem thêm
-
-- `ba-spec` — Tạo Business-Spec (input)
-- `dev-spec-driven-development` — Tạo Tech-Spec (input)
-- `qa-test-design` — Tạo Test Cases (input)
-- `qa-auto-design` — Sinh automation code (phase sau)
-
+- *"Tech-spec đã cover hết rồi nên không cần map lại sang test cases"* → Sai lầm; code có thể lệch với spec nếu thiếu test case xác nhận.
+- *"Chỉ cần chạy thử pass là đủ, ma trận truy vết chỉ là thủ tục giấy tờ"* → Không có ma trận sẽ không thể đo lường rủi ro khi có yêu cầu thay đổi (CR).
 
 ---
 <CRITICAL_RULE>

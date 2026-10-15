@@ -38,7 +38,7 @@ agent-skills/
 
 ---
 
-## 📦 `plugins/` — 8 Persona Plugins
+## 📦 `plugins/` — 7 Persona Plugins
 
 Mỗi plugin theo cấu trúc chuẩn: `plugin.json` + `skills/` + `agents/` + `commands/`
 

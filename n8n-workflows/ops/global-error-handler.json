@@ -1,0 +1,87 @@
+{
+  "name": "AgentSkills - Global Error Handler",
+  "id": "GlobalErrorHandler001",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first()?.json || {};\nconst execution = input.execution || {};\nconst workflow = input.workflow || {};\nconst error = execution.error || {};\n\nconst wfName = workflow.name || 'Unknown Workflow';\nconst wfId = workflow.id || 'N/A';\nconst failedNode = execution.lastNodeExecuted || error.node?.name || 'Unknown Node';\nconst errorMsg = error.message || error.description || 'Không có chi tiết lỗi';\nconst execId = execution.id || 'N/A';\nconst now = new Date();\nconst timeStr = now.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });\n\nconst alertText = [\n  `🚨 **[DEAD-LETTER ALERT: N8N WORKFLOW GẶP LỖI]**`,\n  `- **Workflow:** \\`${wfName}\\` (ID: \\`${wfId}\\`)`,\n  `- **Node gặp lỗi:** \\`${failedNode}\\``,\n  `- **Nguyên nhân:** ${errorMsg}`,\n  `- **Execution ID:** \\`${execId}\\``,\n  `- **Thời gian:** \\`${timeStr}\\``,\n  `\\n> ⚠️ *Vui lòng kiểm tra lại cấu hình kết nối, hạn mức API hoặc logs n8n để khắc phục.*`\n].join('\\n');\n\nreturn [{\n  json: {\n    workflowName: wfName,\n    workflowId: wfId,\n    failedNode,\n    errorMessage: errorMsg,\n    executionId: execId,\n    timestamp: now.toISOString(),\n    reportText: alertText\n  }\n}];\n"
+      },
+      "id": "2",
+      "name": "Format Error Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MATTERMOST_ALERT_WEBHOOK_URL || $env.MATTERMOST_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.reportText, username: 'n8n Sentinel Bot', icon_emoji: ':rotating_light:' }) }}",
+        "options": {}
+      },
+      "id": "3",
+      "name": "Send Alert to Mattermost",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        300
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Error Alert": {
+      "main": [
+        [
+          {
+            "node": "Send Alert to Mattermost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Ho_Chi_Minh"
+  },
+  "active": true
+}

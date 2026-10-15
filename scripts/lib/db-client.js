@@ -197,7 +197,13 @@ async function metabaseFetch(endpoint, options = {}) {
         const errText = await res.text();
         let errMsg = errText;
         try { const p = JSON.parse(errText); errMsg = p.message || p.error || errText; } catch (_) {}
-        if (res.status === 401 || res.status === 403) {
+        if ((res.status === 401 || res.status === 403) && !options._retried) {
+            // Tự động nạp lại .env để lấy token mới nhất (Zero-Downtime Session Refresh)
+            loadEnv(path.join(projectRoot, '.env'));
+            const freshConfig = getMetabaseConfig();
+            if (freshConfig.token && freshConfig.token !== headers['X-Metabase-Session'] && freshConfig.token !== headers['x-api-key']) {
+                return await metabaseFetch(endpoint, { ...options, _retried: true });
+            }
             throw new Error(`Xác thực Metabase thất bại (${res.status}): Kiểm tra METABASE_SESSION_TOKEN hoặc METABASE_API_TOKEN trong .env. Nếu dùng SSO trên Production (${baseUrl}), hãy chạy 'npm run metabase:login' để đăng nhập và làm mới session token. Chi tiết: ${errMsg}`);
         }
         throw new Error(`Lỗi Metabase API (${res.status}): ${errMsg}`);

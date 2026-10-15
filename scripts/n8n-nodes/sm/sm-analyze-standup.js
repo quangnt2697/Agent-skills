@@ -47,8 +47,14 @@ try {
     const proc = require('process');
     if (proc && typeof proc.cwd === 'function') wsDir = ($env && $env.AGENT_WORKSPACE_DIR) || proc.cwd();
   } catch (_) {}
-  const configPath = path.resolve(wsDir, 'sm-config.yaml');
-  if (fs.existsSync(configPath)) {
+  const configCandidates = [
+    path.resolve(wsDir, 'config', 'sm-config.yaml'),
+    path.resolve(wsDir, 'sm-config.yaml'),
+    path.resolve(wsDir, 'config', 'sm-config.example.yaml'),
+    path.resolve(wsDir, 'sm-config.example.yaml')
+  ];
+  const configPath = configCandidates.find(p => fs.existsSync(p)) || null;
+  if (configPath) {
     const rawYaml = fs.readFileSync(configPath, 'utf8');
     // Simple YAML parser cho team list
     const teamMatches = rawYaml.match(/- name:\s*"([^"]+)"\s*\n\s*role:\s*"([^"]+)"/g);

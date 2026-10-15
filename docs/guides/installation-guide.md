@@ -31,21 +31,21 @@ git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
 cd agent-skills
 npm run setup:mac
 ```
-Script tự động: cài Homebrew/Node/ngrok/n8n nếu thiếu → tạo `.env`, `projects.json`, `sm-config.yaml` từ file mẫu → `npm install` → khởi tạo database n8n và nạp workflows mẫu → đồng bộ plugins + rules vào `~/.gemini/config/` (Giai đoạn 2).
+Script tự động: cài Homebrew/Node/ngrok/n8n nếu thiếu → tạo `.env`, `config/projects.json`, `config/sm-config.yaml` từ file mẫu → `npm install` → khởi tạo database n8n và nạp workflows mẫu → đồng bộ plugins + rules vào `~/.gemini/config/` (Giai đoạn 2).
 
 ### Tùy chọn B: Thủ công (Windows/Linux, hoặc macOS đã có sẵn công cụ)
 ```bash
 git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
 cd agent-skills
 cp .env.example .env
-cp projects.json.example projects.json
-cp sm-config.example.yaml sm-config.yaml
+cp config/projects.json.example config/projects.json
+cp config/sm-config.example.yaml config/sm-config.yaml
 npm install
 npm run n8n:setup        # cài n8n nếu thiếu và nạp workflows mẫu (chỉ cần cho mức Đầy đủ)
 ```
 
 ### Điền file `.env`
-Mở `.env` và điền theo mức bạn dùng. File `.env`, `projects.json`, `sm-config.yaml` đã nằm trong `.gitignore` — **không commit**.
+Mở `.env` và điền theo mức bạn dùng. File `.env`, `config/projects.json`, `config/sm-config.yaml` đã nằm trong `.gitignore` — **không commit**.
 
 | Biến | Cần cho | Ghi chú |
 |---|---|---|
@@ -66,7 +66,7 @@ Tất cả phải PASS trước khi chuyển sang giai đoạn tiếp theo.
 
 ## Giai đoạn 2: Tích hợp AI Agent CLI (Claude Code / Antigravity / Gemini)
 
-`agent-skills` gồm 8 plugins (`ba-po`, `qa`, `dev`, `scrum-master`, `code-reviewer`, `security-auditor`, `web-performance-auditor`, `core`). Cần đồng bộ chúng vào cấu hình toàn cục của Agent CLI.
+`agent-skills` gồm 7 plugins (`ba-po`, `qa`, `dev`, `scrum-master`, `code-reviewer`, `fintech-data`, `core`). Cần đồng bộ chúng vào cấu hình toàn cục của Agent CLI.
 
 ### Claude Code (toàn máy, tự cập nhật)
 ```bash
@@ -100,7 +100,7 @@ Lệnh này sao chép plugins, `references/`, một số script, `AGENTS.md` và
 | `/dev-unit-test` | Workflow TDD | `dev-test-driven-development` |
 | `/cr-review` | Review code 5 phương diện | `cr-review-code-and-quality` |
 
-Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` có đủ 8 plugin và khởi động lại agent.
+Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` có đủ 7 plugin và khởi động lại agent.
 
 ---
 

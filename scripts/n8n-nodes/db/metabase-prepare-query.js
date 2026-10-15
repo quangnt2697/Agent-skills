@@ -124,6 +124,37 @@ if (!isNaN(parsedNumericDb) && parsedNumericDb > 0) {
   databaseId = parsedNumericDb;
 }
 
+// G. Partition Pruning Check cho TimescaleDB Hypertables
+if (dbName === 'timescale') {
+  const timescaleHypertables = [
+    'krx_mdds_v3_ticks', 'krx_mdds_v3_ticks_extra', 'krx_mdds_v3_top_prices',
+    'krx_mdds_v3_market_indices', 'krx_mdds_v3_board_events', 'krx_mdds_v3_symbol_board_events',
+    'krx_mdds_v3_trading_foreign_investors', 'expected_price_v3', 'expected_price_v3_snapshots',
+    'krx_mdds_v2_ticks', 'krx_mdds_v2_top_prices', 'krx_mdds_v2_market_indices',
+    'krx_mdds_v2_board_events', 'krx_mdds_v2_symbol_board_events', 'krx_mdds_v2_stock_ohlc',
+    'prices', 'stock_ohlc', 'trading_result_of_foreign_investors'
+  ];
+
+  const matchedHypertable = timescaleHypertables.find(t => new RegExp(`\\b${t}\\b`, 'i').test(cleanQueryNoComments));
+  if (matchedHypertable) {
+    const hasTimeFilter = /(sending_time|transact_time|\btime\b|created_at|\bdate\b)\s*(=|!=|<>|<|>|<=|>=|\bBETWEEN\b|\bIN\b|\bLIKE\b|\bIS\s+NOT\s+NULL\b)/i.test(cleanQueryNoComments)
+      || /time_bucket\s*\(/i.test(cleanQueryNoComments)
+      || /\b(CURRENT_DATE|CURRENT_TIMESTAMP|now\(\))\b/i.test(cleanQueryNoComments);
+    if (!hasTimeFilter) {
+      const errMsg = `🚨 **[Chặn Bởi TimescaleDB Partition Guard]** Truy vấn vào hypertable (\`${matchedHypertable}\`) thiếu điều kiện lọc thời gian (\`sending_time\`, \`transact_time\`, hoặc \`time\`). Bắt buộc phải có điều kiện lọc thời gian để tránh quét toàn bảng (Full Table Scan).`;
+      return [{
+        json: {
+          isError: true,
+          errorType: 'MISSING_PARTITION_FILTER',
+          reportText: errMsg,
+          _triggerSource: triggerSource,
+          userName
+        }
+      }];
+    }
+  }
+}
+
 // F. Phân giải URL và Session Token
 let metabaseUrl = isProd
   ? (($env && $env.METABASE_PROD_URL) || ($env && $env.METABASE_URL) || 'https://mb.dnse.com.vn')

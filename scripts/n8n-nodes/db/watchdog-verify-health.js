@@ -258,9 +258,11 @@ try {
     const currentDir = (envObj && envObj.AGENT_WORKSPACE_DIR) || process.cwd();
 
     const configFiles = [
+      pathMod.join(currentDir, 'config', 'projects.json'),
       pathMod.join(currentDir, 'projects.json'),
       pathMod.join(currentDir, 'project.js'),
       pathMod.join(currentDir, 'projects.js'),
+      pathMod.resolve(currentDir, '..', 'config', 'projects.json'),
       pathMod.resolve(currentDir, '..', 'projects.json'),
       pathMod.resolve(currentDir, '..', '..', 'projects.json')
     ];
@@ -330,6 +332,152 @@ try {
   // Lỗi ghi file không làm gián đoạn pipeline thông báo
 }
 
+// ── 10.5. Cơ chế Chống Spam & Quản lý Trạng thái Cảnh báo (Stateful Alert Deduplication) ──
+let alertStateSummary = {
+  firing: [],
+  ongoing: [],
+  recovered: [],
+  suppressed: []
+};
+
+try {
+  let fsMod = null;
+  let pathM = null;
+  let cryptoM = null;
+  if (typeof require !== 'undefined') {
+    fsMod = require('fs');
+    pathM = require('path');
+    try { cryptoM = require('crypto'); } catch (_) {}
+  }
+
+  function getFingerprint(str) {
+    if (cryptoM) {
+      return cryptoM.createHash('sha256').update(str).digest('hex').slice(0, 16);
+    }
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = ((h << 5) - h) + str.charCodeAt(i);
+      h |= 0;
+    }
+    return Math.abs(h).toString(16).padStart(16, '0');
+  }
+
+  if (fsMod && pathM) {
+    const envObj = (typeof $env !== 'undefined' && $env) ? $env : ((typeof process !== 'undefined' && process.env) ? process.env : {});
+    const currentDir = (envObj && envObj.AGENT_WORKSPACE_DIR) || process.cwd();
+    const stateDir = pathM.join(currentDir, 'workspace', 'adhoc', 'database');
+    const stateFile = pathM.join(stateDir, 'watchdog-alert-state.json');
+
+    if (!fsMod.existsSync(stateDir)) {
+      fsMod.mkdirSync(stateDir, { recursive: true });
+    }
+
+    let state = { tradingDate: dateStr, activeAlerts: {}, resolvedAlerts: [] };
+    if (fsMod.existsSync(stateFile)) {
+      try {
+        const loaded = JSON.parse(fsMod.readFileSync(stateFile, 'utf8'));
+        if (loaded && loaded.tradingDate === dateStr) {
+          state = loaded;
+          if (!state.activeAlerts) state.activeAlerts = {};
+          if (!state.resolvedAlerts) state.resolvedAlerts = [];
+        }
+      } catch (_) {}
+    }
+
+    // Thu thập danh sách bất thường hiện tại
+    const currentAnomalies = [];
+    if (totalScanned === 0 && step1Data) {
+      currentAnomalies.push({
+        topic: 'SecDef',
+        symbol: 'ALL',
+        anomalyType: 'EMPTY_TABLE',
+        severity: 'CRITICAL',
+        detail: 'Bảng security_definition_v3 chưa có dữ liệu'
+      });
+    }
+    for (const inv of invalids) {
+      currentAnomalies.push({
+        topic: 'SecDef',
+        symbol: inv.symbol || 'UNKNOWN',
+        anomalyType: 'INVALID_SEC_DEF',
+        severity: 'CRITICAL',
+        detail: inv.error_detail || 'Thiếu biên độ/giá/board'
+      });
+    }
+    for (const unc of uncleanSamples) {
+      currentAnomalies.push({
+        topic: 'StockInfoRealtime',
+        symbol: unc.symbol || 'UNKNOWN',
+        anomalyType: 'UNCLEAN_REALTIME',
+        severity: 'WARNING',
+        detail: unc.uncleared_fields || 'Chưa clear trường realtime'
+      });
+    }
+
+    const currentFpMap = {};
+    const nowIso = now.toISOString();
+    const nowMs = now.getTime();
+
+    for (const anom of currentAnomalies) {
+      const rawKey = `${dateStr}:${anom.topic}:${anom.symbol}:${anom.anomalyType}`;
+      const fp = getFingerprint(rawKey);
+      currentFpMap[fp] = anom;
+
+      if (!state.activeAlerts[fp]) {
+        // Lỗi mới xuất hiện -> FIRING
+        state.activeAlerts[fp] = {
+          fingerprint: fp,
+          topic: anom.topic,
+          symbol: anom.symbol,
+          anomalyType: anom.anomalyType,
+          severity: anom.severity,
+          detail: anom.detail,
+          firstSeen: nowIso,
+          lastSeen: nowIso,
+          occurrenceCount: 1,
+          lastAlertSentAt: nowIso
+        };
+        alertStateSummary.firing.push(state.activeAlerts[fp]);
+      } else {
+        // Lỗi đã tồn tại -> ONGOING
+        const alertObj = state.activeAlerts[fp];
+        alertObj.occurrenceCount = (alertObj.occurrenceCount || 1) + 1;
+        alertObj.lastSeen = nowIso;
+
+        const lastAlertMs = alertObj.lastAlertSentAt ? new Date(alertObj.lastAlertSentAt).getTime() : 0;
+        const minutesSinceLastAlert = (nowMs - lastAlertMs) / (60 * 1000);
+
+        if (minutesSinceLastAlert >= 60) {
+          // Nhắc lại sau 60 phút
+          alertObj.lastAlertSentAt = nowIso;
+          alertStateSummary.ongoing.push(alertObj);
+        } else {
+          // Tắt cảnh báo trùng lặp (Suppressed)
+          alertStateSummary.suppressed.push(alertObj);
+        }
+      }
+    }
+
+    // Kiểm tra các lỗi đã phục hồi (RESOLVED)
+    for (const fp of Object.keys(state.activeAlerts)) {
+      if (!currentFpMap[fp]) {
+        const resolvedObj = state.activeAlerts[fp];
+        const downtimeMinutes = Math.round((nowMs - new Date(resolvedObj.firstSeen).getTime()) / (60 * 1000));
+        resolvedObj.resolvedAt = nowIso;
+        resolvedObj.downtimeMinutes = downtimeMinutes;
+        state.resolvedAlerts.push(resolvedObj);
+        alertStateSummary.recovered.push(resolvedObj);
+        delete state.activeAlerts[fp];
+      }
+    }
+
+    // Ghi lại state mới
+    fsMod.writeFileSync(stateFile, JSON.stringify(state, null, 2), 'utf8');
+  }
+} catch (_) {
+  // Lỗi alert state tracking không làm ngắt pipeline
+}
+
 // ── 11. Định dạng thông báo Markdown gửi lên Mattermost ─────────────────────
 let msgTitle = '';
 if (isHealthy) {
@@ -342,7 +490,23 @@ if (isHealthy) {
   msgTitle = `⚠️ **[CẢNH BÁO MDDS PRODUCTION 08:20 AM] Phát Hiện ${uncleanCount} Mã CHƯA ĐƯỢC CLEAR Trường Realtime Đầu Ngày!**`;
 }
 
-let reportMarkdown = `${msgTitle}\n${partialWarning}\n`;
+if (alertStateSummary.firing.length > 0) {
+  msgTitle = `🚨 **[FIRING: ${alertStateSummary.firing.length} LỖI MỚI]** ${msgTitle}`;
+} else if (alertStateSummary.ongoing.length > 0) {
+  msgTitle = `⚠️ **[ONGOING: ${alertStateSummary.ongoing.length} LỖI TIẾP DIỄN (Nhắc lại sau 60p)]** ${msgTitle}`;
+}
+
+let recoveredBanner = '';
+if (alertStateSummary.recovered.length > 0) {
+  recoveredBanner = `\n> ✅ **[RECOVERED]** Đã phục hồi **${alertStateSummary.recovered.length}** lỗi trước đó (Thời gian gián đoạn: ~${alertStateSummary.recovered[0]?.downtimeMinutes || 0} phút).\n`;
+}
+
+let suppressionBanner = '';
+if (alertStateSummary.suppressed.length > 0 && alertStateSummary.firing.length === 0) {
+  suppressionBanner = `\n> ℹ️ *Đã tắt âm ${alertStateSummary.suppressed.length} cảnh báo đang tiếp diễn để chống spam (sẽ nhắc lại sau 60 phút).* \n`;
+}
+
+let reportMarkdown = `${msgTitle}\n${recoveredBanner}${suppressionBanner}${partialWarning}\n`;
 reportMarkdown += `- **Thời gian chạy kiểm tra:** \`${dateStr} ${timeStr}\` | **Môi trường:** \`PRODUCTION\`\n`;
 reportMarkdown += `- **Tổng số mã niêm yết đã kiểm tra:** **${totalSymbolsAll.toLocaleString()}** mã\n`;
 reportMarkdown += `- **[Step 1] Dữ Liệu (Trần/Sàn/TC/Board):** ${hasDataError ? `❌ **${invalidSymbolsAll} mã thiếu dữ liệu**` : `✅ **100% đầy đủ**`}\n`;
@@ -393,6 +557,13 @@ return [{
     fileContent: txtContent,
     message: reportMarkdown,
     reportText: reportMarkdown,
+    alertState: {
+      firingCount: alertStateSummary.firing.length,
+      ongoingCount: alertStateSummary.ongoing.length,
+      suppressedCount: alertStateSummary.suppressed.length,
+      recoveredCount: alertStateSummary.recovered.length
+    },
+    shouldNotify: alertStateSummary.firing.length > 0 || alertStateSummary.ongoing.length > 0 || alertStateSummary.recovered.length > 0 || isHealthy,
     _triggerSource: triggerSource
   }
 }];

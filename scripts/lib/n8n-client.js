@@ -93,10 +93,12 @@ export async function callN8nWebhook(webhookPath, payload = {}, timeoutMs = DEFA
 /**
  * Fast-Path: Lấy context Jira đã làm sạch từ n8n
  * @param {string} issueKey Mã Jira (VD: G3PTP-17396)
+ * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object|null>}
  */
-export async function prepJiraContext(issueKey) {
-  return await callN8nWebhook('jira-prep', { issueKey }, 15000, { retries: 2 });
+export async function prepJiraContext(issueKey, options = {}) {
+  const timeoutMs = options.timeoutMs || 15000;
+  return await callN8nWebhook('jira-prep', { issueKey }, timeoutMs, { retries: 2 });
 }
 
 /**
@@ -105,9 +107,10 @@ export async function prepJiraContext(issueKey) {
  * Quy trình chuẩn hóa production BẮT BUỘC dùng `/qa-squash-push` (`squash-push.sh`)
  * để xử lý đầy đủ XSRF token, cấu trúc folder và liên kết Campaign Test Plan.
  * @param {object} params { baseUrl, apiToken, projectId, folderId, testCases }
+ * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}
  */
-export async function batchSquashPush(params = {}) {
+export async function batchSquashPush(params = {}, options = {}) {
   const payload = {
     baseUrl: (params.baseUrl || process.env.SQUASH_BASE_URL || '').replace(/\/$/, ''),
     apiToken: params.apiToken || process.env.SQUASH_API_TOKEN || '',
@@ -115,31 +118,36 @@ export async function batchSquashPush(params = {}) {
     folderId: params.folderId || process.env.SQUASH_TC_G31_FOLDER_ID || '',
     testCases: params.testCases || []
   };
-  return await callN8nWebhook('squash-batch', payload, 30000); // 30s for batch
+  const timeoutMs = options.timeoutMs || 30000;
+  return await callN8nWebhook('squash-batch', payload, timeoutMs);
 }
 
 /**
  * Fast-Path: Lấy báo cáo Standup từ n8n để hiển thị trực tiếp lên Mattermost
+ * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}
  */
-export async function getStandupReport() {
-  return await callN8nWebhook('sm-standup', {});
+export async function getStandupReport(options = {}) {
+  const timeoutMs = options.timeoutMs || 15000;
+  return await callN8nWebhook('sm-standup', {}, timeoutMs);
 }
 
 /**
  * Fast-Path: Kích hoạt test suite phi đồng bộ (Non-blocking)
  * @param {object} params { issueKey, testCommand, testFiles }
+ * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}
  */
-export async function triggerAsyncTest(params) {
-  return await callN8nWebhook('qa-run-test', params, 650000);
+export async function triggerAsyncTest(params, options = {}) {
+  const timeoutMs = options.timeoutMs || 650000;
+  return await callN8nWebhook('qa-run-test', params, timeoutMs);
 }
 
 /**
  * Fast-Path: Đẩy file refined.md lên Jira Description qua n8n
  * @param {string} issueKey Mã Jira
  * @param {string} filePathOrProject Đường dẫn file hoặc tên project/cluster
- * @param {object} options { dryRun: boolean, project: string }
+ * @param {object} options { dryRun: boolean, project: string, timeoutMs: number }
  * @returns {Promise<object>}
  */
 export async function pushSpecToJira(issueKey, filePathOrProject = '', options = {}) {
@@ -150,13 +158,14 @@ export async function pushSpecToJira(issueKey, filePathOrProject = '', options =
     project: options.project || (!isMd ? filePathOrProject : undefined),
     dryRun: Boolean(options.dryRun)
   };
-  return await callN8nWebhook('jira-push-spec', payload, 30000);
+  const timeoutMs = options.timeoutMs || 30000;
+  return await callN8nWebhook('jira-push-spec', payload, timeoutMs);
 }
 
 /**
  * Fast-Path: Thực thi truy vấn dữ liệu Metabase (TimescaleDB / OpenAPI) qua n8n
  * @param {string} query Câu lệnh SQL hoặc template
- * @param {object} options { database, environment, maxRows, params, userQuestion }
+ * @param {object} options { database, environment, maxRows, params, userQuestion, timeoutMs }
  * @returns {Promise<object>}
  */
 export async function queryMetabase(query, options = {}) {
@@ -168,17 +177,20 @@ export async function queryMetabase(query, options = {}) {
     params: options.params || {},
     userQuestion: options.userQuestion || ''
   };
-  return await callN8nWebhook('metabase-query', payload, 35000);
+  const timeoutMs = options.timeoutMs || 45000;
+  return await callN8nWebhook('metabase-query', payload, timeoutMs);
 }
 
 /**
  * Fast-Path: Lấy Test Fixture chứng khoán từ security_definition_v3
  * Trả về 4 phân khúc: Phái sinh (41I1GA0000/rollover), HOSE (SHB), UPCOM (OIL), HNX (SHS) kèm API Key/Secret.
  * @param {object} params { exchange, symbol, accountType }
+ * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}
  */
-export async function getSecuritiesFixture(params = {}) {
-  return await callN8nWebhook('securities-fixture', params, 25000, { retries: 2 });
+export async function getSecuritiesFixture(params = {}, options = {}) {
+  const timeoutMs = options.timeoutMs || 25000;
+  return await callN8nWebhook('securities-fixture', params, timeoutMs, { retries: 2 });
 }
 
 /**
@@ -187,73 +199,87 @@ export async function getSecuritiesFixture(params = {}) {
  * Kết quả lưu vào workspace/{issueKey}/test/fixtures/locators.json.
  * @param {string} issueKey  Jira issue key (VD: STK-201)
  * @param {string} targetPage Tên màn hình cần lấy locator (VD: 'login', 'order', 'portfolio')
- * @param {object} options   { urlOverride } — ghi đè URL nếu cần
+ * @param {object} options   { urlOverride, timeoutMs } — ghi đè URL nếu cần
  * @returns {Promise<object>} { success, loginSuccess, locatorCount, outputFile, login_locators, page_locators }
  */
 export async function discoverWebUILocators(issueKey, targetPage = 'home', options = {}) {
-  const payload = { issueKey, targetPage, ...options };
-  return await callN8nWebhook('web-ui-locator-discovery', payload, 120000); // 2 phút cho Playwright
+  const { timeoutMs: customTimeout, ...restOptions } = options;
+  const payload = { issueKey, targetPage, ...restOptions };
+  const timeoutMs = customTimeout || 120000; // 2 phút cho Playwright
+  return await callN8nWebhook('web-ui-locator-discovery', payload, timeoutMs);
 }
 
 /**
  * Fast-Path: Bóc tách tài liệu Confluence Storage XHTML sang Markdown tinh gọn (WF-03)
  * @param {string} pageUrlOrId Confluence URL hoặc Page ID
+ * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}
  */
-export async function fetchConfluenceDoc(pageUrlOrId) {
-  return await callN8nWebhook('confluence-doc', { pageUrlOrId }, 25000);
+export async function fetchConfluenceDoc(pageUrlOrId, options = {}) {
+  const timeoutMs = options.timeoutMs || 25000;
+  return await callN8nWebhook('confluence-doc', { pageUrlOrId }, timeoutMs);
 }
 
 /**
  * Fast-Path: Tiền xử lý lọc sạch git diff rác cho Code Reviewer
  * @param {string} rawDiffText Nội dung raw diff
- * @param {object} options { maxLinesPerFile: number }
+ * @param {object} options { maxLinesPerFile: number, timeoutMs: number }
  * @returns {Promise<object>}
  */
 export async function cleanDiffForReview(rawDiffText, options = {}) {
-  return await callN8nWebhook('cr-diff-clean', { rawDiff: rawDiffText, ...options }, 20000);
+  const { timeoutMs: customTimeout, ...restOptions } = options;
+  const timeoutMs = customTimeout || 20000;
+  return await callN8nWebhook('cr-diff-clean', { rawDiff: rawDiffText, ...restOptions }, timeoutMs);
 }
 
 /**
  * Fast-Path: Quét phụ thuộc và lỗ hổng bảo mật ngầm
  * @param {string} projectPath Đường dẫn project
- * @param {object} options { scanContent: string }
+ * @param {object} options { scanContent: string, timeoutMs: number }
  * @returns {Promise<object>}
  */
 export async function runSecurityDigest(projectPath = '', options = {}) {
-  return await callN8nWebhook('security-scan', { projectPath, ...options }, 35000);
+  const { timeoutMs: customTimeout, ...restOptions } = options;
+  const timeoutMs = customTimeout || 35000;
+  return await callN8nWebhook('security-scan', { projectPath, ...restOptions }, timeoutMs);
 }
 
 /**
  * Fast-Path: Gửi sự kiện chuyển trạng thái Jira Ready To Test lên Mattermost (WF-11)
  * @param {object} payload Dữ liệu Jira Webhook hoặc test payload
+ * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}
  */
-export async function notifyJiraReadyToTest(payload = {}) {
-  return await callN8nWebhook('jira-ready-to-test', payload, 20000);
+export async function notifyJiraReadyToTest(payload = {}, options = {}) {
+  const timeoutMs = options.timeoutMs || 20000;
+  return await callN8nWebhook('jira-ready-to-test', payload, timeoutMs);
 }
 
 /**
  * Fast-Path: Lấy ma trận loại lệnh hợp lệ và bảng Examples tham số hóa đa sàn (WF-18)
  * Tra cứu theo sàn, phiên, và cờ trạng thái SI (CR/RES filter).
  * @param {object} params { marketId, boardId, eventId, symbol, adminStatus, sanctionStatus, methodStatus }
+ * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>} { allowedOrders, disallowedOrders, sessionName, isMtlFiltered, multiSymbolExamples }
  */
-export async function getSecuritiesRuleMatrix(params = {}) {
-  return await callN8nWebhook('securities-rule-matrix', { action: 'getRuleMatrix', ...params }, 20000);
+export async function getSecuritiesRuleMatrix(params = {}, options = {}) {
+  const timeoutMs = options.timeoutMs || 20000;
+  return await callN8nWebhook('securities-rule-matrix', { action: 'getRuleMatrix', ...params }, timeoutMs);
 }
 
 /**
  * Fast-Path: Kiểm tra tính tuân thủ quy tắc nghiệp vụ chứng khoán (Domain Linter) của file Gherkin (WF-19)
  * Phát hiện vi phạm: MTL trên mã CR/RES, lệnh cấm trên UPCoM, sửa/hủy ATO/ATC, PLO sau giờ...
  * @param {string|object} gherkinOrParams Nội dung .feature hoặc object { gherkinContent, issueKey }
+ * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>} { valid, errorCount, warningCount, errors, warnings, checkedRules }
  */
-export async function lintDomainGherkin(gherkinOrParams) {
+export async function lintDomainGherkin(gherkinOrParams, options = {}) {
   const payload = typeof gherkinOrParams === 'string'
     ? { action: 'lintGherkin', gherkinContent: gherkinOrParams }
     : { action: 'lintGherkin', ...gherkinOrParams };
-  return await callN8nWebhook('qa-domain-lint', payload, 25000);
+  const timeoutMs = options.timeoutMs || 25000;
+  return await callN8nWebhook('qa-domain-lint', payload, timeoutMs);
 }
 
 /**

@@ -1,23 +1,96 @@
 /**
- * Node Script: Prepare Watchdog Query — Step 2: Realtime Clear Check
+ * Node Script: Prepare Watchdog Query — Step 2: Realtime Clear & Session-Aware Staleness Check
  * (`scripts/n8n-nodes/db/watchdog-prepare-query-realtime.js`)
  *
  * Mục đích:
- * Chuẩn bị câu SQL BƯỚC 2 — Kiểm tra bảng `krx_mdds_v2_stock_infos`:
- *   - Đảm bảo 21 trường realtime/giao dịch tích lũy BẮT BUỘC phải CLEAR (NULL hoặc = 0)
- *     trước giờ mở phiên ATO lúc 09:00 AM.
- *   - Các trường cần clear: highest_price, lowest_price, open_price, close_price,
- *     average_price, buy_foreign_qtty, sell_foreign_qtty, expected_trade_price,
- *     expected_trade_qtty, open_interest_qtty, total_volume_traded, gross_trade_amount,
- *     total_offer_qtty, total_bid_qtty, match_price, match_qtty, match_value,
- *     changed_value, changed_ratio, buy_foreign_value, sell_foreign_value.
- *   - Liệt kê tối đa 100 mã chưa clear (nếu có).
- *
- * Output node này được merge với BƯỚC 1 (security_definition_v3) tại node watchdog-verify-health.
+ * 1. Hỗ trợ Session-Aware Watchdog:
+ *    - Xác định phiên giao dịch KRX hiện tại (PRE_OPEN, ATO, CONTINUOUS_MORNING, LUNCH_BREAK, CONTINUOUS_AFTERNOON, ATC, PLO, CLOSED).
+ *    - Trong LUNCH_BREAK (11:30–13:00): Tắt cảnh báo đứng hình (staleness) khớp lệnh, chuyển sang kiểm tra toàn vẹn cuối phiên sáng.
+ *    - Trong CONTINUOUS_*: Kiểm tra độ trễ luồng dữ liệu (staleness_seconds) của các topic MDDS trọng yếu.
+ *    - Sau 15:15 (CLOSED): Gợi ý chuyển sang EOD Full Reconciliation.
+ * 2. Giữ tương thích kiểm tra 21 trường realtime cần clear của `krx_mdds_v2_stock_infos` đầu ngày.
  */
 
-// ── SQL BƯỚC 2: Kiểm tra clear trường realtime krx_mdds_v2_stock_infos ───────
-const realtimeSql = `
+const input = typeof $input !== 'undefined' ? $input.first() : null;
+const raw = (input && input.json) || {};
+
+// ── 1. HELPER: KRX MARKET SESSION STATE MACHINE ─────────────────────────────
+function getKRXMarketSession(date = new Date()) {
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+  const vnDate = new Date(utc + (7 * 3600000));
+  
+  const yyyy = vnDate.getFullYear();
+  const mm = String(vnDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(vnDate.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+  const dayOfWeek = vnDate.getDay();
+
+  const vnStockHolidays = [
+    '2025-01-01', '2025-01-27', '2025-01-28', '2025-01-29', '2025-01-30', '2025-01-31',
+    '2025-04-07', '2025-04-30', '2025-05-01', '2025-05-02', '2025-09-01', '2025-09-02',
+    '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-20',
+    '2026-04-26', '2026-04-30', '2026-05-01', '2026-09-01', '2026-09-02',
+    '2027-01-01', '2027-02-05', '2027-02-08', '2027-02-09', '2027-02-10',
+    '2027-04-16', '2027-04-30', '2027-05-01', '2027-09-02', '2027-09-03'
+  ];
+
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const isHoliday = vnStockHolidays.includes(dateStr);
+  const isTradingDay = !isWeekend && !isHoliday;
+
+  const hours = vnDate.getHours();
+  const minutes = vnDate.getMinutes();
+  const hhmm = hours * 100 + minutes;
+
+  let sessionPhase = 'CLOSED';
+  let description = 'Thị trường đóng cửa';
+
+  if (!isTradingDay) {
+    sessionPhase = 'CLOSED';
+    description = isWeekend ? 'Cuối tuần (Không có giao dịch)' : 'Ngày nghỉ lễ (Không có giao dịch)';
+  } else if (hhmm < 845) {
+    sessionPhase = 'PRE_OPEN';
+    description = 'Trước giờ mở cửa (Kiểm tra reset đầu ngày)';
+  } else if (hhmm < 900) {
+    sessionPhase = 'ATO';
+    description = 'Phiên khớp lệnh định kỳ mở cửa (Phái sinh mở 08:45, Cơ sở mở 09:00)';
+  } else if (hhmm < 1130) {
+    sessionPhase = 'CONTINUOUS_MORNING';
+    description = 'Phiên khớp lệnh liên tục buổi sáng';
+  } else if (hhmm < 1300) {
+    sessionPhase = 'LUNCH_BREAK';
+    description = 'Nghỉ trưa (Tắt cảnh báo đứng hình khớp lệnh)';
+  } else if (hhmm < 1430) {
+    sessionPhase = 'CONTINUOUS_AFTERNOON';
+    description = 'Phiên khớp lệnh liên tục buổi chiều';
+  } else if (hhmm < 1445) {
+    sessionPhase = 'ATC';
+    description = 'Phiên khớp lệnh định kỳ đóng cửa';
+  } else if (hhmm < 1500) {
+    sessionPhase = 'PLO';
+    description = 'Phiên khớp lệnh sau giờ (HNX PLO)';
+  } else {
+    sessionPhase = 'CLOSED';
+    description = 'Thị trường đã đóng cửa (EOD Full Reconciliation)';
+  }
+
+  return {
+    tradingDate: dateStr,
+    dayOfWeek,
+    isWeekend,
+    isHoliday,
+    isTradingDay,
+    sessionPhase,
+    description,
+    timeStr: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(vnDate.getSeconds()).padStart(2, '0')} ICT`
+  };
+}
+
+const marketSession = getKRXMarketSession();
+const reqMode = raw.mode || (marketSession.sessionPhase === 'PRE_OPEN' ? 'clear_check' : 'staleness_check');
+
+// ── 2. SQL BƯỚC 2A: KIỂM TRA RESET REALTIME ĐẦU NGÀY ────────────────────────
+const clearCheckSql = `
 WITH unclean_realtime AS (
   SELECT
     symbol,
@@ -105,13 +178,50 @@ SELECT json_build_object(
 )::text AS report_data;
 `.trim();
 
+// ── 3. SQL BƯỚC 2B: REALTIME STALENESS & FLOW CHECK (TRONG PHIÊN) ───────────
+const stalenessSql = `
+WITH topic_staleness AS (
+  SELECT 'krx_mdds_v3_ticks' AS topic_name, MAX(sending_time) AS max_time,
+         ROUND(EXTRACT(EPOCH FROM (NOW() - MAX(sending_time)))::numeric, 1) AS latency_seconds,
+         COUNT(*)::int AS row_count
+  FROM krx_mdds_v3_ticks
+  WHERE sending_time >= CURRENT_DATE
+  UNION ALL
+  SELECT 'krx_mdds_v3_top_prices' AS topic_name, MAX(sending_time) AS max_time,
+         ROUND(EXTRACT(EPOCH FROM (NOW() - MAX(sending_time)))::numeric, 1) AS latency_seconds,
+         COUNT(*)::int AS row_count
+  FROM krx_mdds_v3_top_prices
+  WHERE sending_time >= CURRENT_DATE
+  UNION ALL
+  SELECT 'krx_mdds_v3_market_indices' AS topic_name, MAX(transact_time) AS max_time,
+         ROUND(EXTRACT(EPOCH FROM (NOW() - MAX(transact_time)))::numeric, 1) AS latency_seconds,
+         COUNT(*)::int AS row_count
+  FROM krx_mdds_v3_market_indices
+  WHERE transact_time >= CURRENT_DATE
+)
+SELECT json_build_object(
+  'step', 'realtime_staleness',
+  'session_phase', '${marketSession.sessionPhase}',
+  'is_trading_day', ${marketSession.isTradingDay},
+  'topics', (SELECT json_agg(t) FROM topic_staleness t)
+)::text AS report_data;
+`.trim();
+
+const isClearMode = reqMode === 'clear_check';
+const chosenSql = isClearMode ? clearCheckSql : stalenessSql;
+const allowStalenessAlerts = marketSession.sessionPhase.startsWith('CONTINUOUS_');
+
 return [{
   json: {
-    query: realtimeSql,
+    query: chosenSql,
     database: 'timescale',
     environment: 'prod',
     maxRows: 10,
-    checkStep: 'step2_realtime_clear',
-    checkTime: '08:20:00 ICT'
+    checkStep: isClearMode ? 'step2_realtime_clear' : 'step2_realtime_staleness',
+    marketSession,
+    sessionPhase: marketSession.sessionPhase,
+    isTradingDay: marketSession.isTradingDay,
+    allowStalenessAlerts,
+    checkTime: marketSession.timeStr
   }
 }];

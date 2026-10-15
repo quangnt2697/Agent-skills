@@ -54,8 +54,10 @@ async function isValidBranchName(name) {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..', '..');
-const PROJECTS_JSON_PATH = path.resolve(ROOT_DIR, 'projects.json');
-const PROJECTS_EXAMPLE_PATH = path.resolve(ROOT_DIR, 'projects.json.example');
+const PROJECTS_JSON_CONFIG_PATH = path.resolve(ROOT_DIR, 'config', 'projects.json');
+const PROJECTS_JSON_ROOT_PATH = path.resolve(ROOT_DIR, 'projects.json');
+const PROJECTS_EXAMPLE_CONFIG_PATH = path.resolve(ROOT_DIR, 'config', 'projects.json.example');
+const PROJECTS_EXAMPLE_ROOT_PATH = path.resolve(ROOT_DIR, 'projects.json.example');
 
 // Tự động load .env nếu PROJECT_SCAN_DIRS chưa được set trong env
 if (!process.env.PROJECT_SCAN_DIRS) {
@@ -128,9 +130,13 @@ export function parseArgs(rawArgs) {
 
 export function loadProjectsConfig() {
   const mapping = {};
-  const configPath = fs.existsSync(PROJECTS_JSON_PATH)
-    ? PROJECTS_JSON_PATH
-    : (fs.existsSync(PROJECTS_EXAMPLE_PATH) ? PROJECTS_EXAMPLE_PATH : null);
+  const candidates = [
+    PROJECTS_JSON_CONFIG_PATH,
+    PROJECTS_JSON_ROOT_PATH,
+    PROJECTS_EXAMPLE_CONFIG_PATH,
+    PROJECTS_EXAMPLE_ROOT_PATH,
+  ];
+  const configPath = candidates.find(p => fs.existsSync(p)) || null;
 
   if (configPath) {
     try {

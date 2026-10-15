@@ -217,8 +217,11 @@ if (scanDirsRaw) {
 
 // Thêm đường dẫn từ projects.json
 try {
-  const pMapPath = path.join(candidateRoots[0], 'projects.json');
-  if (fs.existsSync(pMapPath)) {
+  const pMapPath = [
+    path.join(candidateRoots[0], 'config', 'projects.json'),
+    path.join(candidateRoots[0], 'projects.json')
+  ].find(p => fs.existsSync(p));
+  if (pMapPath) {
     const pMap = JSON.parse(fs.readFileSync(pMapPath, 'utf8'));
     Object.values(pMap).forEach(v => {
       const p = path.resolve(v);

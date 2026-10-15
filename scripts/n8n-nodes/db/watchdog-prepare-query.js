@@ -22,6 +22,80 @@ try {
   triggerSource = 'cron';
 }
 
+// ── HELPER: KRX MARKET SESSION STATE MACHINE ────────────────────────────────
+function getKRXMarketSession(date = new Date()) {
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+  const vnDate = new Date(utc + (7 * 3600000));
+  
+  const yyyy = vnDate.getFullYear();
+  const mm = String(vnDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(vnDate.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+  const dayOfWeek = vnDate.getDay();
+
+  const vnStockHolidays = [
+    '2025-01-01', '2025-01-27', '2025-01-28', '2025-01-29', '2025-01-30', '2025-01-31',
+    '2025-04-07', '2025-04-30', '2025-05-01', '2025-05-02', '2025-09-01', '2025-09-02',
+    '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-20',
+    '2026-04-26', '2026-04-30', '2026-05-01', '2026-09-01', '2026-09-02',
+    '2027-01-01', '2027-02-05', '2027-02-08', '2027-02-09', '2027-02-10',
+    '2027-04-16', '2027-04-30', '2027-05-01', '2027-09-02', '2027-09-03'
+  ];
+
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const isHoliday = vnStockHolidays.includes(dateStr);
+  const isTradingDay = !isWeekend && !isHoliday;
+
+  const hours = vnDate.getHours();
+  const minutes = vnDate.getMinutes();
+  const hhmm = hours * 100 + minutes;
+
+  let sessionPhase = 'CLOSED';
+  let description = 'Thị trường đóng cửa';
+
+  if (!isTradingDay) {
+    sessionPhase = 'CLOSED';
+    description = isWeekend ? 'Cuối tuần (Không có giao dịch)' : 'Ngày nghỉ lễ (Không có giao dịch)';
+  } else if (hhmm < 845) {
+    sessionPhase = 'PRE_OPEN';
+    description = 'Trước giờ mở cửa (08:20 SecDef check)';
+  } else if (hhmm < 900) {
+    sessionPhase = 'ATO';
+    description = 'Phiên khớp lệnh định kỳ mở cửa';
+  } else if (hhmm < 1130) {
+    sessionPhase = 'CONTINUOUS_MORNING';
+    description = 'Phiên khớp lệnh liên tục buổi sáng';
+  } else if (hhmm < 1300) {
+    sessionPhase = 'LUNCH_BREAK';
+    description = 'Nghỉ trưa (Tắt cảnh báo staleness khớp lệnh)';
+  } else if (hhmm < 1430) {
+    sessionPhase = 'CONTINUOUS_AFTERNOON';
+    description = 'Phiên khớp lệnh liên tục buổi chiều';
+  } else if (hhmm < 1445) {
+    sessionPhase = 'ATC';
+    description = 'Phiên khớp lệnh định kỳ đóng cửa';
+  } else if (hhmm < 1500) {
+    sessionPhase = 'PLO';
+    description = 'Phiên khớp lệnh sau giờ (HNX PLO)';
+  } else {
+    sessionPhase = 'CLOSED';
+    description = 'Thị trường đã đóng cửa (EOD Reconciliation)';
+  }
+
+  return {
+    tradingDate: dateStr,
+    dayOfWeek,
+    isWeekend,
+    isHoliday,
+    isTradingDay,
+    sessionPhase,
+    description,
+    timeStr: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(vnDate.getSeconds()).padStart(2, '0')} ICT`
+  };
+}
+
+const marketSession = getKRXMarketSession();
+
 // ── SQL HỢP NHẤT: BƯỚC 1 (SecDef V3) + BƯỚC 2 (Realtime Clear) ───────────────
 const combinedSql = `
 WITH sec_summary AS (
@@ -178,6 +252,9 @@ return [{
     maxRows: 10,
     checkStep: 'step1_and_step2',
     checkTime: '08:20:00 ICT',
+    marketSession,
+    sessionPhase: marketSession.sessionPhase,
+    isTradingDay: marketSession.isTradingDay,
     _triggerSource: triggerSource
   }
 }];

@@ -10,8 +10,11 @@ node_modules/
 .env.*
 !.env.example
 sm-config.yaml
+config/sm-config.yaml
+!config/sm-config.example.yaml
 projects.json
-!projects.json.example
+config/projects.json
+!config/projects.json.example
 
 # n8n Local & Dumps
 export.json

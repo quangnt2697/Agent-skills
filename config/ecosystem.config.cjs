@@ -26,8 +26,9 @@ const apps = [
       N8N_BLOCK_ENV_ACCESS_IN_NODE: 'false',
       N8N_RUNNERS_MODE: 'internal',
       N8N_RUNNERS_TASK_REQUEST_TIMEOUT: '60',
-      NODE_FUNCTION_ALLOW_BUILTIN: '*',
-      NODE_FUNCTION_ALLOW_EXTERNAL: '*',
+      // Bảo mật môi trường Node: Chỉ cho phép các built-in module cần thiết cho Agent Skills
+      NODE_FUNCTION_ALLOW_BUILTIN: 'fs,path,crypto,os,child_process,url',
+      NODE_FUNCTION_ALLOW_EXTERNAL: 'dotenv',
       // ── Múi Giờ Việt Nam ──────────────────────────────────────────────────
       // GENERIC_TIMEZONE: n8n dùng để tính lịch cron (Schedule Trigger)
       // TZ: Node.js process dùng để hiển thị time trong log và new Date()

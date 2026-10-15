@@ -310,7 +310,8 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "timezone": "Asia/Ho_Chi_Minh"
+    "timezone": "Asia/Ho_Chi_Minh",
+    "errorWorkflow": "GlobalErrorHandler001"
   },
   "active": true
 }

@@ -178,21 +178,22 @@ Hệ thống sử dụng **Mattermost** làm giao diện tương tác duy nhất
 
 ## 6. Chiến Lược Sử Dụng AI Model (Gemini) trên n8n
 
-Dự án tích hợp mô hình **Antigravity** trực tiếp vào các luồng workflow của n8n qua node HTTP Request gọi Google AI Studio API:
+Dự án tích hợp mô hình **AI Studio (Antigravity & Gemini Flash)** trực tiếp vào các luồng workflow của n8n qua node HTTP Request gọi Google AI Studio API:
 
-**Endpoint chuẩn:**
+**Endpoint chuẩn hóa (hỗ trợ biến môi trường & fallback):**
 ```
-https://generativelanguage.googleapis.com/v1beta/models/antigravity:generateContent?key={{ $env.GEMINI_API_KEY }}
+https://generativelanguage.googleapis.com/v1beta/models/{{ $env.GEMINI_AGENT_MODEL || 'antigravity' }}:generateContent?key={{ $env.GEMINI_API_KEY }}
 ```
 
 1. **AI Intent Recognition (Fuzzy Matching):**
-   - Áp dụng tại luồng Single Router (Mattermost). Thay vì match text cứng nhắc, n8n đẩy câu lệnh của người dùng (VD: *"chạy giùm test vé G3PTP-17059"*) vào Antigravity.
+   - Áp dụng tại luồng Single Router (Mattermost). Thay vì match text cứng nhắc, n8n đẩy câu lệnh của người dùng (VD: *"chạy giùm test vé G3PTP-17059"*) vào AI Model.
    - Trả về JSON chuẩn: `{"intent": "test", "params": {"issueKey": "G3PTP-17059"}}`.
    - Dùng `system_instruction` + `responseMimeType: "application/json"` để đảm bảo output là JSON thuần túy (không cần regex cleanup).
 2. **Help Menu & Mattermost Message Attachments:**
    - Nếu AI nhận diện ý định là "hỏi đáp / danh sách lệnh", n8n tự động chặn luồng gọi terminal và trả về tin nhắn Mattermost.
-3. **Phân bổ tác vụ AI hiệu quả:**
-   - **`Antigravity`** ← Model duy nhất đang dùng: Tốc độ cực cao (<1s), Free tier 100 req/ngày, đủ cho mọi tác vụ trong dự án này (Intent classifier, Parse JSON, Tóm tắt, Làm sạch ADF).
+3. **Phân tầng Model Quotas & Fallback (HTTP 429):**
+   - **Mặc định:** `GEMINI_AGENT_MODEL=antigravity` (tốc độ cao, tối ưu phân loại intent và xử lý nhanh context).
+   - **Cơ chế Fallback (HTTP 429):** Khi gặp lỗi Rate Limit hoặc Quota Exceeded (HTTP 429), workflow tự động chuyển sang mô hình dự phòng `GEMINI_FLASH_MODEL` (mặc định: `gemini-2.0-flash` hoặc `gemini-2.5-flash`) để duy trì tính sẵn sàng liên tục của dịch vụ.
 
 > 📖 **Hướng dẫn chi tiết kết nối + test:** `docs/guides/installation-guide.md`
 

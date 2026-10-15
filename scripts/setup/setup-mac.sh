@@ -60,8 +60,9 @@ else
 fi
 
 # 5c. Tạo file cấu hình cục bộ từ mẫu (nếu chưa có)
-[ -f projects.json ] || { [ -f projects.json.example ] && cp projects.json.example projects.json && echo "📄 Tạo projects.json từ mẫu."; }
-[ -f sm-config.yaml ] || { [ -f sm-config.example.yaml ] && cp sm-config.example.yaml sm-config.yaml && echo "📄 Tạo sm-config.yaml từ mẫu."; }
+mkdir -p config
+[ -f config/projects.json ] || [ -f projects.json ] || { [ -f config/projects.json.example ] && cp config/projects.json.example config/projects.json && echo "📄 Tạo config/projects.json từ mẫu."; }
+[ -f config/sm-config.yaml ] || [ -f sm-config.yaml ] || { [ -f config/sm-config.example.yaml ] && cp config/sm-config.example.yaml config/sm-config.yaml && echo "📄 Tạo config/sm-config.yaml từ mẫu."; }
 
 # 6. Khởi động n8n lần đầu để tạo database, sau đó import workflows
 echo "⚙️ Khởi động n8n lần đầu để khởi tạo cơ sở dữ liệu..."

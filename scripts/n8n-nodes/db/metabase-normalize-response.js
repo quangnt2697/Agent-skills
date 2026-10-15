@@ -67,11 +67,21 @@ const normalizedData = rawRows.map(row => {
 
 const rowCount = normalizedData.length;
 
-// 4. Render Bảng Markdown trực quan cho Mattermost
+// 4. Phát hiện sớm khi kết quả Metabase bị cắt cụt ở ngưỡng 2000 dòng
+const isTruncated = rawData.rows_truncated === true || rawRows.length >= 2000;
+const warnings = [];
+if (isTruncated) {
+  warnings.push('⚠️ CẢNH BÁO: Kết quả trả về từ Metabase chạm ngưỡng giới hạn (bị cắt cụt tại ' + rowCount + ' dòng). Cần thu hẹp WHERE hoặc gom nhóm SQL.');
+}
+
+// 5. Render Bảng Markdown trực quan cho Mattermost
 let reportText = '';
 let headerTitle = `🔍 **[Metabase Query Result]**\n- **Cơ sở dữ liệu:** \`${dbName.toUpperCase()} (${envName})\` | **Bản ghi:** **${rowCount}** records`;
 if (userQuestion) {
   headerTitle += `\n- **Yêu cầu:** _"${userQuestion}"_`;
+}
+if (warnings.length > 0) {
+  headerTitle += `\n> ${warnings.join('\n> ')}`;
 }
 
 if (rowCount === 0) {
@@ -114,6 +124,8 @@ return [{
     userQuestion,
     columns: cols,
     rowCount,
+    isTruncated,
+    warnings,
     data: normalizedData,
     reportText,
     _triggerSource: triggerSource,

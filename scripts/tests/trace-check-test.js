@@ -6,11 +6,11 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { afterEach, test } from "node:test";
 
-import { extractIds, traceCheck } from "../../plugins/core/skills/meta-cross-validation/scripts/trace-check.js";
+import { extractIds, traceCheck } from "../../plugins/core/skills/meta-cross-validation/assets/trace-check.js";
 
 const SCRIPT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  "../../plugins/core/skills/meta-cross-validation/scripts/trace-check.js",
+  "../../plugins/core/skills/meta-cross-validation/assets/trace-check.js",
 );
 
 const sandboxes = [];

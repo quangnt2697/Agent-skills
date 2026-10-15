@@ -4,17 +4,19 @@
  *
  * Thực thi các câu query đối chiếu (Reconciliation & Parity Check) trên TimescaleDB
  * (UAT: DB ID $METABASE_UAT_DB_TIMESCALE_ID / Prod: DB ID $METABASE_PROD_DB_TIMESCALE_ID)
- * qua Metabase API. Môi trường được chọn tự động theo biến METABASE_ENV (mặc định: uat).
- * Catalog câu query chuẩn hóa tại:
- * plugins/core/skills/db-timescale-reconciler/assets/reconciliation-queries.json
+ * qua Metabase API. Môi trường được chọn tự động theo biến METABASE_ENV hoặc cờ --env.
  *
  * Cách dùng:
- *   node scripts/db/db-recon.js                           # Chạy Master Dashboard cho ngày hiện tại
+ *   node scripts/db/db-recon.js                           # Chạy Master Dashboard cho ngày hiện tại (UAT)
+ *   node scripts/db/db-recon.js --env=prod --suite=core   # Chạy 4 bài đối chiếu Core (Production)
+ *   node scripts/db/db-recon.js --env=prod --suite=full   # Chạy Full Suite
  *   node scripts/db/db-recon.js recon-ticks               # Chạy đối chiếu Ticks V3 vs V2
  *   node scripts/db/db-recon.js recon-ticks --symbol FPT  # Lọc theo mã FPT
  *   node scripts/db/db-recon.js --date 2026-09-08         # Lọc theo ngày cụ thể
  *   node scripts/db/db-recon.js --list                    # Liệt kê toàn bộ các câu query khả dụng
- *   npm run db:recon                                   # Lệnh npm tiện ích
+ *   npm run db:recon                                      # Lệnh npm tiện ích UAT
+ *   npm run db:recon:prod                                 # Lệnh npm tiện ích Prod
+ *   npm run db:recon:core                                 # Lệnh npm tiện ích Core Suite
  */
 
 import fs from 'node:fs';
@@ -34,6 +36,12 @@ import {
     formatErrorMessage
 } from '../lib/db-client.js';
 
+import {
+    runCoreReconciliation,
+    formatCoreReport,
+    recordReconHistory,
+    todayVN
+} from '../lib/recon-engine.js';
 
 // Nạp .env
 loadEnv(path.join(projectRoot, '.env'));
@@ -99,7 +107,7 @@ function formatMarkdownTable(rows, title) {
     ].join('\n');
 }
 
-async function runQuery(queryId, cliArgs) {
+async function runQuery(queryId, cliArgs = {}) {
     const catalog = loadCatalog();
     const queryDef = catalog[queryId];
 
@@ -123,7 +131,7 @@ async function runQuery(queryId, cliArgs) {
 
     // Xử lý CURRENT_DATE
     if (params.date === 'CURRENT_DATE' || !params.date) {
-        params.date = new Date().toISOString().slice(0, 10);
+        params.date = todayVN();
     }
 
     const rawSql = replaceParams(queryDef.sql, params);
@@ -204,6 +212,11 @@ function parseCliArgs(args = process.argv.slice(2)) {
         if (arg === '--list') parsed.list = true;
         else if (arg === '--json') parsed.json = true;
         else if (arg === '--uat') parsed.uat = true;
+        else if (arg === '--prod') parsed.prod = true;
+        else if (arg.startsWith('--env=')) parsed.env = arg.split('=')[1];
+        else if (arg === '--env' && args[i + 1]) parsed.env = args[++i];
+        else if (arg.startsWith('--suite=')) parsed.suite = arg.split('=')[1];
+        else if (arg === '--suite' && args[i + 1]) parsed.suite = args[++i];
         else if (arg === '--query' && args[i + 1]) parsed.query = args[++i];
         else if (arg === '--date' && args[i + 1]) parsed.date = args[++i];
         else if (arg === '--symbol' && args[i + 1]) parsed.symbol = args[++i];
@@ -245,6 +258,34 @@ async function main() {
 
     if (cliArgs.uat) {
         process.env.METABASE_ENV = 'uat';
+    } else if (cliArgs.prod) {
+        process.env.METABASE_ENV = 'prod';
+    } else if (cliArgs.env) {
+        process.env.METABASE_ENV = cliArgs.env;
+    }
+
+    // Nếu chọn suite=core hoặc lệnh npm run db:recon:core
+    if (cliArgs.suite === 'core') {
+        const env = cliArgs.env || process.env.METABASE_ENV || 'prod';
+        const dateStr = cliArgs.date || todayVN();
+        console.log(`\n==============================================================`);
+        console.log(`🔍 TIMESCALEDB MDDS CORE RECONCILIATION RUNNER (4 QUERIES)`);
+        console.log(`📅 Ngày kiểm tra: ${dateStr} | Môi trường: ${env.toUpperCase()}`);
+        console.log(`==============================================================\n`);
+
+        const outcome = await runCoreReconciliation({ date: dateStr, env });
+        recordReconHistory(outcome, projectRoot);
+
+        if (cliArgs.json) {
+            console.log(JSON.stringify(outcome, null, 2));
+        } else {
+            console.log(formatCoreReport(outcome));
+        }
+
+        if (outcome.hasErrors || !outcome.isHealthy) {
+            process.exitCode = 1;
+        }
+        return;
     }
 
     // Xác định queryId
@@ -268,7 +309,6 @@ if (isMain()) {
     });
 }
 
-
 export {
     loadCatalog,
     replaceParams,
@@ -278,4 +318,3 @@ export {
     runQuery,
     main
 };
-

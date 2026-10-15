@@ -99,15 +99,14 @@ Dự án được cấu trúc như một monorepo chứa nhiều plugin độc l
 
 ```
 agent-skills/
-├── plugins/                    → Chứa các plugin chuyên biệt
+├── plugins/                    → Chứa các plugin chuyên biệt (7 plugins)
 │   ├── core/                   → Meta-skills, shared commands
 │   ├── ba-po/                  → BA/PO persona & skills
 │   ├── qa/                     → QA persona & skills
 │   ├── dev/                    → DEV persona & skills
-│   ├── code-reviewer/          → Code Reviewer persona & skills
+│   ├── code-reviewer/          → Code Reviewer + Security Audit + Webperf
 │   ├── scrum-master/           → Scrum Master persona & skills
-│   ├── security-auditor/       → Security Auditor persona & skills
-│   └── web-performance-auditor/ → Web Performance Auditor persona & skills
+│   └── fintech-data/           → TimescaleDB KRX MDDS data reconciler
 ├── n8n-workflows/               → Các workflow tự động (ChatOps, Cron)
 ├── scripts/                     → Các script hỗ trợ, tool cài đặt (A-Z)
 ├── references/                  → Checklists & templates dùng chung

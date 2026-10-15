@@ -111,7 +111,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 **Invoke:**
 ```bash
-node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/scripts/trace-check.js \
+node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/assets/trace-check.js \
   workspace/JIRA-123 --stage=tech
 ```
 

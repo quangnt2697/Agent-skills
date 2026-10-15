@@ -15,8 +15,11 @@ let cwd = $env.AGENT_WORKSPACE_DIR || process.cwd();
 
 let projects = {};
 try {
-  const projectsFile = path.resolve(cwd, 'projects.json');
-  if (fs.existsSync(projectsFile)) {
+  const projectsFile = [
+    path.resolve(cwd, 'config', 'projects.json'),
+    path.resolve(cwd, 'projects.json')
+  ].find(p => fs.existsSync(p));
+  if (projectsFile) {
     projects = JSON.parse(fs.readFileSync(projectsFile, 'utf8'));
   }
 } catch (e) {}
