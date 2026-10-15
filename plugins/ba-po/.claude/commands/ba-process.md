@@ -15,7 +15,7 @@ $ARGUMENTS có thể chứa:
 
 1. **Đọc Input** (Process Description):
    - Nếu có issueKey: Đọc từ `*-final.md` Section 5 (User Flow)
-   - Nếu có Gap Analysis: Đọc từ `/project-root/workspace/{issueKey}/spec/gap-analysis.md`
+   - Nếu có Gap Analysis: Đọc từ `workspace/issues/{issueKey}/spec/gap-analysis.md`
    - Nếu text từ user: Parse process description trực tiếp
 
 2. **Identify Components**:
@@ -41,8 +41,8 @@ $ARGUMENTS có thể chứa:
    - Comparison table: Time, Steps, Error rate, Actors, Technology
 
 6. **Output**:
-   - AS-IS: `/project-root/workspace/{issueKey}/spec/process-as-is.md`
-   - TO-BE: `/project-root/workspace/{issueKey}/spec/process-to-be.md`
+   - AS-IS: `workspace/issues/{issueKey}/spec/process-as-is.md`
+   - TO-BE: `workspace/issues/{issueKey}/spec/process-to-be.md`
 
 **Diagram Types:**
 

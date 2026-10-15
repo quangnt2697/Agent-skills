@@ -5,12 +5,12 @@ Invoke the qa-squash-push skill. Đọc file `plugins/qa/skills/qa-squash-push/S
 
 $ARGUMENTS chứa Issue Key (VD: PROJ-123).
 
-1. Đọc file spec `/project-root/workspace/{issueKey}/spec/final.md` để lấy tiêu đề Jira task (tìm `namejira` hoặc `Summary`).
+1. Đọc file spec `workspace/issues/{issueKey}/spec/final.md` để lấy tiêu đề Jira task (tìm `namejira` hoặc `Summary`).
    - Nếu tiêu đề dài hoặc chứa khoảng trắng, hãy slug hóa nó thành `namejira` (ví dụ: `Thiet-ke-luong-thanh-toan`).
-2. Xác nhận file `.feature` có tồn tại ở `/project-root/workspace/{issueKey}/test/{issueKey}.feature` hay không.
+2. Xác nhận file `.feature` có tồn tại ở `workspace/issues/{issueKey}/test/{issueKey}.feature` hay không.
 3. Chạy script bash:
    ```bash
-   bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-squash-push/assets/squash-push.sh {issueKey} {namejira} /project-root/workspace/{issueKey}/test/{issueKey}.feature
+   bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-squash-push/assets/squash-push.sh {issueKey} {namejira} workspace/issues/{issueKey}/test/{issueKey}.feature
    ```
 
 4. Phân tích output từ bash script và thông báo cho người dùng.

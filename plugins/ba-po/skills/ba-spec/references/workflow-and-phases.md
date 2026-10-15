@@ -55,7 +55,7 @@ danh sách                                 loại task          theo profile
    - Gộp các kết quả tìm được vào danh sách tài liệu cần duyệt.
 
 4. **Kiểm tra Cache — file đã tải trước đó:**
-   - Với mỗi Confluence pageId → Quét `/project-root/workspace/{issueKey}/source/refs/` xem đã có file `*-{pageId}.pdf` hoặc `*-{pageId}.md` chưa.
+   - Với mỗi Confluence pageId → Quét `workspace/issues/{issueKey}/source/refs/` xem đã có file `*-{pageId}.pdf` hoặc `*-{pageId}.md` chưa.
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại chưa.
 
 5. **Trình bảng Danh sách cho User duyệt:** (Hiển thị Markdown Table các file sẽ tải / bỏ qua / đã có).
@@ -69,7 +69,7 @@ Sau khi User đồng ý:
 2. **Tải các Confluence page chưa có:** Dùng n8n Fast-Path `fetchConfluenceDoc(pageUrlOrId)` qua `/webhook/confluence-doc` (bóc tách thành Markdown sạch) hoặc Export PDF (`pdfpageexport.action`). Tải attachment.
 3. **Tải các file attachment Jira chưa có.**
 4. **Tạo `metadata.json`** liệt kê chi tiết các references và trạng thái.
-5. **Lưu tất cả vào:** `/project-root/workspace/{issueKey}/source/` và `source/refs/`.
+5. **Lưu tất cả vào:** `workspace/issues/{issueKey}/source/` và `source/refs/`.
 
 ### Phase 1.5: Nhận diện loại task
 Đọc trường `summary`, tìm tag prefix: `[APP]`, `[WEB]`, `[OpenAPI]/[BE]/[WS]`.
@@ -86,7 +86,7 @@ Agent **BẮT BUỘC ĐỌC QUA TOÀN BỘ** các tài liệu đã tải về (P
 Gọi skill `interview-me` để hỏi user từng điểm mơ hồ (ưu tiên Critical). Ghi nhận câu trả lời vào draft.
 
 ### Phase 5: Tổng hợp bản Markdown chi tiết
-Tạo file `/project-root/workspace/{issueKey}/spec/final.md`. Ghi đè nếu đã tồn tại. Áp dụng template 13 sections chuẩn.
+Tạo file `workspace/issues/{issueKey}/spec/final.md`. Ghi đè nếu đã tồn tại. Áp dụng template 13 sections chuẩn.
 *Tích hợp kỹ năng:*
 - Hỏi user về User Flow format (Mermaid Diagram / Text Flow / Không cần flow).
 - Dùng `/ba-user-story-writing` cho Section 9.
@@ -113,6 +113,6 @@ Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi.
 
 - **Depth = 1:** Chỉ scan link ở tầng trực tiếp. KHÔNG đào sâu thêm.
 - **API-first:** Ưu tiên dùng REST API thay vì để AI đọc text tìm link.
-- **Cache Check:** Luôn kiểm tra file đã có trong dự án (`/project-root/workspace/{issueKey}/source/refs/`).
+- **Cache Check:** Luôn kiểm tra file đã có trong dự án (`workspace/issues/{issueKey}/source/refs/`).
 - **Smart Filter:** Chỉ tải file trong bộ lọc cho phép. Bỏ qua video, file nén.
 - **Approval Gate:** Luôn trình danh sách cho User duyệt trước khi tải.

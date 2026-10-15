@@ -128,14 +128,16 @@ export function parseArgs(rawArgs) {
 
 // ─── LOAD PROJECTS MAPPING ───────────────────────────────────────────────────
 
-export function loadProjectsConfig() {
+export function loadProjectsConfig(customConfigPath = null) {
   const mapping = {};
-  const candidates = [
-    PROJECTS_JSON_CONFIG_PATH,
-    PROJECTS_JSON_ROOT_PATH,
-    PROJECTS_EXAMPLE_CONFIG_PATH,
-    PROJECTS_EXAMPLE_ROOT_PATH,
-  ];
+  const candidates = customConfigPath
+    ? [path.resolve(customConfigPath)]
+    : [
+        PROJECTS_JSON_CONFIG_PATH,
+        PROJECTS_JSON_ROOT_PATH,
+        PROJECTS_EXAMPLE_CONFIG_PATH,
+        PROJECTS_EXAMPLE_ROOT_PATH,
+      ];
   const configPath = candidates.find(p => fs.existsSync(p)) || null;
 
   if (configPath) {
@@ -147,6 +149,11 @@ export function loadProjectsConfig() {
     } catch (err) {
       console.error(`⚠️ Lỗi khi đọc ${configPath}: ${err.message}`);
     }
+  }
+
+  // Nếu truyền customConfigPath thì không quét PROJECT_SCAN_DIRS để test cô lập hoàn toàn
+  if (customConfigPath) {
+    return mapping;
   }
 
   // Tự động bổ sung các thư mục nhóm/repos từ PROJECT_SCAN_DIRS theo cơ chế Smart 2-Tier

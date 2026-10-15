@@ -7,14 +7,14 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 
 ## Nguồn đầu vào
 
-1. **File .feature:** `/project-root/workspace/{issueKey}/test/{issueKey}.feature`
-2. **File checklist:** `/project-root/workspace/{issueKey}/test/checklist.md`
+1. **File .feature:** `workspace/issues/{issueKey}/test/{issueKey}.feature`
+2. **File checklist:** `workspace/issues/{issueKey}/test/checklist.md`
 3. **Mã nguồn hệ thống:** Quét codebase để tìm và tái sử dụng code của developer (module auth, signature, token, websocket client)
 
 ## Quy trình 4 Giai Đoạn
 
 1. **Giai đoạn 1: Khảo sát & Kế thừa (Recon & Context Setup):**
-   - Áp dụng Blueprint thư mục chuẩn tại `/project-root/workspace/{issueKey}/test/`.
+   - Áp dụng Blueprint thư mục chuẩn tại `workspace/issues/{issueKey}/test/`.
    - Nhận diện Task Type (`🌐 WEB`, `🔌 API`, `⚡ WebSocket`, `📱 Mobile`).
    - Kế thừa cấu hình `.env` 3 tầng (Root → Sibling → Local).
    - Code Recon Gate: Quét và tái sử dụng trực tiếp code dev có sẵn. Soi DOM thật nếu là Web UI. Với chứng khoán: chỉ dùng Metabase UAT (DB 644, V3 > V2).
@@ -25,7 +25,7 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
    - Cấu hình `conftest.py` với logging chuẩn 4 thẻ tiếng Việt và teardown an toàn.
 
 3. **Giai đoạn 3: Sinh Mã Kiểm thử (Test Script Generation):**
-   - Sinh code test trong `/project-root/workspace/{issueKey}/test/steps/test_*.py` bao phủ 100% scenario trong file `.feature`.
+   - Sinh code test trong `workspace/issues/{issueKey}/test/steps/test_*.py` bao phủ 100% scenario trong file `.feature`.
    - Gắn decorators truy vết `@pytest.mark.scenario`, `@pytest.mark.jira`.
    - No-mock policy trên UAT: gọi Real Base URLs (`openapi-uat`, `ws-openapi-uat`).
    - Áp dụng các testing patterns: Smart waits, Trigger-Listen-Verify (Order States).
@@ -37,8 +37,8 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 
 ## Output
 
-- Test scripts & Fixtures: `/project-root/workspace/{issueKey}/test/steps/test_*.py` và `conftest.py`
-- Cấu hình runner: `/project-root/workspace/{issueKey}/test/pytest.ini`
+- Test scripts & Fixtures: `workspace/issues/{issueKey}/test/steps/test_*.py` và `conftest.py`
+- Cấu hình runner: `workspace/issues/{issueKey}/test/pytest.ini`
 
 ## Quy tắc Bắt buộc
 

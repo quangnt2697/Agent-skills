@@ -1,4 +1,4 @@
-description = "Lệnh tắt đồng bộ nhanh mã nguồn dự án về máy cục bộ (alias của /repo-sync)"
+description = "Đồng bộ, fetch và pull mã nguồn mới nhất của dự án hoặc microservices trong group về máy cục bộ an toàn"
 
 prompt = """
 Lệnh đồng bộ nhanh mã nguồn: TẬP TRUNG DUY NHẤT VÀO CHỨC NĂNG PULL CODE.

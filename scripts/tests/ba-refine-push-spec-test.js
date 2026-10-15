@@ -10,17 +10,14 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const require = createRequire(import.meta.url);
-
-const {
+import {
   normalizeIssueKey,
   markdownToAdf,
   splitBlocks,
-} = require(path.join(__dirname, '..', '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'assets', 'jira-push-spec.js'));
+} from '../../plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 // --- normalizeIssueKey --------------------------------------------------------

@@ -189,7 +189,7 @@ Xem `plugins/ba-po/skills/ba-refine/examples.md` để có ví dụ đầy đủ
 
 ## Checklist Trước khi Push to Jira
 
-Trước khi gọi `jira-push-spec.sh`, verify:
+Trước khi gọi `jira-push-spec.js`, verify:
 
 - [ ] **User Story:** Có đầy đủ Role + Goal + Value, KHÔNG chung chung
 - [ ] **Acceptance Criteria:** ≥2 scenarios, dạng Given-When-Then, testable (bao gồm Happy Case, Edge Case, Validation Case)

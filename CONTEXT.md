@@ -61,7 +61,7 @@ Agent đọc file này một lần mỗi session để giảm token giải thíc
 | **n8n** | Workflow automation engine chạy local — fast-path thay thế MCP cho một số tác vụ |
 | **Squash TM** | Test Management tool — đồng bộ `.feature` files qua `qa-squash-push` |
 | **Metabase UAT** | Nguồn dữ liệu kiểm thử chứng khoán chuẩn — BẮT BUỘC dùng, cấm hardcode giá |
-| **n8n Fast-Path** | Kênh thực thi duy nhất cho các quy trình tự động hóa. Nếu n8n offline → báo user khởi động `npm run n8n` và DỪNG. Không có fallback. |
+| **n8n Fast-Path** | Kênh thực thi webhook tự động hóa. Khi dùng mode n8n, nếu n8n offline → báo user `npm run n8n` và DỪNG. Các script CLI trong `assets/` là helpers chuyên dụng (thủ công/CI/PDF), không phải kênh fallback thay thế n8n. |
 
 ### Quy ước Comment Code
 

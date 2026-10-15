@@ -12,14 +12,13 @@
       "Bash(bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-spec/assets/jira-auth-check.sh:*)",
       "Bash(bash plugins/ba-po/skills/ba-spec/assets/jira-fetch-pdf.sh:*)",
       "Bash(bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-spec/assets/jira-fetch-pdf.sh:*)",
-      "Bash(bash plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh:*)",
-      "Bash(bash ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.sh:*)",
-      "Bash(python3 plugins/ba-po/skills/ba-design-flowchart/scripts/export.py:*)",
-      "Bash(python3 ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-flowchart/scripts/export.py:*)",
-      "Bash(node plugins/core/skills/meta-cross-validation/scripts/trace-check.js:*)",
-      "Bash(node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/scripts/trace-check.js:*)",
+      "Bash(node plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js:*)",
+      "Bash(node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js:*)",
+      "Bash(python3 plugins/ba-po/skills/ba-design-flowchart/assets/export.py:*)",
+      "Bash(python3 ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-flowchart/assets/export.py:*)",
+      "Bash(node plugins/core/skills/meta-cross-validation/assets/trace-check.js:*)",
+      "Bash(node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/assets/trace-check.js:*)",
       "Bash(bash .agents/hooks/claude/session-start.sh)",
-      "Bash(bash hooks/claude/session-start.sh)",
       "Bash(pytest:*)",
       "Bash(python3 -m pytest:*)",
       "Bash(behave:*)",
@@ -72,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "SCRIPT=\"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/session-start.sh\"; [ -f \"$SCRIPT\" ] || SCRIPT=\"${CLAUDE_PROJECT_DIR}/hooks/claude/session-start.sh\"; bash \"$SCRIPT\""
+            "command": "SCRIPT=\"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/session-start.sh\"; [ -f \"$SCRIPT\" ] && bash \"$SCRIPT\" || true"
           }
         ]
       }

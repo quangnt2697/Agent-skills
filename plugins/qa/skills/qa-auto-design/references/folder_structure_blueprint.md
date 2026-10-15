@@ -7,7 +7,7 @@ Tài liệu này định nghĩa cấu trúc thư mục và file chuẩn mực ch
 ## 1. Cấu Trúc Tổng Thể (The Canonical Layout)
 
 Toàn bộ tài nguyên kiểm thử của một Jira task BẮT BUỘC nằm gọn trong thư mục:
-`/project-root/workspace/{issueKey}/test/`
+`workspace/issues/{issueKey}/test/`
 
 ```
 workspace/{issueKey}/test/

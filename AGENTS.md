@@ -58,9 +58,10 @@ hoặc gọi `/qa-full-pipeline` để chạy toàn bộ 1 lệnh (bao gồm c�
 ### Scrum Master Pipeline
 `/sm-sprint-planning → /sm-daily-standup → /sm-impediment-triage → /sm-sprint-retrospective`
 
-### Tối Ưu Tốc Độ Fast-Path với n8n (Optional Accelerator)
+### Tối Ưu Tốc Độ Fast-Path với n8n & Vai Trò CLI Helpers
 Khi n8n đang chạy cục bộ (`npm run n8n`), các skill ưu tiên dùng `scripts/lib/n8n-client.js` thay thế MCP/curl.
-- **Nguyên tắc n8n-Only:** Không có fallback. Nếu n8n offline → báo user `npm run n8n` và DỪNG.
+- **Nguyên tắc n8n-Only cho Tự Động Hóa:** Không có fallback ngẫu hứng. Khi luồng tự động hóa sử dụng n8n mà n8n offline → báo user `npm run n8n` và DỪNG.
+- **Vai trò của các script trong `assets/` và `scripts/`:** Các script `.sh`/`.js` (như `jira-fetch-pdf.sh`, `jira-push-spec.js`, `squash-push.sh`, `repo-sync.js`) là **CLI helpers & utilities độc lập** dùng cho tương tác dòng lệnh thủ công, headless CI/CD, hoặc do chính các node n8n kích hoạt. Chúng là công cụ CLI chuyên trách, không phải kênh fallback để agent tự ý bypass n8n.
 - **Ranh giới GitLab:** n8n KHÔNG comment/push/merge lên GitLab microservices. Ngoại lệ: repo `agent-skills` qua Git CLI sau khi user approve.
 - 📖 Chi tiết webhook từng persona: [docs/architecture/n8n-integration-strategy.md](docs/architecture/n8n-integration-strategy.md)
 

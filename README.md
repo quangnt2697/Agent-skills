@@ -99,21 +99,22 @@ Dự án được cấu trúc như một monorepo chứa nhiều plugin độc l
 
 ```
 agent-skills/
+├── config/                     → Tập trung file cấu hình hệ thống (projects.json, sm-config.yaml, ecosystem...)
 ├── plugins/                    → Chứa các plugin chuyên biệt (7 plugins)
-│   ├── core/                   → Meta-skills, shared commands
-│   ├── ba-po/                  → BA/PO persona & skills
-│   ├── qa/                     → QA persona & skills
-│   ├── dev/                    → DEV persona & skills
-│   ├── code-reviewer/          → Code Reviewer + Security Audit + Webperf
-│   ├── scrum-master/           → Scrum Master persona & skills
+│   ├── core/                   → Meta-skills, shared commands (/sync, /learn, /e2e-delivery)
+│   ├── ba-po/                  → BA/PO persona & skills (9 skills)
+│   ├── qa/                     → QA persona & skills (6 skills)
+│   ├── dev/                    → DEV persona & skills (14 skills)
+│   ├── code-reviewer/          → Code Reviewer + Security Audit + Webperf (4 skills)
+│   ├── scrum-master/           → Scrum Master persona & skills (4 skills)
 │   └── fintech-data/           → TimescaleDB KRX MDDS data reconciler
+├── .agents/                    → Workspace customizations (rules, hooks)
 ├── n8n-workflows/               → Các workflow tự động (ChatOps, Cron)
-├── scripts/                     → Các script hỗ trợ, tool cài đặt (A-Z)
-├── references/                  → Checklists & templates dùng chung
-├── docs/                        → Documentation
-│   ├── guides/                  → Hướng dẫn (setup, skills, agents)
-│   └── architecture/            → Thiết kế kiến trúc (test-ownership, workflow)
-└── CLAUDE.md                    → Hướng dẫn cho Claude agent
+├── scripts/                     → Automation scripts, validators, setup & testing
+├── references/                  → Domain knowledge base & checklists dùng chung
+├── workspace/                   → Output artifacts theo issueKey (spec, tech, test, trace)
+├── docs/                        → Documentation & Architecture Decision Records (ADRs)
+└── evals/                       → Bộ đánh giá chất lượng kỹ năng (Skill Evals)
 ```
 
 Mỗi plugin (ví dụ `plugins/dev/`) đều tuân theo chuẩn Antigravity plugin:
@@ -148,13 +149,12 @@ plugins/dev/
 
 | Command                                 | Chức năng                                              |
 |-----------------------------------------|--------------------------------------------------------|
-| `/qa-full-pipeline {issueKey} [--auto]` | **Full QA workflow** (design → automation → execution) |
+| `/qa-full-pipeline {issueKey}`          | **Full QA workflow** (tự kích hoạt ba-spec nếu chưa có final.md → design → automation → execution) |
 | `/qa-test-design {issueKey}`            | Thiết kế Checklist + Gherkin scenarios                 |
 | `/qa-auto-design {issueKey}`            | Sinh automation test code (Playwright/Pytest)          |
 | `/qa-run-test {issueKey}`               | Chạy tests + xuất báo cáo                              |
 | `/qa-code2spec {path}`                  | Reverse engineer code → spec                           |
 | `/qa-squash-push`                       | Push kết quả test lên Squash TM                        |
-| `/qa-pipeline`                          | Alias để chạy pipeline cơ bản                          |
 
 ### DEV Commands (`plugins/dev`)
 
@@ -166,12 +166,14 @@ plugins/dev/
 | `/dev-audit`                   | Kiểm toán, quét lỗi, và tự sửa lỗi toàn diện |
 | `/dev-unit-test`               | Viết unit tests trước khi code               |
 
-### Code Reviewer Commands (`plugins/code-reviewer`)
+### Code Reviewer, Security & WebPerf Commands (`plugins/code-reviewer`)
 
-| Command             | Chức năng                                                 |
-|---------------------|-----------------------------------------------------------|
-| `/cr-review`        | Code review đa chiều (correctness, security, performance) |
-| `/cr-code-simplify` | Phân tích và đơn giản hóa code phức tạp                   |
+| Command                  | Chức năng                                                 |
+|--------------------------|-----------------------------------------------------------|
+| `/cr-review`             | Code review đa chiều (correctness, security, performance) |
+| `/cr-code-simplify`      | Phân tích và đơn giản hóa code phức tạp                   |
+| `/security-audit [path]` | Audit bảo mật, phát hiện lỗ hổng OWASP Top 10             |
+| `/webperf-audit [url]`   | Audit hiệu năng web, đánh giá Core Web Vitals             |
 
 ### Scrum Master Commands (`plugins/scrum-master`)
 
@@ -182,28 +184,21 @@ plugins/dev/
 | `/sm-impediment-triage`    | Phát hiện và xử lý ticket bị kẹt/treo                  |
 | `/sm-sprint-retrospective` | Tổng kết Sprint, rút kinh nghiệm và đề xuất cải tiến   |
 
-### Security & Performance Commands
-
-| Command                  | Plugin                    | Chức năng                                     |
-|--------------------------|---------------------------|-----------------------------------------------|
-| `/security-audit [path]` | `security-auditor`        | Audit bảo mật, phát hiện lỗ hổng OWASP Top 10 |
-| `/webperf-audit [url]`   | `web-performance-auditor` | Audit hiệu năng web, đánh giá Core Web Vitals |
-
 ### E2E Pipeline (`plugins/core`)
 
 | Command                    | Chức năng                                       |
 |----------------------------|-------------------------------------------------|
 | `/e2e-delivery {issueKey}` | **Full SDLC pipeline** (BA → DEV → QA → Review) |
 
-### Meta / Session Commands (`plugins/core`)
+### Meta / Session / Sync Commands (`plugins/core`)
 
-| Command                       | Chức năng                                                       |
-|-------------------------------|-----------------------------------------------------------------|
-| `/learn` hoặc `/save-session` | Tự động đúc kết bài học từ phiên làm việc và lưu thành Rule mới |
-| `/save-checkpoint`            | Nén toàn bộ ngữ cảnh hiện tại thành file trạng thái nhỏ gọn     |
-| `/load-checkpoint`            | Khôi phục trạng thái từ file nén và tự động tiếp tục công việc  |
-| `/flowchart`                  | Render sơ đồ Editorial HTML sang ảnh                            |
-| `/webperf`                    | Audit web performance (Core Web Vitals)                         |
+| Command            | Chức năng                                                       |
+|--------------------|-----------------------------------------------------------------|
+| `/sync`            | Đồng bộ, fetch và pull mã nguồn mới nhất của dự án về máy       |
+| `/learn`           | Tự động đúc kết bài học từ phiên làm việc và lưu thành Rule mới |
+| `/save-checkpoint` | Nén toàn bộ ngữ cảnh hiện tại thành file trạng thái nhỏ gọn     |
+| `/load-checkpoint` | Khôi phục trạng thái từ file nén và tự động tiếp tục công việc  |
+| `/flowchart`       | Render sơ đồ Editorial HTML sang ảnh                            |
 
 ---
 
@@ -344,10 +339,10 @@ Xem chi tiết: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## 📊 Stats
 
-- **8 Plugins** (core, ba-po, qa, dev, scrum-master, code-reviewer, security-auditor, web-performance-auditor)
+- **7 Plugins** (`ba-po`, `code-reviewer`, `core`, `dev`, `fintech-data`, `qa`, `scrum-master`)
 - **8 vai trò** (BA/PO, QA, DEV, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor, Core/Meta)
 - **44 Skills** (9 BA + 6 QA + 14 DEV + 4 SM + 2 CR + 1 Security + 1 WebPerf + 7 Meta)
-- **35 Slash Commands**
+- **34 Slash Commands**
 - **40+ Reference Documents**
 - **Production-Ready** — Dùng trong real projects (Finance/Trading domain)
 

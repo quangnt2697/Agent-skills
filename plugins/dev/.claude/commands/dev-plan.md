@@ -13,7 +13,7 @@ Kích hoạt kỹ năng dev-planning-and-task-breakdown.
 5. Đặt các điểm dừng giữa các giai đoạn
 6. Trình bày kế hoạch cho con người review
 
-Lưu kế hoạch vào /project-root/workspace/{issueKey}/tech/plan.md và danh sách công việc vào /project-root/workspace/{issueKey}/tech/todo.md.
+Lưu kế hoạch vào workspace/issues/{issueKey}/tech/plan.md và danh sách công việc vào workspace/issues/{issueKey}/tech/todo.md.
 
 <critical_instruction>
 HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.

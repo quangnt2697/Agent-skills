@@ -57,7 +57,7 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - Chi tiết cơ chế xem [shared_fixtures_and_env.md](shared_fixtures_and_env.md).
 
 ### 1.7. Quản lý Cấu Trúc Thư Mục Chuẩn (Blueprint)
-- Toàn bộ tài nguyên kiểm thử của task BẮT BUỘC nằm trong `/project-root/workspace/{issueKey}/test/`.
+- Toàn bộ tài nguyên kiểm thử của task BẮT BUỘC nằm trong `workspace/issues/{issueKey}/test/`.
 - **CẤM TỰ NGHĨ RA THƯ MỤC:** Tuyệt đối không tự ý tạo các thư mục rời rạc như `src/`, `tests/`, `utils/`, `common/` bên ngoài blueprint.
 - Tuân thủ ma trận cho phép theo Task Type: Không sinh `pages/` cho API/WS; Không sinh `services/` cho Web UI.
 - Thư mục `result/` chỉ chứa duy nhất 1 file mỗi loại (`junit.xml`, `report.html`, `test-output.log`, `report.md`).

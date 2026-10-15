@@ -6,7 +6,7 @@ prompt = """
 Kích hoạt skill ba-interview-me với BA/PO persona. Đọc `plugins/ba-po/skills/ba-interview-me/SKILL.md` để thực hiện đúng workflow.
 
 $ARGUMENTS có thể chứa:
-- Jira issue key (VD: G3PTP-16584) → Đọc từ `/project-root/workspace/{issueKey}/spec/final.md` Section 10 (Gap Analysis)
+- Jira issue key (VD: G3PTP-16584) → Đọc từ `workspace/issues/{issueKey}/spec/final.md` Section 10 (Gap Analysis)
 - Hoặc danh sách câu hỏi trực tiếp từ user
 
 **Workflow:**

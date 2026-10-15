@@ -34,7 +34,7 @@ Input mới hơn output → chạy lại phase đó và mọi phase phía sau.
 
 ## Trạng thái `.pipeline-state.json` (tuỳ chọn)
 
-Ghi tại `/project-root/workspace/{issueKey}/.pipeline-state.json` — một file cho mỗi issueKey, KHÔNG commit.
+Ghi tại `workspace/issues/{issueKey}/.pipeline-state.json` — một file cho mỗi issueKey, KHÔNG commit.
 Chỉ dùng để đọc `"autoMode": false` (tắt auto) theo `autonomy-contract.md` §4 và ghi phase đã xong:
 
 ```json

@@ -7,7 +7,7 @@ description: "[BA/PO] Phân tích khoảng cách AS-IS vs TO-BE, identify gaps (
 Kích hoạt skill ba-gap-analysis với BA/PO persona. Đọc `plugins/ba-po/skills/ba-gap-analysis/SKILL.md` để thực hiện đúng workflow.
 
 $ARGUMENTS có thể chứa:
-- Jira issue key (VD: G3PTP-16584) → Đọc từ `/project-root/workspace/{issueKey}/spec/final.md`
+- Jira issue key (VD: G3PTP-16584) → Đọc từ `workspace/issues/{issueKey}/spec/final.md`
 - Hoặc requirements từ user (text input)
 
 **Workflow:**
@@ -39,7 +39,7 @@ $ARGUMENTS có thể chứa:
    - Identify risks (hiring, migration, timeline)
    - Mitigation plans cho từng risk
 
-6. **Output**: Lưu vào `/project-root/workspace/{issueKey}/spec/gap-analysis.md`
+6. **Output**: Lưu vào `workspace/issues/{issueKey}/spec/gap-analysis.md`
 
 **Template Gap:**
 

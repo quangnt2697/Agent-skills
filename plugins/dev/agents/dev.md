@@ -65,7 +65,7 @@ mkdir -p workspace/{issueKey}/tech
 ### BA/PO → DEV Handoff
 
 **Input từ BA/PO:**
-- File `*-final.md` (Business-Spec) tại `/project-root/workspace/{issueKey}/spec/final.md`
+- File `*-final.md` (Business-Spec) tại `workspace/issues/{issueKey}/spec/final.md`
 - Sections quan trọng:
   - **Business Rules (Section 8)** → Transform thành validation rules, calculation logic
   - **Data Requirements** → Transform thành data model, database schema
@@ -81,7 +81,7 @@ mkdir -p workspace/{issueKey}/tech
 **Command để bắt đầu:**
 ```bash
 /dev-tech-spec {issueKey}
-# Đọc /project-root/workspace/{issueKey}/spec/final.md
+# Đọc workspace/issues/{issueKey}/spec/final.md
 # Tạo specs/tech-spec/{issueKey}-tech-spec.md
 # Bao gồm: API Contract, Data Model, Architecture, Implementation Plan
 ```

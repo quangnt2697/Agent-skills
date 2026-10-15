@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -62,8 +64,20 @@ test('repo-sync parseArgs: Nhận diện đúng các cờ boolean (--stash, --dr
   assert.equal(t5.noReset, true);
 });
 
-test('repo-sync loadProjectsConfig: Đọc và phân giải danh sách alias từ projects.json', () => {
-  const mapping = loadProjectsConfig();
+test('repo-sync loadProjectsConfig: Đọc và phân giải danh sách alias từ fixture projects.json', (t) => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-sync-test-'));
+  const tmpConfig = path.join(tmpDir, 'projects.json');
+  fs.writeFileSync(tmpConfig, JSON.stringify({
+    'openapi-tyk': '/tmp/mock-projects/3.1/openapi-tyk',
+    'openapi': '/tmp/mock-projects/3.1',
+    'agent-skills': '/tmp/mock-projects/agent-skills'
+  }));
+
+  t.after(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  const mapping = loadProjectsConfig(tmpConfig);
   assert.ok(typeof mapping === 'object' && mapping !== null);
   
   // Đảm bảo có các alias quan trọng
@@ -72,9 +86,22 @@ test('repo-sync loadProjectsConfig: Đọc và phân giải danh sách alias t�
   assert.ok(mapping['agent-skills'], 'projects.json cần có alias agent-skills');
 });
 
-test('repo-sync resolveTargetProjects: Phân giải alias thành đúng thư mục đích', () => {
-  const mapping = loadProjectsConfig();
-  
+test('repo-sync resolveTargetProjects: Phân giải alias thành đúng thư mục đích', (t) => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-sync-resolve-'));
+  const clusterDir = path.join(tmpDir, '3.1');
+  const tykDir = path.join(clusterDir, 'openapi-tyk');
+  fs.mkdirSync(tykDir, { recursive: true });
+  fs.mkdirSync(path.join(tykDir, '.git'), { recursive: true });
+
+  const mapping = {
+    'openapi-tyk': tykDir,
+    'openapi': clusterDir,
+  };
+
+  t.after(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
   // Test với alias đơn: openapi-tyk
   const targetsTyk = resolveTargetProjects('openapi-tyk', mapping);
   assert.ok(targetsTyk.length >= 1, 'Cần tìm thấy ít nhất 1 target cho openapi-tyk');

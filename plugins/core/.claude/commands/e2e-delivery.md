@@ -112,7 +112,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 
 **Invoke:**
 ```bash
-node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/scripts/trace-check.js workspace/JIRA-123 --stage=tech
+node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/assets/trace-check.js workspace/JIRA-123 --stage=tech
 ```
 
 **Output:** `/project-root/workspace/JIRA-123/trace/matrix.md` (BR/AC → Tech-Spec, khớp mã chính xác)

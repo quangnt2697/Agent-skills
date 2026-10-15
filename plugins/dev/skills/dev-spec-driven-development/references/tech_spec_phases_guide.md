@@ -6,8 +6,8 @@ Trước khi viết bất kỳ dòng Tech-Spec nào, đọc kỹ Business-Spec:
 
 ```bash
 # Tìm Business-Spec theo thứ tự ưu tiên
-1. /project-root/workspace/{issueKey}/spec/final.md  # Từ /ba-spec (Jira)
-2. /project-root/workspace/{issueKey}/spec/final.md     # New structure
+1. workspace/issues/{issueKey}/spec/final.md  # Từ /ba-spec (Jira)
+2. workspace/issues/{issueKey}/spec/final.md     # New structure
 3. SPEC.md                                             # Root level
 4. docs/SPEC.md                                        # Docs folder
 5. spec/*.md                                           # Spec folder

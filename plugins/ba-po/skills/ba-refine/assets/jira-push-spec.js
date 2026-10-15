@@ -11,9 +11,13 @@
 //      convert, rồi thay sentinel bằng node `hardBreak` sau khi convert.
 // ==============================================================================
 
-const fs = require('fs');
-const path = require('path');
-const md2adf = require('md-to-adf');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import md2adf from 'md-to-adf';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Sentinel đánh dấu vị trí ngắt dòng mềm: sống sót qua md-to-adf (nó chỉ coi
 // đây là text thường) rồi được thay bằng node hardBreak. U+2063 là ký tự vô
@@ -360,6 +364,8 @@ async function main() {
 }
 
 // Export cho unit test; chỉ chạy main khi được gọi trực tiếp từ CLI.
-module.exports = { normalizeIssueKey, markdownToAdf, splitBlocks };
+export { normalizeIssueKey, markdownToAdf, splitBlocks };
 
-if (require.main === module) main();
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+    main();
+}

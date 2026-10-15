@@ -1,4 +1,4 @@
-description = "Chạy full QA pipeline từ test design đến test execution trong 1 lệnh. Orchestrate qa-test-design → qa-auto-design → qa-run-test. Sử dụng khi cần workflow tự động end-to-end cho QA testing."
+description = "Chạy full QA pipeline tự động từ test design đến execution (tự kích hoạt ba-spec nếu chưa có final.md)"
 
 prompt = """
 Kích hoạt kỹ năng `qa-full-pipeline` với `$ARGUMENTS`.
@@ -7,10 +7,22 @@ Kích hoạt kỹ năng `qa-full-pipeline` với `$ARGUMENTS`.
 xử lý lỗi và resume nằm trong `plugins/qa/skills/qa-full-pipeline/SKILL.md` — đọc file đó
 và làm theo, không tự diễn giải lại ở đây.
 
+## Quy Trình Tích Hợp Tự Động
+
+1. **Kiểm tra Spec Đầu Vào (`workspace/issues/{issueKey}/spec/final.md`):**
+   - Nếu **ĐÃ CÓ**: Chuyển ngay sang Phase 1 (`qa-test-design`).
+   - Nếu **CHƯA CÓ**: Tự động kích hoạt Phase 0 (`ba-spec {issueKey}`) để import Jira/Confluence và tạo `workspace/issues/{issueKey}/spec/final.md` trước khi tiến hành thiết kế test.
+
+2. **Phase 1-4 — QA Pipeline:**
+   - Phase 1: `qa-test-design` → checklist kiểm thử và kịch bản Gherkin (.feature).
+   - Phase 2: `qa-auto-design` → sinh test code tự động (Playwright/Pytest) theo SDK map.
+   - Phase 3: `qa-run-test` → thực thi test và ghi nhận kết quả.
+   - Phase 4: Tổng hợp báo cáo Passed/Failed và ma trận truy vết.
+
 ## Cú pháp
 
 ```bash
-# Mặc định: chạy thẳng từ Phase 0 đến Phase 4, không dừng
+# Mặc định: chạy thẳng từ đầu đến cuối, không dừng
 /qa-full-pipeline {issueKey}
 
 # Dừng sau mỗi phase để review (opt-in)
@@ -35,32 +47,22 @@ và làm theo, không tự diễn giải lại ở đây.
 | `--no-squash` | Bỏ qua bước đẩy lên Squash TM |
 | `--dry-run` | In kế hoạch, không thực thi |
 
-> Cú pháp `--mode semi-auto|full-auto|manual` cũ **không còn dùng**. Toàn repo
-> thống nhất một bộ cờ duy nhất ở bảng trên.
-
-## Đầu vào bắt buộc
-
-`/project-root/workspace/{issueKey}/spec/final.md`
-
-Thiếu file này → dừng theo trường hợp 1 của `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md`,
-hướng dẫn user chạy `/ba-spec {issueKey}` trước. Nếu muốn chạy cả bước import
-Jira trong cùng một lệnh, dùng `/qa-pipeline {issueKey}`.
-
 ## Đầu ra
 
 ```
-/project-root/workspace/{issueKey}/test/
-├── checklist.md
-├── {issueKey}.feature
-├── steps/test_*.py
-└── result/summary.md
+workspace/issues/{issueKey}/
+├── spec/final.md                    # (Phase 0 nếu tự kích hoạt ba-spec)
+└── test/
+    ├── checklist.md
+    ├── {issueKey}.feature
+    ├── steps/test_*.py
+    └── result/summary.md
 ```
 
 ## Xem thêm
 
 - `plugins/qa/skills/qa-full-pipeline/SKILL.md` — quy trình đầy đủ (nguồn sự thật)
 - `plugins/qa/skills/qa-full-pipeline/references/pipeline-states.md` — sơ đồ trạng thái
-- `/qa-pipeline` — bao gồm cả bước `ba-spec` phía trước
 - `/e2e-delivery` — pipeline SDLC đầy đủ (BA → DEV → QA)
 - `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md` — cổng dừng/chạy tiếp
 """
