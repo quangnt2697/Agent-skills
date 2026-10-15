@@ -32,10 +32,10 @@ Tự động nhận diện profile từ `spec/testability-manifest.json` hoặc 
 
 | Mã Profile | Loại Task áp dụng | Trọng tâm Kiểm thử Bắt buộc | Liên kết Tài nguyên trong Repo |
 |---|---|---|---|
-| **QA-PROFILE-API** | REST / OpenAPI (Đặt lệnh, truy vấn tài sản, sức mua, danh mục) | Schema validation, Auth/Token, Idempotency, Công thức tính toán (Decimal), Mã lỗi nghiệp vụ | `api_ws_service.py`, `test_api_example.py`, `api.env.example` |
-| **QA-PROFILE-WS** | WebSocket Streaming, Market Data (MDDS), Thông báo đẩy | Ngưỡng kết nối/stream theo hạng user (Normal/VIP/Ultimate), Reconnect, Watchdog/Topic Timeout, Thứ tự bản tin | `test_ws_example.py`, `ws.env.example`, `references/securities/05-market-data-mdds.md` |
-| **QA-PROFILE-UI** | Web Trading Dashboard & Mobile App (Appium/Playwright) | Trạng thái hiển thị theo phiên, Form validation tức thời, Khóa nút (Double-click), Đồng bộ dữ liệu UI ↔ API | `web_ui_pom.py`, `mobile_app_pom.py`, `web-ui.env.example` |
-| **QA-PROFILE-STATE** | Vòng đời lệnh (Order Lifecycle), Khớp lệnh ORS, Deal Margin | Chuyển đổi trạng thái lệnh (Pending → New → Partial → Filled/Cancelled/Rejected), Giữ/Giải tỏa sức mua & ký quỹ | `order_state_testing.md`, `references/securities/03-order-lifecycle-and-ors.md`, `references/securities/06-trading-core-margin.md`, `references/securities/07-deal-margin.md` |
+| **QA-PROFILE-API** | REST / OpenAPI (Đặt lệnh, truy vấn tài sản, sức mua, danh mục) | Schema validation, Auth/Token, Idempotency, Công thức tính toán (Decimal), Mã lỗi nghiệp vụ | `fixtures_api.py`, `api_ws_service.py`, `test_api_example.py`, `api.env.example` |
+| **QA-PROFILE-WS** | WebSocket Streaming, Market Data (MDDS), Thông báo đẩy | Ngưỡng kết nối/stream theo hạng user (Normal/VIP/Ultimate), Reconnect, Watchdog/Topic Timeout, Thứ tự bản tin | `fixtures_ws.py`, `test_ws_example.py`, `ws.env.example`, `references/securities/05-market-data-mdds.md` |
+| **QA-PROFILE-UI** | Web Trading Dashboard & Mobile App (Appium/Playwright) | Trạng thái hiển thị theo phiên, Form validation tức thời, Khóa nút (Double-click), Đồng bộ dữ liệu UI ↔ API | `fixtures_web_ui.py`, `fixtures_mobile.py`, `web_ui_pom.py`, `mobile_app_pom.py`, `web-ui.env.example` |
+| **QA-PROFILE-STATE** | Vòng đời lệnh (Order Lifecycle), Khớp lệnh ORS, Deal Margin | Chuyển đổi trạng thái lệnh (Pending → New → Partial → Filled/Cancelled/Rejected), Giữ/Giải tỏa sức mua & ký quỹ | `fixtures_api.py`, `order_state_testing.md`, `references/securities/03-order-lifecycle-and-ors.md`, `references/securities/06-trading-core-margin.md`, `references/securities/07-deal-margin.md` |
 | **QA-PROFILE-DATA** | Đối chiếu Database (TimescaleDB v3/v2, OpenAPI DB) | Độ vẹn toàn dữ liệu giữa 11 topics KRX MDDS, kiểm tra lệch giá/khối lượng, ưu tiên bảng v3 fallback v2 | `recon_guide.md`, `timescale-schema.md`, `db-timescale-reconciler` |
 
 *(Một ticket phức tạp có thể kết hợp nhiều profile, ví dụ: QA-PROFILE-API + QA-PROFILE-STATE)*
@@ -148,7 +148,7 @@ Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y
   - [quick-start-checklist.md](references/quick-start-checklist.md): Tờ nhắc quy trình ≤ 40 dòng.
 
 - 🛠️ **Công cụ & Script (assets/):**
-  - [qa-init.sh](assets/qa-init.sh): Khởi tạo thư mục và template kiểm thử.
+  - [qa-init.sh](assets/qa-init.sh): Khởi tạo thư mục và triển khai fixtures lắp ghép theo loại task (`--type=api,ws,web_ui,mobile`).
   - [qa-validate.sh](assets/qa-validate.sh): Script thẩm định cú pháp file Gherkin (6 quy tắc cứng).
 
 - 📖 **Tài liệu quy trình & Kỹ thuật (references/):**

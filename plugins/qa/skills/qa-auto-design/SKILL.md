@@ -105,8 +105,10 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
   - [sdk-map.json](references/sdk-map.json): SDK Index — đọc ngay trước khi recon, tránh grep toàn repo.
 
 - 🛠️ **Công cụ & Mã nguồn mẫu (assets/):**
-  - [conftest_template.py](assets/conftest_template.py): Template đầy đủ mọi loại task.
-  - [api_ws_service.py](assets/api_ws_service.py), [test_api_example.py](assets/test_api_example.py), [web_ui_pom.py](assets/web_ui_pom.py): Mẫu code hoàn chỉnh kế thừa SDK.
+  - [conftest_core.py](assets/conftest_core.py): File Core bất biến (Env loader, UAT DB guard, Pytest hooks ghi test-output.log & report.md, Composable `pytest_plugins` dynamic loader).
+  - Fixture Modules lắp ghép (Composable): [fixtures_api.py](assets/fixtures_api.py), [fixtures_ws.py](assets/fixtures_ws.py), [fixtures_web_ui.py](assets/fixtures_web_ui.py), [fixtures_mobile.py](assets/fixtures_mobile.py).
+  - [conftest_template.py](assets/conftest_template.py): Master composite reference wrapper (tái xuất toàn bộ fixtures).
+  - [api_ws_service.py](assets/api_ws_service.py), [test_api_example.py](assets/test_api_example.py), [web_ui_pom.py](assets/web_ui_pom.py), [mobile_app_pom.py](assets/mobile_app_pom.py): Mẫu code hoàn chỉnh kế thừa SDK.
 
 - 📋 **Template môi trường (references/env-templates/):**
   - [api.env.example](references/env-templates/api.env.example): Biến môi trường cho REST API task.

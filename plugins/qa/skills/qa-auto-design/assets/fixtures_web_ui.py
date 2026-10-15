@@ -1,21 +1,24 @@
 # ==========================================================
-# conftest_ui.py — Web UI, Mobile Emulation & Appium Driver Fixtures
+# fixtures_web_ui.py — Web Trading UI (Playwright) Fixtures
 # ==========================================================
 # Cung cấp:
-# 1. CLI options & credentials cho Web Trading & Mobile
-# 2. Playwright Web Fixtures (Desktop Full HD 1920x1080, ignore_https_errors)
-# 3. Mobile Web Emulation Fixtures (Pixel 7 / iPhone 14 touch emulation)
-# 4. Native Mobile Appium Fixtures (UiAutomator2 / XCUITest driver)
+# 1. CLI options & credentials cho Web Trading Dashboard
+# 2. Playwright Desktop Fixtures (Full HD 1920x1080, ignore_https_errors)
+# 3. authenticated_page: Tự động đăng nhập vào Web Trading
+# 4. locators: Tự động nạp bảng locator từ test/fixtures/locators.json
 # ==========================================================
 
 import os
+import json
+from pathlib import Path
+from typing import Optional, Any, Dict
 import pytest
 
 # ==========================================================
-# CLI OPTIONS REGISTRATION FOR WEB & MOBILE UI
+# CLI OPTIONS REGISTRATION FOR WEB UI
 # ==========================================================
 def pytest_addoption(parser):
-    """Đăng ký CLI options cho Web UI và Mobile."""
+    """Đăng ký CLI options cho Web UI."""
     options = [
         ("--web-base-url", os.getenv("WEB_BASE_URL", ""), "Base URL của Web Trading"),
         ("--trading-username", os.getenv("TRADING_USERNAME", ""), "Tài khoản đăng nhập Web Trading"),
@@ -71,61 +74,47 @@ def browser_context_args(browser_context_args):
         "ignore_https_errors": True,
     }
 
-# ==========================================================
-# MOBILE EMULATION FIXTURES (Playwright Mobile)
-# ==========================================================
 @pytest.fixture
-def mobile_context(browser):
-    """
-    Context giả lập thiết bị di động (Pixel 7).
-    Tự động bật touch events và viewport di động.
-    """
-    from playwright.sync_api import devices
-    pixel_7 = devices.get("Pixel 7") or {"viewport": {"width": 412, "height": 915}, "is_mobile": True, "has_touch": True}
-    context = browser.new_context(**pixel_7, locale="vi-VN")
-    yield context
-    context.close()
+def web_page(page, web_base_url):
+    """Page cơ bản đã mở sẵn trang chủ Web Trading."""
+    if web_base_url:
+        page.goto(web_base_url)
+    return page
 
 @pytest.fixture
-def mobile_page(mobile_context):
-    """Page object chạy trên thiết bị di động giả lập."""
-    page = mobile_context.new_page()
-    yield page
-    page.close()
+def authenticated_page(page, web_base_url, trading_username, trading_password, locators):
+    """Page tự động hoàn tất đăng nhập vào Web Trading Dashboard."""
+    if not web_base_url:
+        return page
+
+    page.goto(f"{web_base_url.rstrip('/')}/login")
+    user_sel = locators.get("login", {}).get("username_input", "input[name='username'], input[type='text']")
+    pass_sel = locators.get("login", {}).get("password_input", "input[name='password'], input[type='password']")
+    btn_sel = locators.get("login", {}).get("submit_button", "button[type='submit']")
+
+    if trading_username and trading_password:
+        try:
+            page.fill(user_sel, trading_username)
+            page.fill(pass_sel, trading_password)
+            page.click(btn_sel)
+            page.wait_for_load_state("networkidle")
+        except Exception as e:
+            print(f"⚠️ Lỗi trong quá trình tự động đăng nhập Web UI: {e}")
+
+    return page
 
 # ==========================================================
-# NATIVE MOBILE FIXTURES (Appium Driver)
+# LOCATORS LOADER FIXTURE
 # ==========================================================
-@pytest.fixture(scope="function")
-def appium_driver():
-    """
-    Khởi tạo Appium Driver cho Native App Testing.
-    Đọc cấu hình server và package từ biến môi trường.
-    """
-    appium_server_url = os.getenv("APPIUM_SERVER_URL", "http://127.0.0.1:4723")
-    app_package = os.getenv("APP_PACKAGE", "com.example.trading")
-    app_activity = os.getenv("APP_ACTIVITY", ".MainActivity")
-
-    capabilities = {
-        "platformName": "Android",
-        "automationName": "UiAutomator2",
-        "appPackage": app_package,
-        "appActivity": app_activity,
-        "noReset": True,
-        "autoGrantPermissions": True,
-    }
-
-    try:
-        from appium import webdriver
-        from appium.options.android import UiAutomator2Options
-        options = UiAutomator2Options().load_capabilities(capabilities)
-        driver = webdriver.Remote(appium_server_url, options=options)
-    except Exception as e:
-        pytest.skip(f"Không thể kết nối đến Appium Server tại {appium_server_url}: {e}")
-
-    yield driver
-
-    try:
-        driver.quit()
-    except Exception:
-        pass
+@pytest.fixture(scope="session")
+def locators() -> Dict[str, Any]:
+    """Tự động nạp bảng locator từ test/fixtures/locators.json nếu có."""
+    test_dir = Path(__file__).resolve().parent.parent
+    locator_file = test_dir / "fixtures" / "locators.json"
+    if locator_file.exists():
+        try:
+            with open(locator_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"⚠️ Lỗi đọc locators.json: {e}")
+    return {}

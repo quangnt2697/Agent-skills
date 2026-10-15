@@ -29,10 +29,10 @@ Nếu chưa có spec → Dừng, yêu cầu dùng `ba-spec` hoặc `ba-interview
 ## BƯỚC 1 — Khởi Tạo Thư Mục (tự động)
 
 ```bash
-bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-init.sh {issueKey}
+bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-init.sh {issueKey} --type=api,ws
 ```
 
-Tạo sẵn: `workspace/{issueKey}/test/steps/` và `workspace/{issueKey}/test/result/`
+Tạo sẵn: `test/conftest.py`, `test/fixtures/` (nạp fixtures lắp ghép theo type), `test/steps/` và `test/result/`
 
 ---
 

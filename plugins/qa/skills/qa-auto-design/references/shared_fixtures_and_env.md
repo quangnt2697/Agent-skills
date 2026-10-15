@@ -49,7 +49,7 @@ Khi khởi tạo hoặc sinh mã test cho một task tại `workspace/{issueKey}
 
 2. **Tier 2: Sibling Task Inheritance (Kế thừa từ Task anh em cùng hệ thống):**
    - Quét các thư mục task đã tồn tại: `workspace/*/test/.env`.
-   - Nếu là task cùng loại (ví dụ cùng test OpenAPI), tự động kế thừa credentials từ task anh em đã chạy thành công trước đó. *(Tham khảo [conftest_template.py](../assets/conftest_template.py))*
+   - Nếu là task cùng loại (ví dụ cùng test OpenAPI), tự động kế thừa credentials từ task anh em đã chạy thành công trước đó. *(Tham khảo [conftest_core.py](../assets/conftest_core.py))*
 
 3. **Tier 3: Task-Local Override (`workspace/{issueKey}/test/.env`):**
    - Chỉ tạo hoặc ghi đè khi task đó có yêu cầu kiểm thử tài khoản đặc thù (VIP account riêng, timeout riêng, mock error).

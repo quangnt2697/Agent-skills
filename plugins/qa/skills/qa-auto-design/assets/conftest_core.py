@@ -1,16 +1,18 @@
 # ==========================================================
-# conftest_core.py — Core Logging Hooks, Env Loader & JIT Data Grounding
+# conftest_core.py — Invariant Core: Env Loader, Pytest Hooks & Plugin Loader
 # ==========================================================
 # Cung cấp:
-# 1. Cơ chế nạp môi trường phân tầng (load_hierarchical_env)
-# 2. EnvConfig quản lý hạn mức & ánh xạ biên BVA tượng trưng
-# 3. TestLogCollector & fixture ghi log trung thực 100% test cases (PASSED & FAILED)
-# 4. Context manager fixture `step` cho BDD step logging
-# 5. JIT Data Grounding fixtures (market_fixture, valid_order_symbol, order_book_fixture)
-# 6. Pytest hook pytest_runtest_makereport xuất test-output.log và chụp ảnh lỗi
+# 1. Cơ chế Composable Plugin Loader tự động nạp test/fixtures/fixtures_*.py qua pytest_plugins
+# 2. Cơ chế nạp môi trường phân tầng (load_hierarchical_env)
+# 3. EnvConfig quản lý hạn mức & ánh xạ biên BVA tượng trưng
+# 4. TestLogCollector & fixture ghi log trung thực 100% test cases (PASSED & FAILED)
+# 5. Context manager fixture `step` cho BDD step logging
+# 6. JIT Data Grounding fixtures (market_fixture, valid_order_symbol, order_book_fixture)
+# 7. Pytest hook pytest_runtest_makereport xuất test-output.log và chụp ảnh lỗi
 # ==========================================================
 
 import os
+import sys
 import json
 import time
 import uuid
@@ -19,6 +21,25 @@ from pathlib import Path
 from contextlib import contextmanager
 import pytest
 from dotenv import load_dotenv, find_dotenv
+
+# ==========================================================
+# COMPOSABLE PLUGIN LOADER (pytest_plugins)
+# ==========================================================
+# Thêm thư mục test hiện tại vào sys.path để pytest nhận diện package fixtures/
+_TEST_DIR = Path(__file__).parent.resolve()
+if str(_TEST_DIR) not in sys.path:
+    sys.path.insert(0, str(_TEST_DIR))
+
+# Tự động quét và nạp mọi module fixture (fixtures_*.py) trong thư mục test/fixtures/
+_FIXTURE_DIR = _TEST_DIR / "fixtures"
+if _FIXTURE_DIR.exists():
+    pytest_plugins = [
+        f"fixtures.{p.stem}"
+        for p in sorted(_FIXTURE_DIR.glob("fixtures_*.py"))
+        if not p.name.startswith("__")
+    ]
+else:
+    pytest_plugins = []
 
 # ==========================================================
 # CƠ CHẾ NẠP MÔI TRƯỜNG PHÂN TẦNG (Cascading Env Load)
@@ -31,10 +52,10 @@ def load_hierarchical_env():
     2. Sibling task .env cùng domain (kế thừa nếu thiếu API_KEY, SECRET,...)
     3. Task-local .env (ưu tiên ghi đè cao nhất)
     """
-    current_dir = Path(__file__).resolve().parent  # steps/ or assets/
-    task_test_dir = current_dir.parent             # workspace/issues/{issueKey}/test/
-    workspace_dir = task_test_dir.parent.parent    # workspace/
-    project_root = workspace_dir.parent            # repo root của project hiện tại
+    current_dir = Path(__file__).resolve().parent
+    task_test_dir = current_dir if current_dir.name == "test" else current_dir.parent
+    workspace_dir = task_test_dir.parent.parent
+    project_root = workspace_dir.parent
 
     # 0. Nạp từ Central agent-skills/.env
     agent_env_candidates = [
@@ -61,7 +82,7 @@ def load_hierarchical_env():
 
     # 2. Kế thừa từ Sibling Tasks
     if not os.getenv("API_KEY") or not os.getenv("API_SECRET"):
-        sibling_envs = glob.glob(str(workspace_dir / "*" / "test" / ".env"))
+        sibling_envs = glob.glob(str(workspace_dir / "*" / "test" / ".env")) + glob.glob(str(workspace_dir / "issues" / "*" / "test" / ".env"))
         for sib in sibling_envs:
             if Path(sib).resolve() != (task_test_dir / ".env").resolve():
                 load_dotenv(sib, override=False)
@@ -114,7 +135,7 @@ class EnvConfig:
         - TAI_HAN_MUC / AT_LIMIT: đúng bằng limit
         - VUOT_HAN_MUC / OVER_LIMIT: limit + 1
         - DUOI_HAN_MUC / BELOW_LIMIT: max(1, limit - 1)
-        - TRONG_NGUONG / WITHIN_LIMIT: đúng bằng ngưỡng (limit)
+        - TRONG_NGUONG / WITHIN_LIMIT: đúng bằng limit
         - VUOT_NGUONG / BEYOND_LIMIT: vượt ngưỡng (limit + 5 hoặc limit * 1.2)
         """
         m_type = metric_type.strip().upper()
@@ -157,7 +178,7 @@ def pytest_addoption(parser):
             help="Target environment (uat, sandbox, staging, dev)"
         )
     except Exception:
-        pass  # Đã đăng ký từ plugin khác
+        pass
 
 # ==========================================================
 # LOGGING INTERCEPTOR & EVIDENCE COLLECTOR
@@ -165,7 +186,7 @@ def pytest_addoption(parser):
 class TestLogCollector:
     """
     Thu thập toàn bộ Request Payload và Response Body của từng testcase (REST & WebSocket).
-    Hoạt động độc lập trên từng test method để ghi lại bằng chứng kiểm thử 100% trung thực.
+    Ghi lại bằng chứng kiểm thử 100% trung thực phục vụ test-output.log & report.md.
     """
     def __init__(self, test_name: str):
         self.test_name = test_name
@@ -269,7 +290,7 @@ def target_environment():
 @pytest.fixture(scope="session")
 def market_fixture():
     """Nạp dữ liệu thị trường thật được export tại test/fixtures/market_data.json."""
-    test_dir = Path(__file__).resolve().parent.parent
+    test_dir = Path(__file__).resolve().parent
     fixture_file = test_dir / "fixtures" / "market_data.json"
     if fixture_file.exists():
         try:
@@ -343,9 +364,10 @@ def pytest_runtest_makereport(item, call):
     report = outcome.get_result()
 
     if report.when == "call":
-        result_dir = os.path.join(os.getcwd(), "test", "result")
-        os.makedirs(result_dir, exist_ok=True)
-        log_file = os.path.join(result_dir, "test-output.log")
+        current_dir = Path(__file__).resolve().parent
+        result_dir = current_dir / "result" if current_dir.name == "test" else Path(os.getcwd()) / "test" / "result"
+        result_dir.mkdir(parents=True, exist_ok=True)
+        log_file = result_dir / "test-output.log"
 
         status_text = "PASSED" if report.passed else ("FAILED" if report.failed else "SKIPPED")
         duration = getattr(call, "duration", 0.0)
@@ -419,13 +441,14 @@ def pytest_runtest_makereport(item, call):
         except Exception as e:
             print(f"⚠️ Lỗi ghi file test-output.log: {e}")
 
+        # Auto-screenshot on failure for Web & Mobile
         if report.failed:
-            screenshots_dir = os.path.join(result_dir, "screenshots")
-            os.makedirs(screenshots_dir, exist_ok=True)
+            screenshots_dir = result_dir / "screenshots"
+            screenshots_dir.mkdir(parents=True, exist_ok=True)
             timestamp = int(time.time())
-            screenshot_path = os.path.join(screenshots_dir, f"fail_{item.name}_{timestamp}.png")
+            screenshot_path = str(screenshots_dir / f"fail_{item.name}_{timestamp}.png")
 
-            page = item.funcargs.get("page") or item.funcargs.get("mobile_page")
+            page = item.funcargs.get("page") or item.funcargs.get("web_page") or item.funcargs.get("mobile_page")
             if page and hasattr(page, "screenshot"):
                 try:
                     page.screenshot(path=screenshot_path, full_page=True)

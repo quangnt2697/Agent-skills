@@ -1,11 +1,12 @@
 # ==========================================================
-# conftest_template.py — Master Conftest Composition
+# conftest_template.py — Master Composite Reference Wrapper
 # ==========================================================
-# Tổng hợp và tái xuất (re-export) toàn bộ fixtures từ 4 modules:
+# Tổng hợp và tái xuất (re-export) toàn bộ fixtures từ 5 modules:
 # 1. conftest_core: Cơ chế nạp môi trường, logging interceptor, JIT data grounding
-# 2. conftest_api: REST client, Auth token cache, ORS admin simulator
-# 3. conftest_ws: WebSocket client, stream monitor
-# 4. conftest_ui: Playwright web & mobile emulation, Appium native
+# 2. fixtures_api: REST OpenAPI client, Dashboard BFF token, ORS admin simulator
+# 3. fixtures_ws: WebSocket client, stream monitor, watchdog
+# 4. fixtures_web_ui: Playwright web desktop & locators loader
+# 5. fixtures_mobile: Playwright mobile emulation & Appium native driver
 #
 # Đảm bảo 100% tính tương thích ngược cho các test suite kế thừa template cũ.
 # ==========================================================
@@ -28,7 +29,7 @@ from .conftest_core import (
 )
 
 # 2. REST API & ORS Admin Fixtures
-from .conftest_api import (
+from .fixtures_api import (
     base_url,
     api_key,
     api_secret,
@@ -39,7 +40,7 @@ from .conftest_api import (
     dashboard_url,
     dashboard_username,
     dashboard_password,
-    dashboard_auth_token,
+    dashboard_token,
     ors_admin_url,
     ors_fo_url,
     ors_admin_username,
@@ -52,7 +53,7 @@ from .conftest_api import (
 )
 
 # 3. WebSocket Fixtures
-from .conftest_ws import (
+from .fixtures_ws import (
     ws_url,
     ws_admin_url,
     ws_encoding,
@@ -60,28 +61,39 @@ from .conftest_ws import (
     ws_client,
     WSAdminClient,
     ws_admin_client,
+    ws_session_factory,
 )
 
-# 4. Web & Mobile UI Fixtures
-from .conftest_ui import (
+# 4. Web UI Fixtures
+from .fixtures_web_ui import (
     web_base_url,
     trading_username,
     trading_password,
     trading_investor_id,
     web_api_token,
     browser_context_args,
+    web_page,
+    authenticated_page,
+    locators,
+)
+
+# 5. Mobile Fixtures
+from .fixtures_mobile import (
     mobile_context,
     mobile_page,
     appium_driver,
+    MobileActions,
+    mobile_actions,
 )
 
 # Đăng ký tổng hợp CLI options
 def pytest_addoption(parser):
-    from . import conftest_core, conftest_api, conftest_ws, conftest_ui
+    from . import conftest_core, fixtures_api, fixtures_ws, fixtures_web_ui, fixtures_mobile
     conftest_core.pytest_addoption(parser)
-    conftest_api.pytest_addoption(parser)
-    conftest_ws.pytest_addoption(parser)
-    conftest_ui.pytest_addoption(parser)
+    fixtures_api.pytest_addoption(parser)
+    fixtures_ws.pytest_addoption(parser)
+    fixtures_web_ui.pytest_addoption(parser)
+    fixtures_mobile.pytest_addoption(parser)
 
 __all__ = [
     "load_hierarchical_env",
@@ -105,7 +117,7 @@ __all__ = [
     "dashboard_url",
     "dashboard_username",
     "dashboard_password",
-    "dashboard_auth_token",
+    "dashboard_token",
     "ors_admin_url",
     "ors_fo_url",
     "ors_admin_username",
@@ -122,13 +134,19 @@ __all__ = [
     "ws_client",
     "WSAdminClient",
     "ws_admin_client",
+    "ws_session_factory",
     "web_base_url",
     "trading_username",
     "trading_password",
     "trading_investor_id",
     "web_api_token",
     "browser_context_args",
+    "web_page",
+    "authenticated_page",
+    "locators",
     "mobile_context",
     "mobile_page",
     "appium_driver",
+    "MobileActions",
+    "mobile_actions",
 ]

@@ -1,11 +1,12 @@
 # ==========================================================
-# conftest_ws.py — WebSocket Testing Fixtures & Client Helpers
+# fixtures_ws.py — WebSocket Testing Fixtures & Client Helpers
 # ==========================================================
 # Cung cấp:
 # 1. CLI options & session fixtures cho WebSocket (ws_url, ws_admin_url, ws_encoding)
-# 2. WSClient tích hợp TestLogCollector.record_ws ghi log trung thực mọi frame
+# 2. WSClient tích hợp TestLogCollector.record_ws ghi log trung thực mọi frame/event
 # 3. WSAdminClient gọi Admin API tra cứu kết nối, hạn mức stream, force disconnect
 # 4. ws_client & ws_admin_client fixtures tái sử dụng trong test suite
+# 5. ws_session_factory: Helper tạo nhiều kết nối song song kiểm tra biên MAX_CONNECTOR
 # ==========================================================
 
 import os
@@ -13,10 +14,9 @@ import json
 import time
 import asyncio
 from typing import Optional, Dict, Any, List
+from pathlib import Path
 import pytest
 import requests
-
-from .conftest_core import TestLogCollector
 
 # ==========================================================
 # CLI OPTIONS REGISTRATION FOR WEBSOCKET
@@ -67,7 +67,7 @@ class WSClient:
     Tự động ghi nhận mọi sự kiện CONNECT, SUBSCRIBE, RECEIVE_EVENT, CLOSE
     vào TestLogCollector để ghi 100% bằng chứng kiểm thử ra test-output.log.
     """
-    def __init__(self, ws_url: str, api_key: str = None, token: str = None, collector: TestLogCollector = None):
+    def __init__(self, ws_url: str, api_key: str = None, token: str = None, collector: Optional[Any] = None):
         self._ws_url = ws_url
         self._api_key = api_key or os.getenv("API_KEY", "")
         self._token = token or os.getenv("API_TOKEN", "")
@@ -90,7 +90,7 @@ class WSClient:
             open_timeout=timeout,
         )
         elapsed_ms = (time.perf_counter() - start) * 1000
-        if self._collector:
+        if self._collector and hasattr(self._collector, "record_ws"):
             self._collector.record_ws("CONNECT", url=self._ws_url, latency_ms=elapsed_ms)
         return True
 
@@ -104,89 +104,100 @@ class WSClient:
 
         start = time.perf_counter()
         await self._ws.send(json.dumps(payload))
-        if self._collector:
-            self._collector.record_ws("SUBSCRIBE_SEND", channel=channel, payload=payload)
-
-        raw = await asyncio.wait_for(self._ws.recv(), timeout=timeout)
+        resp_raw = await asyncio.wait_for(self._ws.recv(), timeout=timeout)
         elapsed_ms = (time.perf_counter() - start) * 1000
-        data = json.loads(raw)
-        if self._collector:
-            self._collector.record_ws("SUBSCRIBE_ACK", channel=channel, payload=data, latency_ms=elapsed_ms)
+        data = json.loads(resp_raw)
+
+        if self._collector and hasattr(self._collector, "record_ws"):
+            self._collector.record_ws("SUBSCRIBE", url=self._ws_url, channel=channel, payload=data, latency_ms=elapsed_ms)
         return data
 
     async def receive_event(self, timeout: float = 10.0) -> dict:
-        """Nhận 1 message/event từ socket với fail-fast timeout."""
+        """Chờ nhận 1 frame sự kiện từ topic stream."""
         start = time.perf_counter()
-        raw = await asyncio.wait_for(self._ws.recv(), timeout=timeout)
+        resp_raw = await asyncio.wait_for(self._ws.recv(), timeout=timeout)
         elapsed_ms = (time.perf_counter() - start) * 1000
-        data = json.loads(raw)
-        if self._collector:
-            channel_name = data.get("channel") or data.get("type", "EVENT")
-            self._collector.record_ws("RECEIVE_EVENT", channel=channel_name, payload=data, latency_ms=elapsed_ms)
+        data = json.loads(resp_raw)
+
+        if self._collector and hasattr(self._collector, "record_ws"):
+            self._collector.record_ws("RECEIVE_EVENT", url=self._ws_url, channel=data.get("topic"), payload=data, latency_ms=elapsed_ms)
         return data
 
-    async def drain_events(self, max_wait: float = 2.0) -> List[dict]:
-        """Thu thập toàn bộ sự kiện đang dồn trong buffer cho tới khi yên ắng."""
-        events = []
-        while True:
-            try:
-                evt = await self.receive_event(timeout=max_wait)
-                events.append(evt)
-            except asyncio.TimeoutError:
-                break
-        return events
-
-    async def close(self, code: int = 1000):
-        """Đóng kết nối WebSocket an toàn."""
-        if self._ws and not self._ws.closed:
-            await self._ws.close(code=code)
-            if self._collector:
-                self._collector.record_ws("CLOSE", payload={"code": code})
+    async def close(self):
+        """Đóng kết nối an toàn."""
+        if self._ws:
+            await self._ws.close()
+            if self._collector and hasattr(self._collector, "record_ws"):
+                self._collector.record_ws("CLOSE", url=self._ws_url)
 
 # ==========================================================
-# WS ADMIN CLIENT (Connection & Stream Limit Monitor)
+# WS ADMIN CLIENT (TRA CỨU MONITORING & HẠN MỨC)
 # ==========================================================
 class WSAdminClient:
-    """Client tra cứu trạng thái kết nối WebSocket qua Admin API."""
-    def __init__(self, admin_url: str = None, collector: TestLogCollector = None):
-        self._admin_url = (admin_url or os.getenv("WS_ADMIN_URL", "")).rstrip("/")
+    """Gọi WebSocket Admin REST API để tra cứu số connection, stream và ép ngắt socket."""
+    def __init__(self, ws_admin_url: str, collector: Optional[Any] = None):
+        self._url = ws_admin_url.rstrip("/") if ws_admin_url else ""
         self._collector = collector
-        self._session = requests.Session()
 
-    def get_current_connections(self) -> List[Dict[str, Any]]:
-        """Tra cứu danh sách kết nối hiện tại trên gateway."""
-        if not self._admin_url:
-            return []
-        url = f"{self._admin_url}/monitor_current"
-        start = time.perf_counter()
-        resp = self._session.get(url, timeout=5)
-        elapsed_ms = (time.perf_counter() - start) * 1000
-        if self._collector:
-            self._collector.record_http(
-                method="GET",
-                url=url,
-                headers=dict(self._session.headers),
-                request_body=None,
-                status_code=resp.status_code,
-                response_time_ms=elapsed_ms,
-                response_headers=dict(resp.headers),
-                response_body=resp.text[:500],
-            )
-        if resp.status_code == 200:
-            data = resp.json()
-            return data if isinstance(data, list) else data.get("connections", [])
-        return []
+    def get_monitor_current(self) -> dict:
+        """Tra cứu trạng thái toàn bộ kết nối hiện tại."""
+        if not self._url:
+            return {}
+        resp = requests.get(f"{self._url}/monitor_current", timeout=5)
+        return resp.json() if resp.status_code == 200 else {}
+
+    def get_user_connections(self, user_id: str) -> List[dict]:
+        """Lấy danh sách các kết nối active của một user."""
+        current = self.get_monitor_current()
+        connections = current.get("connections", [])
+        return [c for c in connections if c.get("user_id") == user_id]
+
+    def force_disconnect(self, connection_id: str) -> bool:
+        """Ngắt cưỡng bức một kết nối từ Admin để kiểm tra cơ chế Auto-Reconnect."""
+        if not self._url:
+            return False
+        resp = requests.post(f"{self._url}/force_disconnect", json={"connection_id": connection_id}, timeout=5)
+        return resp.status_code == 200
 
 # ==========================================================
-# FIXTURES
+# PYTEST FIXTURES
 # ==========================================================
 @pytest.fixture
 def ws_client(ws_url, api_key, auth_token, test_log_collector):
-    """Fixture cung cấp WSClient được gắn sẵn collector."""
-    client = WSClient(ws_url=ws_url, api_key=api_key, token=auth_token, collector=test_log_collector)
-    yield client
+    """Fixture cấp WSClient có gắn TestLogCollector."""
+    return WSClient(ws_url=ws_url, api_key=api_key, token=auth_token, collector=test_log_collector)
 
 @pytest.fixture(scope="session")
 def ws_admin_client(ws_admin_url, test_log_collector):
-    """Fixture cung cấp WSAdminClient."""
-    return WSAdminClient(admin_url=ws_admin_url, collector=test_log_collector)
+    """Fixture cấp WSAdminClient phục vụ kiểm tra hạn mức & test disconnect."""
+    return WSAdminClient(ws_admin_url=ws_admin_url, collector=test_log_collector)
+
+@pytest.fixture
+def ws_session_factory(ws_url, api_key, auth_token, test_log_collector):
+    """Factory hỗ trợ sinh N kết nối WebSocket đồng thời phục vụ test biên MAX_CONNECTOR."""
+    clients = []
+
+    def _create(custom_token: str = None) -> WSClient:
+        tok = custom_token or auth_token
+        c = WSClient(ws_url=ws_url, api_key=api_key, token=tok, collector=test_log_collector)
+        clients.append(c)
+        return c
+
+    yield _create
+
+    # Auto cleanup sau test case
+    async def _cleanup_all():
+        for c in clients:
+            try:
+                await c.close()
+            except Exception:
+                pass
+
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            asyncio.create_task(_cleanup_all())
+        else:
+            loop.run_until_complete(_cleanup_all())
+    except Exception:
+        pass
