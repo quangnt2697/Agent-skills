@@ -9,6 +9,8 @@ import { execSync } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
 
+import fs from 'node:fs';
+
 const dbPath = path.join(os.homedir(), '.n8n', 'database.sqlite');
 const workflowsDir = path.resolve('n8n-workflows');
 
@@ -53,7 +55,14 @@ try {
 // 3. Import lại toàn bộ workflow chuẩn hóa mới
 try {
   console.log('\n3. Đang import toàn bộ workflow mới nhất từ n8n-workflows/...');
-  execSync(`n8n import:workflow --separate --input="${workflowsDir}"`, { stdio: 'inherit' });
+  const subdirs = fs.readdirSync(workflowsDir, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => path.join(workflowsDir, dirent.name));
+
+  const targetDirs = subdirs.length > 0 ? subdirs : [workflowsDir];
+  for (const dir of targetDirs) {
+    execSync(`n8n import:workflow --separate --input="${dir}"`, { stdio: 'inherit' });
+  }
   console.log('✅ Đã nạp thành công các workflow mới!');
 } catch (err) {
   console.error('❌ Lỗi khi import workflow:', err.message);

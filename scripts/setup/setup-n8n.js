@@ -75,7 +75,13 @@ const workflowsDir = path.join(projectRoot, 'n8n-workflows');
 if (fs.existsSync(workflowsDir)) {
   console.log('\n📥 Đang tự động nạp các Workflow mẫu từ n8n-workflows/...');
   try {
-    execSync(`n8n import:workflow --separate --input="${workflowsDir}"`, { stdio: 'inherit' });
+    const subdirs = fs.readdirSync(workflowsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => path.join(workflowsDir, dirent.name));
+    const targetDirs = subdirs.length > 0 ? subdirs : [workflowsDir];
+    for (const dir of targetDirs) {
+      execSync(`n8n import:workflow --separate --input="${dir}"`, { stdio: 'inherit' });
+    }
     console.log('✅ Đã nạp thành công toàn bộ workflows mẫu vào n8n!');
   } catch (err) {
     console.log('⚠️  Không thể nạp workflow tự động (có thể do n8n đang bận). Bạn có thể nạp sau.');
