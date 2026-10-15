@@ -9,8 +9,8 @@ Các personas chuyên biệt đóng một vai trò duy nhất với một góc n
 | [qa](../../plugins/qa/agents/qa.md)                                                                | `qa`                      | QA Engineer                      | Chiến lược test, phân tích độ bao phủ, thiết kế checklist, BDD Gherkin |
 | [scrum-master](../../plugins/scrum-master/agents/scrum-master.md)                                  | `scrum-master`            | Scrum Master                     | Lập kế hoạch, daily standup, xử lý rủi ro, retrospective               |
 | [code-reviewer](../../plugins/code-reviewer/agents/code-reviewer.md)                               | `code-reviewer`           | Senior Staff Engineer            | Review code 5 phương diện trước khi merge                              |
-| [security-auditor](../../plugins/security-auditor/agents/security-auditor.md)                      | `security-auditor`        | Security Engineer                | Phát hiện lỗ hổng, audit theo chuẩn OWASP                              |
-| [web-performance-auditor](../../plugins/web-performance-auditor/agents/web-performance-auditor.md) | `web-performance-auditor` | Web Performance Engineer         | Audit Core Web Vitals, phân tích load/render/network                   |
+| [security-auditor](../../plugins/code-reviewer/agents/security-auditor.md)                      | `code-reviewer`           | Security Engineer                | Phát hiện lỗ hổng, audit theo chuẩn OWASP                              |
+| [web-performance-auditor](../../plugins/code-reviewer/agents/web-performance-auditor.md) | `code-reviewer`           | Web Performance Engineer         | Audit Core Web Vitals, phân tích load/render/network                   |
 
 ## Personas liên quan đến skills và lệnh như thế nào
 

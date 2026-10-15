@@ -12,9 +12,8 @@ plugins/                          → Chứa các plugin chuyên biệt
   ├── qa/                         → QA persona & skills
   ├── dev/                        → DEV persona & skills
   ├── scrum-master/               → Scrum Master persona & skills
-  ├── code-reviewer/              → Code Reviewer persona & skills
-  ├── security-auditor/           → Security Auditor persona & skills
-  ├── web-performance-auditor/    → Web Performance Auditor persona & skills
+  ├── code-reviewer/              → Code Reviewer, Security Auditor & Web Performance Auditor skills
+  ├── fintech-data/               → Fintech & TimescaleDB Data Reconciler skills
   └── core/                       → Meta-skills, shared commands (e2e-delivery, learn, checkpoint)
 n8n-workflows/                    → Các n8n workflow tự động (ChatOps, Cron)
 scripts/                          → Các script hỗ trợ, tool cài đặt (A-Z)

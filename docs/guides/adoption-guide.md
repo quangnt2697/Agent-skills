@@ -74,13 +74,17 @@ Jira Task                Checklist & BDD          Tech-Spec & Code        Review
 Tất cả các tài liệu phát sinh trong quá trình chạy đều phải lưu trữ trong thư mục `workspace/` theo cấu trúc:
 ```
 workspace/
-├── {issueKey}/
-│   ├── source/      # Tài liệu thô tải từ Jira/Confluence (PDF, metadata)
-│   ├── spec/        # Business-Spec (*-final.md), sơ đồ (.mmd, .png)
-│   ├── tech/        # Tech-Spec, Kế hoạch lập trình (plan.md)
-│   └── test/        # Checklist, kịch bản (.feature), automation code, reports
-└── sprint/
-    └── trace/       # Báo cáo Daily Standup, Sprint Retrospective
+├── issues/
+│   └── {issueKey}/
+│       ├── source/      # Tài liệu thô tải từ Jira/Confluence (PDF, metadata)
+│       ├── spec/        # Business-Spec (*-final.md), sơ đồ (.mmd, .png)
+│       ├── tech/        # Tech-Spec, Kế hoạch lập trình (plan.md)
+│       ├── test/        # Checklist, kịch bản (.feature), automation code, reports
+│       └── trace/       # Ma trận truy vết
+├── sprints/
+│   └── {sprintId}/      # Báo cáo Daily Standup, Sprint Retrospective
+└── adhoc/
+    └── {slug}/          # Nhiệm vụ nội bộ, reports, adhoc analysis
 ```
 
 ---

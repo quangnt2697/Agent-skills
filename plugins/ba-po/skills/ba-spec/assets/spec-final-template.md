@@ -153,12 +153,23 @@
 ## 9. Acceptance Criteria (Reframed — Rule-based)
 
 > ⚠️ **LƯU Ý:** BA viết AC dạng **Checklist Tiêu Chí (WHAT must be true)** với mệnh đề Pass/Fail rõ ràng. Không viết Gherkin scenarios (Given-When-Then) — QA sẽ phụ trách chuyển đổi thành Gherkin.
+> **Quy ước mã định danh:** Bắt buộc gắn mã dạng `[AC-x.y]` (x là nhóm chức năng/user flow, y là điều kiện con cụ thể) để phục vụ truy vết tự động 1-1 sang Checklist `[CHK-xx]` và Feature Tag `@AC-x.y`.
 
-- [ ] **[AC-01] Happy Path Chính:** Hệ thống cho phép người dùng [hành động] thành công khi [điều kiện hợp lệ], kết quả [kết quả trả về rõ ràng].
-- [ ] **[AC-02] Ràng Buộc Dữ Liệu:** Hệ thống từ chối và hiển thị thông báo lỗi "[Nội dung lỗi]" khi người dùng [nhập sai/thiếu trường X].
-- [ ] **[AC-03] Kiểm Tra Số Dư / Quyền Hạn:** Khi [tài khoản không đủ điều kiện/hết hạn], hệ thống chặn thao tác và hiển thị cảnh báo phù hợp.
-- [ ] **[AC-04] Tính Nhất Quán Dữ Liệu:** Sau khi thực hiện thành công, dữ liệu tại [Màn hình / Endpoint liên quan] được cập nhật đồng bộ ngay lập tức.
-- [ ] **[AC-05] Xử Lý Ngoại Lệ Mạng / Timeout:** Khi backend trả về mã lỗi 5xx hoặc timeout quá 10 giây, hiển thị popup hướng dẫn thử lại.
+### Nhóm 1: Luồng Nghiệp Vụ Chính (Main Flow)
+- [ ] **[AC-1.1] Happy Path Chính:** Hệ thống cho phép người dùng [hành động] thành công khi [điều kiện hợp lệ], kết quả [kết quả trả về rõ ràng].
+- [ ] **[AC-1.2] Tính Nhất Quán Dữ Liệu:** Sau khi thực hiện thành công, dữ liệu tại [Màn hình / Endpoint liên quan] được cập nhật đồng bộ ngay lập tức.
+
+### Nhóm 2: Ràng Buộc Dữ Liệu & Thẩm Quyền (Validation & Auth)
+- [ ] **[AC-2.1] Ràng Buộc Dữ Liệu Đầu Vào:** Hệ thống từ chối và hiển thị thông báo lỗi "[Nội dung lỗi]" khi người dùng [nhập sai/thiếu trường X].
+- [ ] **[AC-2.2] Kiểm Tra Số Dư / Quyền Hạn:** Khi [tài khoản không đủ điều kiện/hết hạn], hệ thống chặn thao tác và hiển thị cảnh báo phù hợp.
+
+### Nhóm 3: Xử Lý Ngoại Lệ & Hạ Tầng (Exceptions & Infra)
+- [ ] **[AC-3.1] Xử Lý Ngoại Lệ Mạng / Timeout:** Khi backend trả về mã lỗi 5xx hoặc timeout quá 10 giây, hiển thị popup hướng dẫn thử lại.
+
+---
+
+### 9.1. Testability Manifest (`spec/testability-manifest.json`)
+> Cuối bước `/ba-spec` (hoặc `/ba-refine`), agent tự động trích xuất file gọn nhẹ `workspace/issues/{issueKey}/spec/testability-manifest.json` gồm danh sách ID (`BR-*`, `AC-*`, `EC-*`), danh sách sàn liên quan (`HOSE`, `HNX`, `UPCOM`, `DERIVATIVES`) và Profile kỹ thuật (`API`, `WS`, `WEB`, `APP`) làm đầu vào cho QA thiết kế test.
 
 ---
 

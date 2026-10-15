@@ -3,7 +3,7 @@
     "PreInvocation": [
       {
         "type": "command",
-        "command": "bash ./hooks/antigravity/session-start.sh",
+        "command": "bash .agents/hooks/antigravity/session-start.sh",
         "timeout": 10
       }
     ]
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ./hooks/antigravity/sdd-cache-pre.sh",
+            "command": "bash .agents/hooks/antigravity/sdd-cache-pre.sh",
             "timeout": 10
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ./hooks/antigravity/sdd-cache-post.sh",
+            "command": "bash .agents/hooks/antigravity/sdd-cache-post.sh",
             "timeout": 15
           }
         ]

@@ -21,12 +21,12 @@ Agent đọc file này một lần mỗi session để giảm token giải thíc
 
 | Thuật ngữ | Định nghĩa | Vị trí |
 |---|---|---|
-| **final.md** (`*-final.md`) | Business Spec — output duy nhất của BA, input của DEV & QA | `workspace/{issueKey}/spec/` |
-| **tech-spec** | Technical Specification — output của DEV, dựa trên final.md | `workspace/{issueKey}/tech/` |
-| **checklist.md** | Checklist kiểm thử thực thi — output Giai đoạn 1 của qa-test-design | `workspace/{issueKey}/test/` |
-| **{issueKey}.feature** | Kịch bản BDD Gherkin — output Giai đoạn 2 của qa-test-design | `workspace/{issueKey}/test/` |
-| **test-output.log** | Full log của Pytest — KHÔNG hiển thị trong chat, user tự mở xem | `workspace/{issueKey}/test/result/` |
-| **report.md** | Báo cáo tổng hợp Passed/Failed — output của qa-run-test | `workspace/{issueKey}/test/result/` |
+| **final.md** (`*-final.md`) | Business Spec — output duy nhất của BA, input của DEV & QA | `workspace/issues/{issueKey}/spec/` |
+| **tech-spec** | Technical Specification — output của DEV, dựa trên final.md | `workspace/issues/{issueKey}/tech/` |
+| **checklist.md** | Checklist kiểm thử thực thi — output Giai đoạn 1 của qa-test-design | `workspace/issues/{issueKey}/test/` |
+| **{issueKey}.feature** | Kịch bản BDD Gherkin — output Giai đoạn 2 của qa-test-design | `workspace/issues/{issueKey}/test/` |
+| **test-output.log** | Full log của Pytest — KHÔNG hiển thị trong chat, user tự mở xem | `workspace/issues/{issueKey}/test/result/` |
+| **report.md** | Báo cáo tổng hợp Passed/Failed — output của qa-run-test | `workspace/issues/{issueKey}/test/result/` |
 | **Checkpoint** | Snapshot context phiên làm việc — output của meta-session-checkpoint | `.checkpoints/` |
 
 ### Workflow Terminology

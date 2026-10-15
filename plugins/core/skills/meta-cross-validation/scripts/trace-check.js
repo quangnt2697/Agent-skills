@@ -21,14 +21,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ID_RE = /\b(BR|AC)-\d{1,4}\b/g;
+const ID_RE = /\b(BR|AC|EC)-\d{1,4}(?:\.\d{1,3})?\b/g;
 const TEST_EXT = /\.(feature|md|py|ts|js)$/;
 
 export function extractIds(text) {
   return [...new Set(text.match(ID_RE) || [])].sort((a, b) => {
-    const [pa, na] = a.split('-');
-    const [pb, nb] = b.split('-');
-    return pa === pb ? Number(na) - Number(nb) : pa.localeCompare(pb);
+    return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
   });
 }
 

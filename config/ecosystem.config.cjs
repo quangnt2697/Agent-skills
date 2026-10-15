@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
-const envPath = path.join(__dirname, '.env');
+const projectRoot = path.join(__dirname, '..');
+const envPath = path.join(projectRoot, '.env');
 if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });
 }
@@ -10,14 +11,14 @@ if (fs.existsSync(envPath)) {
 const apps = [
   {
     name: 'n8n-agent-skills',
-    cwd: __dirname,
+    cwd: projectRoot,
     script: 'n8n',
     args: 'start',
     interpreter: 'none',
     env: {
       ...process.env,
       NODE_TLS_REJECT_UNAUTHORIZED: '0',
-      AGENT_WORKSPACE_DIR: __dirname,
+      AGENT_WORKSPACE_DIR: projectRoot,
       N8N_PORT: process.env.N8N_PORT || '5678',
       N8N_PROTOCOL: 'http',
       N8N_HOST: 'localhost',
@@ -44,7 +45,7 @@ const n8nPort = process.env.N8N_PORT || '5678';
 if (ngrokDomain) {
   apps.push({
     name: 'ngrok-tunnel',
-    cwd: __dirname,
+    cwd: projectRoot,
     script: 'ngrok',
     args: `http --domain=${ngrokDomain} ${n8nPort}`,
     interpreter: 'none',

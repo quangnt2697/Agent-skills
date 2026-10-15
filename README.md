@@ -28,22 +28,17 @@ Kỹ sư Quản lý Quy trình & Điều phối (Scrum Master). Quản lý Sprin
 
 **4 skills:** Sprint planning, daily standup, impediment triage, sprint retrospective.
 
-### 5. Code Reviewer (`plugins/code-reviewer`)
-Kỹ sư chuyên trách đánh giá chất lượng mã nguồn.
+### 5. Code Reviewer & Quality Engineer (`plugins/code-reviewer`)
+Kỹ sư chuyên trách đánh giá chất lượng mã nguồn, bảo mật và hiệu năng web.
 
-**2 skills:** Code simplification, code and quality review.
+**4 skills:** Code simplification (`cr-code-simplification`), code and quality review (`cr-review-code-and-quality`), security code audit (`security-code-audit`), web performance Core Web Vitals (`webperf-core-vitals`).
 
-### 6. Security Auditor (`plugins/security-auditor`)
-Kỹ sư chuyên trách phát hiện lỗ hổng và audit bảo mật mã nguồn theo chuẩn OWASP Top 10.
+### 6. Fintech Data Engineer (`plugins/fintech-data`)
+Kỹ sư dữ liệu thị trường và kiểm toán dữ liệu chứng khoán.
 
-**1 skill:** Security code audit
+**1 skill:** TimescaleDB KRX MDDS data reconciler (`db-timescale-reconciler`).
 
-### 7. Web Performance Auditor (`plugins/web-performance-auditor`)
-Kỹ sư chuyên trách đánh giá hiệu năng web, Core Web Vitals (LCP, FID, CLS).
-
-**1 skill:** Core Web Vitals audit
-
-*(Ngoài ra còn có `plugins/core` chứa các kỹ năng meta và lệnh dùng chung).*
+*(Ngoài ra còn có `plugins/core` chứa các kỹ năng meta, đồng bộ repo và lệnh dùng chung).*
 
 ---
 
@@ -323,9 +318,8 @@ Mọi artifacts đều có traceability:
 Business Rule → Tech Spec → Code → Unit Test → Integration Test → E2E Test → Report
 ```
 
-### 3. Confidence-Based Gating
-Skills report confidence level (90%+ = auto-approve, 70-89% = ask, <70% = stop).  
-Xem: [.agents/rules/confidence-level.md](.agents/rules/confidence-level.md)
+### 3. Autonomous Execution & Confidence Assessment
+Mặc định tự chạy (Autonomous by default). Không dùng Confidence Level làm cổng chặn luồng. Chỉ dừng hỏi user trong 5 trường hợp danh sách đóng quy định tại [.agents/rules/autonomy-contract.md](.agents/rules/autonomy-contract.md). Confidence level dùng để đánh giá độ hoàn thiện và độ tin cậy của artifact tại [.agents/rules/confidence-level.md](.agents/rules/confidence-level.md).
 
 ### 4. Git Workflow Safety
 - Branch-based development (no direct commits to main)

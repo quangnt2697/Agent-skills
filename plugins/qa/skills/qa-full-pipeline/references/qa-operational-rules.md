@@ -18,3 +18,20 @@ Tài liệu này chứa các quy tắc sống còn mà QA Agent **bắt buộc**
 
 ## 4. Thiết Kế Kịch Bản BDD Gherkin
 - **Quy tắc Tham số hóa Đa sàn / Đa mã (Multi-Symbol Parameterization):** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** phải tách riêng Scenario độc lập hoặc sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa chi tiết. **CẤM TUYỆT ĐỐI** viết scenario gộp chung làm mờ ranh giới thời gian và kênh dữ liệu.
+
+## 5. Cơ Chế Phân Loại Lỗi Thông Minh (Smart Failure Triage & Self-Fix Gate)
+Khi thực thi test (`qa-run-test` trong `qa-full-pipeline`), nếu test fail, Agent BẮT BUỘC phân loại lỗi theo 3 nhóm trước khi quyết định hành động:
+
+- **[Loại 1: Test Script / Harness Error]**
+  - Dấu hiệu: `SyntaxError`, `ModuleNotFoundError`, `ImportError`, `AttributeError`, sai tên hàm SDK so với `sdk-map.json`, thiếu fixture cấu hình hoặc sai selector Web UI.
+  - Hành động: **ĐƯỢC PHÉP tự động sửa mã test (Self-Fix tối đa 2 vòng)** qua `qa-auto-design` và chạy lại.
+- **[Loại 2: Stale Test Data / Env Timeout]**
+  - Dấu hiệu: Lệnh bị từ chối do giá vượt biên độ trần/sàn khi test chạy khác ngày giao dịch, hoặc gặp 502/504 gateway timeout tạm thời.
+  - Hành động: **ĐƯỢC PHÉP tự động refresh `data-grounding.json` từ Metabase UAT (`$METABASE_UAT_DB_TIMESCALE_ID`) và retry 1 lần duy nhất.**
+- **[Loại 3: Real Application Bug (Lỗi Nghiệp vụ Ứng dụng Thật)]**
+  - Dấu hiệu: Request đã gửi thành công tới server UAT đúng thông số theo `spec/final.md` và `.feature`, nhưng server trả HTTP status code khác kỳ vọng (vd: mong đợi 200 nhưng server trả 400/500), sai error code nghiệp vụ, hoặc dữ liệu DB/WS không khớp logic đặc tả.
+  - Hành động: **CẤM TUYỆT ĐỐI SỬA TEST ASSERTION ĐỂ ÉP PASS!** Giữ nguyên trạng thái **FAILED**, ghi nhận đầy đủ request/response vào `test-output.log`, trích xuất cURL/WS frame vào `report.md`, gắn nhãn **`[APP_BUG]`** trong `report.md` và bàn giao sang DEV.
+
+## 6. Quy Tắc Dữ Liệu Động JIT (Just-In-Time Data Grounding & price_type)
+- **Kịch bản Gherkin (.feature):** Bảng `Examples` khi có giá chứng khoán BẮT BUỘC có thêm cột `price_type` (`AT_REF`, `AT_CEILING`, `AT_FLOOR`, `OVER_CEILING_1_TICK`, `UNDER_FLOOR_1_TICK`) bên cạnh mức giá mẫu.
+- **Test Fixture (conftest):** Kiểm tra `trading_date` trong `data-grounding.json`. Nếu khác ngày hiện tại, fixture tự động cập nhật lại mức giá thực tế tương ứng với `price_type` từ Metabase UAT, chống fail giả do biên độ giá thay đổi qua ngày.

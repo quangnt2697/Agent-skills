@@ -83,7 +83,7 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 
      const lintResult = await lintDomainGherkin({
        issueKey,
-       gherkinContent: fs.readFileSync(`workspace/${issueKey}/test/${issueKey}.feature`, 'utf8')
+       gherkinContent: fs.readFileSync(`workspace/issues/${issueKey}/test/${issueKey}.feature`, 'utf8')
      });
      // Tự động bắt lỗi: Đặt MTL cho mã CR/RES, lệnh MP trên UPCoM, sửa/hủy trong ATO/ATC...
      ```
@@ -108,7 +108,7 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
   const res = await discoverWebUILocators(issueKey, targetPage);
   // Workflow tự động probe ISSUE_KEY_URL (fallback WEB_BASE_URL),
   // mở trình duyệt, đăng nhập thật, dump DOM và lưu locators.json vào:
-  // workspace/{issueKey}/test/fixtures/locators.json
+  // workspace/issues/{issueKey}/test/fixtures/locators.json
   ```
 - **⚠️ Ranh giới quan trọng:**
   - Lệnh `batchSquashPush` qua n8n **CHỈ** được thiết kế để tạo nhanh hàng loạt Test Case thô (Dumb Batch Creation) từ checklist, giúp tiết kiệm thời gian (đẩy 20 test cases chỉ mất 3-4 giây). Tuy nhiên, nó **KHÔNG** chứa logic dọn dẹp rác hay liên kết Campaign.

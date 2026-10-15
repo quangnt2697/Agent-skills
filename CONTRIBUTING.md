@@ -37,19 +37,15 @@ Mọi đóng góp Plugin và Skill mới trong repository này **BẮT BUỘC** 
 
 ## 3. Quy tắc Vị trí Rule Files
 
-Khi tạo hoặc cập nhật rule:
+Thư mục `.agents/rules/` là **Single Source of Truth** cho toàn bộ quy tắc của Agent trong dự án.  
+Thư mục `.claude/rules` là một **Symbolic Link** trỏ trực tiếp sang `../.agents/rules`:
 
-| Thư mục | Dùng cho | Ai đọc |
+| Thư mục | Cơ chế | Ai đọc |
 |---|---|---|
-| `.claude/rules/` | Source of truth — nơi soạn thảo và cập nhật | Claude Code, Cursor, Copilot |
-| `.agents/rules/` | Mirror của `.claude/rules/` — **PHẢI đồng bộ** | Antigravity IDE, Gemini |
+| `.agents/rules/` | **Source of truth** — nơi soạn thảo và lưu trữ | Antigravity IDE, Gemini, Claude |
+| `.claude/rules/` | **Symlink** (`.claude/rules -> ../.agents/rules`) | Claude Code, Cursor |
 
-**Quy trình bắt buộc:** Sau mỗi lần sửa file trong `.claude/rules/`, phải chạy:
-```bash
-cp .claude/rules/<file>.md .agents/rules/<file>.md
-```
-
-Rule mới tạo trong `.claude/rules/` **phải được copy ngay** vào `.agents/rules/` trong cùng commit.
+**Lưu ý:** Chỉ cần chỉnh sửa trực tiếp các file trong `.agents/rules/` (hoặc thông qua symlink `.claude/rules/`), mọi thay đổi sẽ tự động đồng bộ ngay lập tức mà không cần lệnh copy thủ công.
 
 ## 3. Chỉnh sửa Kỹ năng hiện có
 

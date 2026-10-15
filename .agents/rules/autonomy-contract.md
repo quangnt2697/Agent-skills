@@ -75,7 +75,7 @@ Auto mode = BẬT (mặc định), trừ khi:
   - Chuỗi $ARGUMENTS chứa "--step" hoặc "--manual"
 
 Kiểm tra bổ sung (nếu file tồn tại):
-  - /project-root/workspace/{issueKey}/.pipeline-state.json có "autoMode": false → tắt auto
+  - `/project-root/workspace/issues/{issueKey}/.pipeline-state.json` có `"autoMode": false` → tắt auto
 ```
 
 Ở chế độ `--step`, agent dừng sau **mỗi phase** để user review — đây là chế độ opt-in, không phải mặc định.

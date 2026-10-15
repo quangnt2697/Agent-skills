@@ -74,7 +74,7 @@ def test_create_order_api():
 - Test business scenarios (Gherkin scenarios)
 
 **Đặt ở đâu:**
-- `/project-root/workspace/{issueKey}/test/steps/`
+- `/project-root/workspace/issues/{issueKey}/test/steps/`
 - `tests/e2e/`
 
 **Framework:**
@@ -89,7 +89,7 @@ def test_create_order_api():
 
 **Example:**
 ```python
-# /project-root/workspace/JIRA-123/test/steps/test_order.py (QA writes this)
+# /project-root/workspace/issues/JIRA-123/test/steps/test_order.py (QA writes this)
 @given('người dùng đã đăng nhập với tài khoản "1234567890"')
 def step_impl(context):
     login("1234567890", "password")

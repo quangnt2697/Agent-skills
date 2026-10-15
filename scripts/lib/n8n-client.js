@@ -100,8 +100,10 @@ export async function prepJiraContext(issueKey) {
 }
 
 /**
- * Fast-Path: Batch Push test cases lên Squash TM qua n8n
- * Tự động nạp cấu hình từ .env nếu params không truyền vào
+ * Fast-Path: Batch Push test cases lên Squash TM qua n8n (Thử nghiệm)
+ * ⚠️ CẢNH BÁO: batchSquashPush qua n8n chỉ là dumb batch creation thử nghiệm.
+ * Quy trình chuẩn hóa production BẮT BUỘC dùng `/qa-squash-push` (`squash-push.sh`)
+ * để xử lý đầy đủ XSRF token, cấu trúc folder và liên kết Campaign Test Plan.
  * @param {object} params { baseUrl, apiToken, projectId, folderId, testCases }
  * @returns {Promise<object>}
  */

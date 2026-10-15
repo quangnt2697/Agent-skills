@@ -18,6 +18,7 @@
       "Bash(python3 ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-flowchart/scripts/export.py:*)",
       "Bash(node plugins/core/skills/meta-cross-validation/scripts/trace-check.js:*)",
       "Bash(node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/scripts/trace-check.js:*)",
+      "Bash(bash .agents/hooks/claude/session-start.sh)",
       "Bash(bash hooks/claude/session-start.sh)",
       "Bash(pytest:*)",
       "Bash(python3 -m pytest:*)",
@@ -71,7 +72,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR}/hooks/claude/session-start.sh\""
+            "command": "SCRIPT=\"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/session-start.sh\"; [ -f \"$SCRIPT\" ] || SCRIPT=\"${CLAUDE_PROJECT_DIR}/hooks/claude/session-start.sh\"; bash \"$SCRIPT\""
           }
         ]
       }

@@ -18,10 +18,10 @@ Tài liệu này hướng dẫn định dạng chuẩn của file báo cáo đ�
 
 ## 2. Quy Chuẩn Độc Bản Output (Single File Per Format)
 
-Trong thư mục kết quả `workspace/{issueKey}/test/result/`, **BẮT BUỘC CHỈ TỒN TẠI DUY NHẤT 1 FILE CHO MỖI LOẠI ĐỊNH DẠNG**:
+Trong thư mục kết quả `workspace/issues/{issueKey}/test/result/`, **BẮT BUỘC CHỈ TỒN TẠI DUY NHẤT 1 FILE CHO MỖI LOẠI ĐỊNH DẠNG**:
 
 ```
-workspace/{issueKey}/test/result/
+workspace/issues/{issueKey}/test/result/
 ├── junit.xml                    # Duy nhất 1 file XML chuẩn JUnit (dùng cho CI/CD)
 ├── report.html                  # Duy nhất 1 file HTML trực quan (kèm pytest-html nếu có)
 ├── test-output.log              # Duy nhất 1 file LOG (toàn bộ console stdout/stderr qua tee)
@@ -41,7 +41,7 @@ workspace/{issueKey}/test/result/
 # Báo cáo Thực thi Automation Test — [Issue Key / Module]
 
 **Thời gian:** YYYY-MM-DD HH:MM:SS  
-**Mục tiêu:** `workspace/{issueKey}/test/steps/`  
+**Mục tiêu:** `workspace/issues/{issueKey}/test/steps/`  
 **Môi trường:** UAT / Staging  
 **Framework:** Pytest  
 
@@ -64,10 +64,11 @@ workspace/{issueKey}/test/result/
 
 ## ❌ 2. Chi tiết Test Case Thất bại (Failed Tests Breakdown)
 
-### 2.1. `test_order.py::test_order_invalid_qty`
-- **File:** `workspace/{issueKey}/test/steps/test_order.py:45`
+### 2.1. `test_order.py::test_order_invalid_qty` [Phân loại: APP_BUG]
+- **File:** `workspace/issues/{issueKey}/test/steps/test_order.py:45`
+- **Phân loại lỗi:** `[APP_BUG]` — Request hợp lệ theo spec nhưng API trả sai mã lỗi.
 - **Thông báo lỗi từ Pytest:** `AssertionError: Expected HTTP 400, got 200`
-- **Dữ liệu ghi nhận từ Log (nếu có):**
+- **Dữ liệu ghi nhận từ Log:**
   - **Request:** `POST /api/v1/orders` — Body: `{"symbol": "TCB", "quantity": 0, "side": "BUY"}`
   - **Response:** HTTP 200 OK — Body: `{"orderId": "ORD-9988", "status": "PENDING"}`
 - **Dòng code gây lỗi (Traceback snippet):**
@@ -75,6 +76,7 @@ workspace/{issueKey}/test/result/
   > assert response.status_code == 400
   E AssertionError: Expected HTTP 400, got 200
   ```
+- **Hành động:** 🛑 CẤM SỬA TEST ASSERTION. Giữ nguyên trạng thái FAILED và chuyển giao DEV sửa backend.
 
 ---
 

@@ -17,7 +17,7 @@ Khi tìm dữ liệu loại (a), BẮT BUỘC tra cứu theo thứ tự sau. D�
 1. **n8n Fast-Path (`getSecuritiesFixture`)**: Cho symbol, giá, bước giá, biên độ.
    - Lệnh: `node scripts/lib/n8n-client.js getSecuritiesFixture "{}"`
 2. **Metabase UAT SQL (READ-ONLY)**: Cho `accountNo`, `VA`, `order`, trạng thái, `napasCode`, số lượng đếm được. Dùng DB ID trong UAT (644, 535, 655).
-   - Lệnh: `node .agents/db-client.js metabaseRunSql '{"database": 644, "query": "SELECT account_no FROM virtual_account LIMIT 1"}'`
+   - Lệnh: `node scripts/lib/db-client.js metabaseRunSql '{"database": 644, "query": "SELECT account_no FROM virtual_account LIMIT 1"}'`
 3. **Gọi API UAT (GET public/internal)**
 4. **Fallback (Gắn nhãn `[DATA-ASSUMED]`)**: Nếu các nguồn trên lỗi/timeout, dùng giá trị symbolic hoặc tự bịa nhưng BẮT BUỘC gắn comment `[DATA-ASSUMED] ...` phía trên Scenario trong `.feature` để cảnh báo. Việc lỗi kết nối CẤM không được làm dừng pipeline.
 

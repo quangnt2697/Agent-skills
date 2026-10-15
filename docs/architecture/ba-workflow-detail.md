@@ -7,10 +7,10 @@
 **Trách nhiệm:**
 - Import tài liệu từ Jira/Confluence (scan references, download files)
 - Phân tích gaps theo 3 loại: Thiếu / Mơ hồ / Xung đột
-- Phỏng vấn stakeholders làm rõ gaps (≥90% confidence)
+- Phỏng vấn stakeholders làm rõ gaps (chỉ phỏng vấn khi có 🔴 Critical gap theo autonomy-contract.md)
 - Tổng hợp thành `*-final.md` với đầy đủ 13 sections
 
-**Output:** `/project-root/workspace/{issueKey}/spec/final.md`
+**Output:** `/project-root/workspace/issues/{issueKey}/spec/final.md`
 
 **Handoff to:**
 - QA: Section 9 (AC) + Section 5 (User Flow) + Section 8 (Edge Cases) → Transform thành Checklist + Gherkin
@@ -58,7 +58,7 @@
 **Focus:** Clarity & Detail (mài giũa ý tưởng thành spec rõ ràng)
 
 **Output:** 
-- Local: `/project-root/workspace/{issueKey}/spec/refined.md`
+- Local: `/project-root/workspace/issues/{issueKey}/spec/refined.md` (hoặc xuất thẳng `spec/final.md` khi hoàn tất làm rõ để QA/DEV tiêu thụ ngay)
 - Jira: Updated description với cấu trúc chuẩn
 
 **Ranh giới:**
@@ -67,6 +67,6 @@
 |-------------|----------------------------------|-----------------------------------------|
 | **Input**   | Jira có requirements rõ ràng     | Jira có ý tưởng thô/mơ hồ               |
 | **Process** | Import → Analyze → Gap detection | Download → Diverge → Converge → Sharpen |
-| **Output**  | `*-final.md` file (for handoff)  | Updated Jira description + local file   |
+| **Output**  | `final.md` file (for handoff)    | Updated Jira description + `refined.md`/`final.md` |
 | **Focus**   | Completeness (13 sections)       | Clarity & Detail (brainstorm)           |
-| **Handoff** | QA/DEV read from file            | QA/DEV read from Jira or file           |
+| **Handoff** | QA/DEV read from file            | QA/DEV read from `spec/final.md`         |

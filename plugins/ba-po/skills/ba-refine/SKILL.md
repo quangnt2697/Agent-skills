@@ -53,8 +53,8 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành 
   Tạo `refined-draft.md` từ template → Trình toàn bộ nội dung cho user → Revision loop (≤5 vòng) → Copy thành `refined.md` → Làm giàu (User Story, AC Gherkin, UI Design/Mockup nếu task liên quan giao diện — HỦY BỎ Mermaid flow).
   > 📖 Template: [assets/jira-description-template.md](assets/jira-description-template.md)
 
-- **Giai đoạn 4 (Push Jira):**
-  Dry-run preview ADF → Push description → Ghi `push-log.json` → Tự động chuyển sang `/qa-test-design`.
+- **Giai đoạn 4 (Push Jira & Xuất bản final.md Handoff):**
+  Dry-run preview ADF → Push description lên Jira → Ghi `push-log.json` → **Tự động xuất bản tài liệu chuẩn hóa ra `workspace/issues/{issueKey}/spec/final.md`** kèm `spec/testability-manifest.json` để QA (`/qa-test-design`, `/qa-full-pipeline`) và DEV (`/dev-tech-spec`) có thể tiêu thụ trực tiếp ngay lập tức mà không cần gọi lại `/ba-spec`.
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 
