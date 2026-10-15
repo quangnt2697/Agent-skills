@@ -17,12 +17,12 @@
     ],
     "negative": [
       {
-        "prompt": "Write unit tests for the date parser",
-        "owner": "dev-test-driven-development"
+        "prompt": "Chạy test automation hiện có Pytest",
+        "owner": "qa-run-test"
       },
       {
-        "prompt": "Harden this endpoint against SQL injection",
-        "owner": "dev-security"
+        "prompt": "Quét mã nguồn phát hiện lỗ hổng bảo mật theo chuẩn OWASP",
+        "owner": "security-code-audit"
       }
     ]
   },

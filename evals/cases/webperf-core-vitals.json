@@ -21,8 +21,8 @@
         "owner": "ba-gap-analysis"
       },
       {
-        "prompt": "Viết unit test cho hàm xử lý thanh toán",
-        "owner": "dev-test-driven-development"
+        "prompt": "Thiết kế bộ artifacts kiểm thử checklist và Gherkin",
+        "owner": "qa-test-design"
       }
     ]
   },

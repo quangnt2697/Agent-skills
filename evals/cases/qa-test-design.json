@@ -17,8 +17,8 @@
     ],
     "negative": [
       {
-        "prompt": "Viết mã nguồn backend API cho đơn hàng",
-        "owner": "dev-api-design"
+        "prompt": "Phân tích khoảng cách giữa trạng thái hiện tại AS-IS và TO-BE",
+        "owner": "ba-gap-analysis"
       },
       {
         "prompt": "Lưu session checkpoint để giải phóng bộ nhớ",

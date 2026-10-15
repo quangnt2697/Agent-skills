@@ -21,8 +21,8 @@
         "owner": "cr-code-simplification"
       },
       {
-        "prompt": "Viết unit test cho logic thanh toán",
-        "owner": "dev-test-driven-development"
+        "prompt": "Điều phối toàn bộ quy trình kiểm thử QA end-to-end",
+        "owner": "qa-full-pipeline"
       }
     ]
   },

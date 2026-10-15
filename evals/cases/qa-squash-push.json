@@ -17,8 +17,8 @@
     ],
     "negative": [
       {
-        "prompt": "Thiết kế giao diện component React CSS",
-        "owner": "dev-frontend-engineering"
+        "prompt": "Sinh mã kiểm thử tự động Playwright",
+        "owner": "qa-auto-design"
       },
       {
         "prompt": "Rà soát ticket bị kẹt impediment triage",

@@ -17,8 +17,8 @@
     ],
     "negative": [
       {
-        "prompt": "Viết test-driven development red green refactor",
-        "owner": "dev-test-driven-development"
+        "prompt": "Đo lường và phân tích Core Web Vitals",
+        "owner": "webperf-core-vitals"
       },
       {
         "prompt": "Viết user story INVEST",

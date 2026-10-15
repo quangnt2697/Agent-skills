@@ -21,10 +21,6 @@
         "owner": "ba-spec"
       },
       {
-        "prompt": "Viết Tech-Spec từ Business-Spec",
-        "owner": "dev-spec-driven-development"
-      },
-      {
         "prompt": "Thiết kế test cases",
         "owner": "qa-test-design"
       }

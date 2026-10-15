@@ -17,8 +17,8 @@
     ],
     "negative": [
       {
-        "prompt": "Thiết kế API RESTful có phân trang và filter",
-        "owner": "dev-api-design"
+        "prompt": "Điều hành Daily Standup tự động",
+        "owner": "sm-daily-standup"
       },
       {
         "prompt": "Tạo checklist kiểm thử cho giao dịch nạp tiền",

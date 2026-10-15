@@ -17,8 +17,8 @@
     ],
     "negative": [
       {
-        "prompt": "Debug lỗi null pointer exception trong code",
-        "owner": "dev-debugging"
+        "prompt": "Tự động đồng bộ test case lên Squash TM",
+        "owner": "qa-squash-push"
       },
       {
         "prompt": "Kiểm tra daily standup của team",

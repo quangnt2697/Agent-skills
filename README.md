@@ -18,11 +18,6 @@ Chuyên gia kiểm thử, thiết kế test cases, automation testing, và đả
 
 **6 skills:** Test design (Checklist + Gherkin), automation code generation, test execution, reverse engineering, Squash TM integration.
 
-### 3. DEV — Software Developer (`plugins/dev`)
-Kỹ sư phần mềm, thiết kế kiến trúc, viết code, unit testing, và review.
-
-**14 skills:** Spec-driven development, TDD, API design, frontend engineering, debugging, performance, security, refactoring.
-
 ### 4. Scrum Master (`plugins/scrum-master`)
 Kỹ sư Quản lý Quy trình & Điều phối (Scrum Master). Quản lý Sprint, theo dõi Kanban board, phát hiện rủi ro (blockers), và điều hành các nghi thức Agile.
 
@@ -155,16 +150,6 @@ plugins/dev/
 | `/qa-run-test {issueKey}`               | Chạy tests + xuất báo cáo                              |
 | `/qa-code2spec {path}`                  | Reverse engineer code → spec                           |
 | `/qa-squash-push`                       | Push kết quả test lên Squash TM                        |
-
-### DEV Commands (`plugins/dev`)
-
-| Command                        | Chức năng                                    |
-|--------------------------------|----------------------------------------------|
-| `/dev-tech-spec {issueKey}`    | Viết tech-spec từ business-spec              |
-| `/dev-plan {issueKey}`         | Chia tasks + dependencies                    |
-| `/dev-build {issueKey} [auto]` | TDD implementation (Red → Green → Refactor)  |
-| `/dev-audit`                   | Kiểm toán, quét lỗi, và tự sửa lỗi toàn diện |
-| `/dev-unit-test`               | Viết unit tests trước khi code               |
 
 ### Code Reviewer, Security & WebPerf Commands (`plugins/code-reviewer`)
 

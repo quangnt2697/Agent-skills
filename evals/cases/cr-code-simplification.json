@@ -20,8 +20,8 @@
         "prompt": "Add a feature flag system to the app"
       },
       {
-        "prompt": "Diagnose why the build broke overnight",
-        "owner": "dev-debugging"
+        "prompt": "Chạy test automation hiện có",
+        "owner": "qa-run-test"
       }
     ]
   },

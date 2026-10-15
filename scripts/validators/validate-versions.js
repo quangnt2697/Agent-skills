@@ -32,7 +32,6 @@ const MANIFEST_PATHS = [
   "plugins/ba-po/plugin.json",
   "plugins/code-reviewer/plugin.json",
   "plugins/core/plugin.json",
-  "plugins/dev/plugin.json",
   "plugins/qa/plugin.json",
   "plugins/scrum-master/plugin.json",
   "plugins/fintech-data/plugin.json",

@@ -23,10 +23,6 @@
       {
         "prompt": "Interview user về requirements",
         "owner": "ba-interview-me"
-      },
-      {
-        "prompt": "Viết Tech-Spec",
-        "owner": "dev-spec-driven-development"
       }
     ]
   },

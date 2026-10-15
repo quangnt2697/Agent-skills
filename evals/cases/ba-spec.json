@@ -17,10 +17,6 @@
     ],
     "negative": [
       {
-        "prompt": "Viết Tech-Spec",
-        "owner": "dev-spec-driven-development"
-      },
-      {
         "prompt": "Thiết kế test cases",
         "owner": "qa-test-design"
       },

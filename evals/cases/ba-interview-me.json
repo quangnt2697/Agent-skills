@@ -17,8 +17,8 @@
     ],
     "negative": [
       {
-        "prompt": "Viết tài liệu Tech-Spec chi tiết cho developer",
-        "owner": "dev-spec-driven-development"
+        "prompt": "Viết User Stories chuẩn theo INVEST",
+        "owner": "ba-user-story-writing"
       },
       {
         "prompt": "Tạo kịch bản kiểm thử Gherkin",

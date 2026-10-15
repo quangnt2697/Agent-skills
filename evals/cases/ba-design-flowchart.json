@@ -17,8 +17,8 @@
     ],
     "negative": [
       {
-        "prompt": "Viết unit test cho hàm tính toán giá cổ phiếu",
-        "owner": "dev-test-driven-development"
+        "prompt": "Thiết kế checklist kiểm thử kịch bản tự động",
+        "owner": "qa-test-design"
       },
       {
         "prompt": "Lập kế hoạch sprint planning",
