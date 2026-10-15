@@ -4,7 +4,7 @@
 - **Database ID trên Metabase UAT:** `${METABASE_UAT_DB_TIMESCALE_ID}` (Mặc định: `644`)
 - **Database ID trên Metabase PROD:** `${METABASE_PROD_DB_TIMESCALE_ID}` (Mặc định: `7`)
 - **Hệ quản trị CSDL:** TimescaleDB (PostgreSQL Extension)
-- **Tổng số bảng trong schema public:** `114` bảng
+- **Tổng số bảng trong schema public:** `118` bảng
 - **Công cụ đối chiếu & kiểm định dữ liệu:** `npm run db:recon`, `npm run db:recon:core`, `npm run db:recon:prod`
 - **Tài liệu tham chiếu chuẩn:** [`references/securities-domain-rules.md`](./securities-domain-rules.md)
 
@@ -56,9 +56,9 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 
 ---
 
-## 3. Danh Mục Chi Tiết 114 Bảng Theo Nhóm Nghiệp Vụ
+## 3. Danh Mục Chi Tiết 118 Bảng Theo Nhóm Nghiệp Vụ
 
-### KRX MDDS Dữ liệu Khớp Lệnh & Sổ Lệnh Realtime (35 bảng)
+### KRX MDDS Dữ liệu Khớp Lệnh & Sổ Lệnh Realtime (36 bảng)
 
 | STT | Tên Bảng | ID Metabase | Số Cột | Tên Hiển Thị |
 | :---: | :--- | :---: | :---: | :--- |
@@ -76,27 +76,28 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 | 12 | `krx_mdds_v2_symbol_trading_session_snapshots` | `91824` | 9 | krx_mdds_v2_symbol_trading_session_snapshots |
 | 13 | `krx_mdds_v2_symbol_trading_sessions` | `91823` | 9 | krx_mdds_v2_symbol_trading_sessions |
 | 14 | `krx_mdds_v2_ticks` | `87224` | 13 | krx_mdds_v2_ticks |
-| 15 | `krx_mdds_v2_top_price_snapshots` | `74867` | 12 | krx_mdds_v2_top_price_snapshots |
-| 16 | `krx_mdds_v2_top_prices` | `81836` | 12 | krx_mdds_v2_top_prices |
-| 17 | `krx_mdds_v3_board_event_snapshots` | `90996` | 7 | krx_mdds_v3_board_event_snapshots |
-| 18 | `krx_mdds_v3_board_events` | `90995` | 7 | krx_mdds_v3_board_events |
-| 19 | `krx_mdds_v3_market_index_snapshots` | `89299` | 27 | krx_mdds_v3_market_index_snapshots |
-| 20 | `krx_mdds_v3_market_indices` | `89300` | 27 | krx_mdds_v3_market_indices |
-| 21 | `krx_mdds_v3_symbol_board_events` | `90997` | 7 | krx_mdds_v3_symbol_board_events |
-| 22 | `krx_mdds_v3_ticks` | `81368` | 14 | krx_mdds_v3_ticks |
-| 23 | `krx_mdds_v3_ticks_extra` | `84710` | 17 | krx_mdds_v3_ticks_extra |
-| 24 | `krx_mdds_v3_ticks_extra_snapshots` | `89101` | 16 | krx_mdds_v3_ticks_extra_snapshots |
-| 25 | `krx_mdds_v3_top_price_snapshots` | `91276` | 10 | krx_mdds_v3_top_price_snapshots |
-| 26 | `krx_mdds_v3_top_prices` | `74604` | 11 | krx_mdds_v3_top_prices |
-| 27 | `krx_mdds_v3_trading_foreign_investors` | `89055` | 17 | krx_mdds_v3_trading_foreign_investors |
-| 28 | `prices` | `86838` | 15 | prices |
-| 29 | `stock_quote` | `76791` | 35 | stock_quote |
-| 30 | `ticks` | `81791` | 8 | ticks |
-| 31 | `ticks_ol` | `81534` | 4 | ticks_ol |
-| 32 | `ticks_statistic_daily_with_side_v2` | `81344` | 8 | ticks_statistic_daily_with_side_v2 |
-| 33 | `ticks_v2_statistic_daily` | `79865` | 5 | ticks_v2_statistic_daily |
-| 34 | `top_prices` | `77650` | 8 | top_prices |
-| 35 | `top_prices_ol` | `74892` | 6 | top_prices_ol |
+| 15 | `krx_mdds_v2_ticks_snapshots` | `97095` | 13 | krx_mdds_v2_ticks_snapshots |
+| 16 | `krx_mdds_v2_top_price_snapshots` | `74867` | 12 | krx_mdds_v2_top_price_snapshots |
+| 17 | `krx_mdds_v2_top_prices` | `81836` | 12 | krx_mdds_v2_top_prices |
+| 18 | `krx_mdds_v3_board_event_snapshots` | `90996` | 7 | krx_mdds_v3_board_event_snapshots |
+| 19 | `krx_mdds_v3_board_events` | `90995` | 7 | krx_mdds_v3_board_events |
+| 20 | `krx_mdds_v3_market_index_snapshots` | `89299` | 27 | krx_mdds_v3_market_index_snapshots |
+| 21 | `krx_mdds_v3_market_indices` | `89300` | 27 | krx_mdds_v3_market_indices |
+| 22 | `krx_mdds_v3_symbol_board_events` | `90997` | 7 | krx_mdds_v3_symbol_board_events |
+| 23 | `krx_mdds_v3_ticks` | `81368` | 14 | krx_mdds_v3_ticks |
+| 24 | `krx_mdds_v3_ticks_extra` | `84710` | 17 | krx_mdds_v3_ticks_extra |
+| 25 | `krx_mdds_v3_ticks_extra_snapshots` | `89101` | 16 | krx_mdds_v3_ticks_extra_snapshots |
+| 26 | `krx_mdds_v3_top_price_snapshots` | `91276` | 10 | krx_mdds_v3_top_price_snapshots |
+| 27 | `krx_mdds_v3_top_prices` | `74604` | 11 | krx_mdds_v3_top_prices |
+| 28 | `krx_mdds_v3_trading_foreign_investors` | `89055` | 17 | krx_mdds_v3_trading_foreign_investors |
+| 29 | `prices` | `86838` | 15 | prices |
+| 30 | `stock_quote` | `76791` | 35 | stock_quote |
+| 31 | `ticks` | `81791` | 8 | ticks |
+| 32 | `ticks_ol` | `81534` | 4 | ticks_ol |
+| 33 | `ticks_statistic_daily_with_side_v2` | `81344` | 8 | ticks_statistic_daily_with_side_v2 |
+| 34 | `ticks_v2_statistic_daily` | `79865` | 5 | ticks_v2_statistic_daily |
+| 35 | `top_prices` | `77650` | 8 | top_prices |
+| 36 | `top_prices_ol` | `74892` | 6 | top_prices_ol |
 
 ---
 
@@ -121,7 +122,7 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 
 ---
 
-### Biểu Đồ Nến & Xu Hướng (OHLC & Trendlines) (16 bảng)
+### Biểu Đồ Nến & Xu Hướng (OHLC & Trendlines) (17 bảng)
 
 | STT | Tên Bảng | ID Metabase | Số Cột | Tên Hiển Thị |
 | :---: | :--- | :---: | :---: | :--- |
@@ -132,15 +133,16 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 | 5 | `index_ohlc` | `74734` | 10 | index_ohlc |
 | 6 | `krx_mdds_v2_derivative_stock_ohlc` | `81034` | 10 | krx_mdds_v2_derivative_stock_ohlc |
 | 7 | `krx_mdds_v2_index_ohlc` | `86627` | 10 | krx_mdds_v2_index_ohlc |
-| 8 | `krx_mdds_v2_stock_ohlc` | `82318` | 10 | krx_mdds_v2_stock_ohlc |
-| 9 | `ohlc` | `78557` | 10 | ohlc |
-| 10 | `ohlc_normalization_details` | `75299` | 16 | ohlc_normalization_details |
-| 11 | `stock_ohlc` | `85775` | 10 | stock_ohlc |
-| 12 | `stock_ohlc_days` | `87510` | 10 | stock_ohlc_days |
-| 13 | `stock_ohlc_min1_view` | `84473` | 10 | stock_ohlc_min1_view |
-| 14 | `symbol_closing_informations` | `78419` | 7 | symbol_closing_informations |
-| 15 | `trend_line_5m` | `83155` | 4 | trend_line_5m |
-| 16 | `trend_line_5m_krx` | `76397` | 4 | trend_line_5m_krx |
+| 8 | `krx_mdds_v2_ohlc_snapshot` | `95966` | 10 | krx_mdds_v2_ohlc_snapshot |
+| 9 | `krx_mdds_v2_stock_ohlc` | `82318` | 10 | krx_mdds_v2_stock_ohlc |
+| 10 | `ohlc` | `78557` | 10 | ohlc |
+| 11 | `ohlc_normalization_details` | `75299` | 16 | ohlc_normalization_details |
+| 12 | `stock_ohlc` | `85775` | 10 | stock_ohlc |
+| 13 | `stock_ohlc_days` | `87510` | 10 | stock_ohlc_days |
+| 14 | `stock_ohlc_min1_view` | `84473` | 10 | stock_ohlc_min1_view |
+| 15 | `symbol_closing_informations` | `78419` | 7 | symbol_closing_informations |
+| 16 | `trend_line_5m` | `83155` | 4 | trend_line_5m |
+| 17 | `trend_line_5m_krx` | `76397` | 4 | trend_line_5m_krx |
 
 ---
 
@@ -230,8 +232,8 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 | 1 | `coupon_payment_dates` | `87188` | 11 | coupon_payment_dates |
 | 2 | `disclosures` | `80121` | 15 | disclosures |
 | 3 | `drv_product_events` | `78227` | 6 | drv_product_events |
-| 4 | `events` | `81644` | 18 | events |
-| 5 | `events_view` | `75198` | 39 | events_view |
+| 4 | `events` | `81644` | 1 | events |
+| 5 | `events_view` | `75198` | 22 | events_view |
 | 6 | `holidays` | `78934` | 7 | holidays |
 | 7 | `krx_mdds_v2_board_event_snapshots` | `78438` | 7 | krx_mdds_v2_board_event_snapshots |
 | 8 | `krx_mdds_v2_board_events` | `83685` | 7 | krx_mdds_v2_board_events |
@@ -245,16 +247,18 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 
 ---
 
-### Hệ Thống & Thống Kê Giám Sát (6 bảng)
+### Hệ Thống & Thống Kê Giám Sát (8 bảng)
 
 | STT | Tên Bảng | ID Metabase | Số Cột | Tên Hiển Thị |
 | :---: | :--- | :---: | :---: | :--- |
-| 1 | `pg_stat_kcache` | `77911` | 29 | pg_stat_kcache |
-| 2 | `pg_stat_kcache_detail` | `79742` | 32 | pg_stat_kcache_detail |
-| 3 | `pg_stat_statements` | `79287` | 33 | pg_stat_statements |
+| 1 | `pg_stat_kcache` | `77911` | 30 | pg_stat_kcache |
+| 2 | `pg_stat_kcache_detail` | `79742` | 33 | pg_stat_kcache_detail |
+| 3 | `pg_stat_statements` | `79287` | 52 | pg_stat_statements |
 | 4 | `pg_stat_statements_info` | `84592` | 2 | pg_stat_statements_info |
-| 5 | `search_events` | `87730` | 3 | search_events |
-| 6 | `timestamps` | `85817` | 2 | timestamps |
+| 5 | `prices_growth_observation` | `95547` | 5 | prices_growth_observation |
+| 6 | `prices_read_observation` | `94769` | 7 | prices_read_observation |
+| 7 | `search_events` | `87730` | 3 | search_events |
+| 8 | `timestamps` | `85817` | 2 | timestamps |
 
 ---
 
@@ -273,7 +277,162 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 
 ## 4. Chi Tiết Cấu Trúc Các Bảng Cốt Lõi (Core Tables)
 
-### Cấu trúc bảng: `krx_mdds_v2_ticks` (ID: 87224)
+### 4.1. Bảng Chuẩn Thế Hệ Mới (V3 Core Tables - Bắt Buộc Ưu Tiên)
+
+#### Cấu trúc bảng: `security_definition_v3` (ID: 77534)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `sending_time` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 2 | `market_id` | `int4` | `type/Integer` | - |
+| 3 | `board_id` | `int4` | `type/Integer` | - |
+| 4 | `symbol` | `text` | `type/Text` | - |
+| 5 | `isin` | `text` | `type/Text` | - |
+| 6 | `product_id` | `text` | `type/Text` | - |
+| 7 | `product_grp_id` | `int4` | `type/Integer` | - |
+| 8 | `security_group_id` | `int4` | `type/Integer` | - |
+| 9 | `basic_price` | `float8` | `type/Float` | - |
+| 10 | `ceiling_price` | `float8` | `type/Float` | - |
+| 11 | `floor_price` | `float8` | `type/Float` | - |
+| 12 | `open_interest_quantity` | `int8` | `type/BigInteger` | - |
+| 13 | `security_status` | `int4` | `type/Integer` | - |
+| 14 | `symbol_admin_status_code` | `int4` | `type/Integer` | - |
+| 15 | `symbol_trading_method_status_code` | `int4` | `type/Integer` | - |
+| 16 | `symbol_trading_sanction_status_code` | `int4` | `type/Integer` | - |
+| 17 | `final_trade_date` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 18 | `listing_date` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+
+#### Cấu trúc bảng: `krx_mdds_v3_ticks` (ID: 89304)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `market_id` | `int4` | `type/Integer` | - |
+| 2 | `board_id` | `int4` | `type/Integer` | - |
+| 3 | `isin` | `text` | `type/Text` | - |
+| 4 | `symbol` | `text` | `type/Text` | - |
+| 5 | `match_price` | `float8` | `type/Float` | - |
+| 6 | `match_qtty` | `float8` | `type/Float` | - |
+| 7 | `sending_time` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 8 | `trading_session_id` | `int4` | `type/Integer` | - |
+| 9 | `total_volume_traded` | `int8` | `type/BigInteger` | - |
+| 10 | `gross_trade_amount` | `float8` | `type/Float` | - |
+| 11 | `highest_price` | `float8` | `type/Float` | - |
+| 12 | `lowest_price` | `float8` | `type/Float` | - |
+| 13 | `open_price` | `float8` | `type/Float` | - |
+| 14 | `created_date` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+
+#### Cấu trúc bảng: `krx_mdds_v3_ticks_extra` (ID: 89305)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `id` | `int8` | `type/BigInteger` | PK |
+| 2 | `market_id` | `int4` | `type/Integer` | - |
+| 3 | `board_id` | `int4` | `type/Integer` | - |
+| 4 | `isin` | `text` | `type/Text` | - |
+| 5 | `symbol` | `text` | `type/Text` | - |
+| 6 | `match_price` | `float8` | `type/Float` | - |
+| 7 | `match_qtty` | `float8` | `type/Float` | - |
+| 8 | `sending_time` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 9 | `trading_session_id` | `int4` | `type/Integer` | - |
+| 10 | `side` | `int4` | `type/Integer` | - |
+| 11 | `avg_price` | `float8` | `type/Float` | - |
+| 12 | `total_volume_traded` | `int8` | `type/BigInteger` | - |
+| 13 | `gross_trade_amount` | `float8` | `type/Float` | - |
+| 14 | `highest_price` | `float8` | `type/Float` | - |
+| 15 | `lowest_price` | `float8` | `type/Float` | - |
+| 16 | `open_price` | `float8` | `type/Float` | - |
+| 17 | `created_date` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+
+#### Cấu trúc bảng: `krx_mdds_v3_top_prices` (ID: 89307)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `id` | `int8` | `type/BigInteger` | PK |
+| 2 | `market_id` | `int4` | `type/Integer` | - |
+| 3 | `board_id` | `int4` | `type/Integer` | - |
+| 4 | `isin` | `text` | `type/Text` | - |
+| 5 | `symbol` | `text` | `type/Text` | - |
+| 6 | `sending_time` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 7 | `bid` | `jsonb` | `type/JSON` | - |
+| 8 | `offer` | `jsonb` | `type/JSON` | - |
+| 9 | `total_offer_qtty` | `float8` | `type/Float` | - |
+| 10 | `total_bid_qtty` | `float8` | `type/Float` | - |
+| 11 | `created_date` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+
+#### Cấu trúc bảng: `expected_price_v3` (ID: 82165)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `id` | `int8` | `type/BigInteger` | PK |
+| 2 | `market_id` | `int4` | `type/Integer` | - |
+| 3 | `board_id` | `int4` | `type/Integer` | - |
+| 4 | `isin` | `text` | `type/Text` | - |
+| 5 | `symbol` | `text` | `type/Text` | - |
+| 6 | `close_price` | `float8` | `type/Float` | - |
+| 7 | `expected_trade_price` | `float8` | `type/Float` | - |
+| 8 | `expected_trade_quantity` | `int8` | `type/BigInteger` | - |
+| 9 | `sending_time` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 10 | `created_date` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+
+#### Cấu trúc bảng: `krx_mdds_v3_trading_foreign_investors` (ID: 89055)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `sending_time` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 2 | `market_id` | `int4` | `type/Integer` | - |
+| 3 | `board_id` | `int4` | `type/Integer` | - |
+| 4 | `trading_session_id` | `text` | `type/Text` | - |
+| 5 | `symbol` | `text` | `type/Text` | - |
+| 6 | `transact_time` | `text` | `type/Text` | - |
+| 7 | `foreign_investor_type_code` | `text` | `type/Text` | - |
+| 8 | `sell_volume` | `int8` | `type/BigInteger` | - |
+| 9 | `sell_traded_amount` | `int8` | `type/BigInteger` | - |
+| 10 | `buy_volume` | `int8` | `type/BigInteger` | - |
+| 11 | `buy_traded_amount` | `int8` | `type/BigInteger` | - |
+| 12 | `total_sell_volume` | `int8` | `type/BigInteger` | - |
+| 13 | `total_sell_traded_amount` | `int8` | `type/BigInteger` | - |
+| 14 | `total_buy_volume` | `int8` | `type/BigInteger` | - |
+| 15 | `total_buy_traded_amount` | `int8` | `type/BigInteger` | - |
+| 16 | `foreigner_order_limit_quantity` | `int8` | `type/BigInteger` | - |
+| 17 | `foreigner_buy_possible_quantity` | `int8` | `type/BigInteger` | - |
+
+#### Cấu trúc bảng: `krx_mdds_v3_market_indices` (ID: 89300)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `market_id` | `int4` | `type/Integer` | - |
+| 2 | `trading_session_id` | `int4` | `type/Integer` | - |
+| 3 | `market_index_class` | `int4` | `type/Integer` | - |
+| 4 | `index_type_code` | `text` | `type/Text` | - |
+| 5 | `currency_code` | `text` | `type/Text` | - |
+| 6 | `transact_time` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 7 | `value_indexes` | `float8` | `type/Float` | - |
+| 8 | `total_volume_traded` | `int8` | `type/BigInteger` | - |
+| 9 | `gross_trade_amount` | `float8` | `type/Float` | - |
+| 10 | `contauct_acc_trd_vol` | `int8` | `type/BigInteger` | - |
+| 11 | `contauct_acc_trd_val` | `float8` | `type/Float` | - |
+| 12 | `blk_trd_acc_trd_vol` | `int8` | `type/BigInteger` | - |
+| 13 | `blk_trd_acc_trd_val` | `float8` | `type/Float` | - |
+| 14 | `fluctuation_upper_limit_issue_count` | `int8` | `type/BigInteger` | - |
+| 15 | `fluctuation_up_issue_count` | `int8` | `type/BigInteger` | - |
+| 16 | `fluctuation_steadiness_issue_count` | `int8` | `type/BigInteger` | - |
+| 17 | `fluctuation_down_issue_count` | `int8` | `type/BigInteger` | - |
+| 18 | `fluctuation_lower_limit_issue_count` | `int8` | `type/BigInteger` | - |
+| 19 | `fluctuation_up_issue_volume` | `int8` | `type/BigInteger` | - |
+| 20 | `fluctuation_steadiness_issue_volume` | `int8` | `type/BigInteger` | - |
+| 21 | `fluctuation_down_issue_volume` | `int8` | `type/BigInteger` | - |
+| 22 | `highest_value_indexes` | `float8` | `type/Float` | - |
+| 23 | `lowest_value_indexes` | `float8` | `type/Float` | - |
+| 24 | `changed_value` | `float8` | `type/Float` | - |
+| 25 | `changed_ratio` | `float8` | `type/Float` | - |
+| 26 | `prior_value_indexes` | `float8` | `type/Float` | - |
+| 27 | `index_name` | `text` | `type/Text` | - |
+
+---
+
+### 4.2. Bảng Snapshots & Thống Kê Giám Sát Mới Bổ Sung (New Tables)
+
+#### Cấu trúc bảng: `krx_mdds_v2_ticks_snapshots` (ID: 97095)
 
 | STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
 | :---: | :--- | :--- | :--- | :---: |
@@ -291,7 +450,66 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 | 12 | `side` | `int4` | `type/Integer` | - |
 | 13 | `created_date` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
 
-### Cấu trúc bảng: `krx_mdds_v2_top_prices` (ID: 81836)
+#### Cấu trúc bảng: `krx_mdds_v2_ohlc_snapshot` (ID: 95966)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `time` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 2 | `timestamp` | `int8` | `type/BigInteger` | - |
+| 3 | `open` | `float8` | `type/Float` | - |
+| 4 | `high` | `float8` | `type/Float` | - |
+| 5 | `low` | `float8` | `type/Float` | - |
+| 6 | `close` | `float8` | `type/Float` | - |
+| 7 | `volume` | `int8` | `type/BigInteger` | - |
+| 8 | `symbol` | `text` | `type/Text` | - |
+| 9 | `resolution` | `text` | `type/Text` | - |
+| 10 | `last_updated` | `int8` | `type/BigInteger` | - |
+
+#### Cấu trúc bảng: `prices_growth_observation` (ID: 95547)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `snapshot_at` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 2 | `total_rows` | `int8` | `type/BigInteger` | - |
+| 3 | `chunk_count` | `int4` | `type/Integer` | - |
+| 4 | `bytes_total` | `int8` | `type/BigInteger` | - |
+| 5 | `volume_pct` | `int4` | `type/Integer` | - |
+
+#### Cấu trúc bảng: `prices_read_observation` (ID: 94769)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `snapshot_at` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 2 | `queryid` | `int8` | `type/BigInteger` | - |
+| 3 | `calls` | `int8` | `type/BigInteger` | - |
+| 4 | `total_exec_time` | `float8` | `type/Float` | - |
+| 5 | `mean_exec_time` | `float8` | `type/Float` | - |
+| 6 | `rows_returned` | `int8` | `type/BigInteger` | - |
+| 7 | `query_text` | `text` | `type/Text` | - |
+
+---
+
+### 4.3. Bảng Dự Phòng Thế Hệ Cũ (V2 Fallback Tables)
+
+#### Cấu trúc bảng: `krx_mdds_v2_ticks` (ID: 87224)
+
+| STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
+| :---: | :--- | :--- | :--- | :---: |
+| 1 | `market_id` | `int4` | `type/Integer` | - |
+| 2 | `board_id` | `int4` | `type/Integer` | - |
+| 3 | `isin` | `text` | `type/Text` | - |
+| 4 | `symbol` | `text` | `type/Text` | - |
+| 5 | `match_price` | `float8` | `type/Float` | - |
+| 6 | `match_qtty` | `float8` | `type/Float` | - |
+| 7 | `sending_time` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+| 8 | `board_id_original` | `int4` | `type/Integer` | - |
+| 9 | `trading_session_id` | `int4` | `type/Integer` | - |
+| 10 | `total_volume_traded` | `int8` | `type/BigInteger` | - |
+| 11 | `gross_trade_amount` | `float8` | `type/Float` | - |
+| 12 | `side` | `int4` | `type/Integer` | - |
+| 13 | `created_date` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
+
+#### Cấu trúc bảng: `krx_mdds_v2_top_prices` (ID: 81836)
 
 | STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
 | :---: | :--- | :--- | :--- | :---: |
@@ -308,7 +526,7 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 | 11 | `symbol_type` | `text` | `type/Text` | - |
 | 12 | `created_date` | `timestamptz` | `type/DateTimeWithLocalTZ` | - |
 
-### Cấu trúc bảng: `security_definitions` (ID: 82602)
+#### Cấu trúc bảng: `security_definitions` (ID: 82602)
 
 | STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
 | :---: | :--- | :--- | :--- | :---: |
@@ -361,7 +579,7 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 | 47 | `sector_type_code` | `text` | `type/Text` | - |
 | 48 | `redumption_date` | `text` | `type/Text` | - |
 
-### Cấu trúc bảng: `volatility_interruptions` (ID: 77808)
+#### Cấu trúc bảng: `volatility_interruptions` (ID: 77808)
 
 | STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
 | :---: | :--- | :--- | :--- | :---: |
@@ -377,7 +595,7 @@ node scripts/lib/n8n-client.js queryMetabase "SELECT * FROM security_definition_
 | 10 | `static_vi_disparity_ratio` | `float8` | `type/Float` | - |
 | 11 | `dynamic_vi_disparity_ratio` | `float8` | `type/Float` | - |
 
-### Cấu trúc bảng: `trading_result_of_foreign_investors` (ID: 79558)
+#### Cấu trúc bảng: `trading_result_of_foreign_investors` (ID: 79558)
 
 | STT | Tên Cột (Column) | Kiểu Dữ Liệu | Base Type | Khóa (PK/FK) |
 | :---: | :--- | :--- | :--- | :---: |

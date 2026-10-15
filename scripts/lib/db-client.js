@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.join(__dirname, '..');
+const projectRoot = path.join(__dirname, '..', '..');
 
 
 function loadEnv(filePath) {
@@ -74,15 +74,15 @@ function getMetabaseConfig() {
     const isUrlProd = Boolean(prodUrl && currentUrl && currentUrl.replace(/\/+$/, '') === prodUrl.replace(/\/+$/, ''));
     const isProd = isExplicitProd || isUrlProd;
 
-    let baseUrl = process.env.METABASE_URL;
-    let token = process.env.METABASE_SESSION_TOKEN || process.env.METABASE_API_TOKEN;
+    let baseUrl;
+    let token;
 
     if (isProd) {
-        baseUrl = (isExplicitProd ? process.env.METABASE_PROD_URL : null) || baseUrl || process.env.METABASE_PROD_URL || '';
-        token = process.env.METABASE_PROD_SESSION_TOKEN || token || process.env.METABASE_PROD_API_TOKEN;
+        baseUrl = (isExplicitProd ? process.env.METABASE_PROD_URL : null) || process.env.METABASE_URL || process.env.METABASE_PROD_URL || '';
+        token = process.env.METABASE_PROD_SESSION_TOKEN || process.env.METABASE_SESSION_TOKEN || process.env.METABASE_PROD_API_TOKEN || process.env.METABASE_API_TOKEN;
     } else {
-        baseUrl = baseUrl || process.env.METABASE_UAT_URL || '';
-        token = token || process.env.METABASE_UAT_API_TOKEN || process.env.METABASE_UAT_SESSION_TOKEN;
+        baseUrl = process.env.METABASE_UAT_URL || process.env.METABASE_URL || '';
+        token = process.env.METABASE_UAT_API_TOKEN || process.env.METABASE_UAT_SESSION_TOKEN || process.env.METABASE_API_TOKEN || process.env.METABASE_SESSION_TOKEN;
     }
 
     return {
@@ -158,9 +158,12 @@ function getMetabaseHeaders() {
     const { token } = getMetabaseConfig();
     const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
     if (token) {
-        headers['X-API-KEY']          = token;
-        headers['X-Metabase-Session'] = token;
-        headers['Cookie']             = `metabase.SESSION=${token}`;
+        if (token.startsWith('mb_')) {
+            headers['x-api-key'] = token;
+        } else {
+            headers['X-Metabase-Session'] = token;
+            headers['Cookie']             = `metabase.SESSION=${token}`;
+        }
     }
     return headers;
 }
