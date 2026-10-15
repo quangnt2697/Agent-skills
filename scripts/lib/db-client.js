@@ -42,7 +42,7 @@ loadEnv(path.join(projectRoot, '.env'));
 
 const DEFAULT_MAX_ROWS           = 50;
 const HARD_CAP_MAX_ROWS          = 200;
-const DEFAULT_STATEMENT_TIMEOUT_MS = parseInt(process.env.DB_STATEMENT_TIMEOUT || '5000', 10);
+const DEFAULT_STATEMENT_TIMEOUT_MS = parseInt(process.env.DB_STATEMENT_TIMEOUT || '30000', 10);
 
 // ─── 3. Metabase Database ID Map ─────────────────────────────────────────────
 
