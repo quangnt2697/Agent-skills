@@ -27,7 +27,7 @@ const apps = [
       N8N_RUNNERS_MODE: 'internal',
       N8N_RUNNERS_TASK_REQUEST_TIMEOUT: '60',
       // Bảo mật môi trường Node: Chỉ cho phép các built-in module cần thiết cho Agent Skills
-      NODE_FUNCTION_ALLOW_BUILTIN: 'fs,path,crypto,os,child_process,url',
+      NODE_FUNCTION_ALLOW_BUILTIN: 'fs,path,crypto,os,child_process,url,util,events,buffer',
       NODE_FUNCTION_ALLOW_EXTERNAL: 'dotenv',
       // ── Múi Giờ Việt Nam ──────────────────────────────────────────────────
       // GENERIC_TIMEZONE: n8n dùng để tính lịch cron (Schedule Trigger)
