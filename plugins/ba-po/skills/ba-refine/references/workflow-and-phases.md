@@ -131,143 +131,88 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
 
 ---
 
-## Giai đoạn 1: Thấu hiểu & Mở rộng (Phân kỳ)
+## Giai đoạn 1: Khai phóng theo 5 Chiều Nghiệp vụ (Business-Driven Divergence)
 
-**Mục tiêu:** Hiểu vấn đề gốc và mở rộng các hướng đi có thể
+**Mục tiêu:** Mở rộng từ ý tưởng sơ khai/mơ hồ theo 5 câu hỏi nghiệp vụ cốt lõi, tuyệt đối không bàn luận kỹ thuật (API/DB/JSON):
 
-1. **Tái trình bày vấn đề dưới dạng câu hỏi "Làm sao để..." (How Might We)**
-   (BẮT BUỘC sử dụng Tiêu đề Task thật sự đã lấy được ở Phase 0, KHÔNG dùng câu ví dụ bên dưới).
-   
-   Ví dụ (Chỉ là mẫu):
-   ```
-   Jira gốc: "[Tên task của user]"
-   
-   Câu HMW: "Làm sao để khách hàng có thể lưu trữ và chia sẻ 
-   báo cáo giao dịch của họ một cách dễ dàng và bảo mật?"
-   ```
+1. **Đối tượng & Phân quyền (Who):**
+   - Những nhóm khách hàng/vai trò nào tham gia?
+   - Quyền hạn của từng nhóm khác nhau ra sao (Normal User, VIP, Ultimate; Khách hàng cá nhân vs tổ chức; Tiểu khoản Thường đuôi 1 vs Tiểu khoản Margin đuôi 6)?
 
-2. **Làm rõ các thành phần cốt lõi (Sử dụng các Kỹ năng Bổ trợ)**
-   
-   - Mặc định, gọi kỹ năng `/ba-interview-me` (hoặc dùng `AskUserQuestion`) để chất vấn user, thu thập:
-     - User Story: Role cụ thể là gì? Mục tiêu muốn đạt được? Giá trị mang lại?
-     - Bối cảnh Nghiệp vụ: Nhu cầu kinh doanh cốt lõi? Tính cấp thiết?
-     - Tiêu chí Nghiệm thu: Góc nhìn nghiệp vụ? Điều kiện thành công đo được?
-     - User Flow & UI: Có thay đổi UI không? Flow thao tác như thế nào?
-     - Tiêu chí Thành công: Thế nào gọi là thành công? Metrics đo lường?
-     - Ghi chú Kỹ thuật: Ràng buộc API, Database? Pháp lý/bảo mật? Hiệu năng?
-   - **Đối chiếu Nghiệp vụ Chứng khoán (nếu thuộc domain chứng khoán):** Bắt buộc tham chiếu `../../../../references/securities-domain-rules.md` để làm rõ Deal-based, loại lệnh, TIF, phiên giao dịch...
-   - Nếu phát hiện có sự chênh lệch lớn giữa hiện trạng (AS-IS) và mục tiêu (TO-BE), hãy gọi kỹ năng `/ba-gap-analysis`.
-   - Nếu task đụng đến nhiều bộ phận/vai trò khác nhau, hãy gọi kỹ năng `/ba-stakeholder-interview`.
+2. **Giá trị & Mục tiêu Kinh doanh (Why):**
+   - Vấn đề thực tế của khách hàng là gì?
+   - Nhu cầu kinh doanh hay quy định pháp lý (KRX, UBCKNN, VSD) nào thúc đẩy tính năng này?
 
-   **TUYỆT ĐỐI KHÔNG BƯỚC TIẾP cho tới khi đạt ≥90% confidence về hiểu biết.**
+3. **Điều kiện & Quy tắc Định lượng (What Rules):**
+   - Các điều kiện tiên quyết trước khi thực hiện hành động?
+   - Công thức tính toán (sức mua, tỷ lệ ký quỹ ban đầu/duy trì, phí, thuế), quy tắc làm tròn số thập phân (Decimal)?
+   - Các ranh giới định lượng (hạn mức lệnh, số lượng stream tối đa)?
 
-3. **Đẻ ra 5-8 biến thể ý tưởng (idea variations)**
-   
-   Áp dụng các lăng kính: Đảo ngược (Inversion), Đạp đổ Ràng buộc (Constraint removal), Đổi Target Audience, Lai tạp (Combination), Đơn giản hóa cực đoan, Nhân 10 lên (10x version), Lăng kính Chuyên gia.
-   > 📖 **Xem chi tiết các lăng kính tại:** [frameworks.md](frameworks.md)
+4. **Thời điểm & Trạng thái Phiên (When):**
+   - Tính năng hoạt động khác nhau như thế nào giữa các phiên giao dịch (ATO: 9h00-9h15, Liên tục: 9h15-11h30 & 13h00-14h30, ATC: 14h30-14h45, PLO: 14h45-15h00, Nghỉ trưa)?
+   - Áp dụng trên sàn nào (HOSE, HNX, UPCoM, Phái sinh VN30F)?
 
-   **Nếu đang trong codebase có sẵn:** Dùng `Glob`, `Grep`, `Read` để scan: Kiến trúc hiện tại, Các patterns đã có, Constraints kỹ thuật. Cite các file và patterns cụ thể khi cần.
+5. **Hành trình Người dùng (User Journey):**
+   - Người dùng bắt đầu từ màn hình/kênh nào (Web/App)?
+   - Các bước thao tác tuần tự là gì?
+   - Kết quả phản hồi nhận được (thành công, thông báo lỗi, thông báo đẩy)?
+
+Chất vấn user qua kỹ năng `/ba-interview-me` (chỉ hỏi khi có điểm mù 🔴 Critical ảnh hưởng bản chất nghiệp vụ theo `autonomy-contract.md`). Đạt ≥90% confidence về hiểu biết nghiệp vụ trước khi chuyển sang Phase 2.
 
 ---
 
-## Giai đoạn 2: Đánh giá & Hội tụ
+## Giai đoạn 2: Phản biện Nghiệp vụ & Tình huống Biên (Business Stress-Test & Convergence)
 
-**Mục tiêu:** Đánh giá, gom nhóm, và chốt hướng đi tốt nhất
+**Mục tiêu:** Đánh giá, gom nhóm thành 2-3 hướng đi nghiệp vụ và stress-test xung đột quy tắc:
 
-1. **Gom nhóm (Cluster) các biến thể thành 2-3 hướng đi khác biệt**
-   Mỗi hướng đi phải có SỰ KHÁC BIỆT THỰC SỰ, không chỉ biến thể nhỏ.
+1. **Phản biện Tác động chéo (Cross-rule Impact):**
+   - Quy tắc mới này có xung đột với các quy tắc nghiệp vụ hiện hành không? (VD: quy tắc tính sức mua PP, quy tắc tỷ lệ vay margin, quy tắc làm tròn lô lẻ 1-99)?
+   - Có vi phạm danh sách cổ phiếu diện cảnh báo/kiểm soát/đình chỉ (CR, CA, RES, SUS) không?
 
-2. **Thử lửa (Stress-test) từng hướng đi**
-   Đánh giá theo tiêu chí: Giá trị Người dùng, Tính Khả thi, Sự Khác biệt, Rủi ro.
-   > 📖 **Xem rubric chấm điểm chi tiết tại:** [refinement-criteria.md](refinement-criteria.md)
+2. **Xử lý Ngoại lệ Nghiệp vụ (Business Exception Handling):**
+   - Khách hàng hủy/sửa khi lệnh đang chờ xác nhận từ Sở giao dịch?
+   - Lệnh bị Sở từ chối (Reject) do biến động biên độ giá hoặc trần/sàn trong phiên?
+   - Tài khoản bị chạm ngưỡng cảnh báo Call Margin hoặc Force Sell trong lúc thực hiện giao dịch?
 
-3. **Vạch trần các giả định ẩn (Surface hidden assumptions)**
-   Với mỗi hướng đi, GỌI TÊN RÕ: Những gì đang CƯỢC là đúng, Những gì có thể GIẾT CHẾT ý tưởng, Những gì QUYẾT ĐỊNH NGÓ LƠ (và tại sao OK).
+3. **Gom nhóm thành 2-3 Hướng đi Nghiệp vụ Khác biệt:**
+   - Trình bày rõ: Hướng đi A (Tối giản / Quick win), Hướng đi B (Toàn diện / Chuẩn KRX), Hướng đi C (Nâng cao cho VIP).
+   - Gọi tên rõ các Giả định Nghiệp vụ (Business Assumptions) đi kèm.
 
 ---
 
-## Giai đoạn 3: Mài sắc & Cấu trúc
+## Giai đoạn 3: Mài sắc & Cấu trúc (Business Spec Sharpening)
 
-**Mục tiêu:** Chốt hướng đi và cấu trúc thành spec rõ ràng
+**Mục tiêu:** Chốt hướng đi và cấu trúc thành spec thuần nghiệp vụ theo khung 7 mục chuẩn mực.
 
-Sau khi user chọn hướng đi cuối cùng, thực hiện **3 bước tuần tự** — KHÔNG được nhảy cóc:
+### Bước 3.1: Tạo bản nháp (Draft) theo Khung 7 Mục Thuần Nghiệp Vụ
 
-### Bước 3.1: Tạo bản nháp (Draft)
+Tạo file nháp tại: `/project-root/workspace/{issueKey}/spec/refined-draft.md` từ template `jira-description-template.md`:
 
-Tạo file nháp tại: `/project-root/workspace/{issueKey}/spec/refined-draft.md`
+1. **Mục tiêu & Giá trị Nghiệp vụ (Business Objective & Value)**
+2. **Phạm vi & Đối tượng Áp dụng (Scope & Actors — In/Out of Scope)**
+3. **Luồng Nghiệp vụ Chính (Main Business Flow — góc nhìn người dùng)**
+4. **Luồng Nghiệp vụ Phụ & Xử lý Ngoại lệ (Alternative & Exception Flows)**
+5. **Danh mục Quy tắc Nghiệp vụ & Công thức tính ([BR-01], [BR-02]...)**
+6. **Tiêu chí Nghiệm thu Nghiệp vụ ([AC-1.1], [AC-1.2]... dạng Business Checklist)**
+7. **Giả định Nghiệp vụ & Câu hỏi Mở (Business Assumptions & Open Questions)**
 
-📄 **Template chuẩn:** `plugins/ba-po/skills/ba-refine/assets/jira-description-template.md`
-
-File template là **skeleton thuần** — mọi dòng trong đó đều là nội dung sẽ lên Jira. Agent copy skeleton, thay các placeholder `[...]` bằng nội dung thật, và **không thêm bất cứ dòng nào của riêng mình** vào đầu/cuối file. Xoá luôn các sub-heading không có nội dung.
-
-**❌ TUYỆT ĐỐI KHÔNG được xuất hiện trong draft/refined.md**:
-- Tiêu đề/mô tả của bản thân file template
-- Câu hướng dẫn dành cho agent
-- Nhãn chọn format
-- Footer chữ ký
-- Placeholder `[...]` còn sót chưa thay
-- Đường kẻ ngang `---` giữa các section
-
-**LƯU Ý QUAN TRỌNG:**
-- **Business Context chuẩn mực:** BẮT BUỘC viết súc tích bằng 3 gạch đầu dòng (`Vấn đề`, `Mục tiêu`, `Tính cấp thiết`), tối đa 3-4 câu đúng trọng tâm. Tuyệt đối KHÔNG chia sub-heading H3 rườm rà, KHÔNG viết văn dài dòng lặp lại User Story.
-- **Nội dung nội bộ:** KHÔNG bao gồm: "Giả định & Rủi ro", "Ngoài Phạm vi", "Đánh giá Độ tin cậy". Các phần này CHỈ dùng nội bộ.
+**❌ BỘ LỌC CHỐNG KỸ THUẬT (BẮT BUỘC):**
+- TUYỆT ĐỐI KHÔNG đưa vào: Tên bảng DB, kiểu dữ liệu SQL, HTTP Methods, JSON keys, Kafka topic, Exception names.
+- HỦY BỎ hoàn toàn sơ đồ luồng Mermaid.
+- **Quy tắc Mockup:** Chỉ thiết kế HTML/PNG mockup khi người dùng truyền cờ `--mockup` hoặc khi task yêu cầu thay đổi trực tiếp bố cục màn hình UI.
 
 ### Bước 3.2: Trình bày bản nháp cho User duyệt (APPROVAL GATE — BẮT BUỘC)
 
-**⚠️ ĐÂY LÀ CỔNG DUYỆT BẮT BUỘC — KHÔNG ĐƯỢC BỎ QUA.**
+1. Trình bày TOÀN BỘ 7 mục bản nháp cho user xem trực tiếp trong chat.
+2. DỪNG LẠI VÀ CHỜ USER PHẢN HỒI ("OK" hoặc chỉnh sửa).
+3. Revision Loop: Tiếp thu phản hồi, tối đa 5 vòng cho tới khi user duyệt.
 
-1. **Trình bày TOÀN BỘ nội dung bản nháp** cho user xem trực tiếp trong chat (Không chỉ in phần diff).
+### Bước 3.3: Chốt bản cuối cùng và Lưu trữ
 
-2. **DỪNG LẠI VÀ CHỜ USER PHẢN HỒI.** Tuyệt đối KHÔNG được: Tự ý chuyển sang Bước 3.3, tự ý lưu file cuối, hỏi "push lên Jira không?".
-
-3. **Vòng lặp chỉnh sửa (Revision Loop):**
-   Nếu user **chưa đồng ý**: Ghi nhận feedback -> Sửa file -> In lại TOÀN BỘ nội dung -> Hỏi lại. Lặp lại cho tới khi user "OK". Tối đa 5 vòng.
-
-### Bước 3.3: Chốt bản cuối cùng và Làm giàu Spec (Enrichment)
-
-1. Copy `refined-draft.md` → `refined.md` (bản cuối cùng)
-2. **Làm giàu nội dung Spec bằng các Kỹ năng Bổ trợ (Sub-processes):**
-   - Gọi kỹ năng `/ba-user-story-writing` để tinh chỉnh User Story + AC. **AC BẮT BUỘC** viết trong codeblock `gherkin` với ≥3 Scenario (Happy, Edge, Validation).
-   - **HỦY BỎ Mermaid User Flow:** Tuyệt đối KHÔNG sinh sơ đồ flow dạng Mermaid trong `ba-refine`. Nếu cần làm rõ luồng thao tác của người dùng, sử dụng danh sách Text có đánh số ngắn gọn trong mục Ghi chú Tương tác.
-   - **Quy tắc Thiết kế Giao diện có Điều kiện (Conditional UI Design Gate):**
-     * **Điều kiện kiểm tra:** Xác định task có thay đổi UI/Frontend hay không (màn hình, component, form, controls, bảng dữ liệu, modal, layout...).
-     * **Nếu KHÔNG liên quan UI (Backend, API, Service ngầm, DB, Cronjob):** BỎ QUA bước thiết kế giao diện, mục UI Design trong `refined.md` ghi `N/A (Task không liên quan giao diện)`.
-     * **Nếu CÓ liên quan UI (Bắt buộc thiết kế mẫu giao diện bám sát Codebase):**
-       Thực hiện tuần tự 4 bước sau để tạo giao diện chính xác giống app thật:
-
-       **Bước 3.3.1: Quét và Bóc tách Mã nguồn (Codebase UI Inspection)**
-       - Với Web (React/Vite): Đọc `:root` CSS variables, `tailwind.config.js`, ThemeProvider, font chữ, mã màu sàn/trần/tham chiếu, và component cha đang chứa UI cần sửa.
-       - Với Mobile (Flutter): Đọc `AppColors`, `AppTextStyles`, `ThemeData` từ `lib/presentation/theme/` hoặc `packages/ui_kit/`.
-       - Asset & Icon: Quét và lấy file SVG icon thực tế từ `assets/icons/` hoặc `public/` (không tự bịa icon generic).
-       - Mock Data: Đọc fixture từ `__mocks__/` để lấy dữ liệu mã chứng khoán/số dư thật.
-
-       **Bước 3.3.2: Tích hợp Figma (Tùy chọn - nếu có Link Figma & FIGMA_API_TOKEN)**
-       - Nếu task có link Figma hoặc node ID, tải ảnh frame thiết kế gốc về làm baseline đối chiếu:
-         ```bash
-         node ${AGENT_SKILLS_HOME:-.}/scripts/lib/figma-client.js exportImage "{figmaUrl}" "{nodeId}" "workspace/{issueKey}/tech/figma-base.png"
-         ```
-         *(Hoặc qua n8n Fast-Path: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js downloadFigmaFrame "{figmaUrl}" "{nodeId}" "workspace/{issueKey}/tech/figma-base.png"`)*
-
-       **Bước 3.3.3: Dựng File Mockup Tương Tác (HTML Mockup Assembly)**
-       - Sử dụng template chuẩn: `plugins/ba-po/skills/ba-refine/assets/mockup-harness.html`.
-       - Tạo file: `workspace/{issueKey}/tech/mockup.html`.
-       - Lựa chọn mode: Mobile Frame (khung iPhone 15 Pro, Status bar, Dynamic Island) hoặc Desktop Frame (Web Portal).
-       - Áp dụng các Design Tokens bóc tách từ codebase và bổ sung các controls/fields/validation theo đúng User Story và AC Gherkin.
-       - Lưu vết mapping vào `workspace/{issueKey}/tech/ui-mapping.json` (ghi nhận các tokens, components, file icon đã tái sử dụng).
-
-       **Bước 3.3.4: Xuất Bản Ảnh Snapshot Nét Cao (Playwright Automation)**
-       - Chạy script render để chụp snapshot chuẩn 2x Retina:
-         ```bash
-         node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/scripts/render-mockup.js \
-           "workspace/{issueKey}/tech/mockup.html" \
-           "workspace/{issueKey}/tech/mockup.png" fit 2
-         ```
-       - Cập nhật section `## 🎨 UI Design / Mockup` trong `refined.md` với link file HTML, ảnh PNG preview và ghi chú tương tác.
-
-3. **Tính confidence score.**
-   > 📖 **Xem công thức tính và quy tắc chất lượng tại:** [quality-rules.md](quality-rules.md)
-4. Thông báo cho user file cuối cùng đã lưu và hỏi user có muốn push lên Jira không.
-5. **DỪNG LẠI VÀ CHỜ USER trả lời** trước khi sang Giai đoạn 4.
+1. Copy `refined-draft.md` → `refined.md`.
+2. Tự động tính confidence score (ngưỡng ≥90%).
+3. Thông báo cho user file cuối cùng đã lưu và xin phép push lên Jira qua **Gate 2**.
+4. **DỪNG LẠI VÀ CHỜ USER trả lời** trước khi sang Giai đoạn 4.
 
 ---
 

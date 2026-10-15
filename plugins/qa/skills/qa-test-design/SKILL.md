@@ -26,32 +26,67 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 - Chưa có spec rõ ràng → Dùng `ba-spec` hoặc `ba-interview-me` trước.
 - Đã có kịch bản `.feature` và cần viết code test tự động → Dùng `qa-auto-design`.
 
+## 1.1. Phân loại 5 Test Profiles chuẩn hóa (Định tuyến tự động)
+
+Tự động nhận diện profile từ `spec/testability-manifest.json` hoặc phân tích `spec/final.md` để nạp đúng Bộ khung kiểm thử (Test Archetype):
+
+| Mã Profile | Loại Task áp dụng | Trọng tâm Kiểm thử Bắt buộc | Liên kết Tài nguyên trong Repo |
+|---|---|---|---|
+| **QA-PROFILE-API** | REST / OpenAPI (Đặt lệnh, truy vấn tài sản, sức mua, danh mục) | Schema validation, Auth/Token, Idempotency, Công thức tính toán (Decimal), Mã lỗi nghiệp vụ | `api_ws_service.py`, `test_api_example.py`, `api.env.example` |
+| **QA-PROFILE-WS** | WebSocket Streaming, Market Data (MDDS), Thông báo đẩy | Ngưỡng kết nối/stream theo hạng user (Normal/VIP/Ultimate), Reconnect, Watchdog/Topic Timeout, Thứ tự bản tin | `test_ws_example.py`, `ws.env.example`, `references/securities/05-market-data-mdds.md` |
+| **QA-PROFILE-UI** | Web Trading Dashboard & Mobile App (Appium/Playwright) | Trạng thái hiển thị theo phiên, Form validation tức thời, Khóa nút (Double-click), Đồng bộ dữ liệu UI ↔ API | `web_ui_pom.py`, `mobile_app_pom.py`, `web-ui.env.example` |
+| **QA-PROFILE-STATE** | Vòng đời lệnh (Order Lifecycle), Khớp lệnh ORS, Deal Margin | Chuyển đổi trạng thái lệnh (Pending → New → Partial → Filled/Cancelled/Rejected), Giữ/Giải tỏa sức mua & ký quỹ | `order_state_testing.md`, `references/securities/03-order-lifecycle-and-ors.md`, `references/securities/06-trading-core-margin.md`, `references/securities/07-deal-margin.md` |
+| **QA-PROFILE-DATA** | Đối chiếu Database (TimescaleDB v3/v2, OpenAPI DB) | Độ vẹn toàn dữ liệu giữa 11 topics KRX MDDS, kiểm tra lệch giá/khối lượng, ưu tiên bảng v3 fallback v2 | `recon_guide.md`, `timescale-schema.md`, `db-timescale-reconciler` |
+
+*(Một ticket phức tạp có thể kết hợp nhiều profile, ví dụ: QA-PROFILE-API + QA-PROFILE-STATE)*
+
+## 1.2. Công thức Ma trận 6 Trục Bao phủ (6-Axis Coverage Matrix) chống sót Case
+
+Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y]`) bắt buộc quét qua 6 lớp lưới lọc cố định sau:
+
+1. **Lớp 1 — Luồng Chính theo Phân khúc Người dùng (`@happy-path` & `@persona`):**
+   Kiểm thử luồng thành công chuẩn trên từng nhóm đối tượng định nghĩa trong `references/securities/08-persona-matrix.md` (Normal User, VIP User, Ultimate User, Tiểu khoản Thường đuôi 1 vs Tiểu khoản Margin đuôi 6).
+
+2. **Lớp 2 — Phân tích Giá trị Biên & Phân vùng Tương đương (`@boundary` / `@bva`):**
+   Áp dụng quy ước 4 điểm biên bắt buộc cho mọi biến số định lượng:
+   - **Biên Giá:** Giá Sàn - 1 tick, Giá Sàn, Giá Tham chiếu, Giá Trần, Giá Trần + 1 tick, Sai bước giá (Tick size).
+   - **Biên Khối lượng:** 0, Lô lẻ (1, 99), Lô chẵn tối thiểu (100), Sai bước khối lượng (150 trên HOSE), Khối lượng tối đa mỗi lệnh (MAX), Vượt khối lượng tối đa (MAX + 100).
+   - **Biên Hạn mức / Cấu hình:** Đúng bằng `MAX_CONNECTOR` / `MAX_STREAM` và vượt quá +1.
+
+3. **Lớp 3 — Tổ hợp Ma trận Nghiệp vụ Chứng khoán (`@domain-matrix`):**
+   Tự động sinh kịch bản `Scenario Outline` kèm bảng `Examples` đa sàn theo công thức:
+   $$\text{Sàn (HOSE/HNX/UPCoM/Phái sinh)} \times \text{Phiên (ATO/Liên tục/ATC/PLO/Nghỉ)} \times \text{Trạng thái mã (Normal/CR/CA/RES/SUS)}$$
+   Tuân thủ tuyệt đối Quy tắc Tham số hóa Đa sàn / Đa mã trong `AGENTS.md`.
+
+4. **Lớp 4 — Kịch bản Phủ định & Vi phạm Quy tắc (`@negative`):**
+   - **Tầng Dữ liệu:** Thiếu trường bắt buộc (null, chuỗi rỗng), sai kiểu dữ liệu, số âm, ký tự đặc biệt.
+   - **Tầng Quyền hạn:** Không có token, token hết hạn, dùng token của Normal User gọi tính năng của VIP/Ultimate, truy cập chéo tiểu khoản của nhà đầu tư khác (IDOR).
+   - **Tầng Nghiệp vụ:** Đặt lệnh MTL cho cổ phiếu diện cảnh báo (CR/RES), đặt lệnh MP trên sàn UPCoM, sửa/hủy lệnh trong phiên khớp lệnh định kỳ ATO/ATC.
+
+5. **Lớp 5 — Chuyển đổi Trạng thái, Tương tranh & Chống trùng (`@state-concurrency`):**
+   - **State Matrix:** Thử thực hiện hành động ở trạng thái không hợp lệ (Hủy lệnh đã Filled, Sửa lệnh đã Cancelled, Đặt lệnh khi thị trường Halt).
+   - **Concurrency (Race Condition):** Gửi đồng thời 2 lệnh mua sử dụng cùng một khoản Sức mua khả dụng (kiểm tra lỗi check-then-act).
+   - **Idempotency:** Gửi lặp lại cùng một request đặt lệnh/chuyển tiền với cùng `requestId` / `clientOrderId`.
+
+6. **Lớp 6 — Độ bền & Phục hồi kết nối (`@resilience`):**
+   Mất kết nối WebSocket đột ngột và kiểm tra cơ chế tự động kết nối lại (`WS_AUTO_RECONNECT`), hết thời gian chờ của topic (Watchdog timeout), hoặc phản hồi chậm vượt ngưỡng SLA.
+
 ## 2. Quy trình 3 Giai đoạn Thiết kế
 
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 40 dòng cho toàn bộ quy trình.
 
-- **Giai đoạn 1 (Phân tích Spec & Thiết kế Checklist `checklist.md`):**
-  - Đọc `workspace/{issueKey}/spec/final.md` và `../../../../references/securities-domain-rules.md` (nếu domain fintech/chứng khoán).
-  - **BẮT BUỘC nhận diện loại API trước khi thiết kế checklist:**
-    - Scan keyword trong Jira description theo bảng dưới. Sai loại → checklist thiếu nhóm test quan trọng.
-
-    | Keyword nhận diện trong Jira | Loại API | Nhóm kịch bản bắt buộc bổ sung |
-    |---|:---:|---|
-    | `GET/POST/PUT/DELETE`, `endpoint`, `HTTP status`, `curl`, `Request Body` | **REST** | Happy path, Negative (4xx), Security, BVA input |
-    | `query { }`, `mutation { }`, `GraphQL`, `operation`, `selection set`, `variables` | **GraphQL** | Full query, Partial query, Empty query, Invalid query |
-    | `WebSocket`, `subscribe`, `event`, `channel`, `stream`, `msgpack` | **WebSocket** | Connect/Auth, Event payload, Disconnect, Isolation |
-    | Không rõ → | **Dừng, hỏi user** | Đây là Critical Input, không được suy diễn |
-
-  - Phân tích theo 6 chiều kiểm thử (Bảo mật, Quy tắc nghiệp vụ, Toàn vẹn dữ liệu, Đường dẫn chuẩn, Ngoại lệ, Ranh giới BVA).
-  - Ghi nhận **loại API đã xác định** vào dòng đầu tiên của `checklist.md`:
+- **Giai đoạn 1 (Phân tích Spec theo Profile & Thiết kế Checklist `checklist.md`):**
+  - Đọc `workspace/{issueKey}/spec/final.md` và `spec/testability-manifest.json` để xác định **Test Profile** (API, WS, UI, STATE, DATA).
+  - Quét từng `[BR-xx]` và `[AC-x.y]` qua **Ma trận 6 Trục Bao phủ** để không bỏ sót kịch bản.
+  - Ghi nhận Test Profile đã chọn vào dòng đầu của `checklist.md`:
     ```markdown
-    <!-- API_TYPE: REST | GraphQL | WebSocket | Mixed -->
+    <!-- TEST_PROFILE: QA-PROFILE-API | QA-PROFILE-WS | QA-PROFILE-UI | QA-PROFILE-STATE | QA-PROFILE-DATA -->
     ```
   - Gán nhãn ưu tiên `[P0]`, `[P1]`, `[P2]` và **gán ID ổn định** (VD: `CL-001`). Mỗi item bắt đầu bằng **động từ hành động**, lượng hóa rõ ràng.
-  - *Fallback thủ công (Quy tắc ưu tiên):*
-    - `[P0]`: Boundary BVA + Security + giao dịch tiền/cổ phiếu
+  - *Quy tắc ưu tiên:*
+    - `[P0]`: Boundary BVA + Security + giao dịch tiền/cổ phiếu + Race Condition
     - `[P1]`: Happy path chính + Negative scenario ảnh hưởng UX
-    - `[P2]`: Nice-to-have, tính năng phụ, performance không critical
+    - `[P2]`: Nice-to-have, tính năng phụ, resilience không critical
 
 - **Giai đoạn 1.5 (Data Grounding):**
   - Đọc file [data-grounding.md](references/data-grounding.md) để hiểu quy trình.

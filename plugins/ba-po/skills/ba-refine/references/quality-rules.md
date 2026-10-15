@@ -80,33 +80,37 @@ Bạn có thể cung cấp thêm không, hoặc tôi nên draft một spec ở m
 
 ---
 
-### 3. Grounded trong Codebase (nếu có)
+### 2.1. Bộ lọc Chống Kỹ thuật (Strict Business-Only Guardrail)
 
-Khi đang trong một codebase, **BẮT BUỘC** phải:
+Mọi nội dung trong `ba-refine` (từ thảo luận, draft đến `refined.md`) BẮT BUỘC tuân thủ ranh giới ngôn ngữ thuần nghiệp vụ:
 
-1. **Scan architecture trước khi suggest solution**
-   ```bash
-   # Tìm patterns hiện tại
-   grep -r "export" --include="*.ts" --include="*.js"
+| Khía cạnh | ❌ NGHIÊM CẤM xuất hiện trong ba-refine | ✅ BẮT BUỘC dùng Ngôn ngữ Nghiệp vụ thay thế |
+|---|---|---|
+| **Dữ liệu** | Tên bảng DB (`security_definition_v3`), kiểu dữ liệu kỹ thuật (`varchar(50)`, `int64`, `JSONB`), câu lệnh SQL | Tên thông tin nghiệp vụ (Mã chứng khoán, Giá trần, Tỷ lệ ký quỹ ban đầu), quy tắc định dạng hiển thị & làm tròn |
+| **Giao tiếp hệ thống** | HTTP Method (`POST /api/v1/orders`), JSON key (`camelCase`, `snake_case`), HTTP Status (`400`, `500`), Kafka topic, Redis cache | Hành động của người dùng/hệ thống (Nhà đầu tư gửi yêu cầu đặt lệnh, Hệ thống từ chối và thông báo lý do...) |
+| **Xử lý lỗi** | Exception name, Stack trace, Timeout ms kỹ thuật, Deadlock, Thread pool | Tình huống ngoại lệ nghiệp vụ (Khi lệnh chưa nhận được phản hồi từ Sở giao dịch, Khi sức mua thay đổi trong lúc chờ duyệt) |
+| **Luồng trạng thái** | Biến cờ trong code (`status = 2`, `is_active = true`) | Trạng thái nghiệp vụ của đối tượng (Chờ gửi lên Sở → Đã vào sổ lệnh → Khớp một phần → Hoàn tất) |
+
+---
+
+### 3. Đối chiếu Nghiệp vụ Sâu (Domain & User Journey Grounding)
+
+Khi phân tích ý tưởng, **BẮT BUỘC** phải:
+
+1. **Tra cứu Quy định & Cẩm nang Nghiệp vụ:**
+   - Đối chiếu `references/securities-domain-rules.md` về loại lệnh, phiên, biên độ giá, tỷ lệ ký quỹ margin.
+   - Làm rõ quyền hạn của từng nhóm người dùng (Normal vs VIP/Ultimate, Thường vs Margin).
+
+2. **Gắn liền với Hành trình Người dùng thật:**
+   ```
+   ✅ "Khi nhà đầu tư đặt lệnh ngoài giờ giao dịch (phiên Nghỉ trưa), hệ thống tiếp nhận dưới dạng lệnh chờ phiên chiều thay vì từ chối."
    
-   # Tìm API endpoints tương tự
-   find . -name "*controller.ts" -o -name "*routes.ts"
+   ❌ "Hệ thống sẽ gọi POST /api/v1/orders với payload { session: 'AFTER_HOURS' } lưu vào bảng pending_orders."
    ```
 
-2. **Cite cụ thể các file và patterns**
+3. **Chỉ ra mâu thuẫn quy tắc nghiệp vụ:**
    ```
-   ✅ "Dựa trên src/api/reports/controller.ts:45, hệ thống đã có 
-   ReportExportService. Ta có thể mở rộng service này thay vì tạo mới."
-   
-   ❌ "Ta có thể tạo một export service"
-   ```
-
-3. **Respect existing constraints**
-   ```
-   ✅ "Codebase dùng Bull queue cho async jobs (xem src/queue/), 
-   nên ta dùng pattern này cho large exports."
-   
-   ❌ "Ta có thể dùng Celery" (khi codebase không có Python)
+   ✅ "Quy tắc này mâu thuẫn với quy định UBCKNN: Không cho phép sửa/hủy lệnh trong phiên khớp lệnh định kỳ ATO (9h00-9h15) và ATC (14h30-14h45)."
    ```
 
 ---

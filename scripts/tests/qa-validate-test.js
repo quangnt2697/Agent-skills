@@ -91,5 +91,44 @@ test('qa-validate.js', async (t) => {
     assert.ok(res.warnings.some(w => w.rule === 'G2'));
   });
 
+  await t.test('fails missing-examples when Scenario Outline lacks Examples table', () => {
+    const checklist = `- [P0] CL-001 test`;
+    const feature = `@CL-001\nScenario Outline: test <param>\nGiven user enters <param>\nThen result ok`;
+    const res = runValidate(checklist, feature, null);
+    assert.strictEqual(res.status, 'fail');
+    assert.ok(res.failures.some(f => f.rule === 'missing-examples'));
+  });
+
+  await t.test('passes when Scenario Outline includes Examples table', () => {
+    const checklist = `- [P0] CL-001 test`;
+    const feature = `@CL-001\nScenario Outline: test <param>\nGiven user enters <param>\nThen result ok\n\nExamples:\n| param |\n| foo |`;
+    const res = runValidate(checklist, feature, null);
+    assert.strictEqual(res.status, 'pass');
+  });
+
+  await t.test('fails multi-symbol-parameterization when multi-exchange scenario is not an outline', () => {
+    const checklist = `- [P0] CL-001 test`;
+    const feature = `@CL-001\nScenario: test trading on HOSE and HNX\nGiven market open on HOSE and HNX\nThen result ok`;
+    const res = runValidate(checklist, feature, null);
+    assert.strictEqual(res.status, 'fail');
+    assert.ok(res.failures.some(f => f.rule === 'multi-symbol-parameterization'));
+  });
+
+  await t.test('fails minimum-coverage when AC lacks 3-tier coverage', () => {
+    const checklist = `- [P0] AC-1.1 Đặt lệnh cơ bản`;
+    const feature = `@happy-path @AC-1.1\nScenario: happy\nGiven order valid\nThen ok\n\n@negative @AC-1.1\nScenario: negative\nGiven order invalid\nThen reject`;
+    const res = runValidate(checklist, feature, null);
+    assert.strictEqual(res.status, 'fail');
+    assert.ok(res.failures.some(f => f.rule === 'minimum-coverage' && f.message.includes('@boundary/@bva')));
+  });
+
+  await t.test('passes minimum-coverage when AC has happy-path, negative, and boundary scenarios', () => {
+    const checklist = `- [P0] AC-1.1 Đặt lệnh cơ bản`;
+    const feature = `# [DATA-ASSUMED]\n@happy-path @AC-1.1\nScenario: happy\nGiven order valid\nThen ok\n\n@negative @AC-1.1\nScenario: negative\nGiven order invalid\nThen reject\n\n@boundary @AC-1.1\nScenario: boundary\nGiven order max limit\nThen ok`;
+    const res = runValidate(checklist, feature, null);
+    assert.strictEqual(res.status, 'pass');
+    assert.strictEqual(res.failures.length, 0);
+  });
+
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });

@@ -69,11 +69,14 @@ const report = {
 
 // 1. Kiểm tra Traceability nếu có checklist
 let checklistSet = null;
+let acSet = new Set();
 if (checklistPath && fs.existsSync(checklistPath)) {
   try {
     const clContent = fs.readFileSync(checklistPath, 'utf8');
     const matches = clContent.match(/\b(CL|CHK|AC)-\d+(?:\.\d+)?\b/g) || [];
     checklistSet = new Set(matches);
+    const acMatches = clContent.match(/\bAC-\d+(?:\.\d+)?\b/g) || [];
+    acSet = new Set(acMatches);
   } catch (err) {
     report.failures.push({ rule: 'checklist-read', message: `Cannot read checklist: ${err.message}` });
   }
@@ -210,6 +213,28 @@ for (const file of featureFiles) {
       }
     }
 
+    // Multi-symbol Parameterization & Examples table check
+    const isOutline = /^\s*Scenario Outline:/.test(sc.name);
+    if (isOutline) {
+      if (!sc.rawText.includes('Examples:')) {
+        report.failures.push({
+          file,
+          rule: 'missing-examples',
+          message: `Scenario Outline '${sc.name}' is missing an Examples: table`
+        });
+      }
+    } else {
+      const exchangeMatches = sc.rawText.match(/\b(HOSE|HNX|UPCoM|Phái\s*sinh)\b/gi) || [];
+      const uniqueExchanges = new Set(exchangeMatches.map((e) => e.toUpperCase()));
+      if (uniqueExchanges.size >= 2 || sc.tags.some((t) => t.toLowerCase().includes('multi-symbol') || t.toLowerCase().includes('multi-board'))) {
+        report.failures.push({
+          file,
+          rule: 'multi-symbol-parameterization',
+          message: `Scenario '${sc.name}' tests multiple exchanges/symbols (${[...uniqueExchanges].join(', ')}) but is not a Scenario Outline. Per AGENTS.md rule, must use Scenario Outline with an Examples table.`
+        });
+      }
+    }
+
     // Traceability to checklist if provided
     if (checklistSet) {
       for (const t of sc.tags) {
@@ -221,6 +246,45 @@ for (const file of featureFiles) {
             message: `Tag @${cleanTag} in '${sc.name}' not found in checklist`
           });
         }
+      }
+    }
+  }
+
+  // Minimum Coverage Rule (Hard Gate):
+  // Mỗi mục Acceptance Criteria (AC) trong checklist/spec bắt buộc phải ánh xạ tới tối thiểu 3 kịch bản:
+  // ít nhất 1 @happy-path, 1 @negative, và 1 @boundary (hoặc @bva / @edge-case / @edge).
+  if (acSet.size > 0) {
+    for (const acId of acSet) {
+      const mappedScenarios = scenarios.filter((sc) =>
+        sc.tags.some((t) => t.replace(/^@/, '') === acId) ||
+        sc.name.includes(acId)
+      );
+
+      if (mappedScenarios.length === 0) {
+        report.failures.push({
+          file,
+          rule: 'minimum-coverage',
+          message: `Acceptance Criteria '${acId}' has no mapped scenarios in feature file (missing @${acId} tag)`
+        });
+        continue;
+      }
+
+      const allTags = mappedScenarios.flatMap((sc) => sc.tags.map((t) => t.toLowerCase()));
+      const hasHappy = allTags.some((t) => t.includes('happy-path') || t.includes('happy_path') || t.includes('happy'));
+      const hasNegative = allTags.some((t) => t.includes('negative'));
+      const hasBoundary = allTags.some((t) => t.includes('boundary') || t.includes('bva') || t.includes('edge'));
+
+      const missing = [];
+      if (!hasHappy) missing.push('@happy-path');
+      if (!hasNegative) missing.push('@negative');
+      if (!hasBoundary) missing.push('@boundary/@bva');
+
+      if (missing.length > 0) {
+        report.failures.push({
+          file,
+          rule: 'minimum-coverage',
+          message: `Acceptance Criteria '${acId}' lacks 3-tier coverage: missing ${missing.join(', ')} (requires ≥1 @happy-path, ≥1 @negative, ≥1 @boundary/@bva)`
+        });
       }
     }
   }

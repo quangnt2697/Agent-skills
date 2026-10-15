@@ -6,24 +6,33 @@ trigger: Khi có Jira task ý tưởng sơ khai/mơ hồ cần brainstorm hoặc
 
 # Kỹ năng Mài giũa Spec (ba-refine)
 
-Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành spec chi tiết rõ ràng → Push lại lên Jira theo cấu trúc chuẩn.
+Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần túy theo tư duy nghiệp vụ (Zero Technical Noise) → Push lại lên Jira theo cấu trúc chuẩn và xuất bản `spec/final.md`.
 
-## ⚠️ RANH GIỚI NHIỆM VỤ (Bắt buộc đọc trước)
+## ⚠️ RANH GIỚI NHIỆM VỤ & BỘ LỌC CHỐNG KỸ THUẬT (Bắt buộc đọc trước)
 
-| ✅ ba-refine LÀM | ❌ ba-refine KHÔNG LÀM |
+| ✅ ba-refine LÀM (WHAT & WHY) | ❌ ba-refine KHÔNG LÀM (HOW TO BUILD) |
 |---|---|
-| Tải và phân tích Jira task, Confluence, attachments | Viết code, test script, SQL |
-| Phân kỳ ý tưởng → Hội tụ → Mài sắc spec | Chạy test hoặc deploy |
-| Viết `refined.md` và push ADF lên Jira | Thiết kế kiến trúc kỹ thuật chi tiết |
-| Gọi sub-skills: ba-interview-me, ba-user-story-writing | Tự ý push Jira trước khi user duyệt |
-| Bàn giao `refined.md` cho `qa-test-design` và `dev` | Tiếp tục sang qa-test-design khi chưa push xong |
+| Tải và phân tích Jira task, Confluence, attachments | Viết code, test script, SQL, API contract |
+| Khai phóng ý tưởng theo 5 chiều nghiệp vụ cốt lõi | Bàn luận kiến trúc hệ thống, microservices, DB Schema |
+| Stress-test xung đột quy tắc nghiệp vụ và phiên giao dịch | Viết JSON payload mẫu (camelCase, snake_case) |
+| Viết `refined.md` 7 mục thuần nghiệp vụ & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
+| Xuất bản `spec/final.md` chuẩn hóa bàn giao cho DEV & QA | Tự ý render mockup khi không có cờ `--mockup` |
+
+### 🛡️ Bảng Ranh giới Ngôn ngữ Bất biến (Strict Business-Only Guardrail)
+
+| Khía cạnh | ❌ NGHIÊM CẤM xuất hiện trong ba-refine | ✅ BẮT BUỘC dùng Ngôn ngữ Nghiệp vụ thay thế |
+|---|---|---|
+| **Dữ liệu** | Tên bảng DB (`security_definition_v3`), kiểu dữ liệu kỹ thuật (`varchar(50)`, `int64`, `JSONB`), câu lệnh SQL | Tên thông tin nghiệp vụ (Mã chứng khoán, Giá trần, Tỷ lệ ký quỹ ban đầu), quy tắc định dạng hiển thị & làm tròn |
+| **Giao tiếp hệ thống** | HTTP Method (`POST /api/v1/orders`), JSON key (`camelCase`, `snake_case`), HTTP Status (`400`, `500`), Kafka topic, Redis cache | Hành động của người dùng/hệ thống (Nhà đầu tư gửi yêu cầu đặt lệnh, Hệ thống từ chối và thông báo lý do...) |
+| **Xử lý lỗi** | Exception name, Stack trace, Timeout ms kỹ thuật, Deadlock, Thread pool | Tình huống ngoại lệ nghiệp vụ (Khi lệnh chưa nhận được phản hồi từ Sở giao dịch, Khi sức mua thay đổi trong lúc chờ duyệt) |
+| **Luồng trạng thái** | Biến cờ trong code (`status = 2`, `is_active = true`) | Trạng thái nghiệp vụ của đối tượng (Chờ gửi lên Sở → Đã vào sổ lệnh → Khớp một phần → Hoàn tất) |
 
 **Ranh giới với ba-spec:**
 - **ba-spec**: Yêu cầu đã rõ ràng → tổng hợp + phát hiện gap → handoff `final.md`
-- **ba-refine**: Yêu cầu thô/mơ hồ → brainstorm + hội tụ → cập nhật Jira + handoff `refined.md`
+- **ba-refine**: Yêu cầu thô/mơ hồ → brainstorm 5 chiều nghiệp vụ + hội tụ → cập nhật Jira + handoff `spec/final.md`
 
 > ⚠️ **DOMAIN CHỨNG KHOÁN & FINTECH:**
-> Khi spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, KRX/MDDS, ký quỹ — **BẮT BUỘC** đọc `../../../../references/securities-domain-rules.md` trong suốt Phase 1-3.
+> Khi spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, KRX/MDDS, ký quỹ — **BẮT BUỘC** đọc `../../../../references/securities-domain-rules.md` trong suốt Phase 0-3.
 
 ## 1. Các Approval Gates Bắt buộc
 
@@ -32,29 +41,48 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành 
 | Gate | Vị trí | Hành động bắt buộc |
 |---|---|---|
 | **Gate 1** | Cuối Phase 0 | Trình bảng tài liệu → **DỪNG chờ user gõ OK** |
-| **Gate 2** | Bước 3.2 | Trình toàn bộ draft → **DỪNG chờ user approve** trước khi lưu `refined.md` |
+| **Gate 2** | Bước 3.2 | Trình toàn bộ draft 7 mục nghiệp vụ → **DỪNG chờ user approve** trước khi lưu `refined.md` |
 
-## 2. Quy trình 4 Giai đoạn
+## 2. Quy trình 4 Giai đoạn Theo Tư Duy Nghiệp Vụ
 
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng.
 
-- **Giai đoạn 0 (Scan & Tổng hợp — Gate 1):**
-  Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira (n8n Fast-Path: `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` — CLI: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js prepJiraContext {issueKey}` — nếu n8n offline báo user và DỪNG), quét Confluence + attachments, trình bảng cho user duyệt, tải file thiếu.
+- **Giai đoạn 0 (Thu thập Ý tưởng & Đối chiếu Quy tắc Ngành — Gate 1):**
+  - Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira qua n8n Fast-Path (`prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`).
+  - Tự động tra cứu các quy định nghiệp vụ liên quan trong `references/securities/` (cấu trúc thị trường, phiên giao dịch, vòng đời lệnh, quy tắc margin) để nắm vững nền tảng nghiệp vụ trước khi phân tích.
+  - Quét Confluence + attachments, trình bảng tài liệu cho user duyệt qua **Gate 1**.
 
-- **Giai đoạn 1 (Phân kỳ — Thấu hiểu & Mở rộng):**
-  HMW statement, chất vấn user qua `ba-interview-me` (đạt ≥90% confidence), sinh 5-8 idea variations.
-  > 📖 Chi tiết lăng kính ideation: [frameworks.md](references/frameworks.md)
+- **Giai đoạn 1 (Khai phóng theo 5 Chiều Nghiệp vụ — Business-Driven Divergence):**
+  - Mở rộng ý tưởng thô theo 5 câu hỏi nghiệp vụ cốt lõi:
+    1. **Đối tượng & Phân quyền (Who):** Nhóm khách hàng/nhân sự nào tham gia? Quyền hạn khác nhau thế nào (Normal vs VIP/Ultimate, Thường vs Margin)?
+    2. **Giá trị & Mục tiêu (Why):** Nhu cầu kinh doanh hay quy định pháp lý (KRX/UBCKNN) nào thúc đẩy tính năng này?
+    3. **Điều kiện & Công thức (What Rules):** Điều kiện tiên quyết, công thức tính toán (sức mua, phí, thuế, tỷ lệ ký quỹ), ranh giới định lượng?
+    4. **Thời điểm & Trạng thái (When):** Tính năng hoạt động khác nhau ra sao giữa các phiên (ATO, Liên tục, ATC, PLO, Nghỉ) và các sàn (HOSE, HNX, UPCoM, Phái sinh)?
+    5. **Hành trình Người dùng (User Journey):** Người dùng bắt đầu từ đâu, thao tác bước nào, và nhận được kết quả/thông báo gì?
+  - Chất vấn user qua `ba-interview-me` (chỉ hỏi câu 🔴 Critical theo `autonomy-contract.md`), đạt ≥90% confidence.
 
-- **Giai đoạn 2 (Hội tụ — Đánh giá & Chốt):**
-  Gom 2-3 hướng đi khác biệt, stress-test, surface hidden assumptions.
-  > 📖 Rubric chấm điểm: [refinement-criteria.md](references/refinement-criteria.md)
+- **Giai đoạn 2 (Phản biện Nghiệp vụ & Tình huống Biên — Business Stress-Test & Convergence):**
+  - Loại bỏ hoàn toàn việc stress-test hạ tầng kỹ thuật. Tập trung 100% vào phản biện xung đột nghiệp vụ:
+    - **Tác động chéo:** Có mâu thuẫn với quy tắc tính sức mua, quy tắc lô lẻ, hay cảnh báo cổ phiếu (CR/CA/RES/SUS) hiện hành không?
+    - **Xử lý ngoại lệ nghiệp vụ:** Khách hàng hủy/sửa khi lệnh đang chờ Sở, cổ phiếu bị đình chỉ giữa phiên, hoặc tài khoản chạm tỷ lệ call margin thì xử lý thế nào?
+  - Gom các biến thể thành 2-3 hướng đi nghiệp vụ rõ ràng để user lựa chọn.
 
-- **Giai đoạn 3 (Mài sắc — Draft → Review → Chốt — Gate 2):**
-  Tạo `refined-draft.md` từ template → Trình toàn bộ nội dung cho user → Revision loop (≤5 vòng) → Copy thành `refined.md` → Làm giàu (User Story, AC Gherkin, UI Design/Mockup nếu task liên quan giao diện — HỦY BỎ Mermaid flow).
-  > 📖 Template: [assets/jira-description-template.md](assets/jira-description-template.md)
+- **Giai đoạn 3 (Chuẩn hóa Tài liệu Đặc tả Nghiệp vụ — Business Spec Sharpening — Gate 2):**
+  - Tạo `refined-draft.md` theo cấu trúc **7 mục thuần nghiệp vụ** (loại bỏ hoàn toàn technical noise API/DB):
+    1. **Mục tiêu & Giá trị Nghiệp vụ (Business Objective & Value)**
+    2. **Phạm vi & Đối tượng Áp dụng (Scope & Actors — In/Out of Scope)**
+    3. **Luồng Nghiệp vụ Chính (Main Business Flow — góc nhìn người dùng)**
+    4. **Luồng Nghiệp vụ Phụ & Xử lý Ngoại lệ (Alternative & Exception Flows)**
+    5. **Danh mục Quy tắc Nghiệp vụ & Công thức tính ([BR-01], [BR-02]...)**
+    6. **Tiêu chí Nghiệm thu Nghiệp vụ ([AC-1.1], [AC-1.2]... dạng Business Checklist)**
+    7. **Giả định Nghiệp vụ & Câu hỏi Mở (Business Assumptions & Open Questions)**
+  - **Quy tắc Mockup:** Chỉ thiết kế HTML/PNG mockup khi có cờ `--mockup` hoặc khi yêu cầu thay đổi trực tiếp bố cục màn hình. Tuyệt đối không sinh sơ đồ flow Mermaid rườm rà.
+  - Trình toàn bộ draft qua **Gate 2** để user phê duyệt.
 
-- **Giai đoạn 4 (Push Jira & Xuất bản final.md Handoff):**
-  Dry-run preview ADF → Push description lên Jira → Ghi `push-log.json` → **Tự động xuất bản tài liệu chuẩn hóa ra `workspace/issues/{issueKey}/spec/final.md`** kèm `spec/testability-manifest.json` để QA (`/qa-test-design`, `/qa-full-pipeline`) và DEV (`/dev-tech-spec`) có thể tiêu thụ trực tiếp ngay lập tức mà không cần gọi lại `/ba-spec`.
+- **Giai đoạn 4 (Đồng bộ lên Jira & Xuất bản final.md Handoff):**
+  - Cập nhật mô tả Jira qua n8n `/webhook/jira-spec-pusher` hoặc script `jira-push-spec.sh`.
+  - **Tự động xuất bản ra `workspace/issues/{issueKey}/spec/final.md`** kèm `spec/testability-manifest.json` (chứa danh sách BR-*, AC-*, profile gợi ý: API, WS, UI, STATE, DATA).
+  - Bàn giao trực tiếp cho DEV (`/dev-tech-spec` - tự chuyển hóa sang kiến trúc kỹ thuật) và QA (`/qa-test-design` - tự chuyển hóa sang kịch bản kiểm thử đa profile).
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 
@@ -63,33 +91,32 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thành 
 
 - 🛠️ **Công cụ & Assets:**
   - [jira-push-spec.sh](assets/jira-push-spec.sh): Script push ADF lên Jira.
-  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton `refined.md`.
+  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 7 mục thuần nghiệp vụ.
 
 - 📖 **Tài liệu chi tiết (references/):**
-  - [workflow-and-phases.md](references/workflow-and-phases.md): Chi tiết 4 phase, curl commands, metadata.json schema.
-  - [rules-and-guidelines.md](references/rules-and-guidelines.md): Auth, file filter, anti-patterns, verification checklist.
+  - [workflow-and-phases.md](references/workflow-and-phases.md): Chi tiết 4 phase theo tư duy nghiệp vụ.
+  - [quality-rules.md](references/quality-rules.md): Bộ lọc chống kỹ thuật & Confidence Score.
+  - [refinement-criteria.md](references/refinement-criteria.md): Rubric 4 tiêu chí stress-test nghiệp vụ.
+  - [frameworks.md](references/frameworks.md): 5 chiều khai phóng ý tưởng nghiệp vụ.
   - [securities-domain-rules.md](../../../../references/securities-domain-rules.md): Quy tắc Domain ngành Chứng khoán.
-  - [quality-rules.md](references/quality-rules.md): Công thức Confidence Score (ngưỡng ≥90%).
-  - [refinement-criteria.md](references/refinement-criteria.md): Rubric 4 tiêu chí stress-test.
-  - [frameworks.md](references/frameworks.md): 7 lăng kính sinh idea (HMW, Inversion, 10x...).
-  - [examples.md](references/examples.md): Few-shot tương tác thực tế với user.
 
-## 4. Ví dụ mẫu Đầu Ra
+## 4. Ví dụ mẫu Đầu Ra Thuần Nghiệp Vụ
 
-**Input:** Jira task "Cải thiện báo cáo giao dịch"
-
-**Output `refined.md` (trích):**
 ```markdown
-## 🧩 User Story
-**As a** Nhà đầu tư cá nhân sử dụng tài khoản margin
-**I want** xem báo cáo giao dịch tổng hợp theo ngày/tuần/tháng với lọc theo mã CK
-**So that** tôi có thể phân tích hiệu quả danh mục và quyết định tái cơ cấu kịp thời
+## 1. Mục tiêu & Giá trị Nghiệp vụ
+Cho phép nhà đầu tư giao dịch ký quỹ (Margin) chủ động lựa chọn gói phí ưu đãi theo kỳ hạn để tối ưu chi phí vay.
 
-## ✅ Acceptance Criteria
-  Scenario: Happy - Xuất báo cáo ngày có dữ liệu giao dịch
-    Given Nhà đầu tư đã đăng nhập và có lệnh giao dịch trong ngày
-    When chọn khoảng thời gian "Hôm nay" và nhấn "Xuất báo cáo"
-    Then hệ thống trả về file PDF/Excel chứa đầy đủ lệnh Mua/Bán trong ngày
+## 2. Phạm vi & Đối tượng Áp dụng
+- Áp dụng: Khách hàng cá nhân có tiểu khoản ký quỹ (đuôi 6) đã kích hoạt hạn mức.
+- Không áp dụng: Khách hàng tổ chức, tài khoản thường (đuôi 1), tài khoản phái sinh.
+
+## 3. Quy tắc Nghiệp vụ
+- [BR-01] Lãi suất ưu đãi chỉ áp dụng cho các món giải ngân mới phát sinh trong thời gian hiệu lực của gói.
+- [BR-02] Khi hết thời hạn gói, lãi suất tự động quay về mức thả nổi chuẩn theo quy định biểu phí hiện hành.
+
+## 4. Tiêu chí Nghiệm thu Nghiệp vụ
+- [AC-1.1] Xác minh hệ thống ghi nhận đúng mức lãi suất ưu đãi cho lệnh khớp mua ký quỹ trong ngày đăng ký gói.
+- [AC-1.2] Xác minh hệ thống từ chối đăng ký gói khi tài khoản đang trong trạng thái bị phong tỏa hoặc diện Call Margin.
 ```
 
 ---

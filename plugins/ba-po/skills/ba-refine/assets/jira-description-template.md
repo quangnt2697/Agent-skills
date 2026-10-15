@@ -1,54 +1,61 @@
-## 🧩 User Story
+## 1. Mục tiêu & Giá trị Nghiệp vụ (Business Objective & Value)
 
-**As a** [role/persona cụ thể]  
-**I want** [goal/action]  
-**So that** [business value/outcome]
+- **Bối cảnh & Nỗi đau (Problem):** [1-2 câu nêu đúng nỗi đau/tình trạng hiện tại của người dùng hoặc yêu cầu từ UBCKNN/KRX]
+- **Mục tiêu (Goal):** [1 câu về kết quả kỳ vọng và giá trị kinh doanh mang lại]
+- **Tính cấp thiết (Urgency):** [1 câu giải thích lý do cần triển khai ngay]
 
-## 💼 Business Context
+## 2. Phạm vi & Đối tượng Áp dụng (Scope & Actors)
 
-- **Vấn đề (Problem):** [1-2 câu nêu đúng nỗi đau/tình trạng hiện tại, kèm số liệu nếu có]
-- **Mục tiêu (Goal):** [1 câu về kết quả kỳ vọng và giá trị mang lại]
-- **Tính cấp thiết (Urgency):** [1 câu ngắn giải thích lý do cần làm ngay]
+- **Đối tượng áp dụng (In-Scope Actors):** [Nhà đầu tư cá nhân / VIP / Tiểu khoản Thường (đuôi 1) / Tiểu khoản Ký quỹ (đuôi 6)...]
+- **Phạm vi chức năng (In-Scope):** [Các nghiệp vụ/sàn giao dịch/loại lệnh nằm trong phạm vi]
+- **Ngoài phạm vi (Out-of-Scope):** [Các nghiệp vụ, loại tài khoản hoặc tính năng chưa xử lý trong kỳ này]
 
-## ✅ Acceptance Criteria
+## 3. Luồng Nghiệp vụ Chính (Main Business Flow)
+
+<!-- Mô tả luồng thao tác từ góc nhìn người dùng/nghiệp vụ theo các bước có đánh số. TUYỆT ĐỐI KHÔNG dùng sơ đồ Mermaid. -->
+1. **Bước 1:** [Người dùng thực hiện hành động gì]
+2. **Bước 2:** [Hệ thống kiểm tra điều kiện nghiệp vụ gì]
+3. **Bước 3:** [Hệ thống phản hồi kết quả và cập nhật trạng thái nghiệp vụ]
+
+## 4. Luồng Nghiệp vụ Phụ & Xử lý Ngoại lệ (Alternative & Exception Flows)
+
+- **Hủy / Thay đổi giữa chừng:** [Hành vi nghiệp vụ khi người dùng hủy thao tác hoặc thay đổi yêu cầu]
+- **Từ chối từ Sở giao dịch / Đối tác:** [Cách xử lý quyền lợi người dùng khi lệnh/yêu cầu bị từ chối]
+- **Xử lý khi gián đoạn:** [Quy tắc bảo lưu trạng thái hoặc hoàn trả sức mua/tiền khi phát sinh ngoại lệ]
+
+## 5. Danh mục Quy tắc Nghiệp vụ & Công thức ([BR-xx])
+
+- **[BR-01]** [Tên quy tắc]: [Mô tả chi tiết quy tắc, điều kiện ràng buộc hoặc công thức tính toán làm tròn]
+- **[BR-02]** [Tên quy tắc]: [Mô tả chi tiết quy tắc, điều kiện ràng buộc hoặc công thức tính toán làm tròn]
+
+## 6. Tiêu chí Nghiệm thu Nghiệp vụ ([AC-x.y])
 
 ```gherkin
-Feature: [Tên chức năng nghiệp vụ]
+Feature: [Tên tính năng nghiệp vụ]
 
-  Scenario: Happy - [Luồng thành công chính]
-    Given [precondition]
-    When [action/trigger]
-    Then [expected outcome]
-    And [additional outcome]
+  @happy-path @persona
+  Scenario: [AC-1.1] [Luồng thành công chính theo phân khúc người dùng]
+    Given [Điều kiện tiên quyết nghiệp vụ của người dùng]
+    When [Người dùng thực hiện hành động]
+    Then [Kết quả nghiệp vụ kỳ vọng hiển thị hoặc ghi nhận]
 
-  Scenario: Edge - [Trường hợp biên/ngoại lệ]
-    Given [precondition]
-    When [edge case action]
-    Then [expected handling]
+  @negative
+  Scenario: [AC-1.2] [Từ chối khi vi phạm điều kiện nghiệp vụ]
+    Given [Điều kiện tiên quyết nghiệp vụ của người dùng]
+    When [Người dùng thực hiện hành động không hợp lệ]
+    Then [Hệ thống từ chối và hiển thị thông báo nghiệp vụ rõ ràng]
 
-  Scenario: Validation - [Kiểm tra dữ liệu đầu vào]
-    Given [precondition]
-    When [invalid input]
-    Then [validation error message]
+  @boundary
+  Scenario: [AC-1.3] [Kiểm tra tại ngưỡng giá trị biên nghiệp vụ]
+    Given [Người dùng tại ngưỡng hạn mức hoặc biên độ]
+    When [Thực hiện giao dịch tại giá trị biên]
+    Then [Hệ thống xử lý đúng theo ranh giới quy tắc]
 ```
 
-## 🎨 UI Design / Mockup
+## 7. Giả định Nghiệp vụ & Đo lường Thành công (Business Assumptions & Success Metrics)
 
-<!-- LƯU Ý: Phần này CHỈ áp dụng đối với task có thay đổi Giao diện người dùng (UI/Frontend).
-Nếu task thuần Backend/API/Logic ngầm/Database: Ghi "N/A (Task không liên quan giao diện)" hoặc lược bỏ.
-HỦY BỎ hoàn toàn User Flow dạng Mermaid. -->
-
-### UI Requirements & Codebase Mapping
-- **Màn hình / Component bị ảnh hưởng:** [Tên component/screen hiện hữu trong codebase cần sửa hoặc tạo mới]
-- **Tái sử dụng Design Tokens:** [Color tokens, Typography, Spacing, Theme có sẵn trong codebase]
-- **Cập nhật mới theo task:** [Mô tả các trường dữ liệu, controls, validation states hoặc layout mới]
-
-### Mockup / Prototype Deliverables
-- **Interactive Mockup (HTML):** [workspace/{issueKey}/tech/mockup.html hoặc Link Figma]
-- **Preview Snapshot (PNG):** [workspace/{issueKey}/tech/mockup.png hoặc ảnh đính kèm]
-- **Ghi chú Tương tác (UX):** [Mô tả ngắn gọn luồng thao tác/action của người dùng dạng text step-by-step nếu có]
-
-## ☀️ Success Criteria & Tracking
+- **Giả định nghiệp vụ (Assumptions):** [Các tiền đề nghiệp vụ được mặc định là đúng để triển khai]
+- **Câu hỏi mở (Open Questions):** [Các điểm cần thống nhất thêm với Product Owner / Risk / Compliance nếu có]
 
 ### Success Metrics
 
@@ -63,24 +70,9 @@ HỦY BỎ hoàn toàn User Flow dạng Mermaid. -->
 |--------------|----------------------|---------------|
 | [Event name] | [Link to dashboard]  | [Team/Person] |
 
-## 🧱 Technical Notes
-
-### API / Service
-
-- [API endpoints, service dependencies]
-
-### Database
-
-- [Tables, schemas affected]
-
-### Event / Message
-
-- [Events published/consumed, message queues]
-
-### Dependency
-
-- [External systems, libraries, feature flags]
-
-### Migration / Rollout
-
-- [Rollout plan, backward compatibility, rollback strategy]
+<!-- LƯU Ý BỔ SUNG (NẾU TASK CÓ THAY ĐỔI GIAO DIỆN NGƯỜI DÙNG VÀ CÓ CỜ --mockup):
+## 🎨 UI Design & Mockup Deliverables
+- Mockup HTML: workspace/{issueKey}/tech/mockup.html
+- Mockup Snapshot: workspace/{issueKey}/tech/mockup.png
+- Ghi chú tương tác UI: [Mô tả tương tác]
+-->
