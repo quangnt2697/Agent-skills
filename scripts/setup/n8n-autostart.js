@@ -25,7 +25,7 @@ const pm2Bin = path.resolve('node_modules', '.bin', 'pm2');
 const withAbsPm2 = (cmd) => cmd.trim().replace(/ pm2 /, ` ${pm2Bin} `);
 
 if (mode === 'on') {
-  const start = run(['start', 'ecosystem.config.cjs']);
+  const start = run(['start', 'config/ecosystem.config.cjs']);
   if (start.status !== 0) {
     console.error(`❌ pm2 start thất bại:\n${start.stderr || start.stdout}`);
     process.exit(1);
