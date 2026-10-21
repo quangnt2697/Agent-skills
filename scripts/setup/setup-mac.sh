@@ -81,7 +81,7 @@ npm run n8n:setup
 
 # 7. Đồng bộ plugins và rules toàn cục cho Antigravity / Gemini CLI
 echo "🔌 Đang đồng bộ Agent Plugins và Global Rules (bao gồm Focus ADHD)..."
-npm run setup:plugins
+npm run setup
 
 # 8. Cài skills cho Claude Code (toàn máy, tự cập nhật qua symlink)
 echo "🔌 Đang cài agent-skills cho Claude Code..."

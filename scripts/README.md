@@ -80,8 +80,8 @@ scripts/
 | `npm run db:recon:core` | Chạy đối chiếu 4 query cốt lõi | `node scripts/db/db-recon-core.js` |
 | `npm run db:recon:prod` | Chạy đối chiếu TimescaleDB Prod | `node scripts/db/db-recon-prod.js` |
 | `npm run metabase:login` | Đăng nhập SSO Metabase qua Playwright | `node scripts/db/metabase-sso-login.js` |
-| `npm run repo:sync` | Đồng bộ git các repo microservice | `node scripts/sync/repo-sync.js` |
+| `npm run sync` | Đồng bộ git các repo microservice | `node scripts/sync/repo-sync.js` |
 | `npm run n8n:sync-nodes` | Đồng bộ 22 node scripts vào workflows | `node scripts/n8n/sync-n8n-nodes.js` |
 | `npm run n8n:clean` | Làm sạch & format n8n JSON workflows | `node scripts/n8n/n8n-clean-workflows.js` |
-| `npm run setup:plugins` | Cài đặt / cập nhật plugins vào agent | `node scripts/setup/setup-plugins.js` |
+| `npm run setup` | Cài đặt / cập nhật plugins vào agent | `node scripts/setup/setup-plugins.js` |
 | `npm run build` | Build các file command twins | `node scripts/setup/build-commands.js` |

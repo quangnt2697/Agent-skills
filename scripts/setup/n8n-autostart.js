@@ -8,9 +8,9 @@ import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 
-const mode = process.argv[2];
+const mode = process.argv[2] || 'on';
 if (!['on', 'off'].includes(mode)) {
-  console.error('Dùng: node scripts/setup/n8n-autostart.js <on|off>');
+  console.error('Dùng: node scripts/setup/n8n-autostart.js [on|off] (mặc định: on)');
   process.exit(1);
 }
 if (process.platform !== 'darwin') {

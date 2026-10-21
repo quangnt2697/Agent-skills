@@ -84,11 +84,11 @@ Vì là symlink nên **sửa nội dung skill trong repo là có hiệu lực ng
 ### Antigravity / Gemini CLI
 **Bước 1: Đồng bộ plugins & rules** *(Tuỳ chọn A đã chạy sẵn bước này; chạy lại khi pull bản mới)*
 ```bash
-npm run setup:plugins
+npm run setup
 ```
-Lệnh này sao chép plugins, `references/`, một số script, `AGENTS.md` và `.agents/rules/` vào `~/.gemini/config/`. Gỡ bỏ: `npm run unlink:plugins`. Dành cho người phát triển skill: `npm run setup:plugins:symlink` để sửa trong repo là có hiệu lực ngay.
+Lệnh này sao chép plugins, `references/`, một số script, `AGENTS.md` và `.agents/rules/` vào `~/.gemini/config/`. Gỡ bỏ: `npm run unlink:plugins`. Dành cho người phát triển skill: `npm run setup -- --symlink` để sửa trong repo là có hiệu lực ngay.
 
-> Sau khi `git pull`, hãy chạy lại `npm run setup:plugins` để máy bạn nhận skills mới.
+> Sau khi `git pull`, hãy chạy lại `npm run setup` để máy bạn nhận skills mới.
 
 **Bước 2: Dùng trong khung chat của agent** — mở lại Agent CLI/IDE, gõ các slash command:
 

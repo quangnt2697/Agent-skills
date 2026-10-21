@@ -150,7 +150,7 @@ Hệ thống sử dụng **Mattermost** làm giao diện tương tác duy nhất
    ```
 2. **Khởi động kèm Tunnel (nhận Webhook ngoài Internet):**
    ```bash
-   npm run n8n:tunnel
+   npm run n8n -- --tunnel
    ```
 3. **Chạy ngầm (Daemon qua PM2):**
    ```bash
@@ -218,7 +218,7 @@ Tóm tắt nhanh:
 
 3. **n8n Tunnel** (khi Mattermost Cloud hoặc khác mạng nội bộ):
    ```bash
-   npm run n8n:tunnel    # Built-in tunnel, URL thay đổi mỗi lần restart
+   npm run n8n -- --tunnel    # Built-in tunnel, URL thay đổi mỗi lần restart
    # Hoặc dùng ngrok/Cloudflare Tunnel cho URL cố định
    ```
    Xem `docs/guides/installation-guide.md` để biết chi tiết.
