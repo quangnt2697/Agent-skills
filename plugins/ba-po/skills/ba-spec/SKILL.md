@@ -40,6 +40,9 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 
 > ⚠️ **DOMAIN CHỨNG KHOÁN & FINTECH:**
 > Khi spec liên quan đến tài chính, đặt/sửa/hủy lệnh (ATO/LO/ATC/MP), sổ lệnh, bảng giá, KRX/MDDS, ký quỹ, mã lỗi ORS — **BẮT BUỘC** đọc [../../../../references/securities-domain-rules.md](../../../../references/securities-domain-rules.md) trong suốt quá trình phân tích.
+>
+> 💡 **KHUYẾN NGHỊ PLANNING MODE (`/plan`):**
+> Đối với các bài toán nghiệp vụ phức tạp (khớp lệnh KRX MDDS, tính toán sức mua margin đa tiểu khoản, xử lý lệnh điều kiện, phân bổ phí/thuế dồn tích), khuyến nghị kích hoạt lệnh `/plan` trước khi bắt đầu. Chế độ Planning giúp agent tư duy phân tích phi-chỉnh-sửa (read-only architecture reasoning) và đối chiếu toàn diện các luồng rẽ nhánh trước khi chốt spec chính thức.
 
 ---
 

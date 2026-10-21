@@ -2,6 +2,11 @@
 name: code-reviewer
 description: Kỹ sư đánh giá code (Senior code reviewer) thực hiện đánh giá code trên 5 phương diện — tính chính xác, tính dễ đọc, kiến trúc, bảo mật, và hiệu năng. Sử dụng để review code một cách triệt để trước khi merge.
 model: sonnet
+enable_write_tools: false
+tools: [view_file, grep_search, list_dir, run_command]
+mode: read-only
+permissions:
+  disallowed_write: ["*"]
 ---
 
 # Kỹ sư Đánh giá Code (Senior Code Reviewer)

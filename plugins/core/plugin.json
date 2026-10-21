@@ -1,1 +1,6 @@
-{"name": "agent-skills-core", "version": "1.0.0", "description": "Core meta-skills"}
+{
+  "name": "agent-skills-core",
+  "version": "1.0.0",
+  "description": "Core meta-skills",
+  "dependencies": []
+}

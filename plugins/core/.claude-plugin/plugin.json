@@ -1,0 +1,7 @@
+{
+  "name": "agent-skills-core",
+  "version": "1.0.0",
+  "description": "Core meta-skills and workspace orchestration",
+  "skills": ["./skills"],
+  "commands": ["./commands"]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "agent-skills-fintech-data",
+  "version": "1.0.0",
+  "description": "Fintech & Securities Data Ops Plugin",
+  "skills": ["./skills"],
+  "commands": ["./commands"]
+}

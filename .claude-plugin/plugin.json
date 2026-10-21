@@ -12,7 +12,6 @@
     "./plugins/ba-po/skills",
     "./plugins/code-reviewer/skills",
     "./plugins/core/skills",
-    "./plugins/dev/skills",
     "./plugins/fintech-data/skills",
     "./plugins/qa/skills",
     "./plugins/scrum-master/skills"
@@ -21,7 +20,6 @@
     "./plugins/ba-po/.claude/commands",
     "./plugins/code-reviewer/.claude/commands",
     "./plugins/core/.claude/commands",
-    "./plugins/dev/.claude/commands",
     "./plugins/fintech-data/.claude/commands",
     "./plugins/qa/.claude/commands",
     "./plugins/scrum-master/.claude/commands"
@@ -31,7 +29,6 @@
     "./plugins/code-reviewer/agents/code-reviewer.md",
     "./plugins/code-reviewer/agents/security-auditor.md",
     "./plugins/code-reviewer/agents/web-performance-auditor.md",
-    "./plugins/dev/agents/dev.md",
     "./plugins/qa/agents/qa.md",
     "./plugins/scrum-master/agents/scrum-master.md"
   ]

@@ -1,1 +1,6 @@
-{"name": "agent-skills-scrum-master", "version": "1.0.0", "description": "Scrum Master Subagent"}
+{
+  "name": "agent-skills-scrum-master",
+  "version": "1.0.0",
+  "description": "Scrum Master Subagent",
+  "dependencies": ["agent-skills-core"]
+}

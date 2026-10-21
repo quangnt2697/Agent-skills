@@ -21,6 +21,7 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 - Đã có tài liệu đặc tả nghiệp vụ (`workspace/{issueKey}/spec/final.md`).
 - Cần chuyển hóa spec thành 2 artifacts kiểm thử chuẩn mực: `checklist.md` (Kiểm thử cái gì) và `{issueKey}.feature` (Kiểm thử như thế nào).
 - Chuẩn bị đầu vào cho quá trình sinh mã tự động (`qa-auto-design`) hoặc đồng bộ lên Squash TM (`qa-squash-push`).
+- **Khuyến nghị Planning Mode (`/plan`):** Đối với các tính năng có từ 2 profile kiểm thử trở lên hoặc tác động trực tiếp luồng khớp lệnh ORS/ký quỹ, khuyến nghị bật `/plan` để phân tích ma trận rủi ro trước khi chốt checklist.
 
 **Khi KHÔNG sử dụng:**
 - Chưa có spec rõ ràng → Dùng `ba-spec` hoặc `ba-interview-me` trước.
@@ -48,6 +49,9 @@ Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y
    Kiểm thử luồng thành công chuẩn trên từng nhóm đối tượng định nghĩa trong `references/securities/08-persona-matrix.md` (Normal User, VIP User, Ultimate User, Tiểu khoản Thường đuôi 1 vs Tiểu khoản Margin đuôi 6).
 
 2. **Lớp 2 — Phân tích Giá trị Biên & Phân vùng Tương đương (`@boundary` / `@bva`):**
+   > 🧠 **CHỈ THỊ EXTENDED THINKING (Ngân sách suy luận 4k - 8k tokens):**
+   > Khi phân tích Boundary Value Analysis (BVA), yêu cầu kích hoạt tư duy chuỗi suy luận sâu (Extended Thinking) nhằm rà soát triệt để các edge cases ẩn: giao thoa giữa các phiên chuyển tiếp (ATO → Liên tục, Liên tục → ATC), trạng thái cổ phiếu đặc thù (chia cổ tức, điều chỉnh giá trần/sàn ngày GDKHQ), và sai số làm tròn số học tài chính khi tính lãi vay margin từng ngày.
+
    Áp dụng quy ước 4 điểm biên bắt buộc cho mọi biến số định lượng:
    - **Biên Giá:** Giá Sàn - 1 tick, Giá Sàn, Giá Tham chiếu, Giá Trần, Giá Trần + 1 tick, Sai bước giá (Tick size).
    - **Biên Khối lượng:** 0, Lô lẻ (1, 99), Lô chẵn tối thiểu (100), Sai bước khối lượng (150 trên HOSE), Khối lượng tối đa mỗi lệnh (MAX), Vượt khối lượng tối đa (MAX + 100).

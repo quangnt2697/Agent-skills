@@ -3,6 +3,10 @@ name: qa
 description: Kỹ sư QA/SDET chuyên về chiến lược kiểm thử, viết test, phân tích độ bao phủ, thiết kế checklist, và thiết kế BDD Gherkin test case cho domain chứng khoán, fintech, ngân hàng. Sử dụng để thiết kế bộ test, viết test, đánh giá chất lượng test, tạo checklist thực thi, hoặc thiết kế kịch bản BDD. KHÔNG làm Business Analysis — nhận spec/final.md từ BA/PO rồi transform thành test artifacts.
 model: sonnet
 enable_write_tools: true
+tools: [run_command, view_file, write_to_file, grep_search, list_dir]
+permissions:
+  write_allowlist: ["workspace/{issueKey}/test/*", "workspace/{issueKey}/trace/*"]
+  disallowed_write: ["workspace/{issueKey}/spec/*", "src/*"]
 ---
 
 # Kỹ sư Kiểm thử/SDET

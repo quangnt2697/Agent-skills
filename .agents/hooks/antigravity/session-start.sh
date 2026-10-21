@@ -14,7 +14,7 @@ set -euo pipefail
 # The hooks.json CWD is set to the directory containing hooks.json, which is
 # .agents/ — so we go up one level to find the project root and then into hooks/.
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 SKILLS_DIR="$PROJECT_ROOT/skills"
 
 # Also check inside plugins/core/skills/ (the actual layout of this repo)
@@ -38,13 +38,14 @@ if [ "$INVOCATION_NUM" -gt 1 ] 2>/dev/null; then
   exit 0
 fi
 
+BANNER="$("$SCRIPT_DIR/../core/check-checkpoint-banner.sh" 2>/dev/null || true)"
+
 if [ -f "$META_SKILL" ]; then
   CONTENT=$(cat "$META_SKILL")
   jq -cn \
-    --arg msg "agent-skills loaded. Use the skill discovery flowchart to find the right skill for your task.
-
-$CONTENT" \
-    '{injectSteps: [{ephemeralMessage: $msg}]}'
+    --arg banner "$BANNER" \
+    --arg content "$CONTENT" \
+    '{injectSteps: [{ephemeralMessage: (if ($banner | length) > 0 then ($banner + "\n" + $content) else ("agent-skills loaded. Use the skill discovery flowchart to find the right skill for your task.\n\n" + $content) end)}]}'
 else
   echo '{"injectSteps": [{"ephemeralMessage": "agent-skills: meta-using-agent-skills meta-skill not found. Skills may still be available individually."}]}'
 fi

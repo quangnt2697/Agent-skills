@@ -207,6 +207,19 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 |---|---|---|
 | **Domain Chứng khoán & Fintech** | [`references/securities-domain-rules.md`](references/securities-domain-rules.md) | Luật KRX, phiên giao dịch HOSE/HNX/UPCoM, tick size, tính toán sức mua |
 | **SDK Index Tra cứu Code Test** | [`plugins/qa/skills/qa-auto-design/references/sdk-map.json`](plugins/qa/skills/qa-auto-design/references/sdk-map.json) | Bản đồ tái sử dụng class Auth, Trading API, MarketData API, WS Client |
+| **Quy chuẩn Subagents Handoff** | [`docs/architecture/subagent-handoff-protocol.md`](docs/architecture/subagent-handoff-protocol.md) | Phân quyền Tool Scoping, Context Window cách ly và quy trình bàn giao |
 | **Quy tắc Vận hành QA** | [`plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md`](plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md) | Chuẩn mực ghi log 100%, tham số hóa đa sàn, cấm hardcode giá |
 | **Chiến lược n8n Fast-Path** | [`docs/architecture/n8n-integration-strategy.md`](docs/architecture/n8n-integration-strategy.md) | Webhooks n8n cho ChatOps Mattermost và tự động hóa CI/CD |
 | **Editorial Diagram Style Guide** | [`plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md`](plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md) | Chuẩn thiết kế sơ đồ phẳng, tinh tế, typography hiện đại |
+
+---
+
+## 7. Tiện Ích Dòng Lệnh Mở Rộng (Extended CLI Utilities)
+
+| Lệnh / Tiện ích | Cú pháp | Mục đích |
+|---|---|---|
+| **Token Budget Validator** | `npm run validate:tokens` | Kiểm định độ dài & ngân sách token cho 30 file `SKILL.md` |
+| **Export Plugin Độc lập** | `npm run plugin:export -- -p <name> [--tar]` | Đóng gói 1 plugin thành thư mục độc lập hoặc file `.tar.gz` |
+| **So sánh Checkpoint Diff** | `npm run checkpoint:diff` | So sánh biến động file `workspace/` so với snapshot gần nhất |
+| **Git Worktree Isolation** | `bash scripts/lib/qa-worktree.sh create {key}` | Cách ly môi trường chạy test E2E Playwright để không làm bẩn working tree |
+

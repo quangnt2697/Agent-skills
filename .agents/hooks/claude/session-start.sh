@@ -20,14 +20,15 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 0
 fi
 
+BANNER="$("$SCRIPT_DIR/../core/check-checkpoint-banner.sh" 2>/dev/null || true)"
+
 if [ -f "$META_SKILL" ]; then
   CONTENT=$(cat "$META_SKILL")
   # Use jq to properly escape and construct valid JSON
   jq -cn \
-    --arg context "agent-skills loaded. Use the skill discovery flowchart to find the right skill for your task.
-
-$CONTENT" \
-    '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $context}}'
+    --arg banner "$BANNER" \
+    --arg content "$CONTENT" \
+    '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: (if ($banner | length) > 0 then ($banner + "\n" + $content) else ("agent-skills loaded. Use the skill discovery flowchart to find the right skill for your task.\n\n" + $content) end)}}'
 else
   echo '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "agent-skills: meta-using-agent-skills meta-skill not found. Skills may still be available individually."}}'
 fi

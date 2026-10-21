@@ -1,0 +1,8 @@
+{
+  "name": "agent-skills-scrum-master",
+  "version": "1.0.0",
+  "description": "Scrum Master Subagent for sprint tracking and agile rituals",
+  "skills": ["./skills"],
+  "commands": ["./commands"],
+  "agents": ["./agents/scrum-master.md"]
+}

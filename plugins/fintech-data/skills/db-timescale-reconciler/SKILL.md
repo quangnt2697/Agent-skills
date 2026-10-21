@@ -2,6 +2,7 @@
 name: db-timescale-reconciler
 description: Quét, đối chiếu và phát hiện sai lệch dữ liệu thị trường KRX MDDS trên TimescaleDB Production. Bao gồm kiểm tra count parity, value drift (giá/khối lượng), NULL/invalid scan, duplicate key, late-arriving data (created_at vs sending_time), và OHLC gap detection cho 11 topic nghiệp vụ.
 trigger: Kích hoạt khi người dùng gõ /db-recon, yêu cầu "đối chiếu dữ liệu", "kiểm tra lệch tick/topprice/ohlc/giá", "so sánh v3 vs v2", "scan dữ liệu prod", hoặc khi cần xác minh tính toàn vẹn dữ liệu sau deploy pipeline MDDS mới.
+disable-auto-invoke: true
 ---
 
 # db-timescale-reconciler

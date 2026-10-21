@@ -2,6 +2,7 @@
 name: ba-refine
 description: Brainstorm, phân kỳ-hội tụ (refine) các ý tưởng thô/mơ hồ thành spec chi tiết rõ ràng, sau đó cập nhật lại lên Jira. Không dùng để import Jira lần đầu khi đã có spec rõ ràng.
 trigger: Khi có Jira task ý tưởng sơ khai/mơ hồ cần brainstorm hoặc làm rõ yêu cầu. Kích hoạt bằng lệnh /ba-refine {issueKey}.
+disable-auto-invoke: true
 ---
 
 # Kỹ năng Mài giũa Spec (ba-refine)

@@ -28,12 +28,13 @@ trigger: Khi cần chạy test automation, regression test, hoặc thẩm địn
 - **Bước 1: Preflight**
   - Xác định mục tiêu từ tham số (hoặc mặc định `workspace/{issueKey}/test/steps/`).
   - Ghi đè file nếu đã tồn tại ở `result/`. Cấm ghi file ra ngoài `result/`.
-- **Bước 2: Run (Chạy n8n Runner)**
+- **Bước 2: Run (Chạy n8n Runner & Background Execution)**
   - Gọi webhook n8n chuẩn (không dùng shell bash):
     ```bash
     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testFiles":"workspace/{issueKey}/test/steps/"}'
     ```
   - Runner sẽ tự áp dụng cờ `--timeout`, `--junitxml` và timeout toàn suite (600s).
+  - ⚡ **Chế độ Chạy Nền Bất Đồng Bộ (Background Async Mode):** Đối với các suite kiểm thử E2E Playwright hoặc regression kéo dài (>3 phút), agent kích hoạt webhook n8n ở chế độ nền (không chờ đồng bộ trong chat). Thông báo kết quả sẽ được n8n tự động bắn về kênh Mattermost của dự án khi hoàn tất.
 - **Bước 3: Verify (Xác minh kết quả)**
   - Kết quả trả về gồm `verdict` và `errorCode` theo Error Contract.
   - Phân loại 4 trạng thái: `PASS` (xanh), `FAIL` (có test trượt), `ERROR` (hỏng script/hạ tầng), `TIMEOUT`.

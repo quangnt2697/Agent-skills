@@ -25,6 +25,9 @@ Quét toàn bộ mã nguồn để phát hiện các lỗ hổng bảo mật the
 ## Quy trình
 
 > ⚡ **Fast-Path Quét Lỗ Hổng & Secret:** Chạy `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js runSecurityDigest <projectPath>` để tự động trích xuất các CVEs High/Critical từ `npm audit` và phát hiện secrets rò rỉ trong working tree trong < 3s trước khi phân tích sâu.
+>
+> 🧠 **CHỈ THỊ EXTENDED THINKING (Ngân sách suy luận 4k - 8k tokens):**
+> Trong suốt quá trình audit, kích hoạt tư duy chuỗi suy luận sâu (Extended Thinking) để truy vết toàn bộ luồng dữ liệu ô nhiễm (Tainted Data Flow) từ điểm nhập liệu không tin cậy (Untrusted Input Sources: query parameters, request headers, cookies, Webhook payloads) tới các điểm thực thi nhạy cảm (Sinks: SQL queries, shell commands, file path joins, deserialization logic). Phân tích kỹ lưỡng nguy cơ IDOR phân quyền ngang và SSRF ẩn sau internal gateways.
 
 ### 1. Scan OWASP Top 10
 

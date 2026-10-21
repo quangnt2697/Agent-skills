@@ -1,1 +1,6 @@
-{"name": "agent-skills-ba-po", "version": "1.0.0", "description": "BA/PO Subagent"}
+{
+  "name": "agent-skills-ba-po",
+  "version": "1.0.0",
+  "description": "BA/PO Subagent",
+  "dependencies": ["agent-skills-core"]
+}

@@ -2,6 +2,7 @@
 name: qa-squash-push
 description: Tự động đồng bộ kịch bản kiểm thử BDD Gherkin (.feature) lên hệ thống quản lý kiểm thử Squash TM qua REST API và gán vào Campaign Test Plan.
 trigger: Khi đã có file .feature hoàn chỉnh và cần đồng bộ test case lên Squash TM. Trigger bằng lệnh /qa-squash-push {issueKey}.
+disable-auto-invoke: true
 ---
 
 # Kỹ Năng Đẩy Test Case Lên Squash TM (qa-squash-push)

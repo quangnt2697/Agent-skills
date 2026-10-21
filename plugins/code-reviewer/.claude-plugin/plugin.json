@@ -1,0 +1,12 @@
+{
+  "name": "agent-skills-code-reviewer",
+  "version": "1.0.0",
+  "description": "Code Reviewer and Security Auditor Subagent",
+  "skills": ["./skills"],
+  "commands": ["./commands"],
+  "agents": [
+    "./agents/code-reviewer.md",
+    "./agents/security-auditor.md",
+    "./agents/web-performance-auditor.md"
+  ]
+}

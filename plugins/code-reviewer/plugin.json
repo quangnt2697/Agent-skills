@@ -1,1 +1,6 @@
-{"name": "agent-skills-code-reviewer", "version": "1.0.0", "description": "Code Reviewer Subagent"}
+{
+  "name": "agent-skills-code-reviewer",
+  "version": "1.0.0",
+  "description": "Code Reviewer Subagent",
+  "dependencies": ["agent-skills-core"]
+}
