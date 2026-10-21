@@ -38,6 +38,9 @@ evals/results/
 scratch*.*
 *.patch.*
 test-*.cjs
+dist/
+.checkpoints/
+.worktrees/
 
 # Báo cáo runtime ở gốc repo — vi phạm quy tắc Zero Pollution, dùng workspace/
 /reports/

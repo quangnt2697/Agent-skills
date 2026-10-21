@@ -69,23 +69,22 @@ Windows/Linux: làm thủ công theo "Tùy chọn B" trong guide.
 # → Import Jira issue → Phân tích gaps → Tổng hợp thành *-final.md
 ```
 
-**2. QA: Thiết kế & chạy test**
+**2. QA: Thiết kế & chạy kiểm thử tự động toàn diện**
 ```bash
 /qa-full-pipeline JIRA-123 --auto
-# → Test design → Automation → Execution → Report (all in one)
+# → Phân tích Business-Spec → Sinh Checklist & BDD → Sinh mã Automation Test → Chạy Test & Báo cáo Log 100%
 ```
 
-**3. DEV: Xây dựng tính năng**
+**3. Code Review & Bảo mật: Kiểm soát chất lượng mã nguồn**
 ```bash
-/dev-tech-spec JIRA-123    # Viết tech-spec từ business-spec
-/dev-plan JIRA-123         # Chia nhỏ thành tasks
-/dev-build JIRA-123 auto   # Implement với TDD
+/cr-review                  # Code review đa chiều (kiến trúc, logic, hiệu năng, an ninh)
+/security-audit             # Quét lỗ hổng bảo mật mã nguồn theo chuẩn OWASP Top 10
 ```
 
-**4. End-to-end delivery**
+**4. Scrum Master: Vận hành Sprint & Điều phối công việc**
 ```bash
-/e2e-delivery JIRA-123
-# → BA spec → Tech spec → Code → Test → Review (full pipeline)
+/sm-daily-standup           # Báo cáo standup hằng ngày & cân bằng tải
+/sm-impediment-triage       # Phát hiện & gỡ rối các ticket bị kẹt/treo
 ```
 
 ---
@@ -97,11 +96,10 @@ Dự án được cấu trúc như một monorepo chứa nhiều plugin độc l
 ```
 agent-skills/
 ├── config/                     → Tập trung file cấu hình hệ thống (projects.json, sm-config.yaml, ecosystem...)
-├── plugins/                    → Chứa các plugin chuyên biệt (7 plugins)
+├── plugins/                    → Chứa các plugin chuyên biệt (6 plugins)
 │   ├── core/                   → Meta-skills, shared commands (/sync, /learn, /e2e-delivery)
 │   ├── ba-po/                  → BA/PO persona & skills (9 skills)
 │   ├── qa/                     → QA persona & skills (6 skills)
-│   ├── dev/                    → DEV persona & skills (14 skills)
 │   ├── code-reviewer/          → Code Reviewer + Security Audit + Webperf (4 skills)
 │   ├── scrum-master/           → Scrum Master persona & skills (4 skills)
 │   └── fintech-data/           → TimescaleDB KRX MDDS data reconciler
@@ -114,13 +112,13 @@ agent-skills/
 └── evals/                       → Bộ đánh giá chất lượng kỹ năng (Skill Evals)
 ```
 
-Mỗi plugin (ví dụ `plugins/dev/`) đều tuân theo chuẩn Antigravity plugin:
+Mỗi plugin (ví dụ `plugins/qa/`) đều tuân theo chuẩn Antigravity plugin:
 ```
-plugins/dev/
+plugins/qa/
 ├── plugin.json          → Metadata của plugin
-├── agents/              → Định nghĩa persona (ví dụ: dev.md)
-├── skills/              → Các kỹ năng (ví dụ: dev-api-design/)
-└── .claude/commands/    → Hoặc commands/ cho các slash commands liên quan
+├── agents/              → Định nghĩa persona (ví dụ: qa.md)
+├── skills/              → Các kỹ năng (ví dụ: qa-auto-design/)
+└── commands/            → Hoặc .claude/commands/ cho các slash commands liên quan
 ```
 
 ---
@@ -193,35 +191,34 @@ plugins/dev/
 
 ### 1. Đọc Documentation
 
-- **[Installation Guide](docs/guides/installation-guide.md)** — Hướng dẫn cài đặt chi tiết
+- **[Installation Guide](docs/guides/installation-guide.md)** — Hướng dẫn cài đặt trọn gói monorepo
+- **[Cài đặt từng Plugin độc lập](docs/guides/installation-guide.md#giai-đoạn-5-hướng-dẫn-cài-đặt-từng-plugin-độc-lập-cho-dự-án-microservice-standalone-plugin-installation)** — Xuất và nạp riêng lẻ plugin vào các dự án microservice bên ngoài
 - **[Skill Anatomy](docs/guides/skill-anatomy.md)** — Cấu trúc một skill
-- **[Agents Guide](docs/guides/agents.md)** — Hiểu rõ 7 personas
+- **[Agents Guide](docs/guides/agents.md)** — Hiểu rõ 6 personas
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — Hướng dẫn tạo skill và plugin mới
 
 ### 2. Workflow Examples
 
-**Scenario 1: New Feature Development**
+**Scenario 1: Delivery từ Phân tích Nghiệp vụ đến Kiểm thử & Review**
 ```bash
 # BA: Analyze requirements
 /ba-spec PROJ-456
 /ba-interview PROJ-456  # If gaps found
 
-# DEV: Design & build
-/dev-tech-spec PROJ-456
-/dev-plan PROJ-456
-/dev-build PROJ-456 auto
+# QA: Test design & Automation
+/qa-test-design PROJ-456
+/qa-auto-design PROJ-456
+/qa-run-test PROJ-456
 
-# QA: Test
-/qa-full-pipeline PROJ-456 --auto
-
-# Review
+# Review & Security Audit
 /cr-review
+/security-audit
 ```
 
-**Scenario 2: Bug Fix với Full Traceability**
+**Scenario 2: QA Kiểm thử Trọn gói Tự động Một Lệnh**
 ```bash
-/e2e-delivery BUG-789
-# → BA analyzes → DEV fixes → QA verifies → Traceability report
+/qa-full-pipeline PROJ-456 --auto
+# → Import spec → Sinh Checklist & BDD → Viết test automation → Chạy test & xuất log 100%
 ```
 
 **Scenario 3: Legacy Code Documentation**

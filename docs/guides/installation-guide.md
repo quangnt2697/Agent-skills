@@ -66,14 +66,14 @@ Tất cả phải PASS trước khi chuyển sang giai đoạn tiếp theo.
 
 ## Giai đoạn 2: Tích hợp AI Agent CLI (Claude Code / Antigravity / Gemini)
 
-`agent-skills` gồm 7 plugins (`ba-po`, `qa`, `dev`, `scrum-master`, `code-reviewer`, `fintech-data`, `core`). Cần đồng bộ chúng vào cấu hình toàn cục của Agent CLI.
+`agent-skills` gồm 6 plugins chuyên biệt (`ba-po`, `qa`, `code-reviewer`, `scrum-master`, `fintech-data`, `core`). Cần đồng bộ chúng vào cấu hình của Agent CLI để sử dụng.
 
 ### Claude Code (toàn máy, tự cập nhật)
 ```bash
 npm run setup:claude
 ```
 Lệnh này (idempotent, `setup:mac` đã chạy sẵn) làm 2 việc:
-1. Tạo symlink `~/.claude/skills/agent-skills` → thư mục repo. Claude Code nạp nó như plugin `agent-skills@skills-dir` ở **mọi project**, gồm 82 skill/command và 7 subagent (`agent-skills:qa`, `agent-skills:dev`…).
+1. Tạo symlink `~/.claude/skills/agent-skills` → thư mục repo. Claude Code nạp nó như plugin `agent-skills@skills-dir` ở **mọi project**, gồm 30 skills, 29 slash commands và 6 subagents (`agent-skills:ba-po`, `agent-skills:qa`, `agent-skills:code-reviewer`…).
 2. Ghi `env.AGENT_SKILLS_HOME` vào `~/.claude/settings.json` để skill gọi được script của repo (`node ${AGENT_SKILLS_HOME}/scripts/...`) từ bất kỳ thư mục làm việc nào. Bản sao lưu: `settings.json.agent-skills.bak`.
 
 Vì là symlink nên **sửa nội dung skill trong repo là có hiệu lực ngay** ở mọi project (phiên mới). Thêm/xoá skill thì gõ `/reload-plugins` trong phiên đang mở. `git pull` cũng tự cập nhật, không cần chạy lại lệnh nào. Gỡ bỏ: `npm run unlink:claude`.
@@ -84,23 +84,30 @@ Vì là symlink nên **sửa nội dung skill trong repo là có hiệu lực ng
 ### Antigravity / Gemini CLI
 **Bước 1: Đồng bộ plugins & rules** *(Tuỳ chọn A đã chạy sẵn bước này; chạy lại khi pull bản mới)*
 ```bash
-npm run setup
+npm run setup:plugins
 ```
-Lệnh này sao chép plugins, `references/`, một số script, `AGENTS.md` và `.agents/rules/` vào `~/.gemini/config/`. Gỡ bỏ: `npm run unlink:plugins`. Dành cho người phát triển skill: `npm run setup -- --symlink` để sửa trong repo là có hiệu lực ngay.
+Lệnh này sao chép plugins, `references/`, một số script, `AGENTS.md` và `.agents/rules/` vào `~/.gemini/config/`. Gỡ bỏ: `npm run unlink:plugins`. Dành cho người phát triển skill: `npm run setup:plugins -- --symlink` để sửa trong repo là có hiệu lực ngay.
 
-> Sau khi `git pull`, hãy chạy lại `npm run setup` để máy bạn nhận skills mới.
+> Sau khi `git pull`, hãy chạy lại `npm run setup:plugins` để máy bạn nhận skills mới.
 
-**Bước 2: Dùng trong khung chat của agent** — mở lại Agent CLI/IDE, gõ các slash command:
+**Bước 2: Kích hoạt Git Protection Hooks (Bắt buộc)**
+```bash
+npm run setup:hooks
+```
+Lệnh này cài đặt pre-commit hook chặn commit trực tiếp vào nhánh `main`/`master` (tuân thủ Rule 5.1). Kỹ sư bắt buộc làm việc trên nhánh tính năng (`git checkout -b feature/<tên-nhánh>`).
+
+**Bước 3: Dùng trong khung chat của agent** — mở lại Agent CLI/IDE, gõ các slash command:
 
 | Lệnh | Chức năng | Skill tương ứng |
 |---|---|---|
-| `/dev-tech-spec` | Viết đặc tả kỹ thuật trước khi code | `dev-spec-driven-development` |
-| `/dev-plan` | Chia nhỏ công việc | `dev-planning-and-task-breakdown` |
-| `/dev-build` | Code từng bước | `dev-incremental-implementation` |
-| `/dev-unit-test` | Workflow TDD | `dev-test-driven-development` |
-| `/cr-review` | Review code 5 phương diện | `cr-review-code-and-quality` |
+| `/ba-spec {issueKey}` | Import & phân tích Jira/Confluence → Business-Spec | `ba-spec` |
+| `/qa-test-design {issueKey}` | Thiết kế Checklist BVA/EP và kịch bản BDD Gherkin | `qa-test-design` |
+| `/qa-auto-design {issueKey}` | Sinh mã test automation Playwright/Pytest chuẩn POM | `qa-auto-design` |
+| `/qa-run-test {issueKey}` | Chạy test automation và ghi log 100% request/response | `qa-run-test` |
+| `/cr-review` | Review code đa chiều (kiến trúc, logic, hiệu năng, an ninh) | `cr-review-code-and-quality` |
+| `/security-audit` | Quét lỗ hổng bảo mật mã nguồn theo chuẩn OWASP Top 10 | `security-code-audit` |
 
-Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` có đủ 7 plugin và khởi động lại agent.
+Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` có đủ 6 plugin và khởi động lại agent.
 
 ---
 
@@ -152,9 +159,83 @@ Mặc định, sau khi reboot máy thì n8n **không** tự chạy lại. Để 
 ```bash
 npm run n8n:autostart
 ```
-Script sẽ in ra 1 lệnh bắt đầu bằng `sudo ...` — **copy và chạy lệnh đó trong terminal** (cần mật khẩu admin). Kiểm tra: `ls ~/Library/LaunchAgents | grep pm2` phải thấy file `pm2.<tên-user>.plist`. Gỡ bỏ: `npm run n8n:autostart:off`.
+Script sẽ in ra 1 lệnh bắt đầu bằng `sudo ...` — **copy và chạy lệnh đó trong terminal** (cần mật khẩu admin). Kiểm tra: `ls ~/Library/LaunchAgents | grep pm2` phải thấy file `pm2.<tên-user>.plist`. Gỡ bỏ: `npm run n8n:autostart -- off`.
 
 > Nếu bạn thêm/xoá tiến trình PM2 sau đó, chạy lại `npx pm2 save` để cập nhật danh sách khởi động.
+
+---
+
+## Giai đoạn 5: Hướng Dẫn Cài Đặt Từng Plugin Độc Lập Cho Dự Án Microservice (Standalone Plugin Installation)
+
+Trong môi trường thực tế, các repo microservice (như trading gateway, market data, mobile web app, hoặc repo test độc lập) thường **chỉ cần 1-2 persona chuyên biệt** (ví dụ chỉ cần QA testing `agent-skills-qa` hoặc chỉ cần Code Review & An ninh `agent-skills-code-reviewer`) thay vì toàn bộ 6 plugins monorepo.
+
+Bạn có thể xuất và nạp từng plugin độc lập theo 3 kịch bản dưới đây:
+
+### Bước 1: Xuất Plugin Độc Lập Từ Monorepo
+Repo đã tích hợp sẵn công cụ export tự động thu thập plugin kèm toàn bộ tài liệu nghiệp vụ dùng chung (`references/securities/`):
+
+```bash
+# Xuất plugin QA dạng thư mục độc lập
+npm run plugin:export -- --plugin qa
+
+# Hoặc đóng gói thành file nén .tgz để chuyển giao/CI-CD
+npm run plugin:export -- --plugin qa --tar
+```
+Plugin độc lập sẽ được sinh tại:
+- Thư mục: `dist/plugins/agent-skills-qa/`
+- Tarball (nếu dùng `--tar`): `dist/plugins/agent-skills-qa-<version>.tgz`
+
+> **Lưu ý Quan Trọng:** Thư mục xuất ra đã có sẵn file `README.md` riêng, file cấu hình `plugin.json`, các kỹ năng con `skills/`, persona `agents/` và toàn bộ các rule chứng khoán dùng chung đi kèm. Không phát sinh broken link khi mang sang máy hoặc repo khác.
+
+---
+
+### Bước 2: Nạp Plugin Vào Công Cụ AI Của Dự Án Microservice
+
+#### Cách 1: Sử dụng trong Claude Code CLI
+
+**Lựa chọn A — Dùng tạm thời qua cờ runtime:**
+Khi khởi chạy Claude Code trong thư mục dự án microservice của bạn:
+```bash
+claude --plugin-dir /path/to/agent-skills/dist/plugins/agent-skills-qa
+```
+
+**Lựa chọn B — Cấu hình cố định cho microservice:**
+Tạo hoặc sửa file `.claude/settings.json` tại thư mục gốc của repo microservice:
+```json
+{
+  "plugins": [
+    "/absolute/path/to/dist/plugins/agent-skills-qa"
+  ]
+}
+```
+Khởi động `claude` tại thư mục dự án, gõ `/plugin list` để kiểm tra plugin đã nạp thành công.
+
+---
+
+#### Cách 2: Sử dụng trong Google Antigravity / Gemini CLI
+
+**Lựa chọn A — Nạp cục bộ cho riêng repo microservice (Khuyến nghị):**
+Tạo symlink thư mục plugin độc lập vào thư mục `.agents/plugins/` của repo microservice:
+```bash
+mkdir -p /path/to/my-microservice/.agents/plugins
+ln -s /path/to/dist/plugins/agent-skills-qa /path/to/my-microservice/.agents/plugins/agent-skills-qa
+```
+
+**Lựa chọn B — Nạp Global vào cấu hình người dùng máy tính:**
+Nếu muốn plugin luôn khả dụng ở mọi dự án mở bằng Antigravity:
+```bash
+ln -s /path/to/dist/plugins/agent-skills-qa ~/.gemini/config/plugins/agent-skills-qa
+```
+Khởi động lại Antigravity IDE, agent sẽ tự động nhận diện toàn bộ skills và subagents của plugin đó.
+
+---
+
+#### Cách 3: Symlink Trực Tiếp Từ Monorepo (Dành Cho Máy Cục Bộ Của Bạn)
+Nếu bạn đã clone sẵn monorepo `agent-skills` trên máy và muốn bất kỳ thay đổi nào trong `plugins/qa/` tự động phản ánh vào microservice mà không cần chạy lệnh export:
+```bash
+mkdir -p /path/to/my-microservice/.agents/plugins
+ln -s /path/to/agent-skills/plugins/qa /path/to/my-microservice/.agents/plugins/agent-skills-qa
+```
 
 ---
 
@@ -183,11 +264,12 @@ Tất cả các lệnh đều được tích hợp sẵn qua hệ thống `npm r
 | `npm run n8n:setup` | Chạy lại nạp workflows nếu vô tình xoá |
 | `npm run n8n:bg` | Khởi động n8n chạy ngầm |
 | `npm run n8n:autostart` | Tự khởi động n8n cùng macOS (PM2 + launchd). Cần chạy thêm 1 lệnh `sudo` do script in ra |
-| `npm run n8n:autostart:off` | Gỡ tự khởi động |
+| `npm run n8n:autostart -- off` | Gỡ tự khởi động |
 | `npm run n8n:status` | Kiểm tra trạng thái n8n & ngrok |
 | `npm run n8n:logs` | Xem Logs thời gian thực của n8n |
 | `npm run n8n:restart`| Khởi động lại (cần thiết khi sửa `.env`) |
 | `npm run n8n:stop` | Tạm dừng n8n |
+| `npm run plugin:export -- --plugin <id>` | Xuất plugin độc lập cho các microservice bên ngoài |
 
 ---
 

@@ -24,7 +24,7 @@
     "workspace:archive": "node scripts/workspace/archive-issues.js",
     "checkpoint:diff": "node scripts/checkpoint/diff-checkpoint.js",
     "evals": "node scripts/evals/run-evals.js --min-rank1 90",
-    "setup": "node scripts/setup/setup-plugins.js",
+    "setup:plugins": "node scripts/setup/setup-plugins.js",
     "unlink:plugins": "node scripts/setup/setup-plugins.js --unlink",
     "plugin:export": "node scripts/setup/export-plugin.js",
     "setup:claude": "node scripts/setup/setup-claude.js",

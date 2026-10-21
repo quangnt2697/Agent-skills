@@ -22,6 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const PLUGINS_DIR = path.join(REPO_ROOT, 'plugins');
+const REFERENCES_DIR = path.join(REPO_ROOT, 'references');
 
 function getAvailablePlugins() {
   if (!fs.existsSync(PLUGINS_DIR)) return [];
@@ -69,6 +70,18 @@ function copyRecursive(src, dest) {
   }
 }
 
+function getPluginSkills(pluginDir) {
+  const skillsDir = path.join(pluginDir, 'skills');
+  if (!fs.existsSync(skillsDir)) return [];
+  return fs.readdirSync(skillsDir).filter(f => fs.statSync(path.join(skillsDir, f)).isDirectory());
+}
+
+function getPluginCommands(pluginDir) {
+  const commandsDir = path.join(pluginDir, 'commands');
+  if (!fs.existsSync(commandsDir)) return [];
+  return fs.readdirSync(commandsDir).filter(f => f.endsWith('.toml')).map(f => f.replace('.toml', ''));
+}
+
 function main() {
   const options = parseArgs();
   const availablePlugins = getAvailablePlugins();
@@ -109,31 +122,89 @@ function main() {
   }
   fs.mkdirSync(outDir, { recursive: true });
 
-  // Sao chép toàn bộ thư mục plugin
+  // 1. Sao chép toàn bộ thư mục plugin
   copyRecursive(srcDir, outDir);
 
-  // Tạo thêm file README.md cho gói độc lập nếu chưa có
-  const readmePath = path.join(outDir, 'README.md');
-  if (!fs.existsSync(readmePath)) {
-    const manifest = JSON.parse(fs.readFileSync(path.join(srcDir, 'plugin.json'), 'utf8'));
-    const readmeContent = `# ${manifest.name} (v${manifest.version})
-
-${manifest.description}
-
-## Hướng dẫn sử dụng độc lập (Standalone Usage)
-Gói này được trích xuất từ monorepo \`agent-skills\` để dùng cho dự án của bạn.
-
-### Cài đặt vào Claude Code
-\`\`\`bash
-claude --plugin-dir .
-\`\`\`
-
-### Cài đặt vào Google Antigravity
-Thêm đường dẫn plugin vào cấu hình workspace Antigravity trong file \`.agents/config.json\`.
-`;
-    fs.writeFileSync(readmePath, readmeContent, 'utf8');
+  // 2. Tự động đính kèm shared references nếu plugin thuộc domain tài chính/chứng khoán
+  const sharedDomainPlugins = ['qa', 'ba-po', 'fintech-data'];
+  if (sharedDomainPlugins.includes(options.plugin)) {
+    const targetRefDir = path.join(outDir, 'references');
+    mkdirp(targetRefDir);
+    const domainRulesSrc = path.join(REFERENCES_DIR, 'securities-domain-rules.md');
+    if (fs.existsSync(domainRulesSrc)) {
+      fs.copyFileSync(domainRulesSrc, path.join(targetRefDir, 'securities-domain-rules.md'));
+    }
+    const secDirSrc = path.join(REFERENCES_DIR, 'securities');
+    if (fs.existsSync(secDirSrc)) {
+      copyRecursive(secDirSrc, path.join(targetRefDir, 'securities'));
+    }
+    console.log('   📚 Đã đính kèm references/securities dùng chung vào gói plugin.');
   }
 
+  // 3. Tạo file README.md hướng dẫn cài đặt độc lập chi tiết
+  const manifest = JSON.parse(fs.readFileSync(path.join(srcDir, 'plugin.json'), 'utf8'));
+  const skillsList = getPluginSkills(srcDir);
+  const commandsList = getPluginCommands(srcDir);
+
+  const skillsTable = skillsList.map(s => `- \`${s}\``).join('\n') || '- Không có skill độc lập';
+  const commandsTable = commandsList.map(c => `- \`/${c}\``).join('\n') || '- Không có lệnh slash command';
+
+  const readmeContent = `# ${manifest.name} (v${manifest.version})
+
+> ${manifest.description}
+
+Gói plugin độc lập được trích xuất từ \`agent-skills\` để tích hợp trực tiếp vào dự án microservice của bạn mà không cần clone cả monorepo.
+
+---
+
+## 🛠️ Danh Sách Kỹ Năng & Lệnh Có Sẵn
+
+### Kỹ Năng (Skills)
+${skillsTable}
+
+### Lệnh Nhanh (Slash Commands)
+${commandsTable}
+
+---
+
+## 🚀 Hướng Dẫn Cài Đặt Vào Dự Án Microservice
+
+### Cách 1: Sử dụng trong Claude Code (Khuyên dùng)
+Chạy lệnh trực tiếp từ thư mục dự án microservice của bạn:
+\`\`\`bash
+# 1. Chạy với thư mục plugin cục bộ
+claude --plugin-dir /path/to/agent-skills-${options.plugin}
+
+# 2. Hoặc nạp vĩnh viễn vào settings.json của dự án microservice:
+# Thêm vào .claude/settings.json của microservice:
+# {
+#   "pluginDirs": ["/path/to/agent-skills-${options.plugin}"]
+# }
+\`\`\`
+
+### Cách 2: Sử dụng trong Google Antigravity / Gemini CLI
+1. Sao chép thư mục này vào dự án microservice của bạn:
+\`\`\`bash
+# Tạo thư mục plugins trong workspace
+mkdir -p /path/to/my-microservice/.agents/plugins/
+cp -r /path/to/agent-skills-${options.plugin} /path/to/my-microservice/.agents/plugins/
+\`\`\`
+2. Hoặc cài đặt toàn cục vào máy cá nhân:
+\`\`\`bash
+mkdir -p ~/.gemini/config/plugins/
+cp -r /path/to/agent-skills-${options.plugin} ~/.gemini/config/plugins/
+\`\`\`
+
+---
+
+## 📖 Kiểm Tra Hoạt Động
+Mở khung chat của AI Agent trong dự án microservice và gõ lệnh kiểm tra:
+\`\`\`text
+${commandsList[0] ? `/${commandsList[0]}` : '/help'}
+\`\`\`
+`;
+
+  fs.writeFileSync(path.join(outDir, 'README.md'), readmeContent, 'utf8');
   console.log(`✅ Đã xuất thư mục plugin thành công tại: ${outDir}`);
 
   if (options.tar) {
@@ -145,6 +216,10 @@ Thêm đường dẫn plugin vào cấu hình workspace Antigravity trong file \
     execFileSync('tar', ['-czf', tarFile, '-C', parentDir, baseName]);
     console.log(`✅ Đã tạo tarball thành công: ${tarFile}`);
   }
+}
+
+function mkdirp(dir) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
 main();

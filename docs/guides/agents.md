@@ -16,10 +16,9 @@ Các personas chuyên biệt đóng một vai trò duy nhất với một góc n
 Có ba tầng (layers), mỗi tầng đảm nhiệm một công việc riêng biệt:
 
 | Tầng               | Định nghĩa                                        | Ví dụ                     | Vai trò trong bố cục                                                     |
-|--------------------|---------------------------------------------------|---------------------------|--------------------------------------------------------------------------|
-| **Skill**          | Một quy trình với các bước và tiêu chí hoàn thành | `review-code-and-quality` | Từ *như thế nào* (how) — được gọi từ bên trong một persona hoặc một lệnh |
+|--------------------|--------| **Skill**          | Một quy trình với các bước và tiêu chí hoàn thành | `review-code-and-quality` | Từ *như thế nào* (how) — được gọi từ bên trong một persona hoặc một lệnh |
 | **Persona**        | Một vai trò với góc nhìn và định dạng đầu ra      | `code-reviewer`           | Từ *ai* (who) — nhận một góc nhìn, đưa ra một báo cáo                    |
-| **Lệnh (Command)** | Điểm bắt đầu dành cho người dùng                  | `/cr-review`, `/dev-audit`   | Từ *khi nào* (when) — kết hợp personas và skills                         |
+| **Lệnh (Command)** | Điểm bắt đầu dành cho người dùng                  | `/cr-review`, `/qa-run-test` | Từ *khi nào* (when) — kết hợp personas và skills                      |
 
 Người dùng (hoặc một slash command) đóng vai trò điều phối (orchestrator). **Personas không gọi các personas khác.** Skills là các bước bắt buộc bên trong quy trình làm việc của một persona.
 
@@ -37,14 +36,14 @@ Hãy chọn cách này khi bạn muốn có một góc nhìn cho thay đổi hi�
 Hãy chọn cách này khi có một quy trình lặp đi lặp lại mà bình thường bạn sẽ phải giải thích lại mỗi lần.
 
 - `/cr-review` → bọc `code-reviewer` với skill review của dự án
-- `/dev-unit-test` → bọc `qa` với skill TDD
-- `/qa` → bọc `qa` với skill qa-test-design để thiết kế checklist + BDD Gherkin
-- `/webperf` → bọc `web-performance-auditor` để audit chuyên sâu hiệu năng trên web apps
+- `/qa-run-test` → bọc `qa` với skill chạy kiểm thử và ghi log
+- `/qa-test-design` → bọc `qa` với skill qa-test-design để thiết kế checklist + BDD Gherkin
+- `/webperf-audit` → bọc `web-performance-auditor` để audit chuyên sâu hiệu năng trên web apps
 
 ### Slash command (điều phối viên — chạy song song / fan-out)
 Chỉ chọn cách này khi các đánh giá **độc lập** có thể chạy song song và tạo ra các báo cáo để một agent duy nhất có thể tổng hợp sau đó.
 
-- `/dev-audit` → chạy song song `code-reviewer` + `security-auditor` + `qa`, sau đó tổng hợp các báo cáo của chúng thành quyết định có nên duyệt (go/no-go) hay không.
+- Audit chất lượng tổng hợp: chạy song song `code-reviewer` + `security-auditor` + `qa`, sau đó tổng hợp các báo cáo của chúng thành quyết định có nên duyệt (go/no-go) hay không.
 
 Đây là mô hình điều phối duy nhất mà kho lưu trữ này ủng hộ. Hãy xem [orchestration-patterns.md](../architecture/orchestration-patterns.md) để biết thêm danh mục đầy đủ các mẫu và phản mẫu.
 
@@ -54,23 +53,23 @@ Chỉ chọn cách này khi các đánh giá **độc lập** có thể chạy s
 Công việc có phải là một góc nhìn duy nhất trên một tài liệu/thay đổi duy nhất không?
 ├── Có → Gọi trực tiếp persona
 └── Không  → Các công việc con có độc lập không (không chia sẻ trạng thái, không phụ thuộc thứ tự)?
-         ├── Có → Slash command với chạy song song (VD: /dev-audit)
-         └── Không  → Slash commands chạy tuần tự bởi người dùng (/dev-tech-spec → /dev-plan → /qa → /dev-build → /dev-unit-test → /cr-review)
+         ├── Có → Slash command với chạy song song (VD: Quality Audit)
+         └── Không  → Slash commands chạy tuần tự bởi người dùng (/ba-spec → /qa-test-design → /qa-auto-design → /qa-run-test → /cr-review)
 ```
 
 ## Ví dụ thực tiễn: Điều phối hợp lệ
 
-`/dev-audit` là điều phối viên fan-out tiêu chuẩn trong repo này:
+Mô hình fan-out tiêu chuẩn trong repo này:
 
 ```
-/dev-audit
+Quality Audit
   ├── (chạy song song) code-reviewer    → báo cáo review
   ├── (chạy song song) security-auditor → báo cáo audit
   └── (chạy song song) qa               → báo cáo độ bao phủ test
                   ↓
          Giai đoạn hợp nhất (main agent)
                   ↓
-      Quyết định duyệt + kế hoạch sửa lỗi tự động
+       Quyết định duyệt + kế hoạch củng cố chất lượng
 ```
 
 Tại sao cách này hiệu quả:
@@ -110,7 +109,7 @@ Tại sao cách này thất bại:
 
 Các personas trong repo này được thiết kế để hoạt động như Claude Code subagents và như đồng đội trong Agent Teams mà không cần phải chỉnh sửa gì:
 
-- **Dưới dạng subagents:** Tự động nhận diện khi plugin này được kích hoạt. Hãy sử dụng công cụ Agent với `subagent_type: code-reviewer` (hoặc `security-auditor`, `qa`). `/dev-audit` là ví dụ tiêu chuẩn.
+- **Dưới dạng subagents:** Tự động nhận diện khi plugin này được kích hoạt. Hãy sử dụng công cụ Agent với `subagent_type: code-reviewer` (hoặc `security-auditor`, `qa`). Ví dụ: chạy `code-reviewer` và `security-auditor` song song để kiểm toán mã nguồn.
 - **Dưới dạng đồng đội trong Agent Teams** (đang thử nghiệm, yêu cầu `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`): tham chiếu cùng tên persona khi gọi một đồng đội. Nội dung của persona được **nối thêm vào** system prompt của đồng đội dưới dạng chỉ dẫn bổ sung (không phải thay thế), vì vậy text của persona sẽ đè lên trên các chỉ dẫn phối hợp nhóm (SendMessage, task-list tools, v.v.).
 
 Subagents chỉ báo cáo kết quả về lại cho agent chính. Agent Teams cho phép đồng đội nhắn tin trực tiếp với nhau. Hãy dùng subagents khi bạn chỉ cần các báo cáo; dùng Agent Teams khi subagents cần đối chất về các kết quả của nhau (VD: debug các giả thuyết cạnh tranh nhau). Xem [orchestration-patterns.md](../architecture/orchestration-patterns.md) để xem chi tiết.
