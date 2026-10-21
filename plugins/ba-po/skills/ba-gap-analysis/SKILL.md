@@ -16,7 +16,7 @@ trigger: Khi cần phân tích AS-IS vs TO-BE, lập lộ trình bù đắp kho�
 - Chỉ cần làm rõ câu hỏi nghiệp vụ chưa rõ ràng → Dùng `ba-interview-me`.
 
 ## 2. Quy trình Thực hiện 5 Bước
-- **Bước 1 (Thu thập Input):** Tiếp nhận yêu cầu nghiệp vụ từ spec thô hoặc file `workspace/{issueKey}/spec/final.md`.
+- **Bước 1 (Thu thập Input):** Tiếp nhận yêu cầu nghiệp vụ từ spec thô hoặc file `workspace/issues/{issueKey}/spec/final.md`.
 - **Bước 2 (Mô tả AS-IS):** Ghi nhận quy trình hiện tại, các điểm nghẽn (Pain Points) và hạn chế kỹ thuật.
 - **Bước 3 (Định nghĩa TO-BE):** Xác lập luồng vận hành mục tiêu, lợi ích kinh doanh và tiêu chí thành công (Success Criteria).
 - **Bước 4 (Nhận diện Gaps):** Đối chiếu AS-IS vs TO-BE để trích xuất danh sách Gaps phân theo: Tính năng, Quy trình, Dữ liệu, Phân quyền.

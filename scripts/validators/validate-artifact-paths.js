@@ -113,8 +113,9 @@ const WORKSPACE_GUARDED_GLOBS = [
 ];
 const WORKSPACE_GUARDED_EXTRA = [
   'CLAUDE.md',
-  'docs/ba-workflow-detail.md',
-  'docs/test-ownership.md',
+  'docs/architecture/ba-workflow-detail.md',
+  'docs/architecture/test-ownership.md',
+  'docs/architecture/subagent-handoff-protocol.md',
 ];
 
 function getPluginFiles() {

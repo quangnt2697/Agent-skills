@@ -118,7 +118,7 @@ Phase B là luồng **Best-effort**: kết nối với API nội bộ của UI S
 │ Bước 8: Gán Mới Test Case & Xuất Metadata Đồng Bộ                      │
 │ POST /backend/sprint-req-version/{sprintReqVersionId}/test-plan-items   │
 │ Payload: {"testCaseIds": [TC_ID]}                                      │
-│ ➔ Ghi file metadata: workspace/{issueKey}/test/squash_sync.json         │
+│ ➔ Ghi file metadata: workspace/issues/{issueKey}/test/squash_sync.json         │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 

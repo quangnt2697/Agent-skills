@@ -30,15 +30,15 @@ Các file skill nằm **cố định** trong thư mục plugin:
 Code Reviewer đọc **bất kỳ file nào** trong `PROJECT_ROOT` được chỉ định review:
 ```
 {PROJECT_ROOT}/src/**          ← App source code
-{PROJECT_ROOT}/workspace/{issueKey}/spec/final.md    ← Spec từ BA/PO (tham chiếu)
-{PROJECT_ROOT}/workspace/{issueKey}/tech/tech-spec.md ← Tech-spec từ DEV (tham chiếu)
+{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/final.md    ← Spec từ BA/PO (tham chiếu)
+{PROJECT_ROOT}/workspace/issues/{issueKey}/tech/tech-spec.md ← Tech-spec từ DEV (tham chiếu)
 ```
 
 ### Vị trí file Output (Ghi)
 Code Reviewer **không ghi file** theo mặc định. Findings trình bày trực tiếp trong conversation.
 Nếu cần lưu báo cáo (ví dụ `/cr-review --save`), ghi vào:
 ```
-{PROJECT_ROOT}/workspace/{issueKey}/trace/
+{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/
 ```
 
 ### Bảng ánh xạ tổng hợp
@@ -47,9 +47,9 @@ Nếu cần lưu báo cáo (ví dụ `/cr-review --save`), ghi vào:
 |-----------|-------------------------|--------------------------------------------------------------|
 | **Skill** | `SKILL.md`              | `{PLUGIN_DIR}/plugins/code-reviewer/skills/*/` (cố định)    |
 | **Input** | App source code         | `{PROJECT_ROOT}/src/` hoặc paths được chỉ định               |
-| **Input** | `spec/final.md`         | `{PROJECT_ROOT}/workspace/{issueKey}/spec/` (tham chiếu)     |
+| **Input** | `spec/final.md`         | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/` (tham chiếu)     |
 | **Output**| Review findings         | Conversation (mặc định)                                      |
-| **Output**| `review-report.md`      | `{PROJECT_ROOT}/workspace/{issueKey}/trace/` (nếu --save)   |
+| **Output**| `review-report.md`      | `{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/` (nếu --save)   |
 
 <workflow>
 ## Quy Trình Đánh Giá 3 Pha (3-Phase Review Framework)

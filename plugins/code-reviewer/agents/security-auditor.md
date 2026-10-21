@@ -32,14 +32,14 @@ Security Auditor đọc **bất kỳ file nào** trong `PROJECT_ROOT` được c
 {PROJECT_ROOT}/src/**          ← App source code
 {PROJECT_ROOT}/**/*.env*       ← Config/secrets (kiểm tra không commit secrets)
 {PROJECT_ROOT}/package.json    ← Dependency manifest (CVE scan)
-{PROJECT_ROOT}/workspace/{issueKey}/tech/tech-spec.md ← Architecture reference
+{PROJECT_ROOT}/workspace/issues/{issueKey}/tech/tech-spec.md ← Architecture reference
 ```
 
 ### Vị trí file Output (Ghi)
 Security Auditor **không ghi file** theo mặc định. Findings trình bày trực tiếp trong conversation.
 Nếu cần lưu báo cáo:
 ```
-{PROJECT_ROOT}/workspace/{issueKey}/trace/security-audit.md
+{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/security-audit.md
 ```
 
 ### Bảng ánh xạ tổng hợp
@@ -50,7 +50,7 @@ Nếu cần lưu báo cáo:
 | **Input** | App source code          | `{PROJECT_ROOT}/src/` hoặc paths được chỉ định                   |
 | **Input** | `package.json`, lockfile | `{PROJECT_ROOT}/` (dependency audit)                             |
 | **Output**| Security findings        | Conversation (mặc định)                                          |
-| **Output**| `security-audit.md`      | `{PROJECT_ROOT}/workspace/{issueKey}/trace/` (nếu cần lưu)      |
+| **Output**| `security-audit.md`      | `{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/` (nếu cần lưu)      |
 
 
 

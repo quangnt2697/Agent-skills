@@ -32,7 +32,7 @@
     "unlink:claude": "node scripts/setup/setup-claude.js --unlink",
     "metabase:login": "node scripts/db/metabase-sso-login.js",
     "db:recon": "node scripts/db/db-recon.js",
-    "db:recon:prod": "METABASE_ENV=prod node scripts/db/db-recon.js",
+    "db:recon:prod": "node scripts/db/db-recon-prod.js",
     "db:recon:core": "node scripts/db/db-recon-core.js",
     "sync": "node scripts/sync/repo-sync.js",
     "scan:ui-components": "node plugins/ba-po/skills/ba-refine/assets/generate-ui-component-map.js",
@@ -45,7 +45,7 @@
     "n8n:status": "pm2 status",
     "n8n:logs": "pm2 logs",
     "n8n:import": "for d in n8n-workflows/*/; do n8n import:workflow --separate --input=$d; done",
-    "n8n:export": "n8n export:workflow --all --separate --output=n8n-workflows/ops/",
+    "n8n:export": "node scripts/n8n/export-workflows.js",
     "n8n:clean": "node scripts/n8n/n8n-clean-workflows.js",
     "n8n:sync-nodes": "node scripts/n8n/sync-n8n-nodes.js"
   },

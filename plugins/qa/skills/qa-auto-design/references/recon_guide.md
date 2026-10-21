@@ -201,7 +201,7 @@ Bên trong `openapi-tyk/sdk/python/`, Agent cần khảo sát các phân hệ:
    pythonpath = . steps ../../../openapi-tyk/sdk/python /Users/qa-quangnt/Desktop/Project/3.1/openapi-tyk/sdk/python
    ```
 2. **Kế thừa Service Client:**
-   Trong `workspace/{issueKey}/test/steps/services/`, tạo Service Wrapper kế thừa hoặc bọc `DNSEClient` hoặc các class từ `trading-api`, `websocket-trading`:
+   Trong `workspace/issues/{issueKey}/test/steps/services/`, tạo Service Wrapper kế thừa hoặc bọc `DNSEClient` hoặc các class từ `trading-api`, `websocket-trading`:
    - Không tự code lại request signing HMAC SHA256 hay logic WebSocket framing.
    - Tái sử dụng 100% client có sẵn từ SDK.
 3. **Tuyệt đối không hardcode:**

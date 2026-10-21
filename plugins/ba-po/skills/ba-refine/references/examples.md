@@ -427,13 +427,13 @@ Agent: Tuyệt. Chuyển sang Giai đoạn 3 để mài sắc spec...
 Agent: Bắt đầu Giai đoạn 3...
 
 [Bước 3.1] Tạo bản nháp spec...
-📁 File: /project-root/workspace/PROJ-456/spec/refined-draft.md
+📁 File: /project-root/workspace/issues/PROJ-456/spec/refined-draft.md
 ```
 
 ```
 [Bước 3.2] 📝 BẢN NHÁP SPEC — Vui lòng review kỹ trước khi chốt:
 
-📄 File: /project-root/workspace/PROJ-456/spec/refined-draft.md
+📄 File: /project-root/workspace/issues/PROJ-456/spec/refined-draft.md
 ────────────────────────────────────────────
 ```
 
@@ -496,7 +496,7 @@ Scenario: Truy vấn audit trail
 - **Tái sử dụng Design Tokens:** Màu primary và spinner indicator có sẵn trong theme
 - **Nút export:** Hành động phụ (secondary button, không phải CTA chính)
 - **Indicator tiến trình:** Spinner vô hạn nếu <5s, thanh tiến trình nếu lâu hơn
-- **Mockup Artifact:** `workspace/STK-402/tech/mockup.html` (đã chụp snapshot `mockup.png`)
+- **Mockup Artifact:** `workspace/issues/STK-402/tech/mockup.html` (đã chụp snapshot `mockup.png`)
 
 ## ☀️ Success Criteria & Tracking
 
@@ -585,7 +585,7 @@ User: "OK, chốt"
 
 ```
 [Bước 3.3] ✅ Bản cuối cùng đã chốt!
-📄 File: /project-root/workspace/PROJ-456/spec/refined.md
+📄 File: /project-root/workspace/issues/PROJ-456/spec/refined.md
 📊 Confidence: 94%
 
 Bạn có muốn push lên Jira không? (Gõ OK hoặc Không)
@@ -605,7 +605,7 @@ Agent: Đang push lên Jira...
 ✅ Description đã cập nhật
 
 📋 Tạo push log...
-✅ Push log: /project-root/workspace/PROJ-456/spec/push-log.json
+✅ Push log: /project-root/workspace/issues/PROJ-456/spec/push-log.json
 
 🔗 Xem task đã cập nhật: https://your-domain.atlassian.net/browse/PROJ-456
 

@@ -26,7 +26,7 @@ KHÔNG được bỏ qua Giai đoạn 1 — checklist là nguồn sự thật du
    - Sử dụng Ranh giới Tượng trưng (`TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`) và BVA 3 giá trị cho tài chính.
    - Lưu tại `workspace/issues/{issueKey}/test/{issueKey}.feature`.
 3. **Giai đoạn 3: Xác minh Cú pháp & Bàn giao:**
-   - Chạy `bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh workspace/{issueKey}/test/{issueKey}.feature` và tự sửa lỗi cú pháp (Self-fix Loop ≤ 3 vòng).
+   - Chạy `bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh workspace/issues/{issueKey}/test/{issueKey}.feature` và tự sửa lỗi cú pháp (Self-fix Loop ≤ 3 vòng).
    - Bàn giao 2 artifacts và hướng dẫn chạy `/qa-auto-design {issueKey}` để sinh code hoặc `/qa-squash-push {issueKey}` để đẩy lên Squash TM.
 
 ## Output

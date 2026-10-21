@@ -138,7 +138,7 @@ curl -s \
 
 ### Bước 4: Xuất file
 - Nếu thư mục `{PROJECT_ROOT}/workspace/sprint/` chưa tồn tại, chạy `mkdir -p` để tạo.
-- Tạo hoặc ghi đè file **`{PROJECT_ROOT}/workspace/sprint/tech/sprint-plan.md`**.
+- Tạo hoặc ghi đè file **`{PROJECT_ROOT}/workspace/sprints/sprint/tech/sprint-plan.md`**.
   - ⚠️ Lưu ý: `workspace` ở đây là **tên thư mục con** bên trong PROJECT_ROOT, KHÔNG phải "workspace root" của IDE.
 - Sử dụng **template** tại `assets/sprint-plan.md` (trong thư mục skill này) làm khung.
 - Thay thế toàn bộ placeholder `{...}` bằng dữ liệu thực tế.
@@ -146,7 +146,7 @@ curl -s \
 
 ## Ví dụ mẫu (Few-shot Example)
 - **Input:** Khởi tạo Sprint 35 với Backlog 42 Story Points.
-- **Output:** File `workspace/sprint/tech/sprint-plan.md` chuẩn:
+- **Output:** File `workspace/sprints/sprint/tech/sprint-plan.md` chuẩn:
   ```markdown
   # Sprint 35 Planning
   - **Mục tiêu Sprint:** Hoàn thiện luồng xác thực Smart OTP và đặt lệnh phái sinh.

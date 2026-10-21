@@ -42,8 +42,8 @@ Xem cẩm nang chi tiết và mẫu báo cáo đầy đủ tại: [references/tr
 ## Verification (Xác minh)
 
 - [ ] Đã chạy `trace-check.js` và dùng con số coverage của script (không tự chấm lại).
-- [ ] Ma trận `workspace/{issueKey}/trace/matrix.md` ghi nhận đủ các mã `[BR-xx]`/`[AC-xx]`.
-- [ ] Báo cáo `workspace/{issueKey}/trace/gaps.md` phân loại rõ gaps P0/P1 kèm Action Items cụ thể.
+- [ ] Ma trận `workspace/issues/{issueKey}/trace/matrix.md` ghi nhận đủ các mã `[BR-xx]`/`[AC-xx]`.
+- [ ] Báo cáo `workspace/issues/{issueKey}/trace/gaps.md` phân loại rõ gaps P0/P1 kèm Action Items cụ thể.
 
 ## Red Flags (Cờ đỏ)
 

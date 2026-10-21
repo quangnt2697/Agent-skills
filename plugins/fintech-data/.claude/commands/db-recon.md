@@ -15,21 +15,21 @@ Agent hoặc người dùng có thể thực thi thông qua CLI script `node ${A
 
 ```bash
 # Xem danh sách tất cả các query đối chiếu có sẵn
-npm run db:recon -- --list
+npm run db:recon:prod -- --list
 
 # Chạy Dashboard tổng quan đối chiếu 11 topic cho ngày giao dịch gần nhất
-npm run db:recon -- --query master_reconciliation_summary --date YYYY-MM-DD
+npm run db:recon:prod -- master-dashboard --date YYYY-MM-DD
 
 # Chạy đối chiếu theo từng topic cụ thể
-npm run db:recon -- --topic ticks --date YYYY-MM-DD --symbol SSI
-npm run db:recon -- --topic topprice --date YYYY-MM-DD --symbol SSI
-npm run db:recon -- --topic expected_price --date YYYY-MM-DD
-npm run db:recon -- --topic ohlc --date YYYY-MM-DD --symbol HPG
-npm run db:recon -- --topic foreign_trading --date YYYY-MM-DD
-npm run db:recon -- --topic missing_symbols_v3_vs_v2 --date YYYY-MM-DD
+npm run db:recon:prod -- recon-ticks --date YYYY-MM-DD --symbol SSI
+npm run db:recon:prod -- recon-topprice --date YYYY-MM-DD --symbol SSI
+npm run db:recon:prod -- recon-expected-price --date YYYY-MM-DD
+npm run db:recon:prod -- recon-ohlc --date YYYY-MM-DD --symbol HPG
+npm run db:recon:prod -- recon-foreign-trading --date YYYY-MM-DD
+npm run db:recon:prod -- recon-missing-symbols --date YYYY-MM-DD
 
-# Chạy dry-run (chỉ in câu SQL đã thế tham số, không gọi Metabase)
-npm run db:recon -- --query ticks_volume_count_parity --dry-run
+# Chạy bộ 4 câu query đối chiếu lõi (Core Suite: Ticks, TopPrices, Ticks Extra)
+npm run db:recon:core -- --date YYYY-MM-DD
 ```
 
 ## 3. Quy Trình Phân Tích Độ Lệch

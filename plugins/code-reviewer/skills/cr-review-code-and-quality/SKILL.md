@@ -125,10 +125,10 @@ Một lượt review chỉ coi là hoàn tất khi:
 
 | Trường hợp | Đường dẫn chuẩn | Hành vi khi gọi lại |
 |---|---|---|
-| Review theo issueKey | `workspace/{issueKey}/trace/code-review-report.md` | **Ghi đè** hoàn toàn |
-| Review không có issueKey | `workspace/code-review/trace/code-review-report.md` | **Ghi đè** hoàn toàn |
+| Review theo issueKey | `workspace/issues/{issueKey}/trace/code-review-report.md` | **Ghi đè** hoàn toàn |
+| Review không có issueKey | `workspace/adhoc/code-review/trace/code-review-report.md` | **Ghi đè** hoàn toàn |
 
-> ⚠️ **TUYỆT ĐỐI CẤM tạo thư mục `reports/` tại gốc dự án.** Mọi báo cáo review đều BẮT BUỘC nằm dưới `workspace/` (theo `.agents/rules/workspace-paths.md`). Nếu có định danh branch hoặc module (ví dụ `feature-order`), có thể dùng `workspace/{slug}/trace/code-review-report.md`. Mặc định khi review tự do là `workspace/code-review/trace/code-review-report.md`.
+> ⚠️ **TUYỆT ĐỐI CẤM tạo thư mục `reports/` tại gốc dự án.** Mọi báo cáo review đều BẮT BUỘC nằm dưới `workspace/` (theo `.agents/rules/workspace-paths.md`). Nếu có định danh branch hoặc module (ví dụ `feature-order`), có thể dùng `workspace/adhoc/{slug}/trace/code-review-report.md`. Mặc định khi review tự do là `workspace/adhoc/code-review/trace/code-review-report.md`.
 > **Quy tắc:** KHÔNG tạo file mới với suffix (-v2.md, -round2.md...). KHÔNG append vào file cũ. Luôn overwrite.
 
 ---

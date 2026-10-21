@@ -12,7 +12,7 @@
 ## 2. Quy Trình 3 Giai Đoạn Thiết Kế
 
 ### Giai đoạn 1: Thiết kế Checklist Thực thi (`checklist.md`)
-- **Nguồn:** Đọc `workspace/{issueKey}/spec/final.md`.
+- **Nguồn:** Đọc `workspace/issues/{issueKey}/spec/final.md`.
 - **Phân loại:** Phân bổ vào 6 chiều kiểm thử chuẩn (Bảo mật, Quy tắc, Toàn vẹn, Dữ liệu, Đường dẫn, Ngoại lệ).
 - **Nguyên tắc:** Mỗi item viết bắt đầu bằng động từ hành động, lượng hoá rõ, gán nhãn [P0], [P1], hoặc [P2].
 - **Output:** `workspace/issues/{issueKey}/test/checklist.md`
@@ -28,7 +28,7 @@
 ### Giai đoạn 3: Xác minh Cú pháp & Bàn giao
 Chạy script kiểm tra định dạng Gherkin:
 ```bash
-bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/{issueKey}/test/{issueKey}.feature"
+bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh "workspace/issues/{issueKey}/test/{issueKey}.feature"
 ```
 - Nếu lỗi: Kích hoạt Self-fix Loop (sửa lỗi $\le$ 3 vòng).
 - Nếu pass: Gợi ý chạy `/qa-auto-design {issueKey}` hoặc `/qa-squash-push {issueKey}`.

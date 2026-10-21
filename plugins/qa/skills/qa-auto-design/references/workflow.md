@@ -35,7 +35,7 @@
 - Rà soát theo `cr-code-simplification`: Never-Cut List (bảo vệ assert/fixture cốt lõi), gộp fixture thừa.
 - Thẩm định cú pháp:
   ```bash
-  pytest "workspace/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only
+  pytest "workspace/issues/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only
   ```
 - Nếu lỗi $\rightarrow$ Tự sửa. Nếu Pass $\rightarrow$ Bàn giao để chạy `/qa-run-test`.
 

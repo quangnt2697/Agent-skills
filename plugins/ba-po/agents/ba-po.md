@@ -5,7 +5,7 @@ model: sonnet
 enable_write_tools: true
 tools: [read_url_content, view_file, write_to_file, ask_question]
 permissions:
-  write_allowlist: ["workspace/{issueKey}/spec/*", "workspace/{issueKey}/source/*"]
+  write_allowlist: ["workspace/issues/{issueKey}/spec/*", "workspace/issues/{issueKey}/source/*"]
   disallowed_tools: [run_command]
 ---
 
@@ -35,7 +35,7 @@ Toàn bộ file output của bộ skill BA/PO **PHẢI** được ghi vào:
 ```
 Trong đó `<root>` là một trong: `source/`, `spec/`.
 
-**Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output cho issue JIRA-123 sẽ ghi vào `/path/to/project/workspace/JIRA-123/spec/final.md`.
+**Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output cho issue JIRA-123 sẽ ghi vào `/path/to/project/workspace/issues/JIRA-123/spec/final.md`.
 
 **Quy tắc tạo thư mục:** Trước khi ghi file, BẮT BUỘC chạy:
 ```bash
@@ -48,18 +48,18 @@ mkdir -p workspace/{issueKey}/<root>
 | Loại       | File                     | Vị trí                                                 |
 |------------|--------------------------|--------------------------------------------------------|
 | **Skill**  | `SKILL.md`, `references/` | `{PLUGIN_DIR}/plugins/ba-po/skills/*/` (cố định)      |
-| **Input**  | `{issueKey}.pdf`          | `{PROJECT_ROOT}/workspace/{issueKey}/source/`          |
-| **Input**  | `metadata.json`           | `{PROJECT_ROOT}/workspace/{issueKey}/source/`          |
-| **Input**  | Confluence PDFs           | `{PROJECT_ROOT}/workspace/{issueKey}/source/refs/`     |
-| **Output** | `final.md` ★              | `{PROJECT_ROOT}/workspace/{issueKey}/spec/`            |
-| **Output** | `refined.md`              | `{PROJECT_ROOT}/workspace/{issueKey}/spec/`            |
-| **Output** | `gap-analysis.md`         | `{PROJECT_ROOT}/workspace/{issueKey}/spec/`            |
-| **Output** | `user-stories.md`         | `{PROJECT_ROOT}/workspace/{issueKey}/spec/`            |
-| **Output** | `backlog.md`              | `{PROJECT_ROOT}/workspace/{issueKey}/spec/`            |
-| **Output** | `process-as-is.md`        | `{PROJECT_ROOT}/workspace/{issueKey}/spec/`            |
-| **Output** | `process-to-be.md`        | `{PROJECT_ROOT}/workspace/{issueKey}/spec/`            |
-| **Output** | `stakeholders.md`         | `{PROJECT_ROOT}/workspace/{issueKey}/spec/`            |
-| **Output** | `push-log.json`           | `{PROJECT_ROOT}/workspace/{issueKey}/spec/`            |
+| **Input**  | `{issueKey}.pdf`          | `{PROJECT_ROOT}/workspace/issues/{issueKey}/source/`          |
+| **Input**  | `metadata.json`           | `{PROJECT_ROOT}/workspace/issues/{issueKey}/source/`          |
+| **Input**  | Confluence PDFs           | `{PROJECT_ROOT}/workspace/issues/{issueKey}/source/refs/`     |
+| **Output** | `final.md` ★              | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `refined.md`              | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `gap-analysis.md`         | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `user-stories.md`         | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `backlog.md`              | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `process-as-is.md`        | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `process-to-be.md`        | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `stakeholders.md`         | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `push-log.json`           | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
 
 ## Trách nhiệm chính
 

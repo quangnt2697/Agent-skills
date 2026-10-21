@@ -20,7 +20,7 @@ trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có,
 - **Bước 1 (Deep Trace 5 Yếu tố Backend):** Đọc code đệ quy tối đa 3 tầng, trích xuất: DB Schema, Transaction Scope, Message Queue/Kafka, Security/RBAC, và WebSocket.
 - **Bước 2 (Gap Analysis & Đối chiếu Domain):** So sánh logic code với Cẩm nang nghiệp vụ chứng khoán/fintech để phát hiện điểm mù hoặc magic numbers.
 - **Bước 3 (Phỏng vấn User - Interview Gate):** Kích hoạt `ba-interview-me` làm rõ các câu hỏi 🔴 Critical về luồng tiền, điều kiện giao dịch và logic ngoại lệ.
-- **Bước 4 (Chốt hạ Đặc tả `final.md`):** Xuất tài liệu đặc tả kỹ thuật chuẩn tắc tại `workspace/{issueKey}/spec/final.md` kèm Metadata truy vết (Commit SHA, Source Repo).
+- **Bước 4 (Chốt hạ Đặc tả `final.md`):** Xuất tài liệu đặc tả kỹ thuật chuẩn tắc tại `workspace/issues/{issueKey}/spec/final.md` kèm Metadata truy vết (Commit SHA, Source Repo).
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 - 📖 **Tài liệu quy trình & Hướng dẫn kỹ thuật (references/):**
@@ -29,7 +29,7 @@ trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có,
 
 ## 4. Ví dụ mẫu (Few-shot Example)
 - **Input:** `/qa-code2spec services/orders/router.py`
-- **Output:** File `workspace/orders-router/spec/final.md` cấu trúc chuẩn:
+- **Output:** File `workspace/issues/orders-router/spec/final.md` cấu trúc chuẩn:
   ```markdown
   # Business-Spec: Order Placement Router
   - Source: `services/orders/router.py` (Commit: `a8f31b2`)

@@ -102,7 +102,7 @@ Tìm kiếm bằng CQL REST API hoặc n8n `/webhook/confluence-doc`. Hiển th�
 Quét trang đã chọn (Depth=1) tìm link/attachments. Trình danh sách duyệt. Dừng chờ User đồng ý.
 
 **Phase 1C: Download**
-Tải trang gốc và references vào `/project-root/workspace/{keyword}/source/`.
+Tải trang gốc và references vào `/project-root/workspace/issues/{keyword}/source/`.
 
 **Phase 2 → Phase 5: Phân tích & Tổng hợp**
 Chạy y hệt Luồng A (Jira) từ Phase 2 trở đi.

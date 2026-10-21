@@ -79,7 +79,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 **Invoke:** `ba-spec JIRA-123`
 
 **Output:**
-- `/project-root/workspace/JIRA-123/spec/final.md`
+- `/project-root/workspace/issues/JIRA-123/spec/final.md`
 - Confidence level
 
 **Gate Check:**
@@ -96,7 +96,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 **Input:** Business-Spec từ Phase 1
 
 **Output:**
-- `/project-root/workspace/JIRA-123/tech/tech-spec.md`
+- `/project-root/workspace/issues/JIRA-123/tech/tech-spec.md`
 - Architecture decisions
 - API contracts
 - Data models
@@ -115,7 +115,7 @@ Confidence Level chỉ dùng để báo cáo, không chặn luồng.
 node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/assets/trace-check.js workspace/JIRA-123 --stage=tech
 ```
 
-**Output:** `/project-root/workspace/JIRA-123/trace/matrix.md` (BR/AC → Tech-Spec, khớp mã chính xác)
+**Output:** `/project-root/workspace/issues/JIRA-123/trace/matrix.md` (BR/AC → Tech-Spec, khớp mã chính xác)
 
 **Gate Check (theo exit code):**
 - `0` (≥ 90%) → Continue
@@ -131,7 +131,7 @@ node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/assets/tr
 **Input:** Tech-Spec từ Phase 2
 
 **Output:**
-- `/project-root/workspace/JIRA-123/tech/plan.md`
+- `/project-root/workspace/issues/JIRA-123/tech/plan.md`
 - Task list với dependencies
 
 **Gate Check:**
@@ -187,11 +187,11 @@ node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/assets/tr
 - Phase 7e: Final Traceability Check (`trace-check.js --stage=all` — BR → Tech-Spec → Tests)
 
 **Output:**
-- `/project-root/workspace/JIRA-123/test/checklist.md`
-- `/project-root/workspace/JIRA-123/test/JIRA-123.feature`
-- `/project-root/workspace/JIRA-123/test/steps/test_*.py`
-- `/project-root/workspace/JIRA-123/test/result/summary.md`
-- `/project-root/workspace/JIRA-123/trace/matrix.md` (end-to-end traceability)
+- `/project-root/workspace/issues/JIRA-123/test/checklist.md`
+- `/project-root/workspace/issues/JIRA-123/test/JIRA-123.feature`
+- `/project-root/workspace/issues/JIRA-123/test/steps/test_*.py`
+- `/project-root/workspace/issues/JIRA-123/test/result/summary.md`
+- `/project-root/workspace/issues/JIRA-123/trace/matrix.md` (end-to-end traceability)
 
 **Gate Check:**
 - If pass rate ≥ 90% AND `trace-check.js` exit 0 → Continue
@@ -255,21 +255,21 @@ Sau khi hoàn thành 8 phases thành công:
 ## 📦 Deliverables
 
 ### Documentation
-- ✅ Business Spec: `/project-root/workspace/JIRA-123/spec/final.md`
-- ✅ Tech Spec: `/project-root/workspace/JIRA-123/tech/tech-spec.md`
-- ✅ Implementation Plan: `/project-root/workspace/JIRA-123/tech/plan.md`
-- ✅ Traceability Report: `/project-root/workspace/JIRA-123/trace/matrix.md`
+- ✅ Business Spec: `/project-root/workspace/issues/JIRA-123/spec/final.md`
+- ✅ Tech Spec: `/project-root/workspace/issues/JIRA-123/tech/tech-spec.md`
+- ✅ Implementation Plan: `/project-root/workspace/issues/JIRA-123/tech/plan.md`
+- ✅ Traceability Report: `/project-root/workspace/issues/JIRA-123/trace/matrix.md`
 
 ### Code
 - ✅ Application Code: `src/services/order_service.py` (+ 5 files)
 - ✅ Unit Tests: `tests/unit/test_order_service.py` (+ 3 files)
-- ✅ QA Automation: `/project-root/workspace/JIRA-123/test/steps/test_*.py` (8 files)
+- ✅ QA Automation: `/project-root/workspace/issues/JIRA-123/test/steps/test_*.py` (8 files)
 
 ### Test Artifacts
-- ✅ Test Checklist: `/project-root/workspace/JIRA-123/test/checklist.md` (42 items)
-- ✅ Gherkin Features: `/project-root/workspace/JIRA-123/test/JIRA-123.feature` (28 scenarios)
-- ✅ QA Pipeline Summary: `/project-root/workspace/JIRA-123/test/result/summary.md`
-- ✅ Test Report: `/project-root/workspace/JIRA-123/test/result/report.md`
+- ✅ Test Checklist: `/project-root/workspace/issues/JIRA-123/test/checklist.md` (42 items)
+- ✅ Gherkin Features: `/project-root/workspace/issues/JIRA-123/test/JIRA-123.feature` (28 scenarios)
+- ✅ QA Pipeline Summary: `/project-root/workspace/issues/JIRA-123/test/result/summary.md`
+- ✅ Test Report: `/project-root/workspace/issues/JIRA-123/test/result/report.md`
 
 ### Git
 - ✅ Feature Branch: `feature/JIRA-123-order-management`
@@ -305,7 +305,7 @@ Sau khi hoàn thành 8 phases thành công:
 - 1 High finding (test data cleanup missing)
 - 3 Medium findings (assertions could be more specific)
 
-**All findings documented in:** `/project-root/workspace/JIRA-123/trace/review-report.md`
+**All findings documented in:** `/project-root/workspace/issues/JIRA-123/trace/review-report.md`
 
 ---
 
@@ -464,7 +464,7 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 **Reason:** Test pass rate < 90%.
 
 **Solution:**
-1. Read pipeline summary: `/project-root/workspace/JIRA-123/test/result/summary.md`
+1. Read pipeline summary: `/project-root/workspace/issues/JIRA-123/test/result/summary.md`
 2. Identify failed test type:
    - E2E test → app code bug OR test code bug
    - Check root cause in report

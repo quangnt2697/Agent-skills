@@ -25,21 +25,26 @@ test('Core Recon: Workflow db-mdds-recon-core.json tồn tại và có đủ 4 n
   assert.ok(nodeNames.includes('Notify Mattermost (Sequential 4 Messages)'), 'Thiếu Node Notify Mattermost');
 });
 
-test('Core Recon: 4 câu query cốt lõi tuân thủ Zero-Mutation & Partition-First', () => {
-  const scriptContent = fs.readFileSync(path.join(projectRoot, 'scripts', 'db', 'db-recon-core.js'), 'utf8');
+test('Core Recon: 4 câu query cốt lõi tuân thủ Zero-Mutation & Partition-First', async () => {
+  const { CORE_QUERIES } = await import('../db/db-recon-core.js');
+  const allSql = Object.values(CORE_QUERIES).map(q => `${q.id}\n${q.sql}`).join('\n');
 
   // Kiểm tra 4 query ID
-  assert.ok(scriptContent.includes('recon-core-ticks'));
-  assert.ok(scriptContent.includes('recon-core-topprices'));
-  assert.ok(scriptContent.includes('recon-core-ticks-extra-vs-prices'));
-  assert.ok(scriptContent.includes('recon-core-ticks-vs-extra'));
+  assert.ok(allSql.includes('recon-core-ticks'));
+  assert.ok(allSql.includes('recon-core-topprices'));
+  assert.ok(allSql.includes('recon-core-ticks-extra-vs-prices'));
+  assert.ok(allSql.includes('recon-core-ticks-vs-extra'));
 
   // Kiểm tra điều kiện lọc total_volume_traded trên bảng prices
-  assert.ok(scriptContent.includes('p.total_volume_traded IS NOT NULL'), 'Thiếu filter total_volume_traded IS NOT NULL cho Trade');
-  assert.ok(scriptContent.includes('p.total_volume_traded IS NULL'), 'Thiếu filter total_volume_traded IS NULL cho Quote');
+  assert.ok(allSql.includes('p.total_volume_traded IS NOT NULL'), 'Thiếu filter total_volume_traded IS NOT NULL cho Trade');
+  assert.ok(allSql.includes('p.total_volume_traded IS NULL'), 'Thiếu filter total_volume_traded IS NULL cho Quote');
 
-  // Kiểm tra partition-first
-  assert.ok(scriptContent.includes("sending_time >= '{{date}}'::date"));
+  // Kiểm tra partition-first & sanitizer
+  for (const q of Object.values(CORE_QUERIES)) {
+    assert.ok(q.sql.includes("sending_time >= '{{date}}'::date"), `Query ${q.id} thiếu partition key sending_time`);
+    const check = sanitizeQuery(q.sql.replace(/\{\{date\}\}/g, '2026-09-24'));
+    assert.equal(check.valid, true, `Query ${q.id} vi phạm Read-Only Sanitizer: ${check.error}`);
+  }
 });
 
 test('Core Recon: Node format sinh chính xác 4 items Mattermost độc lập', () => {

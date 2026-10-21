@@ -43,7 +43,7 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 
 ### 1.6. Quy Tắc Quản Lý Biến Môi Trường & Tuyệt Đối Không Hardcode (.env Mandatory & Zero-Hardcode Rule)
 - **TẠO VÀ LƯU GIỮ BIẾN TRONG `.env`:**
-  - Toàn bộ các giá trị cấu hình, kết nối, thông tin xác thực và biến kiểm thử (Base URLs, WS URLs, API keys, secrets, tokens, account numbers, test symbols, prices, quantities, timeouts, threshold metrics, broker codes) **BẮT BUỘC** phải được tạo và lưu giữ trong file `.env` (theo mô hình phân tầng: task-local `workspace/{issueKey}/test/.env` hoặc central `agent-skills/.env`).
+  - Toàn bộ các giá trị cấu hình, kết nối, thông tin xác thực và biến kiểm thử (Base URLs, WS URLs, API keys, secrets, tokens, account numbers, test symbols, prices, quantities, timeouts, threshold metrics, broker codes) **BẮT BUỘC** phải được tạo và lưu giữ trong file `.env` (theo mô hình phân tầng: task-local `workspace/issues/{issueKey}/test/.env` hoặc central `agent-skills/.env`).
 - **CHỈ ĐƯỢC GỌI TỪ `.env` TRONG TEST SCRIPT:**
   - Trong toàn bộ test script (`test_*.py`, `conftest.py`, `services/`, `pages/`), mã nguồn **CHỈ ĐƯỢC PHÉP** đọc/gọi giá trị từ file `.env` thông qua `os.getenv("VARIABLE_NAME", default_val)` hoặc qua fixture/config loader.
 - **TUYỆT ĐỐI NGHIÊM CẤM HARDCODE:**
@@ -88,7 +88,7 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
   3. **Phân loại Level nghiêm ngặt:** Sử dụng đúng chuẩn `ERROR` (hỏng hóc/test fail), `WARN` (bất thường/chậm), `INFO` (luồng bình thường/kết quả), `DEBUG` (chi tiết nội bộ/raw query).
   4. **Chống trùng lặp & Khởi tạo gọn gàng:** Cấm tuyệt đối `logging.basicConfig(...)` trong test script/conftest (tránh nhân đôi log Pytest). Khởi tạo môi trường chỉ in đúng 1 dòng tóm tắt ở Session Scope.
 - **Không Dùng Ký Tự Cây:** Tuyệt đối không dùng các ký tự ASCII tree (`▶`, `├─`, `└─`). Log hiển thị theo dạng flow text tuần tự tự nhiên với 4 thẻ tiếng Việt: `[KỊCH BẢN]`, `[ĐẦU VÀO]`, `[HỆ THỐNG TRẢ RA]`, `[KẾT QUẢ]`.
-- **Ghi nhận Full Audit Trail:** File `workspace/{issueKey}/test/result/test-output.log` và bảng trong `report.md` vẫn lưu trữ đầy đủ 100% Request/Response của **CẢ TEST CASE PASSED VÀ FAILED**.
+- **Ghi nhận Full Audit Trail:** File `workspace/issues/{issueKey}/test/result/test-output.log` và bảng trong `report.md` vẫn lưu trữ đầy đủ 100% Request/Response của **CẢ TEST CASE PASSED VÀ FAILED**.
 - 📖 **Cẩm nang & Template Chi Tiết Cho Mọi Loại Test/Task:** Bắt buộc tham chiếu và tuân thủ [test_logging_guidelines.md](test_logging_guidelines.md). Không định nghĩa template riêng lẻ trong file này.
 
 ### 1.11. Tuyệt Đối Không Mock Server Trên UAT (Real Base URLs Only)
@@ -156,7 +156,7 @@ Khi làm việc với các task kiểm thử Web UI, Agent **BẮT BUỘC** thao
      - `DASHBOARD_USERNAME` và `DASHBOARD_PASSWORD` — tài khoản Backoffice/Dashboard.
    - Navigate đến URL đăng nhập, điền thông tin thật, bấm login thật — **KHÔNG bypass hoặc mock token**.
    - Xác nhận đăng nhập thành công (có heading hoặc element đặc trưng của màn hình chính) trước khi bước tiếp.
-   - ⚡ **n8n Fast-Path (Khuyến nghị):** Gọi `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}` để workflow `web-ui-locator-discovery` tự động probe URL, đăng nhập thật, dump DOM và lưu danh sách semantic locators vào `workspace/{issueKey}/test/fixtures/locators.json`.
+   - ⚡ **n8n Fast-Path (Khuyến nghị):** Gọi `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}` để workflow `web-ui-locator-discovery` tự động probe URL, đăng nhập thật, dump DOM và lưu danh sách semantic locators vào `workspace/issues/{issueKey}/test/fixtures/locators.json`.
 
 3. **Quan sát trực quan (`playwright_screenshot`):**
    - Chụp ảnh màn hình (`playwright_screenshot(name="ui_overview")`) để xác định chính xác layout, menu, và trạng thái hiển thị.

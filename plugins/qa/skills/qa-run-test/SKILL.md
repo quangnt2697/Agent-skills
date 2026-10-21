@@ -26,12 +26,12 @@ trigger: Khi cần chạy test automation, regression test, hoặc thẩm địn
 ## 3. Quy Trình Thực Thi 4 Bước
 
 - **Bước 1: Preflight**
-  - Xác định mục tiêu từ tham số (hoặc mặc định `workspace/{issueKey}/test/steps/`).
+  - Xác định mục tiêu từ tham số (hoặc mặc định `workspace/issues/{issueKey}/test/steps/`).
   - Ghi đè file nếu đã tồn tại ở `result/`. Cấm ghi file ra ngoài `result/`.
 - **Bước 2: Run (Chạy n8n Runner & Background Execution)**
   - Gọi webhook n8n chuẩn (không dùng shell bash):
     ```bash
-    node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testFiles":"workspace/{issueKey}/test/steps/"}'
+    node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testFiles":"workspace/issues/{issueKey}/test/steps/"}'
     ```
   - Runner sẽ tự áp dụng cờ `--timeout`, `--junitxml` và timeout toàn suite (600s).
   - ⚡ **Chế độ Chạy Nền Bất Đồng Bộ (Background Async Mode):** Đối với các suite kiểm thử E2E Playwright hoặc regression kéo dài (>3 phút), agent kích hoạt webhook n8n ở chế độ nền (không chờ đồng bộ trong chat). Thông báo kết quả sẽ được n8n tự động bắn về kênh Mattermost của dự án khi hoàn tất.
@@ -55,9 +55,9 @@ Bước tiếp theo: Chạy `/qa-auto-design {issueKey}` để sửa script.
 
 ## 5. Quy Tắc Output File & Xác Minh (Verification)
 > 📌 Do n8n runner tự ghi, agent không dùng file edit tool để sửa.
-- `workspace/{issueKey}/test/result/test-output.log` (Nguyên văn)
-- `workspace/{issueKey}/test/result/report.md` (Báo cáo tổng hợp)
-- `workspace/{issueKey}/test/result/junit.xml` (Số liệu cấu trúc)
-- `workspace/{issueKey}/test/result/run-status.json` (Error Contract)
+- `workspace/issues/{issueKey}/test/result/test-output.log` (Nguyên văn)
+- `workspace/issues/{issueKey}/test/result/report.md` (Báo cáo tổng hợp)
+- `workspace/issues/{issueKey}/test/result/junit.xml` (Số liệu cấu trúc)
+- `workspace/issues/{issueKey}/test/result/run-status.json` (Error Contract)
 
 ---

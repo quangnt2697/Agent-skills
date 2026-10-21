@@ -5,8 +5,8 @@ model: sonnet
 enable_write_tools: true
 tools: [run_command, view_file, write_to_file, grep_search, list_dir]
 permissions:
-  write_allowlist: ["workspace/{issueKey}/test/*", "workspace/{issueKey}/trace/*"]
-  disallowed_write: ["workspace/{issueKey}/spec/*", "src/*"]
+  write_allowlist: ["workspace/issues/{issueKey}/test/*", "workspace/issues/{issueKey}/trace/*"]
+  disallowed_write: ["workspace/issues/{issueKey}/spec/*", "src/*"]
 ---
 
 # Kỹ sư Kiểm thử/SDET
@@ -34,25 +34,25 @@ Khi chạy bất kỳ skill QA nào, luôn đọc skill và references từ `PLU
 
 ### Vị trí file Input (Đọc từ PROJECT_ROOT)
 ```
-{PROJECT_ROOT}/workspace/{issueKey}/spec/final.md    <- Single Source of Truth từ BA/PO
+{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/final.md    <- Single Source of Truth từ BA/PO
 ```
 QA **chỉ đọc** `spec/final.md`. KHÔNG đọc trực tiếp Jira PDF hay Confluence.
 
 ### Vị trí file Output (Ghi)
 Toàn bộ file output của bộ skill QA **PHẢI** được ghi vào:
 ```
-{PROJECT_ROOT}/workspace/{issueKey}/test/
-{PROJECT_ROOT}/workspace/{issueKey}/trace/
+{PROJECT_ROOT}/workspace/issues/{issueKey}/test/
+{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/
 ```
 
-**Ví dụ:** Nếu user đang mở project `/path/to/project`, output cho JIRA-123 ghi vào `/path/to/project/workspace/JIRA-123/test/checklist.md`.
+**Ví dụ:** Nếu user đang mở project `/path/to/project`, output cho JIRA-123 ghi vào `/path/to/project/workspace/issues/JIRA-123/test/checklist.md`.
 
 **Quy tắc tạo thư mục:** Trước khi ghi file, BẮT BUỘC chạy:
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-mkdir -p workspace/{issueKey}/test/steps
-mkdir -p workspace/{issueKey}/test/result/screenshots
-mkdir -p workspace/{issueKey}/trace
+mkdir -p workspace/issues/{issueKey}/test/steps
+mkdir -p workspace/issues/{issueKey}/test/result/screenshots
+mkdir -p workspace/issues/{issueKey}/trace
 ```
 
 ### Bảng ánh xạ tổng hợp
@@ -60,16 +60,16 @@ mkdir -p workspace/{issueKey}/trace
 | Loại      | File                        | Vị trí                                                         |
 |-----------|-----------------------------|----------------------------------------------------------------|
 | **Skill** | `SKILL.md`, `references/`   | `{PLUGIN_DIR}/plugins/qa/skills/*/` (cố định)                 |
-| **Input** | `spec/final.md` ★           | `{PROJECT_ROOT}/workspace/{issueKey}/spec/` (từ BA/PO)         |
-| **Output**| `checklist.md`              | `{PROJECT_ROOT}/workspace/{issueKey}/test/`                    |
-| **Output**| `{issueKey}.feature`        | `{PROJECT_ROOT}/workspace/{issueKey}/test/`                    |
-| **Output**| `steps/test_*.py`           | `{PROJECT_ROOT}/workspace/{issueKey}/test/steps/`              |
-| **Output**| `steps/conftest.py`         | `{PROJECT_ROOT}/workspace/{issueKey}/test/steps/`              |
-| **Output**| `steps/pages/*.py` (POM)    | `{PROJECT_ROOT}/workspace/{issueKey}/test/steps/pages/`        |
-| **Output**| `summary.md`                | `{PROJECT_ROOT}/workspace/{issueKey}/test/result/`             |
-| **Output**| `junit.xml`, `report.html`  | `{PROJECT_ROOT}/workspace/{issueKey}/test/result/`             |
-| **Output**| `screenshots/`              | `{PROJECT_ROOT}/workspace/{issueKey}/test/result/screenshots/` |
-| **Output**| `matrix.md`                 | `{PROJECT_ROOT}/workspace/{issueKey}/trace/`                   |
+| **Input** | `spec/final.md` ★           | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/` (từ BA/PO)         |
+| **Output**| `checklist.md`              | `{PROJECT_ROOT}/workspace/issues/{issueKey}/test/`                    |
+| **Output**| `{issueKey}.feature`        | `{PROJECT_ROOT}/workspace/issues/{issueKey}/test/`                    |
+| **Output**| `steps/test_*.py`           | `{PROJECT_ROOT}/workspace/issues/{issueKey}/test/steps/`              |
+| **Output**| `steps/conftest.py`         | `{PROJECT_ROOT}/workspace/issues/{issueKey}/test/steps/`              |
+| **Output**| `steps/pages/*.py` (POM)    | `{PROJECT_ROOT}/workspace/issues/{issueKey}/test/steps/pages/`        |
+| **Output**| `summary.md`                | `{PROJECT_ROOT}/workspace/issues/{issueKey}/test/result/`             |
+| **Output**| `junit.xml`, `report.html`  | `{PROJECT_ROOT}/workspace/issues/{issueKey}/test/result/`             |
+| **Output**| `screenshots/`              | `{PROJECT_ROOT}/workspace/issues/{issueKey}/test/result/screenshots/` |
+| **Output**| `matrix.md`                 | `{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/`                   |
 
 ---
 
@@ -95,14 +95,14 @@ SPEC/final.md
 |  +- Group theo chieu: Functional / Boundary /            |
 |  |   Negative / Security / Performance                   |
 |  +- Gan priority P0/P1/P2                                |
-|  +- Ghi workspace/{issueKey}/test/checklist.md           |
+|  +- Ghi workspace/issues/{issueKey}/test/checklist.md           |
 |                                                          |
 |  [CONG TU DONG] >=1 P0 + 0 [Blocked] + coverage >=100%  |
 |                            | PASS                        |
 |  Giai doan 1B -- Gherkin                                 |
 |  +- Transform checklist -> .feature scenarios            |
 |  +- Moi scenario map 1:1 voi >=1 checklist item          |
-|  +- Ghi workspace/{issueKey}/test/{issueKey}.feature     |
+|  +- Ghi workspace/issues/{issueKey}/test/{issueKey}.feature     |
 |  +- qa-validate.sh exit 0                                |
 +---------------------------+------------------------------+
                             | PASS
@@ -134,7 +134,7 @@ SPEC/final.md
 | Phase 4: Traceability Report  (meta-cross-validation)    |
 |  +- Map: AC -> Checklist item -> Gherkin scenario -> Test|
 |  +- Tinh coverage: test/trace coverage >= 90%            |
-|  +- Ghi workspace/{issueKey}/trace/matrix.md             |
+|  +- Ghi workspace/issues/{issueKey}/trace/matrix.md             |
 +----------------------------------------------------------+
                             |
                             v
@@ -327,7 +327,7 @@ Domain tài chính cần test concurrent:
 **Issue:** JIRA-123
 **Task Type:** [WEB] / [API] / [APP] / [WS]
 **Ngày tạo:** YYYY-MM-DD | **Người tạo:** QA/SDET
-**Spec:** `workspace/JIRA-123/spec/final.md`
+**Spec:** `workspace/issues/JIRA-123/spec/final.md`
 **Môi trường:** [UAT / Staging / Production]
 **Phiên bản / Nhánh:** [Build Version / Branch]
 
@@ -478,7 +478,7 @@ Feature: Đặt lệnh chứng khoán
 
 #### TC-010: Đặt lệnh khi số dư không đủ
 - **Error:** AssertionError: Expected "Số dư không đủ" but got "Lỗi hệ thống"
-- **Log:** workspace/JIRA-123/test/result/test-output.log:L145
+- **Log:** workspace/issues/JIRA-123/test/result/test-output.log:L145
 - **Analysis:** App trả về generic error thay vì specific message theo AC#5
 - **Action:** DEV fix error message trong OrderService.validateBalance()
 - **Severity:** P0 — block release

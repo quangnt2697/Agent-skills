@@ -25,7 +25,7 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 **Khi có test fail sau khi `qa-run-test` chạy:** Bàn giao cho `dev-debugging` (lỗi hệ thống) hoặc cập nhật script qua `qa-auto-design` nếu script bị lỗi kỹ thuật (ImportError, fixture sai).
 
 ## 1. Khi nào dùng?
-- Đã có kịch bản BDD Gherkin (`workspace/{issueKey}/test/{issueKey}.feature`) và Checklist kiểm thử (`checklist.md`).
+- Đã có kịch bản BDD Gherkin (`workspace/issues/{issueKey}/test/{issueKey}.feature`) và Checklist kiểm thử (`checklist.md`).
 - Cần sinh mã kiểm thử tự động phân tầng (POM/Service layer + Test steps) bằng Pytest/Playwright.
 - Thẩm định cú pháp test (`pytest --collect-only`) trước khi bàn giao cho `qa-run-test`.
 
@@ -39,16 +39,16 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng.
 
 - **Giai đoạn 0 (Preflight Gate):**
-  - Kiểm tra `sha256` của `.feature` so với `workspace/{issueKey}/.pipeline-state.json`.
+  - Kiểm tra `sha256` của `.feature` so với `workspace/issues/{issueKey}/.pipeline-state.json`.
   - Chạy tất định SDK preflight (1 lệnh): `node ${AGENT_SKILLS_HOME:-.}/scripts/qa/check-sdk.js`. Dừng nếu thiếu dependency.
 
 - **Giai đoạn 1 (Reuse Scan & Recon):**
-  - Đọc `workspace/{issueKey}/test/fixtures/data-grounding.json` nếu tồn tại. Sử dụng dữ liệu định danh đã grounding.
+  - Đọc `workspace/issues/{issueKey}/test/fixtures/data-grounding.json` nếu tồn tại. Sử dụng dữ liệu định danh đã grounding.
   - Khảo sát mã nguồn tái sử dụng bằng script tất định:
     ```bash
     node ${AGENT_SKILLS_HOME:-.}/scripts/qa/reuse-scan.js {issueKey} "từ_khóa_từ_feature"
     ```
-  - Ghi kết quả vào `workspace/{issueKey}/test/reuse-scan.json`. Dùng code tái sử dụng theo JSON này.
+  - Ghi kết quả vào `workspace/issues/{issueKey}/test/reuse-scan.json`. Dùng code tái sử dụng theo JSON này.
   - Lấy dữ liệu chứng khoán: chuỗi ưu tiên bắt buộc là `fixture valid_order_symbol` (nguồn Metabase UAT) → `getSecuritiesFixture` (n8n) → `.env`.
   - Web UI: Dùng n8n `discoverWebUILocators` hoặc Playwright thủ công, verify locators trước khi dùng.
 
@@ -75,12 +75,12 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 - **Giai đoạn 5 (GATE: Thẩm định Cú pháp, Lint & Bàn giao):**
   - Chạy lệnh kiểm tra cú pháp và ngữ nghĩa test:
     ```bash
-    pytest "workspace/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only
+    pytest "workspace/issues/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only
     node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-lint.js {issueKey}
     ```
   - `qa-lint.js` sẽ kiểm tra: Phủ đủ Scenario, cấm sleep/mock/hardcode, assert đúng tầng.
   - Nếu có lỗi cú pháp/lint ➤ Tự sửa (≤ 3 vòng).
-  - Cập nhật kết quả vào `workspace/{issueKey}/.pipeline-state.json` và bàn giao cho `qa-run-test`.
+  - Cập nhật kết quả vào `workspace/issues/{issueKey}/.pipeline-state.json` và bàn giao cho `qa-run-test`.
 
 ## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
 
@@ -88,10 +88,10 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 
 | File Output | Đường dẫn chuẩn | Hành vi khi gọi lại |
 |---|---|---|
-| conftest.py | `workspace/{issueKey}/test/steps/conftest.py` | **Ghi đè** hoàn toàn |
-| Test steps | `workspace/{issueKey}/test/steps/test_*.py` | **Ghi đè** từng file tương ứng |
-| Service layer | `workspace/{issueKey}/test/steps/services/*.py` | **Ghi đè** từng file tương ứng |
-| Page Object (Web UI) | `workspace/{issueKey}/test/steps/pages/*.py` | **Ghi đè** từng file tương ứng |
+| conftest.py | `workspace/issues/{issueKey}/test/steps/conftest.py` | **Ghi đè** hoàn toàn |
+| Test steps | `workspace/issues/{issueKey}/test/steps/test_*.py` | **Ghi đè** từng file tương ứng |
+| Service layer | `workspace/issues/{issueKey}/test/steps/services/*.py` | **Ghi đè** từng file tương ứng |
+| Page Object (Web UI) | `workspace/issues/{issueKey}/test/steps/pages/*.py` | **Ghi đè** từng file tương ứng |
 
 **Quy tắc:**
 - **KHÔNG** tạo file mới với suffix (_v2.py, _new.py, ...).

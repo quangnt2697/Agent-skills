@@ -44,12 +44,12 @@
 1. **Phase 0 — Scan & Duyệt (GATE 1):**
    - Đọc credentials từ `.env` (`ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`).
    - Lấy metadata Jira sạch qua n8n Fast-Path `prepJiraContext(issueKey)`.
-   - Quét link Confluence + attachments + kiểm tra cache trong `workspace/{issueKey}/source/refs/`.
+   - Quét link Confluence + attachments + kiểm tra cache trong `workspace/issues/{issueKey}/source/refs/`.
    - Trình bảng danh sách cho user → **DỪNG chờ "OK"**.
 
 2. **Phase 1 — Download:**
    - Tải file PDF Jira (`assets/jira-fetch-pdf.sh`) + Confluence PDF + attachments còn thiếu.
-   - Ghi thông tin nguồn vào `workspace/{issueKey}/source/metadata.json`.
+   - Ghi thông tin nguồn vào `workspace/issues/{issueKey}/source/metadata.json`.
 
 3. **Phase 1.5 — Nhận diện Task Type:**
    - Xác định: 📱 `[APP]`, 🌐 `[WEB]`, hoặc 🔌 `[API]`. Nếu chưa rõ, hỏi 1 câu duy nhất.
@@ -65,7 +65,7 @@
 
 6. **Phase 5 — Tổng Hợp `final.md` (Handoff Artifact):**
    - Dùng template chuẩn: `assets/spec-final-template.md`.
-   - Ghi file vào: `workspace/{issueKey}/spec/final.md`.
+   - Ghi file vào: `workspace/issues/{issueKey}/spec/final.md`.
    - Đầy đủ 13 sections (section không có ghi "Không áp dụng" kèm lý do, không bỏ trống).
    - Section 9 (AC): Viết dạng **Checklist Tiêu Chí Pass/Fail** (WHAT must be true), KHÔNG viết Gherkin.
    - Đính kèm Section 14 `## 📊 Confidence Assessment`.
@@ -74,7 +74,7 @@
 
 ## ✅ VERIFICATION CHECKLIST (Trước khi bàn giao)
 
-- [ ] File tồn tại tại `workspace/{issueKey}/spec/final.md` và không rỗng.
+- [ ] File tồn tại tại `workspace/issues/{issueKey}/spec/final.md` và không rỗng.
 - [ ] 100% tài liệu tải về trong `source/` và `source/refs/` được trích dẫn trong spec.
 - [ ] Đủ 13 sections theo template `assets/spec-final-template.md`.
 - [ ] Section 8 có Symmetry Coverage (mô tả đủ Mua/Bán, Thêm/Xóa, Bật/Tắt).

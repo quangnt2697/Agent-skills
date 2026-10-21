@@ -63,11 +63,11 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 60 dòng.
 
 - **Phase 0 — Scan & Duyệt References (GATE 1):**
-  Đọc credentials từ `.env`, lấy metadata Jira thô (n8n Fast-Path: `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` — CLI: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js prepJiraContext {issueKey}` — nếu n8n offline báo user và DỪNG), quét Confluence links + attachments, kiểm tra cache `workspace/{issueKey}/source/refs/`, hiển thị bảng cho user duyệt → **DỪNG chờ "OK"**. Khi phát hiện link Confluence, ưu tiên dùng Fast-Path `fetchConfluenceDoc(urlOrId)` — CLI: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js fetchConfluenceDoc {urlOrId}` — để lấy trực tiếp nội dung Markdown sạch (tiết kiệm 90% token).
+  Đọc credentials từ `.env`, lấy metadata Jira thô (n8n Fast-Path: `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` — CLI: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js prepJiraContext {issueKey}` — nếu n8n offline báo user và DỪNG), quét Confluence links + attachments, kiểm tra cache `workspace/issues/{issueKey}/source/refs/`, hiển thị bảng cho user duyệt → **DỪNG chờ "OK"**. Khi phát hiện link Confluence, ưu tiên dùng Fast-Path `fetchConfluenceDoc(urlOrId)` — CLI: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js fetchConfluenceDoc {urlOrId}` — để lấy trực tiếp nội dung Markdown sạch (tiết kiệm 90% token).
   > 📖 Chi tiết API: [references/jira-api-reference.md](references/jira-api-reference.md)
 
 - **Phase 1 — Download (Chỉ tải file thiếu):**
-  Tải Jira PDF (`assets/jira-fetch-pdf.sh`) + Confluence PDF (`{slug}-{pageId}.pdf`) + attachments còn thiếu. Nếu đã lấy được Markdown sạch qua Fast-Path Confluence (`fetchConfluenceDoc`), lưu trực tiếp vào `workspace/{issueKey}/source/` và `source/refs/`. Ghi `metadata.json`.
+  Tải Jira PDF (`assets/jira-fetch-pdf.sh`) + Confluence PDF (`{slug}-{pageId}.pdf`) + attachments còn thiếu. Nếu đã lấy được Markdown sạch qua Fast-Path Confluence (`fetchConfluenceDoc`), lưu trực tiếp vào `workspace/issues/{issueKey}/source/` và `source/refs/`. Ghi `metadata.json`.
 
 - **Phase 1.5 — Nhận diện Loại Task:**
   Phân loại: 📱 `[APP]`, 🌐 `[WEB]`, hoặc 🔌 `[API]`. Nếu chưa chắc chắn, hỏi user đúng 1 câu ngắn gọn.
@@ -84,7 +84,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 
 - **Phase 5 — Tổng Hợp `final.md` (Handoff Artifact):**
   Dùng template chuẩn: [spec-final-template.md](assets/spec-final-template.md).
-  Lưu tại `workspace/{issueKey}/spec/final.md`. Đủ 13 sections. Section 9 (AC) viết dạng **Checklist Tiêu Chí Pass/Fail**, KHÔNG viết Gherkin. Đính kèm Section `## 📊 Confidence Assessment`.
+  Lưu tại `workspace/issues/{issueKey}/spec/final.md`. Đủ 13 sections. Section 9 (AC) viết dạng **Checklist Tiêu Chí Pass/Fail**, KHÔNG viết Gherkin. Đính kèm Section `## 📊 Confidence Assessment`.
 
 ---
 
@@ -112,7 +112,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 
 **Input:** `/ba-spec G3PTP-16584` (Task: Đặt lệnh mua cổ phiếu trên Mobile App)
 
-**Output `workspace/G3PTP-16584/spec/final.md` (trích đoạn):**
+**Output `workspace/issues/G3PTP-16584/spec/final.md` (trích đoạn):**
 ```markdown
 # [G3PTP-16584] Đặt Lệnh Mua Cổ Phiếu Thường (Mobile App)
 
@@ -158,7 +158,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 
 ## Xác minh (Verification)
 
-- [ ] File `workspace/{issueKey}/spec/final.md` đã được tạo đầy đủ 13 sections chuẩn. **Gọi lại `/ba-spec {issueKey}` → ghi đè hoàn toàn file này.**
+- [ ] File `workspace/issues/{issueKey}/spec/final.md` đã được tạo đầy đủ 13 sections chuẩn. **Gọi lại `/ba-spec {issueKey}` → ghi đè hoàn toàn file này.**
 - [ ] Mọi Business Rules đều có ID truy vết (`[BR-01]`, `[BR-02]...`).
 - [ ] Acceptance Criteria được viết theo dạng kiểm thử được (Rule-based).
 - [ ] Đã chạy phỏng vấn đạt Confidence Score >= 90%.

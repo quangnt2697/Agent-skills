@@ -241,6 +241,6 @@ if (isUnlink) {
   console.log(`🎉 Hoàn tất thiết lập ${successCount}/${subPlugins.length} plugins!`);
   console.log('');
   console.log('📌 Giờ đây khi mở bất kỳ project nào trong Gemini CLI hoặc Antigravity,');
-  console.log('   tất cả 44 skills và 8 agents sẽ được nhận diện và thực thi an toàn (không bị chặn ranh giới file).');
+  console.log('   tất cả 30 skills và 6 agents sẽ được nhận diện và thực thi an toàn (không bị chặn ranh giới file).');
 }
 console.log('='.repeat(65));

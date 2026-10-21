@@ -12,7 +12,7 @@ $ARGUMENTS chứa đường dẫn tới file mã nguồn (VD: `src/controllers/o
 3. Truy vết sâu vào các file được import (Model, Service, DTO, 5 yếu tố backend). Đừng chỉ đọc file router/controller.
 4. Đối chiếu với cẩm nang nghiệp vụ chứng khoán (`references/securities-domain-rules.md`).
 5. Kích hoạt `ba-interview-me` để phỏng vấn user về các Điểm mù (Gaps) hoặc Edge cases chưa rõ.
-6. Xuất ra file `/project-root/workspace/{tên_file}/spec/final.md`. Cấu trúc file final tuân thủ chuẩn `profile-api.md` và bắt buộc có header `**Loại task:** 🔌 API` cùng metadata Commit SHA từ GitLab.
+6. Xuất ra file `/project-root/workspace/issues/{tên_file}/spec/final.md`. Cấu trúc file final tuân thủ chuẩn `profile-api.md` và bắt buộc có header `**Loại task:** 🔌 API` cùng metadata Commit SHA từ GitLab.
 
 Sau khi ghi file final thành công, hướng dẫn user gõ `/qa-test-design` để tiếp tục luồng QA automation.
 

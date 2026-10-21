@@ -28,7 +28,7 @@ trigger: Khi cần tạo báo cáo daily standup tự động cho team hoặc ph
   Webhook `/webhook/sm-standup` trả về ngay báo cáo text và gửi Mattermost tự động.
   > Nếu n8n không phản hồi: báo ngay "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**.
 - **Bước 2 (Gửi lại Báo cáo - Tùy chọn):** Call lại webhook `sm-standup` qua n8n Client nếu cần gửi lại.
-- **Bước 3 (Tóm tắt Kết quả):** Kiểm tra file báo cáo tại `workspace/sprint/trace/daily-standup-report.md` và thông báo ngắn gọn cho người dùng.
+- **Bước 3 (Tóm tắt Kết quả):** Kiểm tra file báo cáo tại `workspace/sprints/sprint/trace/daily-standup-report.md` và thông báo ngắn gọn cho người dùng.
 
 ## 4. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 - 🛠️ **Công cụ & File mẫu thực thi (assets/):**
@@ -42,7 +42,7 @@ trigger: Khi cần tạo báo cáo daily standup tự động cho team hoặc ph
   - **Cân bằng tải:** 
     - DEV 1: 3 In Progress (8 SP) - Bình thường
     - DEV 2: 5 In Progress (16 SP) - ⚠️ Quá tải, cần hỗ trợ
-  - **Báo cáo chi tiết:** Đã xuất file `workspace/sprint/trace/daily-standup-report.md` và gửi lên kênh #dev-standup.
+  - **Báo cáo chi tiết:** Đã xuất file `workspace/sprints/sprint/trace/daily-standup-report.md` và gửi lên kênh #dev-standup.
   ```
 
 ---

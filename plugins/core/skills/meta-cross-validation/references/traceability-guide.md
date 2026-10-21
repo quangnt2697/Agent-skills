@@ -6,7 +6,7 @@ Tài liệu tham chiếu chi tiết cho skill `meta-cross-validation`: Quy trìn
 
 ## 1. Trích Xuất Business Rules (Phase 1)
 
-Đọc Business-Spec (`workspace/{issueKey}/spec/final.md`) và trích xuất tất cả Business Rules:
+Đọc Business-Spec (`workspace/issues/{issueKey}/spec/final.md`) và trích xuất tất cả Business Rules:
 
 | Rule ID   | Rule Name           | Description                               | Priority   | Source      |
 |-----------|---------------------|-------------------------------------------|------------|-------------|
@@ -26,7 +26,7 @@ Tài liệu tham chiếu chi tiết cho skill `meta-cross-validation`: Quy trìn
 
 ## 2. Ánh Xạ Tech-Spec (Phase 2)
 
-Đọc Tech-Spec (`workspace/{issueKey}/tech/tech-spec.md`) và xác minh vị trí hiện thực của từng rule:
+Đọc Tech-Spec (`workspace/issues/{issueKey}/tech/tech-spec.md`) và xác minh vị trí hiện thực của từng rule:
 
 | Rule ID   | Covered in Tech-Spec   | Section              | Implementation Note                            |
 |-----------|------------------------|----------------------|------------------------------------------------|
@@ -55,7 +55,7 @@ Tài liệu tham chiếu chi tiết cho skill `meta-cross-validation`: Quy trìn
 
 ## 4. Báo Cáo Ma Trận & Gap Analysis (Phase 4)
 
-### Mẫu Full Traceability Matrix (`workspace/{issueKey}/trace/matrix.md`):
+### Mẫu Full Traceability Matrix (`workspace/issues/{issueKey}/trace/matrix.md`):
 
 ```markdown
 # Full Traceability Matrix
@@ -75,7 +75,7 @@ Tài liệu tham chiếu chi tiết cho skill `meta-cross-validation`: Quy trìn
 - Gap: 1 (20%)
 ```
 
-### Mẫu Gap Analysis Report (`workspace/{issueKey}/trace/gaps.md`):
+### Mẫu Gap Analysis Report (`workspace/issues/{issueKey}/trace/gaps.md`):
 
 ```markdown
 # Gap Analysis Report

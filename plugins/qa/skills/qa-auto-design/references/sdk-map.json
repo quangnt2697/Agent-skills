@@ -38,7 +38,7 @@
   "env_path": {
     "central": "agent-skills/.env",
     "project_root": "{project}/.env",
-    "task_local": "workspace/{issueKey}/test/.env"
+    "task_local": "workspace/issues/{issueKey}/test/.env"
   },
   "lookup_hints": {
     "API_KEY": "API_KEY / DNSE_API_KEY",

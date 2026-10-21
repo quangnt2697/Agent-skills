@@ -33,7 +33,7 @@ Toàn bộ file output của bộ skill SM **PHẢI** được ghi vào:
 ```
 {PROJECT_ROOT}/workspace/sprint/<tên-file>
 ```
-**Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output sẽ ghi vào `/path/to/project/workspace/sprint/trace/daily-standup-report.md`.
+**Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output sẽ ghi vào `/path/to/project/workspace/sprints/sprint/trace/daily-standup-report.md`.
 
 **Quy tắc tạo thư mục:** Nếu thư mục `workspace/sprint/` chưa tồn tại bên trong `PROJECT_ROOT`, chạy `mkdir -p` trước khi ghi file.
 
@@ -50,10 +50,10 @@ Nếu project hiện tại có file `{PROJECT_ROOT}/.env` → các biến trong 
 |------------|-----------------------------------|-------------------------------------------------|
 | **Config** | `sm-config.yaml`                  | `{PLUGIN_DIR}/sm-config.yaml` (cố định)         |
 | **Env**    | `.env`                            | `{PLUGIN_DIR}/.env` (cố định) — override bởi `{PROJECT_ROOT}/.env` nếu có |
-| **Output** | `sprint-plan.md`                  | `{PROJECT_ROOT}/workspace/sprint/tech/`              |
-| **Output** | `daily-standup-report.md`         | `{PROJECT_ROOT}/workspace/sprint/trace/`              |
-| **Output** | `blockers-triage.md`              | `{PROJECT_ROOT}/workspace/sprint/trace/`              |
-| **Output** | `sprint-retrospective-report.md`  | `{PROJECT_ROOT}/workspace/sprint/trace/`              |
+| **Output** | `sprint-plan.md`                  | `{PROJECT_ROOT}/workspace/sprints/sprint/tech/`              |
+| **Output** | `daily-standup-report.md`         | `{PROJECT_ROOT}/workspace/sprints/sprint/trace/`              |
+| **Output** | `blockers-triage.md`              | `{PROJECT_ROOT}/workspace/sprints/sprint/trace/`              |
+| **Output** | `sprint-retrospective-report.md`  | `{PROJECT_ROOT}/workspace/sprints/sprint/trace/`              |
 
 ## Trách nhiệm chính
 - **Sprint Planning**: Gọi `sm-sprint-planning` để tính toán thông tin Sprint và tạo Sprint Plan.

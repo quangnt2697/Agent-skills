@@ -32,7 +32,7 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 
 4. **Giai đoạn 4: Thẩm định Cú pháp & Bàn giao (Validation & Handoff):**
    - Rà soát code sạch (không `print()`, không comment rác, assertions đúng tầng).
-   - Chạy `pytest "workspace/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only` để đảm bảo 100% test cases hợp lệ về cú pháp.
+   - Chạy `pytest "workspace/issues/{issueKey}/test/steps" -o python_files="test_*.py *_test.py" --collect-only` để đảm bảo 100% test cases hợp lệ về cú pháp.
    - Bàn giao mã test và hướng dẫn chạy `/qa-run-test {issueKey}` để thực thi toàn trình và xuất báo cáo.
 
 ## Output
@@ -42,7 +42,7 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 
 ## Quy tắc Bắt buộc
 
-1. BẮT BUỘC tuân thủ Blueprint cấu trúc thư mục chuẩn tại `workspace/{issueKey}/test/`, TUYỆT ĐỐI KHÔNG tự nghĩ ra file/thư mục lạ ngoài blueprint.
+1. BẮT BUỘC tuân thủ Blueprint cấu trúc thư mục chuẩn tại `workspace/issues/{issueKey}/test/`, TUYỆT ĐỐI KHÔNG tự nghĩ ra file/thư mục lạ ngoài blueprint.
 2. BẮT BUỘC áp dụng cơ chế kế thừa env 3 tầng, tái sử dụng credentials (`api-key`, `api-secret`, `token`, URLs) mà không bắt user nhập lại.
 3. BẮT BUỘC tìm và tái sử dụng code API/WebSocket có sẵn của dev (Code Recon Gate). KHÔNG viết lại từ đầu.
 4. Nếu file `.feature` chưa tồn tại, yêu cầu user chạy `/qa-test-design` trước.

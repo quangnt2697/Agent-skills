@@ -214,12 +214,29 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 
 ---
 
-## 7. Tiện Ích Dòng Lệnh Mở Rộng (Extended CLI Utilities)
+## 7. Tiện Ích Dòng Lệnh Mở Rộng & Tra Cứu Scripts (CLI & Scripts Reference)
 
 | Lệnh / Tiện ích | Cú pháp | Mục đích |
 |---|---|---|
-| **Token Budget Validator** | `npm run validate:tokens` | Kiểm định độ dài & ngân sách token cho 30 file `SKILL.md` |
-| **Export Plugin Độc lập** | `npm run plugin:export -- -p <name> [--tar]` | Đóng gói 1 plugin thành thư mục độc lập hoặc file `.tar.gz` |
+| **Pipeline Kiểm định Toàn diện** | `npm test` hoặc `npm run lint` | Chạy toàn bộ 8 cổng validators + 19 unit test suites + evals |
+| **Kiểm định 8 Cổng Validators** | `npm run validate` | Chạy lần lượt cả 8 script kiểm định chất lượng bên dưới |
+| ↳ *Gate 1: Skills Structure* | `npm run validate:skills` | Kiểm định cấu trúc SKILL.md, frontmatter YAML và từ khóa kích hoạt |
+| ↳ *Gate 2: Command Parity* | `npm run validate:commands` | Kiểm định đồng bộ giữa commands TOML và Markdown |
+| ↳ *Gate 3: Version Manifests* | `npm run validate:versions` | Kiểm tra tính nhất quán phiên bản giữa các manifests |
+| ↳ *Gate 4: Relative Links* | `npm run validate:links` | Kiểm tra liên kết tham chiếu tương đối trong references/ |
+| ↳ *Gate 5: Canonical Workspace* | `npm run validate:paths` | Kiểm định ranh giới 5 thư mục canonical `workspace/issues/{issueKey}/` |
+| ↳ *Gate 6: Icons Gallery* | `npm run validate:icons` | Kiểm tra thư viện icon Lucide phục vụ sơ đồ flowchart |
+| ↳ *Gate 7: n8n Node Sync* | `npm run validate:nodes` | Kiểm định đồng bộ mã JavaScript với file JSON workflow n8n |
+| ↳ *Gate 8: Token Budget* | `npm run validate:tokens` | Kiểm định độ dài & ngân sách token cho 30 file `SKILL.md` |
+| **Lưu Trữ Workspace Issue** | `npm run workspace:archive` | Đóng gói nén thư mục `workspace/issues/` phục vụ lưu trữ |
 | **So sánh Checkpoint Diff** | `npm run checkpoint:diff` | So sánh biến động file `workspace/` so với snapshot gần nhất |
+| **Export Plugin Độc lập** | `npm run plugin:export -- -p <name> [--tar]` | Đóng gói 1 plugin thành thư mục độc lập hoặc file `.tar.gz` |
+| **Quét UI Design System** | `npm run scan:ui-components` | Quét UI components từ web/mobile trading sang dictionary |
+| **Nạp Workflows n8n** | `npm run n8n:import` | Import toàn bộ workflows từ 4 thư mục con vào n8n instance |
+| **Xuất Workflows n8n Phân Loại**| `npm run n8n:export` | Xuất và tự động phân loại workflows về đúng 4 thư mục con |
+| **Làm Sạch Workflows n8n** | `npm run n8n:clean` | Chuẩn hóa, format và làm sạch các file JSON workflows |
+| **Đồng Bộ Node Code n8n** | `npm run n8n:sync-nodes` | Đồng bộ 22 node scripts từ `scripts/n8n-nodes/` vào JSON |
+| **Quản Lý Daemon n8n (PM2)** | `npm run n8n:bg` / `:status` / `:logs` / `:restart` / `:stop` | Vận hành tiến trình n8n ngầm với PM2 |
 | **Git Worktree Isolation** | `bash scripts/lib/qa-worktree.sh create {key}` | Cách ly môi trường chạy test E2E Playwright để không làm bẩn working tree |
+
 

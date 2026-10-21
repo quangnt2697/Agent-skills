@@ -4,16 +4,16 @@
 
 ### Bước 1: Định vị Target Trực Tiếp & Dọn Dẹp
 - Xác định mục tiêu chạy từ tham số người dùng truyền vào hoặc mặc định:
-  - File test cụ thể: `workspace/{issueKey}/test/steps/test_xxx.py` ➔ Chạy ngay file đó.
-  - Thư mục test cụ thể: `workspace/{issueKey}/test/steps/` ➔ Quét mọi test file trong thư mục.
+  - File test cụ thể: `workspace/issues/{issueKey}/test/steps/test_xxx.py` ➔ Chạy ngay file đó.
+  - Thư mục test cụ thể: `workspace/issues/{issueKey}/test/steps/` ➔ Quét mọi test file trong thư mục.
   - Nhận diện cả 2 chuẩn file: `test_*.py` và `*_test.py`.
-- Chuẩn bị thư mục kết quả `workspace/{issueKey}/test/result/` và dọn dẹp kết quả cũ (nếu có).
+- Chuẩn bị thư mục kết quả `workspace/issues/{issueKey}/test/result/` và dọn dẹp kết quả cũ (nếu có).
 - **CHẠY NGAY:** Tuyệt đối KHÔNG đọc spec (`final.md`), không đọc checklist, không kiểm tra lan man trước khi chạy.
 
 ### Bước 2: Thực thi Test Suite Ngay Lập Tức
 - **Kích hoạt n8n Webhook (/webhook/qa-run-test):** Gọi `triggerAsyncTest({ issueKey, testCommand, testFiles })` qua `scripts/lib/n8n-client.js`:
   ```bash
-  node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/{issueKey}/test/steps/"}'
+  node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testCommand":"pytest","testFiles":"workspace/issues/{issueKey}/test/steps/"}'
   ```
 - **Nếu n8n offline:** Báo người dùng khởi động n8n bằng `npm run n8n` và **DỪNG** (không chạy fallback).
 - **Cờ `--timeout=60`** (yêu cầu gói `pytest-timeout`): Mỗi test case bị kill tự động sau 60 giây. Kết quả là `FAILED (timeout)` — không cần chờ thêm.
@@ -66,7 +66,7 @@
 - [ ] `test-output.log` có đủ full log (cờ `-s`).
 - [ ] Trả kết quả trung thực, không sửa assertion gian lận.
 - [ ] Không tự sửa test script khi bị TIMEOUT — ghi nhận và bàn giao.
-- [ ] Xuất báo cáo độc bản tại `workspace/{issueKey}/test/result/report.md`.
+- [ ] Xuất báo cáo độc bản tại `workspace/issues/{issueKey}/test/result/report.md`.
 - [ ] Đã đề xuất kỹ năng `dev-debugging` / `cr-review-code-and-quality` / `qa-auto-design` nếu phát hiện lỗi hoặc timeout.
 
 ---

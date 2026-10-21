@@ -102,15 +102,15 @@ Phân loại theo mức độ nghiêm trọng:
 
 ## Output Format
 
-> 📌 **Output duy nhất:** Ghi báo cáo vào `workspace/{issueKey}/trace/security-audit-report.md` (nếu có `{issueKey}`), hoặc `workspace/security/trace/security-audit-report.md` (nếu quét toàn project). Gọi lại skill → **ghi đè** file cũ, không tạo file mới.
+> 📌 **Output duy nhất:** Ghi báo cáo vào `workspace/issues/{issueKey}/trace/security-audit-report.md` (nếu có `{issueKey}`), hoặc `workspace/adhoc/security/trace/security-audit-report.md` (nếu quét toàn project). Gọi lại skill → **ghi đè** file cũ, không tạo file mới.
 > ⚠️ **TUYỆT ĐỐI CẤM tạo thư mục `reports/` tại gốc dự án.**
 
 ## ⚡ Quy Tắc Output File (Output File Rules)
 
 | Trường hợp | Đường dẫn chuẩn | Hành vi khi gọi lại |
 |---|---|---|
-| Audit theo issueKey | `workspace/{issueKey}/trace/security-audit-report.md` | **Ghi đè** hoàn toàn |
-| Audit toàn project | `workspace/security/trace/security-audit-report.md` | **Ghi đè** hoàn toàn |
+| Audit theo issueKey | `workspace/issues/{issueKey}/trace/security-audit-report.md` | **Ghi đè** hoàn toàn |
+| Audit toàn project | `workspace/adhoc/security/trace/security-audit-report.md` | **Ghi đè** hoàn toàn |
 
 ```markdown
 # Security Audit Report

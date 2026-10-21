@@ -27,7 +27,7 @@
 - Chỉ hỏi các câu **🔴 Critical** (ảnh hưởng luồng tiền, quy tắc, toàn vẹn dữ liệu). Những điểm thứ yếu tự đưa ra giả định.
 
 ### Bước 4: Chốt hạ Đặc tả (`final.md`)
-- Tổng hợp thành file `final.md` tại `/project-root/workspace/{tên_file}/spec/final.md`.
+- Tổng hợp thành file `final.md` tại `/project-root/workspace/issues/{tên_file}/spec/final.md`.
 - File phải có Header Metadata bắt buộc (Chứa Identifier, Commit SHA, Confidence Level).
 
 ## 2. Các Biện hộ Thường gặp (Anti-patterns)

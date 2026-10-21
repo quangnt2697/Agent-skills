@@ -51,7 +51,7 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 1. Lấy Jira metadata: n8n Fast-Path `prepJiraContext({issueKey})`
 2. Trích xuất `fields.summary` làm Tiêu đề Task (KHÔNG dùng chuỗi placeholder)
 3. Quét: `issuelinks` (Confluence), `attachment`, `description` (URL pattern `*/wiki/*`)
-4. Kiểm tra cache: `workspace/{issueKey}/source/refs/` đã có file nào chưa
+4. Kiểm tra cache: `workspace/issues/{issueKey}/source/refs/` đã có file nào chưa
 5. Nếu task liên quan UI (WEB/APP): **AS-IS Screen Discovery** — tra cứu `ui-component-map.json`, đọc file màn hình thực tế từ `dnse-trading` hoặc `arrow-app`.
 
 ---
@@ -120,11 +120,11 @@ Bước 3.3: Copy refined-draft.md → refined.md
 ```bash
 # 1. Dry-run preview (không gọi Jira, tự export testability-manifest.json và ADF mediaSingle preview)
 DRY_RUN=1 node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
-  "workspace/{issueKey}/spec/refined.md" | head -40
+  "workspace/issues/{issueKey}/spec/refined.md" | head -40
 
 # 2. Push thật: Tự động upload toàn bộ ảnh mockup lên Attachments + Dán trực tiếp (inline) vào Description Jira
 node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
-  "workspace/{issueKey}/spec/refined.md"
+  "workspace/issues/{issueKey}/spec/refined.md"
 ```
 
 → Tự động dán trực tiếp ảnh vào Description, sinh `spec/testability-manifest.json` và chuyển sang `/qa-test-design {issueKey}`

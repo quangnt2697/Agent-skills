@@ -12,8 +12,8 @@ Trong hệ sinh thái `agent-skills`, việc phối hợp giữa các tác nhân
 
 | Tác nhân (Subagent) | File Định Nghĩa | Quyền Công Cụ (Tools) | Ranh Giới Ghi File (Write Scope) | Ràng Buộc Bảo Mật |
 |---|---|---|---|---|
-| **BA/PO** | `plugins/ba-po/agents/ba-po.md` | `read_url_content`, `view_file`, `write_to_file`, `ask_question` | `workspace/{issueKey}/spec/*`<br/>`workspace/{issueKey}/source/*` | ❌ Cấm `run_command`<br/>❌ Cấm push git |
-| **QA/SDET** | `plugins/qa/agents/qa.md` | `run_command`, `view_file`, `write_to_file`, `grep_search`, `list_dir` | `workspace/{issueKey}/test/*`<br/>`workspace/{issueKey}/trace/*` | ❌ Cấm sửa `spec/*`<br/>❌ Cấm sửa app code `src/*` |
+| **BA/PO** | `plugins/ba-po/agents/ba-po.md` | `read_url_content`, `view_file`, `write_to_file`, `ask_question` | `workspace/issues/{issueKey}/spec/*`<br/>`workspace/issues/{issueKey}/source/*` | ❌ Cấm `run_command`<br/>❌ Cấm push git |
+| **QA/SDET** | `plugins/qa/agents/qa.md` | `run_command`, `view_file`, `write_to_file`, `grep_search`, `list_dir` | `workspace/issues/{issueKey}/test/*`<br/>`workspace/issues/{issueKey}/trace/*` | ❌ Cấm sửa `spec/*`<br/>❌ Cấm sửa app code `src/*` |
 | **Code Reviewer** | `plugins/code-reviewer/agents/code-reviewer.md` | `view_file`, `grep_search`, `list_dir`, `run_command` | Read-Only | ❌ Cấm ghi sửa app code |
 | **Security Auditor** | `plugins/code-reviewer/agents/security-auditor.md` | `view_file`, `grep_search`, `list_dir`, `run_command` | Read-Only | ❌ Cấm ghi sửa app code |
 | **Scrum Master** | `plugins/scrum-master/agents/scrum-master.md` | `view_file`, `grep_search`, `list_dir`, `run_command`, `write_to_file` | `workspace/sprints/*`<br/>`sm-config.yaml` | ❌ Cấm sửa `workspace/issues/*` |
@@ -37,7 +37,7 @@ sequenceDiagram
         Note over Orchestrator,BA: Chặng 1: Phân tích & Đặc tả Nghiệp vụ
         Orchestrator->>BA: Spawn BA Agent (Jira issueKey)
         BA->>BA: ba-spec & ba-interview-me
-        BA-->>Orchestrator: Bàn giao workspace/{issueKey}/spec/final.md
+        BA-->>Orchestrator: Bàn giao workspace/issues/{issueKey}/spec/final.md
     end
 
     rect rgb(245, 255, 240)
@@ -70,7 +70,7 @@ bash scripts/lib/qa-worktree.sh create {issueKey}
 
 # Thực thi test trong worktree mà không làm bẩn nhánh làm việc hiện tại
 cd .worktrees/qa-{issueKey}
-pytest -v workspace/{issueKey}/test/
+pytest -v workspace/issues/{issueKey}/test/
 
 # Dọn dẹp sau khi kiểm thử xong
 bash scripts/lib/qa-worktree.sh remove {issueKey}

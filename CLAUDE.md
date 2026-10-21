@@ -15,7 +15,7 @@ Hệ thống kỹ năng (skills) cấp sản xuất cho AI coding agents — chu
 # Kích hoạt hooks bảo vệ nhánh main và workspace
 npm run setup:hooks
 
-# Kiểm tra toàn bộ validators hệ thống (skills, commands, versions, links, paths, icons, nodes)
+# Kiểm tra toàn bộ 8 cổng validators hệ thống (skills, commands, versions, links, paths, icons, nodes, tokens)
 npm run validate
 
 # Chạy toàn bộ test suite (unit tests + eval benchmark)

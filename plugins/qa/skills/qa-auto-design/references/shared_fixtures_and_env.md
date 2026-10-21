@@ -6,7 +6,7 @@ Tài liệu này hướng dẫn chi tiết cơ chế chia sẻ fixtures, kế th
 
 ## 1. Cơ Chế Tự Động Nhận Diện Môi Trường Phân Tầng (Cascading Auto-Discovery)
 
-Khi khởi tạo hoặc sinh mã test cho một task tại `workspace/{issueKey}/test/` ở bất kỳ dự án nào, Agent **BẮT BUỘC** áp dụng quy trình nạp cấu hình phân tầng:
+Khi khởi tạo hoặc sinh mã test cho một task tại `workspace/issues/{issueKey}/test/` ở bất kỳ dự án nào, Agent **BẮT BUỘC** áp dụng quy trình nạp cấu hình phân tầng:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -31,7 +31,7 @@ Khi khởi tạo hoặc sinh mã test cho một task tại `workspace/{issueKey}
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  Tier 3: Task-Local Config                                  │
-│  - workspace/{issueKey}/test/.env                           │
+│  - workspace/issues/{issueKey}/test/.env                           │
 │  - Chỉ chứa biến đặc thù hoặc ghi đè riêng của task đó      │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -51,7 +51,7 @@ Khi khởi tạo hoặc sinh mã test cho một task tại `workspace/{issueKey}
    - Quét các thư mục task đã tồn tại: `workspace/*/test/.env`.
    - Nếu là task cùng loại (ví dụ cùng test OpenAPI), tự động kế thừa credentials từ task anh em đã chạy thành công trước đó. *(Tham khảo [conftest_core.py](../assets/conftest_core.py))*
 
-3. **Tier 3: Task-Local Override (`workspace/{issueKey}/test/.env`):**
+3. **Tier 3: Task-Local Override (`workspace/issues/{issueKey}/test/.env`):**
    - Chỉ tạo hoặc ghi đè khi task đó có yêu cầu kiểm thử tài khoản đặc thù (VIP account riêng, timeout riêng, mock error).
 
 ---
@@ -75,7 +75,7 @@ def load_hierarchical_env():
     3. Task-local .env (ưu tiên ghi đè cao nhất)
     """
     current_dir = Path(__file__).resolve().parent  # steps/
-    task_test_dir = current_dir.parent             # workspace/{issueKey}/test/
+    task_test_dir = current_dir.parent             # workspace/issues/{issueKey}/test/
     workspace_dir = task_test_dir.parent.parent    # workspace/
     project_root = workspace_dir.parent            # repo root của project hiện tại
 
@@ -193,7 +193,7 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 - **BẮT BUỘC LƯU MỌI BIẾN TRONG `.env`:** Toàn bộ tham số cấu hình, endpoints, thông tin bảo mật, số tài khoản, mã chứng khoán kiểm thử (nếu không lấy từ market fixture), khối lượng, mức giá và timeouts BẮT BUỘC phải được tạo và lưu trữ trong file `.env`.
 - **TEST SCRIPT CHỈ ĐƯỢC GỌI QUA `os.getenv()`:** Trong file `test_*.py`, `conftest.py` và `services/`, tuyệt đối không hardcode chuỗi hoặc số học mang tính cấu hình hay dữ liệu kiểm thử.
 - **Quy trình khi cần biến mới:**
-  1. Thêm key-value vào `workspace/{issueKey}/test/.env` hoặc root `.env`.
+  1. Thêm key-value vào `workspace/issues/{issueKey}/test/.env` hoặc root `.env`.
   2. Trong test script, đọc biến qua `os.getenv("KEY_NAME", default_fallback)`.
 
 ### 4.2. Bảng Danh Mục Biến `.env` Chuẩn Hóa Cho API & WebSocket
@@ -239,15 +239,15 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 | | `HEADLESS` | `false` khi debug hoặc kiểm tra UI trực tiếp; `true` khi CI/CD |
 | | `PLAYWRIGHT_TIMEOUT_MS` | Timeout mỗi action (ms, mặc định: `30000`) |
 | | `PLAYWRIGHT_TRACE` | `retain-on-failure` — lưu trace khi test fail |
-| **Output** | `SCREENSHOT_DIR` | Thư mục ảnh chụp khi fail (VD: `workspace/{issueKey}/test/result/screenshots`) |
-| | `RESULT_DIR` | Thư mục kết quả test (VD: `workspace/{issueKey}/test/result`) |
+| **Output** | `SCREENSHOT_DIR` | Thư mục ảnh chụp khi fail (VD: `workspace/issues/{issueKey}/test/result/screenshots`) |
+| | `RESULT_DIR` | Thư mục kết quả test (VD: `workspace/issues/{issueKey}/test/result`) |
 
 ---
 
 ## 5. Tóm Tắt Quy Trình Khi Khởi Tạo Session Mới
 
 1. **Bước 1:** Quét tìm file `.env` ở Root và các task anh em (`workspace/*/test/.env`).
-2. **Bước 2:** Khởi tạo `workspace/{issueKey}/test/.env` từ template, tự động điền sẵn các credentials và tham số đã tìm thấy.
+2. **Bước 2:** Khởi tạo `workspace/issues/{issueKey}/test/.env` từ template, tự động điền sẵn các credentials và tham số đã tìm thấy.
 3. **Bước 3:** Sử dụng `conftest.py` có hàm `load_hierarchical_env()` để bảo đảm mọi fixture đều nhận đúng cấu hình.
 4. **Bước 4:** Tận dụng token caching trong `conftest.py` để tiết kiệm thời gian xác thực giữa các lần chạy.
 5. **Bước 5:** Bổ sung đường dẫn `openapi-tyk/sdk/python/` vào `pytest.ini` và kế thừa client SDK.
@@ -283,7 +283,7 @@ def target_environment():
 
 ### 5.2. Nạp Dữ Liệu Thị Trường Thật Từ `fixtures/market_data.json`
 Trước khi thực thi test, n8n Fast-Path gọi `getSecuritiesFixture` qua `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js getSecuritiesFixture` để snapshot dữ liệu thị trường thật vào file:
-`workspace/{issueKey}/test/fixtures/market_data.json`
+`workspace/issues/{issueKey}/test/fixtures/market_data.json`
 
 Fixture `market_fixture` và `valid_order_symbol` tự động nạp dữ liệu này:
 ```python

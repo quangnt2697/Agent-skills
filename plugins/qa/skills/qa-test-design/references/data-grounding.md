@@ -28,7 +28,7 @@ Tại phase thiết kế (qa-test-design), **NGHIÊM CẤM** thực thi các tha
 
 ## 4. Định dạng file `data-grounding.json`
 
-Lưu tại: `workspace/{issueKey}/test/fixtures/data-grounding.json`
+Lưu tại: `workspace/issues/{issueKey}/test/fixtures/data-grounding.json`
 
 ```json
 {

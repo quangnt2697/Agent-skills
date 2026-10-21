@@ -27,7 +27,7 @@ Tất cả cổng đều PASS → chạy tiếp, chỉ log 1 dòng `[AUTO] Phase
 
 ```bash
 # final.md mới hơn checklist → checklist đã cũ, KHÔNG được skip Phase 1
-[ workspace/JIRA-123/spec/final.md -nt workspace/JIRA-123/test/checklist.md ] && echo STALE
+[ workspace/issues/JIRA-123/spec/final.md -nt workspace/issues/JIRA-123/test/checklist.md ] && echo STALE
 ```
 
 Input mới hơn output → chạy lại phase đó và mọi phase phía sau.

@@ -81,7 +81,7 @@ workspace/issues/{issueKey}/test/result/
 ---
 
 ### 2.2. `test_ws.py::test_ws_reconnect`
-- **File:** `workspace/{issueKey}/test/steps/test_ws.py:82`
+- **File:** `workspace/issues/{issueKey}/test/steps/test_ws.py:82`
 - **Thông báo lỗi từ Pytest:** `asyncio.exceptions.TimeoutError: Timeout waiting for WebSocket reconnect event after 5.0s`
 - **Dòng code gây lỗi (Traceback snippet):**
   ```python
@@ -118,11 +118,11 @@ Phát hiện test case thất bại. Đề xuất các kỹ năng/vai trò chuy�
 ```markdown
 ### 📊 Kết Quả Thực Thi Kiểm Thử: G3PTP-17061
 
-- **Mục tiêu:** `workspace/G3PTP-17061/test/steps/test_volume_profile_and_stream.py`
+- **Mục tiêu:** `workspace/issues/G3PTP-17061/test/steps/test_volume_profile_and_stream.py`
 - **Tổng số tests:** 30 | ✅ **Passed:** 14 | ❌ **Failed:** 16 | ⏱️ **Thời gian:** 12.8s
 - **Artifacts:**
-  - 📄 Log chi tiết: `workspace/G3PTP-17061/test/result/test-output.log`
-  - 📋 Báo cáo tổng hợp: `workspace/G3PTP-17061/test/result/report.md`
+  - 📄 Log chi tiết: `workspace/issues/G3PTP-17061/test/result/test-output.log`
+  - 📋 Báo cáo tổng hợp: `workspace/issues/G3PTP-17061/test/result/report.md`
 
 #### ❌ Tóm tắt các lỗi phát hiện (Trích xuất từ Pytest Output):
 1. `test_volume_profile_valid_symbol`: AssertionError: Expected status 200, got 400. Response: `{"error": "Invalid boardId"}`

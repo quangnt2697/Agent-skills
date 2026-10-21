@@ -17,7 +17,7 @@
 #   7. Đọc sprint-view, tìm requirement có reference == ISSUE_KEY.
 #   8. XOÁ TEST PLAN ITEM CŨ CỦA ISSUE_KEY: chỉ item trỏ tới test case của issue này.
 #   9. Gán Test Case mới vào test plan của sprint-req-version đó.
-#  10. Lưu thông tin đồng bộ vào workspace/{ISSUE_KEY}/test/squash_sync.json.
+#  10. Lưu thông tin đồng bộ vào workspace/issues/{ISSUE_KEY}/test/squash_sync.json.
 #
 # Sử dụng: bash squash-push.sh <ISSUE_KEY> <NAME_JIRA> <GHERKIN_FILE_PATH>
 # ==============================================================================
@@ -663,7 +663,7 @@ if assign_test_case_to_campaign; then
 fi
 
 # Lưu vết đồng bộ vào file squash_sync.json
-SYNC_DIR="workspace/${ISSUE_KEY}/test"
+SYNC_DIR="workspace/issues/${ISSUE_KEY}/test"
 if [[ -d "$SYNC_DIR" ]]; then
     SYNC_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     cat <<EOF > "${SYNC_DIR}/squash_sync.json"

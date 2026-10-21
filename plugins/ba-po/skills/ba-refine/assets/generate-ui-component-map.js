@@ -32,8 +32,8 @@ if (fs.existsSync(configProjectsPath)) {
   }
 }
 
-const webTradingRoot = projects['web-trading'] || '/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading';
-const mobileTradingRoot = projects['mobile-trading'] || '/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app';
+const webTradingRoot = projects['web-trading'] || process.env.WEB_TRADING_ROOT || path.resolve(agentSkillsRoot, '..', 'dnse-trading');
+const mobileTradingRoot = projects['mobile-trading'] || process.env.MOBILE_TRADING_ROOT || path.resolve(agentSkillsRoot, '..', 'arrow-app');
 
 console.log('🔍 Đang quét Codebase UI Design System...');
 console.log(`   - Web Trading: ${webTradingRoot}`);

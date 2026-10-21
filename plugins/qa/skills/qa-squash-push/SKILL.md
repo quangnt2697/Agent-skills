@@ -8,7 +8,7 @@ disable-auto-invoke: true
 # Kỹ Năng Đẩy Test Case Lên Squash TM (qa-squash-push)
 
 ## 1. Khi nào dùng?
-- Đã hoàn thiện kịch bản BDD Gherkin (`workspace/{issueKey}/test/{issueKey}.feature`) và đã pass qua script kiểm tra `qa-validate.sh`.
+- Đã hoàn thiện kịch bản BDD Gherkin (`workspace/issues/{issueKey}/test/{issueKey}.feature`) và đã pass qua script kiểm tra `qa-validate.sh`.
 - Cần đồng bộ test case lên hệ thống Squash TM (Test Case Workspace) và tự động gán vào Sprint Test Plan (Campaign Workspace).
 
 **Khi KHÔNG sử dụng:**
@@ -21,10 +21,10 @@ disable-auto-invoke: true
 - **Bước 1 (Kiểm tra Đầu vào):** Xác định `issueKey`, trích xuất `namejira` từ `final.md`, kiểm tra file `{issueKey}.feature` tồn tại.
 - **Bước 2 (Chạy Script Đồng bộ):** Thực thi script duy nhất:
   ```bash
-  bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-squash-push/assets/squash-push.sh "{issueKey}" "{namejira}" "workspace/{issueKey}/test/{issueKey}.feature"
+  bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-squash-push/assets/squash-push.sh "{issueKey}" "{namejira}" "workspace/issues/{issueKey}/test/{issueKey}.feature"
   ```
   Script tự nạp cấu hình `.env`, tự động quét và xác định Sprint mới nhất trên cả 3 workspace (Test Case, Requirement, Campaign), quét toàn dự án và chỉ xoá test case (kèm execution) có tên đúng `{issueKey}` hoặc `{issueKey}-…` — test case của task khác, kể cả task có số bắt đầu giống (`PROJ-1234` khi push `PROJ-123`) hay test case chỉ nhắc tới key giữa tên, được giữ nguyên; tạo mới test case sạch sẽ tại Sprint mới nhất, và liên kết vào Campaign Workspace tương ứng với Sprint.
-- **Bước 3 (Phân tích Kết quả & Lưu Metadata):** Đọc kết quả từ console, lưu thông tin đồng bộ vào `workspace/{issueKey}/test/squash_sync.json` và báo cáo cho người dùng.
+- **Bước 3 (Phân tích Kết quả & Lưu Metadata):** Đọc kết quả từ console, lưu thông tin đồng bộ vào `workspace/issues/{issueKey}/test/squash_sync.json` và báo cáo cho người dùng.
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 - 🛠️ **Công cụ & Script tự động (assets/):**
@@ -38,7 +38,7 @@ disable-auto-invoke: true
 - **Output:**
   ```markdown
   ### 🚀 Kết Quả Đồng Bộ Lên Squash TM: STK-101
-  - **Kịch bản nguồn:** `workspace/STK-101/test/STK-101.feature` (5 scenarios).
+  - **Kịch bản nguồn:** `workspace/issues/STK-101/test/STK-101.feature` (5 scenarios).
   - **Test Case Workspace:** Đã cập nhật thành công thư mục `[Sprint 34] STK-101 Dat lenh mua`.
   - **Campaign Workspace:** Đã gán 5 test cases vào Test Plan của Requirement `STK-101`.
   - **Metadata:** Đã lưu kết quả tại `test/squash_sync.json`.

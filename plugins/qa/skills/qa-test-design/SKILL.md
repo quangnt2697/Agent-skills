@@ -18,7 +18,7 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 | Bàn giao artifacts cho `qa-auto-design` | Viết báo cáo kết quả test |
 
 ## 1. Khi nào dùng?
-- Đã có tài liệu đặc tả nghiệp vụ (`workspace/{issueKey}/spec/final.md`).
+- Đã có tài liệu đặc tả nghiệp vụ (`workspace/issues/{issueKey}/spec/final.md`).
 - Cần chuyển hóa spec thành 2 artifacts kiểm thử chuẩn mực: `checklist.md` (Kiểm thử cái gì) và `{issueKey}.feature` (Kiểm thử như thế nào).
 - Chuẩn bị đầu vào cho quá trình sinh mã tự động (`qa-auto-design`) hoặc đồng bộ lên Squash TM (`qa-squash-push`).
 - **Khuyến nghị Planning Mode (`/plan`):** Đối với các tính năng có từ 2 profile kiểm thử trở lên hoặc tác động trực tiếp luồng khớp lệnh ORS/ký quỹ, khuyến nghị bật `/plan` để phân tích ma trận rủi ro trước khi chốt checklist.
@@ -80,7 +80,7 @@ Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 40 dòng cho toàn bộ quy trình.
 
 - **Giai đoạn 1 (Phân tích Spec theo Profile & Thiết kế Checklist `checklist.md`):**
-  - Đọc `workspace/{issueKey}/spec/final.md` và `spec/testability-manifest.json` để xác định **Test Profile** (API, WS, UI, STATE, DATA).
+  - Đọc `workspace/issues/{issueKey}/spec/final.md` và `spec/testability-manifest.json` để xác định **Test Profile** (API, WS, UI, STATE, DATA).
   - Quét từng `[BR-xx]` và `[AC-x.y]` qua **Ma trận 6 Trục Bao phủ** để không bỏ sót kịch bản.
   - Ghi nhận Test Profile đã chọn vào dòng đầu của `checklist.md`:
     ```markdown
@@ -96,7 +96,7 @@ Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y
   - Đọc file [data-grounding.md](references/data-grounding.md) để hiểu quy trình.
   - Liệt kê các dữ liệu định danh cần cho test (VD: số tài khoản, mã CK, mã order).
   - Sử dụng các Tool Call để lấy dữ liệu có THẬT từ UAT (qua DB/Metabase hoặc API).
-  - Ghi thông tin dữ liệu đã verify vào `workspace/{issueKey}/test/fixtures/data-grounding.json`.
+  - Ghi thông tin dữ liệu đã verify vào `workspace/issues/{issueKey}/test/fixtures/data-grounding.json`.
   - **Nhận diện & chuẩn bị cho Data Accuracy Verification (nếu task yêu cầu):**
     - Trigger khi Jira có keyword: `"chính xác"`, `"trúng khớp"`, `"match"`, `"consistency"`, `"so sánh"`, `"verify data"`.
     - BẮT BUỘC tra cứu sẵn **giá trị reference** từ Metabase UAT cho từng field cần verify.
@@ -121,14 +121,14 @@ Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y
 - **Giai đoạn 3 (GATE: Xác minh, Linter & Bàn giao):**
   1. *Kiểm tra Cú pháp & Traceability:*
      ```bash
-     node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-validate.js --checklist workspace/{issueKey}/test/checklist.md "workspace/{issueKey}/test/{issueKey}.feature"
+     node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-validate.js --checklist workspace/issues/{issueKey}/test/checklist.md "workspace/issues/{issueKey}/test/{issueKey}.feature"
      ```
   2. *Kiểm tra Quy tắc Nghiệp vụ Chứng khoán (Domain Linter):*
      ```bash
-     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js lintDomainGherkin "{\"issueKey\":\"{issueKey}\",\"gherkinContent\":$(node -e 'console.log(JSON.stringify(require(\"fs\").readFileSync(\"workspace/{issueKey}/test/{issueKey}.feature\", \"utf8\"))')}"
+     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js lintDomainGherkin "{\"issueKey\":\"{issueKey}\",\"gherkinContent\":$(node -e 'console.log(JSON.stringify(require(\"fs\").readFileSync(\"workspace/issues/{issueKey}/test/{issueKey}.feature\", \"utf8\"))')}"
      ```
-  3. Ghi kết quả ma trận traceability ra `workspace/{issueKey}/trace/matrix.md`.
-  4. Ghi trạng thái và SHA256 của feature file vào `workspace/{issueKey}/.pipeline-state.json`.
+  3. Ghi kết quả ma trận traceability ra `workspace/issues/{issueKey}/trace/matrix.md`.
+  4. Ghi trạng thái và SHA256 của feature file vào `workspace/issues/{issueKey}/.pipeline-state.json`.
   5. Tự sửa lỗi (≤ 3 vòng) nếu không qua linter. Sau khi pass, bàn giao cho `qa-auto-design`.
 
 ## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
@@ -137,8 +137,8 @@ Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y
 
 | File Output | Đường dẫn chuẩn | Hành vi khi gọi lại |
 |---|---|---|
-| Checklist kiểm thử | `workspace/{issueKey}/test/checklist.md` | **Ghi đè** toàn bộ nội dung cũ |
-| Kịch bản BDD Gherkin | `workspace/{issueKey}/test/{issueKey}.feature` | **Ghi đè** toàn bộ nội dung cũ |
+| Checklist kiểm thử | `workspace/issues/{issueKey}/test/checklist.md` | **Ghi đè** toàn bộ nội dung cũ |
+| Kịch bản BDD Gherkin | `workspace/issues/{issueKey}/test/{issueKey}.feature` | **Ghi đè** toàn bộ nội dung cũ |
 
 **Quy tắc:**
 - **KHÔNG** tạo file mới với suffix (checklist-v2.md, STK-101-new.feature, ...).

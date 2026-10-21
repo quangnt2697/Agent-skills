@@ -19,7 +19,7 @@
 
 ```bash
 # Kiểm tra spec đã tồn tại chưa
-ls workspace/{issueKey}/spec/final.md
+ls workspace/issues/{issueKey}/spec/final.md
 ```
 
 Nếu chưa có spec → Dừng, yêu cầu dùng `ba-spec` hoặc `ba-interview-me` trước.
@@ -38,7 +38,7 @@ Tạo sẵn: `test/conftest.py`, `test/fixtures/` (nạp fixtures lắp ghép th
 
 ## BƯỚC 2 — Đọc Spec & Nhận Diện Domain
 
-- Đọc `workspace/{issueKey}/spec/final.md`
+- Đọc `workspace/issues/{issueKey}/spec/final.md`
 - Nếu domain **chứng khoán/fintech** → đọc thêm `references/securities-domain-rules.md`
 - Xác định loại task:
 
@@ -104,7 +104,7 @@ Phân bổ vào **6 chiều** (mỗi item: động từ hành động + lượng
 - Xác định các loại **(a) Dữ liệu định danh/precondition** cần thiết (account, symbol, orderId...).
 - Truy vấn lấy giá trị thật từ UAT theo chuỗi ưu tiên (n8n `getSecuritiesFixture`, Metabase SQL `metabaseRunSql`, API GET).
 - Zero-mutation: TUYỆT ĐỐI không gọi các lệnh thay đổi dữ liệu (POST, UPDATE, DELETE).
-- Lưu kết quả vào `workspace/{issueKey}/test/fixtures/data-grounding.json`.
+- Lưu kết quả vào `workspace/issues/{issueKey}/test/fixtures/data-grounding.json`.
 - Ghi chú: Nếu timeout/lỗi, chuyển sang fallback và nhớ gắn nhãn `[DATA-ASSUMED]` khi viết Gherkin ở Bước 4.
 
 ### ⚠️ Verify Tính Chính Xác Dữ Liệu Response (Response Data Accuracy — BẮT BUỘC khi Jira yêu cầu)
@@ -146,7 +146,7 @@ Tham khảo mẫu theo task type: [gherkin-patterns.md](gherkin-patterns.md)
 
 ```bash
 bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh \
-  "workspace/{issueKey}/test/{issueKey}.feature"
+  "workspace/issues/{issueKey}/test/{issueKey}.feature"
 ```
 
 ✅ **`"status": "pass"`** → Gợi ý chạy `/qa-auto-design {issueKey}`

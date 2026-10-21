@@ -113,7 +113,7 @@ Kỹ năng hỗ trợ trọn bộ cú pháp cờ tương thích:
 - `/repo-sync project: order-service`
 - `/sync -p 3.1`
 - `/sync -p backend --stash`
-- CLI: `npm run repo:sync -- -p order-service`
+- CLI: `npm run sync -- -p order-service`
 - Mattermost: `/agent sync -p order-service`
 
 ## Những lời Biện minh Thường gặp

@@ -89,7 +89,7 @@ cat plugins/qa/skills/qa-auto-design/references/sdk-map.json
 
 ```bash
 cp plugins/qa/skills/qa-auto-design/references/env-templates/{type}.env.example \
-   workspace/{issueKey}/test/.env
+   workspace/issues/{issueKey}/test/.env
 ```
 
 Điền các giá trị còn thiếu (`BASE_URL`, `API_KEY`, `TEST_ORDER_SYMBOL`, v.v.).
@@ -101,7 +101,7 @@ cp plugins/qa/skills/qa-auto-design/references/env-templates/{type}.env.example 
 Tuân thủ ma trận `folder_structure_blueprint.md`:
 
 ```
-workspace/{issueKey}/test/
+workspace/issues/{issueKey}/test/
 ├── pytest.ini            # ← luôn phải có
 ├── .env                  # ← copy từ template, đã điền
 ├── steps/
@@ -172,7 +172,7 @@ Rà soát theo `cr-code-simplification` Never-Cut List:
 ## BƯỚC 7 — Quality Gate Trước Bàn Giao
 
 ```bash
-pytest "workspace/{issueKey}/test/steps" \
+pytest "workspace/issues/{issueKey}/test/steps" \
   -o python_files="test_*.py *_test.py" \
   --collect-only
 ```

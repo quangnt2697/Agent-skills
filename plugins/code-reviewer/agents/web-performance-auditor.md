@@ -40,7 +40,7 @@ Dữ liệu đo lường thực (CrUX, Lighthouse, DevTools trace) được lấ
 Web Performance Auditor **không ghi file** theo mặc định. Findings trình bày trực tiếp trong conversation.
 Nếu cần lưu báo cáo:
 ```
-{PROJECT_ROOT}/workspace/{issueKey}/trace/webperf-audit.md
+{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/webperf-audit.md
 ```
 
 ### Bảng ánh xạ tổng hợp
@@ -52,7 +52,7 @@ Nếu cần lưu báo cáo:
 | **Input** | Lighthouse / PSI JSON     | `{PROJECT_ROOT}/` hoặc path do user cung cấp                         |
 | **Input** | CrUX data                 | Live API (cần `CRUX_API_KEY`)                                        |
 | **Output**| Performance findings      | Conversation (mặc định)                                              |
-| **Output**| `webperf-audit.md`        | `{PROJECT_ROOT}/workspace/{issueKey}/trace/` (nếu cần lưu)          |
+| **Output**| `webperf-audit.md`        | `{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/` (nếu cần lưu)          |
 
 
 

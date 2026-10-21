@@ -10,7 +10,7 @@ Toàn bộ tài nguyên kiểm thử của một Jira task BẮT BUỘC nằm g�
 `workspace/issues/{issueKey}/test/`
 
 ```
-workspace/{issueKey}/test/
+workspace/issues/{issueKey}/test/
 ├── checklist.md                        # Checklist BVA/EP (sinh bởi qa-test-design)
 ├── {issueKey}.feature                  # Kịch bản BDD Gherkin (sinh bởi qa-test-design)
 ├── .env                                # Task-level config (kế thừa từ Root/Shared & ghi đè riêng)
@@ -67,7 +67,7 @@ Agent **TUYỆT ĐỐI KHÔNG** sinh ra các thư mục không liên quan đến
 ## 3. Quy Định Chi Tiết Từng File & Thư Mục
 
 ### 3.1. File Cấu Hình Test Runner (`pytest.ini`)
-Bắt buộc có tại `workspace/{issueKey}/test/pytest.ini` để đảm bảo test có thể chạy độc lập ở bất kỳ môi trường nào:
+Bắt buộc có tại `workspace/issues/{issueKey}/test/pytest.ini` để đảm bảo test có thể chạy độc lập ở bất kỳ môi trường nào:
 
 ```ini
 [pytest]
@@ -137,7 +137,7 @@ Khi test chạy xong (thông qua `qa-run-test` hoặc Bước 7 của `qa-auto-d
 
 ## 4. Các Điều Cấm Kỵ (Anti-Patterns)
 
-1. ❌ **CẤM tự ý tạo thư mục lạ ngoài blueprint:** Không tự tạo các thư mục như `src/`, `tests/`, `test-data/`, `utils/`, `common/` rời rạc bên ngoài `workspace/{issueKey}/test/`.
+1. ❌ **CẤM tự ý tạo thư mục lạ ngoài blueprint:** Không tự tạo các thư mục như `src/`, `tests/`, `test-data/`, `utils/`, `common/` rời rạc bên ngoài `workspace/issues/{issueKey}/test/`.
 2. ❌ **CẤM đặt sai vị trí:** Tuyệt đối không sinh file test trực tiếp ngoài thư mục gốc repo hoặc lẫn lộn trong thư mục `spec/`.
 3. ❌ **CẤM duplicate file kết quả:** Không sinh ra nhiều file trùng loại trong `result/` (ví dụ `report1.html`, `test_run_123.log`, `result.xml`). Chỉ giữ đúng 1 file duy nhất mỗi loại.
 4. ❌ **CẤM sinh thừa file theo Task Type:** Không sinh `pages/` cho API task, không sinh `services/` cho Web UI task đơn thuần.

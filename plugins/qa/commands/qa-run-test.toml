@@ -8,13 +8,13 @@ $ARGUMENTS có thể chứa Jira issue key (VD: G3PTP-16825) hoặc đường d�
 ## Nguyên Tắc Cốt Lõi: ĐO LƯỜNG Trung Thực — KHÔNG Tự Sửa Lỗi
 
 1. **Chuẩn bị & Gọi Runner (Bắt buộc):**
-   - Định vị target `workspace/{issueKey}/test/steps/`. Không đọc spec. Không sửa file.
+   - Định vị target `workspace/issues/{issueKey}/test/steps/`. Không đọc spec. Không sửa file.
    - BẮT BUỘC gọi webhook bằng lệnh:
-     `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testFiles":"workspace/{issueKey}/test/steps/"}'`
+     `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testFiles":"workspace/issues/{issueKey}/test/steps/"}'`
    - Tuyệt đối không dùng `pytest` hay `bash`. Không dùng `tee`. Mọi cấu hình cờ `--timeout`, `--junitxml` do n8n tự xử lý.
 
 2. **Trả Kết Quả Tức Thì & Nguyên Bản:**
-   - Đọc kết quả từ console output của node script hoặc từ `workspace/{issueKey}/test/result/report.md` do n8n sinh.
+   - Đọc kết quả từ console output của node script hoặc từ `workspace/issues/{issueKey}/test/result/report.md` do n8n sinh.
    - Tóm tắt kết quả theo 4 Verdict: PASS (xanh), FAIL (có test trượt), ERROR (lỗi hạ tầng/kịch bản), TIMEOUT.
    - Agent **không** tự viết lại hay ghi đè `report.md`.
 

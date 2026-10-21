@@ -11,10 +11,10 @@ Khi nhận lệnh `/qa-run-test [TARGET]`, runner phân giải mục tiêu nhanh
 ```
 [MỤC TIÊU THỰC THI]
 ├── Cấp 1: Tham số $ARGUMENTS được cung cấp tường minh
-│   ├── Là file cụ thể (vd: workspace/SCRUM-123/test/steps/test_login.py) ➔ Chạy đúng file đó
-│   └── Là thư mục cụ thể (vd: workspace/SCRUM-123/test/steps) ➔ Quét mọi test file trong thư mục
+│   ├── Là file cụ thể (vd: workspace/issues/SCRUM-123/test/steps/test_login.py) ➔ Chạy đúng file đó
+│   └── Là thư mục cụ thể (vd: workspace/issues/SCRUM-123/test/steps) ➔ Quét mọi test file trong thư mục
 ├── Cấp 2: Cung cấp {issueKey} (vd: /qa-run-test SCRUM-123)
-│   └── Phân giải thành: workspace/{issueKey}/test/steps/
+│   └── Phân giải thành: workspace/issues/{issueKey}/test/steps/
 └── Cấp 3: Không có tham số
     └── Tự động dò tìm thư mục test gần nhất trong workspace hiện tại
 ```
@@ -31,10 +31,10 @@ Pytest theo mặc định chỉ tìm `test_*.py`. Tuy nhiên, trong nhiều dự
 Để đảm bảo vừa quan sát được console trực tiếp, vừa thu thập đầy đủ 100% log thô phục vụ báo cáo, lệnh Pytest tiêu chuẩn BẮT BUỘC sử dụng đầy đủ các cờ sau:
 
 ```bash
-mkdir -p "workspace/{issueKey}/test/result"
+mkdir -p "workspace/issues/{issueKey}/test/result"
 
 HTML_FLAG=""
-python3 -c "import pytest_html" 2>/dev/null && HTML_FLAG="--html=workspace/{issueKey}/test/result/report.html --self-contained-html"
+python3 -c "import pytest_html" 2>/dev/null && HTML_FLAG="--html=workspace/issues/{issueKey}/test/result/report.html --self-contained-html"
 
 pytest "$TEST_TARGET" \
   -o python_files="test_*.py *_test.py" \
@@ -45,9 +45,9 @@ pytest "$TEST_TARGET" \
   --timeout=60 \
   -o log_cli=true \
   -o log_cli_level=INFO \
-  --junitxml="workspace/{issueKey}/test/result/junit.xml" \
+  --junitxml="workspace/issues/{issueKey}/test/result/junit.xml" \
   $HTML_FLAG \
-  2>&1 | tee "workspace/{issueKey}/test/result/test-output.log"
+  2>&1 | tee "workspace/issues/{issueKey}/test/result/test-output.log"
 ```
 
 ### Chi tiết ý nghĩa từng cờ:
@@ -68,7 +68,7 @@ pytest "$TEST_TARGET" \
 Thực hiện siêu tốc, không kiểm tra lan man:
 1. Đảm bảo thư mục kết quả sạch sẽ:
    ```bash
-   mkdir -p "workspace/{issueKey}/test/result"
+   mkdir -p "workspace/issues/{issueKey}/test/result"
    ```
 2. Chạy ngay lệnh Pytest ở Mục 2. Tuyệt đối KHÔNG đọc spec, không đọc checklist, không review code trước khi chạy.
 
@@ -80,7 +80,7 @@ Khi test suite có kết quả FAILED:
 
 1. **Ghi nhận khách quan:**
    - Trích xuất thông tin lỗi trực tiếp từ Pytest output: tên test case, file/dòng gây lỗi, assertion error / exception.
-   - Ghi vào báo cáo `workspace/{issueKey}/test/result/report.md`.
+   - Ghi vào báo cáo `workspace/issues/{issueKey}/test/result/report.md`.
 
 2. **Quy tắc Nghiêm cấm (Strict Guardrails):**
    - ❌ **CẤM mở mã nguồn backend:** Không `view_file` hay `grep_search` các file logic nghiệp vụ backend (`.go`, `.py`, `.java` của service).

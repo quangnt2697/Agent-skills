@@ -58,7 +58,7 @@ Mở `.env` và điền theo mức bạn dùng. File `.env`, `config/projects.js
 
 ### Kiểm tra cài đặt
 ```bash
-npm test      # validate skills/commands/links + unit tests + evals
+npm test      # 8 cổng validators (skills/commands/versions/links/paths/icons/nodes/tokens) + 19 unit tests + evals
 ```
 Tất cả phải PASS trước khi chuyển sang giai đoạn tiếp theo.
 
