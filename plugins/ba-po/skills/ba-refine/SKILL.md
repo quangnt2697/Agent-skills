@@ -15,8 +15,8 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 | Tải và phân tích Jira task, Confluence, attachments | Viết code, test script, SQL, API contract |
 | Khai phóng ý tưởng theo 5 chiều nghiệp vụ cốt lõi | Bàn luận kiến trúc hệ thống, microservices, DB Schema |
 | Stress-test xung đột quy tắc nghiệp vụ và phiên giao dịch | Viết JSON payload mẫu (camelCase, snake_case) |
-| Viết `refined.md` 7 mục thuần nghiệp vụ & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
-| Xuất bản `spec/final.md` chuẩn hóa bàn giao cho DEV & QA | Tự ý render mockup khi không có cờ `--mockup` |
+| Viết `refined.md` 8 mục thuần nghiệp vụ (kèm Mục 8 UI khi có thay đổi màn hình) & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
+| Xuất bản `spec/final.md` chuẩn hóa bàn giao cho DEV & QA | Tự ý thiết kế bừa, lệch khỏi `ui-component-map.json` |
 
 ### 🛡️ Bảng Ranh giới Ngôn ngữ Bất biến (Strict Business-Only Guardrail)
 
@@ -41,7 +41,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 | Gate | Vị trí | Hành động bắt buộc |
 |---|---|---|
 | **Gate 1** | Cuối Phase 0 | Trình bảng tài liệu → **DỪNG chờ user gõ OK** |
-| **Gate 2** | Bước 3.2 | Trình toàn bộ draft 7 mục nghiệp vụ → **DỪNG chờ user approve** trước khi lưu `refined.md` |
+| **Gate 2** | Bước 3.2 | Trình đồng thời: Toàn bộ draft 8 mục nghiệp vụ + Ảnh `mockup.png` + Bảng chú thích UI Delta ① ② ③ → **DỪNG chờ user approve** trước khi lưu `refined.md` |
 
 ## 2. Quy trình 4 Giai đoạn Theo Tư Duy Nghiệp Vụ
 
@@ -50,6 +50,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 - **Giai đoạn 0 (Thu thập Ý tưởng & Đối chiếu Quy tắc Ngành — Gate 1):**
   - Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira qua n8n Fast-Path (`prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`).
   - Tự động tra cứu các quy định nghiệp vụ liên quan trong `references/securities/` (cấu trúc thị trường, phiên giao dịch, vòng đời lệnh, quy tắc margin) để nắm vững nền tảng nghiệp vụ trước khi phân tích.
+  - **AS-IS Screen Discovery (Chốt chặn 2):** Khi task liên quan UI (WEB/APP), tra cứu `references/ui-component-map.json` và đọc trực tiếp file màn hình thực tế từ `dnse-trading` hoặc `mobile/arrow-app` để nắm đúng 90% khung màn hình cũ làm nền ngữ cảnh.
   - Quét Confluence + attachments, trình bảng tài liệu cho user duyệt qua **Gate 1**.
 
 - **Giai đoạn 1 (Khai phóng theo 5 Chiều Nghiệp vụ — Business-Driven Divergence):**
@@ -67,22 +68,27 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
     - **Xử lý ngoại lệ nghiệp vụ:** Khách hàng hủy/sửa khi lệnh đang chờ Sở, cổ phiếu bị đình chỉ giữa phiên, hoặc tài khoản chạm tỷ lệ call margin thì xử lý thế nào?
   - Gom các biến thể thành 2-3 hướng đi nghiệp vụ rõ ràng để user lựa chọn.
 
-- **Giai đoạn 3 (Chuẩn hóa Tài liệu Đặc tả Nghiệp vụ — Business Spec Sharpening — Gate 2):**
-  - Tạo `refined-draft.md` theo cấu trúc **7 mục thuần nghiệp vụ** (loại bỏ hoàn toàn technical noise API/DB):
+- **Giai đoạn 3 (Chuẩn hóa Tài liệu Đặc tả Nghiệp vụ & Dựng Mockup — Gate 2):**
+  - Tạo `refined-draft.md` theo cấu trúc **8 mục chuẩn nghiệp vụ**:
     1. **Mục tiêu & Giá trị Nghiệp vụ (Business Objective & Value)**
     2. **Phạm vi & Đối tượng Áp dụng (Scope & Actors — In/Out of Scope)**
     3. **Luồng Nghiệp vụ Chính (Main Business Flow — góc nhìn người dùng)**
     4. **Luồng Nghiệp vụ Phụ & Xử lý Ngoại lệ (Alternative & Exception Flows)**
     5. **Danh mục Quy tắc Nghiệp vụ & Công thức tính ([BR-01], [BR-02]...)**
     6. **Tiêu chí Nghiệm thu Nghiệp vụ ([AC-1.1], [AC-1.2]... dạng Business Checklist)**
-    7. **Giả định Nghiệp vụ & Câu hỏi Mở (Business Assumptions & Open Questions)**
-  - **Quy tắc Mockup:** Chỉ thiết kế HTML/PNG mockup khi có cờ `--mockup` hoặc khi yêu cầu thay đổi trực tiếp bố cục màn hình. Tuyệt đối không sinh sơ đồ flow Mermaid rườm rà.
-  - Trình toàn bộ draft qua **Gate 2** để user phê duyệt.
+    7. **Giả định Nghiệp vụ & Đo lường Thành công (Business Assumptions & Success Metrics)**
+    8. **Thiết kế Giao diện & Điểm chạm Thao tác (UI/UX Mockup) — BẮT BUỘC khi task có UI**
+  - **Quy tắc Dựng Mockup (Kiến trúc 4 Chốt Chặn & Case-Based):**
+    - **Chốt chặn 1:** Tra cứu `references/ui-component-map.json` — Bắt buộc dùng component chuẩn, cấm viết inline CSS tự do.
+    - **Chốt chặn 3 (Delta-Only & Case-Based):** Tái hiện khung màn hình cũ làm nền ngữ cảnh (as-is, opacity 0.75), làm nổi bật phần thay đổi kèm Huy hiệu đánh số chú thích `①`, `②`, `③`. **BẮT BUỘC chia theo từng Case/Kịch bản thao tác cụ thể** (Case 1: Thao tác chính / Luồng chuẩn, Case 2: Cảnh báo ngoại lệ / Lỗi, Case 3: Tình huống biên / Khóa phiên). **CẤM mô tả design bằng text lan man**, thay vào đó mỗi ảnh đều có ghi chú thao tác người dùng (Action) và phản hồi hệ thống (Response) gắn với `[BR-*]`, `[AC-*]`.
+    - **Kết xuất Mockup ngay tại Bước 3.1:** Dựng `spec/diagrams/mockup.html` và chạy `render-mockup.js "mockup.html" "mockup.png" fit 2 all` sinh đủ ảnh `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png` để trình user duyệt tại Gate 2.
+  - Trình toàn bộ draft 8 mục kèm ảnh Mockup từng Case và Ghi chú thao tác qua **Gate 2** để user phê duyệt.
 
-- **Giai đoạn 4 (Đồng bộ lên Jira & Xuất bản final.md Handoff):**
-  - Cập nhật mô tả Jira qua n8n `/webhook/jira-spec-pusher` hoặc CLI helper `node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js`.
-  - **Tự động xuất bản ra `workspace/issues/{issueKey}/spec/final.md`** kèm `spec/testability-manifest.json` (chứa danh sách BR-*, AC-*, profile gợi ý: API, WS, UI, STATE, DATA).
-  - Bàn giao trực tiếp cho DEV (`/dev-tech-spec` - tự chuyển hóa sang kiến trúc kỹ thuật) và QA (`/qa-test-design` - tự chuyển hóa sang kịch bản kiểm thử đa profile).
+- **Giai đoạn 4 (Đồng bộ lên Jira & Handoff Kỹ thuật):**
+  - Cập nhật mô tả Jira qua n8n hoặc CLI helper `jira-push-spec.js`.
+  - **Tự động upload toàn bộ ảnh `mockup*.png` và dán trực tiếp (inline image ADF `mediaSingle`) vào Mục 8 trong Description của Jira ticket**, đúng theo từng Case kèm ghi chú thao tác (không chỉ đính kèm file ở tab attachments).
+  - **Tự động xuất bản `spec/testability-manifest.json`** chứa danh sách phần tử UI (kèm selector/badge/BR/AC gợi ý) để QA tự động sinh test code POM mà không phải gõ tay.
+  - Handoff sang DEV (`/dev-tech-spec`) và QA (`/qa-test-design`).
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 
@@ -90,10 +96,14 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
   - [quick-start-checklist.md](references/quick-start-checklist.md): Tờ nhắc 5 bước ≤ 50 dòng.
 
 - 🛠️ **Công cụ & Assets:**
-  - [jira-push-spec.js](assets/jira-push-spec.js): CLI helper push ADF lên Jira qua REST API.
-  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 7 mục thuần nghiệp vụ.
+  - [jira-push-spec.js](assets/jira-push-spec.js): CLI helper push ADF, upload ảnh Mockup và xuất manifest.
+  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 8 mục chuẩn hóa.
+  - [mockup-harness.html](assets/mockup-harness.html): Bộ khung HTML UI Kit chuẩn và styling Delta-Only.
+  - [render-mockup.js](assets/render-mockup.js): Script chụp ảnh Retina 2x qua Playwright.
+  - [generate-ui-component-map.js](assets/generate-ui-component-map.js): Script quét tự động codebase Web & Mobile.
 
 - 📖 **Tài liệu chi tiết (references/):**
+  - [ui-component-map.json](references/ui-component-map.json): Chỉ mục Màn hình UI & Component Design System chuẩn.
   - [workflow-and-phases.md](references/workflow-and-phases.md): Chi tiết 4 phase theo tư duy nghiệp vụ.
   - [quality-rules.md](references/quality-rules.md): Bộ lọc chống kỹ thuật & Confidence Score.
   - [refinement-criteria.md](references/refinement-criteria.md): Rubric 4 tiêu chí stress-test nghiệp vụ.

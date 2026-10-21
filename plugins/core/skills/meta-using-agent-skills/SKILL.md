@@ -24,7 +24,8 @@ Task đến
     ├── Cần lên checklist & kịch bản BDD? ───────→ qa-test-design
     ├── Đánh giá chất lượng code/test ───────────→ cr-review-code-and-quality
     ├── Code test phức tạp, cần refactor? ───────→ cr-code-simplification
-    ├── Kiến trúc bốc mùi, cần tự động audit & fix? ──→ dev-audit-and-fix
+    ├── Cần quét bảo mật mã nguồn? ──────────────→ security-code-audit
+    ├── Cần đo lường Core Web Vitals? ───────────→ webperf-core-vitals
     ├── Cần tối ưu lại ngữ cảnh hiện tại? ───────→ meta-context
     └── Muốn tìm xem có skill nào xài được? ─────→ meta-using-agent-skills
 ```
@@ -116,24 +117,19 @@ Luôn xem xét ngữ cảnh của domain và platform:
 2.  ba-interview-me                  → Phỏng vấn gap → đạt confidence ≥90%
 3.  ba-refine         (Tùy chọn)     → Brainstorm/refine ý tưởng thô
 
-── DEV ────────────────────────────────────────────────────────────────
-4.  dev-spec-driven-development      → Tech-Spec: Architecture, API, Data Model
-5.  meta-cross-validation            → Kiểm tra BR → Tech-Spec mapping
-6.  dev-planning-and-task-breakdown  → Plan + task breakdown
-7.  dev-incremental-implementation   → Build từng increment (TDD)
-8.  dev-test-driven-development      → Unit tests (Red → Green → Refactor)
-
 ── QA ─────────────────────────────────────────────────────────────────
-9.  qa-code2spec      (Tùy chọn)     → Đọc code có sẵn → spec
-10. qa-test-design                   → Checklist + BDD Gherkin
-11. qa-squash-push    (Tùy chọn)     → Đồng bộ .feature lên Squash TM
-12. qa-auto-design                   → Sinh automation test code
-13. qa-run-test                      → Thực thi + báo cáo
+4.  qa-code2spec      (Tùy chọn)     → Đọc code có sẵn → spec
+5.  qa-test-design                   → Checklist + BDD Gherkin
+6.  qa-squash-push    (Tùy chọn)     → Đồng bộ .feature lên Squash TM
+7.  qa-auto-design                   → Sinh automation test code
+8.  qa-run-test                      → Thực thi + báo cáo
 
-── Review & Polish ────────────────────────────────────────────────────
-14. cr-code-simplification (Tùy chọn) → Làm sạch code test
-15. cr-review-code-and-quality        → Code Review trước merge
-16. meta-context      (Bất cứ lúc nào) → Reset/nạp lại ngữ cảnh
+── Review & Audit ─────────────────────────────────────────────────────
+9.  cr-code-simplification (Tùy chọn) → Làm sạch code test
+10. cr-review-code-and-quality        → Code Review trước merge
+11. security-code-audit               → Quét bảo mật OWASP
+12. webperf-core-vitals               → Kiểm toán Core Web Vitals
+13. meta-context      (Bất cứ lúc nào) → Reset/nạp lại ngữ cảnh
 ```
 
 Không phải task nào cũng cần mọi kỹ năng. Task chỉ viết test API có sẵn: `qa-code2spec → qa-test-design → qa-auto-design → qa-run-test`.
@@ -146,11 +142,10 @@ Không phải task nào cũng cần mọi kỹ năng. Task chỉ viết test API
 | **BA** | `ba-interview-me` | Phỏng vấn từng câu → bịt gap logic |
 | **BA** | `ba-refine` | Brainstorm ý tưởng thô → User Story/BDD |
 | **BA** | `qa-code2spec` | Dịch ngược code → đặc tả |
-| **DEV** | `dev-spec-driven-development` | Tech-Spec: kiến trúc, API, Data Model |
-| **DEV** | `dev-planning-and-task-breakdown` | Chia task + dependencies |
-| **DEV** | `dev-incremental-implementation` | Build an toàn từng bước |
-| **DEV** | `dev-test-driven-development` | Unit test (TDD cycle) |
-| **DEV** | `dev-audit-and-fix` | Audit toàn diện + tự sửa |
+| **Scrum** | `sm-sprint-planning` | Kế hoạch Sprint & Backlog |
+| **Scrum** | `sm-daily-standup` | Báo cáo Standup tự động |
+| **Scrum** | `sm-impediment-triage` | Xử lý ticket bị treo |
+| **Scrum** | `sm-sprint-retrospective` | Tổng kết Sprint burndown |
 | **QA** | `qa-test-design` | Checklist + BDD Gherkin |
 | **QA** | `qa-auto-design` | Automation test code (Playwright/Pytest) |
 | **QA** | `qa-run-test` | Chạy test + báo cáo |

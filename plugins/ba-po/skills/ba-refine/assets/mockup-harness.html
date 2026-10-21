@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>[ISSUE-KEY] UI Mockup Preview</title>
+  <title>[ISSUE-KEY] UI Mockup Preview — ba-refine Delta-Only Design</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    /* ── DESIGN SYSTEM TOKENS (Trích xuất từ Codebase Dự án) ── */
+    /* ── DESIGN SYSTEM TOKENS (Đồng bộ với dnse-trading & arrow-app) ── */
     :root {
       /* Theme Dark (Mặc định cho Trading / Fintech) */
-      --bg-app: #0e1114;
-      --bg-surface: #14181d;
-      --bg-card: #1c2127;
-      --bg-card-hover: #242b33;
-      --bg-input: #1a1f26;
+      --bg-app: #0a0d11;
+      --bg-surface: #11151b;
+      --bg-card: #181d24;
+      --bg-card-hover: #222933;
+      --bg-input: #12161c;
 
       --text-primary: #f0f3f6;
       --text-secondary: #9aa4b2;
       --text-muted: #647082;
       --text-disabled: #434c59;
 
-      --border-subtle: #252c36;
+      --border-subtle: #242c37;
       --border-focus: #3d7fff;
 
       /* Màu nghiệp vụ Chứng khoán (KRX / MDDS Standard) */
@@ -32,17 +32,25 @@
       --stock-green: #00d084;  /* Giá Tăng (Gain) */
       --stock-red: #ff4d4f;    /* Giá Giảm (Loss) */
 
-      /* Nút bấm & Nhận diện thương hiệu */
+      /* Nhận diện thương hiệu & Nút thao tác */
       --brand-primary: #1068eb;
       --brand-primary-hover: #0c56c7;
       --brand-accent: #f59e0b;
+
+      /* Màu Delta-Only Chú thích */
+      --delta-added: #00d084;
+      --delta-added-bg: rgba(0, 208, 132, 0.08);
+      --delta-modified: #f59e0b;
+      --delta-modified-bg: rgba(245, 158, 11, 0.08);
+      --delta-removed: #ff4d4f;
+      --delta-removed-bg: rgba(255, 77, 79, 0.08);
 
       --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 16px;
       --radius-full: 9999px;
 
-      --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.45);
       --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -81,18 +89,19 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── HEADER THANH CÔNG CỤ XEM TRƯỚC ── */
+    /* ── HEADER THANH CÔNG CỤ XEM TRƯỚC (TOOLBAR) ── */
     .preview-toolbar {
       width: 100%;
-      max-width: 900px;
+      max-width: 960px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
-      padding: 12px 16px;
+      padding: 12px 18px;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
     .badge-task {
@@ -102,15 +111,17 @@
       padding: 4px 10px;
       background: rgba(16, 104, 235, 0.15);
       color: #60a5fa;
+      border: 1px solid rgba(16, 104, 235, 0.3);
       border-radius: var(--radius-sm);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       font-family: var(--font-mono);
     }
 
     .toolbar-actions {
       display: flex;
       gap: 8px;
+      align-items: center;
     }
 
     .btn-toggle {
@@ -120,7 +131,7 @@
       padding: 6px 12px;
       border-radius: var(--radius-sm);
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
     }
@@ -129,6 +140,91 @@
       background: var(--brand-primary);
       color: #ffffff;
       border-color: var(--brand-primary);
+    }
+
+    /* ── CƠ CHẾ DELTA-ONLY (CHỐNG THIẾT KẾ BỪA) ── */
+    /* Khung màn hình gốc AS-IS: Giữ 90% làm nền mờ nhẹ */
+    .as-is-context, [data-ui="as-is"] {
+      opacity: 0.75;
+      transition: opacity 0.2s ease;
+    }
+    .as-is-context:hover, [data-ui="as-is"]:hover {
+      opacity: 0.95;
+    }
+
+    /* Viền nhấn nổi bật cho phần Thêm mới (Added) */
+    [data-change="added"] {
+      position: relative;
+      outline: 2px dashed var(--delta-added);
+      outline-offset: 4px;
+      border-radius: var(--radius-sm);
+      background: var(--delta-added-bg);
+      box-shadow: 0 0 12px rgba(0, 208, 132, 0.25);
+    }
+
+    /* Viền nhấn nổi bật cho phần Sửa đổi (Modified) */
+    [data-change="modified"] {
+      position: relative;
+      outline: 2px dashed var(--delta-modified);
+      outline-offset: 4px;
+      border-radius: var(--radius-sm);
+      background: var(--delta-modified-bg);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+    }
+
+    /* Viền gạch bỏ cho phần Xóa (Removed) */
+    [data-change="removed"] {
+      position: relative;
+      outline: 2px dashed var(--delta-removed);
+      outline-offset: 4px;
+      border-radius: var(--radius-sm);
+      background: var(--delta-removed-bg);
+      text-decoration: line-through;
+      opacity: 0.55;
+    }
+
+    /* Huy hiệu Đánh số Chú thích ① ② ③ ④ ⑤ */
+    .delta-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 4px;
+      background: var(--brand-primary);
+      color: #ffffff;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      box-shadow: 0 2px 8px rgba(16, 104, 235, 0.6);
+      margin-right: 6px;
+      vertical-align: middle;
+      user-select: none;
+    }
+    .delta-badge.badge-added {
+      background: #00d084;
+      color: #052e16;
+      box-shadow: 0 2px 8px rgba(0, 208, 132, 0.6);
+    }
+    .delta-badge.badge-modified {
+      background: #f59e0b;
+      color: #451a03;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.6);
+    }
+    .delta-badge.badge-removed {
+      background: #ff4d4f;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(255, 77, 79, 0.6);
+    }
+
+    /* Huy hiệu ghim góc nổi bật (Pinned Corner Badge) */
+    .delta-pin {
+      position: absolute;
+      top: -12px;
+      right: -10px;
+      z-index: 30;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
     }
 
     /* ── KHUNG CHỨA CANVAS ── */
@@ -153,7 +249,6 @@
       flex-direction: column;
     }
 
-    /* Dynamic Island & Status Bar */
     .mobile-status-bar {
       height: 48px;
       padding: 12px 24px 0 24px;
@@ -184,6 +279,7 @@
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
     }
 
     .mobile-content-area {
@@ -242,13 +338,13 @@
       overflow-y: auto;
     }
 
-    /* ── CÁC COMPONENT UI MẪU CHUẨN (UI KIT) ── */
+    /* ── THƯ VIỆN COMPONENT CHUẨN DESIGN SYSTEM (UI KIT) ── */
     .ui-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
       padding: 16px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .form-group {
@@ -256,7 +352,9 @@
     }
 
     .form-label {
-      display: block;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: 13px;
       font-weight: 500;
       color: var(--text-secondary);
@@ -280,6 +378,172 @@
       border-color: var(--border-focus);
     }
 
+    /* Ô nhập stepper (+/-) */
+    .stepper-control {
+      display: flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .stepper-control .form-input {
+      border: none;
+      text-align: center;
+      font-weight: 600;
+      background: transparent;
+    }
+    .stepper-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-card);
+      border: none;
+      color: var(--text-primary);
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .stepper-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--brand-primary);
+    }
+
+    /* Segmented Control (Tabs Mua/Bán hoặc Thường/Margin) */
+    .segmented-control {
+      display: flex;
+      background: var(--bg-input);
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 14px;
+      gap: 2px;
+    }
+    .segment-btn {
+      flex: 1;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .segment-btn.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .segment-btn.buy.active {
+      background: rgba(0, 208, 132, 0.2);
+      color: var(--stock-green);
+      border: 1px solid rgba(0, 208, 132, 0.4);
+    }
+    .segment-btn.sell.active {
+      background: rgba(255, 77, 79, 0.2);
+      color: var(--stock-red);
+      border: 1px solid rgba(255, 77, 79, 0.4);
+    }
+
+    /* Select Dropdown */
+    .select-wrapper {
+      position: relative;
+    }
+    .form-select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 10px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      appearance: none;
+      cursor: pointer;
+    }
+    .select-wrapper::after {
+      content: '▾';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    /* Bảng Độ Sâu Sổ Lệnh KRX Mini */
+    .krx-order-book {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      margin-bottom: 14px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+    .krx-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+      font-size: 11px;
+    }
+    .krx-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 0;
+    }
+    .krx-cell {
+      flex: 1;
+      text-align: center;
+    }
+    .krx-cell:first-child { text-align: left; }
+    .krx-cell:last-child { text-align: right; }
+    .krx-cell.highlight-cell {
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+      padding: 2px 4px;
+    }
+
+    /* Banner Thông báo & Lỗi */
+    .alert-banner {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+    .alert-banner.warning {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+    .alert-banner.error {
+      background: rgba(255, 77, 79, 0.12);
+      border: 1px solid rgba(255, 77, 79, 0.4);
+      color: #f87171;
+    }
+    .alert-banner.info {
+      background: rgba(16, 104, 235, 0.12);
+      border: 1px solid rgba(16, 104, 235, 0.4);
+      color: #60a5fa;
+    }
+
+    /* Nút bấm chính & phụ */
     .btn-primary {
       width: 100%;
       background: var(--brand-primary);
@@ -292,20 +556,74 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-
     .btn-primary:hover {
       background: var(--brand-primary-hover);
     }
-
-    .status-tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 600;
+    .btn-primary:disabled {
+      background: var(--text-disabled);
+      cursor: not-allowed;
+      opacity: 0.6;
     }
-    .status-tag.gain { background: rgba(0, 208, 132, 0.15); color: var(--stock-green); }
-    .status-tag.loss { background: rgba(255, 77, 79, 0.15); color: var(--stock-red); }
+
+    .btn-buy {
+      background: var(--stock-green);
+      color: #052e16;
+      font-weight: 700;
+    }
+    .btn-buy:hover {
+      background: #00ba75;
+    }
+
+    .btn-sell {
+      background: var(--stock-red);
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .btn-sell:hover {
+      background: #e03e40;
+    }
+
+    /* Màu chữ chứng khoán */
+    .text-purple { color: var(--stock-purple); }
+    .text-cyan { color: var(--stock-cyan); }
+    .text-yellow { color: var(--stock-yellow); }
+    .text-gain { color: var(--stock-green); }
+    .text-loss { color: var(--stock-red); }
+    .text-hint { font-size: 11px; color: var(--text-muted); font-weight: normal; }
+
+    /* ── BẢNG CHÚ THÍCH UI DELTA (DELTA MAPPING TABLE) ── */
+    .delta-legend-card {
+      width: 100%;
+      max-width: 960px;
+      margin-top: 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .delta-legend-card h4 {
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .delta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .delta-table th, .delta-table td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .delta-table th {
+      color: var(--text-secondary);
+      font-weight: 600;
+      background: var(--bg-card);
+    }
   </style>
 </head>
 <body>
@@ -317,6 +635,12 @@
       <strong style="font-size: 14px;">[TIÊU ĐỀ GIAO DIỆN CẦN THIẾT KẾ]</strong>
     </div>
     <div class="toolbar-actions">
+      <!-- Bộ chuyển trạng thái nghiệp vụ (Multi-State Switcher) -->
+      <select id="stateSelector" class="btn-toggle" onchange="switchState(this.value)" style="outline: none;">
+        <option value="default">Trạng thái Mặc định</option>
+        <option value="error">Trạng thái Báo lỗi / Vượt hạn mức</option>
+        <option value="locked">Trạng thái Khóa phiên ATO/ATC</option>
+      </select>
       <button class="btn-toggle active" id="btnModeMobile" onclick="switchView('mobile')">📱 Mobile</button>
       <button class="btn-toggle" id="btnModeDesktop" onclick="switchView('desktop')">💻 Desktop</button>
       <button class="btn-toggle" onclick="toggleTheme()">🌗 Dark/Light</button>
@@ -336,47 +660,142 @@
         <span>5G 🔋</span>
       </div>
 
-      <!-- Tiêu đề Header Màn hình -->
-      <div class="mobile-app-header">
-        <span style="font-weight: 600; font-size: 15px;">← Chi tiết Giao dịch</span>
+      <!-- Tiêu đề Header Màn hình (AS-IS) -->
+      <div class="mobile-app-header as-is-context">
+        <span style="font-weight: 600; font-size: 15px;">← Đặt Lệnh Chứng Khoán</span>
         <span style="color: var(--text-muted); cursor: pointer;">•••</span>
       </div>
 
-      <!-- NỘI DUNG MÀN HÌNH (INJECT COMPONENT TỪ CODEBASE VÀ YÊU CẦU MỚI TẠI ĐÂY) -->
+      <!-- NỘI DUNG MÀN HÌNH (LẮP GHÉP TỪ COMPONENT CHUẨN & ÁP DỤNG DELTA-ONLY) -->
       <div class="mobile-content-area" id="screenContent">
-        <!-- VÍ DỤ SLOT NỘI DUNG -->
-        <div class="ui-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        
+        <!-- [AS-IS CONTEXT] Thông tin mã CP & Bảng giá mini (Giữ nguyên khung cũ làm nền) -->
+        <div class="ui-card as-is-context" data-ui="as-is">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <strong style="font-size: 16px;">VND (VNDIRECT)</strong>
-            <span class="status-tag gain">+2.45%</span>
+            <span class="krx-badge text-gain" style="font-weight: 700; font-size: 13px;">24,500 (+2.5%)</span>
           </div>
-          <div style="display: flex; gap: 16px; font-size: 13px; color: var(--text-secondary);">
-            <span>Giá: <b style="color: var(--stock-green);">24,500</b></span>
-            <span>Khối lượng: <b>1,240,500</b></span>
+          <div class="krx-order-book">
+            <div class="krx-header">
+              <span>Mua 1</span>
+              <span>Khớp Lệnh</span>
+              <span>Bán 1</span>
+            </div>
+            <div class="krx-row">
+              <span class="krx-cell text-gain">24.45 <small>(15.2k)</small></span>
+              <span class="krx-cell highlight-cell text-gain">24.50 <small>(85.0k)</small></span>
+              <span class="krx-cell text-loss">24.55 <small>(10.8k)</small></span>
+            </div>
           </div>
         </div>
 
+        <!-- Form Đặt Lệnh -->
         <div class="ui-card">
-          <div class="form-group">
-            <label class="form-label">Loại Lệnh</label>
-            <input type="text" class="form-input" value="Lệnh giới hạn (LO)" readonly>
+          <!-- [AS-IS] Tabs Chọn Mua / Bán -->
+          <div class="segmented-control as-is-context" data-ui="as-is">
+            <button type="button" class="segment-btn buy active">MUA</button>
+            <button type="button" class="segment-btn sell">BÁN</button>
           </div>
-          <div class="form-group">
-            <label class="form-label">Khối Lượng Đặt</label>
-            <input type="number" class="form-input" placeholder="Nhập bội số 100" value="1000">
+
+          <!-- [TO-BE DELTA ①] THÊM MỚI: Chọn Gói Vay Margin / Lãi suất ưu đãi -->
+          <div class="form-group" data-change="added" id="fieldMarginPackage">
+            <span class="delta-pin delta-badge badge-added">①</span>
+            <label class="form-label">
+              <span>Gói Lãi Suất Ký Quỹ</span>
+              <span class="text-hint">Áp dụng cho lệnh này</span>
+            </label>
+            <div class="select-wrapper">
+              <select class="form-select">
+                <option value="pkg_t10">Gói T+10 Ưu đãi (8.9%/năm - Miễn lãi 5 ngày đầu)</option>
+                <option value="pkg_std">Gói Tiêu chuẩn (12.5%/năm - Không giới hạn kỳ)</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group">
+
+          <!-- [TO-BE DELTA ②] SỬA ĐỔI: Khối Lượng Kèm Nút Stepper (+/-) và Bước Nhảy -->
+          <div class="form-group" data-change="modified" id="fieldQuantity">
+            <span class="delta-pin delta-badge badge-modified">②</span>
+            <label class="form-label">
+              <span>Khối Lượng Đặt</span>
+              <span class="text-hint">Bội số 100</span>
+            </label>
+            <div class="stepper-control">
+              <button type="button" class="stepper-btn">−</button>
+              <input type="text" class="form-input" value="1,000">
+              <button type="button" class="stepper-btn">+</button>
+            </div>
+          </div>
+
+          <!-- [AS-IS] Giá Đặt Lệnh -->
+          <div class="form-group as-is-context" data-ui="as-is">
             <label class="form-label">Giá Đặt (x 1,000 đ)</label>
-            <input type="number" class="form-input" value="24.5">
+            <div class="stepper-control">
+              <button type="button" class="stepper-btn">−</button>
+              <input type="text" class="form-input text-gain" value="24.5">
+              <button type="button" class="stepper-btn">+</button>
+            </div>
           </div>
-          <button class="btn-primary" style="margin-top: 8px;">Xác Nhận Đặt Lệnh Mua</button>
+
+          <!-- [TO-BE DELTA ③] THÊM MỚI: Banner Cảnh Báo Call Margin (Hiển thị khi tài khoản chạm ngưỡng) -->
+          <div class="alert-banner warning" data-change="added" id="bannerCallMargin" style="display: none;">
+            <span class="delta-pin delta-badge badge-added">③</span>
+            <div style="font-size: 16px;">⚠️</div>
+            <div>
+              <strong>Cảnh báo Tỷ lệ Ký quỹ (Rtt = 38%):</strong> Gần ngưỡng Call Margin 35%. Lệnh này chỉ được giải ngân tối đa 15,000,000 đ.
+            </div>
+          </div>
+
+          <!-- Nút Đặt Lệnh Chính -->
+          <button class="btn-primary btn-buy" id="btnSubmitOrder" style="margin-top: 8px;">
+            Đặt Lệnh Mua VND
+          </button>
         </div>
+
       </div>
 
       <!-- Mobile Home Indicator -->
       <div class="home-indicator" id="mobileFooter"></div>
     </div>
 
+  </div>
+
+  <!-- BẢNG CHÚ THÍCH THAY ĐỔI GIAO DIỆN (UI DELTA MAPPING) -->
+  <div class="delta-legend-card">
+    <h4>📋 Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)</h4>
+    <table class="delta-table">
+      <thead>
+        <tr>
+          <th style="width: 80px; text-align: center;">Ký hiệu</th>
+          <th>Thành phần Giao diện</th>
+          <th>Loại thay đổi</th>
+          <th>Mô tả chi tiết & Trạng thái</th>
+          <th>Ràng buộc Nghiệp vụ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span class="delta-badge badge-added">①</span></td>
+          <td><strong>Chọn Gói Vay Ký Quỹ</strong></td>
+          <td><span style="color: var(--delta-added); font-weight: 600;">Thêm mới (Dropdown)</span></td>
+          <td>Cho phép nhà đầu tư chọn gói T+10 hoặc Tiêu chuẩn ngay tại Form đặt lệnh</td>
+          <td><code>[BR-01]</code>, <code>[AC-1.1]</code></td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span class="delta-badge badge-modified">②</span></td>
+          <td><strong>Bộ Tăng Giảm Khối Lượng (+/-)</strong></td>
+          <td><span style="color: var(--delta-modified); font-weight: 600;">Sửa đổi (Stepper)</span></td>
+          <td>Bổ sung nút tăng/giảm bước nhảy 100 cổ phiếu thay vì chỉ gõ phím thuần</td>
+          <td><code>[BR-02]</code>, <code>[AC-1.2]</code></td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span class="delta-badge badge-added">③</span></td>
+          <td><strong>Banner Cảnh Báo Call Margin</strong></td>
+          <td><span style="color: var(--delta-added); font-weight: 600;">Thêm mới (Alert Banner)</span></td>
+          <td>Hiển thị cảnh báo màu vàng khi tỷ lệ Rtt tiệm cận ngưỡng 38%</td>
+          <td><code>[BR-03]</code>, <code>[AC-1.3]</code></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <script>
@@ -405,6 +824,33 @@
     function toggleTheme() {
       const current = document.documentElement.getAttribute('data-theme');
       document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+
+    // Đa trạng thái nghiệp vụ (Multi-State Switcher)
+    function switchState(state) {
+      const banner = document.getElementById('bannerCallMargin');
+      const btn = document.getElementById('btnSubmitOrder');
+
+      if (state === 'error') {
+        if (banner) banner.style.display = 'flex';
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Đặt Lệnh Mua VND (Vượt Hạn Mức)';
+        }
+      } else if (state === 'locked') {
+        if (banner) banner.style.display = 'none';
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Khóa Đặt Lệnh (Đang Trong Phiên Khớp Định Kỳ)';
+        }
+      } else {
+        // default
+        if (banner) banner.style.display = 'none';
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Đặt Lệnh Mua VND';
+        }
+      }
     }
 
     // Đánh dấu để Playwright biết giao diện đã render xong

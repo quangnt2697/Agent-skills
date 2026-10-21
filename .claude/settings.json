@@ -75,6 +75,84 @@
           }
         ]
       }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/session-end.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit:*)",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/core/check-branch.sh\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "if": "Bash(pytest:*)",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/qa-log-guard.sh\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "if": "Bash(behave:*)",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/qa-log-guard.sh\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/pre-tool-guard.sh\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/pre-tool-guard.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/post-tool-guard.sh\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/post-tool-guard.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

@@ -43,6 +43,7 @@ The preset sets the SVG `viewBox`. Every value below is divisible by 4, so the g
 
 | Preset | viewBox | Aspect | PNG @2 | Type ramp | Use |
 |---|---|---|---|---|---|
+| `fhd-16x9` (khuyến nghị Full HD) | `0 0 1920 1080` | 16:9 | 3840×2160 | presentation | Màn hình Full HD trở lên, TV/Slide 4K, Jira full-bleed |
 | `doc-inline` (default) | `0 0 960 600` | 8:5 | 1920×1200 | standard | Body-width diagram in a post or README |
 | `doc-wide` | `0 0 1280 720` | 16:9 | 2560×1440 | standard | Full-width docs, wiki pages |
 | `slide-16x9` | `0 0 1280 720` | 16:9 | 2560×1440 | presentation | Deck slide, projected |
@@ -52,6 +53,15 @@ The preset sets the SVG `viewBox`. Every value below is divisible by 4, so the g
 | `print-a4-landscape` | `0 0 1120 792` | ~1.41:1 | @3 → 3360×2376 | print | A4 landscape, ~10mm margins at 96dpi |
 | `print-letter-landscape` | `0 0 1056 816` | ~1.29:1 | @3 → 3168×2448 | print | US Letter landscape |
 | `fit` | derived from content | any | @2 | standard | Vector hand-off; no fixed frame |
+
+### Quy tắc Bẻ dòng Luồng Full HD (Z-Pattern Flow Wrapping)
+
+- **Giới hạn số nodes trên 1 hàng:** Tối đa 4–6 nodes theo chiều ngang.
+- **Bắt buộc gập dòng khi > 6 nodes:** Nếu quy trình có từ 6 bước trở lên, TUYỆT ĐỐI CẤM kéo dài trên một hàng đơn (dẫn tới viewBox ngang > 2500px). Bắt buộc gập dòng thành 2–3 hàng:
+  - Hàng 1: Bước 1 ➔ Bước 2 ➔ Bước 3 ➔ Bước 4 (Trái sang Phải)
+  - Mũi tên ngoặc xuống Hàng 2 (U-turn / Z-curve)
+  - Hàng 2: Bước 5 ➔ Bước 6 ➔ Bước 7 ➔ Hoàn tất (Trái sang Phải hoặc Phải sang Trái)
+- Điều này bảo toàn tỷ lệ vàng 16:9, giúp hình ảnh khi snapshot đưa lên màn hình Full HD (1920x1080) tận dụng trọn vẹn diện tích, chữ to rõ ràng (≥14px) và không bao giờ bị cắt xén hai bên.
 
 ### Deriving `fit`
 

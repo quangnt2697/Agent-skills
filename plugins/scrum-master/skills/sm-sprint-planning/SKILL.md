@@ -94,14 +94,14 @@ curl -s \
   curl -s \
     -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
     -H "Accept: application/json" \
-    "${ATLASSIAN_BASE_URL}/rest/agile/1.0/sprint/{sprintId}/issue?maxResults=200&fields=summary,status,assignee,customfield_10016,priority,created,updated"
+    "${ATLASSIAN_BASE_URL}/rest/agile/1.0/sprint/{sprintId}/issue?maxResults=200&fields=summary,status,assignee,customfield_10022,customfield_10026,priority,created,updated"
   ```
 - **Ticket trong Backlog**:
   ```bash
   curl -s \
     -u "${ATLASSIAN_EMAIL}:${ATLASSIAN_API_TOKEN}" \
     -H "Accept: application/json" \
-    "${ATLASSIAN_BASE_URL}/rest/agile/1.0/board/{boardId}/backlog?maxResults=200&fields=summary,status,assignee,customfield_10016,priority,labels"
+    "${ATLASSIAN_BASE_URL}/rest/agile/1.0/board/{boardId}/backlog?maxResults=200&fields=summary,status,assignee,customfield_10022,customfield_10026,priority,labels"
   ```
     - `customfield_10022` = Story Points (field thực tế trên workspace này). Fallback về `customfield_10016` nếu `customfield_10022` là null (Jira Cloud mặc định).
 - **Fallback bằng JQL** nếu không có Board ID:

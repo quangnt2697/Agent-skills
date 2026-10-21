@@ -95,18 +95,23 @@ for (const issue of issues) {
   const statusCat = (f.status && f.status.statusCategory && f.status.statusCategory.name) || '';
   const statusLower = statusName.toLowerCase();
 
-  // Story Points: customfield_10022 là estimation field của Board 61, fallback customfield_10016 hoặc estimate
-  let sp = f.customfield_10022;
-  if (sp === null || sp === undefined) sp = f.customfield_10016;
-  if (sp === null || sp === undefined) {
-    if (f.timeoriginalestimate) {
-      sp = Math.round((parseFloat(f.timeoriginalestimate) / 28800) * 10) / 10;
-    } else {
-      sp = 0;
-    }
+  // Story Points: Board 61 (G3PTP) dùng customfield_10022 ("Story Points", number), fallback customfield_10026 ("Story point estimate", number) hoặc timeoriginalestimate (8h = 1 SP)
+  // CẢNH BÁO: Tuyệt đối KHÔNG dùng customfield_10016 vì đó là "[CHART] Date of First Response" (chuỗi ISO datetime "2026-...", parseFloat sẽ ra 2026!)
+  let rawSp = f.customfield_10022;
+  if (rawSp === null || rawSp === undefined) rawSp = f.customfield_10026;
+
+  let sp = 0;
+  if (typeof rawSp === 'number' && !isNaN(rawSp)) {
+    sp = rawSp;
+  } else if (typeof rawSp === 'string' && /^\d+(\.\d+)?$/.test(rawSp.trim())) {
+    sp = parseFloat(rawSp.trim());
+  } else if (f.timeoriginalestimate && typeof f.timeoriginalestimate === 'number') {
+    sp = Math.round((f.timeoriginalestimate / 28800) * 10) / 10;
+  } else if (f.timeoriginalestimate && typeof f.timeoriginalestimate === 'string' && /^\d+(\.\d+)?$/.test(f.timeoriginalestimate.trim())) {
+    sp = Math.round((parseFloat(f.timeoriginalestimate.trim()) / 28800) * 10) / 10;
   }
-  sp = parseFloat(sp) || 0;
-  committedPoints += sp;
+  sp = Math.max(0, Math.round(sp * 10) / 10);
+  committedPoints = Math.round((committedPoints + sp) * 10) / 10;
 
   // Tính thời gian ở trạng thái từ changelog (nếu có) hoặc updated
   let daysInStatus = 0;
@@ -141,7 +146,7 @@ for (const issue of issues) {
   };
 
   if (isDone) {
-    completedPoints += sp;
+    completedPoints = Math.round((completedPoints + sp) * 10) / 10;
     doneIssues.push(issueItem);
   } else if (isInProg) {
     inProgressIssues.push(issueItem);
@@ -165,7 +170,7 @@ for (const issue of issues) {
       memberStats[assignee] = { tickets: 0, sp: 0, inProgress: 0, role: 'Thành viên khác' };
     }
     memberStats[assignee].tickets += 1;
-    memberStats[assignee].sp += sp;
+    memberStats[assignee].sp = Math.round((memberStats[assignee].sp + sp) * 10) / 10;
     if (isInProg) memberStats[assignee].inProgress += 1;
   }
 }

@@ -40,7 +40,7 @@ trigger: Khi cần chạy test automation, regression test, hoặc thẩm địn
 - **Bước 4: Report (Báo cáo)**
   - Node `qa-format-result` đã tự sinh `report.md` và `run-status.json`.
   - **Agent KHÔNG tự viết/sửa lại `report.md`**. Chỉ việc đọc `report.md` và tóm tắt ngắn gọn 1-2 câu ra màn hình chat.
-  - Đề xuất: `FAIL` → `dev-debugging`, `ERROR/TIMEOUT` → `qa-auto-design` / User, `RUNNER_UNAVAILABLE` → User (`npm run n8n`).
+  - Đề xuất: `FAIL` → Bàn giao cho Developer phụ trách service / `cr-review-code-and-quality`, `ERROR/TIMEOUT` → `qa-auto-design` / User, `RUNNER_UNAVAILABLE` → User (`npm run n8n`).
 
 ## 4. Verdict & Error Contract
 Runner sẽ trả kết quả JSON với các mã lỗi như `COLLECT_IMPORT_ERROR`, `NO_TESTS_COLLECTED`, `TEST_FAILED`. 

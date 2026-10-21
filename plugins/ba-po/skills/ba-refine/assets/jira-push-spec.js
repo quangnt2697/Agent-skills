@@ -94,6 +94,19 @@ function splitBlocks(markdown) {
 
         if (/^\s*```/.test(line)) inCodeBlock = !inCodeBlock;
 
+        // Nhận diện block ảnh Markdown đứng riêng: ![alt](path/to/image.png)
+        const imgMatch = !inCodeBlock && line.match(/^\s*!\[([^\]]*)\]\(([^)]+)\)\s*$/);
+        if (imgMatch) {
+            flush();
+            blocks.push({
+                type: 'image',
+                alt: imgMatch[1].trim(),
+                src: imgMatch[2].trim(),
+                raw: line
+            });
+            continue;
+        }
+
         if (!inCodeBlock
             && isTableRow(line)
             && i + 1 < lines.length
@@ -243,7 +256,87 @@ function sanitizeCodeBlocks(node) {
     return node;
 }
 
-function markdownToAdf(markdown) {
+function imageBlockToAdf(block, attachmentMap = {}) {
+    const filename = path.basename(block.src);
+    // Tra cứu trong attachmentMap theo filename hoặc full src path
+    const attach = attachmentMap[filename] 
+        || attachmentMap[block.src] 
+        || Object.values(attachmentMap).find(a => a && a.filename === filename);
+
+    // 1. Nếu đã upload lên Jira và có attachment ID chuẩn
+    if (attach && attach.id) {
+        return {
+            type: 'mediaSingle',
+            attrs: { layout: 'center' },
+            content: [
+                {
+                    type: 'media',
+                    attrs: {
+                        id: String(attach.id),
+                        type: 'file',
+                        collection: '',
+                        alt: block.alt || filename
+                    }
+                }
+            ]
+        };
+    }
+
+    // 2. Nếu có URL trực tiếp (external content URL)
+    if (attach && (attach.content || attach.url)) {
+        return {
+            type: 'mediaSingle',
+            attrs: { layout: 'center' },
+            content: [
+                {
+                    type: 'media',
+                    attrs: {
+                        type: 'external',
+                        url: attach.content || attach.url,
+                        alt: block.alt || filename
+                    }
+                }
+            ]
+        };
+    }
+
+    // 3. Fallback cho URL ngoài web (http:// hoặc https://)
+    if (block.src.startsWith('http://') || block.src.startsWith('https://')) {
+        return {
+            type: 'mediaSingle',
+            attrs: { layout: 'center' },
+            content: [
+                {
+                    type: 'media',
+                    attrs: {
+                        type: 'external',
+                        url: block.src,
+                        alt: block.alt || filename
+                    }
+                }
+            ]
+        };
+    }
+
+    // 4. Fallback cho file local khi chạy dry-run / offline
+    return {
+        type: 'mediaSingle',
+        attrs: { layout: 'center' },
+        content: [
+            {
+                type: 'media',
+                attrs: {
+                    id: `local-${filename}`,
+                    type: 'file',
+                    collection: '',
+                    alt: block.alt || filename
+                }
+            }
+        ]
+    };
+}
+
+function markdownToAdf(markdown, attachmentMap = {}) {
     // Ngắt dòng mềm của markdown: >=2 khoảng trắng cuối dòng.
     const marked = markdown.replace(/[ \t]{2,}\r?\n/g, `${HARD_BREAK_TOKEN}\n`);
 
@@ -252,6 +345,11 @@ function markdownToAdf(markdown) {
     for (const block of splitBlocks(marked)) {
         if (block.type === 'table') {
             content.push(markdownTableToAdf(block.lines));
+            continue;
+        }
+
+        if (block.type === 'image') {
+            content.push(imageBlockToAdf(block, attachmentMap));
             continue;
         }
 
@@ -266,17 +364,218 @@ function markdownToAdf(markdown) {
     return { type: 'doc', version: 1, content };
 }
 
+// Trích xuất UI Elements từ Mục 8 của markdown (UI Delta Mapping table) và tạo testability-manifest.json
+function exportTestabilityManifest(issueKey, mdContent, mdFilePath) {
+    const brMatches = [...mdContent.matchAll(/\[(BR-\d+)\]/gi)].map(m => m[1].toUpperCase());
+    const acMatches = [...mdContent.matchAll(/\[(AC-\d+\.\d+)\]/gi)].map(m => m[1].toUpperCase());
+    const uniqueBrs = [...new Set(brMatches)];
+    const uniqueAcs = [...new Set(acMatches)];
+
+    // Parse Bảng Chú thích Thay đổi Giao diện nếu có
+    const uiElements = [];
+    const tableRegex = /\|\s*(\*{0,2}[①②③④⑤⑥⑦⑧⑨⑩\d]+\*{0,2})\s*\|\s*([^|]+)\|\s*([^|]+)\|\s*([^|]+)\|\s*([^|]+)\|/g;
+    let match;
+    while ((match = tableRegex.exec(mdContent)) !== null) {
+        const badgeRaw = match[1].replace(/\*/g, '').trim();
+        // Bỏ qua header
+        if (badgeRaw.toLowerCase().includes('ký hiệu') || badgeRaw.includes('-')) continue;
+        const name = match[2].trim().replace(/\*\*/g, '');
+        const changeType = match[3].trim();
+        const desc = match[4].trim();
+        const ruleMap = match[5].trim();
+
+        const elemBrs = [...ruleMap.matchAll(/\[(BR-\d+)\]/gi)].map(m => m[1].toUpperCase());
+        const elemAcs = [...ruleMap.matchAll(/\[(AC-\d+\.\d+)\]/gi)].map(m => m[1].toUpperCase());
+
+        uiElements.push({
+            badge: badgeRaw,
+            name,
+            change_type: changeType.toLowerCase().includes('thêm') ? 'added' : (changeType.toLowerCase().includes('sửa') ? 'modified' : 'removed'),
+            change_type_label: changeType,
+            description: desc,
+            rules: elemBrs,
+            criteria: elemAcs
+        });
+    }
+
+    const manifest = {
+        issueKey,
+        generated_at: new Date().toISOString(),
+        profiles: uiElements.length > 0 ? ['WEB', 'UI', 'STATE'] : ['API', 'DATA'],
+        rules: uniqueBrs,
+        acceptance_criteria: uniqueAcs,
+        ui_elements: uiElements
+    };
+
+    // Lưu vào workspace/issues/{issueKey}/spec/testability-manifest.json
+    const issueDir = path.dirname(mdFilePath);
+    const manifestPath = path.join(issueDir, 'testability-manifest.json');
+    try {
+        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+        console.log(`📋 Đã xuất bản Testability Manifest: ${manifestPath} (${uiElements.length} phần tử UI)`);
+    } catch (err) {
+        console.warn(`⚠️ Không thể lưu testability-manifest.json: ${err.message}`);
+    }
+
+    // Xuất bản bản sao final.md nếu chưa có
+    const finalMdPath = path.join(issueDir, 'final.md');
+    try {
+        if (!fs.existsSync(finalMdPath) || path.basename(mdFilePath) !== 'final.md') {
+            fs.copyFileSync(mdFilePath, finalMdPath);
+            console.log(`📄 Đã sao chép sang artifact bàn giao: ${finalMdPath}`);
+        }
+    } catch (err) {
+        // bỏ qua
+    }
+
+    return manifest;
+}
+
+// Upload tất cả các file ảnh mockup lên Jira Attachments và trả về map { [filename]: attachmentInfo }
+async function uploadAllMockupAttachments(issueKey, baseUrl, authHeader, mdFilePath, mdContent) {
+    const specDir = path.dirname(mdFilePath);
+    const attachmentMap = {};
+
+    // 1. Lấy danh sách attachment đã có sẵn trên ticket
+    try {
+        const getUrl = `${baseUrl}/rest/api/3/issue/${issueKey}?fields=attachment`;
+        const getRes = await fetch(getUrl, {
+            headers: {
+                'Authorization': authHeader,
+                'Accept': 'application/json'
+            }
+        });
+        if (getRes.ok) {
+            const issueData = await getRes.json();
+            const existingAttachments = issueData.fields?.attachment || [];
+            for (const att of existingAttachments) {
+                attachmentMap[att.filename] = {
+                    id: att.id,
+                    filename: att.filename,
+                    content: att.content,
+                    size: att.size
+                };
+            }
+            if (existingAttachments.length > 0) {
+                console.log(`ℹ️  Jira ticket ${issueKey} hiện có ${existingAttachments.length} attachments có sẵn.`);
+            }
+        }
+    } catch (err) {
+        console.warn(`⚠️ Không thể truy vấn danh sách attachments hiện có: ${err.message}`);
+    }
+
+    // 2. Thu thập danh sách các file ảnh local
+    const candidateFiles = new Set();
+
+    // 2.1. Trích xuất từ Markdown tags ![alt](src)
+    const imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    let match;
+    while ((match = imgRegex.exec(mdContent)) !== null) {
+        const src = match[2].trim();
+        if (src.startsWith('http://') || src.startsWith('https://')) continue;
+
+        const resolvedCandidates = [
+            path.resolve(specDir, src),
+            path.resolve(process.cwd(), src),
+            path.resolve(specDir, 'diagrams', path.basename(src)),
+            path.resolve(specDir, path.basename(src))
+        ];
+
+        for (const cand of resolvedCandidates) {
+            if (fs.existsSync(cand) && fs.statSync(cand).isFile()) {
+                candidateFiles.add(cand);
+                break;
+            }
+        }
+    }
+
+    // 2.2. Quét thêm thư mục diagrams/ nếu có các file mockup*.png
+    const diagramsDir = path.join(specDir, 'diagrams');
+    if (fs.existsSync(diagramsDir) && fs.statSync(diagramsDir).isDirectory()) {
+        const pngFiles = fs.readdirSync(diagramsDir).filter(f => f.toLowerCase().endsWith('.png') && f.toLowerCase().startsWith('mockup'));
+        for (const png of pngFiles) {
+            candidateFiles.add(path.join(diagramsDir, png));
+        }
+    }
+
+    // 2.3. Quét thêm specDir trực tiếp
+    const directMockup = path.join(specDir, 'mockup.png');
+    if (fs.existsSync(directMockup)) {
+        candidateFiles.add(directMockup);
+    }
+
+    if (candidateFiles.size === 0) {
+        console.log("ℹ️  Không tìm thấy ảnh Mockup PNG nào trên đĩa để đính kèm.");
+        return attachmentMap;
+    }
+
+    console.log(`🖼️  Tìm thấy ${candidateFiles.size} file ảnh Mockup cần xử lý:`);
+    for (const file of candidateFiles) {
+        console.log(`   - ${path.basename(file)} (${file})`);
+    }
+
+    // 3. Tiến hành upload từng file lên Jira Attachments
+    const attachUrl = `${baseUrl}/rest/api/3/issue/${issueKey}/attachments`;
+
+    for (const filePath of candidateFiles) {
+        const fileName = path.basename(filePath);
+        try {
+            const fileBuffer = fs.readFileSync(filePath);
+            const blob = new Blob([fileBuffer], { type: 'image/png' });
+            const formData = new FormData();
+            formData.append('file', blob, fileName);
+
+            const attachRes = await fetch(attachUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': authHeader,
+                    'X-Atlassian-Token': 'no-check'
+                },
+                body: formData
+            });
+
+            if (attachRes.ok) {
+                const uploadedList = await attachRes.json();
+                for (const item of uploadedList) {
+                    attachmentMap[item.filename] = {
+                        id: item.id,
+                        filename: item.filename,
+                        content: item.content,
+                        size: item.size
+                    };
+                    console.log(`✅ Đã tải lên ảnh Mockup: ${item.filename} (ID: ${item.id})`);
+                }
+            } else {
+                const errText = await attachRes.text();
+                console.warn(`⚠️ Đính kèm ảnh ${fileName} không thành công (HTTP ${attachRes.status}):`, errText);
+            }
+        } catch (err) {
+            console.warn(`⚠️ Lỗi mạng khi đính kèm ảnh ${fileName}: ${err.message}`);
+        }
+    }
+
+    return attachmentMap;
+}
+
+// Wrapper tương thích ngược
+async function uploadMockupAttachment(issueKey, baseUrl, authHeader, mdFilePath) {
+    const mdContent = fs.existsSync(mdFilePath) ? fs.readFileSync(mdFilePath, 'utf8') : '';
+    const map = await uploadAllMockupAttachments(issueKey, baseUrl, authHeader, mdFilePath, mdContent);
+    return Object.keys(map).length > 0;
+}
+
 async function main() {
     loadEnv();
 
     const args = process.argv.slice(2);
     if (args.length < 2) {
-        console.error("❌ Cách dùng: node jira-push-spec.js <JIRA_ISSUE_KEY|URL> <ĐƯỜNG_DẪN_FILE_MD>");
+        console.error("Usage: node jira-push-spec.js <issueKey> <markdownFilePath> [--dry-run]");
+        console.error("   VD: node jira-push-spec.js G3PTP-17057 workspace/issues/G3PTP-17057/spec/refined.md");
         process.exit(1);
     }
 
     const rawIssueKey = args[0];
-    const mdFilePath = args[1];
+    const mdFilePath = path.resolve(args[1]);
 
     const issueKey = normalizeIssueKey(rawIssueKey);
     if (!issueKey) {
@@ -306,30 +605,39 @@ async function main() {
     console.log(`⏳ Đang đọc file: ${mdFilePath}`);
     const markdownContent = fs.readFileSync(mdFilePath, 'utf8');
 
+    const authHeader = 'Basic ' + Buffer.from(`${email}:${apiToken}`).toString('base64');
+    let attachmentMap = {};
+    const isDryRun = process.env.DRY_RUN === '1' || args.includes('--dry-run');
+
+    if (!isDryRun) {
+        console.log(`⏳ Đang kiểm tra và tải ảnh Mockup lên Jira Attachments...`);
+        attachmentMap = await uploadAllMockupAttachments(issueKey, baseUrl, authHeader, mdFilePath, markdownContent);
+    }
+
     console.log(`⏳ Đang chuyển đổi Markdown sang Jira ADF...`);
     let adfContent;
     try {
-        adfContent = markdownToAdf(markdownContent);
+        adfContent = markdownToAdf(markdownContent, attachmentMap);
     } catch (err) {
         console.error("❌ Lỗi khi parse Markdown sang ADF:", err.message);
         process.exit(1);
     }
 
     const tableCount = adfContent.content.filter(n => n.type === 'table').length;
-    console.log(`   → ${adfContent.content.length} block, trong đó ${tableCount} bảng`);
+    const mediaCount = adfContent.content.filter(n => n.type === 'mediaSingle').length;
+    console.log(`   → ${adfContent.content.length} block, trong đó ${tableCount} bảng, ${mediaCount} ảnh mockup inline`);
 
     // --dry-run: in ADF ra stdout, không gọi Jira. Dùng để soi output trước khi
     // ghi đè description của ticket thật.
-    if (process.env.DRY_RUN === '1' || args.includes('--dry-run')) {
+    if (isDryRun) {
+        exportTestabilityManifest(issueKey, markdownContent, mdFilePath);
         console.log(JSON.stringify(adfContent, null, 2));
         console.log("🧪 DRY RUN — không gọi Jira API.");
         return;
     }
 
     const apiUrl = `${baseUrl}/rest/api/3/issue/${issueKey}`;
-    console.log(`🌐 Đang đẩy lên Jira: ${apiUrl}`);
-
-    const authHeader = 'Basic ' + Buffer.from(`${email}:${apiToken}`).toString('base64');
+    console.log(`🌐 Đang đẩy Description lên Jira: ${apiUrl}`);
 
     const body = {
         fields: {
@@ -349,8 +657,11 @@ async function main() {
         });
 
         if (response.ok) {
-            console.log(`✅ Thành công! Đã ghi đè Description của ticket ${issueKey}.`);
+            console.log(`✅ Thành công! Đã ghi đè Description của ticket ${issueKey} (kèm ${mediaCount} ảnh mockup inline).`);
             console.log(`👉 Xem ticket tại: ${baseUrl}/browse/${issueKey}`);
+
+            // Xuất testability-manifest.json
+            exportTestabilityManifest(issueKey, markdownContent, mdFilePath);
         } else {
             const errorText = await response.text();
             console.error(`❌ Cập nhật thất bại. HTTP Status: ${response.status}`);
@@ -364,7 +675,15 @@ async function main() {
 }
 
 // Export cho unit test; chỉ chạy main khi được gọi trực tiếp từ CLI.
-export { normalizeIssueKey, markdownToAdf, splitBlocks };
+export {
+    normalizeIssueKey,
+    markdownToAdf,
+    splitBlocks,
+    imageBlockToAdf,
+    exportTestabilityManifest,
+    uploadMockupAttachment,
+    uploadAllMockupAttachments
+};
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
     main();

@@ -129,6 +129,16 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
    }
    ```
 
+11. **Tự động Quét Màn hình Hiện tại (AS-IS Screen Discovery — Chốt chặn 2):**
+   Khi phát hiện task có liên quan tới giao diện (`task_type = "WEB"` hoặc `"APP"` theo `profile-web.md` / `profile-app.md`):
+   - **Đọc Chỉ mục Component UI:** Mở ngay `references/ui-component-map.json` để tra cứu danh sách màn hình và thư viện component chuẩn đã khai báo.
+   - **Đối với Web (`web-trading`):**
+     - Đọc trực tiếp file component của màn hình đích trong `dnse-trading` (VD: `apps/web/src/pages/Home`, `apps/web/src/components/OrderForm`) để lấy danh sách các trường, nhãn tiếng Việt và nút bấm hiện có (AS-IS DOM).
+     - *Tùy chọn nâng cao qua n8n:* Gọi webhook `/webhook/web-ui-locator-discovery` để đăng nhập vào Web UAT và chụp ảnh thực tế màn hình AS-IS.
+   - **Đối với App (`mobile-trading`):**
+     - Đọc trực tiếp file màn hình tương ứng trong `mobile/arrow-app` (VD: `lib/pages/order_deal_book`, `lib/pages/margin_loan`) để trích xuất đúng cấu trúc Header, Card, Form input và tên nhãn tiếng Việt đang dùng trên App.
+   - **Mục tiêu:** Nắm vững 90% khung màn hình cũ để làm nền ngữ cảnh, tránh việc Agent tự nghĩ ra bố cục hay đặt sai tên nhãn (label).
+
 ---
 
 ## Giai đoạn 1: Khai phóng theo 5 Chiều Nghiệp vụ (Business-Driven Divergence)
@@ -182,9 +192,9 @@ Chất vấn user qua kỹ năng `/ba-interview-me` (chỉ hỏi khi có điểm
 
 ## Giai đoạn 3: Mài sắc & Cấu trúc (Business Spec Sharpening)
 
-**Mục tiêu:** Chốt hướng đi và cấu trúc thành spec thuần nghiệp vụ theo khung 7 mục chuẩn mực.
+**Mục tiêu:** Chốt hướng đi và cấu trúc thành spec thuần nghiệp vụ theo khung 8 mục chuẩn mực (kèm Mockup trực quan nếu task có UI).
 
-### Bước 3.1: Tạo bản nháp (Draft) theo Khung 7 Mục Thuần Nghiệp Vụ
+### Bước 3.1: Tạo bản nháp (Draft) theo Khung 8 Mục Thuần Nghiệp Vụ
 
 Tạo file nháp tại: `workspace/issues/{issueKey}/spec/refined-draft.md` từ template `jira-description-template.md`:
 
@@ -194,18 +204,45 @@ Tạo file nháp tại: `workspace/issues/{issueKey}/spec/refined-draft.md` từ
 4. **Luồng Nghiệp vụ Phụ & Xử lý Ngoại lệ (Alternative & Exception Flows)**
 5. **Danh mục Quy tắc Nghiệp vụ & Công thức tính ([BR-01], [BR-02]...)**
 6. **Tiêu chí Nghiệm thu Nghiệp vụ ([AC-1.1], [AC-1.2]... dạng Business Checklist)**
-7. **Giả định Nghiệp vụ & Câu hỏi Mở (Business Assumptions & Open Questions)**
+7. **Giả định Nghiệp vụ & Đo lường Thành công (Business Assumptions & Success Metrics)**
+8. **Thiết kế Giao diện & Điểm chạm Màn hình (UI/UX & Mockup) — BẮT BUỘC khi task có UI**
 
 **❌ BỘ LỌC CHỐNG KỸ THUẬT (BẮT BUỘC):**
 - TUYỆT ĐỐI KHÔNG đưa vào: Tên bảng DB, kiểu dữ liệu SQL, HTTP Methods, JSON keys, Kafka topic, Exception names.
 - HỦY BỎ hoàn toàn sơ đồ luồng Mermaid.
-- **Quy tắc Mockup:** Chỉ thiết kế HTML/PNG mockup khi người dùng truyền cờ `--mockup` hoặc khi task yêu cầu thay đổi trực tiếp bố cục màn hình UI.
 
-### Bước 3.2: Trình bày bản nháp cho User duyệt (APPROVAL GATE — BẮT BUỘC)
+**🎨 QUY TRÌNH DỰNG MOCKUP THEO KIẾN TRÚC 4 CHỐT CHẶN & CASE-BASED (Khi task có UI):**
+Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App:
+1. **Chốt chặn 1 (ui-component-map.json):** Mở `references/ui-component-map.json`, tra cứu đúng màn hình và component chuẩn (Stepper, KrxPriceBoard, SegmentedControl, ModalConfirm, AlertBanner...). CẤM tự viết inline CSS sáng tạo layout tự do.
+2. **Chốt chặn 3 (Delta-Only & Case-Based Design):**
+   - Giữ nguyên 90% khung màn hình gốc làm nền ngữ cảnh (`class="as-is-context"` hoặc `data-ui="as-is"`, opacity 0.75).
+   - Phần thêm mới/sửa đổi được bao bằng viền nhấn nổi bật (`data-change="added|modified"`) kèm **Huy hiệu đánh số chú thích `①`, `②`, `③`**.
+   - **Tách rõ theo từng Case / Kịch bản thao tác cụ thể:**
+     - **Case 1:** Luồng chuẩn / Thao tác chính (Happy path).
+     - **Case 2:** Tình huống cảnh báo ngoại lệ / Xử lý vi phạm hạn mức.
+     - **Case 3:** Tình huống biên / Trạng thái khóa phiên ATO/ATC.
+   - **CẤM mô tả design bằng text lan man:** Dưới mỗi ảnh mockup của từng Case, bắt buộc ghi chú hành động của người dùng (Action: Click/Nhập/Chọn...) và phản hồi tương ứng của hệ thống (Response: Cập nhật giá/Hiện banner/Disable nút...) gắn với mã quy tắc `[BR-xx]`, `[AC-x.y]`.
+3. **Sinh Mockup HTML & PNG đa trạng thái:**
+   - Dựng file: `workspace/issues/{issueKey}/spec/diagrams/mockup.html` (dựa trên `mockup-harness.html`).
+   - Chạy script kết xuất ảnh Retina 2x cho tất cả các cases ngay tại Bước 3.1:
+     ```bash
+     node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/render-mockup.js \
+       "workspace/issues/{issueKey}/spec/diagrams/mockup.html" \
+       "workspace/issues/{issueKey}/spec/diagrams/mockup.png" fit 2 all
+     ```
+     *(Lệnh trên sẽ tự động sinh các file ảnh: `mockup.png`, `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png` tương ứng với từng state)*
+4. **Điền Mục 8 vào `refined-draft.md`:** Khai báo màn hình gốc AS-IS, nhúng các ảnh Markdown cho từng Case (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`), ghi chú điểm chạm thao tác `①`, `②`, `③` và hoàn thành **Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)**.
 
-1. Trình bày TOÀN BỘ 7 mục bản nháp cho user xem trực tiếp trong chat.
-2. DỪNG LẠI VÀ CHỜ USER PHẢN HỒI ("OK" hoặc chỉnh sửa).
-3. Revision Loop: Tiếp thu phản hồi, tối đa 5 vòng cho tới khi user duyệt.
+### Bước 3.2: Trình bày bản nháp cho User duyệt (Gate 2 — APPROVAL GATE)
+
+1. Trình bày TOÀN BỘ 8 mục bản nháp cho user xem trực tiếp trong chat.
+2. **Khi task có UI:** Trình đồng thời:
+   - **Nội dung Spec 8 mục**
+   - **Các ảnh Mockup trực quan theo từng Case** (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`)
+   - **Ghi chú điểm chạm thao tác `①`, `②`, `③` dưới từng ảnh**
+   - **Bảng chú thích UI Delta Mapping tổng hợp**
+3. **DỪNG LẠI VÀ CHỜ USER PHẢN HỒI ("OK" hoặc chỉnh sửa).**
+   User có quyền yêu cầu điều chỉnh lại vị trí nút bấm, nhãn trường, hoặc màu sắc trạng thái ngay trong vòng lặp Gate 2 (tối đa 5 vòng cho tới khi user hài lòng).
 
 ### Bước 3.3: Chốt bản cuối cùng và Lưu trữ
 
@@ -216,33 +253,33 @@ Tạo file nháp tại: `workspace/issues/{issueKey}/spec/refined-draft.md` từ
 
 ---
 
-## Giai đoạn 4: Đẩy lên Jira
+## Giai đoạn 4: Đẩy lên Jira & Handoff Kỹ thuật
 
-**Mục tiêu:** Cập nhật Jira task với spec đã refine. ❌ KHÔNG push comment, ❌ KHÔNG thêm label.
+**Mục tiêu:** Cập nhật Jira task với spec đã refine, dán trực tiếp toàn bộ ảnh Mockup vào Description và xuất bản manifest kiểm thử cho QA. ❌ KHÔNG push comment, ❌ KHÔNG thêm label.
 
-1. **Kiểm tra nội dung file trước khi push**
+1. **Kiểm tra nội dung file trước khi push:**
    File `refined.md` không được chứa thông tin nội bộ, không có placeholder, AC phải có `Given/When/Then` hợp lệ (≥3 scenario, ≥6 dòng).
 
-2. **Xem trước ADF (khuyến nghị, không gọi Jira)**
+2. **Xem trước ADF (khuyến nghị, không gọi Jira):**
    ```bash
    DRY_RUN=1 node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
      "workspace/issues/{issueKey}/spec/refined.md" | head -40
    ```
 
-3. **Đính kèm ảnh sơ đồ lên Jira (nếu có)**
-   Upload từng file PNG trong `diagrams/` lên tab Attachments.
-
-4. **Cập nhật Jira description (3-Tier Fallback)**
+3. **Cập nhật Jira description & Dán trực tiếp ảnh Mockup vào Description:**
    - **Ưu tiên 1 (n8n Fast-Path - Tức thời & đồng bộ Mattermost):**
      ```bash
      node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js pushSpecToJira {issueKey} "workspace/issues/{issueKey}/spec/refined.md"
      ```
-     *(Hoặc gõ từ Mattermost: `/agent [project hoặc cluster] push-jira {issueKey}`)*
-   - **Ưu tiên 2 (Fallback - Script Shell nội bộ):**
+   - **Ưu tiên 2 (CLI Helper Độc lập - Tự động upload ảnh và nhúng inline vào Description):**
      ```bash
      node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
        "workspace/issues/{issueKey}/spec/refined.md"
      ```
+     *Script `jira-push-spec.js` sẽ tự động phát hiện tất cả ảnh mockup (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`...), tải lên Jira Attachments trước, sau đó chèn chính xác các node ADF `mediaSingle` để **dán trực tiếp ảnh vào Mục 8 trong Description** chứ không chỉ đính kèm file rời rạc.*
+
+4. **Tự động xuất bản Testability Manifest (`spec/testability-manifest.json`):**
+   Script `jira-push-spec.js` tự động trích xuất các phần tử UI từ Bảng UI Delta Mapping của Mục 8, ánh xạ cùng danh sách `[BR-*]` và `[AC-*]` vào `workspace/issues/{issueKey}/spec/testability-manifest.json`. File này là đầu vào chuẩn hóa để QA sinh automation test và Page Object Model (POM) mà không phải gõ tay locators.
 
 5. **Ghi log push history** vào `push-log.json`.
 

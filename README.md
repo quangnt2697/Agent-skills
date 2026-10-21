@@ -1,12 +1,14 @@
 # agent-skills
 
-Bộ sưu tập kỹ năng (skills) cấp sản xuất cho AI coding agents, tập trung vào quy trình phát triển phần mềm chuyên nghiệp từ phân tích yêu cầu, thiết kế kỹ thuật, đến kiểm thử và triển khai.
+Bộ sưu tập kỹ năng (skills) cấp sản xuất cho AI coding agents, chuyên trách Phân tích Yêu cầu (BA/PO), Tự động hóa Kiểm thử (QA/SDET), Điều phối Agile (Scrum Master) và Đánh giá Chất lượng Mã nguồn (Code Reviewer & Security).
+
+👉 **[Bảng Tra cứu Master (CATALOG.md)](CATALOG.md)** | **[Lộ trình Tiếp cận (LEARNING-ROADMAP.md)](LEARNING-ROADMAP.md)** | **[Cẩm nang Cài đặt](docs/guides/installation-guide.md)**
 
 ---
 
 ## 🎯 Tổng quan
 
-**agent-skills** cung cấp 7 personas chuyên biệt với bộ kỹ năng đầy đủ để tự động hóa toàn bộ vòng đời phát triển phần mềm (SDLC). Hệ thống được module hóa thành các **plugins**, cho phép bạn chỉ cài đặt những gì mình cần:
+**agent-skills** cung cấp hệ thống kỹ năng chuyên biệt để tự động hóa quy trình phân tích và kiểm thử phần mềm chuyên nghiệp. Hệ thống được module hóa thành **6 plugins**, cho phép bạn chỉ cài đặt những gì mình cần:
 
 ### 1. BA/PO — Business Analyst / Product Owner (`plugins/ba-po`)
 Chuyên gia phân tích nghiệp vụ, làm rõ yêu cầu, viết đặc tả, và ưu tiên backlog.
@@ -18,17 +20,17 @@ Chuyên gia kiểm thử, thiết kế test cases, automation testing, và đả
 
 **6 skills:** Test design (Checklist + Gherkin), automation code generation, test execution, reverse engineering, Squash TM integration.
 
-### 4. Scrum Master (`plugins/scrum-master`)
+### 3. Scrum Master (`plugins/scrum-master`)
 Kỹ sư Quản lý Quy trình & Điều phối (Scrum Master). Quản lý Sprint, theo dõi Kanban board, phát hiện rủi ro (blockers), và điều hành các nghi thức Agile.
 
 **4 skills:** Sprint planning, daily standup, impediment triage, sprint retrospective.
 
-### 5. Code Reviewer & Quality Engineer (`plugins/code-reviewer`)
+### 4. Code Reviewer & Quality Engineer (`plugins/code-reviewer`)
 Kỹ sư chuyên trách đánh giá chất lượng mã nguồn, bảo mật và hiệu năng web.
 
 **4 skills:** Code simplification (`cr-code-simplification`), code and quality review (`cr-review-code-and-quality`), security code audit (`security-code-audit`), web performance Core Web Vitals (`webperf-core-vitals`).
 
-### 6. Fintech Data Engineer (`plugins/fintech-data`)
+### 5. Fintech Data Engineer (`plugins/fintech-data`)
 Kỹ sư dữ liệu thị trường và kiểm toán dữ liệu chứng khoán.
 
 **1 skill:** TimescaleDB KRX MDDS data reconciler (`db-timescale-reconciler`).
@@ -324,10 +326,10 @@ Xem chi tiết: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## 📊 Stats
 
-- **7 Plugins** (`ba-po`, `code-reviewer`, `core`, `dev`, `fintech-data`, `qa`, `scrum-master`)
-- **8 vai trò** (BA/PO, QA, DEV, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor, Core/Meta)
-- **44 Skills** (9 BA + 6 QA + 14 DEV + 4 SM + 2 CR + 1 Security + 1 WebPerf + 7 Meta)
-- **34 Slash Commands**
+- **6 Plugins** (`ba-po`, `code-reviewer`, `core`, `fintech-data`, `qa`, `scrum-master`)
+- **6 vai trò** (BA/PO, QA/SDET, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor)
+- **30 Skills** (9 BA + 6 QA + 4 SM + 4 CR/Sec/WebPerf + 1 Fintech Data + 6 Core Meta)
+- **29 Slash Commands**
 - **40+ Reference Documents**
 - **Production-Ready** — Dùng trong real projects (Finance/Trading domain)
 

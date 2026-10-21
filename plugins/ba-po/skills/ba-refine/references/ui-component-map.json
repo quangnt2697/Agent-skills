@@ -1,0 +1,484 @@
+{
+  "_doc": "Chỉ mục Màn hình UI & Thư viện Component chuẩn cho ba-refine. BẮT BUỘC đọc file này trước khi dựng Mockup để đảm bảo bám sát 100% codebase thực tế.",
+  "_updated": "2026-10-16",
+  "projects": {
+    "web-trading": "/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading",
+    "mobile-trading": "/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app"
+  },
+  "guardrails": {
+    "strict_ui_rules": [
+      "1. CẤM tự viết inline CSS sáng tạo layout tự do. BẮT BUỘC lắp ghép từ các component chuẩn đã khai báo.",
+      "2. BẮT BUỘC áp dụng cơ chế Delta-Only: Giữ nguyên khung màn hình gốc (as-is, opacity: 0.75) và chỉ làm nổi bật phần thay đổi ([data-change='added|modified|removed']) kèm Huy hiệu đánh số ① ② ③.",
+      "3. Tên nhãn, button, dropdown BẮT BUỘC dùng đúng thuật ngữ tiếng Việt đang có trong screens của dự án (tra cứu bên dưới).",
+      "4. Bảng màu chứng khoán: Tím #c80096 (Trần), Xanh sàn #00ced1 (Sàn), Vàng #f5a623 (TC), Xanh lá #00d084 (Tăng), Đỏ #ff4d4f (Giảm)."
+    ],
+    "delta_syntax": {
+      "as_is_element": "class=\"as-is-context\" hoặc data-ui=\"as-is\" (Hiển thị mờ nhẹ làm nền ngữ cảnh)",
+      "added_element": "data-change=\"added\" kèm <span class=\"delta-badge\">①</span> (Viền xanh viền nổi bật)",
+      "modified_element": "data-change=\"modified\" kèm <span class=\"delta-badge\">②</span> (Viền vàng cam nổi bật)",
+      "removed_element": "data-change=\"removed\" kèm <span class=\"delta-badge\">③</span> (Gạch ngang mờ đỏ)"
+    }
+  },
+  "discovery_helpers": {
+    "web": {
+      "repo_key": "web-trading",
+      "root": "/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading",
+      "pages_dir": "apps/web/src/pages",
+      "components_dir": "apps/web/src/components",
+      "ui_lib_dir": "libs/ui/src",
+      "n8n_discovery_webhook": "/webhook/web-ui-locator-discovery"
+    },
+    "mobile": {
+      "repo_key": "mobile-trading",
+      "root": "/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app",
+      "pages_dir": "lib/pages",
+      "screens_dir": "lib/screens",
+      "widgets_dir": "lib/widgets"
+    }
+  },
+  "web_trading": {
+    "screens": {
+      "OrderForm": {
+        "vietnamese_name": "Màn hình Đặt lệnh Chứng khoán Cơ sở",
+        "category": "Trading",
+        "route": "/trade",
+        "layout": "TwoColumnTrading (Trái: Chart + Sổ lệnh, Phải: Đặt lệnh)",
+        "source_files": [
+          "apps/web/src/pages/Home",
+          "apps/web/src/components/OrderForm",
+          "apps/web/src/components/PriceBoard"
+        ],
+        "primary_actions": [
+          "Đặt Mua",
+          "Đặt Bán",
+          "Chọn Tiểu khoản (Đuôi 1/Đuôi 6)",
+          "Chọn Gói Margin",
+          "Chọn Loại lệnh (LO, MP, ATO, ATC)"
+        ],
+        "key_fields": [
+          "Mã CK",
+          "Khối lượng",
+          "Giá đặt",
+          "Sức mua khả dụng",
+          "Tỷ lệ ký quỹ (Margin)",
+          "Gói phí ưu đãi"
+        ]
+      },
+      "OrdersConfirmation": {
+        "vietnamese_name": "Sổ lệnh & Xác nhận lệnh trong ngày",
+        "category": "Order Management",
+        "route": "/trade/orders",
+        "layout": "TabTableLayout (Tabs: Chờ khớp, Đã khớp, Hủy/Hết hạn)",
+        "source_files": [
+          "apps/web/src/pages/OrdersConfirmation",
+          "apps/web/src/components/OrderBook"
+        ],
+        "primary_actions": [
+          "Hủy lệnh",
+          "Sửa giá/khối lượng",
+          "Hủy toàn bộ lệnh chờ",
+          "Lọc theo trạng thái"
+        ],
+        "key_fields": [
+          "Mã lệnh",
+          "Thời gian",
+          "Mã CK",
+          "Lệnh M/B",
+          "Giá",
+          "Khối lượng đặt/khớp",
+          "Trạng thái"
+        ]
+      },
+      "Loans": {
+        "vietnamese_name": "Quản lý Khoản vay Ký quỹ & Gói Margin",
+        "category": "Margin & Loans",
+        "route": "/assets/loans",
+        "layout": "CardGridLayout (Danh sách gói vay + Bảng chi tiết từng deal)",
+        "source_files": [
+          "apps/web/src/pages/Loans",
+          "apps/web/src/pages/LoanDetail"
+        ],
+        "primary_actions": [
+          "Đổi gói vay",
+          "Trả nợ trước hạn",
+          "Xem hạn mức lãi suất ưu đãi",
+          "Gia hạn gói vay"
+        ],
+        "key_fields": [
+          "Tên gói vay",
+          "Lãi suất ưu đãi (%/năm)",
+          "Dư nợ gốc",
+          "Tiền lãi tích lũy",
+          "Tỷ lệ an toàn Rtt",
+          "Ngày đến hạn"
+        ]
+      },
+      "CashTransfer": {
+        "vietnamese_name": "Nộp / Rút & Chuyển tiền nội bộ",
+        "category": "Cash",
+        "route": "/cash-transfer",
+        "layout": "CardCenteredForm (Tabs: Nộp tiền QR, Chuyển ra Ngân hàng, Chuyển nội bộ)",
+        "source_files": [
+          "apps/web/src/pages/CashTransfer"
+        ],
+        "primary_actions": [
+          "Chuyển tiền ra tài khoản thụ hưởng",
+          "Chuyển giữa tiểu khoản 1 và 6",
+          "Quét mã QR nộp tiền"
+        ],
+        "key_fields": [
+          "Số tiền chuyển",
+          "Tài khoản nguồn",
+          "Ngân hàng thụ hưởng",
+          "Số tài khoản nhận",
+          "Nội dung",
+          "Phí chuyển khoản"
+        ]
+      },
+      "StockTransfer": {
+        "vietnamese_name": "Chuyển Chứng khoán giữa các Tiểu khoản",
+        "category": "Assets",
+        "route": "/stock-transfer",
+        "layout": "CardCenteredForm",
+        "source_files": [
+          "apps/web/src/pages/StockTransfer"
+        ],
+        "primary_actions": [
+          "Chuyển cổ phiếu thường sang ký quỹ",
+          "Chuyển trả về thường"
+        ],
+        "key_fields": [
+          "Mã chứng khoán",
+          "Số lượng khả dụng",
+          "Số lượng muốn chuyển",
+          "Tỷ lệ ảnh hưởng Margin"
+        ]
+      },
+      "Assets": {
+        "vietnamese_name": "Báo cáo Tài sản & Danh mục Đầu tư",
+        "category": "Assets",
+        "route": "/assets",
+        "layout": "DashboardWithCharts (Pie Chart phân bổ tài sản + Bảng danh mục)",
+        "source_files": [
+          "apps/web/src/pages/Assets"
+        ],
+        "primary_actions": [
+          "Xem lãi/lỗ chưa thực hiện",
+          "Xuất sao kê tài sản",
+          "Xem sức mua tổng quan"
+        ],
+        "key_fields": [
+          "Tổng tài sản",
+          "Tài sản ròng (NAV)",
+          "Tiền mặt",
+          "Giá trị chứng khoán",
+          "Lãi/Lỗ tạm tính (% và số tiền)"
+        ]
+      },
+      "ConditionalOrder": {
+        "vietnamese_name": "Đặt Lệnh Điều kiện Chuyên sâu (Stop-Loss / Take-Profit / Trailing)",
+        "category": "Trading",
+        "route": "/trade/conditional-orders",
+        "layout": "DrawerPanel / TabPanel",
+        "source_files": [
+          "apps/web/src/components/ConditionalOrder",
+          "apps/web/src/components/OcoOrder"
+        ],
+        "primary_actions": [
+          "Thiết lập giá kích hoạt",
+          "Chọn điều kiện chốt lời/cắt lỗ",
+          "Xác nhận kích hoạt"
+        ],
+        "key_fields": [
+          "Giá kích hoạt (Trigger Price)",
+          "Giá đặt lệnh",
+          "Khoảng cách trailing",
+          "Thời hạn hiệu lực"
+        ]
+      }
+    },
+    "detected_ui_primitives_count": 76,
+    "detected_ui_primitives": [
+      "Accordion",
+      "ActionTimer",
+      "Alert",
+      "Autocomplete",
+      "Avatar",
+      "Badge",
+      "Box",
+      "Breadcrumbs",
+      "Button",
+      "ButtonBase",
+      "Card",
+      "Checkbox",
+      "CheckboxGroup",
+      "Chip",
+      "CircularProgress",
+      "ClickAwayListener",
+      "Collapse",
+      "Container",
+      "DatePicker",
+      "Dialog",
+      "Divider",
+      "DotsFlashing",
+      "Drawer",
+      "FormControlLabel",
+      "GlobalStyles",
+      "Grid",
+      "Icon",
+      "IconButton",
+      "Input",
+      "InputErrorMessage",
+      "InputFormatter",
+      "InputPassword",
+      "LegacyTextField",
+      "LinearProgress",
+      "Link",
+      "ListItemButton",
+      "Menu",
+      "MenuList",
+      "Modal",
+      "MultiSelectSearch",
+      "OtpBlockInput",
+      "OutlinedInput",
+      "Pagination",
+      "Paper",
+      "Popover",
+      "Popper",
+      "Progress",
+      "ProgressBar",
+      "QRCode",
+      "Radio",
+      "RouterLink",
+      "SearchInput",
+      "Select",
+      "Skeleton",
+      "Slider",
+      "Stack",
+      "Stepper",
+      "Strategy",
+      "SwipeableDrawer",
+      "Switch",
+      "Tab",
+      "TabContext",
+      "TabList",
+      "TabPanel",
+      "Table",
+      "Tabs",
+      "TextArea",
+      "TextField",
+      "TimePicker",
+      "Toast",
+      "ToggleButton",
+      "ToggleGroup",
+      "Tooltip",
+      "Typography",
+      "styles",
+      "theme"
+    ]
+  },
+  "mobile_trading": {
+    "screens": {
+      "order_deal_book": {
+        "vietnamese_name": "Sổ Lệnh & Quản lý Deal Margin trên App",
+        "category": "Trading",
+        "layout": "ScaffoldWithTopTabs (Tabs: Sổ lệnh | Deal Margin | Lịch sử)",
+        "source_files": [
+          "lib/pages/order_deal_book",
+          "lib/pages/deal_history"
+        ],
+        "primary_actions": [
+          "Sửa lệnh nhanh",
+          "Hủy lệnh",
+          "Đổi gói deal margin",
+          "Đóng vị thế deal"
+        ],
+        "key_fields": [
+          "Mã CP",
+          "Giá mua/bán",
+          "Khối lượng",
+          "Lãi/lỗ theo deal",
+          "Lãi suất áp dụng",
+          "Cảnh báo Rtt"
+        ]
+      },
+      "edit_order": {
+        "vietnamese_name": "Sửa / Hủy Lệnh Đang Chờ Khớp",
+        "category": "Trading",
+        "layout": "BottomSheetModal",
+        "source_files": [
+          "lib/pages/edit_order"
+        ],
+        "primary_actions": [
+          "Tăng/giảm khối lượng (+/-)",
+          "Thay đổi mức giá",
+          "Xác nhận gửi sửa lệnh"
+        ],
+        "key_fields": [
+          "Giá cũ",
+          "Giá mới",
+          "Khối lượng cũ",
+          "Khối lượng mới",
+          "Bước giá tối thiểu"
+        ]
+      },
+      "margin_loan": {
+        "vietnamese_name": "Quản lý Gói Vay & Lãi suất Ký quỹ Mobile",
+        "category": "Margin & Loans",
+        "layout": "ScaffoldListWithHeader (Banner hạn mức + Danh sách gói)",
+        "source_files": [
+          "lib/pages/margin_loan",
+          "lib/pages/margin_loan_rate_selection",
+          "lib/pages/margin_registration"
+        ],
+        "primary_actions": [
+          "Chọn gói lãi suất ưu đãi",
+          "Kích hoạt hạn mức vay",
+          "Đăng ký hợp đồng ký quỹ"
+        ],
+        "key_fields": [
+          "Gói phí Margin",
+          "Mức lãi suất (%/năm)",
+          "Hạn mức phê duyệt",
+          "Thời hạn vay ưu đãi"
+        ]
+      },
+      "order_confirmation_page": {
+        "vietnamese_name": "Xác Nhận Đặt Lệnh & Nhập Smart OTP",
+        "category": "Security & Order",
+        "layout": "BottomSheet / FullModal",
+        "source_files": [
+          "lib/pages/order_confirmation_page",
+          "lib/screens/confirmation_page"
+        ],
+        "primary_actions": [
+          "Xác nhận mã OTP",
+          "Bật ghi nhớ phiên giao dịch",
+          "Gửi lệnh"
+        ],
+        "key_fields": [
+          "Thông tin lệnh (Mã, M/B, Giá, KL)",
+          "Tổng giá trị",
+          "Phí dự tính",
+          "Ô nhập Smart OTP 6 số"
+        ]
+      },
+      "cash_transfer": {
+        "vietnamese_name": "Chuyển Tiền & Nạp Rút Mobile",
+        "category": "Cash",
+        "layout": "ScaffoldWithCustomHeader",
+        "source_files": [
+          "lib/screens/cash_transfer",
+          "lib/screens/cash_transfer_withdrawal"
+        ],
+        "primary_actions": [
+          "Chuyển nhanh Napas 247",
+          "Chuyển nộp ký quỹ",
+          "Lưu tài khoản thụ hưởng"
+        ],
+        "key_fields": [
+          "Số dư khả dụng",
+          "Số tiền rút",
+          "Tên chủ tài khoản thụ hưởng",
+          "Ngân hàng nhận"
+        ]
+      },
+      "asset_report_page": {
+        "vietnamese_name": "Báo cáo Tài sản & Biến động NAV Mobile",
+        "category": "Assets",
+        "layout": "SliverScrollViewWithCard",
+        "source_files": [
+          "lib/pages/asset_report_page"
+        ],
+        "primary_actions": [
+          "Xem biểu đồ tăng trưởng NAV",
+          "Xem danh mục đang nắm giữ",
+          "Chia sẻ lợi nhuận"
+        ],
+        "key_fields": [
+          "Tổng tài sản",
+          "Sức mua",
+          "Tỷ lệ an toàn Margin",
+          "Top cổ phiếu sinh lời"
+        ]
+      }
+    },
+    "detected_widgets_count": 227,
+    "sample_detected_widgets": [
+      "account_view_mode_switcher",
+      "action_builder_view",
+      "add_symbol_button",
+      "app_keyboard_scope 2",
+      "app_keyboard_scope 3",
+      "app_keyboard_scope 4",
+      "app_keyboard_scope 5",
+      "app_keyboard_scope 6",
+      "app_keyboard_scope 7",
+      "app_keyboard_scope 8",
+      "app_keyboard_scope 9",
+      "app_keyboard_scope",
+      "app_lifecycle_widget",
+      "app_tabbar",
+      "back_to_top_button",
+      "backdrop_blur",
+      "background_opacity_widget",
+      "bank_account_empty_view",
+      "base_home_banner",
+      "base_page",
+      "batch_in_progress_widget",
+      "bg_card_view",
+      "blur_app_in_background",
+      "bottom_bar",
+      "bottom_tab_navigation",
+      "builder_view",
+      "button",
+      "cancel_conditional_dialog",
+      "cancel_dialog",
+      "cancel_dialog_widget"
+    ]
+  },
+  "standard_components": {
+    "StepperInput": {
+      "name": "Ô Nhập Giá / Khối lượng kèm nút Tăng Giảm (+/-)",
+      "class_name": "stepper-control",
+      "html_snippet": "<div class=\"form-group\">\n  <label class=\"form-label\">{LABEL} <span class=\"text-hint\">{HINT}</span></label>\n  <div class=\"stepper-control\">\n    <button type=\"button\" class=\"stepper-btn stepper-minus\">−</button>\n    <input type=\"text\" class=\"form-input text-center\" value=\"{VALUE}\">\n    <button type=\"button\" class=\"stepper-btn stepper-plus\">+</button>\n  </div>\n</div>",
+      "react_equivalent": "libs/ui/src/TextField / apps/web/src/components/OrderForm/PriceInput.tsx",
+      "flutter_equivalent": "lib/widgets/stepper_input.dart"
+    },
+    "KrxPriceBoard": {
+      "name": "Bảng Giá & Độ sâu Sổ lệnh KRX Mini (3 mức Mua - Khớp - 3 mức Bán)",
+      "class_name": "krx-order-book",
+      "html_snippet": "<div class=\"krx-order-book\">\n  <div class=\"krx-header\">\n    <span>Bên Mua</span>\n    <span>Khớp Lệnh</span>\n    <span>Bên Bán</span>\n  </div>\n  <div class=\"krx-row\">\n    <span class=\"krx-cell text-gain\">24.45 <small>(12.5k)</small></span>\n    <span class=\"krx-cell highlight-cell text-gain\">24.50 <small>(50.2k)</small></span>\n    <span class=\"krx-cell text-loss\">24.55 <small>(8.3k)</small></span>\n  </div>\n</div>",
+      "react_equivalent": "apps/web/src/components/PriceBoard / OrderBook",
+      "flutter_equivalent": "lib/widgets/krx_order_book_widget.dart"
+    },
+    "SegmentedControl": {
+      "name": "Thanh Chọn Phân đoạn (Tiểu khoản Thường / Margin hoặc Mua / Bán)",
+      "class_name": "segmented-control",
+      "html_snippet": "<div class=\"segmented-control\">\n  <button type=\"button\" class=\"segment-btn active\">Thường (Đuôi 1)</button>\n  <button type=\"button\" class=\"segment-btn\">Ký quỹ (Đuôi 6)</button>\n</div>",
+      "react_equivalent": "libs/ui/src/ToggleButton / ToggleGroup / Tabs",
+      "flutter_equivalent": "lib/widgets/custom_segmented_tab.dart"
+    },
+    "MarginPackageSelect": {
+      "name": "Dropdown Chọn Gói Vay Ký Quỹ & Lãi suất Ưu đãi",
+      "class_name": "margin-package-select",
+      "html_snippet": "<div class=\"form-group\" data-change=\"added\">\n  <span class=\"delta-badge\">①</span>\n  <label class=\"form-label\">Gói Lãi Suất Vay Ký Quỹ</label>\n  <div class=\"select-wrapper\">\n    <select class=\"form-select\">\n      <option value=\"T10_8.9\">Gói T+10 Ưu đãi (8.9%/năm - Miễn phí 5 ngày đầu)</option>\n      <option value=\"STANDARD_12.5\">Gói Tiêu chuẩn (12.5%/năm - Không giới hạn kỳ)</option>\n    </select>\n  </div>\n  <div class=\"badge-hint text-gain\">Tiết kiệm 3.6%/năm so với gói thông thường</div>\n</div>",
+      "react_equivalent": "libs/ui/src/Select / MultiSelectSearch",
+      "flutter_equivalent": "lib/pages/margin_loan_rate_selection"
+    },
+    "AlertBanner": {
+      "name": "Banner Thông Báo Lỗi / Cảnh báo Call Margin & Khóa Phiên",
+      "class_name": "alert-banner",
+      "html_snippet": "<div class=\"alert-banner warning\" data-change=\"added\">\n  <span class=\"delta-badge\">③</span>\n  <div class=\"alert-icon\">⚠️</div>\n  <div class=\"alert-content\">\n    <strong>Cảnh báo Tỷ lệ Ký quỹ:</strong> Tỷ lệ an toàn hiện tại là 38% (tiệm cận ngưỡng Call 35%). Vui lòng kiểm tra trước khi đặt lệnh giải ngân mới.\n  </div>\n</div>",
+      "react_equivalent": "libs/ui/src/Alert",
+      "flutter_equivalent": "lib/widgets/app_banner.dart"
+    },
+    "OrderConfirmModal": {
+      "name": "Hộp Thoại Xác Nhận Lệnh & Smart OTP",
+      "class_name": "modal-confirm",
+      "html_snippet": "<div class=\"modal-backdrop\">\n  <div class=\"modal-dialog\">\n    <div class=\"modal-header\">\n      <h3>Xác Nhận Đặt Lệnh Mua</h3>\n      <button class=\"modal-close\">✕</button>\n    </div>\n    <div class=\"modal-body\">\n      <div class=\"summary-row\"><span>Mã CK:</span><strong>VND</strong></div>\n      <div class=\"summary-row\"><span>Lệnh:</span><span class=\"text-gain\">MUA (LO)</span></div>\n      <div class=\"summary-row\"><span>Khối lượng:</span><strong>1,000</strong></div>\n      <div class=\"summary-row\"><span>Giá đặt:</span><strong>24,500 đ</strong></div>\n      <div class=\"summary-row total\"><span>Tổng giá trị:</span><strong>24,500,000 đ</strong></div>\n    </div>\n    <div class=\"modal-footer\">\n      <button class=\"btn-secondary\">Hủy bỏ</button>\n      <button class=\"btn-primary\">Xác Nhận Giao Dịch</button>\n    </div>\n  </div>\n</div>",
+      "react_equivalent": "libs/ui/src/Modal / Dialog",
+      "flutter_equivalent": "lib/pages/order_confirmation_page"
+    }
+  }
+}

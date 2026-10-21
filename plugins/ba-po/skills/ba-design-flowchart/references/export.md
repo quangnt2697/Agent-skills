@@ -85,31 +85,28 @@ If the import fails, surface this exact instruction to the user and stop:
 
 Don't auto-install. The user asked for one feature, not a system change.
 
-### Rasterize
+### Rasterize & Export (PNG & SVG)
 
-Write the snippet below to a temp file and run it with `python <tmp.py> <src.html> <out.png>`:
+Sử dụng trực tiếp script chuyên dụng tại `assets/export.py`:
 
-```python
-from playwright.sync_api import sync_playwright
-import sys, pathlib
+```bash
+# Xuất cả file .png và .svg cùng lúc (khuyến nghị):
+python3 assets/export.py <src.html> --both 2.0
 
-src, out = sys.argv[1], sys.argv[2]
-scale = int(sys.argv[3]) if len(sys.argv) > 3 else 2
-
-with sync_playwright() as p:
-    browser = p.chromium.launch()
-    page = browser.new_page(device_scale_factor=scale)
-    page.goto(f"file://{pathlib.Path(src).resolve()}")
-    page.wait_for_load_state("networkidle")
-    page.locator("svg").first.screenshot(path=out, omit_background=True)
-    browser.close()
+# Hoặc chỉ xuất riêng từng file:
+python3 assets/export.py <src.html> <out.png> 2.0
+python3 assets/export.py <src.html> <out.svg>
 ```
 
-Default `device_scale_factor=2` for crisp output. Accept `1` for compact assets or `3` for print/retina hero use, passed as a third CLI arg.
+**Cơ chế tối ưu Full HD & Chống lỗi SVG của `export.py`:**
+- **Full HD Viewport:** Tự động mở Playwright với viewport tối thiểu `1920x1080` (hoặc mở rộng theo viewBox của SVG), kết hợp `device_scale_factor=2.0` (mặc định) để ảnh snapshot siêu nét ở độ phân giải 2K/4K (3840x2160), không bao giờ bị cắt xén hay co rúm chữ.
+- **Font-Ready Awaiting:** Bắt buộc chờ `document.fonts.ready` hoàn tất trước khi chụp để tránh FOUC (nhảy chữ, vỡ layout).
+- **SVG Chuẩn XML 1.1:** Tự động nhúng Google Fonts với entity `&amp;`, chuyển đổi màu `rgba(...)` sang hex + opacity để tương thích với Microsoft Office/PowerPoint và Figma, đồng thời bảo đảm không bị nhân đôi thẻ `<defs>` (mismatched tag).
+- **Cảnh báo `<foreignObject>`:** Nhận diện và cảnh báo nguy cơ mất trắng text nếu SVG chứa thẻ HTML `foreignObject`.
 
 ### Output naming
 
-`example-architecture.html` → `example-architecture.png`, written next to the source. Honour explicit user-provided paths.
+`example-architecture.html` → `example-architecture.png` và `example-architecture.svg`, written next to the source. Honour explicit user-provided paths.
 
 ## Sizing the export
 

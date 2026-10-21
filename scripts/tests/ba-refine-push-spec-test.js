@@ -14,6 +14,7 @@ import {
   normalizeIssueKey,
   markdownToAdf,
   splitBlocks,
+  exportTestabilityManifest,
 } from '../../plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -170,13 +171,14 @@ test('splits a document into md and table blocks in order', () => {
 
 // --- Template ------------------------------------------------------------------
 
-test('the shipped template converts with both of its tables intact', () => {
+test('the shipped template converts with all three of its tables intact', () => {
   const templatePath = path.join(
     __dirname, '..', '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'assets', 'jira-description-template.md',
   );
   const doc = markdownToAdf(fs.readFileSync(templatePath, 'utf8'));
 
-  assert.strictEqual(doc.content.filter(n => n.type === 'table').length, 2);
+  // 3 bảng: Success Metrics, Tracking, và Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)
+  assert.strictEqual(doc.content.filter(n => n.type === 'table').length, 3);
 });
 
 test('the shipped template carries no leftover meta text', () => {
@@ -198,3 +200,111 @@ test('the shipped template carries no leftover meta text', () => {
     assert.ok(!raw.includes(banned), `template vẫn còn: ${banned}`);
   }
 });
+
+// --- Testability Manifest & UI Delta Mapping -----------------------------------
+
+test('exportTestabilityManifest extracts BR, AC, and UI delta mapping table', () => {
+  const sampleMarkdown = `
+## 5. Quy tắc Nghiệp vụ
+- [BR-01] Quy tắc gói vay ký quỹ ưu đãi
+- [BR-02] Quy tắc kiểm tra bước giá
+
+## 6. Tiêu chí Nghiệm thu
+- [AC-1.1] Đặt lệnh thành công với gói T+10
+- [AC-1.2] Báo lỗi khi sai bước giá
+
+## 8. Thiết kế Giao diện & Điểm chạm Màn hình (UI/UX & Mockup)
+| Ký hiệu trên Mockup | Thành phần Giao diện | Loại thay đổi | Mô tả chi tiết & Trạng thái | Ràng buộc Nghiệp vụ |
+| :---: | --- | :---: | --- | :---: |
+| **①** | Chọn Gói vay Ký quỹ | Thêm mới (Dropdown) | Dropdown chọn gói T+10 | [BR-01], [AC-1.1] |
+| **②** | Ô Nhập Khối Lượng | Sửa đổi (Stepper) | Bổ sung nút tăng giảm +/- | [BR-02], [AC-1.2] |
+`;
+
+  const tmpPath = path.join(__dirname, 'temp_test_spec.md');
+  fs.writeFileSync(tmpPath, sampleMarkdown, 'utf8');
+
+  try {
+    const manifest = exportTestabilityManifest('G3PTP-17057', sampleMarkdown, tmpPath);
+
+    assert.strictEqual(manifest.issueKey, 'G3PTP-17057');
+    assert.deepStrictEqual(manifest.rules, ['BR-01', 'BR-02']);
+    assert.deepStrictEqual(manifest.acceptance_criteria, ['AC-1.1', 'AC-1.2']);
+    assert.strictEqual(manifest.ui_elements.length, 2);
+
+    assert.strictEqual(manifest.ui_elements[0].badge, '①');
+    assert.strictEqual(manifest.ui_elements[0].name, 'Chọn Gói vay Ký quỹ');
+    assert.strictEqual(manifest.ui_elements[0].change_type, 'added');
+    assert.deepStrictEqual(manifest.ui_elements[0].rules, ['BR-01']);
+    assert.deepStrictEqual(manifest.ui_elements[0].criteria, ['AC-1.1']);
+
+    assert.strictEqual(manifest.ui_elements[1].badge, '②');
+    assert.strictEqual(manifest.ui_elements[1].name, 'Ô Nhập Khối Lượng');
+    assert.strictEqual(manifest.ui_elements[1].change_type, 'modified');
+  } finally {
+    if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+    const generatedManifest = path.join(__dirname, 'testability-manifest.json');
+    if (fs.existsSync(generatedManifest)) fs.unlinkSync(generatedManifest);
+    const generatedFinal = path.join(__dirname, 'final.md');
+    if (fs.existsSync(generatedFinal)) fs.unlinkSync(generatedFinal);
+  }
+});
+
+// --- Ảnh Mockup Inline (mediaSingle / media) -----------------------------------
+
+test('splitBlocks identifies markdown image line as image block', () => {
+  const md = [
+    '### Case 1: Thao tác đặt lệnh',
+    '![Case 1: Thao tác đặt lệnh](workspace/issues/G3PTP-17057/spec/diagrams/mockup-case-1.png)',
+    '- **① Chọn Gói vay:** Click chọn gói T+10',
+  ].join('\n');
+
+  const blocks = splitBlocks(md);
+  assert.strictEqual(blocks.length, 3);
+  assert.strictEqual(blocks[0].type, 'md');
+  assert.strictEqual(blocks[1].type, 'image');
+  assert.strictEqual(blocks[1].alt, 'Case 1: Thao tác đặt lệnh');
+  assert.strictEqual(blocks[1].src, 'workspace/issues/G3PTP-17057/spec/diagrams/mockup-case-1.png');
+  assert.strictEqual(blocks[2].type, 'md');
+});
+
+test('markdownToAdf converts markdown image into mediaSingle ADF node with attachment id', () => {
+  const md = '![Case 1: Thao tác chính](mockup-case-1.png)';
+  const attachmentMap = {
+    'mockup-case-1.png': {
+      id: '99881',
+      filename: 'mockup-case-1.png',
+      content: 'https://jira.example.com/attachments/99881',
+    },
+  };
+
+  const doc = markdownToAdf(md, attachmentMap);
+  const mediaSingles = doc.content.filter(n => n.type === 'mediaSingle');
+
+  assert.strictEqual(mediaSingles.length, 1);
+  assert.strictEqual(mediaSingles[0].attrs.layout, 'center');
+  assert.strictEqual(mediaSingles[0].content[0].type, 'media');
+  assert.strictEqual(mediaSingles[0].content[0].attrs.type, 'file');
+  assert.strictEqual(mediaSingles[0].content[0].attrs.id, '99881');
+  assert.strictEqual(mediaSingles[0].content[0].attrs.alt, 'Case 1: Thao tác chính');
+});
+
+test('markdownToAdf handles dry-run or unmapped images gracefully with placeholder id', () => {
+  const md = '![Case 2: Cảnh báo ngoại lệ](mockup-case-2.png)';
+  const doc = markdownToAdf(md, {});
+  const mediaSingles = doc.content.filter(n => n.type === 'mediaSingle');
+
+  assert.strictEqual(mediaSingles.length, 1);
+  assert.strictEqual(mediaSingles[0].content[0].attrs.id, 'local-mockup-case-2.png');
+  assert.strictEqual(mediaSingles[0].content[0].attrs.alt, 'Case 2: Cảnh báo ngoại lệ');
+});
+
+test('the shipped template converts with 3 mediaSingle mockup blocks for Case 1, 2, and 3', () => {
+  const templatePath = path.join(
+    __dirname, '..', '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'assets', 'jira-description-template.md',
+  );
+  const doc = markdownToAdf(fs.readFileSync(templatePath, 'utf8'));
+
+  const mediaSingles = doc.content.filter(n => n.type === 'mediaSingle');
+  assert.strictEqual(mediaSingles.length, 3, 'Template phải có đúng 3 khối ảnh mockup cho Case 1, Case 2, Case 3');
+});
+

@@ -52,11 +52,11 @@ cd "$(git rev-parse --show-toplevel)"
 mkdir -p workspace/issues/{issueKey}/spec
 ```
 
-**Quan trọng**: Sau khi tạo mã Mermaid, BẮT BUỘC gọi lệnh render qua script:
+**Quan trọng**: Sau khi tạo file sơ đồ Editorial HTML/SVG, BẮT BUỘC gọi lệnh xuất ảnh chuẩn Full HD qua script `ba-design-flowchart`:
 ```bash
-node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-flowchart/assets/render.mjs --input <file_mmd_tạm> --output <file_png_kết_quả> --format png --bg '#ffffff' --fg '#000000'
+python3 ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-flowchart/assets/export.py <file_diagram_html> --both 2.0
 ```
-(Nếu có lỗi, tự động đọc lỗi và sửa lại cú pháp Mermaid).
+*(Script tự động xuất cả `.png` siêu nét chuẩn Full HD và `.svg` vector độc lập không lỗi font)*.
 
 ## Các Dấu hiệu Cảnh báo (Red Flags)
 ❌ **Biểu đồ quá phức tạp (> 20 nodes):** Cần chia nhỏ thành các sub-processes.

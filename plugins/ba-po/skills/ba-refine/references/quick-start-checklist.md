@@ -52,6 +52,7 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 2. Trích xuất `fields.summary` làm Tiêu đề Task (KHÔNG dùng chuỗi placeholder)
 3. Quét: `issuelinks` (Confluence), `attachment`, `description` (URL pattern `*/wiki/*`)
 4. Kiểm tra cache: `workspace/{issueKey}/source/refs/` đã có file nào chưa
+5. Nếu task liên quan UI (WEB/APP): **AS-IS Screen Discovery** — tra cứu `ui-component-map.json`, đọc file màn hình thực tế từ `dnse-trading` hoặc `arrow-app`.
 
 ---
 
@@ -81,46 +82,52 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 
 ---
 
-## BƯỚC 5 — Phase 3: Draft → **GATE 2** → Chốt
+## BƯỚC 5 — Phase 3: Draft (kèm Mockup) → **GATE 2** → Chốt
 
 ```
-Bước 3.1: Tạo refined-draft.md
+Bước 3.1: Tạo refined-draft.md (Khung 8 mục chuẩn)
           └─ Copy skeleton từ assets/jira-description-template.md
-          └─ Thay TẤT CẢ placeholder [...] bằng nội dung thật
+          └─ Nếu task liên quan UI (WEB hoặc APP):
+             • Tra cứu references/ui-component-map.json (chống thiết kế bừa)
+             • Dựng Delta-Only: Giữ 90% AS-IS mờ nhẹ, viền nhấn added/modified kèm badge ① ② ③
+             • Phân tách theo từng Case: Case 1 (Thao tác chính), Case 2 (Ngoại lệ/Lỗi), Case 3 (Khóa phiên/Biên)
+             • CẤM mô tả design bằng text lan man; mỗi ảnh đi kèm ghi chú thao tác người dùng (Action) & phản hồi hệ thống (Response) gắn [BR-*], [AC-*]
+             • Dựng spec/diagrams/mockup.html → Chạy render-mockup.js sinh đủ mockup-case-1.png, mockup-case-2.png, mockup-case-3.png
+             • Hoàn thành Mục 8 kèm Bảng chú thích UI Delta Mapping map trực tiếp với [BR-*], [AC-*]
           └─ Xóa heading không có nội dung, xóa --- giữa sections
 
-Bước 3.2: TRÌNH TOÀN BỘ NỘI DUNG cho user
-          → DỪNG, chờ user "OK"
-          → Revision loop ≤ 5 vòng nếu cần sửa
+Bước 3.2: TRÌNH TOÀN BỘ NỘI DUNG cho user (GATE 2)
+          └─ Trình ĐỒNG THỜI: Spec 8 mục + Các ảnh mockup từng Case + Ghi chú thao tác ① ② ③ + Bảng UI Delta
+          └─ DỪNG, chờ user "OK" (sửa lại vị trí nút/label ngay trong vòng lặp ≤ 5 vòng)
 
 Bước 3.3: Copy refined-draft.md → refined.md
-          → Gọi ba-user-story-writing để tinh chỉnh AC
-          → [HỦY BỎ Mermaid] Nếu task liên quan UI: Quét tokens codebase (hoặc Figma nếu có) → Dựng mockup.html (mockup-harness.html) → Chụp mockup.png bằng Playwright (Task non-UI: ghi N/A)
-          → Tính Confidence Score (ngưỡng ≥ 90%)
+          └─ Gọi ba-user-story-writing để tinh chỉnh AC
+          └─ Tính Confidence Score (ngưỡng ≥ 90%)
 ```
 
 **Checklist refined.md trước khi push:**
 - [ ] Business Context ngắn gọn đúng trọng tâm (đúng 3 gạch đầu dòng: Vấn đề, Mục tiêu, Tính cấp thiết; không dùng sub-heading H3 lan man)
 - [ ] Không có placeholder `[...]` còn sót
 - [ ] AC có ≥ 3 Scenario (Happy, Edge, Validation) dạng Given/When/Then
+- [ ] Mục 8 có đầy đủ AS-IS Screen, các ảnh `mockup-case-*.png` kèm ghi chú thao tác `① ② ③` (không tả text lan man) và Bảng UI Delta
 - [ ] Không có heading nội bộ: "Giả định & Rủi ro", "Đánh giá Độ tin cậy"
 - [ ] Không có đường kẻ ngang `---` giữa sections
 
 ---
 
-## BƯỚC 6 — Phase 4: Push Jira (Sau khi user approve)
+## BƯỚC 6 — Phase 4: Push Jira & Handoff (Sau khi user approve)
 
 ```bash
-# 1. Dry-run preview (không gọi Jira)
+# 1. Dry-run preview (không gọi Jira, tự export testability-manifest.json và ADF mediaSingle preview)
 DRY_RUN=1 node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
   "workspace/{issueKey}/spec/refined.md" | head -40
 
-# 2. Push thật sau khi xác nhận ADF đúng
+# 2. Push thật: Tự động upload toàn bộ ảnh mockup lên Attachments + Dán trực tiếp (inline) vào Description Jira
 node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
   "workspace/{issueKey}/spec/refined.md"
 ```
 
-→ Push thành công: Tự động chuyển sang `/qa-test-design {issueKey}`
+→ Tự động dán trực tiếp ảnh vào Description, sinh `spec/testability-manifest.json` và chuyển sang `/qa-test-design {issueKey}`
 
 ---
 

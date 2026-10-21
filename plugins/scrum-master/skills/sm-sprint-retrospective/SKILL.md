@@ -32,7 +32,7 @@ Skill này truy xuất dữ liệu Sprint từ Jira REST API với cấu hình x
    - Tính toán Sprint End Date dựa trên `sm-config.yaml` (anchor_start_date & duration_days).
    - Nếu hôm nay chưa phải cuối Sprint (vẫn đang ở giữa chừng), hãy xuất ra thông báo: "Sprint vẫn đang diễn ra, dữ liệu Retro có thể chưa hoàn chỉnh".
 3. **Tổng hợp dữ liệu Jira**:
-   - Gọi Jira REST API với JQL `sprint in openSprints()` để lấy toàn bộ issues. Dựa vào `statusCategory` và `customfield_10016` (Story Points) để tính:
+   - Gọi Jira REST API với JQL `sprint in openSprints()` để lấy toàn bộ issues. Dựa vào `statusCategory` và `customfield_10022` / `customfield_10026` (Story Points) để tính:
      - Velocity: Điểm đã cam kết (Committed Points) vs Điểm hoàn thành (Completed Points).
      - Cycle Time trung bình của các ticket.
      - Số lượng bug phát sinh trong Sprint.
