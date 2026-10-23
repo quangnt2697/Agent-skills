@@ -51,7 +51,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 - **Giai đoạn 0 (Thu thập Ý tưởng & Đối chiếu Quy tắc Ngành — Gate 1):**
   - Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira qua n8n Fast-Path (`prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`).
   - Tự động tra cứu các quy định nghiệp vụ liên quan trong `references/securities/` (cấu trúc thị trường, phiên giao dịch, vòng đời lệnh, quy tắc margin) để nắm vững nền tảng nghiệp vụ trước khi phân tích.
-  - **AS-IS Screen Discovery (Chốt chặn 2):** Khi task liên quan UI (WEB/APP), tra cứu `references/ui-component-map.json` và đọc trực tiếp file màn hình thực tế từ `dnse-trading` hoặc `mobile/arrow-app` để nắm đúng 90% khung màn hình cũ làm nền ngữ cảnh.
+  - **AS-IS Screen Discovery (Chốt chặn 2 — MASTER-BRANCH-FIRST):** Khi task liên quan UI (WEB/APP), tra cứu `references/ui-component-map.json` và **thực hiện toàn bộ Bước 11.A trong `workflow-and-phases.md`**: đọc các file màn hình đích trực tiếp từ **nhánh master/main** của `dnse-trading` hoặc `arrow-app` bằng `git show origin/master:<file>` (KHÔNG checkout), trích xuất bảng AS-IS DOM Inventory, đọc token CSS thực tế, và tạo file `spec/asis-inventory.md`. **⛔ CẤM dựng mockup khi chưa có file này.**
   - Quét Confluence + attachments, trình bảng tài liệu cho user duyệt qua **Gate 1**.
 
 - **Giai đoạn 1 (Khai phóng theo 5 Chiều Nghiệp vụ — Business-Driven Divergence):**
@@ -80,9 +80,11 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
     7. **Giả định Nghiệp vụ & Đo lường Thành công (Business Assumptions & Success Metrics)**
     8. **Thiết kế Giao diện & Điểm chạm Thao tác (UI/UX Mockup) — BẮT BUỘC khi task có UI**
   - **Quy tắc Dựng Mockup (Kiến trúc 4 Chốt Chặn & Case-Based):**
+    - **Chốt chặn 0 (asis-inventory.md):** Tầt cả phần tử UI trong mockup **BẮT BUỘC** có nguồn gốc trong `spec/asis-inventory.md` (sinh ra từ Bước 11.A). CẤM dựng mockup khi file này chưa tồn tại.
     - **Chốt chặn 1:** Tra cứu `references/ui-component-map.json` — Bắt buộc dùng component chuẩn, cấm viết inline CSS tự do.
     - **Chốt chặn 3 (Delta-Only & Case-Based):** Tái hiện khung màn hình cũ làm nền ngữ cảnh (as-is, opacity 0.75), làm nổi bật phần thay đổi kèm Huy hiệu đánh số chú thích `①`, `②`, `③`. **BẮT BUỘC chia theo từng Case/Kịch bản thao tác cụ thể** (Case 1: Thao tác chính / Luồng chuẩn, Case 2: Cảnh báo ngoại lệ / Lỗi, Case 3: Tình huống biên / Khóa phiên). **CẤM mô tả design bằng text lan man**, thay vào đó mỗi ảnh đều có ghi chú thao tác người dùng (Action) và phản hồi hệ thống (Response) gắn với `[BR-*]`, `[AC-*]`.
     - **Kết xuất Mockup ngay tại Bước 3.1:** Dựng `spec/diagrams/mockup.html` và chạy `render-mockup.js "mockup.html" "mockup.png" fit 2 all` sinh đủ ảnh `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png` để trình user duyệt tại Gate 2.
+    - **Chốt chặn 4 (Fidelity Check trước Gate 2):** Tính Fidelity Score = (số phần tử mockup khớp với asis-inventory.md) / (tổng) × 100%. **Ngưỡng bắt buộc ≥ 90%** trước khi trình Gate 2. Ghi Fidelity Score vào đầu Mục 8 của `refined-draft.md`.
   - Trình toàn bộ draft 8 mục kèm ảnh Mockup từng Case và Ghi chú thao tác qua **Gate 2** để user phê duyệt.
 
 - **Giai đoạn 4 (Đồng bộ lên Jira & Handoff Kỹ thuật):**

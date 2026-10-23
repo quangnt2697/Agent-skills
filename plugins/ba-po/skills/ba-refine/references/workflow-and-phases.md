@@ -130,14 +130,104 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
    ```
 
 11. **Tự động Quét Màn hình Hiện tại (AS-IS Screen Discovery — Chốt chặn 2):**
-   Khi phát hiện task có liên quan tới giao diện (`task_type = "WEB"` hoặc `"APP"` theo `profile-web.md` / `profile-app.md`):
-   - **Đọc Chỉ mục Component UI:** Mở ngay `references/ui-component-map.json` để tra cứu danh sách màn hình và thư viện component chuẩn đã khai báo.
-   - **Đối với Web (`web-trading`):**
-     - Đọc trực tiếp file component của màn hình đích trong `dnse-trading` (VD: `apps/web/src/pages/Home`, `apps/web/src/components/OrderForm`) để lấy danh sách các trường, nhãn tiếng Việt và nút bấm hiện có (AS-IS DOM).
-     - *Tùy chọn nâng cao qua n8n:* Gọi webhook `/webhook/web-ui-locator-discovery` để đăng nhập vào Web UAT và chụp ảnh thực tế màn hình AS-IS.
-   - **Đối với App (`mobile-trading`):**
-     - Đọc trực tiếp file màn hình tương ứng trong `mobile/arrow-app` (VD: `lib/pages/order_deal_book`, `lib/pages/margin_loan`) để trích xuất đúng cấu trúc Header, Card, Form input và tên nhãn tiếng Việt đang dùng trên App.
-   - **Mục tiêu:** Nắm vững 90% khung màn hình cũ để làm nền ngữ cảnh, tránh việc Agent tự nghĩ ra bố cục hay đặt sai tên nhãn (label).
+   Khi phát hiện task có liên quan tới giao diện (`task_type = "WEB"` hoặc `"APP"`):
+   - **Đọc Chỉ mục Component UI:** Mở ngay `references/ui-component-map.json` để xác định `source_files` của màn hình đích.
+   - **Bắt buộc thực hiện toàn bộ Bước 11.A bên dưới trước khi sang Giai đoạn 1.**
+
+### Bước 11.A — AS-IS Codebase Extraction Protocol (BẮT BUỘC — CẤM bỏ qua)
+
+> ⛔ **GATE CỨNG:** CẤM chạy `render-mockup.js` khi chưa tạo xong `spec/asis-inventory.md`.
+
+**11.A.1 — Xác định nhánh source-of-truth (master/main)**
+```bash
+# Luôn đọc từ master/main — KHÔNG đọc từ nhánh feature đang phát triển
+MASTER_REF=$(git -C "$PROJECT_CODEBASE_ROOT" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
+  | sed 's@^refs/remotes/origin/@@' || echo "master")
+echo "📌 Reading UI from branch: $MASTER_REF"
+
+# Fetch latest remote ref (không checkout, chỉ cập nhật pointer)
+git -C "$PROJECT_CODEBASE_ROOT" fetch origin "$MASTER_REF" --quiet 2>/dev/null || true
+MASTER_COMMIT=$(git -C "$PROJECT_CODEBASE_ROOT" rev-parse "origin/$MASTER_REF" 2>/dev/null || \
+  git -C "$PROJECT_CODEBASE_ROOT" rev-parse HEAD)
+echo "📌 Commit hash: $MASTER_COMMIT"
+```
+
+**11.A.2 — Tra cứu màn hình đích từ `ui-component-map.json`**
+```bash
+# Lấy source_files của màn hình liên quan (ví dụ: "OrderForm", "Portfolio"...)
+# Đọc trường: screen_key → source_files[], primary_actions[], key_fields[], key_states[]
+```
+
+**11.A.3 — Đọc từng source file từ master bằng `git show` (KHÔNG checkout)**
+
+Với Web (`dnse-trading`):
+```bash
+DNSE_ROOT="/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading"
+for FILE in <source_files từ ui-component-map>; do
+  echo "=== $FILE ==="
+  git -C "$DNSE_ROOT" show "origin/$MASTER_REF:$FILE/index.tsx" 2>/dev/null || \
+  git -C "$DNSE_ROOT" show "origin/$MASTER_REF:$FILE.tsx" 2>/dev/null
+done
+```
+
+Với App (`arrow-app`):
+```bash
+APP_ROOT="/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app"
+git -C "$APP_ROOT" show "origin/$MASTER_REF:lib/pages/<screen_dir>/<screen_file>.dart" 2>/dev/null
+```
+
+Từ nội dung đọc được, điền vào bảng AS-IS DOM Inventory:
+
+| Loại | Tên/class thực tế trong code | Nhãn tiếng Việt hiển thị | Vị trí (file:line) | Trạng thái / Điều kiện |
+|------|------------------------------|--------------------------|--------------------|------------------------|
+| Header | `<PageHeader title=...>` | "Đặt lệnh" | OrderForm/index.tsx:L12 | Luôn hiển thị |
+| Input | `<PriceInput name="price">` | "Giá" | OrderForm/index.tsx:L45 | Disabled khi ATO/ATC |
+| Button | `<Button variant="buy">` | "Đặt Mua" | OrderForm/index.tsx:L89 | Disabled khi ngoài phiên |
+| Dropdown | `<Select name="orderType">` | "Loại lệnh" | OrderForm/index.tsx:L67 | Options: LO, MP, ATO, ATC |
+| Banner | `<AlertBanner type="warning">` | "Cảnh báo Call Margin" | OrderForm/index.tsx:L112 | Conditional: khi margin ratio hit |
+
+**11.A.4 — Đọc Design Token / CSS thực tế từ master**
+```bash
+# Đọc token màu, spacing, typography thực tế từ master
+git -C "$DNSE_ROOT" show "origin/$MASTER_REF:libs/ui/src/tokens/colors.ts" 2>/dev/null | head -60
+git -C "$DNSE_ROOT" show "origin/$MASTER_REF:libs/ui/src/theme/index.ts" 2>/dev/null | head -40
+```
+→ Ghi lại CSS class/token đang dùng THỰC TẾ, không dùng giả định từ `mockup-harness.html`.
+
+**11.A.5 — Tạo file `spec/asis-inventory.md` (Output bắt buộc)**
+```bash
+ASSET_DIR="workspace/issues/{issueKey}/spec"
+mkdir -p "$ASSET_DIR"
+cat > "$ASSET_DIR/asis-inventory.md" << 'EOF'
+# AS-IS UI Inventory — {issueKey}
+
+## Metadata
+- Source branch: origin/{MASTER_REF}
+- Commit hash: {MASTER_COMMIT}
+- Ngày đọc: {timestamp}
+- Loại task: WEB / APP
+
+## Files đã đọc
+| File | Số dòng đọc |
+|------|-------------|
+| apps/web/src/components/OrderForm/index.tsx | 1-150 |
+| ... | ... |
+
+## AS-IS DOM Inventory
+{Bảng từ 11.A.3}
+
+## CSS Token thực tế đang dùng
+{Token từ 11.A.4}
+
+## Layout Pattern
+- Kiểu bố cục: (1-column / 2-column TwoColumnTrading / Modal / BottomSheet)
+- Responsive breakpoint: (nếu Web)
+- Platform: Web / App
+EOF
+```
+
+> ✅ Sau khi `asis-inventory.md` tạo xong → cho phép sang Giai đoạn 1.
+> *Tùy chọn nâng cao:* Gọi n8n webhook `/webhook/web-ui-locator-discovery` để chụp ảnh UAT thực tế bổ sung.
 
 ---
 
@@ -235,12 +325,41 @@ Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App:
 
 ### Bước 3.2: Trình bày bản nháp cho User duyệt (Gate 2 — APPROVAL GATE)
 
+**[Bước 3.2.0 — Fidelity Self-Check TRƯỚC khi trình user]**
+
+Agent phải tự đối chiếu mockup vừa dựng với `spec/asis-inventory.md` và điền bảng sau:
+
+| Phần tử UI | Trong `asis-inventory.md` | Trong `mockup.html` | Khớp? |
+|------------|--------------------------|---------------------|-------|
+| Header label | (tên nhãn thực tế) | (tên nhãn trong mockup) | ✅/❌ |
+| Input field | (tên field, disabled condition) | (field trong mockup) | ✅/❌ |
+| Button | (variant, label, disabled state) | (button trong mockup) | ✅/❌ |
+| Layout pattern | (2-column / modal / drawer) | (layout trong mockup) | ✅/❌ |
+| CSS token màu | (hex thực tế từ codebase) | (màu dùng trong mockup) | ✅/❌ |
+
+```
+Fidelity Score = (Số phần tử ✅) / (Tổng phần tử) × 100%
+```
+
+- **≥ 90%** → ✅ Được phép trình Gate 2
+- **80–89%** → ⚠️ Agent tự fix mockup trước, sau đó trình
+- **< 80%** → ❌ CẤM trình Gate 2 — bắt buộc đọc lại codebase (quay lại Bước 11.A)
+
+**Fidelity Score phải ghi vào đầu Mục 8 của `refined-draft.md`:**
+```
+## 8. Thiết kế Giao diện (UI/UX Mockup)
+> 🎯 Fidelity Score: XX% (đọc từ origin/master @ {commit-hash})
+```
+
+---
+
 1. Trình bày TOÀN BỘ 8 mục bản nháp cho user xem trực tiếp trong chat.
 2. **Khi task có UI:** Trình đồng thời:
    - **Nội dung Spec 8 mục**
    - **Các ảnh Mockup trực quan theo từng Case** (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`)
    - **Ghi chú điểm chạm thao tác `①`, `②`, `③` dưới từng ảnh**
    - **Bảng chú thích UI Delta Mapping tổng hợp**
+   - **Fidelity Score + Bảng Self-Check**
 3. **DỪNG LẠI VÀ CHỜ USER PHẢN HỒI ("OK" hoặc chỉnh sửa).**
    User có quyền yêu cầu điều chỉnh lại vị trí nút bấm, nhãn trường, hoặc màu sắc trạng thái ngay trong vòng lặp Gate 2 (tối đa 5 vòng cho tới khi user hài lòng).
 

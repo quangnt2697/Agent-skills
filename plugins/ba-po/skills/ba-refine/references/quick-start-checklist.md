@@ -52,7 +52,19 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 2. Trích xuất `fields.summary` làm Tiêu đề Task (KHÔNG dùng chuỗi placeholder)
 3. Quét: `issuelinks` (Confluence), `attachment`, `description` (URL pattern `*/wiki/*`)
 4. Kiểm tra cache: `workspace/issues/{issueKey}/source/refs/` đã có file nào chưa
-5. Nếu task liên quan UI (WEB/APP): **AS-IS Screen Discovery** — tra cứu `ui-component-map.json`, đọc file màn hình thực tế từ `dnse-trading` hoặc `arrow-app`.
+5. Nếu task liên quan UI (WEB/APP) — **AS-IS Extraction Protocol (BẮT BUỘC):**
+   - 5a. Tra cứu `ui-component-map.json` → xác định `source_files` của màn hình đích
+   - 5b. **Đọc từ master/main — KHÔNG checkout:**
+     ```bash
+     MASTER_REF=$(git -C "$PROJECT_ROOT" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
+       | sed 's@^refs/remotes/origin/@@' || echo "master")
+     git -C "$PROJECT_ROOT" fetch origin "$MASTER_REF" --quiet 2>/dev/null || true
+     git -C "$DNSE_ROOT" show "origin/$MASTER_REF:<source_file>/index.tsx"
+     ```
+   - 5c. Điền bảng **AS-IS DOM Inventory** (tên/class thực tế, nhãn tiếng Việt, file:line, điều kiện)
+   - 5d. Đọc CSS token thực tế từ `libs/ui/src/tokens/` trên master
+   - 5e. **Tạo `spec/asis-inventory.md`** (metadata branch + commit hash + bảng DOM + token)
+   - **⛔ GATE CỨNG:** CẤM chạy `render-mockup.js` khi chưa có `asis-inventory.md`
 
 ---
 
@@ -112,6 +124,9 @@ Bước 3.3: Copy refined-draft.md → refined.md
 - [ ] Mục 8 có đầy đủ AS-IS Screen, các ảnh `mockup-case-*.png` kèm ghi chú thao tác `① ② ③` (không tả text lan man) và Bảng UI Delta
 - [ ] Không có heading nội bộ: "Giả định & Rủi ro", "Đánh giá Độ tin cậy"
 - [ ] Không có đường kẻ ngang `---` giữa sections
+- [ ] `spec/asis-inventory.md` đã tạo, đọc từ `origin/master` (ghi rõ commit hash)
+- [ ] Fidelity Score ≥ 90% (ghi trong Mục 8, dạng: `🎯 Fidelity Score: XX%`)
+- [ ] KHÔNG có phần tử UI tự sáng tạo không có trong `asis-inventory.md`
 
 ---
 
