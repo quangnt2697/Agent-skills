@@ -48,7 +48,8 @@
     "n8n:import": "for d in n8n-workflows/*/; do n8n import:workflow --separate --input=$d; done",
     "n8n:export": "node scripts/n8n/export-workflows.js",
     "n8n:clean": "node scripts/n8n/n8n-clean-workflows.js",
-    "n8n:sync-nodes": "node scripts/n8n/sync-n8n-nodes.js"
+    "n8n:sync-nodes": "node scripts/n8n/sync-n8n-nodes.js",
+    "n8n:activate": "node scripts/n8n/import-and-activate.js"
   },
   "engines": {
     "node": ">=20"
