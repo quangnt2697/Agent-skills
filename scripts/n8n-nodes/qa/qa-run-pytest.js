@@ -7,11 +7,21 @@ const issueKey = (input.json.issueKey || '').toUpperCase();
 let project = (input.json.project || '').trim();
 const reqTestFiles = (input.json.testFiles || '').trim();
 
+let procEnv = {};
+let procCwd = '';
+try {
+  const proc = require('process');
+  if (proc) {
+    procEnv = proc.env || {};
+    if (typeof proc.cwd === 'function') procCwd = proc.cwd();
+  }
+} catch (_) {}
+
 if (input.json.error || !issueKey) {
-  return [{ json: { stdout: '', stderr: input.json.error || 'Thiếu tham số issueKey.', exitCode: 1, error: { message: input.json.error || 'Thiếu tham số issueKey.' }, project, issueKey, cwd: process.cwd() } }];
+  return [{ json: { stdout: '', stderr: input.json.error || 'Thiếu tham số issueKey.', exitCode: 1, error: { message: input.json.error || 'Thiếu tham số issueKey.' }, project, issueKey, cwd: procCwd } }];
 }
 
-let cwd = $env.AGENT_WORKSPACE_DIR || process.cwd();
+let cwd = ($env && $env.AGENT_WORKSPACE_DIR) || procCwd || '';
 
 let projects = {};
 try {
@@ -28,7 +38,7 @@ if (project) {
   if (projects[project]) {
     cwd = projects[project];
   } else {
-    const scanDirsRaw = (typeof $env !== 'undefined' && $env.PROJECT_SCAN_DIRS) || process.env.PROJECT_SCAN_DIRS || '';
+    const scanDirsRaw = (typeof $env !== 'undefined' && $env.PROJECT_SCAN_DIRS) || procEnv.PROJECT_SCAN_DIRS || '';
     const scanDirs = scanDirsRaw.split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
     let foundDir = '';
     for (const sDir of scanDirs) {
@@ -44,16 +54,33 @@ if (project) {
     cwd = projects[projectKeys[0]];
     project = projectKeys[0];
   } else {
-    const currentTestDir = path.resolve(cwd, 'workspace', issueKey, 'test');
-    if (!fs.existsSync(currentTestDir)) {
+    const candidateDirs = [
+      path.resolve(cwd, 'workspace', 'issues', issueKey, 'test'),
+      path.resolve(cwd, 'workspace', issueKey, 'test')
+    ];
+    let currentTestDir = candidateDirs.find(d => fs.existsSync(d));
+    if (!currentTestDir) {
       for (const [pName, pPath] of Object.entries(projects)) {
-        if (fs.existsSync(path.resolve(pPath, 'workspace', issueKey, 'test'))) { cwd = pPath; project = pName; break; }
+        const pCandidates = [
+          path.resolve(pPath, 'workspace', 'issues', issueKey, 'test'),
+          path.resolve(pPath, 'workspace', issueKey, 'test')
+        ];
+        const found = pCandidates.find(d => fs.existsSync(d));
+        if (found) {
+          cwd = pPath;
+          project = pName;
+          currentTestDir = found;
+          break;
+        }
       }
     }
   }
 }
 
-const ticketDir = path.resolve(cwd, 'workspace', issueKey);
+let ticketDir = path.resolve(cwd, 'workspace', 'issues', issueKey);
+if (!fs.existsSync(ticketDir)) {
+  ticketDir = path.resolve(cwd, 'workspace', issueKey);
+}
 const testDir = path.resolve(ticketDir, 'test');
 const stepsDir = path.resolve(testDir, 'steps');
 const resultDir = path.resolve(testDir, 'result');
@@ -88,7 +115,7 @@ const args = [
 ];
 
 return new Promise((resolve) => {
-  const child = spawn('pytest', args, { cwd: cwd, env: process.env, shell: false });
+  const child = spawn('pytest', args, { cwd: cwd, shell: false });
   let stdoutData = '';
   let stderrData = '';
   

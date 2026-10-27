@@ -82,19 +82,24 @@ if (!step2Data) missingSteps.push('Step 2 (krx_mdds_v2_stock_infos)');
 let triggerSource = 'cron';
 try {
   const prepNode = $('Prepare Watchdog Query').first();
-  if (prepNode && prepNode.json && prepNode.json._triggerSource) {
-    triggerSource = prepNode.json._triggerSource;
+  if (prepNode && prepNode.json) {
+    triggerSource = prepNode.json._parentTriggerSource || prepNode.json._triggerSource || 'cron';
   }
 } catch (_) {}
 for (const item of allInputs) {
-  if (item._triggerSource) triggerSource = item._triggerSource;
+  if (item._parentTriggerSource) triggerSource = item._parentTriggerSource;
+  else if (item._triggerSource && item._triggerSource !== 'executeWorkflow') triggerSource = item._triggerSource;
 }
 
 if (missingSteps.length === 2) {
-  // Cả 2 đều lỗi — có thể Metabase timeout hoàn toàn
+  // Cả 2 đều lỗi — có thể Metabase timeout hoàn toàn hoặc lỗi truy vấn
   const firstItem = allInputs[0] || {};
-  const errMsg = firstItem.reportText || firstItem.message || 'Không nhận được response từ Metabase';
-  const alertMsg = `🚨 **[MDDS PRODUCTION LỖI 08:20 AM]** Không thể truy vấn Metabase Production:\n> ${errMsg}\n\n*👉 Hãy kiểm tra kết nối TimescaleDB hoặc chạy SSO login nếu session token hết hạn.*`;
+  const errMsg = firstItem.reportText || firstItem.message || (allInputs.length === 0 ? 'Không nhận được dữ liệu phản hồi từ Metabase Query Executor (Sub-workflow có thể bị ngắt).' : 'Không nhận được response từ Metabase');
+  const isAuthError = /401|403|unauthenticated|session token/i.test(errMsg);
+  const suggestion = isAuthError
+    ? '\n\n*👉 Session Token có thể đã hết hạn hoặc không hợp lệ. Hãy chạy `node scripts/db/metabase-sso-login.js`.*'
+    : '\n\n*👉 Hãy kiểm tra kết nối TimescaleDB hoặc cú pháp câu lệnh SQL.*';
+  const alertMsg = `🚨 **[MDDS PRODUCTION LỖI 08:20 AM]** Không thể truy vấn Metabase Production:\n> ${errMsg}${suggestion}`;
   return [{
     json: {
       environment: 'PRODUCTION',
@@ -167,12 +172,85 @@ for (const s of summary) {
   tableMd += `| **${floor}** | ${total.toLocaleString()} | ${valid.toLocaleString()} | ${invalid > 0 ? `**${invalid}**` : '0'} | ${statusIcon} ${pct} |\n`;
 }
 
+// ── Helper: KRX Market Session State Machine ────────────────────────────────
+function getKRXMarketSession(date = new Date()) {
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+  const vnDate = new Date(utc + (7 * 3600000));
+  
+  const yyyy = vnDate.getFullYear();
+  const mm = String(vnDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(vnDate.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+  const dayOfWeek = vnDate.getDay();
+
+  const vnStockHolidays = [
+    '2025-01-01', '2025-01-27', '2025-01-28', '2025-01-29', '2025-01-30', '2025-01-31',
+    '2025-04-07', '2025-04-30', '2025-05-01', '2025-05-02', '2025-09-01', '2025-09-02',
+    '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-20',
+    '2026-04-26', '2026-04-30', '2026-05-01', '2026-09-01', '2026-09-02',
+    '2027-01-01', '2027-02-05', '2027-02-08', '2027-02-09', '2027-02-10',
+    '2027-04-16', '2027-04-30', '2027-05-01', '2027-09-02', '2027-09-03'
+  ];
+
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const isHoliday = vnStockHolidays.includes(dateStr);
+  const isTradingDay = !isWeekend && !isHoliday;
+
+  const hours = vnDate.getHours();
+  const minutes = vnDate.getMinutes();
+  const hhmm = hours * 100 + minutes;
+
+  let sessionPhase = 'CLOSED';
+  let description = 'Thị trường đóng cửa';
+
+  if (!isTradingDay) {
+    sessionPhase = 'CLOSED';
+    description = isWeekend ? 'Cuối tuần (Không có giao dịch)' : 'Ngày nghỉ lễ (Không có giao dịch)';
+  } else if (hhmm < 845) {
+    sessionPhase = 'PRE_OPEN';
+    description = 'Trước giờ mở cửa (08:20 SecDef check)';
+  } else if (hhmm < 900) {
+    sessionPhase = 'ATO';
+    description = 'Phiên khớp lệnh định kỳ mở cửa';
+  } else if (hhmm < 1130) {
+    sessionPhase = 'CONTINUOUS_MORNING';
+    description = 'Phiên khớp lệnh liên tục buổi sáng';
+  } else if (hhmm < 1300) {
+    sessionPhase = 'LUNCH_BREAK';
+    description = 'Nghỉ trưa';
+  } else if (hhmm < 1430) {
+    sessionPhase = 'CONTINUOUS_AFTERNOON';
+    description = 'Phiên khớp lệnh liên tục buổi chiều';
+  } else if (hhmm < 1445) {
+    sessionPhase = 'ATC';
+    description = 'Phiên khớp lệnh định kỳ đóng cửa';
+  } else if (hhmm < 1500) {
+    sessionPhase = 'PLO';
+    description = 'Phiên khớp lệnh sau giờ (HNX PLO)';
+  } else {
+    sessionPhase = 'POST_CLOSE';
+    description = 'Thị trường đã đóng cửa';
+  }
+
+  return {
+    tradingDate: dateStr,
+    sessionPhase,
+    description,
+    isTradingDay,
+    isPreOpen: isTradingDay && (hhmm < 900),
+    timeStr: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(vnDate.getSeconds()).padStart(2, '0')} ICT`
+  };
+}
+
+const marketSession = getKRXMarketSession(now);
+const isPreOpen = marketSession.isPreOpen;
+
 const totalPct = totalSymbolsAll > 0 ? ((validSymbolsAll / totalSymbolsAll) * 100).toFixed(1) + '%' : '0.0%';
 tableMd += `| **TỔNG CỘNG** | **${totalSymbolsAll.toLocaleString()}** | **${validSymbolsAll.toLocaleString()}** | **${invalidSymbolsAll > 0 ? invalidSymbolsAll : '0'}** | **${totalPct}** |\n`;
 
 // ── 7. Đánh giá tính toàn vẹn tổng thể ──────────────────────────────────────
 const hasDataError    = invalidSymbolsAll > 0;
-const hasUncleanError = uncleanCount > 0;
+const hasUncleanError = isPreOpen ? (uncleanCount > 0) : false;
 const isHealthy       = !hasDataError && !hasUncleanError;
 
 // ── 8. Thông báo nếu thiếu 1 step (partial error) ────────────────────────────
@@ -203,10 +281,14 @@ txtContent += `   => TỔNG CỘNG: ${totalSymbolsAll} mã đã kiểm tra. Đ�
 txtContent += `2. KIỂM TRA RESET CÁC TRƯỜNG GIAO DỊCH (21 trường realtime):\n`;
 if (step2Data === null) {
   txtContent += `   - Trạng thái: KHÔNG CÓ DỮ LIỆU (Step 2 không chạy được).\n\n`;
-} else if (uncleanCount === 0) {
-  txtContent += `   - Trạng thái: HOÀN TOÀN SẠCH. 100% các mã đã được reset/clear (NULL hoặc 0) trước giờ mở phiên.\n\n`;
+} else if (isPreOpen) {
+  if (uncleanCount === 0) {
+    txtContent += `   - Trạng thái: HOÀN TOÀN SẠCH. 100% các mã đã được reset/clear (NULL hoặc 0) trước giờ mở phiên.\n\n`;
+  } else {
+    txtContent += `   - CẢNH BÁO: Phát hiện ${uncleanCount} mã CHƯA ĐƯỢC RESET/CLEAR trường giao dịch đầu ngày!\n\n`;
+  }
 } else {
-  txtContent += `   - CẢNH BÁO: Phát hiện ${uncleanCount} mã CHƯA ĐƯỢC RESET/CLEAR trường giao dịch đầu ngày!\n\n`;
+  txtContent += `   - Trạng thái: BỎ QUA KIỂM TRA RESET ĐẦU NGÀY. Thời điểm kiểm tra (${timeStr}) thuộc phiên ${marketSession.sessionPhase}, dữ liệu realtime đã phát sinh giao dịch bình thường (${uncleanCount.toLocaleString()} bản ghi).\n\n`;
 }
 
 if (invalids.length > 0) {
@@ -227,7 +309,7 @@ if (invalids.length > 0) {
   txtContent += `--------------------------------------------------------------------------------\n\n`;
 }
 
-if (uncleanSamples.length > 0) {
+if (isPreOpen && uncleanSamples.length > 0) {
   txtContent += `4. DANH SÁCH CHI TIẾT CÁC MÃ CHƯA RESET/CLEAR TRƯỜNG REALTIME (${uncleanSamples.length} mã):\n`;
   txtContent += `--------------------------------------------------------------------------------\n`;
   txtContent += `STT | MÃ CK    | SÀN   | CÁC TRƯỜNG CHƯA CLEAR\n`;
@@ -404,14 +486,16 @@ try {
         detail: inv.error_detail || 'Thiếu biên độ/giá/board'
       });
     }
-    for (const unc of uncleanSamples) {
-      currentAnomalies.push({
-        topic: 'StockInfoRealtime',
-        symbol: unc.symbol || 'UNKNOWN',
-        anomalyType: 'UNCLEAN_REALTIME',
-        severity: 'WARNING',
-        detail: unc.uncleared_fields || 'Chưa clear trường realtime'
-      });
+    if (isPreOpen) {
+      for (const unc of uncleanSamples) {
+        currentAnomalies.push({
+          topic: 'StockInfoRealtime',
+          symbol: unc.symbol || 'UNKNOWN',
+          anomalyType: 'UNCLEAN_REALTIME',
+          severity: 'WARNING',
+          detail: unc.uncleared_fields || 'Chưa clear trường realtime'
+        });
+      }
     }
 
     const currentFpMap = {};
@@ -481,11 +565,11 @@ try {
 // ── 11. Định dạng thông báo Markdown gửi lên Mattermost ─────────────────────
 let msgTitle = '';
 if (isHealthy) {
-  msgTitle = `✅ **[MDDS PRODUCTION 08:20 AM] Dữ Liệu Security Definition V3 & Bảng Giá Đầu Ngày ỔN ĐỊNH**`;
+  msgTitle = `✅ **[MDDS PRODUCTION ${isPreOpen ? '08:20 AM' : 'WATCHDOG'}] Dữ Liệu Security Definition V3 & Bảng Giá Đầu Ngày ỔN ĐỊNH**`;
 } else if (hasDataError && hasUncleanError) {
-  msgTitle = `🚨 **[CẢNH BÁO MDDS PRODUCTION 08:20 AM] Phát Hiện Mã THIẾU DỮ LIỆU BIÊN ĐỘ VÀ CHƯA CLEAR DỮ LIỆU REALTIME!**`;
+  msgTitle = `🚨 **[CẢNH BÁO MDDS PRODUCTION] Phát Hiện Mã THIẾU DỮ LIỆU BIÊN ĐỘ VÀ CHƯA CLEAR DỮ LIỆU REALTIME!**`;
 } else if (hasDataError) {
-  msgTitle = `🚨 **[CẢNH BÁO MDDS PRODUCTION 08:20 AM] Phát Hiện ${invalidSymbolsAll} Mã CHỨNG KHOÁN THIẾU Dữ Liệu Trần/Sàn/TC/Board!**`;
+  msgTitle = `🚨 **[CẢNH BÁO MDDS PRODUCTION] Phát Hiện ${invalidSymbolsAll} Mã CHỨNG KHOÁN THIẾU Dữ Liệu Trần/Sàn/TC/Board!**`;
 } else {
   msgTitle = `⚠️ **[CẢNH BÁO MDDS PRODUCTION 08:20 AM] Phát Hiện ${uncleanCount} Mã CHƯA ĐƯỢC CLEAR Trường Realtime Đầu Ngày!**`;
 }
@@ -506,11 +590,17 @@ if (alertStateSummary.suppressed.length > 0 && alertStateSummary.firing.length =
   suppressionBanner = `\n> ℹ️ *Đã tắt âm ${alertStateSummary.suppressed.length} cảnh báo đang tiếp diễn để chống spam (sẽ nhắc lại sau 60 phút).* \n`;
 }
 
+const step2StatusMd = step2Data === null
+  ? `⚪ **Không kiểm tra được**`
+  : (isPreOpen
+      ? (hasUncleanError ? `❌ **${uncleanCount} mã chưa clear trước phiên**` : `✅ **100% đã clear sạch (NULL / 0) trước giờ ATO**`)
+      : `ℹ️ **Bỏ qua kiểm tra reset đầu ngày** (Đang trong/sau phiên \`${marketSession.sessionPhase}\`, ${uncleanCount.toLocaleString()} bản ghi giao dịch bình thường)`);
+
 let reportMarkdown = `${msgTitle}\n${recoveredBanner}${suppressionBanner}${partialWarning}\n`;
 reportMarkdown += `- **Thời gian chạy kiểm tra:** \`${dateStr} ${timeStr}\` | **Môi trường:** \`PRODUCTION\`\n`;
 reportMarkdown += `- **Tổng số mã niêm yết đã kiểm tra:** **${totalSymbolsAll.toLocaleString()}** mã\n`;
 reportMarkdown += `- **[Step 1] Dữ Liệu (Trần/Sàn/TC/Board):** ${hasDataError ? `❌ **${invalidSymbolsAll} mã thiếu dữ liệu**` : `✅ **100% đầy đủ**`}\n`;
-reportMarkdown += `- **[Step 2] Clear trường realtime (21 fields):** ${step2Data === null ? `⚪ **Không kiểm tra được**` : (hasUncleanError ? `❌ **${uncleanCount} mã chưa clear**` : `✅ **100% đã clear sạch (NULL / 0)**`)}\n\n`;
+reportMarkdown += `- **[Step 2] Clear trường realtime (21 fields):** ${step2StatusMd}\n\n`;
 
 reportMarkdown += `### 📊 Bảng Thống Kê Theo Sàn Giao Dịch:\n`;
 reportMarkdown += `${tableMd}\n`;
@@ -527,7 +617,7 @@ if (hasDataError) {
   reportMarkdown += `\`\`\`\n\n`;
 }
 
-if (hasUncleanError) {
+if (hasUncleanError && isPreOpen) {
   reportMarkdown += `### ⚠️ Danh Sách Mã Chưa Clear Trường Realtime (${uncleanSamples.length} mã):\n`;
   reportMarkdown += `\`\`\`txt\n`;
   uncleanSamples.slice(0, 25).forEach((unc, i) => {

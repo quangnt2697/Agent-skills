@@ -105,20 +105,34 @@ WITH sec_summary AS (
       WHEN market_id = 7 THEN 'HNX'
       WHEN market_id = 8 THEN 'UPCOM'
       WHEN market_id = 3 THEN 'DVX (Phái sinh)'
+      WHEN market_id = 4 THEN 'TPDN Riêng lẻ (HCX)'
       ELSE 'SÀN ' || COALESCE(market_id::text, 'KHÁC')
     END AS floor_code,
     COUNT(*)::int AS total_symbols,
-    COUNT(CASE WHEN basic_price > 0 AND ceiling_price > 0 AND floor_price > 0
-                    AND board_id IS NOT NULL AND board_id <> '' THEN 1 END)::int AS valid_symbols,
-    COUNT(CASE WHEN basic_price IS NULL OR basic_price <= 0
-                 OR ceiling_price IS NULL OR ceiling_price <= 0
-                 OR floor_price IS NULL OR floor_price <= 0
-                 OR board_id IS NULL OR board_id = '' THEN 1 END)::int AS invalid_symbols,
-    COUNT(CASE WHEN basic_price IS NULL OR basic_price <= 0 THEN 1 END)::int AS missing_basic_count,
-    COUNT(CASE WHEN ceiling_price IS NULL OR ceiling_price <= 0 THEN 1 END)::int AS missing_ceiling_count,
-    COUNT(CASE WHEN floor_price IS NULL OR floor_price <= 0 THEN 1 END)::int AS missing_floor_count,
-    COUNT(CASE WHEN board_id IS NULL OR board_id = '' THEN 1 END)::int AS missing_board_id_count
+    COUNT(CASE 
+      -- Trái phiếu riêng lẻ (market_id = 4): không áp dụng giá sàn theo quy chế UBCKNN
+      WHEN market_id = 4 AND basic_price > 0 AND ceiling_price > 0 AND board_id > 0 THEN 1
+      -- HNX board 4 (Thỏa thuận sau giờ): không áp dụng trần/sàn/tc theo đặc tả KRX
+      WHEN market_id = 7 AND board_id = 4 AND board_id > 0 THEN 1
+      -- Cổ phiếu & Phái sinh thông thường: bắt buộc đủ basic/ceiling/floor > 0 và board_id > 0
+      WHEN basic_price > 0 AND ceiling_price > 0 AND floor_price > 0 AND board_id > 0 THEN 1 
+    END)::int AS valid_symbols,
+    COUNT(CASE 
+      WHEN market_id = 4 AND (basic_price IS NULL OR basic_price <= 0 OR ceiling_price IS NULL OR ceiling_price <= 0 OR board_id IS NULL OR board_id <= 0) THEN 1
+      WHEN market_id = 7 AND board_id = 4 AND (board_id IS NULL OR board_id <= 0) THEN 1
+      WHEN market_id <> 4 AND NOT (market_id = 7 AND board_id = 4) AND (
+           basic_price IS NULL OR basic_price <= 0
+        OR ceiling_price IS NULL OR ceiling_price <= 0
+        OR floor_price IS NULL OR floor_price <= 0
+        OR board_id IS NULL OR board_id <= 0
+      ) THEN 1
+    END)::int AS invalid_symbols,
+    COUNT(CASE WHEN (market_id <> 7 OR board_id <> 4) AND (basic_price IS NULL OR basic_price <= 0) THEN 1 END)::int AS missing_basic_count,
+    COUNT(CASE WHEN (market_id <> 7 OR board_id <> 4) AND (ceiling_price IS NULL OR ceiling_price <= 0) THEN 1 END)::int AS missing_ceiling_count,
+    COUNT(CASE WHEN market_id NOT IN (4) AND (market_id <> 7 OR board_id <> 4) AND (floor_price IS NULL OR floor_price <= 0) THEN 1 END)::int AS missing_floor_count,
+    COUNT(CASE WHEN board_id IS NULL OR board_id <= 0 THEN 1 END)::int AS missing_board_id_count
   FROM security_definition_v3
+  WHERE sending_time >= CURRENT_DATE
   GROUP BY market_id
   ORDER BY floor_code
 ),
@@ -130,6 +144,7 @@ sec_invalids AS (
       WHEN market_id = 7 THEN 'HNX'
       WHEN market_id = 8 THEN 'UPCOM'
       WHEN market_id = 3 THEN 'DVX'
+      WHEN market_id = 4 THEN 'TPDN (HCX)'
       ELSE 'SÀN ' || COALESCE(market_id::text, 'KHÁC')
     END AS floor_code,
     basic_price,
@@ -137,16 +152,23 @@ sec_invalids AS (
     floor_price,
     board_id,
     CONCAT_WS(', ',
-      CASE WHEN basic_price IS NULL OR basic_price <= 0 THEN 'Thiếu giá TC' END,
-      CASE WHEN ceiling_price IS NULL OR ceiling_price <= 0 THEN 'Thiếu giá Trần' END,
-      CASE WHEN floor_price IS NULL OR floor_price <= 0 THEN 'Thiếu giá Sàn' END,
-      CASE WHEN board_id IS NULL OR board_id = '' THEN 'Thiếu Board ID' END
+      CASE WHEN (market_id <> 7 OR board_id <> 4) AND (basic_price IS NULL OR basic_price <= 0) THEN 'Thiếu giá TC' END,
+      CASE WHEN (market_id <> 7 OR board_id <> 4) AND (ceiling_price IS NULL OR ceiling_price <= 0) THEN 'Thiếu giá Trần' END,
+      CASE WHEN (market_id NOT IN (4) AND (market_id <> 7 OR board_id <> 4)) AND (floor_price IS NULL OR floor_price <= 0) THEN 'Thiếu giá Sàn' END,
+      CASE WHEN board_id IS NULL OR board_id <= 0 THEN 'Thiếu Board ID' END
     ) AS error_detail
   FROM security_definition_v3
-  WHERE basic_price IS NULL OR basic_price <= 0
-     OR ceiling_price IS NULL OR ceiling_price <= 0
-     OR floor_price IS NULL OR floor_price <= 0
-     OR board_id IS NULL OR board_id = ''
+  WHERE sending_time >= CURRENT_DATE
+    AND (
+      (market_id = 4 AND (basic_price IS NULL OR basic_price <= 0 OR ceiling_price IS NULL OR ceiling_price <= 0 OR board_id IS NULL OR board_id <= 0))
+      OR (market_id = 7 AND board_id = 4 AND (board_id IS NULL OR board_id <= 0))
+      OR (market_id <> 4 AND NOT (market_id = 7 AND board_id = 4) AND (
+           basic_price IS NULL OR basic_price <= 0
+        OR ceiling_price IS NULL OR ceiling_price <= 0
+        OR floor_price IS NULL OR floor_price <= 0
+        OR board_id IS NULL OR board_id <= 0
+      ))
+    )
   ORDER BY market_id, symbol
   LIMIT 100
 ),
@@ -160,56 +182,59 @@ unclean_realtime AS (
       ELSE 'KHÁC'
     END AS floor_code,
     CONCAT_WS(', ',
-      CASE WHEN highest_price       IS NOT NULL AND highest_price       > 0 THEN 'highest_price' END,
-      CASE WHEN lowest_price        IS NOT NULL AND lowest_price        > 0 THEN 'lowest_price' END,
-      CASE WHEN open_price          IS NOT NULL AND open_price          > 0 THEN 'open_price' END,
-      CASE WHEN close_price         IS NOT NULL AND close_price         > 0 THEN 'close_price' END,
-      CASE WHEN average_price       IS NOT NULL AND average_price       > 0 THEN 'average_price' END,
-      CASE WHEN buy_foreign_qtty    IS NOT NULL AND buy_foreign_qtty    > 0 THEN 'buy_foreign_qtty' END,
-      CASE WHEN sell_foreign_qtty   IS NOT NULL AND sell_foreign_qtty   > 0 THEN 'sell_foreign_qtty' END,
-      CASE WHEN expected_trade_price IS NOT NULL AND expected_trade_price > 0 THEN 'expected_trade_price' END,
-      CASE WHEN expected_trade_qtty  IS NOT NULL AND expected_trade_qtty  > 0 THEN 'expected_trade_qtty' END,
-      CASE WHEN open_interest_qtty   IS NOT NULL AND open_interest_qtty   > 0 THEN 'open_interest_qtty' END,
-      CASE WHEN total_volume_traded  IS NOT NULL AND total_volume_traded  > 0 THEN 'total_volume_traded' END,
-      CASE WHEN gross_trade_amount   IS NOT NULL AND gross_trade_amount   > 0 THEN 'gross_trade_amount' END,
-      CASE WHEN total_offer_qtty     IS NOT NULL AND total_offer_qtty     > 0 THEN 'total_offer_qtty' END,
-      CASE WHEN total_bid_qtty       IS NOT NULL AND total_bid_qtty       > 0 THEN 'total_bid_qtty' END,
-      CASE WHEN match_price          IS NOT NULL AND match_price          > 0 THEN 'match_price' END,
-      CASE WHEN match_qtty           IS NOT NULL AND match_qtty           > 0 THEN 'match_qtty' END,
-      CASE WHEN match_value          IS NOT NULL AND match_value          > 0 THEN 'match_value' END,
-      CASE WHEN changed_value        IS NOT NULL AND changed_value        > 0 THEN 'changed_value' END,
-      CASE WHEN changed_ratio        IS NOT NULL AND changed_ratio        > 0 THEN 'changed_ratio' END,
-      CASE WHEN buy_foreign_value    IS NOT NULL AND buy_foreign_value    > 0 THEN 'buy_foreign_value' END,
-      CASE WHEN sell_foreign_value   IS NOT NULL AND sell_foreign_value   > 0 THEN 'sell_foreign_value' END
+      CASE WHEN highest_price                IS NOT NULL AND highest_price                > 0 THEN 'highest_price' END,
+      CASE WHEN lowest_price                 IS NOT NULL AND lowest_price                 > 0 THEN 'lowest_price' END,
+      CASE WHEN open_price                   IS NOT NULL AND open_price                   > 0 THEN 'open_price' END,
+      CASE WHEN close_price                  IS NOT NULL AND close_price                  > 0 THEN 'close_price' END,
+      CASE WHEN average_price                IS NOT NULL AND average_price                > 0 THEN 'average_price' END,
+      CASE WHEN buy_foreign_quantity         IS NOT NULL AND buy_foreign_quantity         > 0 THEN 'buy_foreign_quantity' END,
+      CASE WHEN sell_foreign_quantity        IS NOT NULL AND sell_foreign_quantity        > 0 THEN 'sell_foreign_quantity' END,
+      CASE WHEN expected_trade_price         IS NOT NULL AND expected_trade_price         > 0 THEN 'expected_trade_price' END,
+      CASE WHEN expected_trade_quantity      IS NOT NULL AND expected_trade_quantity      > 0 THEN 'expected_trade_quantity' END,
+      CASE WHEN open_interest_quantity       IS NOT NULL AND open_interest_quantity       > 0 THEN 'open_interest_quantity' END,
+      CASE WHEN total_volume_traded          IS NOT NULL AND total_volume_traded          > 0 THEN 'total_volume_traded' END,
+      CASE WHEN gross_trade_amount           IS NOT NULL AND gross_trade_amount           > 0 THEN 'gross_trade_amount' END,
+      CASE WHEN sell_total_order_quantity    IS NOT NULL AND sell_total_order_quantity    > 0 THEN 'sell_total_order_quantity' END,
+      CASE WHEN buy_total_order_quantity     IS NOT NULL AND buy_total_order_quantity     > 0 THEN 'buy_total_order_quantity' END,
+      CASE WHEN match_price                  IS NOT NULL AND match_price                  > 0 THEN 'match_price' END,
+      CASE WHEN match_quantity               IS NOT NULL AND match_quantity               > 0 THEN 'match_quantity' END,
+      CASE WHEN match_value                  IS NOT NULL AND match_value                  > 0 THEN 'match_value' END,
+      CASE WHEN changed_value                IS NOT NULL AND changed_value                > 0 THEN 'changed_value' END,
+      CASE WHEN changed_ratio                IS NOT NULL AND changed_ratio                > 0 THEN 'changed_ratio' END,
+      CASE WHEN buy_foreign_value            IS NOT NULL AND buy_foreign_value            > 0 THEN 'buy_foreign_value' END,
+      CASE WHEN sell_foreign_value           IS NOT NULL AND sell_foreign_value           > 0 THEN 'sell_foreign_value' END
     ) AS uncleared_fields
   FROM krx_mdds_v2_stock_infos
-  WHERE (highest_price       IS NOT NULL AND highest_price       > 0)
-     OR (lowest_price        IS NOT NULL AND lowest_price        > 0)
-     OR (open_price          IS NOT NULL AND open_price          > 0)
-     OR (close_price         IS NOT NULL AND close_price         > 0)
-     OR (average_price       IS NOT NULL AND average_price       > 0)
-     OR (buy_foreign_qtty    IS NOT NULL AND buy_foreign_qtty    > 0)
-     OR (sell_foreign_qtty   IS NOT NULL AND sell_foreign_qtty   > 0)
-     OR (expected_trade_price IS NOT NULL AND expected_trade_price > 0)
-     OR (expected_trade_qtty  IS NOT NULL AND expected_trade_qtty  > 0)
-     OR (open_interest_qtty   IS NOT NULL AND open_interest_qtty   > 0)
-     OR (total_volume_traded  IS NOT NULL AND total_volume_traded  > 0)
-     OR (gross_trade_amount   IS NOT NULL AND gross_trade_amount   > 0)
-     OR (total_offer_qtty     IS NOT NULL AND total_offer_qtty     > 0)
-     OR (total_bid_qtty       IS NOT NULL AND total_bid_qtty       > 0)
-     OR (match_price          IS NOT NULL AND match_price          > 0)
-     OR (match_qtty           IS NOT NULL AND match_qtty           > 0)
-     OR (match_value          IS NOT NULL AND match_value          > 0)
-     OR (changed_value        IS NOT NULL AND changed_value        > 0)
-     OR (changed_ratio        IS NOT NULL AND changed_ratio        > 0)
-     OR (buy_foreign_value    IS NOT NULL AND buy_foreign_value    > 0)
-     OR (sell_foreign_value   IS NOT NULL AND sell_foreign_value   > 0)
+  WHERE created_date >= CURRENT_DATE
+    AND (
+         (highest_price                IS NOT NULL AND highest_price                > 0)
+      OR (lowest_price                 IS NOT NULL AND lowest_price                 > 0)
+      OR (open_price                   IS NOT NULL AND open_price                   > 0)
+      OR (close_price                  IS NOT NULL AND close_price                  > 0)
+      OR (average_price                IS NOT NULL AND average_price                > 0)
+      OR (buy_foreign_quantity         IS NOT NULL AND buy_foreign_quantity         > 0)
+      OR (sell_foreign_quantity        IS NOT NULL AND sell_foreign_quantity        > 0)
+      OR (expected_trade_price         IS NOT NULL AND expected_trade_price         > 0)
+      OR (expected_trade_quantity      IS NOT NULL AND expected_trade_quantity      > 0)
+      OR (open_interest_quantity       IS NOT NULL AND open_interest_quantity       > 0)
+      OR (total_volume_traded          IS NOT NULL AND total_volume_traded          > 0)
+      OR (gross_trade_amount           IS NOT NULL AND gross_trade_amount           > 0)
+      OR (sell_total_order_quantity    IS NOT NULL AND sell_total_order_quantity    > 0)
+      OR (buy_total_order_quantity     IS NOT NULL AND buy_total_order_quantity     > 0)
+      OR (match_price                  IS NOT NULL AND match_price                  > 0)
+      OR (match_quantity               IS NOT NULL AND match_quantity               > 0)
+      OR (match_value                  IS NOT NULL AND match_value                  > 0)
+      OR (changed_value                IS NOT NULL AND changed_value                > 0)
+      OR (changed_ratio                IS NOT NULL AND changed_ratio                > 0)
+      OR (buy_foreign_value            IS NOT NULL AND buy_foreign_value            > 0)
+      OR (sell_foreign_value           IS NOT NULL AND sell_foreign_value           > 0)
+    )
   ORDER BY symbol
   LIMIT 100
 )
 SELECT json_build_object(
   'step',         'sec_def_v3',
-  'total_scanned', (SELECT COUNT(*)::int FROM security_definition_v3),
+  'total_scanned', (SELECT COUNT(*)::int FROM security_definition_v3 WHERE sending_time >= CURRENT_DATE),
   'summary',      (SELECT COALESCE(json_agg(s), '[]'::json) FROM sec_summary s),
   'invalids',     (SELECT COALESCE(json_agg(i), '[]'::json) FROM sec_invalids i)
 )::text AS report_data
@@ -218,27 +243,30 @@ SELECT json_build_object(
   'step',          'realtime_clear',
   'unclean_count', (
     SELECT COUNT(*)::int FROM krx_mdds_v2_stock_infos
-    WHERE (highest_price       IS NOT NULL AND highest_price       > 0)
-       OR (lowest_price        IS NOT NULL AND lowest_price        > 0)
-       OR (open_price          IS NOT NULL AND open_price          > 0)
-       OR (close_price         IS NOT NULL AND close_price         > 0)
-       OR (average_price       IS NOT NULL AND average_price       > 0)
-       OR (buy_foreign_qtty    IS NOT NULL AND buy_foreign_qtty    > 0)
-       OR (sell_foreign_qtty   IS NOT NULL AND sell_foreign_qtty   > 0)
-       OR (expected_trade_price IS NOT NULL AND expected_trade_price > 0)
-       OR (expected_trade_qtty  IS NOT NULL AND expected_trade_qtty  > 0)
-       OR (open_interest_qtty   IS NOT NULL AND open_interest_qtty   > 0)
-       OR (total_volume_traded  IS NOT NULL AND total_volume_traded  > 0)
-       OR (gross_trade_amount   IS NOT NULL AND gross_trade_amount   > 0)
-       OR (total_offer_qtty     IS NOT NULL AND total_offer_qtty     > 0)
-       OR (total_bid_qtty       IS NOT NULL AND total_bid_qtty       > 0)
-       OR (match_price          IS NOT NULL AND match_price          > 0)
-       OR (match_qtty           IS NOT NULL AND match_qtty           > 0)
-       OR (match_value          IS NOT NULL AND match_value          > 0)
-       OR (changed_value        IS NOT NULL AND changed_value        > 0)
-       OR (changed_ratio        IS NOT NULL AND changed_ratio        > 0)
-       OR (buy_foreign_value    IS NOT NULL AND buy_foreign_value    > 0)
-       OR (sell_foreign_value   IS NOT NULL AND sell_foreign_value   > 0)
+    WHERE created_date >= CURRENT_DATE
+      AND (
+           (highest_price                IS NOT NULL AND highest_price                > 0)
+        OR (lowest_price                 IS NOT NULL AND lowest_price                 > 0)
+        OR (open_price                   IS NOT NULL AND open_price                   > 0)
+        OR (close_price                  IS NOT NULL AND close_price                  > 0)
+        OR (average_price                IS NOT NULL AND average_price                > 0)
+        OR (buy_foreign_quantity         IS NOT NULL AND buy_foreign_quantity         > 0)
+        OR (sell_foreign_quantity        IS NOT NULL AND sell_foreign_quantity        > 0)
+        OR (expected_trade_price         IS NOT NULL AND expected_trade_price         > 0)
+        OR (expected_trade_quantity      IS NOT NULL AND expected_trade_quantity      > 0)
+        OR (open_interest_quantity       IS NOT NULL AND open_interest_quantity       > 0)
+        OR (total_volume_traded          IS NOT NULL AND total_volume_traded          > 0)
+        OR (gross_trade_amount           IS NOT NULL AND gross_trade_amount           > 0)
+        OR (sell_total_order_quantity    IS NOT NULL AND sell_total_order_quantity    > 0)
+        OR (buy_total_order_quantity     IS NOT NULL AND buy_total_order_quantity     > 0)
+        OR (match_price                  IS NOT NULL AND match_price                  > 0)
+        OR (match_quantity               IS NOT NULL AND match_quantity               > 0)
+        OR (match_value                  IS NOT NULL AND match_value                  > 0)
+        OR (changed_value                IS NOT NULL AND changed_value                > 0)
+        OR (changed_ratio                IS NOT NULL AND changed_ratio                > 0)
+        OR (buy_foreign_value            IS NOT NULL AND buy_foreign_value            > 0)
+        OR (sell_foreign_value           IS NOT NULL AND sell_foreign_value           > 0)
+      )
   ),
   'unclean_samples', (SELECT COALESCE(json_agg(u), '[]'::json) FROM unclean_realtime u)
 )::text AS report_data;
@@ -255,6 +283,7 @@ return [{
     marketSession,
     sessionPhase: marketSession.sessionPhase,
     isTradingDay: marketSession.isTradingDay,
-    _triggerSource: triggerSource
+    _triggerSource: 'executeWorkflow',
+    _parentTriggerSource: triggerSource
   }
 }];

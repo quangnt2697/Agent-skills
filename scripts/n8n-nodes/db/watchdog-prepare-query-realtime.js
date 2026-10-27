@@ -101,50 +101,53 @@ WITH unclean_realtime AS (
       ELSE 'KHÁC'
     END AS floor_code,
     CONCAT_WS(', ',
-      CASE WHEN highest_price       IS NOT NULL AND highest_price       > 0 THEN 'highest_price' END,
-      CASE WHEN lowest_price        IS NOT NULL AND lowest_price        > 0 THEN 'lowest_price' END,
-      CASE WHEN open_price          IS NOT NULL AND open_price          > 0 THEN 'open_price' END,
-      CASE WHEN close_price         IS NOT NULL AND close_price         > 0 THEN 'close_price' END,
-      CASE WHEN average_price       IS NOT NULL AND average_price       > 0 THEN 'average_price' END,
-      CASE WHEN buy_foreign_qtty    IS NOT NULL AND buy_foreign_qtty    > 0 THEN 'buy_foreign_qtty' END,
-      CASE WHEN sell_foreign_qtty   IS NOT NULL AND sell_foreign_qtty   > 0 THEN 'sell_foreign_qtty' END,
-      CASE WHEN expected_trade_price IS NOT NULL AND expected_trade_price > 0 THEN 'expected_trade_price' END,
-      CASE WHEN expected_trade_qtty  IS NOT NULL AND expected_trade_qtty  > 0 THEN 'expected_trade_qtty' END,
-      CASE WHEN open_interest_qtty   IS NOT NULL AND open_interest_qtty   > 0 THEN 'open_interest_qtty' END,
-      CASE WHEN total_volume_traded  IS NOT NULL AND total_volume_traded  > 0 THEN 'total_volume_traded' END,
-      CASE WHEN gross_trade_amount   IS NOT NULL AND gross_trade_amount   > 0 THEN 'gross_trade_amount' END,
-      CASE WHEN total_offer_qtty     IS NOT NULL AND total_offer_qtty     > 0 THEN 'total_offer_qtty' END,
-      CASE WHEN total_bid_qtty       IS NOT NULL AND total_bid_qtty       > 0 THEN 'total_bid_qtty' END,
-      CASE WHEN match_price          IS NOT NULL AND match_price          > 0 THEN 'match_price' END,
-      CASE WHEN match_qtty           IS NOT NULL AND match_qtty           > 0 THEN 'match_qtty' END,
-      CASE WHEN match_value          IS NOT NULL AND match_value          > 0 THEN 'match_value' END,
-      CASE WHEN changed_value        IS NOT NULL AND changed_value        > 0 THEN 'changed_value' END,
-      CASE WHEN changed_ratio        IS NOT NULL AND changed_ratio        > 0 THEN 'changed_ratio' END,
-      CASE WHEN buy_foreign_value    IS NOT NULL AND buy_foreign_value    > 0 THEN 'buy_foreign_value' END,
-      CASE WHEN sell_foreign_value   IS NOT NULL AND sell_foreign_value   > 0 THEN 'sell_foreign_value' END
+      CASE WHEN highest_price                IS NOT NULL AND highest_price                > 0 THEN 'highest_price' END,
+      CASE WHEN lowest_price                 IS NOT NULL AND lowest_price                 > 0 THEN 'lowest_price' END,
+      CASE WHEN open_price                   IS NOT NULL AND open_price                   > 0 THEN 'open_price' END,
+      CASE WHEN close_price                  IS NOT NULL AND close_price                  > 0 THEN 'close_price' END,
+      CASE WHEN average_price                IS NOT NULL AND average_price                > 0 THEN 'average_price' END,
+      CASE WHEN buy_foreign_quantity         IS NOT NULL AND buy_foreign_quantity         > 0 THEN 'buy_foreign_quantity' END,
+      CASE WHEN sell_foreign_quantity        IS NOT NULL AND sell_foreign_quantity        > 0 THEN 'sell_foreign_quantity' END,
+      CASE WHEN expected_trade_price         IS NOT NULL AND expected_trade_price         > 0 THEN 'expected_trade_price' END,
+      CASE WHEN expected_trade_quantity      IS NOT NULL AND expected_trade_quantity      > 0 THEN 'expected_trade_quantity' END,
+      CASE WHEN open_interest_quantity       IS NOT NULL AND open_interest_quantity       > 0 THEN 'open_interest_quantity' END,
+      CASE WHEN total_volume_traded          IS NOT NULL AND total_volume_traded          > 0 THEN 'total_volume_traded' END,
+      CASE WHEN gross_trade_amount           IS NOT NULL AND gross_trade_amount           > 0 THEN 'gross_trade_amount' END,
+      CASE WHEN sell_total_order_quantity    IS NOT NULL AND sell_total_order_quantity    > 0 THEN 'sell_total_order_quantity' END,
+      CASE WHEN buy_total_order_quantity     IS NOT NULL AND buy_total_order_quantity     > 0 THEN 'buy_total_order_quantity' END,
+      CASE WHEN match_price                  IS NOT NULL AND match_price                  > 0 THEN 'match_price' END,
+      CASE WHEN match_quantity               IS NOT NULL AND match_quantity               > 0 THEN 'match_quantity' END,
+      CASE WHEN match_value                  IS NOT NULL AND match_value                  > 0 THEN 'match_value' END,
+      CASE WHEN changed_value                IS NOT NULL AND changed_value                > 0 THEN 'changed_value' END,
+      CASE WHEN changed_ratio                IS NOT NULL AND changed_ratio                > 0 THEN 'changed_ratio' END,
+      CASE WHEN buy_foreign_value            IS NOT NULL AND buy_foreign_value            > 0 THEN 'buy_foreign_value' END,
+      CASE WHEN sell_foreign_value           IS NOT NULL AND sell_foreign_value           > 0 THEN 'sell_foreign_value' END
     ) AS uncleared_fields
   FROM krx_mdds_v2_stock_infos
-  WHERE (highest_price       IS NOT NULL AND highest_price       > 0)
-     OR (lowest_price        IS NOT NULL AND lowest_price        > 0)
-     OR (open_price          IS NOT NULL AND open_price          > 0)
-     OR (close_price         IS NOT NULL AND close_price         > 0)
-     OR (average_price       IS NOT NULL AND average_price       > 0)
-     OR (buy_foreign_qtty    IS NOT NULL AND buy_foreign_qtty    > 0)
-     OR (sell_foreign_qtty   IS NOT NULL AND sell_foreign_qtty   > 0)
-     OR (expected_trade_price IS NOT NULL AND expected_trade_price > 0)
-     OR (expected_trade_qtty  IS NOT NULL AND expected_trade_qtty  > 0)
-     OR (open_interest_qtty   IS NOT NULL AND open_interest_qtty   > 0)
-     OR (total_volume_traded  IS NOT NULL AND total_volume_traded  > 0)
-     OR (gross_trade_amount   IS NOT NULL AND gross_trade_amount   > 0)
-     OR (total_offer_qtty     IS NOT NULL AND total_offer_qtty     > 0)
-     OR (total_bid_qtty       IS NOT NULL AND total_bid_qtty       > 0)
-     OR (match_price          IS NOT NULL AND match_price          > 0)
-     OR (match_qtty           IS NOT NULL AND match_qtty           > 0)
-     OR (match_value          IS NOT NULL AND match_value          > 0)
-     OR (changed_value        IS NOT NULL AND changed_value        > 0)
-     OR (changed_ratio        IS NOT NULL AND changed_ratio        > 0)
-     OR (buy_foreign_value    IS NOT NULL AND buy_foreign_value    > 0)
-     OR (sell_foreign_value   IS NOT NULL AND sell_foreign_value   > 0)
+  WHERE created_date >= CURRENT_DATE
+    AND (
+         (highest_price                IS NOT NULL AND highest_price                > 0)
+      OR (lowest_price                 IS NOT NULL AND lowest_price                 > 0)
+      OR (open_price                   IS NOT NULL AND open_price                   > 0)
+      OR (close_price                  IS NOT NULL AND close_price                  > 0)
+      OR (average_price                IS NOT NULL AND average_price                > 0)
+      OR (buy_foreign_quantity         IS NOT NULL AND buy_foreign_quantity         > 0)
+      OR (sell_foreign_quantity        IS NOT NULL AND sell_foreign_quantity        > 0)
+      OR (expected_trade_price         IS NOT NULL AND expected_trade_price         > 0)
+      OR (expected_trade_quantity      IS NOT NULL AND expected_trade_quantity      > 0)
+      OR (open_interest_quantity       IS NOT NULL AND open_interest_quantity       > 0)
+      OR (total_volume_traded          IS NOT NULL AND total_volume_traded          > 0)
+      OR (gross_trade_amount           IS NOT NULL AND gross_trade_amount           > 0)
+      OR (sell_total_order_quantity    IS NOT NULL AND sell_total_order_quantity    > 0)
+      OR (buy_total_order_quantity     IS NOT NULL AND buy_total_order_quantity     > 0)
+      OR (match_price                  IS NOT NULL AND match_price                  > 0)
+      OR (match_quantity               IS NOT NULL AND match_quantity               > 0)
+      OR (match_value                  IS NOT NULL AND match_value                  > 0)
+      OR (changed_value                IS NOT NULL AND changed_value                > 0)
+      OR (changed_ratio                IS NOT NULL AND changed_ratio                > 0)
+      OR (buy_foreign_value            IS NOT NULL AND buy_foreign_value            > 0)
+      OR (sell_foreign_value           IS NOT NULL AND sell_foreign_value           > 0)
+    )
   ORDER BY symbol
   LIMIT 100
 )
@@ -152,27 +155,30 @@ SELECT json_build_object(
   'step',          'realtime_clear',
   'unclean_count', (
     SELECT COUNT(*)::int FROM krx_mdds_v2_stock_infos
-    WHERE (highest_price       IS NOT NULL AND highest_price       > 0)
-       OR (lowest_price        IS NOT NULL AND lowest_price        > 0)
-       OR (open_price          IS NOT NULL AND open_price          > 0)
-       OR (close_price         IS NOT NULL AND close_price         > 0)
-       OR (average_price       IS NOT NULL AND average_price       > 0)
-       OR (buy_foreign_qtty    IS NOT NULL AND buy_foreign_qtty    > 0)
-       OR (sell_foreign_qtty   IS NOT NULL AND sell_foreign_qtty   > 0)
-       OR (expected_trade_price IS NOT NULL AND expected_trade_price > 0)
-       OR (expected_trade_qtty  IS NOT NULL AND expected_trade_qtty  > 0)
-       OR (open_interest_qtty   IS NOT NULL AND open_interest_qtty   > 0)
-       OR (total_volume_traded  IS NOT NULL AND total_volume_traded  > 0)
-       OR (gross_trade_amount   IS NOT NULL AND gross_trade_amount   > 0)
-       OR (total_offer_qtty     IS NOT NULL AND total_offer_qtty     > 0)
-       OR (total_bid_qtty       IS NOT NULL AND total_bid_qtty       > 0)
-       OR (match_price          IS NOT NULL AND match_price          > 0)
-       OR (match_qtty           IS NOT NULL AND match_qtty           > 0)
-       OR (match_value          IS NOT NULL AND match_value          > 0)
-       OR (changed_value        IS NOT NULL AND changed_value        > 0)
-       OR (changed_ratio        IS NOT NULL AND changed_ratio        > 0)
-       OR (buy_foreign_value    IS NOT NULL AND buy_foreign_value    > 0)
-       OR (sell_foreign_value   IS NOT NULL AND sell_foreign_value   > 0)
+    WHERE created_date >= CURRENT_DATE
+      AND (
+           (highest_price                IS NOT NULL AND highest_price                > 0)
+        OR (lowest_price                 IS NOT NULL AND lowest_price                 > 0)
+        OR (open_price                   IS NOT NULL AND open_price                   > 0)
+        OR (close_price                  IS NOT NULL AND close_price                  > 0)
+        OR (average_price                IS NOT NULL AND average_price                > 0)
+        OR (buy_foreign_quantity         IS NOT NULL AND buy_foreign_quantity         > 0)
+        OR (sell_foreign_quantity        IS NOT NULL AND sell_foreign_quantity        > 0)
+        OR (expected_trade_price         IS NOT NULL AND expected_trade_price         > 0)
+        OR (expected_trade_quantity      IS NOT NULL AND expected_trade_quantity      > 0)
+        OR (open_interest_quantity       IS NOT NULL AND open_interest_quantity       > 0)
+        OR (total_volume_traded          IS NOT NULL AND total_volume_traded          > 0)
+        OR (gross_trade_amount           IS NOT NULL AND gross_trade_amount           > 0)
+        OR (sell_total_order_quantity    IS NOT NULL AND sell_total_order_quantity    > 0)
+        OR (buy_total_order_quantity     IS NOT NULL AND buy_total_order_quantity     > 0)
+        OR (match_price                  IS NOT NULL AND match_price                  > 0)
+        OR (match_quantity               IS NOT NULL AND match_quantity               > 0)
+        OR (match_value                  IS NOT NULL AND match_value                  > 0)
+        OR (changed_value                IS NOT NULL AND changed_value                > 0)
+        OR (changed_ratio                IS NOT NULL AND changed_ratio                > 0)
+        OR (buy_foreign_value            IS NOT NULL AND buy_foreign_value            > 0)
+        OR (sell_foreign_value           IS NOT NULL AND sell_foreign_value           > 0)
+      )
   ),
   'unclean_samples', (SELECT COALESCE(json_agg(u), '[]'::json) FROM unclean_realtime u)
 )::text AS report_data;
@@ -222,6 +228,7 @@ return [{
     sessionPhase: marketSession.sessionPhase,
     isTradingDay: marketSession.isTradingDay,
     allowStalenessAlerts,
-    checkTime: marketSession.timeStr
+    checkTime: marketSession.timeStr,
+    _triggerSource: 'executeWorkflow'
   }
 }];

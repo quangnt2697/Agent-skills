@@ -168,6 +168,21 @@ if (isProd) {
   sessionToken = ($env && $env.METABASE_UAT_API_TOKEN) || ($env && $env.METABASE_UAT_SESSION_TOKEN) || ($env && $env.METABASE_API_TOKEN) || ($env && $env.METABASE_SESSION_TOKEN) || '';
 }
 
+// Fallback nạp session token từ .env trực tiếp nếu $env chưa cập nhật
+if (!sessionToken && typeof require !== 'undefined') {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const envFile = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envFile)) {
+      const envContent = fs.readFileSync(envFile, 'utf8');
+      const tokenKey = isProd ? 'METABASE_PROD_SESSION_TOKEN' : 'METABASE_UAT_API_TOKEN';
+      const m = envContent.match(new RegExp(`^${tokenKey}=(.*)$`, 'm'));
+      if (m && m[1]) sessionToken = m[1].trim().replace(/^["']|["']$/g, '');
+    }
+  } catch (_) {}
+}
+
 return [{
   json: {
     isError: false,

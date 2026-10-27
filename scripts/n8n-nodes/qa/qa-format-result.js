@@ -5,7 +5,8 @@ const input = $input.first();
 const extractNode = (typeof $('Extract issueKey') !== 'undefined') ? $('Extract issueKey').first().json : {};
 const issueKey = extractNode.issueKey || input.json.issueKey || '';
 const project = extractNode.project || input.json.project || '';
-const cwd = input.json.cwd || $env.AGENT_WORKSPACE_DIR || process.cwd();
+const procCwd = (() => { try { return require('process').cwd(); } catch (_) { return ''; } })();
+const cwd = input.json.cwd || ($env && $env.AGENT_WORKSPACE_DIR) || procCwd || '';
 const targetLabel = project ? (project + ' / ' + issueKey) : issueKey;
 const triggerSource = extractNode._triggerSource || input.json._triggerSource || 'webhook';
 
@@ -47,7 +48,10 @@ if (isTimeout) {
 }
 
 const success = (verdict === 'PASS');
-const resultDir = path.resolve(cwd, 'workspace', issueKey, 'test', 'result');
+let resultDir = path.resolve(cwd, 'workspace', 'issues', issueKey, 'test', 'result');
+if (!fs.existsSync(path.resolve(cwd, 'workspace', 'issues', issueKey))) {
+  resultDir = path.resolve(cwd, 'workspace', issueKey, 'test', 'result');
+}
 if (!fs.existsSync(resultDir)) {
   fs.mkdirSync(resultDir, { recursive: true });
 }

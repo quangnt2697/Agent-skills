@@ -255,12 +255,12 @@
   },
 
   "audit-null-security-def": {
-    "name": "[NULL Scan] Mã Niêm Yết thiếu trường bắt buộc (basic_price, floor_code, lot_size)",
+    "name": "[NULL Scan] Mã Niêm Yết thiếu trường bắt buộc (basic_price, ceiling_price, floor_price, board_id)",
     "topic": "Security Definition (d)",
     "database": "timescale",
-    "description": "Tìm các mã trong security_definition_v3 có basic_price NULL/0, floor_code NULL/rỗng, lot_size NULL/0 — ảnh hưởng trực tiếp đến tính toán biên độ và điều kiện đặt lệnh",
+    "description": "Tìm các mã trong security_definition_v3 có basic_price/ceiling_price/floor_price NULL hoặc <= 0, hoặc board_id thiếu — ảnh hưởng trực tiếp đến tính toán biên độ và điều kiện đặt lệnh",
     "params": {},
-    "sql": "SELECT symbol, basic_price, floor_code, lot_size, CASE WHEN basic_price IS NULL OR basic_price <= 0 THEN 'INVALID_BASIC_PRICE' WHEN floor_code IS NULL OR floor_code = '' THEN 'MISSING_FLOOR_CODE' WHEN lot_size IS NULL OR lot_size <= 0 THEN 'INVALID_LOT_SIZE' ELSE 'MULTIPLE_ISSUES' END as primary_issue FROM security_definition_v3 WHERE basic_price IS NULL OR basic_price <= 0 OR floor_code IS NULL OR floor_code = '' OR lot_size IS NULL OR lot_size <= 0 ORDER BY primary_issue, symbol LIMIT 50"
+    "sql": "SELECT symbol, market_id, board_id, basic_price, ceiling_price, floor_price, CASE WHEN basic_price IS NULL OR basic_price <= 0 THEN 'INVALID_BASIC_PRICE' WHEN ceiling_price IS NULL OR ceiling_price <= 0 THEN 'INVALID_CEILING_PRICE' WHEN floor_price IS NULL OR floor_price <= 0 THEN 'INVALID_FLOOR_PRICE' WHEN board_id IS NULL OR board_id <= 0 THEN 'MISSING_BOARD_ID' ELSE 'MULTIPLE_ISSUES' END as primary_issue FROM security_definition_v3 WHERE sending_time >= CURRENT_DATE AND (basic_price IS NULL OR basic_price <= 0 OR ceiling_price IS NULL OR ceiling_price <= 0 OR floor_price IS NULL OR floor_price <= 0 OR board_id IS NULL OR board_id <= 0) ORDER BY market_id, symbol LIMIT 50"
   },
 
   "audit-duplicate-ticks": {
