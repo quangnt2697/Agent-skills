@@ -192,10 +192,26 @@ def auth_page(page: Page, trading_web_url: str, trading_credentials: dict):
         password=trading_credentials["password"],
     )
 
+    # Chốt chặn Fail-Fast: Bắt lỗi ngay nếu thông báo lỗi hiển thị (sai user/pass)
+    try:
+        if login_page.error_alert.first.is_visible(timeout=3000):
+            err_msg = login_page.error_alert.first.inner_text().strip()
+            pytest.fail(f"[AUTH_FAILED] Đăng nhập thất bại với tài khoản '{trading_credentials['username']}': {err_msg}")
+    except Exception as e:
+        if "Failed: [AUTH_FAILED]" in str(e):
+            raise
+
     # Verify đăng nhập thành công (locator cần xác nhận qua DOM thật)
-    expect(page.get_by_role("heading", name="Bảng giá trực tuyến")).to_be_visible(
-        timeout=int(os.getenv("PLAYWRIGHT_TIMEOUT_MS", "30000"))
-    )
+    try:
+        expect(page.get_by_role("heading", name="Bảng giá trực tuyến")).to_be_visible(
+            timeout=int(os.getenv("PLAYWRIGHT_TIMEOUT_MS", "30000"))
+        )
+    except AssertionError:
+        pytest.fail(
+            f"[AUTH_TIMEOUT] Không tìm thấy Dashboard sau đăng nhập. "
+            f"Tài khoản '{trading_credentials['username']}' có thể sai mật khẩu hoặc web không chuyển hướng. "
+            f"URL hiện tại: {page.url}"
+        )
 
     yield page
 

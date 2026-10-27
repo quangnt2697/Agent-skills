@@ -136,9 +136,16 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 
 ## 2. Quy Tắc Chuyên Biệt Cho Web UI Testing (Desktop & Webview)
 
-### 2.1. Cấu hình Browser & Viewport Chuẩn
-- Toàn bộ phiên kiểm thử Web UI tự động áp dụng độ phân giải chuẩn Full HD: **`1920x1080`**.
-- Không sử dụng Headless mode khi đang viết mới hoặc debug script nếu muốn trực quan hóa hành vi.
+### 2.1. Cấu hình Browser, Headless & Viewport Chuẩn
+- **Viewport Chuẩn:** Toàn bộ phiên kiểm thử Web UI tự động áp dụng độ phân giải chuẩn Full HD: **`1920x1080`**.
+- **Chế độ Headless:** Mặc định chạy ở chế độ **`headless = False`** (`HEADLESS=false`) để quan sát trực quan tiến trình thao tác trên trình duyệt thật. Chỉ bật `headless=true` khi chạy batch trên môi trường CI/CD headless.
+- **Khởi chạy trình duyệt tương ứng theo task (Browser Selection):**
+  - **Cốc Cốc (`coccoc`):** Dùng Chromium engine với `executable_path` trỏ đến binary Cốc Cốc (tự động phát hiện qua `get_coccoc_executable_path()` hoặc cấu hình `COCCOC_BINARY_PATH` trong `.env`). Chạy với cờ `--target-browser=coccoc` hoặc thiết lập `TARGET_BROWSER=coccoc` trong `.env`.
+  - **Google Chrome / Microsoft Edge:** Sử dụng channel tương ứng: `channel="chrome"` hoặc `channel="msedge"`.
+  - **Chromium / Firefox / WebKit:** Theo tham số mặc định của Playwright.
+- **Cơ chế Chốt chặn Auth (Fail-Fast & Zero False-Positive):**
+  - Khi đăng nhập thất bại do sai tài khoản/mật khẩu, fixture `authenticated_page` hoặc auth helper **BẮT BUỘC** phải `pytest.fail()` ngay lập tức tại bước Setup.
+  - **TUYỆT ĐỐI CẤM** bọc `try...except` nuốt lỗi hoặc chỉ `wait_for_load_state("networkidle")` mà không assert element màn hình chính, tránh hiện tượng test pass ảo.
 
 ### 2.2. Quy Trình Thao Tác Bắt Buộc Với Web UI Testing
 Khi làm việc với các task kiểm thử Web UI, Agent **BẮT BUỘC** thao tác theo quy trình 6 bước:
