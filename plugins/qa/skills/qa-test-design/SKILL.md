@@ -6,6 +6,12 @@ trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc v
 
 # Kỹ Năng Thiết Kế Kiểm Thử QA (qa-test-design)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `spec/final.md`; dữ liệu chứng khoán lấy từ Metabase UAT/TimescaleDB. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** `checklist.md` và `.feature` tồn tại; `qa-validate.js` exit 0; không bịa mã chứng khoán.
+
 ## ⚠️ RANH GIỚI NHIỆM VỤ (Bắt buộc đọc trước)
 
 | ✅ qa-test-design LÀM | ❌ qa-test-design KHÔNG LÀM |
@@ -36,7 +42,7 @@ Tự động nhận diện profile từ `spec/testability-manifest.json` hoặc 
 | **QA-PROFILE-API** | REST / OpenAPI (Đặt lệnh, truy vấn tài sản, sức mua, danh mục) | Schema validation, Auth/Token, Idempotency, Công thức tính toán (Decimal), Mã lỗi nghiệp vụ | `fixtures_api.py`, `api_ws_service.py`, `test_api_example.py`, `api.env.example` |
 | **QA-PROFILE-WS** | WebSocket Streaming, Market Data (MDDS), Thông báo đẩy | Ngưỡng kết nối/stream theo hạng user (Normal/VIP/Ultimate), Reconnect, Watchdog/Topic Timeout, Thứ tự bản tin | `fixtures_ws.py`, `test_ws_example.py`, `ws.env.example`, `references/securities/05-market-data-mdds.md` |
 | **QA-PROFILE-UI** | Web Trading Dashboard & Mobile App (Appium/Playwright) | Trạng thái hiển thị theo phiên, Form validation tức thời, Khóa nút (Double-click), Đồng bộ dữ liệu UI ↔ API | `fixtures_web_ui.py`, `fixtures_mobile.py`, `web_ui_pom.py`, `mobile_app_pom.py`, `web-ui.env.example` |
-| **QA-PROFILE-STATE** | Vòng đời lệnh (Order Lifecycle), Khớp lệnh ORS, Deal Margin | Chuyển đổi trạng thái lệnh (Pending → New → Partial → Filled/Cancelled/Rejected), Giữ/Giải tỏa sức mua & ký quỹ | `fixtures_api.py`, `order_state_testing.md`, `references/securities/03-order-lifecycle-and-ors.md`, `references/securities/06-trading-core-margin.md`, `references/securities/07-deal-margin.md` |
+| **QA-PROFILE-STATE** | Vòng đời lệnh (Order Lifecycle), Khớp lệnh ORS, Deal Margin | Chuyển đổi trạng thái lệnh (Pending → New → Partial → Filled/Cancelled/Rejected), Giữ/Giải tỏa sức mua & ký quỹ | `fixtures_api.py`, `order_state_testing.md`, `references/securities/03-order-lifecycle-and-ors.md`, `references/securities/06-traditional-margin.md`, `references/securities/07-deal-based-margin.md` |
 | **QA-PROFILE-DATA** | Đối chiếu Database (TimescaleDB v3/v2, OpenAPI DB) | Độ vẹn toàn dữ liệu giữa 11 topics KRX MDDS, kiểm tra lệch giá/khối lượng, ưu tiên bảng v3 fallback v2 | `recon_guide.md`, `timescale-schema.md`, `db-timescale-reconciler` |
 
 *(Một ticket phức tạp có thể kết hợp nhiều profile, ví dụ: QA-PROFILE-API + QA-PROFILE-STATE)*
@@ -163,6 +169,8 @@ Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y
   - [securities-domain-rules.md](../../../../references/securities-domain-rules.md): Cẩm nang nghiệp vụ chứng khoán.
 
 ## 4. Ví dụ mẫu (Few-shot Example)
+
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
 
 **Input:** Yêu cầu: "Kiểm tra giới hạn đặt lệnh tối đa 500,000 cổ phiếu/lệnh trên sàn HOSE"
 

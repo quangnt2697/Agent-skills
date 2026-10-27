@@ -6,6 +6,12 @@ trigger: Sử dụng khi bắt đầu một phiên làm việc mới, khi chất
 
 # Kỹ Thuật Kéo Ngữ Cảnh (Context Engineering)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Dự án và task hiện tại. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Các file rules/ngữ cảnh được tham chiếu tồn tại thật.
+
 ## Tổng Quan
 
 Cung cấp cho agent đúng thông tin vào đúng thời điểm. Ngữ cảnh (Context) là đòn bẩy lớn nhất cho chất lượng đầu ra của agent — quá ít thì agent sẽ bịa chuyện (hallucinate), quá nhiều thì agent sẽ mất tập trung. Kỹ thuật ngữ cảnh (Context engineering) là thực hành việc chủ ý tinh tuyển những gì agent thấy, khi nào agent thấy và cấu trúc của thông tin đó ra sao.
@@ -17,6 +23,11 @@ Cung cấp cho agent đúng thông tin vào đúng thời điểm. Ngữ cảnh 
 - Chuyển đổi giữa các phần khác nhau của một codebase
 - Thiết lập một dự án mới để code với sự hỗ trợ của AI
 - Agent không tuân thủ các quy ước của dự án
+
+**Khi KHÔNG sử dụng:**
+- Cần lưu lại trạng thái phiên làm việc hiện tại vào file checkpoint → Dùng `meta-session-checkpoint`.
+- Cần đúc kết bài học kinh nghiệm dài hạn vào file luật → Dùng `meta-continuous-learning`.
+- Điều phối kích hoạt các skill chuyên biệt trong pipeline → Dùng `meta-using-agent-skills`.
 
 ## Hệ Thống Phân Cấp Ngữ Cảnh
 

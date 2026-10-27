@@ -6,8 +6,20 @@ trigger: Use when cần lập kế hoạch (planning) cho Sprint mới hoặc ph
 
 # sm-sprint-planning
 
-## Mục đích
-Lập kế hoạch cho Sprint tiếp theo dựa trên dữ liệu từ Jira.
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `sm-config.yaml`, `.env` Jira. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Dữ liệu Sprint/Backlog từ Jira thật; `sprint-plan.md` tồn tại.
+
+## Khi nào dùng?
+- Lập kế hoạch Sprint mới, tính toán Velocity trung bình và phân bổ Story Points vào Sprint Backlog.
+- Chuẩn bị danh sách User Stories ưu tiên trước buổi họp Sprint Planning.
+
+**Khi KHÔNG sử dụng:**
+- Điều phối Daily Standup trong chu kỳ Sprint đang mở → Dùng `sm-daily-standup`.
+- Xử lý các blocker / ticket bị kẹt → Dùng `sm-impediment-triage`.
+- Đánh giá tổng kết Sprint sau khi kết thúc chu kỳ → Dùng `sm-sprint-retrospective`.
 
 ## Đầu vào
 1. Đọc cấu hình team từ file `sm-config.yaml` tại `PLUGIN_DIR` (thư mục plugin `agent-skills`, cố định).
@@ -145,6 +157,8 @@ curl -s \
 - Nếu một section không có dữ liệu, ghi: "Không có."
 
 ## Ví dụ mẫu (Few-shot Example)
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Input:** Khởi tạo Sprint 35 với Backlog 42 Story Points.
 - **Output:** File `workspace/sprints/sprint/tech/sprint-plan.md` chuẩn:
   ```markdown

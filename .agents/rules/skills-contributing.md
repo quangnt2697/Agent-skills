@@ -1,7 +1,7 @@
 ---
 description: Hàng rào bảo vệ chống trùng lặp khi thêm mới hoặc thay đổi kỹ năng
 paths:
-  - "skills/**"
+  - "plugins/*/skills/**"
 ---
 
 # Thêm mới hoặc thay đổi một kỹ năng (skill)

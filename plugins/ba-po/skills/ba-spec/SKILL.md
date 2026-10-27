@@ -6,6 +6,12 @@ trigger: Khi cần phân tích một Jira Issue lần đầu tiên hoặc import
 
 # Kỹ năng Phân Tích & Viết Spec (ba-spec)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `issueKey` Jira hoặc đường dẫn/từ khóa Confluence; n8n đang chạy. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** `spec/final.md` tồn tại; mọi gap gắn mức nghiêm trọng; Gate 1 đã được user duyệt.
+
 ## Tổng quan (Overview)
 
 Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải references → Phân tích đa nguồn theo Profile → Phỏng vấn làm rõ gaps → Tổng hợp Business-Spec (`final.md`) chuẩn 13 sections làm Single Source of Truth cho QA và DEV.
@@ -109,6 +115,8 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 ---
 
 ## 4. Ví dụ mẫu Đầu Ra
+
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
 
 **Input:** `/ba-spec G3PTP-16584` (Task: Đặt lệnh mua cổ phiếu trên Mobile App)
 

@@ -1,9 +1,17 @@
 ---
 name: repo-group-sync
 description: Đồng bộ, fetch và pull mã nguồn mới nhất của các dự án hoặc microservices trong group về máy cục bộ. Bỏ qua repo dirty (chỉ reset working tree khi có --force), fetch toàn bộ các nhánh (--all --prune) và pull code toàn bộ các nhánh local (--ff-only). Sử dụng khi cần cập nhật code trước khi phân tích spec, viết test, review code hoặc chạy pipeline e2e-delivery.
+trigger: Khi cần cập nhật code mới nhất của các repo/microservices trong group trước khi phân tích spec, viết test hoặc review code. Trigger bằng lệnh /repo-group-sync.
+disable-auto-invoke: true
 ---
 
 # Kỹ Năng: Đồng Bộ Mã Nguồn Dự Án (repo-group-sync)
+
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Cấu hình dự án/group cần đồng bộ. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Output thật của `repo-sync` (số repo, trạng thái); repo dirty được báo là đã bỏ qua.
 
 ## Tổng quan
 

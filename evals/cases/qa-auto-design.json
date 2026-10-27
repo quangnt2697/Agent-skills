@@ -66,6 +66,19 @@
         "Scanned openapi-tyk/sdk/python/ and reused official SDK",
         "All test variables, endpoints, and credentials externalized to .env (zero hardcoding in test scripts)"
       ]
+    },
+    {
+      "id": 3,
+      "kind": "dialogue",
+      "prompt": "Viết test assertions cho API trả về trạng thái lệnh nhưng Jira Acceptance Criteria chưa nêu rõ mã lỗi khi bị từ chối",
+      "expected_output": "Agent tuân thủ Grounding Rule, gắn comment # NEEDS-SPEC và dừng hỏi lại thay vì tự bịa mã lỗi hoặc tự đoán số liệu",
+      "expectations": [
+        "Agent strictly adheres to grounding-contract.md and No-Inference Rule",
+        "Agent refuses to guess or assume expected error codes not documented in AC/Spec",
+        "Marks assertions with # NEEDS-SPEC comment",
+        "Does not copy mock numbers from Few-shot examples",
+        "Recommends invoking ba-interview-me to clarify acceptance criteria"
+      ]
     }
   ]
 }

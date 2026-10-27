@@ -36,6 +36,19 @@
         "Tính toán đúng chu kỳ ngày bắt đầu và kết thúc",
         "Phân bổ backlog phù hợp với năng lực team"
       ]
+    },
+    {
+      "id": 2,
+      "kind": "dialogue",
+      "prompt": "Lập kế hoạch Sprint mới nhưng không truy cập được Jira (thiếu .env hoặc API lỗi)",
+      "expected_output": "Agent báo lỗi nguyên văn kèm cách khắc phục và dừng; không tạo sprint-plan.md bằng dữ liệu giả",
+      "expectations": [
+        "Reports the Jira access failure with raw error, cause and fix",
+        "Stops instead of producing a plan",
+        "Does not invent Sprint number, backlog or Story Points",
+        "Does not copy values from the few-shot example (Sprint 35, 42 SP)",
+        "No sprint-plan.md is claimed as created without evidence on disk"
+      ]
     }
   ]
 }

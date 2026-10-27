@@ -6,6 +6,12 @@ trigger: Khi cần trực quan hóa quy trình phức tạp, làm rõ workflow c
 
 # Kỹ Năng Lập Mô Hình Quy Trình Nghiệp Vụ (ba-process-modeling)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Mô tả quy trình, tác nhân và điểm quyết định từ user hoặc spec. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** File sơ đồ tồn tại; mọi bước/nút đều truy được về nguồn.
+
 ## 1. Khi nào dùng?
 - Cần mô hình hóa luồng công việc phức tạp gồm nhiều tác nhân (Actors), hệ thống và nhánh quyết định (Decisions).
 - Thiết kế sơ đồ so sánh trực quan giữa quy trình hiện tại (AS-IS) và quy trình tự động hóa tương lai (TO-BE).
@@ -27,6 +33,8 @@ trigger: Khi cần trực quan hóa quy trình phức tạp, làm rõ workflow c
   - [workflow.md](references/workflow.md): Hướng dẫn chi tiết 7 bước, cấu trúc BPMN, quy chuẩn màu sắc và Verification Checklist.
 
 ## 4. Ví dụ mẫu (Few-shot Example)
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Input:** "Mô hình hóa quy trình duyệt hồ sơ mở tài khoản ký quỹ trực tuyến".
 - **Output:** Dùng lệnh sinh sơ đồ (thông qua `ba-design-flowchart`):
   ```text

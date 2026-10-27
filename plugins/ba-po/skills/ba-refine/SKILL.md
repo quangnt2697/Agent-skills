@@ -7,6 +7,12 @@ disable-auto-invoke: true
 
 # Kỹ năng Mài giũa Spec (ba-refine)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `issueKey` Jira và ý tưởng thô; metadata Jira lấy qua n8n (`prepJiraContext`). Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** File `refined.md`/`final.md` tồn tại; chỉ báo đã đẩy Jira khi nhận phản hồi HTTP thật; không dựng mockup khi chưa có `spec/asis-inventory.md`.
+
 Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần túy theo tư duy nghiệp vụ (Zero Technical Noise) → Push lại lên Jira theo cấu trúc chuẩn và xuất bản `spec/final.md`.
 
 ## ⚠️ RANH GIỚI NHIỆM VỤ & BỘ LỌC CHỐNG KỸ THUẬT (Bắt buộc đọc trước)
@@ -114,6 +120,8 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
   - [securities-domain-rules.md](../../../../references/securities-domain-rules.md): Quy tắc Domain ngành Chứng khoán.
 
 ## 4. Ví dụ mẫu Đầu Ra Thuần Nghiệp Vụ
+
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
 
 ```markdown
 ## 1. Mục tiêu & Giá trị Nghiệp vụ

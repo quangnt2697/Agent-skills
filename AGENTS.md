@@ -93,6 +93,13 @@ Mặc định **TỰ ĐỘNG ÁP DỤNG 100% (Always-on)** khi thực thi bất 
 - **Không Tự Tạo File/Skill Vào Dự Án Đang Làm Việc (Zero Repo Pollution):** NGHIÊM CẤM tự ý tạo mới các file mang nội dung tương tự/sao chép hướng dẫn kỹ năng (như tự sinh file `SKILL.md`, `.agents/skills/`, v.v.) vào bất kỳ thư mục dự án nào.
 - **Tuyệt Đối Tuân Thủ Ranh Giới Output:** Mọi file output, báo cáo, log BẮT BUỘC nằm trong `workspace/issues/{issueKey}/...` (hoặc `workspace/adhoc/{slug}/...` khi không có issueKey, `workspace/sprints/{sprintId}/...` cho sprint). TUYỆT ĐỐI CẤM tạo các thư mục rác ở gốc dự án như `reports/`, `docs/`, `output/`.
 
+### 4.4. Quy Tắc Bắt Rễ Dữ Liệu & Chống Kết Quả Giả (Grounding & Anti-Hallucination)
+Mặc định **TỰ ĐỘNG ÁP DỤNG 100% (Always-on)** cho mọi skill và mọi hành động:
+- **Bắt rễ dữ liệu (Grounding-First):** 100% assertions, endpoint, mã lỗi, giá trị test BẮT BUỘC lấy từ nguồn thực tế (Jira, Spec, DB, Code). **NGHIÊM CẤM TỰ SUY DIỄN / ĐOÁN MÒ.** Khi thiếu thông tin: gắn `# NEEDS-SPEC` và hỏi qua `ba-interview-me`.
+- **Bằng chứng thực tế (Evidence-or-Stop):** Chỉ công bố "đã xong/đã chạy" khi có bằng chứng tool call thật (file tồn tại, lệnh exit code 0). Khi script/n8n lỗi: báo cáo sự thật, **TUYỆT ĐỐI KHÔNG TỰ GIẢ LẬP KẾT QUẢ / VIẾT BÁO CÁO GIẢ**.
+- **Cách ly ví dụ (Few-Shot Quarantine):** CẤM sao chép số liệu từ mục Few-shot ví dụ mẫu vào kết quả thực tế của người dùng.
+- 📖 **Chi tiết toàn văn:** [`.agents/rules/grounding-contract.md`](.agents/rules/grounding-contract.md)
+
 ## 5. Tự Chủ & Chủ Động
 - **Mặc định là TỰ CHẠY.** Chỉ dừng hỏi user khi rơi vào 5 trường hợp của danh sách đóng trong `.agents/rules/autonomy-contract.md`: thiếu input bắt buộc, thiếu credential, có câu hỏi 🔴 Critical, sắp commit/merge vào main, hoặc hành động không hoàn tác được bằng `git revert`.
 - Không được hỏi "có tiếp không", "đã đủ chưa", "có apply không" — mọi trường hợp đó đều tự quyết và chạy tiếp.

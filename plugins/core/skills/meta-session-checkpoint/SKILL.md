@@ -6,6 +6,12 @@ trigger: Sử dụng khi chat history đã quá dài, khi muốn tạm dừng c�
 
 # Kỹ năng Nén & Khôi phục Ngữ cảnh (Session Checkpoint)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Lịch sử phiên làm việc thực. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** `.agents/workspace_state.md` tồn tại với đủ 3 nhóm Facts/Progress/Next Steps.
+
 ## Tổng quan
 
 Một phiên làm việc dài tích tụ ngữ cảnh nhanh hơn nhiều so với lượng ngữ cảnh thực sự cần để
@@ -21,6 +27,11 @@ về [meta-continuous-learning](../meta-continuous-learning/SKILL.md).
 - Người dùng sử dụng lệnh `/save-checkpoint` hoặc `/load-checkpoint`.
 - Khi độ dài của chat history đã quá lớn, Token sử dụng cao dẫn đến agent bị quên hoặc xử lý chậm.
 - Khi người dùng muốn tạm dừng công việc hiện tại (dừng phiên) và muốn tiếp tục vào hôm sau mà không muốn mất thời gian giải thích lại từ đầu.
+
+**Khi KHÔNG sử dụng:**
+- Muốn đúc kết quy tắc, bài học kinh nghiệm dài hạn cho các phiên sau → Dùng `meta-continuous-learning`.
+- Tối ưu ngữ cảnh hiện tại đang chạy trong cửa sổ chat mà không ngắt phiên → Dùng `meta-context`.
+- Kiểm tra ma trận truy vết giữa Spec và Test → Dùng `meta-cross-validation`.
 
 ## Ranh giới & Quyền hạn
 - **Không thay đổi Codebase:** Kỹ năng này chỉ tạo ra tài liệu quản lý trạng thái, TUYỆT ĐỐI không sửa đổi code ứng dụng hoặc xóa các file code.

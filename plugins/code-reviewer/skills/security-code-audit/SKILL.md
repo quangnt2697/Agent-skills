@@ -6,6 +6,12 @@ trigger: Sử dụng khi cần audit bảo mật trước khi deploy production 
 
 # Kỹ năng: Security Code Audit
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Đường dẫn mã nguồn cần audit. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Mỗi lỗ hổng trích `file:dòng` thật; kết quả `npm audit` là output thật.
+
 ## Tổng quan
 
 Quét toàn bộ mã nguồn để phát hiện các lỗ hổng bảo mật theo OWASP Top 10 và các best practices về bảo mật. Skill này tập trung vào static code analysis để tìm ra các vấn đề tiềm ẩn trước khi chúng trở thành lỗ hổng thực sự.
@@ -21,6 +27,11 @@ Quét toàn bộ mã nguồn để phát hiện các lỗ hổng bảo mật the
   - API endpoints xử lý dữ liệu nhạy cảm
 - Khi review code của developer mới
 - Định kỳ hàng tuần/tháng để đảm bảo không có lỗ hổng mới xuất hiện
+
+**Khi KHÔNG sử dụng:**
+- Đánh giá kiến trúc, clean code, và độ bao phủ test nghiệp vụ thông thường → Dùng `cr-review-code-and-quality`.
+- Tối ưu hóa độ phức tạp mã nguồn hoặc tinh gọn test mock → Dùng `cr-code-simplification`.
+- Kiểm thử thâm nhập (Penetration Testing) trên môi trường live hoặc quét hạ tầng mạng/máy chủ.
 
 ## Quy trình
 

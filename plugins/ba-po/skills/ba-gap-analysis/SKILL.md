@@ -6,6 +6,12 @@ trigger: Khi cần phân tích AS-IS vs TO-BE, lập lộ trình bù đắp kho�
 
 # Kỹ Năng Phân Tích Khoảng Cách (ba-gap-analysis)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Mô tả AS-IS và TO-BE có nguồn (spec, code, Jira). Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Mỗi dòng gap trích được nguồn AS-IS và TO-BE tương ứng.
+
 ## 1. Khi nào dùng?
 - Có yêu cầu nâng cấp hệ thống hiện tại lên giải pháp mới cần so sánh trạng thái hiện tại (AS-IS) và mục tiêu (TO-BE).
 - Cần phát hiện các lỗ hổng về tính năng (missing features), thay đổi quy trình, di trú dữ liệu hoặc phụ thuộc kỹ thuật.
@@ -27,6 +33,8 @@ trigger: Khi cần phân tích AS-IS vs TO-BE, lập lộ trình bù đắp kho�
   - [workflow.md](references/workflow.md): Hướng dẫn chi tiết 5 bước, bảng ma trận phân loại Gaps và tiêu chí nghiệm thu.
 
 ## 4. Ví dụ mẫu (Few-shot Example)
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Input:** "Phân tích gap khi chuyển đổi từ đăng nhập OTP SMS sang Smart OTP trên Mobile App".
 - **Output:** Bảng phân tích Gap chuẩn Markdown:
   | Hạng mục | Hiện tại (AS-IS) | Mục tiêu (TO-BE) | Khoảng cách (Gap) | Mức ưu tiên |

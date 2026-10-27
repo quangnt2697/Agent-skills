@@ -232,7 +232,7 @@ artifact root per-issue nào (`source/`, `spec/`, `tech/`, `test/`, `trace/`) m�
 tố `/project-root/workspace/issues/{issueKey}/` hoặc `/project-root/workspace/sprints/` đều bị phát hiện.
 Validator cũng chặn mọi tên thư mục của layout cũ (`specs/imports`, `tests/qa-test-design`, `docs/user-stories`…).
 
-Đổi quy ước = sửa `scripts/validate-artifact-paths.js` **và** mọi file bị chặn trong cùng một commit.
+Đổi quy ước = sửa `scripts/validators/validate-artifact-paths.js` **và** mọi file bị chặn trong cùng một commit.
 
 ## Xem thêm
 

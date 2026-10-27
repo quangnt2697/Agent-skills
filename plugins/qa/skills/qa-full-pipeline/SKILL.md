@@ -2,9 +2,16 @@
 name: qa-full-pipeline
 description: Điều phối toàn bộ quy trình kiểm thử QA end-to-end từ phân tích đặc tả, thiết kế test, sinh mã automation đến thực thi và xuất báo cáo trong 1 lệnh duy nhất.
 trigger: Khi cần thực hiện toàn trình quy trình QA cho một task Jira hoặc feature mới. Trigger bằng lệnh /qa-full-pipeline {issueKey}.
+disable-auto-invoke: true
 ---
 
 # Kỹ Năng Điều Phối Toàn Trình QA (qa-full-pipeline)
+
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `issueKey`; n8n đang chạy. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Artifact của từng bước tồn tại; `report.md` do runner ghi, agent không tự viết.
 
 ## 1. Khi nào dùng?
 - Đã nhận bàn giao file đặc tả nghiệp vụ `workspace/issues/{issueKey}/spec/final.md` từ BA/PO.
@@ -47,6 +54,8 @@ trigger: Khi cần thực hiện toàn trình quy trình QA cho một task Jira 
   - [pipeline-states.md](references/pipeline-states.md): Quản lý file trạng thái pipeline và xử lý ngoại lệ.
 
 ## 5. Ví dụ mẫu (Few-shot Example)
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Input:** `/qa-full-pipeline STK-101`
 - **Output:**
   ```markdown

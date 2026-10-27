@@ -49,6 +49,10 @@ npm run n8n
    - Bắt buộc dùng kiểu dữ liệu `Decimal` cho bước giá (tick size), cấm dùng float gây sai số số học.
 5. **Progressive Disclosure 3 Tầng:**
    - Khi chỉnh sửa hoặc tạo mới Skill: Giữ `SKILL.md` tinh gọn (50-100 dòng), chuyển tài liệu tham chiếu sâu vào `references/` và mẫu thực thi vào `assets/` / `templates/`.
+6. **Bắt Rễ Dữ Liệu & Chống Kết Quả Giả (Grounding & Anti-Hallucination):**
+   - 100% assertions, endpoint, mã lỗi, giá trị test BẮT BUỘC lấy từ nguồn thực tế (Jira, Spec, DB, Code). Cấm tự suy diễn.
+   - Bằng chứng thực tế (Evidence-or-Stop): chỉ công bố xong khi có tool call thật (file tồn tại, exit code 0). Khi lỗi: báo cáo sự thật, cấm tự giả lập kết quả.
+   - Chi tiết: [`.agents/rules/grounding-contract.md`](.agents/rules/grounding-contract.md).
 
 ---
 

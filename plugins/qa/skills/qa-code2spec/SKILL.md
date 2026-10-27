@@ -6,6 +6,12 @@ trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có,
 
 # Kỹ Năng Dịch Ngược Code Sang Spec (qa-code2spec)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Đường dẫn file mã nguồn thật. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Commit SHA lấy từ git thật; `spec/final.md` tồn tại.
+
 ## 1. Khi nào dùng?
 - Dự án có mã nguồn đang chạy nhưng không có tài liệu Jira/Spec tương ứng hoặc tài liệu đã lỗi thời.
 - Tiếp nhận module legacy cần viết test tự động mà chưa rõ toàn bộ logic rẽ nhánh.
@@ -28,6 +34,8 @@ trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có,
   - Cẩm nang nghiệp vụ chứng khoán: [securities-domain-rules.md](../../../../references/securities-domain-rules.md).
 
 ## 4. Ví dụ mẫu (Few-shot Example)
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Input:** `/qa-code2spec services/orders/router.py`
 - **Output:** File `workspace/issues/orders-router/spec/final.md` cấu trúc chuẩn:
   ```markdown

@@ -6,6 +6,12 @@ trigger: Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó �
 
 # Kỹ năng: Đơn giản hóa Code (Code Simplification)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Đường dẫn file hoặc diff cụ thể cần đơn giản hóa. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Test chạy trước và sau đều exit code 0 (hành vi không đổi); diff thực tế được trình bày.
+
 ## Tổng quan
 
 Đơn giản hóa code bằng cách giảm bớt sự phức tạp trong khi vẫn giữ nguyên vẹn hành vi của nó. Mục tiêu không phải là viết ít số dòng đi — mục tiêu là viết ra đoạn code dễ đọc hơn, dễ hiểu hơn, dễ sửa đổi, và dễ debug hơn. Mọi nỗ lực đơn giản hóa phải vượt qua bài test: "Liệu một thành viên mới đọc vào cái này có hiểu nó nhanh hơn so với phiên bản gốc không?"

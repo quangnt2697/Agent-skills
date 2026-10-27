@@ -165,16 +165,20 @@ Nếu build bị vỡ, hãy dùng skill `dev-debugging`.
 
 Đừng sao chép lặp lại (duplicate) nội dung giữa các skills — hãy tham chiếu và liên kết (link) tới chúng.
 
-## Bắt Buộc vs. Khuyên Dùng (Required vs Recommended)
-
 Bắt buộc:
 
 - Phải có file `plugins/<plugin-name>/skills/<skill-name>/SKILL.md`
-- Phải có frontmatter YAML hợp lệ với trường `name` và `description`
-- Phải có một description mô tả được cả hai ý: skill này làm gì và khi nào nên dùng nó
+- Phải có frontmatter YAML hợp lệ với trường `name`, `description`, và `trigger`
+- Nếu skill có tác dụng phụ lên hệ thống bên ngoài (đẩy lên Jira/Squash, đồng bộ/pull git, gửi Mattermost, chạy pipeline): bắt buộc khai báo `disable-auto-invoke: true`. Skill chỉ đọc dữ liệu và ghi file cục bộ trong `workspace/` không thuộc diện này
+- Phải có mục `## Input Bắt Buộc & Bằng Chứng Hoàn Thành` (input cần có, hành vi khi thiếu, và bằng chứng kiểm chứng được); linter cảnh báo khi thiếu
+- Phải có mục `Khi KHÔNG sử dụng` (Negative scope) để phân định ranh giới rõ ràng
+- Phải tuân thủ Hợp đồng Bắt rễ Dữ liệu: trích dẫn [grounding-contract.md](../../../../.agents/rules/grounding-contract.md)
+- Mọi mục ví dụ mẫu (Few-shot) bắt buộc có cảnh báo minh họa chống sao chép số liệu giả
+- Mọi quy trình thực thi bắt buộc tuân thủ Evidence-or-Stop (chỉ công bố xong khi có exit code 0 hoặc file thật trên đĩa)
 
 Khuyên dùng:
 
 - Luồng các sections tiêu chuẩn như đã minh họa ở trên
 - Các tiêu đề (headings) tương đương như `Cách Nó Hoạt Động (How It Works)`, `Quy Trình Cốt Lõi (Core Process)`, hay `Quy Trình (Workflow)` khi chúng có cảm giác tự nhiên hơn cho skill đó
 - Chỉ dùng các file hỗ trợ (Supporting files) khi chúng thực sự giúp giữ cho `SKILL.md` chính được tập trung
+- Đánh giá Confidence dựa trên tỷ lệ bằng chứng thực tế (không chấm cảm tính)

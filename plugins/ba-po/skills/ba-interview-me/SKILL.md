@@ -6,6 +6,12 @@ trigger: Khi yêu cầu bị thiếu thông tin cốt lõi, người dùng gọi
 
 # Kỹ Năng Phỏng Vấn Làm Rõ Yêu Cầu (ba-interview-me)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Chủ đề/yêu cầu ban đầu từ user. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Câu trả lời thật của user được ghi lại; agent không tự trả lời thay user.
+
 ## 1. Khi nào dùng?
 - Yêu cầu ban đầu mơ hồ (ví dụ: "làm cho tôi tính năng X" nhưng không rõ "cho ai", "để giải quyết vấn đề gì").
 - Phát hiện các giả định ngầm (Assumptions) hoặc lỗ hổng logic trong tài liệu đặc tả cần chất vấn người dùng.
@@ -28,6 +34,8 @@ trigger: Khi yêu cầu bị thiếu thông tin cốt lõi, người dùng gọi
   - [rules-and-guidelines.md](references/rules-and-guidelines.md): Checklist Red Flags và các cấm kỵ (như hỏi chùm 5 câu cùng lúc).
 
 ## 4. Ví dụ mẫu (Few-shot Example)
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Input:** User yêu cầu: "Tôi muốn thêm tính năng xuất báo cáo giao dịch ra file".
 - **Hành động của Agent:**
   ```markdown

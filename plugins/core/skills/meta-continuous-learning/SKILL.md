@@ -6,6 +6,12 @@ trigger: Sử dụng khi vừa hoàn thành một task khó, vừa sửa xong m�
 
 # Kỹ năng Tự Học & Đúc Kết Kinh Nghiệm (Continuous Learning)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Nội dung thật của phiên làm việc vừa xảy ra. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** `lessons-learned.md` được đọc lại sau khi ghi: dài hơn trước và nội dung cũ còn nguyên.
+
 ## Tổng quan
 
 Mỗi phiên làm việc dài đều sinh ra tri thức: một cấu hình phải set đúng cách, một API cư xử
@@ -21,6 +27,11 @@ phiên sau mà không cần lệnh `load`. Nó cũng phân biệt được hai l
 - Người dùng sử dụng lệnh `/learn` hoặc `/save-session`.
 - Khi vừa hoàn thành một Task khó, sửa thành công một bug phức tạp mất nhiều thời gian, hoặc khi phát hiện ra một Pattern/Rule mới cần tuân thủ cho toàn dự án.
 - Khi người dùng chủ động yêu cầu bạn "ghi nhớ lại cách làm này cho lần sau".
+
+**Khi KHÔNG sử dụng:**
+- Chỉ muốn lưu lại trạng thái phiên làm việc ngắn hạn để tiếp tục sau (không tạo luật) → Dùng `meta-session-checkpoint`.
+- Tối ưu ngữ cảnh nạp vào prompt cho phiên hiện tại → Dùng `meta-context`.
+- Thực hiện review chất lượng code hoặc refactor mã nguồn → Dùng `cr-review-code-and-quality`.
 
 ## Ranh giới & Quyền hạn
 - **Không thay đổi Codebase:** Kỹ năng này chỉ tạo ra tài liệu tri thức, TUYỆT ĐỐI không sửa đổi code ứng dụng.

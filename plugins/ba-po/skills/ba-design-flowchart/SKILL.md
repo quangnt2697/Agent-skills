@@ -8,6 +8,12 @@ metadata:
 
 # ba-design-flowchart
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Nội dung quy trình/kiến trúc lấy từ spec hoặc user (không tự thêm bước). Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** File `.html` tồn tại; `export.py` exit code 0 và file PNG/SVG tồn tại trên đĩa.
+
 ## Overview (Tổng quan)
 
 Tạo sơ đồ nghiệp vụ và kiến trúc dưới dạng file HTML độc lập chứa SVG nội tuyến theo hệ thống thiết kế Editorial chuẩn mực. Hỗ trợ các loại sơ đồ trực quan cốt lõi (flowchart, sequence, swimlane, er, db-schema, architecture, deployment, state, process, data-flow) và xuất file PNG/SVG chất lượng cao qua Playwright, thay thế hoàn toàn Mermaid.
@@ -17,6 +23,10 @@ Tạo sơ đồ nghiệp vụ và kiến trúc dưới dạng file HTML độc l
 - Khi cần vẽ sơ đồ luồng quy trình (Flowchart, Swimlane), kiến trúc hệ thống (Architecture, Deployment), hoặc cơ sở dữ liệu (ERD).
 - Khi tài liệu kỹ thuật/nghiệp vụ cần trực quan hóa thay vì mô tả bằng bảng hoặc văn bản dài dòng.
 - Khi cần xuất ảnh PNG/SVG chất lượng cao gắn vào Jira ticket hoặc báo cáo Sprint.
+
+**Khi KHÔNG sử dụng:**
+- Dựng mockup giao diện người dùng (Web/Mobile App) → Dùng `ba-refine` với HTML mockup harness.
+- Chỉ cần sơ đồ nhanh dạng Mermaid thô trong chat mà không yêu cầu xuất ảnh chất lượng cao hoặc chuẩn Editorial.
 
 ## Quy Trình Thực Thi & Tài Liệu Tham Chiếu
 

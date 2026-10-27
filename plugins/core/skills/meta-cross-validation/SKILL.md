@@ -7,6 +7,12 @@ disable-auto-invoke: true
 
 # Cross-Validation — Xác thực Truy vết (Meta)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `spec/final.md` có mã `[BR-xx]`/`[AC-xx]` và test artifacts. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Exit code của `trace-check.js` và `trace/matrix.md` tồn tại; exit 2 thì ghi gap, không đoán.
+
 ## Overview (Tổng quan)
 
 Xác thực truy vết (traceability) đa tầng giữa các artifacts trong SDLC: Business-Spec (`spec/final.md`) → Tech-Spec (`tech/tech-spec.md`) → Test Cases (`test/checklist.md`, `test/*.feature`). Tạo ma trận ánh xạ 1-1 để phát hiện gaps (thiếu sót) và redundancies (trùng lặp), đảm bảo 100% Business Rules được kiểm thử.

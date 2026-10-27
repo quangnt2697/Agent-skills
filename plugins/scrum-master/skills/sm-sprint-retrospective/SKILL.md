@@ -6,8 +6,20 @@ trigger: Use when kết thúc Sprint và cần đánh giá để cải tiến ti
 
 # sm-sprint-retrospective
 
-## Mục đích
-Tổng kết Sprint khi đến ngày cuối cùng của chu kỳ để đưa ra Action Items cải tiến.
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `sm-config.yaml`, `.env` Jira. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Dữ liệu Sprint từ Jira thật; báo cáo retrospective tồn tại.
+
+## Khi nào dùng?
+- Tổng kết Sprint vào ngày cuối cùng của chu kỳ để phân tích Velocity, tỷ lệ cam kết vs hoàn thành, và đưa ra Action Items cải tiến.
+- Rút ra bài học kinh nghiệm (What went well, What needs improvement).
+
+**Khi KHÔNG sử dụng:**
+- Đang trong chu kỳ Sprint cần báo cáo hằng ngày → Dùng `sm-daily-standup`.
+- Xử lý các blocker / ticket bị treo → Dùng `sm-impediment-triage`.
+- Chuẩn bị kế hoạch cho Sprint mới sắp mở → Dùng `sm-sprint-planning`.
 
 ## Đầu vào
 1. Đọc cấu hình team từ file `sm-config.yaml` tại `PLUGIN_DIR` (thư mục plugin `agent-skills`, cố định).

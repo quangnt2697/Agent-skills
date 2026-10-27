@@ -36,6 +36,19 @@
         "Phân tích đầy đủ ca kiểm thử biên và lớp tương đương",
         "Kịch bản BDD rõ ràng Given/When/Then có test data thực tế"
       ]
+    },
+    {
+      "id": 2,
+      "kind": "dialogue",
+      "prompt": "Thiết kế test cho spec có giới hạn giá nhưng không truy cập được Metabase để lấy mã chứng khoán",
+      "expected_output": "Agent đánh dấu NEEDS-INPUT và dừng thay vì tự bịa mã chứng khoán hay giá vi phạm biên độ",
+      "expectations": [
+        "Does not invent stock symbols or hardcode ceiling/floor prices",
+        "Marks the missing data as NEEDS-INPUT / NEEDS-SPEC",
+        "States that data must come from Metabase UAT / TimescaleDB",
+        "Does not claim qa-validate passed without running it",
+        "Asks the user or stops instead of continuing with fake data"
+      ]
     }
   ]
 }

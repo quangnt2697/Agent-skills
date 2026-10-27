@@ -6,6 +6,12 @@ trigger: Sử dụng khi bắt đầu một phiên làm việc hoặc khi bạn 
 
 # Kỹ năng: Sử dụng các Kỹ năng của Agent (Using Agent Skills)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Yêu cầu của user. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Chỉ đề xuất skill có thật trong danh mục; không bịa tên skill.
+
 ## Tổng quan
 
 Agent Skills là một bộ sưu tập các kỹ năng luồng làm việc của kỹ sư phần mềm, được tổ chức theo từng giai đoạn phát triển. Mỗi kỹ năng mã hóa một quy trình cụ thể mà các kỹ sư cấp cao (senior engineers) thường tuân theo. Kỹ năng siêu cấp (meta-skill) này giúp bạn khám phá và áp dụng đúng kỹ năng cho task hiện tại.
@@ -99,7 +105,7 @@ Công việc của bạn là phẫu thuật chính xác, không phải là đậ
 
 Mỗi kỹ năng đều bao gồm một bước xác minh. Một task chưa hoàn thành cho đến khi vượt qua được bước xác minh. "Có vẻ đúng" không bao giờ là đủ — phải có bằng chứng (test pass, output của build, dữ liệu runtime).
 
-Xác minh trên từng kỹ năng là khâu kiểm tra cục bộ. Tiêu chuẩn toàn dự án áp dụng cho *mọi* sự thay đổi, bất kể kỹ năng nào đang hoạt động, chính là Định nghĩa Hoàn thành (Definition of Done): test phải pass, không có bug regression, hành vi được xác minh lúc chạy thực tế, docs được cập nhật. Xem `../../../../../docs/guides/definition-of-done.md`. Nó bổ trợ cho tiêu chí chấp thuận (acceptance criteria) của từng task chứ không phải thay thế chúng.
+Xác minh trên từng kỹ năng là khâu kiểm tra cục bộ. Tiêu chuẩn toàn dự án áp dụng cho *mọi* sự thay đổi, bất kể kỹ năng nào đang hoạt động, chính là Định nghĩa Hoàn thành (Definition of Done): test phải pass, không có bug regression, hành vi được xác minh lúc chạy thực tế, docs được cập nhật. Xem `../../../../docs/guides/definition-of-done.md`. Nó bổ trợ cho tiêu chí chấp thuận (acceptance criteria) của từng task chứ không phải thay thế chúng.
 
 ### 7. Tôn trọng Ràng buộc Nền tảng & Domain
 

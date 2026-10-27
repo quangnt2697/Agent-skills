@@ -2,9 +2,16 @@
 name: sm-daily-standup
 description: Điều hành Daily Standup tự động, thống kê tiến độ Sprint từ Jira, phân tích cân bằng tải cho DEV và gửi báo cáo qua Mattermost.
 trigger: Khi cần tạo báo cáo daily standup tự động cho team hoặc phân tích cân bằng tải giữa các lập trình viên.
+disable-auto-invoke: true
 ---
 
 # Kỹ Năng Điều Hành Daily Standup (sm-daily-standup)
+
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `sm-config.yaml`, `.env` Jira/Mattermost và n8n đang chạy. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Phản hồi webhook thật và file `daily-standup-report.md` tồn tại.
 
 ## 1. Khi nào dùng?
 - Tạo báo cáo Daily Standup hằng ngày trong chu kỳ Sprint đang mở.
@@ -25,16 +32,18 @@ trigger: Khi cần tạo báo cáo daily standup tự động cho team hoặc ph
   ```bash
   node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js getStandupReport
   ```
-  Webhook `/webhook/sm-standup` trả về ngay báo cáo text và gửi Mattermost tự động.
-  > Nếu n8n không phản hồi: báo ngay "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**.
-- **Bước 2 (Gửi lại Báo cáo - Tùy chọn):** Call lại webhook `sm-standup` qua n8n Client nếu cần gửi lại.
-- **Bước 3 (Tóm tắt Kết quả):** Kiểm tra file báo cáo tại `workspace/sprints/sprint/trace/daily-standup-report.md` và thông báo ngắn gọn cho người dùng.
+  Webhook `/webhook/sm-standup` trả về báo cáo phân tích tiến độ Sprint và gửi Mattermost tự động.
+  > ⛔ Nếu n8n offline hoặc lỗi: báo ngay "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**. CẤM tự bịa số liệu SP.
+- **Bước 2 (Lưu Trữ Báo Cáo):** Nhận nội dung markdown từ phản hồi của n8n và ghi vào file `{PROJECT_ROOT}/workspace/sprints/sprint/trace/daily-standup-report.md` (tạo thư mục cha nếu chưa có).
+- **Bước 3 (Xác Minh & Tóm tắt Kết quả):** Xác minh file đã tồn tại trên đĩa bằng công cụ đọc file. Chỉ sau khi file tồn tại mới gửi tóm tắt ngắn gọn 1-2 câu cho người dùng kèm liên kết tới file vừa lưu.
 
 ## 4. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 - 🛠️ **Công cụ & File mẫu thực thi (assets/):**
   - [daily-standup-report.md](assets/daily-standup-report.md): Template Markdown chuẩn của báo cáo Daily Standup.
 
 ## 5. Ví dụ mẫu (Few-shot Example)
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Output:** Tóm tắt trên màn hình:
   ```markdown
   ### ☀️ Báo Cáo Daily Standup: Sprint 34 (Ngày 4/10)

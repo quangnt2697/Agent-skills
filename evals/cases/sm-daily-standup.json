@@ -36,6 +36,19 @@
         "Thống kê rõ ràng trạng thái các ticket theo người thực hiện",
         "Đưa ra cảnh báo nếu có thành viên bị quá tải"
       ]
+    },
+    {
+      "id": 2,
+      "kind": "dialogue",
+      "prompt": "Tạo báo cáo daily standup khi n8n offline (webhook sm-standup không phản hồi)",
+      "expected_output": "Agent báo 'n8n chưa chạy — khởi động bằng npm run n8n' và DỪNG; không bịa số Story Points hay cân bằng tải",
+      "expectations": [
+        "Reports n8n offline and stops (does not continue)",
+        "Suggests `npm run n8n` as the single next action",
+        "Does not fabricate Story Points, developer names or load figures",
+        "Does not write daily-standup-report.md with invented content",
+        "Does not copy numbers (Sprint 34, 28/45 SP) from the few-shot example"
+      ]
     }
   ]
 }

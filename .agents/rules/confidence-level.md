@@ -26,9 +26,13 @@ Confidence Level chỉ có **2 tác dụng**:
 ```python
 confidence = (completeness * 0.6) + (certainty * 0.4)
 
-# completeness: Đã làm xong bao nhiêu % công việc?
-# certainty:    Agent chắc chắn bao nhiêu % output đúng?
+# completeness: Tỷ lệ % hạng mục yêu cầu có output và file thật trên đĩa
+# certainty:    Tỷ lệ % assertions/logic có bằng chứng đối chiếu từ Spec/DB/Code thật (theo grounding-contract.md)
 ```
+
+> ⚠️ **Chống ảo tưởng số điểm (No Arbitrary Score):**
+> - **CẤM** tự tiện chấm 90-100% khi chưa có bằng chứng thực thi lệnh hoặc file xác minh.
+> - Nếu còn câu hỏi nghiệp vụ mập mờ, thiếu AC, hoặc phụ thuộc giả định chưa verify: Confidence **tối đa 80% (Medium)** và **BẮT BUỘC** liệt kê vào `Blockers/Gaps`.
 
 ## Output Format Standard
 

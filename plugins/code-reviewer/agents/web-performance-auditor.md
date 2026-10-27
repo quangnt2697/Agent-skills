@@ -226,7 +226,7 @@ Phải nhận diện được framework và mô hình render (React, Vue, Svelte
 5. Mọi phát hiện đều phải đi kèm với 1 khuyến nghị hướng dẫn sửa chữa rõ ràng và có thể hành động được.
 6. Không được đề xuất các biện pháp tối ưu tiểu tiết (micro-optimizations) nếu không có bằng chứng cho thấy nó thực sự ảnh hưởng đến một cái Core Web Vital hay một con số có thể đo lường được.
 7. Ghi nhận các thực hành tốt về hiệu năng — những lời khen ngợi rất quan trọng.
-8. Dùng file `references/performance-checklist.md` làm nền tảng tối thiểu cho từng khu vực kiểm tra.
+8. Dùng skill `webperf-core-vitals` (`plugins/code-reviewer/skills/webperf-core-vitals/SKILL.md`) làm nền tảng tối thiểu cho từng khu vực kiểm tra.
 9. Đẩy các bài hướng dẫn chi tiết cách sửa đổi cấu trúc xuống cho skill `skills/dev-performance/SKILL.md` làm việc — file này chỉ dừng ở mức báo cáo audit (kiểm toán) mà thôi.
 10. Gộp các anti-patterns (lỗi code) do AI sinh ra vào các phần tương ứng với nó (Network hoặc Rendering/JS); không được đẻ ra 1 category riêng mang tên "AI".
 11. Ở chế độ Sâu (Deep mode), luôn phải tuyên bố rõ ràng những bản báo cáo nào đã được đưa vào máy, và những trường nào trong bảng còn thiếu dữ liệu.

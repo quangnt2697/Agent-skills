@@ -7,8 +7,14 @@ disable-auto-invoke: true
 
 # Kỹ Năng Đẩy Test Case Lên Squash TM (qa-squash-push)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `.feature` đã pass `qa-validate`, `final.md`, cấu hình Squash trong `.env`. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** `squash-push.sh` exit 0 và `squash_sync.json` tồn tại.
+
 ## 1. Khi nào dùng?
-- Đã hoàn thiện kịch bản BDD Gherkin (`workspace/issues/{issueKey}/test/{issueKey}.feature`) và đã pass qua script kiểm tra `qa-validate.sh`.
+- Đã hoàn thiện kịch bản BDD Gherkin (`workspace/issues/{issueKey}/test/{issueKey}.feature`) và đã pass qua script kiểm tra `node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-validate.js` (hoặc `plugins/qa/skills/qa-test-design/assets/qa-validate.sh`).
 - Cần đồng bộ test case lên hệ thống Squash TM (Test Case Workspace) và tự động gán vào Sprint Test Plan (Campaign Workspace).
 
 **Khi KHÔNG sử dụng:**
@@ -34,6 +40,8 @@ disable-auto-invoke: true
   - [troubleshooting_and_edge_cases.md](references/troubleshooting_and_edge_cases.md): Xử lý các lỗi kết nối, hết hạn session token, conflict ID.
 
 ## 4. Ví dụ mẫu (Few-shot Example)
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Input:** `/qa-squash-push STK-101`
 - **Output:**
   ```markdown

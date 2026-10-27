@@ -2,13 +2,25 @@
 name: qa-run-test
 description: 'Chạy test automation hiện có (Pytest), regression test, chạy lại test sau khi fix bug. ĐO LƯỜNG trung thực, KHÔNG sửa lỗi. Báo cáo kết quả nguyên văn (Pass/Fail/Error/Timeout) và đề xuất skill xử lý nếu có lỗi.'
 trigger: Khi cần chạy test automation, regression test, hoặc thẩm định kết quả sau fix bug. Trigger bằng /qa-run-test.
+disable-auto-invoke: true
 ---
 
 # Kỹ Năng Thực Thi Kiểm Thử Tự Động (qa-run-test)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Mã test đã tồn tại và n8n runner online. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** `run-status.json`, `junit.xml`, `test-output.log`, `report.md` do runner ghi; agent không tự tạo hay sửa.
+
 ## 1. Mục đích: ĐO LƯỜNG, Không Sửa
 - Chỉ dùng khi đã có sẵn mã kiểm thử. Mục tiêu là thu thập kết quả trung thực nhất.
 - Lỗi (test fail, hạ tầng, script sai) là **dữ liệu**, agent tuyệt đối không được tự ý sửa để "làm xanh" báo cáo.
+
+**Khi KHÔNG sử dụng:**
+- Chưa có mã kiểm thử hoặc cần sinh mới mã test từ file Gherkin → Dùng `qa-auto-design`.
+- Cần chạy toàn bộ luồng E2E từ spec đến report trong 1 lệnh duy nhất → Dùng `qa-full-pipeline`.
+- Cần điều tra sửa lỗi hệ thống (root cause fix) → Bàn giao cho Developer / `dev-debugging`.
 
 ## 2. Bảng Vi Phạm (Agent CẦN LÀM / KHÔNG LÀM)
 

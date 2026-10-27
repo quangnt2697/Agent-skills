@@ -295,6 +295,31 @@ function lintSkillContent(dirName, content, knownSkills) {
     }
   }
 
+  // ── Grounding & Anti-Hallucination Checks ─────────────────────────────────
+  if (!content.includes('grounding-contract')) {
+    warnings.push("Missing grounding banner ('grounding-contract') — skill must carry the self-contained anti-hallucination summary");
+  }
+
+  // Few-shot quarantine disclaimer check
+  if (/##\s+.*(ví\s+dụ\s+mẫu|few-shot)/i.test(content)) {
+    if (!content.includes('LƯU Ý MINH HỌA') && !content.includes('formatting template')) {
+      errors.push("Few-shot example section is missing the required quarantine disclaimer (LƯU Ý MINH HỌA)");
+    }
+  }
+
+  // Input & evidence section check (grounding: skill phải khai báo input bắt buộc và bằng chứng hoàn thành)
+  if (!exempt && !/^##\s+.*input\s+bắt\s+buộc.*bằng\s+chứng/im.test(content)) {
+    warnings.push("Missing section '## Input Bắt Buộc & Bằng Chứng Hoàn Thành' (grounding: required input and completion evidence)");
+  }
+
+  // Negative scope check
+  if (!exempt) {
+    const hasNegativeScope = /(khi\s+(nào\s+)?(không|chưa)\s+(nên\s+)?(sử\s+dụng|dùng|áp\s+dụng)|(không|chưa)\s+(nên\s+)?(sử\s+dụng|dùng|áp\s+dụng)\s+(khi|cho)|negative\s+scope|do\s+not\s+use\s+when)/i.test(content);
+    if (!hasNegativeScope) {
+      warnings.push("Missing negative scope section ('Khi KHÔNG sử dụng')");
+    }
+  }
+
   return { errors, warnings, exempt };
 }
 

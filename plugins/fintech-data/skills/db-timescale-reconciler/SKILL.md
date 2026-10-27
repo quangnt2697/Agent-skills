@@ -7,6 +7,12 @@ disable-auto-invoke: true
 
 # db-timescale-reconciler
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** Môi trường (`--env`), ngày, suite cần đối chiếu và kết nối Metabase hợp lệ. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Output thật của `db-recon.js` (exit code, số bản ghi); không kết nối được thì dừng, không đưa số liệu.
+
 ## Overview (Tổng quan)
 
 Phát hiện sai lệch dữ liệu chứng khoán KRX MDDS trên TimescaleDB Production qua Metabase API (`${METABASE_PROD_URL}`, DB ID: `${METABASE_PROD_DB_TIMESCALE_ID}`). Bao gồm 11 topic MDDS: Ticks, TopPrices, ExpectedPrice, OHLC, Indices, BoardEvents, SymbolBoardEvents, ForeignTrading, SecurityDefinition, VolatilityInterruption, TradeExtra.
@@ -17,6 +23,11 @@ Phát hiện sai lệch dữ liệu chứng khoán KRX MDDS trên TimescaleDB Pr
 - Kích hoạt khi nghi ngờ có value drift (lệch giá, lệch khối lượng) giữa bảng raw (`prices`) và bảng transformed (`krx_mdds_v3_*`).
 - Kích hoạt khi cần rà soát nến OHLC bị thiếu (gap) hoặc bản ghi ghi muộn sau phiên.
 - Sau khi deploy phiên bản pipeline dữ liệu MDDS mới lên môi trường Production.
+
+**Khi KHÔNG sử dụng:**
+- Chạy trên môi trường local/dev mà không có kết nối Metabase/TimescaleDB Production hợp lệ.
+- Thực hiện sửa đổi (mutate/fix) trực tiếp vào DB — skill này 100% Read-Only, chỉ phát hiện và đối chiếu.
+- Kiểm thử chức năng API đặt lệnh hoặc luồng giao dịch của người dùng → Dùng `qa-run-test`.
 
 ## Quy Tắc An Toàn & Thực Thi (Execution Rules)
 

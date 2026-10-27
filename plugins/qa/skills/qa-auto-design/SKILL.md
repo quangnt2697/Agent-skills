@@ -6,6 +6,12 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 
 # Thiết Kế & Sinh Mã Automation Test (qa-auto-design)
 
+> 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `{issueKey}.feature` và `checklist.md` đã tồn tại. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** `check-sdk.js` exit 0; `reuse-scan.json` tồn tại; `pytest --collect-only` exit 0; `qa-lint.js` exit 0.
+
 ## ⚠️ RANH GIỚI NHIỆM VỤ (Bắt buộc đọc trước)
 
 | ✅ qa-auto-design LÀM | ❌ qa-auto-design KHÔNG LÀM |
@@ -124,6 +130,8 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
   - [known-errors-and-fixes.md](references/known-errors-and-fixes.md): Lỗi phổ biến & cách fix nhanh.
 
 ## 4. Ví dụ mẫu (Few-shot Example)
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Input:** Scenario Gherkin: `Scenario: Đặt lệnh mua cổ phiếu hợp lệ`
 - **Output:** Test step trong `test_orders.py` (toàn bộ tham số lấy từ `.env` / fixture, không hardcode):
   ```python
