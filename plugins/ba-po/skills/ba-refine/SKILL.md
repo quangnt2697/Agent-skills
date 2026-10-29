@@ -22,7 +22,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 | Tải và phân tích Jira task, Confluence, attachments | Viết code, test script, SQL, API contract |
 | Khai phóng ý tưởng theo 5 chiều nghiệp vụ cốt lõi | Bàn luận kiến trúc hệ thống, microservices, DB Schema |
 | Stress-test xung đột quy tắc nghiệp vụ và phiên giao dịch | Viết JSON payload mẫu (camelCase, snake_case) |
-| Viết `refined.md` 8 mục thuần nghiệp vụ (kèm Mục 8 UI khi có thay đổi màn hình) & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
+| Viết `refined.md` 6 phần chuẩn Jira thuần nghiệp vụ (kèm Mục UI khi có thay đổi màn hình) & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
 | Xuất bản `spec/final.md` chuẩn hóa bàn giao cho DEV & QA | Tự ý thiết kế bừa, lệch khỏi `ui-component-map.json` |
 
 ### 🛡️ Bảng Ranh giới Ngôn ngữ Bất biến (Strict Business-Only Guardrail)
@@ -48,17 +48,18 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 | Gate | Vị trí | Hành động bắt buộc |
 |---|---|---|
 | **Gate 1** | Cuối Phase 0 | Trình bảng tài liệu → **DỪNG chờ user gõ OK** |
-| **Gate 2** | Bước 3.2 | Trình đồng thời: Toàn bộ draft 8 mục nghiệp vụ + Ảnh `mockup.png` + Bảng chú thích UI Delta ① ② ③ → **DỪNG chờ user approve** trước khi lưu `refined.md` |
+| **Gate 2** | Bước 3.2 | Trình đồng thời: Toàn bộ draft 6 phần chuẩn Jira + Ảnh `mockup.png` + Bảng chú thích UI Delta ① ② ③ → **DỪNG chờ user approve** trước khi lưu `refined.md` |
 
 ## 2. Quy trình 4 Giai đoạn Theo Tư Duy Nghiệp Vụ
 
 > 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng.
 
-- **Giai đoạn 0 (Thu thập Ý tưởng & Đối chiếu Quy tắc Ngành — Gate 1):**
+- **Giai đoạn 0 (Thu thập Ý tưởng, Trích xuất Từ khóa & Đối chiếu Quy tắc Ngành — Gate 1):**
   - Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira qua n8n Fast-Path (`prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`).
+  - **Trích xuất từ khóa từ Tiêu đề Task (Summary):** Tự động bóc tách từ khóa nghiệp vụ (loại bỏ prefix `[WEB]`, `[APP]` và stopwords) để tìm kiếm các task Jira và trang Confluence liên quan mật thiết.
   - Tự động tra cứu các quy định nghiệp vụ liên quan trong `references/securities/` (cấu trúc thị trường, phiên giao dịch, vòng đời lệnh, quy tắc margin) để nắm vững nền tảng nghiệp vụ trước khi phân tích.
   - **AS-IS Screen Discovery (Chốt chặn 2 — MASTER-BRANCH-FIRST):** Khi task liên quan UI (WEB/APP), tra cứu `references/ui-component-map.json` và **thực hiện toàn bộ Bước 11.A trong `workflow-and-phases.md`**: đọc các file màn hình đích trực tiếp từ **nhánh master/main** của `dnse-trading` hoặc `arrow-app` bằng `git show origin/master:<file>` (KHÔNG checkout), trích xuất bảng AS-IS DOM Inventory, đọc token CSS thực tế, và tạo file `spec/asis-inventory.md`. **⛔ CẤM dựng mockup khi chưa có file này.**
-  - Quét Confluence + attachments, trình bảng tài liệu cho user duyệt qua **Gate 1**.
+  - Quét Confluence + attachments, trình bảng tài liệu và task liên quan cho user duyệt qua **Gate 1**.
 
 - **Giai đoạn 1 (Khai phóng theo 5 Chiều Nghiệp vụ — Business-Driven Divergence):**
   - Mở rộng ý tưởng thô theo 5 câu hỏi nghiệp vụ cốt lõi:
@@ -76,26 +77,25 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
   - Gom các biến thể thành 2-3 hướng đi nghiệp vụ rõ ràng để user lựa chọn.
 
 - **Giai đoạn 3 (Chuẩn hóa Tài liệu Đặc tả Nghiệp vụ & Dựng Mockup — Gate 2):**
-  - Tạo `refined-draft.md` theo cấu trúc **8 mục chuẩn nghiệp vụ**:
-    1. **Mục tiêu & Giá trị Nghiệp vụ (Business Objective & Value)**
-    2. **Phạm vi & Đối tượng Áp dụng (Scope & Actors — In/Out of Scope)**
-    3. **Luồng Nghiệp vụ Chính (Main Business Flow — góc nhìn người dùng)**
-    4. **Luồng Nghiệp vụ Phụ & Xử lý Ngoại lệ (Alternative & Exception Flows)**
-    5. **Danh mục Quy tắc Nghiệp vụ & Công thức tính ([BR-01], [BR-02]...)**
-    6. **Tiêu chí Nghiệm thu Nghiệp vụ ([AC-1.1], [AC-1.2]... dạng Business Checklist)**
-    7. **Giả định Nghiệp vụ & Đo lường Thành công (Business Assumptions & Success Metrics)**
-    8. **Thiết kế Giao diện & Điểm chạm Thao tác (UI/UX Mockup) — BẮT BUỘC khi task có UI**
+  - Tạo `refined-draft.md` theo cấu trúc **Jira Description chuẩn mực 6 phần**:
+    1. **`## 🧩 User Story`** (`**As a** [role/persona cụ thể]`, `**I want** [hành động]`, `**So that** [giá trị đạt được]`)
+    2. **`## 💼 Business Context`** (`Vấn đề (Problem)`, `Mục tiêu (Goal)`, `Tính cấp thiết (Urgency)`, `Phạm vi (Scope)`)
+    3. **`## 📜 Business Rules`** (Danh mục quy tắc nghiệp vụ `[BR-01]`, `[BR-02]`, công thức tính toán)
+    4. **`## ✅ Acceptance Criteria`** (Khối `gherkin` sạch: **tuyệt đối không có automation `@tags`**, **không có tiền tố `[AC-x.y]`**, sử dụng `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
+    5. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: ảnh inline từng Case kèm điểm chạm thao tác `①`, `②`, `③` và Bảng UI Delta Mapping; ghi `N/A` nếu task backend)
+    6. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
+  - **Kiểm định Hard Gate trước Gate 2:** Chạy lệnh `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md"` — BẮT BUỘC PASS 100% trước khi trình user.
   - **Quy tắc Dựng Mockup (Kiến trúc 4 Chốt Chặn & Case-Based):**
-    - **Chốt chặn 0 (asis-inventory.md):** Tầt cả phần tử UI trong mockup **BẮT BUỘC** có nguồn gốc trong `spec/asis-inventory.md` (sinh ra từ Bước 11.A). CẤM dựng mockup khi file này chưa tồn tại.
+    - **Chốt chặn 0 (asis-inventory.md):** Tất cả phần tử UI trong mockup **BẮT BUỘC** có nguồn gốc trong `spec/asis-inventory.md` (sinh ra từ Bước 11.A). CẤM dựng mockup khi file này chưa tồn tại.
     - **Chốt chặn 1:** Tra cứu `references/ui-component-map.json` — Bắt buộc dùng component chuẩn, cấm viết inline CSS tự do.
-    - **Chốt chặn 3 (Delta-Only & Case-Based):** Tái hiện khung màn hình cũ làm nền ngữ cảnh (as-is, opacity 0.75), làm nổi bật phần thay đổi kèm Huy hiệu đánh số chú thích `①`, `②`, `③`. **BẮT BUỘC chia theo từng Case/Kịch bản thao tác cụ thể** (Case 1: Thao tác chính / Luồng chuẩn, Case 2: Cảnh báo ngoại lệ / Lỗi, Case 3: Tình huống biên / Khóa phiên). **CẤM mô tả design bằng text lan man**, thay vào đó mỗi ảnh đều có ghi chú thao tác người dùng (Action) và phản hồi hệ thống (Response) gắn với `[BR-*]`, `[AC-*]`.
+    - **Chốt chặn 3 (Delta-Only & Case-Based):** Tái hiện khung màn hình cũ làm nền ngữ cảnh (as-is, opacity 0.75), làm nổi bật phần thay đổi kèm Huy hiệu đánh số chú thích `①`, `②`, `③`. **BẮT BUỘC chia theo từng Case/Kịch bản thao tác cụ thể** (Case 1: Thao tác chính / Luồng chuẩn, Case 2: Cảnh báo ngoại lệ / Lỗi, Case 3: Tình huống biên / Khóa phiên). **CẤM mô tả design bằng text lan man**, thay vào đó mỗi ảnh đều có ghi chú thao tác người dùng (Action) và phản hồi hệ thống (Response) gắn với `[BR-*]`.
     - **Kết xuất Mockup ngay tại Bước 3.1:** Dựng `spec/diagrams/mockup.html` và chạy `render-mockup.js "mockup.html" "mockup.png" fit 2 all` sinh đủ ảnh `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png` để trình user duyệt tại Gate 2.
-    - **Chốt chặn 4 (Fidelity Check trước Gate 2):** Tính Fidelity Score = (số phần tử mockup khớp với asis-inventory.md) / (tổng) × 100%. **Ngưỡng bắt buộc ≥ 90%** trước khi trình Gate 2. Ghi Fidelity Score vào đầu Mục 8 của `refined-draft.md`.
-  - Trình toàn bộ draft 8 mục kèm ảnh Mockup từng Case và Ghi chú thao tác qua **Gate 2** để user phê duyệt.
+    - **Chốt chặn 4 (Fidelity Check trước Gate 2):** Tính Fidelity Score = (số phần tử mockup khớp với asis-inventory.md) / (tổng) × 100%. **Ngưỡng bắt buộc ≥ 90%** trước khi trình Gate 2. Ghi Fidelity Score vào đầu Mục UI của `refined-draft.md`.
+  - Trình toàn bộ draft kèm ảnh Mockup từng Case và Ghi chú thao tác qua **Gate 2** để user phê duyệt.
 
 - **Giai đoạn 4 (Đồng bộ lên Jira & Handoff Kỹ thuật):**
   - Cập nhật mô tả Jira qua n8n hoặc CLI helper `jira-push-spec.js`.
-  - **Tự động upload toàn bộ ảnh `mockup*.png` và dán trực tiếp (inline image ADF `mediaSingle`) vào Mục 8 trong Description của Jira ticket**, đúng theo từng Case kèm ghi chú thao tác (không chỉ đính kèm file ở tab attachments).
+  - **Tự động upload toàn bộ ảnh `mockup*.png` và dán trực tiếp (inline image ADF `mediaSingle`) vào Mục UI Design / Mockup trong Description của Jira ticket**, đúng theo từng Case kèm ghi chú thao tác (không chỉ đính kèm file ở tab attachments).
   - **Tự động xuất bản `spec/testability-manifest.json`** chứa danh sách phần tử UI (kèm selector/badge/BR/AC gợi ý) để QA tự động sinh test code POM mà không phải gõ tay.
   - Handoff sang DEV (`/dev-tech-spec`) và QA (`/qa-test-design`).
 
@@ -106,7 +106,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 
 - 🛠️ **Công cụ & Assets:**
   - [jira-push-spec.js](assets/jira-push-spec.js): CLI helper push ADF, upload ảnh Mockup và xuất manifest.
-  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 8 mục chuẩn hóa.
+  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 6 phần chuẩn Jira.
   - [mockup-harness.html](assets/mockup-harness.html): Bộ khung HTML UI Kit chuẩn và styling Delta-Only.
   - [render-mockup.js](assets/render-mockup.js): Script chụp ảnh Retina 2x qua Playwright.
   - [generate-ui-component-map.js](assets/generate-ui-component-map.js): Script quét tự động codebase Web & Mobile.
@@ -124,20 +124,40 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 > ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
 
 ```markdown
-## 1. Mục tiêu & Giá trị Nghiệp vụ
-Cho phép nhà đầu tư giao dịch ký quỹ (Margin) chủ động lựa chọn gói phí ưu đãi theo kỳ hạn để tối ưu chi phí vay.
+## 🧩 User Story
+**As a** Nhà đầu tư giao dịch ký quỹ (Margin)  
+**I want** chủ động lựa chọn gói phí ưu đãi theo kỳ hạn  
+**So that** tối ưu hóa chi phí vay vốn phù hợp với chiến lược nắm giữ cổ phiếu
 
-## 2. Phạm vi & Đối tượng Áp dụng
-- Áp dụng: Khách hàng cá nhân có tiểu khoản ký quỹ (đuôi 6) đã kích hoạt hạn mức.
-- Không áp dụng: Khách hàng tổ chức, tài khoản thường (đuôi 1), tài khoản phái sinh.
+## 💼 Business Context
+- **Vấn đề (Problem):** Khách hàng giao dịch ngắn hạn hiện phải chịu mức lãi suất thả nổi cố định cả kỳ, làm giảm hiệu quả sinh lời và tăng tỷ lệ rời bỏ nền tảng.
+- **Mục tiêu (Goal):** Cung cấp các gói lãi suất ưu đãi theo kỳ hạn (T+10, T+30), giúp tăng 20% dư nợ margin và giữ chân nhà đầu tư năng động.
+- **Tính cấp thiết (Urgency):** Đối thủ đã tung các gói lãi suất linh hoạt; cần triển khai ngay trước thềm mùa báo cáo tài chính quý.
+- **Phạm vi (Scope):** Áp dụng cho tài khoản ký quỹ cá nhân đã kích hoạt hạn mức; ngoài phạm vi: tài khoản thường và tài khoản phái sinh.
 
-## 3. Quy tắc Nghiệp vụ
+## 📜 Business Rules
 - [BR-01] Lãi suất ưu đãi chỉ áp dụng cho các món giải ngân mới phát sinh trong thời gian hiệu lực của gói.
 - [BR-02] Khi hết thời hạn gói, lãi suất tự động quay về mức thả nổi chuẩn theo quy định biểu phí hiện hành.
 
-## 4. Tiêu chí Nghiệm thu Nghiệp vụ
-- [AC-1.1] Xác minh hệ thống ghi nhận đúng mức lãi suất ưu đãi cho lệnh khớp mua ký quỹ trong ngày đăng ký gói.
-- [AC-1.2] Xác minh hệ thống từ chối đăng ký gói khi tài khoản đang trong trạng thái bị phong tỏa hoặc diện Call Margin.
+## ✅ Acceptance Criteria
+```gherkin
+Feature: Đăng ký gói vay margin ưu đãi theo kỳ hạn
+
+  Scenario: Happy - Đăng ký gói vay ưu đãi T+10 thành công
+    Given Tài khoản ký quỹ có trạng thái hoạt động bình thường
+    When Khách hàng chọn gói vay T+10 và xác nhận đăng ký
+    Then Hệ thống ghi nhận mức lãi suất ưu đãi cho các lệnh giải ngân mới trong ngày
+
+  Scenario: Validation - Từ chối khi tài khoản đang diện Call Margin
+    Given Tài khoản ký quỹ đang chạm tỷ lệ cảnh báo Call Margin
+    When Khách hàng yêu cầu đăng ký gói lãi suất ưu đãi
+    Then Hệ thống từ chối và hiển thị thông báo "Tài khoản đang diện cảnh báo, không thể đăng ký gói ưu đãi"
+
+  Scenario: Edge - Giải ngân vào ngày cuối cùng của hiệu lực gói
+    Given Gói ưu đãi đang ở ngày cuối cùng của chu kỳ hiệu lực
+    When Lệnh mua ký quỹ khớp thành công trong phiên liên tục
+    Then Món vay vẫn được áp dụng lãi suất ưu đãi cho đến hết ngày theo đúng quy chế
+```
 ```
 
 ---

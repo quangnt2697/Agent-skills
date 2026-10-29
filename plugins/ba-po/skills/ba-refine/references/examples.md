@@ -440,103 +440,88 @@ Agent: Bắt đầu Giai đoạn 3...
 ```markdown
 ## 🧩 User Story
 
-As a **trader chuyên nghiệp chịu yêu cầu kiểm toán pháp quy**
-I want **export báo cáo giao dịch kèm audit trail chống giả mạo**
-So that **cung cấp tài liệu tuân thủ cho kiểm toán viên và giảm rủi ro pháp lý**
+**As a** trader chuyên nghiệp chịu yêu cầu kiểm toán pháp quy,
+**I want** xuất báo cáo giao dịch kèm nhật ký kiểm toán chống giả mạo,
+**So that** cung cấp tài liệu tuân thủ hợp lệ cho kiểm toán viên và giảm rủi ro pháp lý.
 
 ## 💼 Business Context
 
-- **Vấn đề:** 87 ticket hỗ trợ trong Q3 yêu cầu export báo cáo phục vụ kiểm toán thuế; giải pháp chụp màn hình thủ công dễ sai lệch và không có giá trị pháp lý.
-- **Mục tiêu:** Cung cấp tính năng export báo cáo kèm audit trail chống giả mạo, giúp giảm ~60% tải hỗ trợ và đáp ứng yêu cầu compliance của trader chuyên nghiệp.
-- **Tính cấp thiết:** Mùa quyết toán thuế Q4 đang tới gần và cần đóng lỗ hổng thiếu audit trail theo cảnh báo của pháp chế.
+- **Vấn đề (Problem):** 87 ticket hỗ trợ trong Q3 yêu cầu xuất báo cáo phục vụ kiểm toán thuế; giải pháp chụp màn hình thủ công dễ sai lệch và không có giá trị pháp lý.
+- **Mục tiêu (Goal):** Cung cấp tính năng xuất báo cáo kèm nhật ký kiểm toán chống giả mạo, giúp giảm ~60% tải hỗ trợ và đáp ứng yêu cầu tuân thủ của trader chuyên nghiệp.
+- **Tính cấp thiết (Urgency):** Mùa quyết toán thuế Q4 đang tới gần và cần đóng lỗ hổng thiếu nhật ký kiểm toán theo cảnh báo của bộ phận pháp chế.
+- **Phạm vi (Scope):**
+  - *Trong phạm vi (In-Scope):* Xuất báo cáo P&L, Lịch sử giao dịch và Tổng hợp danh mục sang định dạng PDF/A có chữ ký số và nhật ký kiểm toán.
+  - *Ngoài phạm vi (Out-of-Scope):* Xuất báo cáo tự động định kỳ theo lịch hoặc tùy chỉnh mẫu báo cáo riêng.
+
+## 📜 Business Rules
+
+- **[BR-01] Định dạng chuẩn pháp quy:** Báo cáo xuất ra bắt buộc ở định dạng PDF/A kèm chữ ký số của hệ thống và đóng dấu mờ (watermark) mã định danh nhà đầu tư.
+- **[BR-02] Thời hạn đường dẫn tải:** Đường dẫn tải báo cáo được mã hóa bảo mật và tự động hết hiệu lực sau 24 giờ kể từ thời điểm khởi tạo.
+- **[BR-03] Ngưỡng xử lý báo cáo lớn:** Báo cáo có từ 10.000 giao dịch trở xuống được tải trực tiếp; báo cáo trên 10.000 giao dịch được xử lý nền và gửi thông báo qua email trong vòng tối đa 5 phút.
+- **[BR-04] Giới hạn tần suất xuất báo cáo:** Mỗi nhà đầu tư được phép yêu cầu xuất tối đa 10 báo cáo trong mỗi khung giờ 60 phút.
 
 ## ✅ Acceptance Criteria
 
 ```gherkin
-Feature: Export Báo cáo Ưu tiên Tuân thủ
+Feature: Xuất Báo cáo Giao dịch Ưu tiên Tuân thủ
 
-Scenario: Export thành công với audit trail
-  Given tôi là user đã đăng nhập tại trang Báo cáo
-  When tôi nhấn nút "Export Báo cáo"
-  Then hệ thống tạo báo cáo định dạng PDF/A
-  And hệ thống ghi audit entry (user_id, timestamp, report_type, transaction_count)
-  And PDF bao gồm chữ ký số + watermark với user_id
-  And link tải được mã hóa và hết hạn sau 24 giờ
+  Scenario: Happy - Xuất báo cáo thành công kèm nhật ký kiểm toán
+    Given nhà đầu tư chuyên nghiệp đã đăng nhập và đang ở màn hình Báo cáo
+    When nhà đầu tư chọn loại báo cáo "Lịch sử Giao dịch" và nhấn nút "Xuất Báo cáo"
+    Then hệ thống khởi tạo tệp báo cáo chuẩn PDF/A có chữ ký số và dấu mờ định danh
+    And hệ thống ghi nhận bản ghi nhật ký kiểm toán cho lần xuất báo cáo này
+    And đường dẫn tải báo cáo có hiệu lực trong vòng 24 giờ
 
-Scenario: Xử lý báo cáo lớn
-  Given báo cáo có >10.000 giao dịch
-  When tôi yêu cầu export
-  Then hệ thống đưa export vào hàng đợi background
-  And hệ thống gửi email thông báo khi hoàn tất
-  And export hoàn thành trong vòng 5 phút
+  Scenario: Validation - Từ chối khi vượt quá giới hạn số lần xuất báo cáo trong giờ
+    Given nhà đầu tư đã thực hiện đủ 10 lần xuất báo cáo trong vòng 60 phút gần nhất
+    When nhà đầu tư tiếp tục nhấn nút "Xuất Báo cáo" lần thứ 11
+    Then hệ thống từ chối yêu cầu và hiển thị thông báo đã vượt quá hạn mức xuất báo cáo trong giờ
 
-Scenario: Truy vấn audit trail
-  Given tôi là admin user
-  When tôi truy cập trang Audit Log
-  Then tôi có thể xem tất cả sự kiện export (ai, khi nào, cái gì)
-  And tôi có thể lọc theo user, khoảng thời gian, loại báo cáo
+  Scenario: Edge - Xử lý báo cáo dung lượng lớn trên 10.000 giao dịch
+    Given nhà đầu tư chọn khoảng thời gian báo cáo có hơn 10.000 giao dịch
+    When nhà đầu tư nhấn nút "Xuất Báo cáo"
+    Then hệ thống hiển thị thông báo báo cáo đang được tổng hợp và sẽ gửi qua email
+    And nhà đầu tư nhận được email kèm đường dẫn tải báo cáo hoàn tất trong vòng 5 phút
 ```
 
 ## 🎨 UI Design / Mockup
 
-### Ghi chú Tương tác (UX Flow)
+> 🎯 Fidelity Score: 96% (đọc từ origin/master)
 
-1. User truy cập trang Báo cáo
-2. Chọn loại báo cáo (P&L Hàng ngày, Lịch sử Giao dịch, Tổng hợp Danh mục)
-3. Nhấn nút "Export Báo cáo"
-4. Hệ thống hiển thị indicator tiến trình
-5. Nếu báo cáo nhỏ (<1000 dòng): Tải ngay
-6. Nếu báo cáo lớn (>1000 dòng): Thông báo "Chúng tôi sẽ email khi xong"
-7. User nhận link tải mã hóa
-8. User nhấn link → PDF được tải về
+- **Màn hình gốc (AS-IS Screen):** Màn hình Báo cáo Giao dịch (`ReportExportModal`, `ExportButton`)
 
-### UI Requirements & Codebase Mapping
+### Kịch bản 1 (Case 1): Luồng thao tác chuẩn — Xuất báo cáo tức thời
 
-- **Component bị ảnh hưởng:** `ReportExportModal.tsx`, `ExportButton.tsx` (tái sử dụng từ design system)
-- **Tái sử dụng Design Tokens:** Màu primary và spinner indicator có sẵn trong theme
-- **Nút export:** Hành động phụ (secondary button, không phải CTA chính)
-- **Indicator tiến trình:** Spinner vô hạn nếu <5s, thanh tiến trình nếu lâu hơn
-- **Mockup Artifact:** `workspace/issues/STK-402/tech/mockup.html` (đã chụp snapshot `mockup.png`)
+![Mockup Case 1 - Xuất báo cáo tức thời](./diagrams/mockup-case-1.png)
+
+- **Điểm chạm & Phản hồi nghiệp vụ trên giao diện:**
+  - **① Chọn loại báo cáo:** Nhà đầu tư chọn loại báo cáo cần xuất (P&L Hàng ngày, Lịch sử Giao dịch, Tổng hợp Danh mục).
+  - **② Nhấn nút "Xuất Báo cáo":** Hệ thống kiểm tra hạn mức `[BR-04]` và khởi tạo tệp PDF/A có chữ ký số `[BR-01]`.
+
+### Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)
+
+| Ký hiệu | Tên phần tử / Trường thông tin | Loại thay đổi | Mô tả hành vi & Quy tắc hiển thị | Quy tắc áp dụng |
+|:---:|---|---|---|---|
+| **①** | Bộ chọn Loại Báo Cáo | Giữ nguyên | Cho phép chọn loại báo cáo giao dịch cần trích xuất | `[BR-01]` |
+| **②** | Nút "Xuất Báo cáo" | Thêm mới | Kích hoạt xuất báo cáo PDF/A hoặc chuyển sang xử lý nền nếu > 10.000 dòng | `[BR-01]`, `[BR-03]`, `[BR-04]` |
 
 ## ☀️ Success Criteria & Tracking
 
-### Chỉ số Thành công
+### Success Metrics
 
-| Chỉ số                           | Hiện tại        | Mục tiêu          | Cách đo                      |
-|----------------------------------|-----------------|-------------------|------------------------------|
-| Ticket hỗ trợ (liên quan export) | 87/quý          | <30/quý           | Phân tích tag Zendesk        |
-| Tỷ lệ sử dụng export             | 0%              | >40% active users | Dashboard phân tích          |
-| Truy vấn kiểm toán               | Thủ công (chậm) | <1 giờ phản hồi   | Thời gian truy vấn audit log |
+| Chỉ số | Hiện tại | Mục tiêu | Cách đo |
+|---|---|---|---|
+| Ticket hỗ trợ (liên quan xuất báo cáo) | 87/quý | <30/quý | Phân tích nhãn hỗ trợ khách hàng |
+| Tỷ lệ sử dụng tính năng xuất báo cáo | 0% | >40% nhà đầu tư hoạt động | Báo cáo phân tích sản phẩm |
+| Thời gian phản hồi truy vấn kiểm toán | Thủ công (chậm) | <1 giờ phản hồi | Thời gian tra cứu nhật ký kiểm toán |
 
-### Theo dõi Sự kiện
+### Tracking
 
-| Sự kiện                 | Dashboard / Báo cáo      | Chủ sở hữu   |
-|-------------------------|--------------------------|--------------|
-| export_report_initiated | Dashboard tăng trưởng    | Product      |
-| export_report_completed | Dashboard tăng trưởng    | Product      |
-| export_report_failed    | Cảnh báo Ops (PagerDuty) | SRE          |
-
-## 🧱 Technical Notes
-
-### API / Service
-
-- POST /api/v1/reports/{report_id}/export - Đưa export vào hàng đợi
-- GET /api/v1/exports/{export_id} - Kiểm tra trạng thái
-- GET /api/v1/exports/{export_id}/download - Lấy link tải mã hóa
-- Rate limit: 10 export/giờ mỗi user
-
-### Database
-
-- Bảng mới: export_audit_log (user_id, report_id, timestamp, status)
-- Index trên (user_id, timestamp) cho truy vấn audit
-- Retention: 7 năm (yêu cầu compliance)
-
-### Dependency
-
-- Ký PDF: DocuSign hoặc Adobe Sign API
-- Lưu trữ: S3 bucket cho PDF tạm (TTL 24h)
-- Hàng đợi: Hạ tầng Bull queue có sẵn
-- Email: Tích hợp SendGrid có sẵn
+| Sự kiện | Dashboard / Báo cáo | Chủ sở hữu |
+|---|---|---|
+| Khởi tạo yêu cầu xuất báo cáo | Bảng theo dõi tăng trưởng sản phẩm | Product |
+| Hoàn tất xuất báo cáo PDF/A | Bảng theo dõi tăng trưởng sản phẩm | Product |
+| Xuất báo cáo thất bại hoặc chạm hạn mức | Bảng cảnh báo vận hành | Vận hành |
 ```
 
 ```

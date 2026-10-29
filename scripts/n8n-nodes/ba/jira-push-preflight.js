@@ -91,7 +91,8 @@ if (/\[\.\.\.\]/.test(markdownContent)) {
 const forbiddenSections = [
   /##\s*Giả định\s*(&|và)\s*Rủi ro/i,
   /##\s*Ngoài Phạm vi/i,
-  /##\s*Đánh giá Độ tin cậy/i
+  /##\s*Đánh giá Độ tin cậy/i,
+  /##\s*(?:🧱\s*)?Technical Notes/i
 ];
 for (const pattern of forbiddenSections) {
   if (pattern.test(markdownContent)) {
@@ -99,7 +100,14 @@ for (const pattern of forbiddenSections) {
   }
 }
 
-// C. Kiểm tra cấu trúc Acceptance Criteria (bắt buộc có Given/When/Then và ít nhất 1 Scenario)
+// C. Kiểm tra cấu trúc User Story (bắt buộc đối với refined.md)
+if (targetFilePath.endsWith('refined.md')) {
+  if (!/^##\s*(?:🧩\s*)?User Story/im.test(markdownContent)) {
+    qualityErrors.push("Spec refine bắt buộc phải có `## 🧩 User Story` (`**As a**`, `**I want**`, `**So that**`).");
+  }
+}
+
+// D. Kiểm tra cấu trúc Acceptance Criteria (Gherkin sạch, không @tag, không [AC-x.y])
 const hasGiven = /Given\b/i.test(markdownContent);
 const hasWhen = /When\b/i.test(markdownContent);
 const hasThen = /Then\b/i.test(markdownContent);
@@ -111,6 +119,24 @@ if (!hasGiven || !hasWhen || !hasThen) {
 const scenarioCount = (markdownContent.match(/Scenario(?:\s+Outline)?\s*:/gi) || []).length;
 if (scenarioCount < 2) {
   qualityErrors.push(`Acceptance Criteria cần có tối thiểu 2 Scenarios kiểm thử (hiện có: ${scenarioCount}).`);
+}
+
+// D.1. Chặn @tags thừa và [AC] trong Scenario
+const lines = markdownContent.split('\n');
+let inGherkin = false;
+for (const line of lines) {
+  if (/^```gherkin/i.test(line)) inGherkin = true;
+  else if (/^```/.test(line)) inGherkin = false;
+  else if (inGherkin) {
+    if (/^\s*@[a-zA-Z0-9_-]+/.test(line)) {
+      qualityErrors.push(`Acceptance Criteria không được chứa automation @tag: "${line.trim()}".`);
+      break;
+    }
+    if (/Scenario(?:\s+Outline)?\s*:.*\[AC(?:-\d+(?:\.\d+)?)?\]/i.test(line)) {
+      qualityErrors.push(`Scenario không được gắn tag mã [AC]: "${line.trim()}".`);
+      break;
+    }
+  }
 }
 
 if (qualityErrors.length > 0) {
