@@ -1,0 +1,43 @@
+{
+  "skill_name": "ba-design-mockup",
+  "trigger": {
+    "positive": [
+      {
+        "prompt": "Thiết kế mockup giao diện màn hình đặt lệnh Web bám sát codebase",
+        "top_k": 3
+      },
+      {
+        "prompt": "Dựng HTML mockup giao diện Mobile App Entrade X theo chuẩn Delta-Only",
+        "top_k": 3
+      },
+      {
+        "prompt": "Bóc tách AS-IS UI từ nhánh master và render ảnh mockup Retina",
+        "top_k": 3
+      }
+    ],
+    "negative": [
+      {
+        "prompt": "Vẽ flowchart sơ đồ kiến trúc hệ thống",
+        "owner": "ba-design-flowchart"
+      },
+      {
+        "prompt": "Thiết kế checklist kiểm thử kịch bản tự động",
+        "owner": "qa-test-design"
+      }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Dựng mockup giao diện đặt lệnh chứng khoán có thêm gói margin ưu đãi",
+      "expected_output": "Mã HTML mockup có Delta-Only và bảng UI Delta Mapping",
+      "expectations": [
+        "Sử dụng Production App Shell hoặc trích xuất AS-IS từ master",
+        "Gắn viền data-change added/modified kèm huy hiệu đánh số",
+        "Có hàm switchState hỗ trợ đa Case"
+      ]
+    }
+  ]
+}
+

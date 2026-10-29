@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=393, initial-scale=1.0">
+  <title>Entrade X App — Mobile Sheet Shell (Prod-Twin)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-device: #000000;
+      --bg-surface: #12161c;
+      --bg-card: #181d24;
+      --bg-input: #0e1217;
+      --border-subtle: #242c37;
+
+      --text-primary: #f0f3f6;
+      --text-secondary: #9aa4b2;
+      --text-muted: #5e6b7c;
+
+      --stock-green: #00d084;
+      --stock-red: #ff4d4f;
+      --delta-added: #00d084;
+      --delta-modified: #f59e0b;
+
+      --font-family: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #05070a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: var(--font-family);
+      color: var(--text-primary);
+    }
+
+    /* KHUNG IPHONE CHUẨN (393 x 852) */
+    .mobile-frame {
+      width: 393px;
+      height: 852px;
+      background: var(--bg-surface);
+      border: 10px solid #282d35;
+      border-radius: 48px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+    }
+
+    /* DYNAMIC ISLAND & STATUS BAR */
+    .status-bar {
+      height: 44px;
+      padding: 12px 24px 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .dynamic-island {
+      width: 100px;
+      height: 26px;
+      background: #000000;
+      border-radius: 20px;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* HEADER APP */
+    .app-header {
+      height: 48px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* SCROLLABLE CONTENT */
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* CARD VÀ FORM */
+    .ui-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    /* DELTA-ONLY MARKING */
+    .as-is-context, [data-ui="as-is"] { opacity: 0.78; }
+    [data-change="added"] {
+      position: relative;
+      outline: 2px dashed var(--delta-added);
+      outline-offset: 4px;
+      border-radius: 8px;
+      background: rgba(0, 208, 132, 0.08);
+    }
+    [data-change="modified"] {
+      position: relative;
+      outline: 2px dashed var(--delta-modified);
+      outline-offset: 4px;
+      border-radius: 8px;
+      background: rgba(245, 158, 11, 0.08);
+    }
+    .delta-pin {
+      position: absolute;
+      top: -10px;
+      right: -8px;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #052e16;
+      background: #00d084;
+    }
+    .badge-modified { background: #f59e0b; color: #451a03; }
+
+    .bottom-bar {
+      height: 34px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .home-indicator {
+      width: 130px;
+      height: 4px;
+      background: var(--text-muted);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-frame device-frame" id="mockup-canvas">
+    <!-- STATUS BAR -->
+    <div class="status-bar as-is-context">
+      <span>09:41</span>
+      <div class="dynamic-island"></div>
+      <span>5G 🔋</span>
+    </div>
+
+    <!-- APP HEADER -->
+    <div class="app-header as-is-context">
+      <span style="font-weight: 600;">← Sổ Lệnh & Vị Thế Deal</span>
+      <span style="color: var(--text-muted);">Tài khoản 0001889922</span>
+    </div>
+
+    <!-- MAIN APP CONTENT -->
+    <div class="content-area">
+      <!-- MÃ VÀ GIÁ KHỚP (AS-IS) -->
+      <div class="ui-card as-is-context">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <strong style="font-size: 16px;">VND (VNDIRECT)</strong>
+          <span style="color: var(--stock-green); font-weight: 700; font-family: var(--font-mono);">24,500 (+2.5%)</span>
+        </div>
+      </div>
+
+      <!-- [TO-BE DELTA ①] THÊM MỚI: Thẻ Deal Kèm Gói Margin Ưu Đãi -->
+      <div class="ui-card" data-change="added" id="deltaDealCard">
+        <span class="delta-pin">①</span>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="font-size: 12px; color: var(--text-secondary);">Gói Vay Deal #9842</span>
+          <span style="font-size: 11px; color: var(--stock-green); background: rgba(0, 208, 132, 0.12); padding: 2px 6px; border-radius: 4px;">T+10 Miễn Lãi</span>
+        </div>
+        <div style="font-size: 13px; margin-bottom: 4px;">
+          Lãi suất áp dụng: <strong>8.9%/năm</strong> (Tiết kiệm 3.6% so với chuẩn)
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted);">
+          Thời hạn ưu đãi còn lại: <strong>4 ngày</strong>
+        </div>
+      </div>
+
+      <!-- [TO-BE DELTA ②] SỬA ĐỔI: Nút Chuyển Gói Vay Nhanh Ngay Trên Mobile -->
+      <div style="margin-top: 8px;" data-change="modified" id="deltaBtnAction">
+        <span class="delta-pin badge-modified">②</span>
+        <button style="width: 100%; height: 44px; background: #1068eb; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer;">
+          Đổi Sang Gói Lãi Suất T+10
+        </button>
+      </div>
+
+      <!-- BANNER CẢNH BÁO CHO CASE 2 -->
+      <div id="bannerWarning" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1px solid var(--delta-modified); padding: 10px; border-radius: 8px; font-size: 12px;" data-change="added">
+        <span class="delta-pin badge-modified">③</span>
+        ⚠️ <strong>Cảnh báo Hạn mức Vay:</strong> Gói T+10 chỉ áp dụng cho giải ngân dưới 500 triệu đồng.
+      </div>
+    </div>
+
+    <!-- HOME INDICATOR -->
+    <div class="bottom-bar as-is-context">
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- BẢNG CHÚ THÍCH UI DELTA MAPPING -->
+  <div class="delta-legend-card" style="width: 390px; margin: 16px auto; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px;">
+    <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">📋 Bảng Chú Thích Thay Đổi Giao Diện (UI Delta Mapping)</h3>
+    <table class="delta-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); text-align: left;">
+          <th style="padding: 6px;">Badge</th>
+          <th style="padding: 6px;">Thành Phần</th>
+          <th style="padding: 6px;">Thay Đổi</th>
+          <th style="padding: 6px;">Quy Tắc</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 6px;"><span class="delta-pin" style="position: static; display: inline-flex;">①</span></td>
+          <td style="padding: 6px;"><strong>Thẻ Deal Margin</strong></td>
+          <td style="padding: 6px;">Thêm mới (Deal Card) - Hiển thị gói lãi suất áp dụng</td>
+          <td style="padding: 6px;"><code>[BR-01]</code></td>
+        </tr>
+        <tr>
+          <td style="padding: 6px;"><span class="delta-pin badge-modified" style="position: static; display: inline-flex;">②</span></td>
+          <td style="padding: 6px;"><strong>Nút Đổi Gói Lãi Suất</strong></td>
+          <td style="padding: 6px;">Sửa đổi (Button) - Nút chuyển đổi nhanh gói T+10</td>
+          <td style="padding: 6px;"><code>[BR-02]</code></td>
+        </tr>
+        <tr>
+          <td style="padding: 6px;"><span class="delta-pin badge-modified" style="position: static; display: inline-flex;">③</span></td>
+          <td style="padding: 6px;"><strong>Banner Hạn Mức</strong></td>
+          <td style="padding: 6px;">Thêm mới (Banner) - Cảnh báo hạn mức gói giải ngân</td>
+          <td style="padding: 6px;"><code>[BR-03]</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function switchState(state) {
+      const banner = document.getElementById('bannerWarning');
+      const btn = document.querySelector('#deltaBtnAction button');
+      if (state === 'error') {
+        if (banner) banner.style.display = 'block';
+        if (btn) btn.textContent = 'Đổi Gói Lãi Suất T+10 (Vượt Hạn Mức)';
+      } else if (state === 'locked') {
+        if (banner) banner.style.display = 'none';
+        if (btn) {
+          btn.disabled = true;
+          btn.style.opacity = '0.5';
+          btn.textContent = 'Khóa Chuyển Gói (Ngoài Giờ Giao Dịch)';
+        }
+      } else {
+        if (banner) banner.style.display = 'none';
+        if (btn) {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.textContent = 'Đổi Sang Gói Lãi Suất T+10';
+        }
+      }
+    }
+    window.__MOCKUP_READY__ = true;
+  </script>
+</body>
+</html>
+

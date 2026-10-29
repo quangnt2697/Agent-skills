@@ -22,18 +22,30 @@ const agentSkillsRoot = path.resolve(__dirname, '../../../../..');
 const configProjectsPath = path.join(agentSkillsRoot, 'config/projects.json');
 const outputPath = path.resolve(__dirname, '../references/ui-component-map.json');
 
-// Đọc đường dẫn repo từ projects.json
+// Đọc đường dẫn repo từ projects.json (hỗ trợ cả git worktree)
 let projects = {};
-if (fs.existsSync(configProjectsPath)) {
-  try {
-    projects = JSON.parse(fs.readFileSync(configProjectsPath, 'utf8'));
-  } catch (err) {
-    console.warn('⚠️ Không thể đọc config/projects.json, sử dụng đường dẫn mặc định.');
+const candidateConfigPaths = [
+  configProjectsPath,
+  '/Users/qa-quangnt/Projects/agent-skills/config/projects.json'
+];
+for (const cfgPath of candidateConfigPaths) {
+  if (fs.existsSync(cfgPath)) {
+    try {
+      projects = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+      break;
+    } catch (_) {}
   }
 }
 
-const webTradingRoot = projects['web-trading'] || process.env.WEB_TRADING_ROOT || path.resolve(agentSkillsRoot, '..', 'dnse-trading');
-const mobileTradingRoot = projects['mobile-trading'] || process.env.MOBILE_TRADING_ROOT || path.resolve(agentSkillsRoot, '..', 'arrow-app');
+const defaultWebPath = fs.existsSync('/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading')
+  ? '/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading'
+  : path.resolve(agentSkillsRoot, '..', 'dnse-trading');
+const defaultMobilePath = fs.existsSync('/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app')
+  ? '/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app'
+  : path.resolve(agentSkillsRoot, '..', 'arrow-app');
+
+const webTradingRoot = projects['web-trading'] || process.env.WEB_TRADING_ROOT || defaultWebPath;
+const mobileTradingRoot = projects['mobile-trading'] || process.env.MOBILE_TRADING_ROOT || defaultMobilePath;
 
 console.log('🔍 Đang quét Codebase UI Design System...');
 console.log(`   - Web Trading: ${webTradingRoot}`);
@@ -323,6 +335,325 @@ const STANDARD_COMPONENTS = {
 </div>`.trim(),
     react_equivalent: 'libs/ui/src/Modal / Dialog',
     flutter_equivalent: 'lib/pages/order_confirmation_page'
+  },
+  'DealCard': {
+    name: 'Thẻ Chi Tiết Deal Margin & Trạng Thái Lãi Lỗ',
+    class_name: 'deal-card',
+    html_snippet: `
+<div class="deal-card" data-change="added">
+  <span class="delta-badge">①</span>
+  <div class="deal-header">
+    <span class="deal-id">#DEAL-9921</span>
+    <span class="badge-status text-gain">Đang Mở</span>
+  </div>
+  <div class="deal-body">
+    <div class="deal-row"><span>Mã CP:</span><strong>VND</strong></div>
+    <div class="deal-row"><span>Khối lượng:</span><strong>5,000</strong></div>
+    <div class="deal-row"><span>Giá vốn TB:</span><strong>23,800 đ</strong></div>
+    <div class="deal-row"><span>Lãi/Lỗ:</span><strong class="text-gain">+3,500,000 đ (+2.9%)</strong></div>
+    <div class="deal-row"><span>Gói Vay:</span><span class="badge-tag">T+10 (8.9%)</span></div>
+  </div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/pages/Loans / DealItem.tsx',
+    flutter_equivalent: 'lib/widgets/deal_card_item.dart'
+  },
+  'OrderBookTable': {
+    name: 'Bảng Sổ Lệnh Realtime Trong Ngày',
+    class_name: 'order-book-table',
+    html_snippet: `
+<div class="order-book-table">
+  <table class="table-compact">
+    <thead>
+      <tr><th>Thời Gian</th><th>Mã</th><th>Lệnh</th><th>Giá</th><th>KL</th><th>Khớp</th><th>Trạng Thái</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>09:35:12</td>
+        <td><strong>VND</strong></td>
+        <td class="text-gain">MUA</td>
+        <td>24.50</td>
+        <td>1,000</td>
+        <td>1,000</td>
+        <td><span class="badge-success">Khớp hết</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/components/OrderBook / OrderTable.tsx',
+    flutter_equivalent: 'lib/pages/order_deal_book/order_book_list.dart'
+  },
+  'SubAccountSwitcher': {
+    name: 'Bộ Chuyển Đổi Tiểu Khoản Thường (0001) / Ký Quỹ (0006)',
+    class_name: 'subaccount-switcher',
+    html_snippet: `
+<div class="subaccount-switcher">
+  <label class="form-label">Tài Khoản Giao Dịch</label>
+  <div class="account-select-box">
+    <span class="acc-id">0001889922-1</span>
+    <span class="acc-badge">Tiểu khoản Thường</span>
+    <span class="arrow-down">▼</span>
+  </div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/components/AccountSwitcher / index.tsx',
+    flutter_equivalent: 'lib/widgets/account_view_mode_switcher.dart'
+  },
+  'QrCashTransferBox': {
+    name: 'Khung Nạp Tiền Nhanh Qua Mã VietQR',
+    class_name: 'qr-cash-transfer-box',
+    html_snippet: `
+<div class="qr-cash-box text-center" data-change="added">
+  <span class="delta-badge">②</span>
+  <div class="qr-image-wrapper">
+    <div class="qr-placeholder">[VIETQR CODE]</div>
+  </div>
+  <div class="qr-info">
+    <p>Ngân hàng: <strong>BIDV (Hà Thành)</strong></p>
+    <p>Số tài khoản: <strong>96110001889922</strong></p>
+    <p>Người thụ hưởng: <strong>CTCP CHUNG KHOAN DNSE</strong></p>
+  </div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/pages/CashTransfer / VietQRModal.tsx',
+    flutter_equivalent: 'lib/pages/cash_transfer/qr_deposit_view.dart'
+  },
+  'SmartOtpInput': {
+    name: 'Ô Nhập 6 Số Mã Xác Thực Smart OTP',
+    class_name: 'smart-otp-input',
+    html_snippet: `
+<div class="otp-container" data-change="added">
+  <span class="delta-badge">①</span>
+  <label class="form-label text-center">Nhập Mã Smart OTP 6 Số</label>
+  <div class="otp-cells">
+    <span class="otp-cell filled">8</span>
+    <span class="otp-cell filled">9</span>
+    <span class="otp-cell filled">2</span>
+    <span class="otp-cell cursor">|</span>
+    <span class="otp-cell"></span>
+    <span class="otp-cell"></span>
+  </div>
+  <div class="otp-timer text-hint text-center">Mã tự động sinh lại sau <strong>18s</strong></div>
+</div>`.trim(),
+    react_equivalent: 'libs/ui/src/OtpBlockInput',
+    flutter_equivalent: 'lib/widgets/smart_otp_input_view.dart'
+  },
+  'RandomEndTooltip': {
+    name: 'Tooltip Cảnh Báo Cơ Chế Đóng Cửa Ngẫu Nhiên Phiên ATC KRX',
+    class_name: 'random-end-tooltip',
+    html_snippet: `
+<div class="tooltip-box info" data-change="added">
+  <span class="delta-badge">③</span>
+  <span class="info-icon">ℹ️</span>
+  <span>Phiên ATC áp dụng cơ chế <strong>Đóng Cửa Ngẫu Nhiên</strong> từ 14:44:30 đến 14:45:00 theo chuẩn KRX. Không được hủy/sửa lệnh.</span>
+</div>`.trim(),
+    react_equivalent: 'libs/ui/src/Tooltip',
+    flutter_equivalent: 'lib/widgets/app_tooltip.dart'
+  },
+  'StockStatusBadge': {
+    name: 'Huy Hiệu Cảnh Báo Trạng Thái Cổ Phiếu (CR/CA/RES/SUS)',
+    class_name: 'stock-status-badge',
+    html_snippet: `
+<span class="stock-status-badge status-warning" title="Cổ phiếu thuộc diện kiểm soát (CR)">
+  CR - Kiểm Soát
+</span>`.trim(),
+    react_equivalent: 'libs/ui/src/Badge / StockBadge.tsx',
+    flutter_equivalent: 'lib/widgets/stock_status_tag.dart'
+  },
+  'DerivativePpseCard': {
+    name: 'Thẻ Sức Mua & Ký Quỹ Phái Sinh PPSE',
+    class_name: 'derivative-ppse-card',
+    html_snippet: `
+<div class="ppse-card">
+  <div class="ppse-row"><span>Sức Mua PPSE:</span><strong class="text-gain">45,200,000 đ</strong></div>
+  <div class="ppse-row"><span>Số HĐ Mua Tối Đa:</span><strong>3 HĐ</strong></div>
+  <div class="ppse-row"><span>Tỷ Lệ Ký Quỹ Bắt Buộc:</span><span>17.0%</span></div>
+  <div class="ppse-row"><span>Tỷ Lệ Ký Quỹ Hiện Tại:</span><strong class="text-warning">68.5%</strong></div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/components/DerivativePPSE / index.tsx',
+    flutter_equivalent: 'lib/pages/derivative/ppse_summary_widget.dart'
+  },
+  'TrailingStopConfig': {
+    name: 'Khung Thiết Lập Lệnh Xu Hướng (Trailing Stop)',
+    class_name: 'trailing-stop-config',
+    html_snippet: `
+<div class="trailing-config" data-change="added">
+  <span class="delta-badge">①</span>
+  <div class="form-group">
+    <label class="form-label">Biên Độ Trượt (Trailing Step)</label>
+    <div class="input-unit">
+      <input type="text" class="form-input" value="0.5">
+      <span class="unit">Giá (0.500 đ)</span>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Giá Kích Hoạt Tối Thiểu</label>
+    <input type="text" class="form-input" value="25.00">
+  </div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/components/OrderForm/TrailingStopTab.tsx',
+    flutter_equivalent: 'lib/pages/conditional_order/trailing_stop_page.dart'
+  },
+  'BottomNavigation': {
+    name: 'Thanh Điều Hướng Đáy Chuẩn Mobile Arrow App',
+    class_name: 'bottom-navigation-bar',
+    html_snippet: `
+<nav class="bottom-nav">
+  <div class="nav-tab active"><span class="tab-icon">📊</span><span class="tab-label">Thị trường</span></div>
+  <div class="nav-tab"><span class="tab-icon">⚡</span><span class="tab-label">Giao dịch</span></div>
+  <div class="nav-tab"><span class="tab-icon">📑</span><span class="tab-label">Sổ lệnh</span></div>
+  <div class="nav-tab"><span class="tab-icon">💰</span><span class="tab-label">Tài sản</span></div>
+  <div class="nav-tab"><span class="tab-icon">⚙️</span><span class="tab-label">Cá nhân</span></div>
+</nav>`.trim(),
+    react_equivalent: 'apps/mobile-web/src/components/BottomNav',
+    flutter_equivalent: 'lib/widgets/bottom_tab_navigation.dart'
+  },
+  'PortfolioSummaryCard': {
+    name: 'Thẻ Tổng Quan Giá Trị Tài Sản Ròng NAV & Lãi Lỗ Tạm Tính',
+    class_name: 'portfolio-summary-card',
+    html_snippet: `
+<div class="portfolio-card as-is-context">
+  <div class="nav-label">TỔNG TÀI SẢN THỰC CÓ (NAV)</div>
+  <div class="nav-value">345,680,000 đ</div>
+  <div class="profit-row">
+    <span>Lãi/Lỗ Tạm Tính Hôm Nay:</span>
+    <span class="text-gain font-mono">+8,240,000 đ (+2.44%)</span>
+  </div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/pages/Assets / PortfolioOverview.tsx',
+    flutter_equivalent: 'lib/pages/assets/portfolio_summary_view.dart'
+  },
+  'AssetAllocationBar': {
+    name: 'Thanh Tỷ Trọng Phân Bổ Tài Sản (Tiền Mặt / Cổ Phiếu / Margin)',
+    class_name: 'asset-allocation-bar',
+    html_snippet: `
+<div class="allocation-bar-wrapper">
+  <div class="allocation-bar">
+    <div class="segment seg-stock" style="width: 65%;"></div>
+    <div class="segment seg-cash" style="width: 25%;"></div>
+    <div class="segment seg-loan" style="width: 10%;"></div>
+  </div>
+  <div class="allocation-legend">
+    <span><i class="dot dot-stock"></i> Cổ phiếu (65%)</span>
+    <span><i class="dot dot-cash"></i> Tiền mặt (25%)</span>
+    <span><i class="dot dot-loan"></i> Nợ Margin (10%)</span>
+  </div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/components/AssetAllocationChart',
+    flutter_equivalent: 'lib/widgets/asset_allocation_bar_widget.dart'
+  },
+  'ConditionalOrderToggle': {
+    name: 'Bộ Chọn Điều Kiện Kích Hoạt Lệnh (STOP / LIMIT / TRAILING)',
+    class_name: 'conditional-order-toggle',
+    html_snippet: `
+<div class="conditional-toggle" data-change="modified">
+  <span class="delta-badge">②</span>
+  <button type="button" class="cond-btn active">Lệnh Chặn (STOP)</button>
+  <button type="button" class="cond-btn">Lệnh Xu Hướng</button>
+  <button type="button" class="cond-btn">Lệnh Tranh Mua</button>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/components/OrderForm/ConditionalTabs.tsx',
+    flutter_equivalent: 'lib/pages/conditional_order/conditional_type_selector.dart'
+  },
+  'PriceRangeSlider': {
+    name: 'Thanh Trượt Chọn Nhanh % Sức Mua (25% / 50% / 75% / 100%)',
+    class_name: 'price-range-slider',
+    html_snippet: `
+<div class="quick-percentage-buttons">
+  <button type="button" class="pct-btn">25%</button>
+  <button type="button" class="pct-btn">50%</button>
+  <button type="button" class="pct-btn">75%</button>
+  <button type="button" class="pct-btn active">100%</button>
+</div>`.trim(),
+    react_equivalent: 'libs/ui/src/Slider / apps/web/src/components/OrderForm/PercentButtons.tsx',
+    flutter_equivalent: 'lib/widgets/quick_percentage_selector.dart'
+  },
+  'MarketIndexTicker': {
+    name: 'Dải Chạy Chỉ Số Thị Trường (VN-Index / VN30 / HNX-Index)',
+    class_name: 'market-index-ticker',
+    html_snippet: `
+<div class="index-ticker as-is-context">
+  <div class="ticker-item">
+    <span class="idx-name">VN-INDEX</span>
+    <span class="idx-val text-gain">1,280.45</span>
+    <span class="idx-chg text-gain">+6.82 (+0.54%)</span>
+  </div>
+  <div class="ticker-item">
+    <span class="idx-name">VN30</span>
+    <span class="idx-val text-loss">1,310.20</span>
+    <span class="idx-chg text-loss">-1.15 (-0.09%)</span>
+  </div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/components/Header/MarketTicker.tsx',
+    flutter_equivalent: 'lib/widgets/market_index_ticker_bar.dart'
+  },
+  'QuickOrderActionDrawer': {
+    name: 'Ngăn Kéo Thao Tác Lệnh Nhanh Trên Mobile',
+    class_name: 'quick-order-action-drawer',
+    html_snippet: `
+<div class="quick-action-drawer" data-change="added">
+  <span class="delta-badge">①</span>
+  <button class="action-btn buy-btn">⚡ Mua Nhanh (MP)</button>
+  <button class="action-btn sell-btn">⚡ Bán Nhanh (MP)</button>
+  <button class="action-btn cancel-all-btn">Hủy Hết Lệnh Chờ</button>
+</div>`.trim(),
+    react_equivalent: 'libs/ui/src/Drawer',
+    flutter_equivalent: 'lib/widgets/quick_order_drawer.dart'
+  },
+  'BankLinkCard': {
+    name: 'Thẻ Liên Kết Tài Khoản Ngân Hàng Thụ Hưởng',
+    class_name: 'bank-link-card',
+    html_snippet: `
+<div class="bank-card">
+  <div class="bank-logo">BIDV</div>
+  <div class="bank-details">
+    <div class="bank-name">Ngân hàng TMCP Đầu tư & Phát triển VN</div>
+    <div class="account-num font-mono">12410000889922</div>
+    <div class="account-holder">NGUYEN VAN A</div>
+  </div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/pages/CashTransfer / BankAccountCard.tsx',
+    flutter_equivalent: 'lib/pages/cash_transfer/bank_card_widget.dart'
+  },
+  'FeeTaxBreakdownBox': {
+    name: 'Bảng Chi Tiết Tạm Tính Phí Giao Dịch & Thuế TNCN',
+    class_name: 'fee-tax-breakdown-box',
+    html_snippet: `
+<div class="fee-tax-box" data-change="added">
+  <span class="delta-badge">③</span>
+  <div class="fee-row"><span>Phí Giao Dịch (Miễn phí DNSE):</span><strong>0 đ</strong></div>
+  <div class="fee-row"><span>Phí Trả Sở (0.027%):</span><span>6,615 đ</span></div>
+  <div class="fee-row"><span>Thuế TNCN Bán (0.1%):</span><span>0 đ (Lệnh Mua)</span></div>
+  <div class="fee-row total"><span>Tổng Chi Phí Dự Kiến:</span><strong>6,615 đ</strong></div>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/components/OrderForm/FeeTaxCalculation.tsx',
+    flutter_equivalent: 'lib/pages/order_confirmation/fee_tax_summary.dart'
+  },
+  'OrderHistoryFilterBar': {
+    name: 'Thanh Lọc Lịch Sử Lệnh Theo Ngày / Mã / Trạng Thái',
+    class_name: 'order-history-filter-bar',
+    html_snippet: `
+<div class="history-filter-bar">
+  <input type="text" class="form-input filter-symbol" placeholder="Mã CK (VD: VND)">
+  <select class="form-select filter-status">
+    <option value="ALL">Tất Cả Trạng Thái</option>
+    <option value="FILLED">Đã Khớp</option>
+    <option value="PENDING">Chờ Khớp</option>
+    <option value="CANCELLED">Đã Hủy</option>
+  </select>
+  <button class="btn-filter">Tìm Kiếm</button>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/pages/OrdersConfirmation / FilterBar.tsx',
+    flutter_equivalent: 'lib/pages/order_deal_book/order_filter_bar.dart'
+  },
+  'SessionClockBadge': {
+    name: 'Huy Hiệu Hiển Thị Phiên Giao Dịch Hiện Tại (ATO / Liên tục / ATC / PLO)',
+    class_name: 'session-clock-badge',
+    html_snippet: `
+<div class="session-badge as-is-context">
+  <span class="pulse-indicator live"></span>
+  <span class="session-name">Khớp Lệnh Liên Tục (HOSE)</span>
+  <span class="session-timer font-mono">11:15:30</span>
+</div>`.trim(),
+    react_equivalent: 'apps/web/src/components/Header/SessionBadge.tsx',
+    flutter_equivalent: 'lib/widgets/trading_session_indicator.dart'
   }
 };
 

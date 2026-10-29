@@ -134,105 +134,37 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
    }
    ```
 
-11. **Tự động Quét Màn hình Hiện tại (AS-IS Screen Discovery — Chốt chặn 2):**
+11. **Tự động Quét Màn hình Hiện tại & Thiết kế Mockup Prod-Twin (ba-design-mockup):**
    Khi phát hiện task có liên quan tới giao diện (`task_type = "WEB"` hoặc `"APP"`):
-   - **Đọc Chỉ mục Component UI:** Mở ngay `references/ui-component-map.json` để xác định `source_files` của màn hình đích.
-   - **Bắt buộc thực hiện toàn bộ Bước 11.A bên dưới trước khi sang Giai đoạn 1.**
-
-### Bước 11.A — AS-IS Codebase Extraction Protocol (BẮT BUỘC — CẤM bỏ qua)
-
-> ⛔ **GATE CỨNG:** CẤM chạy `render-mockup.js` khi chưa tạo xong `spec/asis-inventory.md`.
-
-**11.A.1 — Xác định nhánh source-of-truth (master/main)**
-```bash
-# Luôn đọc từ master/main — KHÔNG đọc từ nhánh feature đang phát triển
-MASTER_REF=$(git -C "$PROJECT_CODEBASE_ROOT" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
-  | sed 's@^refs/remotes/origin/@@' || echo "master")
-echo "📌 Reading UI from branch: $MASTER_REF"
-
-# Fetch latest remote ref (không checkout, chỉ cập nhật pointer)
-git -C "$PROJECT_CODEBASE_ROOT" fetch origin "$MASTER_REF" --quiet 2>/dev/null || true
-MASTER_COMMIT=$(git -C "$PROJECT_CODEBASE_ROOT" rev-parse "origin/$MASTER_REF" 2>/dev/null || \
-  git -C "$PROJECT_CODEBASE_ROOT" rev-parse HEAD)
-echo "📌 Commit hash: $MASTER_COMMIT"
-```
-
-**11.A.2 — Tra cứu màn hình đích từ `ui-component-map.json`**
-```bash
-# Lấy source_files của màn hình liên quan (ví dụ: "OrderForm", "Portfolio"...)
-# Đọc trường: screen_key → source_files[], primary_actions[], key_fields[], key_states[]
-```
-
-**11.A.3 — Đọc từng source file từ master bằng `git show` (KHÔNG checkout)**
-
-Với Web (`dnse-trading`):
-```bash
-DNSE_ROOT="/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading"
-for FILE in <source_files từ ui-component-map>; do
-  echo "=== $FILE ==="
-  git -C "$DNSE_ROOT" show "origin/$MASTER_REF:$FILE/index.tsx" 2>/dev/null || \
-  git -C "$DNSE_ROOT" show "origin/$MASTER_REF:$FILE.tsx" 2>/dev/null
-done
-```
-
-Với App (`arrow-app`):
-```bash
-APP_ROOT="/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app"
-git -C "$APP_ROOT" show "origin/$MASTER_REF:lib/pages/<screen_dir>/<screen_file>.dart" 2>/dev/null
-```
-
-Từ nội dung đọc được, điền vào bảng AS-IS DOM Inventory:
-
-| Loại | Tên/class thực tế trong code | Nhãn tiếng Việt hiển thị | Vị trí (file:line) | Trạng thái / Điều kiện |
-|------|------------------------------|--------------------------|--------------------|------------------------|
-| Header | `<PageHeader title=...>` | "Đặt lệnh" | OrderForm/index.tsx:L12 | Luôn hiển thị |
-| Input | `<PriceInput name="price">` | "Giá" | OrderForm/index.tsx:L45 | Disabled khi ATO/ATC |
-| Button | `<Button variant="buy">` | "Đặt Mua" | OrderForm/index.tsx:L89 | Disabled khi ngoài phiên |
-| Dropdown | `<Select name="orderType">` | "Loại lệnh" | OrderForm/index.tsx:L67 | Options: LO, MP, ATO, ATC |
-| Banner | `<AlertBanner type="warning">` | "Cảnh báo Call Margin" | OrderForm/index.tsx:L112 | Conditional: khi margin ratio hit |
-
-**11.A.4 — Đọc Design Token / CSS thực tế từ master**
-```bash
-# Đọc token màu, spacing, typography thực tế từ master
-git -C "$DNSE_ROOT" show "origin/$MASTER_REF:libs/ui/src/tokens/colors.ts" 2>/dev/null | head -60
-git -C "$DNSE_ROOT" show "origin/$MASTER_REF:libs/ui/src/theme/index.ts" 2>/dev/null | head -40
-```
-→ Ghi lại CSS class/token đang dùng THỰC TẾ, không dùng giả định từ `mockup-harness.html`.
-
-**11.A.5 — Tạo file `spec/asis-inventory.md` (Output bắt buộc)**
-```bash
-ASSET_DIR="workspace/issues/{issueKey}/spec"
-mkdir -p "$ASSET_DIR"
-cat > "$ASSET_DIR/asis-inventory.md" << 'EOF'
-# AS-IS UI Inventory — {issueKey}
-
-## Metadata
-- Source branch: origin/{MASTER_REF}
-- Commit hash: {MASTER_COMMIT}
-- Ngày đọc: {timestamp}
-- Loại task: WEB / APP
-
-## Files đã đọc
-| File | Số dòng đọc |
-|------|-------------|
-| apps/web/src/components/OrderForm/index.tsx | 1-150 |
-| ... | ... |
-
-## AS-IS DOM Inventory
-{Bảng từ 11.A.3}
-
-## CSS Token thực tế đang dùng
-{Token từ 11.A.4}
-
-## Layout Pattern
-- Kiểu bố cục: (1-column / 2-column TwoColumnTrading / Modal / BottomSheet)
-- Responsive breakpoint: (nếu Web)
-- Platform: Web / App
-EOF
-```
-
-> ✅ Sau khi `asis-inventory.md` tạo xong → cho phép sang Giai đoạn 1.
-> *Tùy chọn nâng cao:* Gọi n8n webhook `/webhook/web-ui-locator-discovery` để chụp ảnh UAT thực tế bổ sung.
+   - **Ủy quyền cho kỹ năng `ba-design-mockup` thực thi:**
+     1. Chạy script bóc tách tự động từ `origin/master`:
+        ```bash
+        node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-mockup/assets/extract-asis-ui.js \
+          --project web-trading --screen {ScreenKey} --output "workspace/issues/{issueKey}/spec"
+        ```
+        *(Sinh ra cặp file: `spec/asis-inventory.json` và `spec/asis-inventory.md`)*
+     2. Chọn Production App Shell phù hợp trong `plugins/ba-po/skills/ba-design-mockup/assets/shells/`:
+        - `web-trading-shell.html` (Giao dịch 2 cột)
+        - `web-assets-dashboard-shell.html` (Quản lý tài sản & Dashboard)
+        - `web-modal-confirm-shell.html` (Modal xác nhận lệnh / OTP)
+        - `mobile-order-sheet-shell.html` (Đặt lệnh Mobile)
+        - `mobile-app-shell.html` (Sổ lệnh & Quản lý Deal)
+        - `mobile-bottom-sheet-shell.html` (Xác thực Smart OTP)
+     3. Copy shell vào `workspace/issues/{issueKey}/spec/diagrams/mockup.html` và chèn phần tử Delta-Only (`data-change="added|modified"`) kèm huy hiệu `①`, `②`, `③`.
+     4. Chạy kiểm định Hard Gate độ giống Prod:
+        ```bash
+        node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-mockup/assets/validate-mockup-fidelity.js \
+          "workspace/issues/{issueKey}/spec/diagrams/mockup.html" \
+          "workspace/issues/{issueKey}/spec/asis-inventory.json"
+        ```
+        *(Bắt buộc đạt Fidelity Score ≥ 90% trước khi chuyển sang Gate 2)*
+     5. Render ảnh Retina 2x đa Case qua Playwright:
+        ```bash
+        node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/render-mockup.js \
+          "workspace/issues/{issueKey}/spec/diagrams/mockup.html" \
+          "workspace/issues/{issueKey}/spec/diagrams/mockup.png" fit 2 all
+        ```
+   - Quét Confluence + attachments, trình bảng tài liệu và task liên quan cho user duyệt qua **Gate 1**.
 
 ---
 
@@ -312,54 +244,42 @@ node ${AGENT_SKILLS_HOME:-.}/scripts/validators/validate-ba-refine.js \
 - TUYỆT ĐỐI KHÔNG đưa vào: Tên bảng DB, kiểu dữ liệu SQL, HTTP Methods, JSON keys, Kafka topic, Exception names, section `## 🧱 Technical Notes`.
 - HỦY BỎ hoàn toàn sơ đồ luồng Mermaid.
 
-**🎨 QUY TRÌNH DỰNG MOCKUP THEO KIẾN TRÚC 4 CHỐT CHẶN & CASE-BASED (Khi task có UI):**
-Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App:
-1. **Chốt chặn 1 (ui-component-map.json):** Mở `references/ui-component-map.json`, tra cứu đúng màn hình và component chuẩn (Stepper, KrxPriceBoard, SegmentedControl, ModalConfirm, AlertBanner...). CẤM tự viết inline CSS sáng tạo layout tự do.
-2. **Chốt chặn 3 (Delta-Only & Case-Based Design):**
-   - Giữ nguyên 90% khung màn hình gốc làm nền ngữ cảnh (`class="as-is-context"` hoặc `data-ui="as-is"`, opacity 0.75).
-   - Phần thêm mới/sửa đổi được bao bằng viền nhấn nổi bật (`data-change="added|modified"`) kèm **Huy hiệu đánh số chú thích `①`, `②`, `③`**.
-   - **Tách rõ theo từng Case / Kịch bản thao tác cụ thể:**
-     - **Case 1:** Luồng chuẩn / Thao tác chính (Happy path).
-     - **Case 2:** Tình huống cảnh báo ngoại lệ / Xử lý vi phạm hạn mức.
-     - **Case 3:** Tình huống biên / Trạng thái khóa phiên ATO/ATC.
-   - **CẤM mô tả design bằng text lan man:** Dưới mỗi ảnh mockup của từng Case, bắt buộc ghi chú hành động của người dùng (Action: Click/Nhập/Chọn...) và phản hồi tương ứng của hệ thống (Response: Cập nhật giá/Hiện banner/Disable nút...) gắn với mã quy tắc `[BR-xx]`.
-3. **Sinh Mockup HTML & PNG đa trạng thái:**
-   - Dựng file: `workspace/issues/{issueKey}/spec/diagrams/mockup.html` (dựa trên `mockup-harness.html`).
-   - Chạy script kết xuất ảnh Retina 2x cho tất cả các cases ngay tại Bước 3.1:
-     ```bash
-     node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/render-mockup.js \
-       "workspace/issues/{issueKey}/spec/diagrams/mockup.html" \
-       "workspace/issues/{issueKey}/spec/diagrams/mockup.png" fit 2 all
-     ```
-     *(Lệnh trên sẽ tự động sinh các file ảnh: `mockup.png`, `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png` tương ứng với từng state)*
-4. **Điền Mục `## 🎨 UI Design / Mockup` vào `refined-draft.md`:** Khai báo màn hình gốc AS-IS, nhúng các ảnh Markdown cho từng Case (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`), ghi chú điểm chạm thao tác `①`, `②`, `③` và hoàn thành **Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)**.
+**🎨 QUY TRÌNH DỰNG MOCKUP GIAO DIỆN CHUẨN PROD (Kỹ năng ba-design-mockup):**
+Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App, kích hoạt kỹ năng chuyên biệt `ba-design-mockup`:
+1. **Trích xuất AS-IS Codebase:** Chạy `extract-asis-ui.js` từ `origin/master` (hoặc `origin/main`) sinh `spec/asis-inventory.json` và `spec/asis-inventory.md`.
+2. **Chọn Production App Shell:** Chọn 1 trong 6 khung shell chuẩn từ `plugins/ba-po/skills/ba-design-mockup/assets/shells/` chép vào `spec/diagrams/mockup.html`.
+3. **Lắp ghép Delta-Only & Đa trạng thái:**
+   - Giữ nguyên 90% khung màn hình gốc làm nền ngữ cảnh (`class="as-is-context"`, opacity 0.75).
+   - Điểm thay đổi gắn viền nhấn (`data-change="added|modified"`) kèm **Huy hiệu đánh số chú thích `①`, `②`, `③`**.
+   - Cài đặt hàm `switchState(state)` hỗ trợ 3 trạng thái: `default` (Luồng chuẩn), `error` (Cảnh báo lỗi/vượt hạn mức), `locked` (Khóa phiên/điều kiện biên).
+   - Điền **Bảng Chú Thích Thay Đổi Giao Diện (UI Delta Mapping)** ở cuối file mockup khớp 1-1 các huy hiệu `①`, `②`, `③`.
+4. **Kiểm định Fidelity tự động (Automated Hard Gate):**
+   ```bash
+   node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-mockup/assets/validate-mockup-fidelity.js \
+     "workspace/issues/{issueKey}/spec/diagrams/mockup.html" \
+     "workspace/issues/{issueKey}/spec/asis-inventory.json"
+   ```
+   *Bắt buộc PASS (Fidelity Score ≥ 90%).*
+5. **Render ảnh Retina 2x đa trạng thái:**
+   ```bash
+   node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/render-mockup.js \
+     "workspace/issues/{issueKey}/spec/diagrams/mockup.html" \
+     "workspace/issues/{issueKey}/spec/diagrams/mockup.png" fit 2 all
+   ```
+   *Tự động sinh: `mockup.png`, `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`.*
+6. **Điền Mục `## 🎨 UI Design / Mockup` vào `refined-draft.md`:** Khai báo Fidelity Score, nhúng ảnh 3 Case kèm ghi chú thao tác người dùng (Action) và phản hồi hệ thống (Response) gắn với `[BR-*]`.
 
 ### Bước 3.2: Trình bày bản nháp cho User duyệt (Gate 2 — APPROVAL GATE)
 
-**[Bước 3.2.0 — Fidelity Self-Check TRƯỚC khi trình user]**
+**[Bước 3.2.0 — Xác thực Fidelity Gate TRƯỚC khi trình user]**
+- Chạy lệnh kiểm định: `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md"`
+- Bắt buộc kiểm định PASS 100% với Fidelity Score ≥ 90% (tính tự động bởi `validate-mockup-fidelity.js`).
+- CẤM trình Gate 2 nếu script báo lỗi hoặc thiếu bộ 3 ảnh render đa Case.
 
-Agent phải tự đối chiếu mockup vừa dựng với `spec/asis-inventory.md` và điền bảng sau:
-
-| Phần tử UI | Trong `asis-inventory.md` | Trong `mockup.html` | Khớp? |
-|------------|--------------------------|---------------------|-------|
-| Header label | (tên nhãn thực tế) | (tên nhãn trong mockup) | ✅/❌ |
-| Input field | (tên field, disabled condition) | (field trong mockup) | ✅/❌ |
-| Button | (variant, label, disabled state) | (button trong mockup) | ✅/❌ |
-| Layout pattern | (2-column / modal / drawer) | (layout trong mockup) | ✅/❌ |
-| CSS token màu | (hex thực tế từ codebase) | (màu dùng trong mockup) | ✅/❌ |
-
-```
-Fidelity Score = (Số phần tử ✅) / (Tổng phần tử) × 100%
-```
-
-- **≥ 90%** → ✅ Được phép trình Gate 2
-- **80–89%** → ⚠️ Agent tự fix mockup trước, sau đó trình
-- **< 80%** → ❌ CẤM trình Gate 2 — bắt buộc đọc lại codebase (quay lại Bước 11.A)
-
-**Fidelity Score phải ghi vào đầu Mục `## 🎨 UI Design / Mockup` của `refined-draft.md`:**
-```
+**Fidelity Score được ghi nhận vào đầu Mục `## 🎨 UI Design / Mockup` của `refined-draft.md`:**
+```markdown
 ## 🎨 UI Design / Mockup
-> 🎯 Fidelity Score: XX% (đọc từ origin/master @ {commit-hash})
+> 🎯 Fidelity Score: XX% (kiểm định tự động qua validate-mockup-fidelity.js từ origin/master @ {commit-hash})
 ```
 
 ---
@@ -370,7 +290,7 @@ Fidelity Score = (Số phần tử ✅) / (Tổng phần tử) × 100%
    - **Các ảnh Mockup trực quan theo từng Case** (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`)
    - **Ghi chú điểm chạm thao tác `①`, `②`, `③` dưới từng ảnh**
    - **Bảng chú thích UI Delta Mapping tổng hợp**
-   - **Fidelity Score + Bảng Self-Check**
+   - **Fidelity Score (≥ 90% từ validate-mockup-fidelity.js)**
 3. **DỪNG LẠI VÀ CHỜ USER PHẢN HỒI ("OK" hoặc chỉnh sửa).**
    User có quyền yêu cầu điều chỉnh lại vị trí nút bấm, nhãn trường, hoặc màu sắc trạng thái ngay trong vòng lặp Gate 2 (tối đa 5 vòng cho tới khi user hài lòng).
 
