@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Entrade X — Web Trading Shell (Prod-Twin)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-app: #0a0d11;
+      --bg-surface: #11151b;
+      --bg-card: #161b22;
+      --bg-card-hover: #1f2631;
+      --bg-input: #0d1117;
+      --border-subtle: #242c37;
+      --border-focus: #1068eb;
+
+      --text-primary: #f0f3f6;
+      --text-secondary: #9aa4b2;
+      --text-muted: #5e6b7c;
+
+      --stock-purple: #c80096;
+      --stock-cyan: #00ced1;
+      --stock-yellow: #f5a623;
+      --stock-green: #00d084;
+      --stock-red: #ff4d4f;
+
+      --brand-primary: #1068eb;
+      --brand-primary-hover: #0c56c7;
+
+      --delta-added: #00d084;
+      --delta-added-bg: rgba(0, 208, 132, 0.08);
+      --delta-modified: #f59e0b;
+      --delta-modified-bg: rgba(245, 158, 11, 0.08);
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --font-family: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      width: 1440px;
+      min-height: 900px;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .device-frame {
+      width: 1440px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    /* TOPBAR CHUẨN ENTRADE X */
+    .topbar {
+      height: 48px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 13px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 20px; }
+    .brand-logo { font-weight: 800; font-size: 15px; color: #ffffff; letter-spacing: 0.5px; }
+    .brand-logo span { color: var(--brand-primary); }
+    .nav-links { display: flex; gap: 16px; font-weight: 500; }
+    .nav-item { color: var(--text-secondary); text-decoration: none; cursor: pointer; }
+    .nav-item.active { color: #ffffff; font-weight: 600; }
+
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .index-ticker { display: flex; gap: 12px; font-family: var(--font-mono); font-size: 12px; }
+    .account-badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* MAIN TRADING WORKSPACE (2 CỘT) */
+    .workspace-layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1px;
+      background: var(--border-subtle);
+      min-height: 600px;
+    }
+
+    /* CỘT TRÁI: CHART & BẢNG GIÁ & SỔ LỆNH */
+    .main-column {
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .chart-panel {
+      flex: 3;
+      background: var(--bg-surface);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    .krx-mini-board {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      background: var(--bg-card);
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .orderbook-panel {
+      flex: 2;
+      background: var(--bg-surface);
+      padding: 12px;
+    }
+
+    /* CỘT PHẢI: FORM ĐẶT LỆNH */
+    .sidebar-column {
+      background: var(--bg-surface);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    /* DELTA-ONLY MARKING */
+    .as-is-context, [data-ui="as-is"] { opacity: 0.78; }
+    [data-change="added"] {
+      position: relative;
+      outline: 2px dashed var(--delta-added);
+      outline-offset: 4px;
+      border-radius: var(--radius-sm);
+      background: var(--delta-added-bg);
+      box-shadow: 0 0 12px rgba(0, 208, 132, 0.25);
+    }
+    [data-change="modified"] {
+      position: relative;
+      outline: 2px dashed var(--delta-modified);
+      outline-offset: 4px;
+      border-radius: var(--radius-sm);
+      background: var(--delta-modified-bg);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+    }
+    .delta-pin {
+      position: absolute;
+      top: -12px;
+      right: -8px;
+      z-index: 20;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 4px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #052e16;
+      background: #00d084;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .badge-modified { background: #f59e0b; color: #451a03; }
+
+    /* FORM STYLES */
+    .form-group { margin-bottom: 12px; }
+    .form-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-input, .form-select {
+      width: 100%;
+      height: 36px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 0 10px;
+      font-size: 13px;
+      outline: none;
+    }
+    .stepper-control { display: flex; width: 100%; }
+    .stepper-btn {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .btn-buy {
+      width: 100%;
+      height: 40px;
+      background: var(--stock-green);
+      color: #052e16;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* BẢNG CHÚ THÍCH UI DELTA */
+    .delta-legend-card {
+      margin: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+    .delta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    .delta-table th, .delta-table td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="device-frame" id="mockup-canvas">
+    <!-- TOPBAR CHUẨN ENTRADE X -->
+    <header class="topbar as-is-context">
+      <div class="topbar-left">
+        <div class="brand-logo">ENTRADE<span>X</span></div>
+        <nav class="nav-links">
+          <span class="nav-item active">Giao Dịch</span>
+          <span class="nav-item">Thị Trường</span>
+          <span class="nav-item">Tài Sản & Khoản Vay</span>
+          <span class="nav-item">Báo Cáo</span>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <div class="index-ticker">
+          <span>VN-INDEX: <strong style="color: var(--stock-green);">1,280.45 (+8.20)</strong></span>
+          <span>HNX: <strong style="color: var(--stock-green);">238.12 (+1.40)</strong></span>
+        </div>
+        <div class="account-badge">
+          <span>Tài khoản: <strong>0001889922</strong></span>
+          <span style="color: var(--stock-green);">● Online</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- WORKSPACE LAYOUT -->
+    <main class="workspace-layout">
+      
+      <!-- KHUNG TRÁI: BẢNG GIÁ & BIỂU ĐỒ (AS-IS) -->
+      <section class="main-column as-is-context">
+        <div class="chart-panel">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <strong style="font-size: 15px;">VND (VNDIRECT) — Bảng Giá & Biểu Đồ Kỹ Thuật</strong>
+            <span style="color: var(--stock-green); font-family: var(--font-mono); font-weight: 700;">24.50 (+2.5%)</span>
+          </div>
+          <div class="krx-mini-board">
+            <div>Mua 1: <strong style="color: var(--stock-green);">24.45 (15.2k)</strong></div>
+            <div style="text-align: center;">Khớp: <strong style="color: var(--stock-green);">24.50 (85.0k)</strong></div>
+            <div style="text-align: right;">Bán 1: <strong style="color: var(--stock-red);">24.55 (10.8k)</strong></div>
+          </div>
+          <div style="flex: 1; background: #0c1016; border: 1px dashed var(--border-subtle); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 13px; margin-top: 8px;">
+            [Biểu đồ kỹ thuật TradingView & Nến thời gian thực]
+          </div>
+        </div>
+        <div class="orderbook-panel">
+          <strong style="font-size: 13px; color: var(--text-secondary);">Sổ Lệnh Trong Ngày (Tabs: Chờ khớp | Đã khớp | Hủy)</strong>
+        </div>
+      </section>
+
+      <!-- KHUNG PHẢI: FORM ĐẶT LỆNH (VÙNG THAO TÁC CHÍNH) -->
+      <section class="sidebar-column" id="orderFormPanel">
+        <h3 style="font-size: 14px; margin-bottom: 12px; font-weight: 700;">LỆNH CHỨNG KHOÁN CƠ SỞ</h3>
+
+        <!-- [AS-IS] Bộ chọn Tiểu khoản -->
+        <div class="as-is-context" style="margin-bottom: 10px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-subtle);">
+          <span>Tiểu khoản: <strong>0001889922-1 (Thường)</strong></span>
+          <span style="color: var(--brand-primary); cursor: pointer;">Đổi sang Ký quỹ (Đuôi 6) ▼</span>
+        </div>
+
+        <!-- [AS-IS] Tabs Loại lệnh & Chế độ đặt -->
+        <div class="as-is-context" style="display: flex; gap: 4px; margin-bottom: 10px; font-size: 11px;">
+          <button style="padding: 4px 8px; background: var(--brand-primary); color: #fff; border: none; border-radius: 4px; font-weight: 600;">Lệnh thường (LO)</button>
+          <button style="padding: 4px 8px; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 4px;">Lệnh Điều kiện</button>
+          <button style="padding: 4px 8px; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 4px;">Lệnh AI</button>
+        </div>
+
+        <!-- [AS-IS] Tabs Mua / Bán -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;" class="as-is-context">
+          <button style="flex: 1; height: 32px; background: var(--stock-green); color: #000; border: none; font-weight: 700; border-radius: 4px;">ĐẶT MUA</button>
+          <button style="flex: 1; height: 32px; background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 4px;">ĐẶT BÁN</button>
+        </div>
+
+        <!-- [AS-IS] Sức mua khả dụng -->
+        <div class="as-is-context" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">
+          <span>Sức Mua Khả Dụng:</span>
+          <strong style="color: var(--stock-green);">45,200,000 đ</strong>
+        </div>
+
+        <!-- [TO-BE DELTA ①] THÊM MỚI: Chọn Gói Margin Ưu Đãi -->
+        <div class="form-group" data-change="added" id="deltaField1">
+          <span class="delta-pin">①</span>
+          <label class="form-label">
+            <span>Gói Lãi Suất Vay Ký Quỹ</span>
+            <span style="color: var(--stock-green);">Tiết kiệm 3.6%</span>
+          </label>
+          <select class="form-select">
+            <option>Gói T+10 Ưu đãi (8.9%/năm - Miễn lãi 5 ngày đầu)</option>
+            <option>Gói Tiêu Chuẩn (12.5%/năm - Hạn mức linh hoạt)</option>
+          </select>
+        </div>
+
+        <!-- [AS-IS] Mã Chứng Khoán & Khối lượng -->
+        <div class="form-group as-is-context">
+          <label class="form-label"><span>Mã Chứng Khoán (Mã CK)</span></label>
+          <input class="form-input" value="VND" readonly>
+        </div>
+
+        <!-- [TO-BE DELTA ②] SỬA ĐỔI: Khối lượng với Stepper -->
+        <div class="form-group" data-change="modified" id="deltaField2">
+          <span class="delta-pin badge-modified">②</span>
+          <label class="form-label">
+            <span>Khối Lượng Đặt</span>
+            <span>Bội số 100</span>
+          </label>
+          <div class="stepper-control">
+            <button class="stepper-btn">−</button>
+            <input class="form-input" value="1,000" style="text-align: center; border-radius: 0;">
+            <button class="stepper-btn">+</button>
+          </div>
+        </div>
+
+        <!-- [AS-IS] Giá đặt -->
+        <div class="form-group as-is-context">
+          <label class="form-label"><span>Giá Đặt (x 1,000 đ)</span></label>
+          <input class="form-input" value="24.50">
+        </div>
+
+        <!-- [TO-BE DELTA ③] Banner Cảnh Báo Call Margin (Ẩn hiện theo State) -->
+        <div id="bannerCallMargin" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1px solid var(--delta-modified); padding: 8px 10px; border-radius: 4px; font-size: 12px; margin-bottom: 12px;" data-change="added">
+          <span class="delta-pin badge-modified">③</span>
+          ⚠️ <strong>Cảnh báo Tỷ lệ Ký quỹ (Rtt = 38%):</strong> Gần ngưỡng Call 35%.
+        </div>
+
+        <!-- Nút Đặt Lệnh -->
+        <button class="btn-buy" id="btnSubmit">Đặt Lệnh Mua VND</button>
+      </section>
+
+    </main>
+
+    <!-- BẢNG CHÚ THÍCH THAY ĐỔI GIAO DIỆN (UI DELTA MAPPING) -->
+    <div class="delta-legend-card">
+      <h4 style="font-size: 14px;">📋 Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)</h4>
+      <table class="delta-table">
+        <thead>
+          <tr>
+            <th style="width: 80px;">Ký hiệu</th>
+            <th>Thành phần Giao diện</th>
+            <th>Loại thay đổi</th>
+            <th>Mô tả chi tiết & Hành vi</th>
+            <th>Quy tắc Nghiệp vụ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="font-weight: 700; color: var(--delta-added);">①</span></td>
+            <td><strong>Gói Lãi Suất Margin</strong></td>
+            <td>Thêm mới (Dropdown)</td>
+            <td>Cho phép nhà đầu tư chọn gói T+10 hoặc Tiêu Chuẩn ngay trên form</td>
+            <td><code>[BR-01]</code></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight: 700; color: var(--delta-modified);">②</span></td>
+            <td><strong>Khối Lượng Đặt</strong></td>
+            <td>Sửa đổi (Stepper +/-)</td>
+            <td>Bổ sung bộ tăng giảm bước nhảy 100 cổ phiếu thay vì chỉ gõ phím</td>
+            <td><code>[BR-02]</code></td>
+          </tr>
+          <tr>
+            <td><span style="font-weight: 700; color: var(--delta-added);">③</span></td>
+            <td><strong>Banner Cảnh Báo Call Margin</strong></td>
+            <td>Thêm mới (Alert)</td>
+            <td>Hiển thị cảnh báo khi tài khoản chạm ngưỡng Call Margin 35%</td>
+            <td><code>[BR-03]</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function switchState(state) {
+      const banner = document.getElementById('bannerCallMargin');
+      const btn = document.getElementById('btnSubmit');
+      if (state === 'error') {
+        if (banner) banner.style.display = 'block';
+        if (btn) btn.textContent = 'Đặt Lệnh Mua VND (Vượt Hạn Mức)';
+      } else if (state === 'locked') {
+        if (banner) banner.style.display = 'none';
+        if (btn) {
+          btn.disabled = true;
+          btn.style.opacity = '0.5';
+          btn.textContent = 'Khóa Đặt Lệnh (Đang Khớp ATO/ATC)';
+        }
+      } else {
+        if (banner) banner.style.display = 'none';
+        if (btn) {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.textContent = 'Đặt Lệnh Mua VND';
+        }
+      }
+    }
+    window.__MOCKUP_READY__ = true;
+  </script>
+</body>
+</html>

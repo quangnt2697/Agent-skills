@@ -58,7 +58,12 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
   - Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira qua n8n Fast-Path (`prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`).
   - **Trích xuất từ khóa từ Tiêu đề Task (Summary):** Tự động bóc tách từ khóa nghiệp vụ (loại bỏ prefix `[WEB]`, `[APP]` và stopwords) để tìm kiếm các task Jira và trang Confluence liên quan mật thiết.
   - Tự động tra cứu các quy định nghiệp vụ liên quan trong `references/securities/` (cấu trúc thị trường, phiên giao dịch, vòng đời lệnh, quy tắc margin) để nắm vững nền tảng nghiệp vụ trước khi phân tích.
-  - **AS-IS Screen Discovery (Chốt chặn 2 — MASTER-BRANCH-FIRST):** Khi task liên quan UI (WEB/APP), tra cứu `references/ui-component-map.json` và **thực hiện toàn bộ Bước 11.A trong `workflow-and-phases.md`**: đọc các file màn hình đích trực tiếp từ **nhánh master/main** của `dnse-trading` hoặc `arrow-app` bằng `git show origin/master:<file>` (KHÔNG checkout), trích xuất bảng AS-IS DOM Inventory, đọc token CSS thực tế, và tạo file `spec/asis-inventory.md`. **⛔ CẤM dựng mockup khi chưa có file này.**
+  - **AS-IS Screen Discovery & Mockup Generation (ba-design-mockup):** Khi task liên quan UI (WEB/APP), ủy quyền cho kỹ năng `ba-design-mockup` thực hiện:
+    1. Chạy `extract-asis-ui.js` đọc trực tiếp từ **nhánh master/main** của `dnse-trading` hoặc `arrow-app` để sinh ra `spec/asis-inventory.json` và `spec/asis-inventory.md`. **⛔ CẤM dựng mockup khi chưa có file này.**
+    2. Chọn Production App Shell tương ứng (`web-trading-shell.html` hoặc `mobile-app-shell.html`).
+    3. Lắp ghép điểm thay đổi Delta-Only (`data-change="added|modified"`) kèm huy hiệu `①`, `②`, `③` và hỗ trợ đa Case (Case 1: Chuẩn, Case 2: Cảnh báo, Case 3: Khóa phiên).
+    4. Chạy `validate-mockup-fidelity.js` chấm điểm tự động (Fidelity Score ≥ 90%).
+    5. Render ảnh Retina 2x (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`) để trình Gate 2.
   - Quét Confluence + attachments, trình bảng tài liệu và task liên quan cho user duyệt qua **Gate 1**.
 
 - **Giai đoạn 1 (Khai phóng theo 5 Chiều Nghiệp vụ — Business-Driven Divergence):**
@@ -85,12 +90,10 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
     5. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: ảnh inline từng Case kèm điểm chạm thao tác `①`, `②`, `③` và Bảng UI Delta Mapping; ghi `N/A` nếu task backend)
     6. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
   - **Kiểm định Hard Gate trước Gate 2:** Chạy lệnh `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md"` — BẮT BUỘC PASS 100% trước khi trình user.
-  - **Quy tắc Dựng Mockup (Kiến trúc 4 Chốt Chặn & Case-Based):**
-    - **Chốt chặn 0 (asis-inventory.md):** Tất cả phần tử UI trong mockup **BẮT BUỘC** có nguồn gốc trong `spec/asis-inventory.md` (sinh ra từ Bước 11.A). CẤM dựng mockup khi file này chưa tồn tại.
-    - **Chốt chặn 1:** Tra cứu `references/ui-component-map.json` — Bắt buộc dùng component chuẩn, cấm viết inline CSS tự do.
-    - **Chốt chặn 3 (Delta-Only & Case-Based):** Tái hiện khung màn hình cũ làm nền ngữ cảnh (as-is, opacity 0.75), làm nổi bật phần thay đổi kèm Huy hiệu đánh số chú thích `①`, `②`, `③`. **BẮT BUỘC chia theo từng Case/Kịch bản thao tác cụ thể** (Case 1: Thao tác chính / Luồng chuẩn, Case 2: Cảnh báo ngoại lệ / Lỗi, Case 3: Tình huống biên / Khóa phiên). **CẤM mô tả design bằng text lan man**, thay vào đó mỗi ảnh đều có ghi chú thao tác người dùng (Action) và phản hồi hệ thống (Response) gắn với `[BR-*]`.
-    - **Kết xuất Mockup ngay tại Bước 3.1:** Dựng `spec/diagrams/mockup.html` và chạy `render-mockup.js "mockup.html" "mockup.png" fit 2 all` sinh đủ ảnh `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png` để trình user duyệt tại Gate 2.
-    - **Chốt chặn 4 (Fidelity Check trước Gate 2):** Tính Fidelity Score = (số phần tử mockup khớp với asis-inventory.md) / (tổng) × 100%. **Ngưỡng bắt buộc ≥ 90%** trước khi trình Gate 2. Ghi Fidelity Score vào đầu Mục UI của `refined-draft.md`.
+  - **Quy tắc Dựng Mockup Giao diện Chuẩn Prod (Khi task có UI):**
+    - BẮT BUỘC gọi kỹ năng chuyên biệt `ba-design-mockup` để tự động bóc tách AS-IS codebase từ master/main (hoặc Live DOM), chọn Production App Shell tương ứng (`assets/shells/`), dựng Delta-Only và chạy kiểm định tự động `validate-mockup-fidelity.js` (Fidelity Score ≥ 90%).
+    - Kết xuất đủ bộ ảnh Retina 2x theo từng kịch bản nghiệp vụ qua `render-mockup.js fit 2 all`: `mockup-case-1.png` (Chuẩn / Happy Path), `mockup-case-2.png` (Cảnh báo ngoại lệ / Lỗi), `mockup-case-3.png` (Khóa phiên / Điều kiện biên).
+    - Dưới mỗi ảnh mockup, ghi rõ chú thích thao tác người dùng (Action) và phản hồi hệ thống (Response) gắn với mã quy tắc `[BR-*]`.
   - Trình toàn bộ draft kèm ảnh Mockup từng Case và Ghi chú thao tác qua **Gate 2** để user phê duyệt.
 
 - **Giai đoạn 4 (Đồng bộ lên Jira & Handoff Kỹ thuật):**

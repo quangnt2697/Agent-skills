@@ -52,19 +52,13 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 2. Trích xuất `fields.summary` làm Tiêu đề Task; tự động bóc tách từ khóa nghiệp vụ (`extractedKeywords`) và tìm kiếm các issue liên quan (`relatedSearchIssues`)
 3. Quét: `issuelinks` (Confluence), `attachment`, `description` (URL pattern `*/wiki/*`)
 4. Kiểm tra cache: `workspace/issues/{issueKey}/source/refs/` đã có file nào chưa
-5. Nếu task liên quan UI (WEB/APP) — **AS-IS Extraction Protocol (BẮT BUỘC):**
-   - 5a. Tra cứu `ui-component-map.json` → xác định `source_files` của màn hình đích
-   - 5b. **Đọc từ master/main — KHÔNG checkout:**
-     ```bash
-     MASTER_REF=$(git -C "$PROJECT_ROOT" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
-       | sed 's@^refs/remotes/origin/@@' || echo "master")
-     git -C "$PROJECT_ROOT" fetch origin "$MASTER_REF" --quiet 2>/dev/null || true
-     git -C "$DNSE_ROOT" show "origin/$MASTER_REF:<source_file>/index.tsx"
-     ```
-   - 5c. Điền bảng **AS-IS DOM Inventory** (tên/class thực tế, nhãn tiếng Việt, file:line, điều kiện)
-   - 5d. Đọc CSS token thực tế từ `libs/ui/src/tokens/` trên master
-   - 5e. **Tạo `spec/asis-inventory.md`** (metadata branch + commit hash + bảng DOM + token)
-   - **⛔ GATE CỨNG:** CẤM chạy `render-mockup.js` khi chưa có `asis-inventory.md`
+5. Nếu task liên quan UI (WEB/APP) — **ba-design-mockup Protocol (BẮT BUỘC):**
+   - 5a. Chạy bóc tách AS-IS tự động: `node plugins/ba-po/skills/ba-design-mockup/assets/extract-asis-ui.js --project <web-trading|mobile-trading> --screen <ScreenKey> --output "workspace/issues/{issueKey}/spec"`
+   - 5b. Chọn Production App Shell phù hợp (`web-trading-shell.html`, `mobile-order-sheet-shell.html`...)
+   - 5c. Chèn Delta-Only (`data-change="added|modified"`) kèm badge `①`, `②`, `③`
+   - 5d. Chạy Hard Gate kiểm định: `node plugins/ba-po/skills/ba-design-mockup/assets/validate-mockup-fidelity.js "workspace/issues/{issueKey}/spec/diagrams/mockup.html" "workspace/issues/{issueKey}/spec/asis-inventory.json"` (Fidelity Score ≥ 90%)
+   - 5e. Render ảnh Retina 2x: `node plugins/ba-po/skills/ba-refine/assets/render-mockup.js "mockup.html" "mockup.png" fit 2 all`
+   - **⛔ GATE CỨNG:** CẤM trình Gate 2 khi chưa có `asis-inventory.md` và 3 ảnh `mockup-case-*.png` đạt Fidelity Score ≥ 90%
 
 ---
 

@@ -67,7 +67,7 @@ const scale = parseFloat(scaleArg) || 2.0;
       return window.__MOCKUP_READY__ === undefined || window.__MOCKUP_READY__ === true;
     }, { timeout: 3000 }).catch(() => {});
 
-    const frameLocator = page.locator('.device-frame, #mockup-canvas, .mockup-viewport').first();
+    const frameLocator = page.locator('.device-frame, #mockup-canvas, .mockup-viewport, .workspace-layout, .mobile-frame').first();
     const count = await frameLocator.count();
 
     const captureToPath = async (targetFilePath) => {

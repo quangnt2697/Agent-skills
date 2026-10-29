@@ -19,6 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateMockupFidelity } from '../../plugins/ba-po/skills/ba-design-mockup/assets/validate-mockup-fidelity.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -179,12 +180,48 @@ export function validateRefinedSpec(filePath, options = {}) {
   // GATE-UI-01: Kiểm tra UI Task nếu được chỉ định
   if (options.isUiTask) {
     const asisPath = path.join(specDir, 'asis-inventory.md');
+    const asisJsonPath = path.join(specDir, 'asis-inventory.json');
+    const mockupHtmlPath = path.join(specDir, 'diagrams', 'mockup.html');
+
     if (!fs.existsSync(asisPath)) {
       errors.push(`[GATE-UI-01] Task giao diện (WEB/APP) thiếu file bắt buộc: ${asisPath}`);
     }
 
+    if (!fs.existsSync(asisJsonPath)) {
+      warnings.push(`[GATE-UI-01] Chưa tìm thấy file ${asisJsonPath} sinh từ ba-design-mockup.`);
+    }
+
+    // Nếu có file mockup.html, chạy trực tiếp hàm kiểm định Fidelity
+    if (fs.existsSync(mockupHtmlPath)) {
+      const fidelityRes = validateMockupFidelity(mockupHtmlPath, fs.existsSync(asisJsonPath) ? asisJsonPath : '');
+      if (!fidelityRes.valid) {
+        fidelityRes.errors.forEach(err => {
+          errors.push(`[GATE-UI-01] ${err}`);
+        });
+      }
+      if (fidelityRes.warnings && fidelityRes.warnings.length > 0) {
+        fidelityRes.warnings.forEach(warn => {
+          warnings.push(`[GATE-UI-01] ${warn}`);
+        });
+      }
+    }
+
     if (!/Fidelity Score\s*:\s*([9][0-9]|100)%/i.test(content)) {
-      warnings.push('[GATE-UI-01] Chưa ghi nhận hoặc Fidelity Score < 90% trong Mục UI Design / Mockup.');
+      errors.push('[GATE-UI-01] Bắt buộc ghi nhận Fidelity Score >= 90% trong Mục UI Design / Mockup (kiểm định qua validate-mockup-fidelity.js).');
+    }
+
+    // Khi ở giai đoạn chuẩn bị push Jira (stage === 'push' hoặc options.isPushStage), kiểm tra đủ ảnh đa case
+    if (options.stage === 'push' || options.isPushStage) {
+      const diagramsDir = path.dirname(mockupHtmlPath);
+      const case1Png = path.join(diagramsDir, 'mockup-case-1.png');
+      const case2Png = path.join(diagramsDir, 'mockup-case-2.png');
+      const case3Png = path.join(diagramsDir, 'mockup-case-3.png');
+      const mainPng = path.join(diagramsDir, 'mockup.png');
+
+      const hasCaseImages = fs.existsSync(case1Png) && fs.existsSync(case2Png) && fs.existsSync(case3Png);
+      if (!hasCaseImages && !fs.existsSync(mainPng)) {
+        errors.push(`[GATE-UI-01] Chưa tìm thấy ảnh render mockup đa trạng thái (mockup-case-1.png, mockup-case-2.png, mockup-case-3.png) trong ${diagramsDir}. Hãy chạy render-mockup.js fit 2 all.`);
+      }
     }
   }
 
