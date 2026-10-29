@@ -46,10 +46,10 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 
 ---
 
-## BƯỚC 2 — Lấy Metadata & Quét Tài Liệu
+## BƯỚC 2 — Lấy Metadata, Trích xuất Từ khóa & Quét Tài Liệu
 
 1. Lấy Jira metadata: n8n Fast-Path `prepJiraContext({issueKey})`
-2. Trích xuất `fields.summary` làm Tiêu đề Task (KHÔNG dùng chuỗi placeholder)
+2. Trích xuất `fields.summary` làm Tiêu đề Task; tự động bóc tách từ khóa nghiệp vụ (`extractedKeywords`) và tìm kiếm các issue liên quan (`relatedSearchIssues`)
 3. Quét: `issuelinks` (Confluence), `attachment`, `description` (URL pattern `*/wiki/*`)
 4. Kiểm tra cache: `workspace/issues/{issueKey}/source/refs/` đã có file nào chưa
 5. Nếu task liên quan UI (WEB/APP) — **AS-IS Extraction Protocol (BẮT BUỘC):**
@@ -71,10 +71,14 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 ## BƯỚC 3 — Trình Bảng cho User → **GATE 1**
 
 ```markdown
+- **Từ khóa trích xuất (`extractedKeywords`):** `{kw1}`, `{kw2}`, `{kw3}`
+- **Task liên quan (`relatedSearchIssues`):** `[{relatedKey1}] {summary1}`
+
 | # | Loại | Tên | Trạng thái | Hành động |
 |---|------|-----|------------|-----------|
 | 1 | 📄 Jira PDF | {issueKey} - {summary} | 🆕 Chưa tải | → Sẽ tải |
-| 2 | 📝 Confluence | {tên page} | ✅ Đã có | {path} |
+| 2 | 🔗 Task liên quan | {relatedKey1} - {summary1} | ✅ Đã quét JQL | `source/jira-issue.json` |
+| 3 | 📝 Confluence | {tên page} | ✅ Đã có | {path} |
 ```
 
 **→ DỪNG, hỏi: "Bạn có muốn tôi tiến hành tải không? (Gõ OK)"**
@@ -97,35 +101,42 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 ## BƯỚC 5 — Phase 3: Draft (kèm Mockup) → **GATE 2** → Chốt
 
 ```
-Bước 3.1: Tạo refined-draft.md (Khung 8 mục chuẩn)
-          └─ Copy skeleton từ assets/jira-description-template.md
+Bước 3.1: Tạo refined-draft.md (Khung Jira Description chuẩn 6 phần)
+          └─ Copy skeleton từ assets/jira-description-template.md:
+             1. ## 🧩 User Story (As a / I want / So that)
+             2. ## 💼 Business Context (Problem / Goal / Urgency / Scope)
+             3. ## 📜 Business Rules ([BR-01], [BR-02]...)
+             4. ## ✅ Acceptance Criteria (Gherkin sạch: KHÔNG @tag, KHÔNG [AC-x.y])
+             5. ## 🎨 UI Design / Mockup (Ảnh inline từng Case & UI Delta)
+             6. ## ☀️ Success Criteria & Tracking (Metrics & Tracking)
           └─ Nếu task liên quan UI (WEB hoặc APP):
              • Tra cứu references/ui-component-map.json (chống thiết kế bừa)
              • Dựng Delta-Only: Giữ 90% AS-IS mờ nhẹ, viền nhấn added/modified kèm badge ① ② ③
              • Phân tách theo từng Case: Case 1 (Thao tác chính), Case 2 (Ngoại lệ/Lỗi), Case 3 (Khóa phiên/Biên)
-             • CẤM mô tả design bằng text lan man; mỗi ảnh đi kèm ghi chú thao tác người dùng (Action) & phản hồi hệ thống (Response) gắn [BR-*], [AC-*]
+             • CẤM mô tả design bằng text lan man; mỗi ảnh đi kèm ghi chú thao tác người dùng (Action) & phản hồi hệ thống (Response) gắn [BR-*]
              • Dựng spec/diagrams/mockup.html → Chạy render-mockup.js sinh đủ mockup-case-1.png, mockup-case-2.png, mockup-case-3.png
-             • Hoàn thành Mục 8 kèm Bảng chú thích UI Delta Mapping map trực tiếp với [BR-*], [AC-*]
-          └─ Xóa heading không có nội dung, xóa --- giữa sections
+             • Hoàn thành Mục UI kèm Bảng chú thích UI Delta Mapping
+          └─ Chạy Hard Gate Validator:
+             node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md"
 
 Bước 3.2: TRÌNH TOÀN BỘ NỘI DUNG cho user (GATE 2)
-          └─ Trình ĐỒNG THỜI: Spec 8 mục + Các ảnh mockup từng Case + Ghi chú thao tác ① ② ③ + Bảng UI Delta
+          └─ Trình ĐỒNG THỜI: Spec 6 mục + Các ảnh mockup từng Case + Ghi chú thao tác ① ② ③ + Bảng UI Delta
           └─ DỪNG, chờ user "OK" (sửa lại vị trí nút/label ngay trong vòng lặp ≤ 5 vòng)
 
 Bước 3.3: Copy refined-draft.md → refined.md
-          └─ Gọi ba-user-story-writing để tinh chỉnh AC
           └─ Tính Confidence Score (ngưỡng ≥ 90%)
 ```
 
 **Checklist refined.md trước khi push:**
+- [ ] Có đầy đủ `## 🧩 User Story` với `As a` cụ thể (không role chung chung)
 - [ ] Business Context ngắn gọn đúng trọng tâm (đúng 3 gạch đầu dòng: Vấn đề, Mục tiêu, Tính cấp thiết; không dùng sub-heading H3 lan man)
 - [ ] Không có placeholder `[...]` còn sót
-- [ ] AC có ≥ 3 Scenario (Happy, Edge, Validation) dạng Given/When/Then
-- [ ] Mục 8 có đầy đủ AS-IS Screen, các ảnh `mockup-case-*.png` kèm ghi chú thao tác `① ② ③` (không tả text lan man) và Bảng UI Delta
-- [ ] Không có heading nội bộ: "Giả định & Rủi ro", "Đánh giá Độ tin cậy"
+- [ ] AC có ≥ 3 Scenario (Happy, Edge, Validation) dạng Given/When/Then; **TUYỆT ĐỐI KHÔNG chứa `@tags` và KHÔNG chứa `[AC-x.y]`**
+- [ ] Mục UI có đầy đủ AS-IS Screen, các ảnh `mockup-case-*.png` kèm ghi chú thao tác `① ② ③` (không tả text lan man) và Bảng UI Delta
+- [ ] Không có heading nội bộ: "Giả định & Rủi ro", "Đánh giá Độ tin cậy", "Technical Notes"
 - [ ] Không có đường kẻ ngang `---` giữa sections
-- [ ] `spec/asis-inventory.md` đã tạo, đọc từ `origin/master` (ghi rõ commit hash)
-- [ ] Fidelity Score ≥ 90% (ghi trong Mục 8, dạng: `🎯 Fidelity Score: XX%`)
+- [ ] `spec/asis-inventory.md` đã tạo (nếu task UI), đọc từ `origin/master` (ghi rõ commit hash)
+- [ ] Fidelity Score ≥ 90% (ghi trong Mục UI, dạng: `🎯 Fidelity Score: XX%`)
 - [ ] KHÔNG có phần tử UI tự sáng tạo không có trong `asis-inventory.md`
 
 ---

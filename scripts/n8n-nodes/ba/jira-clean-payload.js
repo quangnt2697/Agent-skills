@@ -240,6 +240,85 @@ const textToScan = cleanDesc + '\n' + comments.map(c => c.body).join('\n');
 const confluenceMatches = textToScan.match(/https?:\/\/[^\s)]+\/wiki\/(?:spaces|pages)\/[^\s)]+/gi) || [];
 const uniqueConfluenceLinks = Array.from(new Set(confluenceMatches));
 
+// 4.1. Trích xuất từ khóa nghiệp vụ từ summary để phục vụ tìm kiếm liên quan
+const VIETNAMESE_STOPWORDS = new Set([
+  'la', 'là', 'toi', 'tôi', 'muon', 'muốn', 'de', 'để', 'co', 'có', 'the', 'thể',
+  'va', 'và', 'hoac', 'hoặc', 'cho', 'cua', 'của', 'tai', 'tại', 'trong', 'tren', 'trên',
+  'khi', 'voi', 'với', 'nhu', 'như', 'ra', 'sao', 'duoc', 'được', 'bi', 'bị', 'boi', 'bởi',
+  'cac', 'các', 'nhung', 'những', 'mot', 'một', 'nhieu', 'nhiều', 'it', 'ít',
+  'cap', 'cập', 'nhat', 'nhật', 'bo', 'bổ', 'sung', 'them', 'thêm', 'sua', 'sửa', 'xoa', 'xóa',
+  'tao', 'tạo', 'xu', 'xử', 'ly', 'lý', 'fix', 'bug', 'task', 'feature', 'story',
+  'chuc', 'chức', 'nang', 'năng', 'tinh', 'tính', 'he', 'hệ', 'thong', 'thống',
+  'man', 'màn', 'hinh', 'hình', 'giao', 'dien', 'diện', 'trang', 'tab', 'component',
+  'chuyen', 'chuyển', 'sang', 've', 'về', 'theo', 'dung', 'đúng', 'lai', 'lại', 'moi', 'mới',
+  'danh', 'đánh', 'quy', 'tac', 'tắc', 'cong', 'công', 'cu', 'cụ', 'tu', 'từ', 'den', 'đến',
+  'can', 'cần', 'lam', 'làm', 'hien', 'hiển', 'thi', 'thị', 'kiem', 'kiểm', 'tra', 'rà', 'soát'
+]);
+
+const DOMAIN_COMPOUND_TERMS = [
+  'bảng giá', 'sổ lệnh', 'đặt lệnh', 'hủy lệnh', 'sửa lệnh', 'lệnh điều kiện',
+  'lô lẻ', 'lô chẵn', 'ký quỹ', 'sức mua', 'tỷ lệ ký quỹ', 'call margin', 'force sell',
+  'giá trần', 'giá sàn', 'giá tham chiếu', 'bước giá', 'biên độ', 'giá tạm tính', 'giá dự kiến',
+  'khớp lệnh', 'phiên ato', 'phiên atc', 'phiên plo', 'phiên liên tục', 'random end',
+  'phái sinh', 'cổ phiếu', 'trái phiếu', 'chứng quyền', 'tiểu khoản',
+  'lightweight chart', 'tradingview', 'stock-gift', 'smart otp', 'smartotp',
+  'monitor giá', 'giám sát', 'cảnh báo', 'khối ngoại', 'nến phút'
+];
+
+function extractKeywordsFromSummary(sumText) {
+  if (!sumText || typeof sumText !== 'string') return { detectedType: 'UNKNOWN', cleanSummary: '', keywords: [] };
+  const raw = sumText.trim();
+  let detectedType = 'UNKNOWN';
+  const prefixMatch = raw.match(/^\s*\[([^\]]+)\]/i);
+  if (prefixMatch) {
+    const p = prefixMatch[1].toUpperCase();
+    if (p.includes('APP') || p.includes('MOBILE')) detectedType = 'APP';
+    else if (p.includes('WEB') || p.includes('FE')) detectedType = 'WEB';
+    else if (p.includes('API') || p.includes('BE') || p.includes('BACKEND') || p.includes('WS')) detectedType = 'API';
+    else detectedType = p;
+  }
+  const cleanSummary = raw.replace(/\[[^\]]+\]/g, ' ').replace(/\s+/g, ' ').trim();
+  const lowerSummary = cleanSummary.toLowerCase();
+  const kwList = [];
+  const seenKw = new Set();
+
+  const addKw = (kw) => {
+    const clean = kw.trim();
+    if (!clean || clean.length < 2) return;
+    const key = clean.toLowerCase();
+    if (!seenKw.has(key)) {
+      seenKw.add(key);
+      kwList.push(clean);
+    }
+  };
+
+  for (const phrase of DOMAIN_COMPOUND_TERMS) {
+    if (lowerSummary.includes(phrase)) {
+      const idx = lowerSummary.indexOf(phrase);
+      addKw(cleanSummary.slice(idx, idx + phrase.length));
+    }
+  }
+
+  const tokens = cleanSummary.split(/[\s,;:!?"'()\[\]{}<>\/\\|]+/i).map(t => t.trim()).filter(Boolean);
+  for (const token of tokens) {
+    const cleanToken = token.replace(/^[^\wÀ-ỹ±%]+|[^\wÀ-ỹ±%-]+$/g, '');
+    if (!cleanToken || cleanToken.length < 2 || /^\d+$/.test(cleanToken)) continue;
+    const cleanLower = cleanToken.toLowerCase();
+    if (VIETNAMESE_STOPWORDS.has(cleanLower)) continue;
+    if (['cổ', 'phiếu', 'biên', 'độ', 'giá', 'sàn', 'mã', 'lệnh'].includes(cleanLower) &&
+        kwList.some(k => k.toLowerCase().includes(cleanLower) && k.includes(' '))) {
+      continue;
+    }
+    addKw(cleanToken);
+  }
+  return { detectedType, cleanSummary, keywords: kwList.slice(0, 10) };
+}
+
+const summaryInfo = extractKeywordsFromSummary(summary);
+const extractedKeywords = summaryInfo.keywords;
+let relatedSearchIssues = [];
+let relatedConfluencePages = [];
+
 // 5. Quét trạng thái Workspace Local
 const candidateRoots = [
   ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills',
@@ -378,6 +457,44 @@ try {
         }
       }
     } catch (_) {}
+
+    // A.1. Tìm kiếm Task liên quan qua từ khóa trích xuất từ summary (Jira Search JQL)
+    if (extractedKeywords.length > 0) {
+      try {
+        const projKey = issueKey.includes('-') ? issueKey.split('-')[0] : '';
+        const topKw = extractedKeywords.slice(0, 3).map(k => `summary ~ "${k}"`).join(' OR ');
+        const jql = encodeURIComponent(`project = "${projKey}" AND issueKey != "${issueKey}" AND (${topKw}) ORDER BY updated DESC`);
+        const searchRaw = curlGet(`${baseUrl}/rest/api/3/search?jql=${jql}&maxResults=5&fields=summary,status,issuetype,assignee`);
+        if (searchRaw) {
+          const sData = typeof searchRaw === 'string' ? JSON.parse(searchRaw) : searchRaw;
+          if (Array.isArray(sData.issues)) {
+            relatedSearchIssues = sData.issues.map(iss => ({
+              key: iss.key,
+              summary: iss.fields?.summary || '',
+              status: iss.fields?.status?.name || '',
+              issueType: iss.fields?.issuetype?.name || ''
+            }));
+          }
+        }
+      } catch (_) {}
+
+      // A.2. Tìm kiếm trang Confluence liên quan qua từ khóa trích xuất (Confluence CQL)
+      try {
+        const topCqlKw = extractedKeywords.slice(0, 3).map(k => `title ~ "${k}" OR text ~ "${k}"`).join(' OR ');
+        const cql = encodeURIComponent(`type = "page" AND (${topCqlKw}) ORDER BY lastmodified DESC`);
+        const cfSearchRaw = curlGet(`${baseUrl}/wiki/rest/api/search?cql=${cql}&limit=5`);
+        if (cfSearchRaw) {
+          const cfSearchData = typeof cfSearchRaw === 'string' ? JSON.parse(cfSearchRaw) : cfSearchRaw;
+          if (Array.isArray(cfSearchData.results)) {
+            relatedConfluencePages = cfSearchData.results.map(item => ({
+              id: item.content?.id || item.id || '',
+              title: item.content?.title || item.title || '',
+              url: item.url ? `${baseUrl}/wiki${item.url}` : ''
+            })).filter(p => p.id || p.title);
+          }
+        }
+      } catch (_) {}
+    }
 
     // B. Hydrate nội dung chi tiết của Parent / Epic (lưu vào source/refs/parent-{key}.md)
     if (parent && parent.key) {
@@ -543,6 +660,22 @@ try {
       multiSourceSummary.push('');
     }
 
+    if (relatedSearchIssues.length > 0) {
+      multiSourceSummary.push('## Các Ticket Liên Quan Tìm Được Qua Từ Khóa Tiêu Đề:');
+      relatedSearchIssues.forEach(r => {
+        multiSourceSummary.push(`- [${r.key}] ${r.summary} (${r.status} - ${r.issueType})`);
+      });
+      multiSourceSummary.push('');
+    }
+
+    if (relatedConfluencePages.length > 0) {
+      multiSourceSummary.push('## Tài Liệu Confluence Tìm Được Qua Từ Khóa Tiêu Đề:');
+      relatedConfluencePages.forEach(cp => {
+        multiSourceSummary.push(`- [Confluence #${cp.id}] ${cp.title}${cp.url ? ` (${cp.url})` : ''}`);
+      });
+      multiSourceSummary.push('');
+    }
+
     if (downloadedAttachments.length > 0) {
       multiSourceSummary.push('## Tài Liệu Đính Kèm Đã Tải Về (`source/refs/`):');
       downloadedAttachments.forEach(fn => multiSourceSummary.push(`- \`source/refs/${fn}\``));
@@ -572,6 +705,9 @@ try {
         issueLinks,
         linkedIssues: linkedIssuesList,
         subtasks,
+        extractedKeywords,
+        relatedSearchIssues,
+        relatedConfluencePages,
         confluenceLinks: uniqueConfluenceLinks,
         confluenceDocs: hydratedConfluenceDocs,
         descriptionMarkdown: cleanDesc,
@@ -617,11 +753,14 @@ const descSnippet = cleanDesc.length > 800 ? cleanDesc.substring(0, 800) + '\n\n
 const parentSnippet = parent ? `- **Ticket Cha:** [${parent.key}] ${parent.summary} (\`${parent.status}\`)\n` : '';
 const commentsSnippet = comments.length > 0 ? `- **Ghi nhận:** ${comments.length} trao đổi/comment nghiệp vụ chốt gần nhất\n` : '';
 
+const keywordsSnippet = extractedKeywords.length > 0 ? `- **Từ khóa trích xuất:** \`${extractedKeywords.join('`, `')}\`\n` : '';
+const relatedSnippet = relatedSearchIssues.length > 0 ? `- **Task liên quan (theo từ khóa):** ${relatedSearchIssues.map(r => `[${r.key}] ${r.summary}`).join(' | ')}\n` : '';
+
 const reportText = `### 📋 Thông Tin Jira Issue: [${issueKey}](${jiraUrl}) - ${summary}
 - **Loại:** \`${issueType}\` | **Trạng thái:** **${status}** | **Ưu tiên:** \`${priority}\`
 - **Người xử lý:** **${assignee}** | **Người tạo:** ${reporter}
 - **Sprint:** \`${sprintName}\`${components.length > 0 ? (' | **Components:** `' + components.join(', ') + '`') : ''}
-${labels.length > 0 ? ('- **Labels:** `' + labels.join(', ') + '`\n') : ''}${parentSnippet}${commentsSnippet}- **Tài liệu tham chiếu:** ${attachments.length} file đính kèm | ${uniqueConfluenceLinks.length} liên kết Confluence | ${issueLinks.length} liên kết Issue
+${labels.length > 0 ? ('- **Labels:** `' + labels.join(', ') + '`\n') : ''}${parentSnippet}${commentsSnippet}${keywordsSnippet}${relatedSnippet}- **Tài liệu tham chiếu:** ${attachments.length} file đính kèm | ${uniqueConfluenceLinks.length} liên kết Confluence | ${issueLinks.length} liên kết Issue
 - **Workspace Local:** ${localStatusText}
 
 #### 📖 Trích Đoạn Mô Tả (ADF Markdown):
@@ -651,6 +790,9 @@ return [{
     issueLinks,
     linkedIssues: linkedIssuesList,
     subtasks,
+    extractedKeywords,
+    relatedSearchIssues,
+    relatedConfluencePages,
     confluenceLinks: uniqueConfluenceLinks,
     confluenceDocs: hydratedConfluenceDocs,
     descriptionMarkdown: cleanDesc,

@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import md2adf from 'md-to-adf';
+import { validateRefinedSpec } from '../../../../../scripts/validators/validate-ba-refine.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -364,12 +365,24 @@ function markdownToAdf(markdown, attachmentMap = {}) {
     return { type: 'doc', version: 1, content };
 }
 
-// Trích xuất UI Elements từ Mục 8 của markdown (UI Delta Mapping table) và tạo testability-manifest.json
+// Trích xuất UI Elements từ Mục UI của markdown (UI Delta Mapping table) và tạo testability-manifest.json
 function exportTestabilityManifest(issueKey, mdContent, mdFilePath) {
     const brMatches = [...mdContent.matchAll(/\[(BR-\d+)\]/gi)].map(m => m[1].toUpperCase());
     const acMatches = [...mdContent.matchAll(/\[(AC-\d+\.\d+)\]/gi)].map(m => m[1].toUpperCase());
     const uniqueBrs = [...new Set(brMatches)];
-    const uniqueAcs = [...new Set(acMatches)];
+    let uniqueAcs = [...new Set(acMatches)];
+
+    // Nếu dùng template AC sạch (không có tag [AC-x.y]), tự động suy diễn danh sách AC từ các dòng Scenario:
+    if (uniqueAcs.length === 0) {
+        const gherkinMatch = mdContent.match(/```gherkin([\s\S]*?)```/i);
+        if (gherkinMatch) {
+            const scenarioLines = gherkinMatch[1]
+                .split('\n')
+                .map(l => l.trim())
+                .filter(l => /^Scenario(?:\s+Outline)?\s*:/i.test(l));
+            uniqueAcs = scenarioLines.map((_, idx) => `AC-1.${idx + 1}`);
+        }
+    }
 
     // Parse Bảng Chú thích Thay đổi Giao diện nếu có
     const uiElements = [];
@@ -604,6 +617,19 @@ async function main() {
 
     console.log(`⏳ Đang đọc file: ${mdFilePath}`);
     const markdownContent = fs.readFileSync(mdFilePath, 'utf8');
+
+    // Chốt chặn Kiểm định Chất lượng Spec (Deterministic Quality Gate)
+    console.log(`🛡️  Đang chạy Pre-flight Validation cho spec: ${path.basename(mdFilePath)}...`);
+    const valResult = validateRefinedSpec(mdFilePath);
+    if (!valResult.valid) {
+        console.error("❌ CẤM PUSH LÊN JIRA — Spec chưa đạt chuẩn nghiệp vụ hoặc vi phạm quy tắc:");
+        valResult.errors.forEach(e => console.error(`   - ${e}`));
+        process.exit(1);
+    }
+    if (valResult.warnings.length > 0) {
+        valResult.warnings.forEach(w => console.warn(`⚠️  Cảnh báo: ${w}`));
+    }
+    console.log("✅ Spec đạt chuẩn 100% về cấu trúc User Story, AC Gherkin sạch và không rò rỉ mã tag.");
 
     const authHeader = 'Basic ' + Buffer.from(`${email}:${apiToken}`).toString('base64');
     let attachmentMap = {};

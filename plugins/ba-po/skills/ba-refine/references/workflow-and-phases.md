@@ -35,7 +35,9 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
    - **n8n Fast-Path (Bắt buộc):** Import và chạy hàm `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`. Hệ thống tự động gọi webhook `/webhook/jira-prep` để lấy metadata JSON siêu sạch (có cả `attachments` và `issueLinks`). BẮT BUỘC dùng `summary` từ đây làm Tiêu đề Task.
    - Nếu n8n offline: báo ngay cho user "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**.
 
-4. **Trích xuất danh sách liên kết tham chiếu:**
+4. **Trích xuất danh sách liên kết & Tìm kiếm mở rộng qua Từ khóa Tiêu đề (Summary Keywords):**
+   - **Bóc tách Từ khóa Tiêu đề:** Bóc tách các từ khóa nghiệp vụ từ trường `summary` (loại bỏ prefix `[WEB]`, `[APP]` và stopwords) để đưa vào mảng `extractedKeywords`.
+   - **Tìm kiếm Task liên quan:** Tự động chạy JQL tìm top 3-5 issue tương đồng trong cùng project (lưu vào `relatedSearchIssues`).
    - Từ `issuelinks`: Lấy Confluence pages được link
    - **Gọi Remote Links:** Dùng danh sách `issueLinks` từ payload n8n hoặc gọi `GET /rest/api/3/issue/{issueKey}/remotelink` → Lấy link Confluence.
    - Từ `description`: Regex quét URL pattern `*/wiki/spaces/*` hoặc `*/wiki/pages/*`
@@ -45,21 +47,24 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
    - Với mỗi Confluence pageId → Quét `workspace/issues/{issueKey}/source/refs/` xem đã có `*-{pageId}.pdf` chưa (kể cả từ lần chạy `ba-spec` trước — cả hai skill dùng chung thư mục này)
    - Với mỗi attachment → Kiểm tra tên file đã tồn tại chưa
 
-6. **Trình bảng Danh sách cho User duyệt:**
+6. **Trình bảng Danh sách Tài liệu & Kết quả Tìm kiếm theo Từ khóa cho User duyệt (Gate 1):**
 
    ```markdown
-📋 **Danh sách tài liệu liên quan đến {issueKey}:**
+📋 **Danh sách tài liệu & task liên quan đến {issueKey}:**
+- **Từ khóa trích xuất từ Tiêu đề (`extractedKeywords`):** `{kw1}`, `{kw2}`, `{kw3}`
+- **Task liên quan tìm được qua Từ khóa (`relatedSearchIssues`):** `[{relatedKey1}] {summary1}`, `[{relatedKey2}] {summary2}`
 
 | # | Loại            | Tên                                      | Trạng thái         | Đường dẫn / Hành động                                        |
 |---|------------------------------------------------------------|--------------------|--------------------------------------------------------------|
 | 1 | 📄 Jira PDF     | {issueKey} - {Tiêu đề Task}              | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
-| 2 | 📝 Confluence   | Thiết kế luồng thanh toán (ID: 12345)    | ✅ Đã có           | `workspace/issues/{issueKey}/source/refs/thiet-ke-luong-12345.pdf`  |
-| 3 | 📝 Confluence   | API Spec v2 (ID: 67890)                  | 🆕 Chưa tải        | → `api-spec-v2-67890.pdf`                                    |
-| 4 | 📎 File         | wireframe-v3.pdf (2.1MB)                 | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
-| 5 | 🖼️ Ảnh          | flowchart.png (800KB)                    | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
-| 6 | 🎬 Video        | demo.mp4 (50MB)                          | ⏭️ Bỏ qua          | Định dạng không hỗ trợ                                       |
+| 2 | 🔗 Task liên quan| {relatedKey1} - {summary1}              | ✅ Đã quét JQL     | `workspace/issues/{issueKey}/source/jira-issue.json`         |
+| 3 | 📝 Confluence   | Thiết kế luồng thanh toán (ID: 12345)    | ✅ Đã có           | `workspace/issues/{issueKey}/source/refs/thiet-ke-luong-12345.pdf`  |
+| 4 | 📝 Confluence   | API Spec v2 (ID: 67890)                  | 🆕 Chưa tải        | → `api-spec-v2-67890.pdf`                                    |
+| 5 | 📎 File         | wireframe-v3.pdf (2.1MB)                 | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
+| 6 | 🖼️ Ảnh          | flowchart.png (800KB)                    | 🆕 Chưa tải        | → Sẽ tải mới                                                 |
+| 7 | 🎬 Video        | demo.mp4 (50MB)                          | ⏭️ Bỏ qua          | Định dạng không hỗ trợ                                       |
 
-   **Tổng cộng:** 4 file cần tải mới, 1 file đã có sẵn, 1 file bỏ qua.
+   **Tổng cộng:** 4 file cần tải mới, 2 mục đã có sẵn, 1 file bỏ qua.
 
    Bạn có muốn tôi tiến hành tải không? (Gõ **OK** hoặc chỉnh sửa)
    ```
@@ -282,23 +287,29 @@ Chất vấn user qua kỹ năng `/ba-interview-me` (chỉ hỏi khi có điểm
 
 ## Giai đoạn 3: Mài sắc & Cấu trúc (Business Spec Sharpening)
 
-**Mục tiêu:** Chốt hướng đi và cấu trúc thành spec thuần nghiệp vụ theo khung 8 mục chuẩn mực (kèm Mockup trực quan nếu task có UI).
+**Mục tiêu:** Chốt hướng đi và cấu trúc thành spec thuần nghiệp vụ theo khung Jira Description chuẩn 6 phần (kèm Mockup trực quan nếu task có UI).
 
-### Bước 3.1: Tạo bản nháp (Draft) theo Khung 8 Mục Thuần Nghiệp Vụ
+### Bước 3.1: Tạo bản nháp (Draft) theo Khung Jira Description Chuẩn mực
 
 Tạo file nháp tại: `workspace/issues/{issueKey}/spec/refined-draft.md` từ template `jira-description-template.md`:
 
-1. **Mục tiêu & Giá trị Nghiệp vụ (Business Objective & Value)**
-2. **Phạm vi & Đối tượng Áp dụng (Scope & Actors — In/Out of Scope)**
-3. **Luồng Nghiệp vụ Chính (Main Business Flow — góc nhìn người dùng)**
-4. **Luồng Nghiệp vụ Phụ & Xử lý Ngoại lệ (Alternative & Exception Flows)**
-5. **Danh mục Quy tắc Nghiệp vụ & Công thức tính ([BR-01], [BR-02]...)**
-6. **Tiêu chí Nghiệm thu Nghiệp vụ ([AC-1.1], [AC-1.2]... dạng Business Checklist)**
-7. **Giả định Nghiệp vụ & Đo lường Thành công (Business Assumptions & Success Metrics)**
-8. **Thiết kế Giao diện & Điểm chạm Màn hình (UI/UX & Mockup) — BẮT BUỘC khi task có UI**
+1. **`## 🧩 User Story`** (`**As a** [role/persona cụ thể]`, `**I want** [hành động]`, `**So that** [giá trị đạt được]`)
+2. **`## 💼 Business Context`** (`Vấn đề (Problem)`, `Mục tiêu (Goal)`, `Tính cấp thiết (Urgency)`, `Phạm vi (Scope)`)
+3. **`## 📜 Business Rules`** (Danh mục quy tắc nghiệp vụ `[BR-01]`, `[BR-02]`, công thức tính toán)
+4. **`## ✅ Acceptance Criteria`** (Khối `gherkin` sạch: **tuyệt đối không có automation `@tags`**, **không có tiền tố `[AC-x.y]`**, sử dụng `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
+5. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: ảnh inline từng Case kèm điểm chạm thao tác `①`, `②`, `③` và Bảng UI Delta Mapping; ghi `N/A` nếu task backend)
+6. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
+
+**🛡️ KIỂM ĐỊNH HARD GATE TRƯỚC GATE 2 (BẮT BUỘC):**
+Chạy lệnh kiểm định trước khi trình user:
+```bash
+node ${AGENT_SKILLS_HOME:-.}/scripts/validators/validate-ba-refine.js \
+  "workspace/issues/{issueKey}/spec/refined-draft.md"
+```
+*Script sẽ kiểm tra: Cấu trúc User Story, AC sạch không chứa `@tag` hay `[AC]`, bộ lọc Zero Technical Noise và tính đầy đủ của các sections. BẮT BUỘC PASS 100% (Exit 0).*
 
 **❌ BỘ LỌC CHỐNG KỸ THUẬT (BẮT BUỘC):**
-- TUYỆT ĐỐI KHÔNG đưa vào: Tên bảng DB, kiểu dữ liệu SQL, HTTP Methods, JSON keys, Kafka topic, Exception names.
+- TUYỆT ĐỐI KHÔNG đưa vào: Tên bảng DB, kiểu dữ liệu SQL, HTTP Methods, JSON keys, Kafka topic, Exception names, section `## 🧱 Technical Notes`.
 - HỦY BỎ hoàn toàn sơ đồ luồng Mermaid.
 
 **🎨 QUY TRÌNH DỰNG MOCKUP THEO KIẾN TRÚC 4 CHỐT CHẶN & CASE-BASED (Khi task có UI):**
@@ -311,7 +322,7 @@ Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App:
      - **Case 1:** Luồng chuẩn / Thao tác chính (Happy path).
      - **Case 2:** Tình huống cảnh báo ngoại lệ / Xử lý vi phạm hạn mức.
      - **Case 3:** Tình huống biên / Trạng thái khóa phiên ATO/ATC.
-   - **CẤM mô tả design bằng text lan man:** Dưới mỗi ảnh mockup của từng Case, bắt buộc ghi chú hành động của người dùng (Action: Click/Nhập/Chọn...) và phản hồi tương ứng của hệ thống (Response: Cập nhật giá/Hiện banner/Disable nút...) gắn với mã quy tắc `[BR-xx]`, `[AC-x.y]`.
+   - **CẤM mô tả design bằng text lan man:** Dưới mỗi ảnh mockup của từng Case, bắt buộc ghi chú hành động của người dùng (Action: Click/Nhập/Chọn...) và phản hồi tương ứng của hệ thống (Response: Cập nhật giá/Hiện banner/Disable nút...) gắn với mã quy tắc `[BR-xx]`.
 3. **Sinh Mockup HTML & PNG đa trạng thái:**
    - Dựng file: `workspace/issues/{issueKey}/spec/diagrams/mockup.html` (dựa trên `mockup-harness.html`).
    - Chạy script kết xuất ảnh Retina 2x cho tất cả các cases ngay tại Bước 3.1:
@@ -321,7 +332,7 @@ Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App:
        "workspace/issues/{issueKey}/spec/diagrams/mockup.png" fit 2 all
      ```
      *(Lệnh trên sẽ tự động sinh các file ảnh: `mockup.png`, `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png` tương ứng với từng state)*
-4. **Điền Mục 8 vào `refined-draft.md`:** Khai báo màn hình gốc AS-IS, nhúng các ảnh Markdown cho từng Case (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`), ghi chú điểm chạm thao tác `①`, `②`, `③` và hoàn thành **Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)**.
+4. **Điền Mục `## 🎨 UI Design / Mockup` vào `refined-draft.md`:** Khai báo màn hình gốc AS-IS, nhúng các ảnh Markdown cho từng Case (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`), ghi chú điểm chạm thao tác `①`, `②`, `③` và hoàn thành **Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)**.
 
 ### Bước 3.2: Trình bày bản nháp cho User duyệt (Gate 2 — APPROVAL GATE)
 
@@ -345,17 +356,17 @@ Fidelity Score = (Số phần tử ✅) / (Tổng phần tử) × 100%
 - **80–89%** → ⚠️ Agent tự fix mockup trước, sau đó trình
 - **< 80%** → ❌ CẤM trình Gate 2 — bắt buộc đọc lại codebase (quay lại Bước 11.A)
 
-**Fidelity Score phải ghi vào đầu Mục 8 của `refined-draft.md`:**
+**Fidelity Score phải ghi vào đầu Mục `## 🎨 UI Design / Mockup` của `refined-draft.md`:**
 ```
-## 8. Thiết kế Giao diện (UI/UX Mockup)
+## 🎨 UI Design / Mockup
 > 🎯 Fidelity Score: XX% (đọc từ origin/master @ {commit-hash})
 ```
 
 ---
 
-1. Trình bày TOÀN BỘ 8 mục bản nháp cho user xem trực tiếp trong chat.
+1. Trình bày TOÀN BỘ 6 phần bản nháp chuẩn Jira cho user xem trực tiếp trong chat.
 2. **Khi task có UI:** Trình đồng thời:
-   - **Nội dung Spec 8 mục**
+   - **Nội dung Spec 6 phần chuẩn Jira**
    - **Các ảnh Mockup trực quan theo từng Case** (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`)
    - **Ghi chú điểm chạm thao tác `①`, `②`, `③` dưới từng ảnh**
    - **Bảng chú thích UI Delta Mapping tổng hợp**
@@ -395,10 +406,10 @@ Fidelity Score = (Số phần tử ✅) / (Tổng phần tử) × 100%
      node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
        "workspace/issues/{issueKey}/spec/refined.md"
      ```
-     *Script `jira-push-spec.js` sẽ tự động phát hiện tất cả ảnh mockup (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`...), tải lên Jira Attachments trước, sau đó chèn chính xác các node ADF `mediaSingle` để **dán trực tiếp ảnh vào Mục 8 trong Description** chứ không chỉ đính kèm file rời rạc.*
+     *Script `jira-push-spec.js` sẽ tự động phát hiện tất cả ảnh mockup (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`...), tải lên Jira Attachments trước, sau đó chèn chính xác các node ADF `mediaSingle` để **dán trực tiếp ảnh vào Mục UI Design / Mockup trong Description** chứ không chỉ đính kèm file rời rạc.*
 
 4. **Tự động xuất bản Testability Manifest (`spec/testability-manifest.json`):**
-   Script `jira-push-spec.js` tự động trích xuất các phần tử UI từ Bảng UI Delta Mapping của Mục 8, ánh xạ cùng danh sách `[BR-*]` và `[AC-*]` vào `workspace/issues/{issueKey}/spec/testability-manifest.json`. File này là đầu vào chuẩn hóa để QA sinh automation test và Page Object Model (POM) mà không phải gõ tay locators.
+   Script `jira-push-spec.js` tự động trích xuất các phần tử UI từ Bảng UI Delta Mapping của Mục `## 🎨 UI Design / Mockup`, ánh xạ cùng danh sách `[BR-*]` và các Scenario AC vào `workspace/issues/{issueKey}/spec/testability-manifest.json`. File này là đầu vào chuẩn hóa để QA sinh automation test và Page Object Model (POM) mà không phải gõ tay locators.
 
 5. **Ghi log push history** vào `push-log.json`.
 
