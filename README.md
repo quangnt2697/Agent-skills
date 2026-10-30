@@ -13,7 +13,7 @@ Bộ sưu tập kỹ năng (skills) cấp sản xuất cho AI coding agents, chu
 ### 1. BA/PO — Business Analyst / Product Owner (`plugins/ba-po`)
 Chuyên gia phân tích nghiệp vụ, làm rõ yêu cầu, viết đặc tả, và ưu tiên backlog.
 
-**9 skills:** Import Jira/Confluence, phỏng vấn stakeholders, viết User Stories, phân tích gaps, ưu tiên backlog, tinh chỉnh backlog, mô hình hóa quy trình, v.v.
+**10 skills:** Import Jira/Confluence, phỏng vấn stakeholders, viết User Stories, phân tích gaps, ưu tiên backlog, tinh chỉnh backlog, mô hình hóa quy trình, thiết kế sơ đồ & mockup giao diện Prod-Twin, v.v.
 
 ### 2. QA/SDET — Quality Assurance / Test Engineer (`plugins/qa`)
 Chuyên gia kiểm thử, thiết kế test cases, automation testing, và đảm bảo chất lượng.
@@ -98,7 +98,7 @@ agent-skills/
 ├── config/                     → Tập trung file cấu hình hệ thống (projects.json, sm-config.yaml, ecosystem...)
 ├── plugins/                    → Chứa các plugin chuyên biệt (6 plugins)
 │   ├── core/                   → Meta-skills, shared commands (/sync, /learn, /e2e-delivery)
-│   ├── ba-po/                  → BA/PO persona & skills (9 skills)
+│   ├── ba-po/                  → BA/PO persona & skills (10 skills)
 │   ├── qa/                     → QA persona & skills (6 skills)
 │   ├── code-reviewer/          → Code Reviewer + Security Audit + Webperf (4 skills)
 │   ├── scrum-master/           → Scrum Master persona & skills (4 skills)
@@ -138,7 +138,7 @@ plugins/qa/
 | `/ba-prioritize {issueKey}`   | Ưu tiên backlog theo MoSCoW/WSJF                   |
 | `/ba-stakeholder`             | Phỏng vấn multi-stakeholders                       |
 | `/ba-process {issueKey}`      | Vẽ process diagram (BPMN/Swim Lane)                |
-| `/ba-refine {issueKey}`       | Refine user stories, bổ sung acceptance criteria   |
+| `/ba-refine {issueKey}`       | Mài giũa ý tưởng, dựng mockup Prod-Twin, bổ sung Gherkin AC & cập nhật Jira ADF |
 
 ### QA Commands (`plugins/qa`)
 
@@ -325,7 +325,7 @@ Xem chi tiết: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 - **6 Plugins** (`ba-po`, `code-reviewer`, `core`, `fintech-data`, `qa`, `scrum-master`)
 - **6 vai trò** (BA/PO, QA/SDET, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor)
-- **30 Skills** (9 BA + 6 QA + 4 SM + 4 CR/Sec/WebPerf + 1 Fintech Data + 6 Core Meta)
+- **31 Skills** (10 BA + 6 QA + 4 SM + 4 CR/Sec/WebPerf + 1 Fintech Data + 6 Core Meta)
 - **29 Slash Commands**
 - **40+ Reference Documents**
 - **Production-Ready** — Dùng trong real projects (Finance/Trading domain)

@@ -30,12 +30,13 @@ Jira Task                Checklist & BDD          Tech-Spec & Code        Review
 ## 2. Hướng Dẫn Áp Dụng Cho Từng Vai Trò
 
 ### 2.1. Dành cho Chuyên Gia Phân Tích Nghiệp Vụ (BA / PO)
-- **Kỹ năng cốt lõi:** `ba-spec`, `ba-refine`, `ba-interview-me`, `ba-design-flowchart`, `ba-process-modeling`.
+- **Kỹ năng cốt lõi:** `ba-spec`, `ba-refine`, `ba-interview-me`, `ba-design-flowchart`, `ba-design-mockup`, `ba-process-modeling`.
 - **Quy trình chuẩn:**
-  1. Khi nhận Jira task mới, chạy `/ba-spec {issueKey}` để phân tích yêu cầu thô và liên kết Confluence.
+  1. Khi nhận Jira task mới, chạy `/ba-spec {issueKey}` để phân tích yêu cầu thô và liên kết Confluence (hoặc `/ba-refine {issueKey}` khi cần mài giũa ý tưởng thô và tìm kiếm ngữ cảnh liên quan).
   2. Nếu yêu cầu còn nhiều giả định chưa rõ, kích hoạt `ba-interview-me` để được phỏng vấn làm rõ từng điểm mù.
-  3. Tạo sơ đồ quy trình trực quan bằng `/flowchart` (chuẩn engine ELK nền trắng chữ đen).
-  4. Đẩy đặc tả hoàn thiện lên Jira qua `/ba-refine`.
+  3. Tạo sơ đồ quy trình trực quan bằng `ba-design-flowchart` (chuẩn engine ELK nền trắng chữ đen).
+  4. Nếu tính năng có giao diện WEB/APP, kích hoạt `ba-design-mockup` để dựng Prod-Twin mockup bám sát codebase, kiểm định Fidelity Score ≥ 90%, kết xuất ảnh Retina 2x.
+  5. Kiểm định Hard Gate qua `validate-ba-refine.js`, đồng bộ đặc tả hoàn thiện lên Jira Description dạng ADF kèm inline media và xuất `testability-manifest.json` bàn giao QA.
 
 ### 2.2. Dành cho Kỹ Sư Phát Triển Phần Mềm (Software Developer - DEV)
 - **Kỹ năng cốt lõi:** `dev-spec-driven-development`, `dev-planning-and-task-breakdown`, `dev-incremental-implementation`, `dev-test-driven-development`, `dev-debugging`, `dev-refactoring`.

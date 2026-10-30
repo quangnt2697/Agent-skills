@@ -17,7 +17,7 @@ Chọn lộ trình học tập phù hợp nhất với vai trò thực tế củ
 ```mermaid
 graph TD
     Start["🧭 Bắt Đầu: Chọn Điểm Xuất Phát"] --> Q{"Vai trò chuyên môn của bạn là gì?"}
-    Q -->|Nghiệp vụ & Sản phẩm| R_BA["Lộ trình 1: BA / PO<br/>(ba-spec, ba-refine, flowchart)"]
+    Q -->|Nghiệp vụ & Sản phẩm| R_BA["Lộ trình 1: BA / PO<br/>(ba-spec, ba-refine, flowchart, mockup)"]
     Q -->|Kiểm thử & Đảm bảo Chất lượng| R_QA["Lộ trình 2: QA / SDET<br/>(qa-test-design, qa-auto-design, run)"]
     Q -->|Điều phối Quy trình Agile| R_SM["Lộ trình 3: Scrum Master<br/>(sm-daily-standup, sm-triage)"]
     Q -->|Quản trị Chất lượng & An ninh| R_CR["Lộ trình 4: Code Reviewer & Audit<br/>(cr-review, security-audit, webperf)"]
@@ -119,7 +119,7 @@ sequenceDiagram
      ```bash
      npm run evals
      ```
-   - Ngưỡng đạt chuẩn: Rank-1 trigger rate ≥ 90% trên toàn bộ 30 skills.
+   - Ngưỡng đạt chuẩn: Rank-1 trigger rate ≥ 90% trên toàn bộ 31 skills.
 4. **Đúc Kết Bài Học & Checkpoints Phiên Làm Việc:**
    - Lưu bài học sau một task khó: `/learn`.
    - Nén phiên làm việc khi cần nghỉ: `/save-checkpoint` và phục hồi lại bằng `/load-checkpoint`.
@@ -131,6 +131,7 @@ sequenceDiagram
 | Mục tiêu thực tế của bạn | Các lệnh & tính năng cần kết hợp | Tài liệu tham khảo |
 |---|---|---|
 | **Làm rõ yêu cầu nghiệp vụ còn mơ hồ** | `/ba-spec` + `/ba-interview` + `/ba-process` | [`docs/architecture/ba-workflow-detail.md`](docs/architecture/ba-workflow-detail.md) |
+| **Mài giũa ý tưởng & Dựng mockup Prod-Twin** | `/ba-refine` + `ba-design-mockup` + `validate-ba-refine.js` | [`docs/architecture/ba-workflow-detail.md`](docs/architecture/ba-workflow-detail.md) |
 | **Tự động hóa kiểm thử API chứng khoán** | `/qa-test-design` + `/qa-auto-design` + `sdk-map.json` | [`references/securities-domain-rules.md`](references/securities-domain-rules.md) |
 | **Kiểm tra và audit bảo mật mã nguồn** | `/security-audit` + `/cr-review` | [`plugins/code-reviewer/skills/security-code-audit/`](plugins/code-reviewer/skills/security-code-audit/) |
 | **Đối chiếu dữ liệu thị trường KRX** | `/db-recon` + TimescaleDB Production v3 | [`plugins/fintech-data/skills/db-timescale-reconciler/`](plugins/fintech-data/skills/db-timescale-reconciler/) |

@@ -25,46 +25,50 @@ Download Jira task → Scan & approve tài liệu → Refine idea (divergent →
 ## Workflow
 
 ```
-Phase 0: Scan & Tổng hợp Danh sách (APPROVAL GATE)
-    - Quét Jira/Confluence tìm tài liệu liên quan
-    - Đối chiếu với file đã có trong project
-    - Trình danh sách cho user duyệt
-    - CHỜ user approve → Tải file thiếu
+Phase 0: Scan, Trích xuất Từ khóa & Tổng hợp Danh sách (APPROVAL GATE 1)
+    - Chuẩn hóa {issueKey}, lấy metadata Jira qua n8n (prepJiraContext)
+    - Trích xuất từ khóa từ Tiêu đề Task (extractedKeywords) & quét JQL/CQL tìm task/Confluence liên quan
+    - Nếu có UI: chạy extract-asis-ui.js sinh spec/asis-inventory.json & .md từ nhánh master/main
+    - Trình danh sách tài liệu & task liên quan cho user duyệt (Gate 1)
+    - CHỜ user approve → Tải file thiếu vào workspace/issues/{issueKey}/source/refs/
     ↓
-Phase 1: Understand & Expand (Divergent)
-    - Đọc TẤT CẢ tài liệu (Jira + Confluence + attachments)
-    - HMW statement
-    - Clarify core components (AskUserQuestion)
-    - Generate 5-8 variations
+Phase 1: Khai phóng theo 5 Chiều Nghiệp vụ (Divergent)
+    - Đọc TẤT CẢ tài liệu (Jira + Confluence + attachments + Domain rules)
+    - Mở rộng ý tưởng theo 5 chiều nghiệp vụ (Who, Why, What Rules, When, User Journey)
+    - Làm rõ điểm mù qua ba-interview-me (Confidence ≥ 90%)
+    - Sinh 5-8 biến thể ý tưởng nghiệp vụ
     ↓
-Phase 2: Evaluate & Converge
-    - Cluster into 2-3 directions
-    - Stress-test each direction
-    - Surface hidden assumptions
+Phase 2: Phản biện Nghiệp vụ & Tình huống Biên (Convergent)
+    - Gom thành 2-3 hướng đi nghiệp vụ rõ ràng
+    - Stress-test xung đột quy tắc nghiệp vụ & xử lý ngoại lệ
+    - Làm lộ diện các giả định ngầm (Surface hidden assumptions)
     ↓
-Phase 3: Sharpen & Structure
-    - User chooses final direction
-    - Create refined spec markdown
+Phase 3: Chuẩn hóa Đặc tả 6 Mục & Dựng Mockup Prod-Twin (APPROVAL GATE 2)
+    - User chọn hướng đi cuối cùng → Tạo refined-draft.md chuẩn 6 phần Jira
+    - Viết Acceptance Criteria dạng Gherkin sạch (KHÔNG @tags, KHÔNG [AC-x.y])
+    - Nếu có UI: gọi ba-design-mockup dựng Prod-Twin mockup đa trạng thái (mockup-case-1..3.png, Fidelity ≥ 90%)
+    - Chạy Hard Gate validate-ba-refine.js → Trình user duyệt (Gate 2) → Chốt refined.md
     ↓
-Phase 4: Push to Jira
-    - Update Jira description
-    - Add comment + label
-    - Return Jira URL
+Phase 4: Đồng bộ lên Jira & Handoff Kỹ thuật
+    - Cập nhật Jira Description dạng ADF kèm inline image mediaSingle (KHÔNG comment, KHÔNG label)
+    - Tự động xuất bản spec/testability-manifest.json bàn giao cho QA
+    - Trả về Jira URL & gợi ý handoff sang DEV/QA
 ```
 
 ## Key Features
 
-- **Scan trước, tải sau:** Quét Jira/Confluence → trình danh sách → user approve → tải
-- **Multi-source reading:** Đọc Jira PDF + Confluence pages + attachments
-- **Cache-aware:** Nhận diện file đã tải, tái sử dụng
-- **Ideation frameworks:** 7 lăng kính (Inversion, 10x, Expert Lens, etc.)
-- **Stress-test rubric:** User Value, Feasibility, Differentiation, Risk
+- **Scan trước, tải sau (Gate 1):** Trích xuất từ khóa tiêu đề, quét Jira/Confluence liên quan → trình danh sách → user approve → tải
+- **Multi-source & Cache-aware:** Đọc Jira PDF + Confluence pages + attachments, tái sử dụng file đã tải trong `source/refs/`
+- **5 Chiều Nghiệp vụ & Stress-test:** Khai phóng thuần nghiệp vụ (Zero Technical Noise), kiểm định xung đột quy tắc ngành
+- **Prod-Twin UI Mockup (`ba-design-mockup`):** Bóc tách AS-IS từ codebase, dựng Delta-Only kèm huy hiệu `① ② ③`, kiểm định `validate-mockup-fidelity.js` (Fidelity ≥ 90%)
+- **Hard Gate & Clean Gherkin (Gate 2):** Kiểm định cấu trúc 6 mục qua `validate-ba-refine.js` trước khi trình duyệt và push Jira
 
 ## Output
 
-- **Local file:** `workspace/issues/{issueKey}/spec/refined.md`
+- **Local spec:** `workspace/issues/{issueKey}/spec/refined.md` (kèm `refined-draft.md`)
+- **UI & Testability artifacts:** `workspace/issues/{issueKey}/spec/asis-inventory.*`, `spec/diagrams/mockup-case-*.png`, `spec/testability-manifest.json`
 - **Local references:** `workspace/issues/{issueKey}/source/refs/` (Confluence + attachments)
-- **Jira:** Updated description (KHÔNG comment, KHÔNG label)
+- **Jira:** Updated description dạng ADF chuẩn kèm inline mockup images (KHÔNG comment, KHÔNG label)
 - **Confidence level:** ≥90% required for handoff
 
 ## Next Steps

@@ -73,7 +73,7 @@ Tất cả phải PASS trước khi chuyển sang giai đoạn tiếp theo.
 npm run setup:claude
 ```
 Lệnh này (idempotent, `setup:mac` đã chạy sẵn) làm 2 việc:
-1. Tạo symlink `~/.claude/skills/agent-skills` → thư mục repo. Claude Code nạp nó như plugin `agent-skills@skills-dir` ở **mọi project**, gồm 30 skills, 29 slash commands và 6 subagents (`agent-skills:ba-po`, `agent-skills:qa`, `agent-skills:code-reviewer`…).
+1. Tạo symlink `~/.claude/skills/agent-skills` → thư mục repo. Claude Code nạp nó như plugin `agent-skills@skills-dir` ở **mọi project**, gồm 31 skills, 29 slash commands và 6 subagents (`agent-skills:ba-po`, `agent-skills:qa`, `agent-skills:code-reviewer`…).
 2. Ghi `env.AGENT_SKILLS_HOME` vào `~/.claude/settings.json` để skill gọi được script của repo (`node ${AGENT_SKILLS_HOME}/scripts/...`) từ bất kỳ thư mục làm việc nào. Bản sao lưu: `settings.json.agent-skills.bak`.
 
 Vì là symlink nên **sửa nội dung skill trong repo là có hiệu lực ngay** ở mọi project (phiên mới). Thêm/xoá skill thì gõ `/reload-plugins` trong phiên đang mở. `git pull` cũng tự cập nhật, không cần chạy lại lệnh nào. Gỡ bỏ: `npm run unlink:claude`.

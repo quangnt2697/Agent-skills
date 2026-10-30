@@ -53,6 +53,10 @@ mkdir -p workspace/{issueKey}/<root>
 | **Input**  | Confluence PDFs           | `{PROJECT_ROOT}/workspace/issues/{issueKey}/source/refs/`     |
 | **Output** | `final.md` ★              | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
 | **Output** | `refined.md`              | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `refined-draft.md`        | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `asis-inventory.*`        | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
+| **Output** | `testability-manifest.json`| `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`           |
+| **Output** | Mockup & Diagram PNG/SVG  | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/diagrams/`   |
 | **Output** | `gap-analysis.md`         | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
 | **Output** | `user-stories.md`         | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
 | **Output** | `backlog.md`              | `{PROJECT_ROOT}/workspace/issues/{issueKey}/spec/`            |
@@ -142,31 +146,17 @@ Handoff
 
 ## Skills chính
 
-### Core Skills (Existing)
-1. **ba-spec** — Import Jira/Confluence, scan references, extract, analyze gaps, interview, consolidate
-   - Input: Jira issueKey hoặc Confluence keyword
-   - Output: `workspace/issues/{issueKey}/spec/final.md`
-   - Workflow: Phase 1-4 (full pipeline)
-
-2. **ba-interview-me** — Phỏng vấn làm rõ gaps (invoked tự động từ ba-spec Phase 3)
-   - Input: Danh sách gaps từ Phase 2
-   - Output: Câu trả lời được ghi vào draft, confidence level tăng lên
-   - Workflow: Hypothesis → Ask + Guess → Record → Repeat until ≥90% confidence
-
-3. **ba-refine** — Mài giũa ý tưởng (optional, cho greenfield projects)
-   - Input: Ý tưởng thô từ user
-   - Output: `docs/ideas/{tên-ý-tưởng}-refined.md` (User Story + AC + Success Metrics)
-   - Workflow: Divergent → Evaluate → Converge
-
-### New Skills (Proposed)
-4. **ba-gap-analysis** — Phân tích chi tiết AS-IS vs TO-BE
-5. **ba-user-story-writing** — Viết User Story chuẩn INVEST
-6. **ba-acceptance-criteria** — Viết AC dạng **Checklist** (rule-based), KHÔNG phải Gherkin
-   - BA/PO viết: High-level business rules (WHAT must be true)
-   - QA transform: Gherkin scenarios với test data (HOW to test)
-7. **ba-backlog-prioritization** — Ưu tiên backlog theo MoSCoW/WSJF
-8. **ba-stakeholder-interview** — Phỏng vấn stakeholders (CEO, PM, Users, Support)
-9. **ba-process-modeling** — Vẽ BPMN/flowchart (Mermaid)
+### 10 Kỹ Năng Cốt Lõi (Core Skills)
+1. **ba-spec** — Import Jira/Confluence, scan references, trích xuất 9 chiều, phân tích gaps, phỏng vấn và xuất `final.md`.
+2. **ba-refine** — Mài giũa ý tưởng thô, tìm kiếm ngữ cảnh liên quan (JQL/CQL), phối hợp dựng mockup Prod-Twin (`ba-design-mockup`), kiểm định hard gate `validate-ba-refine.js` và đồng bộ Jira ADF kèm `testability-manifest.json`.
+3. **ba-interview-me** — Phỏng vấn làm rõ gaps theo từng câu hỏi một, nâng cao độ tự tin (Confidence Score).
+4. **ba-user-story-writing** — Viết User Story chuẩn INVEST kèm tiêu chí chấp nhận Acceptance Criteria.
+5. **ba-gap-analysis** — Phân tích chi tiết khoảng cách AS-IS vs TO-BE, lập lộ trình chuyển đổi.
+6. **ba-backlog-prioritization** — Ưu tiên backlog theo ma trận MoSCoW hoặc WSJF.
+7. **ba-stakeholder-interview** — Phỏng vấn đa đối tượng liên quan (CEO, PM, Support, Users) và giải quyết mâu thuẫn nghiệp vụ.
+8. **ba-process-modeling** — Vẽ sơ đồ quy trình nghiệp vụ BPMN / Swimlane.
+9. **ba-design-flowchart** — Render sơ đồ Editorial kiến trúc, nghiệp vụ (flowchart, sequence, ERD) dạng HTML/SVG/PNG.
+10. **ba-design-mockup** — Dựng mockup giao diện Prod-Twin (WEB/APP) bám sát codebase, kiểm định độ trung thực Fidelity Score ≥ 90%, kết xuất ảnh Retina 2x đa trạng thái.
 
 ## Ranh giới với các Persona khác
 
@@ -185,14 +175,13 @@ Handoff
 - Edge Cases → Negative test cases với specific inputs
 
 ❌ **BA/PO KHÔNG:**
-- Viết Gherkin scenarios (Given-When-Then) — QA làm việc này
-- Viết test cases với concrete data ("account 123", "amount 10,000,000 VND")
-- Viết automation test code
-- Quyết định test strategy (unit/integration/e2e)
+- Viết kịch bản test chi tiết kèm test data cụ thể ("tài khoản 000123", "mã lệnh 9999", "click button #submit") — QA đảm nhiệm việc này
+- Viết mã nguồn kiểm thử tự động (Playwright / Pytest automation code)
+- Quyết định chiến lược kiểm thử kỹ thuật (test pyramid, unit/integration/e2e strategy)
 
-**Lưu ý quan trọng:**
-- BA viết AC = **Checklist** (business rules: "Nếu không đủ tiền → Error message")
-- QA viết Gherkin = **Test scenarios** (concrete: "Given tài khoản có 1,000,000 VND...")
+**Lưu ý quan trọng về Acceptance Criteria:**
+- Trong `ba-refine`, BA viết AC theo chuẩn **Business Gherkin** (Given-When-Then ở mức hành vi nghiệp vụ trừu tượng, không chứa selector DOM, không hardcode dữ liệu test cụ thể).
+- QA sẽ kế thừa và chuyển hóa Business Gherkin này thành **Executable Gherkin / Automation Test Cases** (bổ sung test data thực tế từ Metabase/TimescaleDB và step definitions).
 
 ### BA/PO → DEV
 ✅ **Bàn giao:**

@@ -4,7 +4,7 @@ Hệ thống kỹ năng (skills) cấp sản xuất cho AI coding agents — chu
 
 > 📖 **Single Source of Truth:**
 > Toàn bộ luật (Rules), Vai trò (Personas), Ma trận trách nhiệm và Quy trình Pipeline chi tiết được chuẩn hóa tại: [AGENTS.md](AGENTS.md).
-> Tra cứu nhanh toàn bộ 30 skills và 29 commands tại: [CATALOG.md](CATALOG.md).
+> Tra cứu nhanh toàn bộ 31 skills và 29 commands tại: [CATALOG.md](CATALOG.md).
 > Hướng dẫn lộ trình làm quen từng bước tại: [LEARNING-ROADMAP.md](LEARNING-ROADMAP.md).
 
 ---
@@ -64,4 +64,5 @@ npm run n8n
 - **Cấu trúc Chi tiết Artifacts:** [`.agents/rules/workspace-paths.md`](.agents/rules/workspace-paths.md)
 - **Quy trình Phân nhánh Git:** [`.agents/rules/git-workflow.md`](.agents/rules/git-workflow.md)
 - **Domain Chứng khoán KRX:** [`references/securities-domain-rules.md`](references/securities-domain-rules.md)
+- **UI Component Map cho BA Mockup:** [`plugins/ba-po/skills/ba-design-mockup/references/ui-component-map.json`](plugins/ba-po/skills/ba-design-mockup/references/ui-component-map.json)
 - **SDK Index cho QA Automation:** [`plugins/qa/skills/qa-auto-design/references/sdk-map.json`](plugins/qa/skills/qa-auto-design/references/sdk-map.json)

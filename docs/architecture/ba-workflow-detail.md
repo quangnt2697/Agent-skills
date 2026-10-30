@@ -17,9 +17,9 @@
 - DEV: Section 8 (Business Rules) + Data Requirements + Dependencies → Transform thành Tech-Spec
 
 **KHÔNG làm:**
-- ❌ Viết Tech-Spec, API Contract, Database Schema
-- ❌ Viết Test Cases, Gherkin, Automation Code
-- ❌ Thiết kế UI/UX chi tiết (chỉ mô tả User Flow từ business perspective)
+- ❌ Viết Tech-Spec, API Contract, Database Schema (do DEV/Architecture đảm nhiệm)
+- ❌ Viết mã nguồn kiểm thử tự động, Test Cases chi tiết với test data cụ thể (do QA đảm nhiệm)
+- ❌ Thiết kế đồ họa UI pixel-perfect trong Figma (nhưng trực tiếp dựng Prod-Twin UI Mockup bám sát codebase qua skill `ba-design-mockup` để kẹp vào đặc tả nghiệp vụ)
 
 **2 Skills chính:**
 
@@ -41,32 +41,32 @@
 
 **Focus:** Completeness (đủ 13 sections, không thiếu sót)
 
-#### 2. ba-refine — Refine Jira có ý tưởng thô/mơ hồ
+#### 2. ba-refine — Refine Jira có ý tưởng thô/mơ hồ & Dựng Mockup Prod-Twin
 
-**Use case:** Jira task có ý tưởng thô/mơ hồ/thiếu chi tiết, cần brainstorm và làm rõ
+**Use case:** Jira task có ý tưởng thô/mơ hồ/thiếu chi tiết, cần tìm kiếm ngữ cảnh, brainstorm, dựng mockup giao diện và cập nhật Jira ADF.
 
 **Process:**
 ```
 /ba-refine {issueKey}
-→ Phase 0: Download Jira
-→ Phase 1: Divergent (HMW + clarify + 5-8 variations)
-→ Phase 2: Convergent (cluster + stress-test + assumptions)
-→ Phase 3: Sharpen (structured spec)
-→ Phase 4: Push to Jira (update description + comment + label)
+→ Phase 0: Scan, Trích xuất Từ khóa & Tổng hợp Danh sách (Gate 1)
+→ Phase 1: Khai phóng theo 5 Chiều Nghiệp vụ (Divergent + ba-interview-me)
+→ Phase 2: Phản biện Nghiệp vụ & Tình huống Biên (Convergent + Stress-test)
+→ Phase 3: Chuẩn hóa Đặc tả 6 Mục, Dựng Prod-Twin Mockup (ba-design-mockup) & Hard Gate validate-ba-refine.js (Gate 2)
+→ Phase 4: Push to Jira (update description ADF kèm inline media, KHÔNG comment/label) & xuất testability-manifest.json
 ```
 
-**Focus:** Clarity & Detail (mài giũa ý tưởng thành spec rõ ràng)
+**Focus:** Clarity & Detail (mài giũa ý tưởng thành spec 6 mục rõ ràng, kèm mockup trung thực cao ≥90% và testability manifest)
 
 **Output:** 
-- Local: `/project-root/workspace/issues/{issueKey}/spec/refined.md` (hoặc xuất thẳng `spec/final.md` khi hoàn tất làm rõ để QA/DEV tiêu thụ ngay)
-- Jira: Updated description với cấu trúc chuẩn
+- Local: `workspace/issues/{issueKey}/spec/refined.md`, `testability-manifest.json`, `spec/diagrams/mockup-*.png`, `spec/asis-inventory.*`
+- Jira: Updated description dạng ADF chuẩn với inline diagrams/mockups
 
 **Ranh giới:**
 
 | Aspect      | ba-spec                          | ba-refine                               |
 |-------------|----------------------------------|-----------------------------------------|
 | **Input**   | Jira có requirements rõ ràng     | Jira có ý tưởng thô/mơ hồ               |
-| **Process** | Import → Analyze → Gap detection | Download → Diverge → Converge → Sharpen |
-| **Output**  | `final.md` file (for handoff)    | Updated Jira description + `refined.md`/`final.md` |
-| **Focus**   | Completeness (13 sections)       | Clarity & Detail (brainstorm)           |
-| **Handoff** | QA/DEV read from file            | QA/DEV read from `spec/final.md`         |
+| **Process** | Import → Analyze → Gap detection | Ingestion → Diverge/Converge → Mockup → ADF Sync |
+| **Output**  | `final.md` file (for handoff)    | Updated Jira description + `refined.md`/`final.md` + `testability-manifest.json` |
+| **Focus**   | Completeness (13 sections)       | Clarity & Detail (brainstorm & Prod-Twin mockups) |
+| **Handoff** | QA/DEV read from file            | QA/DEV read from `spec/final.md` hoặc Jira Description |

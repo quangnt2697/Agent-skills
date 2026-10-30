@@ -1,8 +1,8 @@
 # Danh Mục Tính Năng & Kỹ Năng (Feature & Skill Catalog)
 
-> **Bảng tra cứu nhanh toàn diện:** Tổng hợp 30 Skills, 29 Slash Commands, 6 Personas, 6 Plugins, 6 Core Rules và các Workflow tự động hóa trong hệ thống `agent-skills` (Nhánh `main` chuyên trách BA - QA - SM - Code Review).
+> **Bảng tra cứu nhanh toàn diện:** Tổng hợp 31 Skills, 29 Slash Commands, 6 Personas, 6 Plugins, 6 Core Rules và các Workflow tự động hóa trong hệ thống `agent-skills` (Nhánh `main` chuyên trách BA - QA - SM - Code Review).
 
-**Điều hướng nhanh:** [Tổng quan](#1-tổng-quan-hệ-thống) | [Slash Commands](#2-danh-mục-slash-commands-29-lệnh) | [Kỹ năng Skills](#3-danh-mục-kỹ-năng-skills-30-skills) | [Ma trận Vai trò Personas](#4-ma-trận-vai-trò-personas--ranh-giới) | [Luật Cốt lõi Rules](#5-hệ-thống-luật-rules--chính-sách) | [Domain & References](#6-tài-liệu-nghiệp-vụ--references)
+**Điều hướng nhanh:** [Tổng quan](#1-tổng-quan-hệ-thống) | [Slash Commands](#2-danh-mục-slash-commands-29-lệnh) | [Kỹ năng Skills](#3-danh-mục-kỹ-năng-skills-31-skills) | [Ma trận Vai trò Personas](#4-ma-trận-vai-trò-personas--ranh-giới) | [Luật Cốt lõi Rules](#5-hệ-thống-luật-rules--chính-sách) | [Domain & References](#6-tài-liệu-nghiệp-vụ--references)
 
 ---
 
@@ -12,7 +12,7 @@
 |---|:---:|---|---|
 | **Plugins** | 6 | `plugins/` | Các gói module: `ba-po`, `qa`, `code-reviewer`, `scrum-master`, `fintech-data`, `core` |
 | **Vai trò (Personas)** | 6 | `plugins/*/agents/` | BA/PO, QA/SDET, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor |
-| **Skills** | 30 | `plugins/*/skills/` | Kỹ năng chuyên môn thực thi theo chuẩn Progressive Disclosure 3 tầng |
+| **Skills** | 31 | `plugins/*/skills/` | Kỹ năng chuyên môn thực thi theo chuẩn Progressive Disclosure 3 tầng |
 | **Slash Commands** | 29 | `plugins/*/commands/` | Lệnh tắt kích hoạt nhanh quy trình nghiệp vụ |
 | **Core Rules** | 6 | `.agents/rules/` + `AGENTS.md` | Luật định hình hành vi, an toàn git, và chuẩn mực output |
 | **n8n Nodes / Workflows** | 28+ nodes | `n8n-workflows/`, `scripts/n8n-nodes/` | Tự động hóa fast-path ChatOps, Cron & Webhooks |
@@ -29,7 +29,7 @@ Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/comm
 | Command | Tham số | Đầu ra chính | Mục đích & Khi nào dùng |
 |---|---|---|---|
 | `/ba-spec` | `{issueKey}` | `spec/*-final.md` | Import từ Jira/Confluence, quét gaps, lập Business Spec bàn giao. |
-| `/ba-refine` | `{issueKey}` | Jira Description | Brainstorm phân kỳ/hội tụ ý tưởng thô và cập nhật spec lên Jira. |
+| `/ba-refine` | `{issueKey}` | `spec/refined.md` + `testability-manifest.json` | Brainstorm phân kỳ/hội tụ ý tưởng thô và cập nhật spec lên Jira. |
 | `/ba-interview` | `{issueKey}` | Spec Clarifications | Phỏng vấn tương tác 1-1 làm rõ điểm mù logic nghiệp vụ. |
 | `/ba-user-stories` | `{issueKey}` | `spec/user-stories.md` | Viết User Stories theo chuẩn INVEST kèm Acceptance Criteria Gherkin. |
 | `/ba-gap-analysis` | `{issueKey}` | `spec/gap-analysis.md` | Phân tích khoảng cách AS-IS vs TO-BE và lộ trình chuyển đổi. |
@@ -85,7 +85,7 @@ Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/comm
 
 ---
 
-## 3. Danh mục Kỹ năng Skills (30 Skills)
+## 3. Danh mục Kỹ năng Skills (31 Skills)
 
 Mỗi skill tuân thủ cấu trúc **Progressive Disclosure 3 tầng**:
 - **Level 1 (Frontmatter):** `name` + `description` + `trigger` (~100 tokens, luôn nạp trong registry).
@@ -109,7 +109,7 @@ graph TD
     L2 -->|Chỉ nạp khi cần chạy| L3B
 ```
 
-### Bảng tra cứu 30 Skills theo 6 Plugins:
+### Bảng tra cứu 31 Skills theo 6 Plugins:
 
 | Plugin | Tên Skill | Mục đích cốt lõi | Trigger kích hoạt chính |
 |---|---|---|---|
@@ -122,6 +122,7 @@ graph TD
 | **ba-po** | `ba-stakeholder-interview` | Phỏng vấn đa bên liên quan | Thu thập yêu cầu từ nhiều phòng ban |
 | **ba-po** | `ba-process-modeling` | Vẽ sơ đồ BPMN / quy trình | Mô hình hóa quy trình nghiệp vụ |
 | **ba-po** | `ba-design-flowchart` | Render sơ đồ Editorial | Tạo flowchart, ERD, sequence diagram |
+| **ba-po** | `ba-design-mockup` | Dựng Mockup Prod-Twin | Thiết kế giao diện WEB/APP bám sát codebase, kiểm định Fidelity Score ≥ 90% |
 | **qa** | `qa-test-design` | Thiết kế Checklist + Gherkin | Khi nhận `final.md` để lên phương án test |
 | **qa** | `qa-auto-design` | Viết Automation code chuẩn POM | Sinh mã Playwright/Pytest từ Gherkin |
 | **qa** | `qa-run-test` | Chạy test & xuất báo cáo log | Thực thi test suite, đo lường trung thực |
@@ -211,6 +212,7 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 | **Quy tắc Vận hành QA** | [`plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md`](plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md) | Chuẩn mực ghi log 100%, tham số hóa đa sàn, cấm hardcode giá |
 | **Chiến lược n8n Fast-Path** | [`docs/architecture/n8n-integration-strategy.md`](docs/architecture/n8n-integration-strategy.md) | Webhooks n8n cho ChatOps Mattermost và tự động hóa CI/CD |
 | **Editorial Diagram Style Guide** | [`plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md`](plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md) | Chuẩn thiết kế sơ đồ phẳng, tinh tế, typography hiện đại |
+| **UI Component Map & Design System** | [`plugins/ba-po/skills/ba-design-mockup/references/ui-component-map.json`](plugins/ba-po/skills/ba-design-mockup/references/ui-component-map.json) | Từ điển linh kiện giao diện Web/Mobile Trading phục vụ dựng mockup |
 
 ---
 
@@ -227,7 +229,7 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 | ↳ *Gate 5: Canonical Workspace* | `npm run validate:paths` | Kiểm định ranh giới 5 thư mục canonical `workspace/issues/{issueKey}/` |
 | ↳ *Gate 6: Icons Gallery* | `npm run validate:icons` | Kiểm tra thư viện icon Lucide phục vụ sơ đồ flowchart |
 | ↳ *Gate 7: n8n Node Sync* | `npm run validate:nodes` | Kiểm định đồng bộ mã JavaScript với file JSON workflow n8n |
-| ↳ *Gate 8: Token Budget* | `npm run validate:tokens` | Kiểm định độ dài & ngân sách token cho 30 file `SKILL.md` |
+| ↳ *Gate 8: Token Budget* | `npm run validate:tokens` | Kiểm định độ dài & ngân sách token cho 31 file `SKILL.md` |
 | **Lưu Trữ Workspace Issue** | `npm run workspace:archive` | Đóng gói nén thư mục `workspace/issues/` phục vụ lưu trữ |
 | **So sánh Checkpoint Diff** | `npm run checkpoint:diff` | So sánh biến động file `workspace/` so với snapshot gần nhất |
 | **Export Plugin Độc lập** | `npm run plugin:export -- -p <name> [--tar]` | Đóng gói 1 plugin thành thư mục độc lập hoặc file `.tar.gz` |

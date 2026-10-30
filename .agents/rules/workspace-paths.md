@@ -126,7 +126,12 @@ test case theo tên file).
 │
 ├── spec/                       # BA/PO sở hữu
 │   ├── final.md                ★ Single Source of Truth
-│   ├── refined.md              # ba-refine
+│   ├── refined.md              # ba-refine (bản hoàn thiện)
+│   ├── refined-draft.md        # ba-refine (bản nháp trong quá trình refine)
+│   ├── asis-inventory.json     # ba-design-mockup (kho linh kiện & trạng thái AS-IS)
+│   ├── asis-inventory.md       # ba-design-mockup (báo cáo phân tích AS-IS)
+│   ├── testability-manifest.json # ba-refine (hợp đồng testability bàn giao QA)
+│   ├── diagrams/               # ba-design-flowchart & ba-design-mockup (ảnh PNG/SVG kết xuất)
 │   ├── gap-analysis.md
 │   ├── user-stories.md
 │   ├── backlog.md

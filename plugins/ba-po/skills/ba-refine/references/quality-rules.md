@@ -176,7 +176,7 @@ Options:
 
 ## Ví dụ Output Chất lượng Cao
 
-Xem `plugins/ba-po/skills/ba-refine/examples.md` để có ví dụ đầy đủ về một phiên refine tốt.
+Xem [SKILL.md](../SKILL.md) (Mục 4) và [Jira Description Template](../assets/jira-description-template.md) để có ví dụ đầy đủ về cấu trúc một phiên refine đạt chuẩn 6 mục.
 
 **Đặc điểm của session tốt:**
 - Không vội vàng (dành thời gian làm rõ)
@@ -191,8 +191,11 @@ Xem `plugins/ba-po/skills/ba-refine/examples.md` để có ví dụ đầy đủ
 
 Trước khi gọi `jira-push-spec.js`, verify:
 
+- [ ] **Hard Gate:** Chạy `node scripts/validators/validate-ba-refine.js workspace/issues/{issueKey}/spec/refined.md` đạt 100% PASS
+- [ ] **UI Mockup Fidelity:** Nếu có giao diện WEB/APP, đã chạy `node scripts/validators/validate-mockup-fidelity.js workspace/issues/{issueKey}/spec/refined.md` đạt Fidelity Score ≥ 90%
+- [ ] **Testability Manifest:** Đã sinh file `workspace/issues/{issueKey}/spec/testability-manifest.json` đầy đủ contracts và endpoints bàn giao cho QA
 - [ ] **User Story:** Có đầy đủ Role + Goal + Value, KHÔNG chung chung
-- [ ] **Acceptance Criteria:** ≥2 scenarios, dạng Given-When-Then, testable (bao gồm Happy Case, Edge Case, Validation Case)
+- [ ] **Acceptance Criteria:** ≥2 scenarios, dạng Given-When-Then chuẩn Business Gherkin, testable (bao gồm Happy Case, Edge Case, Validation Case)
 - [ ] **Success Metrics:** Có baseline + target + measurement method
 - [ ] **Assumptions:** Đã surface ≥3 giả định + risks
 - [ ] **Confidence:** ≥90%
@@ -233,8 +236,8 @@ Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
 
 - [Cẩm nang Nghiệp vụ Chứng khoán & Fintech (Domain Knowledge Base)](../../../../../references/securities-domain-rules.md)
 - [Chiến Lược Tích Hợp n8n](../../../../../docs/architecture/n8n-integration-strategy.md)
-- [Ví dụ Refine Chất lượng Cao](examples.md)
 - [Jira Description Template](../assets/jira-description-template.md)
+- [SKILL.md](../SKILL.md)
 
 ---
 
