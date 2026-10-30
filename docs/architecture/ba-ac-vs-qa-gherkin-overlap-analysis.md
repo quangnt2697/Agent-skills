@@ -1,292 +1,163 @@
-# Phân tích Ranh giới: BA/PO Acceptance Criteria vs QA Gherkin Scenarios
+# Phân Tích Ranh Giới: BA/PO Acceptance Criteria vs QA Executable Gherkin
 
-**Mục đích:** Làm rõ sự khác biệt giữa AC của BA/PO và Gherkin của QA để tránh overlap và duplicate công việc.
-
----
-
-## 🎯 Nguyên tắc vàng
-
-> **BA/PO viết AC = High-level business rules và trường hợp chính (WHAT must be true)**
-> 
-> **QA viết Gherkin = Chi tiết test scenarios với test data, cover đủ các trường hợp ngoại lệ (HOW to test)**
-
-**KHÔNG overlap:** BA viết high-level rules, QA expand thành low-level test scenarios với data cụ thể.
+**Mục đích:** Làm rõ sự khác biệt bản chất và tính kế thừa giữa **Acceptance Criteria (AC) của BA/PO** và **Kịch bản BDD Gherkin thực thi (`.feature`) của QA/SDET** nhằm triệt tiêu việc lặp lại công việc hoặc chồng lấn trách nhiệm trên nhánh `main`.
 
 ---
 
-## 📋 BA/PO: Acceptance Criteria (Section 9 trong *-final.md)
+## 🎯 Nguyên Tắc Vàng
 
-### Format
+> **BA/PO viết AC = Quy tắc & Hành vi Nghiệp vụ ở mức WHAT (*Điều gì phải đúng về mặt nghiệp vụ?*) — Thuần ngôn ngữ kinh doanh, không chứa dữ liệu test cụ thể, không chứa chi tiết kỹ thuật/automation.**
+>
+> **QA/SDET viết Gherkin (`.feature`) = Kịch bản Kiểm thử Thực thi ở mức HOW TO TEST (*Kiểm chứng bằng dữ liệu thực nào, trên những sàn/phiên nào?*) — Có `@tags` truy vết, `Scenario Outline` tham số hóa đa sàn KRX và dữ liệu thực từ Metabase/TimescaleDB.**
 
-**Business Checklist** — Không phải Gherkin, không phải test case, chỉ là business rules.
+**Không trùng lặp (Zero Overlap):** BA xác lập khung hành vi nghiệp vụ chuẩn và hợp đồng giao diện (`testability-manifest.json`); QA kế thừa khung đó để nhân rộng (expand 3–5x) thành bộ kịch bản kiểm thử tự động bao phủ mọi giá trị biên và đặc thù sàn giao dịch.
 
-### Đặc điểm
+---
 
-- ✅ High-level (không chi tiết kỹ thuật)
-- ✅ Tập trung vào **trường hợp chính** (happy path + main alternatives)
-- ✅ Dùng ngôn ngữ business (không technical jargon)
-- ✅ Mỗi item là một **điều kiện nghiệp vụ** cần đạt được
-- ❌ KHÔNG có test data cụ thể
-- ❌ KHÔNG cover đủ edge cases
-- ❌ KHÔNG phải Gherkin format
+## 📋 1. BA/PO: Acceptance Criteria Trong `ba-spec` và `ba-refine`
 
-### Ví dụ
+Trên nhánh `main`, BA/PO có 2 luồng tạo đặc tả tương ứng với 2 định dạng trình bày AC ở mức **Thuần Nghiệp Vụ (WHAT)**:
+
+### 1.1. Trong `ba-spec` (`spec/final.md` — Mục 9)
+Khi tổng hợp yêu cầu từ tài liệu có sẵn sang `spec/final.md` (13 mục), BA viết AC dưới dạng **Danh mục Điều kiện Nghiệp vụ (Business Checklist)** gắn với các mã quy tắc `[BR-xx]`:
+- Tập trung vào các điều kiện nghiệm thu cốt lõi (Happy path + các quy tắc chặn chính).
+- Tuyệt đối không viết test data cứng hay thao tác DOM kỹ thuật.
+
+### 1.2. Trong `ba-refine` (`spec/refined.md` — Mục 4 `## ✅ Acceptance Criteria`)
+Khi mài giũa yêu cầu và đẩy trực tiếp lên Jira Description chuẩn 6 mục, BA viết AC dưới dạng **Business Gherkin sạch (Clean Business Gherkin)** được kiểm định tự động bởi `validate-ba-refine.js`:
+- ✅ Dùng cấu trúc `Feature:` và các nhóm `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`.
+- ✅ Diễn đạt 100% bằng **Ngôn ngữ Nghiệp vụ** (Nhà đầu tư, Tiểu khoản ký quỹ, Sở Giao dịch, Sức mua...).
+- ❌ **TUYỆT ĐỐI CẤM có `@tags` automation** (`@smoke`, `@P0`, `@api`, `@G3PTP-...`).
+- ❌ **TUYỆT ĐỐI CẤM có tiền tố mã `[AC-x.y]`** trong dòng tiêu đề `Scenario:`.
+- ❌ **TUYỆT ĐỐI CẤM hardcode dữ liệu test cụ thể** (như mã `"VNM"`, giá `79,500`, số tiểu khoản `"0001234"` hay câu lệnh SQL/HTTP status code).
+
+### Ví dụ Chuẩn của BA/PO (Trong `ba-refine`)
+
+> ⚠️ **LƯU Ý MINH HỌA:** Chỉ dùng để minh họa định dạng, không sao chép vào kết quả thực tế.
 
 ```markdown
-## 9. Acceptance Criteria
+## 📜 Business Rules
+- [BR-01] Lệnh giới hạn (LO) mua chỉ được phép gửi lên Sở khi giá đặt nằm trong biên độ trần/sàn của phiên hiện tại và tiểu khoản có đủ sức mua khả dụng.
+- [BR-02] Khi giá đặt hoặc khối lượng vi phạm quy định lô giao dịch của sàn, hệ thống phải chặn ngay và hiển thị thông báo lý do cụ thể cho nhà đầu tư.
 
-### AC1: Đặt lệnh Limit Order (LO)
-- [ ] Người dùng có thể đặt lệnh LO với giá > 0
-- [ ] Hệ thống kiểm tra margin trước khi cho phép đặt lệnh
-- [ ] Lệnh được gửi đến sàn trong vòng 500ms
-- [ ] Người dùng nhận được thông báo xác nhận khi lệnh đặt thành công
+## ✅ Acceptance Criteria
+```gherkin
+Feature: Đặt lệnh giới hạn (LO) trên tiểu khoản giao dịch
 
-### AC2: Validation
-- [ ] Hệ thống từ chối lệnh nếu giá ≤ 0
-- [ ] Hệ thống từ chối lệnh nếu margin không đủ
-- [ ] Hệ thống hiển thị lỗi rõ ràng khi validation fail
+  Scenario: Happy - Đặt lệnh mua LO hợp lệ thành công trong phiên liên tục
+    Given Tiểu khoản của nhà đầu tư đang hoạt động bình thường và có đủ sức mua khả dụng
+    When Nhà đầu tư gửi yêu cầu đặt lệnh mua LO với mức giá nằm trong biên độ trần sàn và khối lượng tròn lô
+    Then Hệ thống ghi nhận lệnh vào sổ lệnh ở trạng thái chờ gửi lên Sở và tạm khóa sức mua tương ứng
 
-### AC3: Edge Cases
-- [ ] Hệ thống xử lý đúng khi giá là số thập phân (ví dụ: 80.5)
-- [ ] Hệ thống xử lý đúng khi khối lượng rất lớn (> 1,000,000)
+  Scenario: Validation - Từ chối đặt lệnh khi khối lượng vượt quá sức mua khả dụng
+    Given Tiểu khoản của nhà đầu tư có sức mua khả dụng thấp hơn giá trị lệnh dự kiến
+    When Nhà đầu tư gửi yêu cầu đặt lệnh mua LO vượt quá sức mua hiện có
+    Then Hệ thống từ chối nhận lệnh và hiển thị thông báo không đủ sức mua
+
+  Scenario: Edge - Đặt lệnh mua tại đúng mức giá trần của phiên giao dịch
+    Given Mã chứng khoán đang giao dịch trong phiên liên tục và chưa bị khóa trần
+    When Nhà đầu tư gửi yêu cầu đặt lệnh mua LO tại mức giá bằng đúng giá trần hiện hành
+    Then Hệ thống vẫn chấp nhận lệnh hợp lệ và tính toán tỷ lệ ký quỹ theo đúng mức giá trần đó
 ```
-
-**Lưu ý:**
-- Chỉ liệt kê **trường hợp chính** và **edge cases quan trọng** (không liệt kê đủ mọi boundary)
-- Không có Given-When-Then
-- Không có test data cụ thể (ví dụ: "VNM", 80000, 100 shares)
+```
 
 ---
 
-## 🧪 QA: Gherkin Scenarios (trong {issueKey}.feature)
+## 🧪 2. QA/SDET: Executable BDD Gherkin Trong `qa-test-design` (`test/{issueKey}.feature`)
 
-### Format
+Khi nhận bàn giao `spec/final.md` hoặc `spec/refined.md` từ BA, kỹ năng `qa-test-design` thực hiện 2 giai đoạn:
+1. Thiết kế `test/checklist.md` để phân tích toàn bộ phân vùng tương đương (EP), giá trị biên (BVA: `min-1`, `min`, `max`, `max+1`) và ma trận 4 sàn chứng khoán.
+2. Chuyển hóa thành file `test/{issueKey}.feature` (**Executable BDD Gherkin**) sẵn sàng để đẩy lên **Squash TM** (`/qa-squash-push`) và sinh code Automation (`/qa-auto-design`).
 
-**BDD Gherkin** — Given-When-Then với test data cụ thể.
+### Đặc điểm của QA Executable Gherkin
+- ✅ Có đầy đủ **`@tags` phân loại và truy vết** (`@G3PTP-xxx`, `@BR-01`, `@P0`, `@HOSE`, `@HNX`, `@UPCOM`, `@DERIVATIVES`).
+- ✅ Áp dụng **Quy tắc Tham số hóa Đa sàn / Đa mã (Multi-Symbol Parameterization)**: Bắt buộc dùng `Scenario Outline` kèm bảng `Examples` chi tiết cho từng sàn (HOSE ±7%, HNX ±10%, UPCoM ±15%, Phái sinh) với khung giờ, bước giá (tick size) và lô giao dịch riêng biệt.
+- ✅ Sử dụng **100% dữ liệu kiểm thử thực tế** truy vấn từ Metabase UAT / TimescaleDB (`security_definition_v3` hoặc qua n8n `/webhook/securities-fixture` & `/webhook/securities-rule-matrix`).
+- ✅ Được kiểm định tự động qua linter nghiệp vụ (`qa-validate.sh` và `/webhook/qa-domain-lint`).
 
-### Đặc điểm
+### Ví dụ Chuẩn của QA/SDET (Chuyển hóa & Mở rộng từ AC của BA)
 
-- ✅ Chi tiết với test data cụ thể
-- ✅ Cover **ĐỦ CÁC TRƯỜNG HỢP**: happy path + alternative flows + edge cases + negative cases + boundary values
-- ✅ Dùng BDD format (Given-When-Then)
-- ✅ Có assertions rõ ràng (response time, error messages, v.v.)
-- ✅ Testable và executable
-- ✅ Mỗi scenario là một **test case** có thể chạy được
-
-### Ví dụ (Transform từ AC của BA)
+> ⚠️ **LƯU Ý MINH HỌA:** Chỉ dùng để minh họa định dạng, không sao chép số liệu vào kết quả thực tế.
 
 ```gherkin
-Feature: Đặt lệnh Limit Order (LO)
-  As a trader
-  I want to đặt lệnh LO với giá xác định
-  So that tôi có thể mua/bán cổ phiếu tại mức giá mong muốn
+@G3PTP-17396 @order_placement
+Feature: Kiểm thử đặt lệnh giới hạn (LO) đa sàn theo quy định KRX
 
-  Background:
-    Given người dùng đã đăng nhập với username "trader001"
-    And tài khoản có margin available = 100,000,000 VNĐ
+  @BR-01 @P0 @happy_path @multi_market
+  Scenario Outline: Đặt lệnh mua LO thành công tại mức giá hợp lệ trong biên độ trên sàn <san>
+    Given nhà đầu tư đã đăng nhập hợp lệ với tiểu khoản "<tieu_khoan>" có sức mua khả dụng lớn hơn 100,000,000 VNĐ
+    And mã chứng khoán "<ma_ck>" trên sàn "<san>" (bảng "<board_id>") đang ở phiên giao dịch liên tục với giá tham chiếu <gia_tc>, giá trần <gia_tran>, giá sàn <gia_san>
+    When nhà đầu tư gửi yêu cầu đặt lệnh mua LO cho mã "<ma_ck>" với giá đặt <gia_dat> và khối lượng <khoi_luong>
+    Then hệ thống phản hồi trạng thái chấp nhận lệnh (HTTP 200/201) và trả về mã hiệu lệnh hợp lệ
+    And trạng thái lệnh trong sổ lệnh chuyển thành "<trang_thai_ky_vong>"
+    And sức mua khả dụng của tiểu khoản "<tieu_khoan>" giảm tương ứng với giá trị tạm khóa của lệnh
 
-# === HAPPY PATH (từ AC1) ===
-  Scenario: Đặt lệnh LO thành công với giá hợp lệ
-    Given mã cổ phiếu "VNM" đang giao dịch
-    And giá thị trường hiện tại của "VNM" = 79,500 VNĐ
-    When người dùng đặt lệnh LO mua "VNM" với:
-      | Giá    | Khối lượng |
-      | 80,000 | 100        |
-    Then hệ thống kiểm tra margin: 80,000 * 100 * 1.1 = 8,800,000 < 100,000,000 ✅
-    And lệnh được chấp nhận
-    And lệnh được gửi đến sàn trong vòng 500ms
-    And người dùng nhận được thông báo: "Đặt lệnh thành công. Mã lệnh: ORD-123456"
-    And balance mới = 100,000,000 - 8,800,000 = 91,200,000 VNĐ
+    Examples: Dữ liệu thực tế trích xuất từ security_definition_v3 theo từng sàn
+      | san   | board_id | ma_ck | tieu_khoan | gia_tc | gia_tran | gia_san | gia_dat | khoi_luong | trang_thai_ky_vong |
+      | HOSE  | G1       | SHB   | 000101     | 11000  | 11750    | 10250   | 11100   | 100        | NEW                |
+      | HNX   | G1       | SHS   | 000101     | 15000  | 16500    | 13500   | 15200   | 100        | NEW                |
+      | UPCOM | G1       | OIL   | 000101     | 10500  | 12000    | 9000    | 10600   | 100        | NEW                |
 
-# === NEGATIVE CASES (từ AC2) ===
-  Scenario Outline: Validation fail - Giá không hợp lệ
-    When người dùng đặt lệnh LO mua "VNM" với giá <giá> và khối lượng 100
-    Then hệ thống từ chối lệnh
-    And hiển thị lỗi: "<error_message>"
+  @BR-02 @P1 @boundary_validation
+  Scenario Outline: Từ chối lệnh mua LO khi giá đặt vi phạm biên độ trần/sàn (<loai_bien>) trên sàn <san>
+    Given mã chứng khoán "<ma_ck>" trên sàn "<san>" đang trong phiên liên tục với giá trần <gia_tran> và giá sàn <gia_san>
+    When nhà đầu tư đặt lệnh mua LO mã "<ma_ck>" với giá <gia_vi_pham> và khối lượng 100
+    Then hệ thống từ chối lệnh với mã lỗi nghiệp vụ "<ma_loi>" và thông báo "<thong_bao_loi>"
 
-    Examples:
-      | giá  | error_message      |
-      | 0    | Giá phải lớn hơn 0 |
-      | -100 | Giá phải lớn hơn 0 |
-      | null | Giá là bắt buộc    |
-
-  Scenario: Validation fail - Margin không đủ
-    Given margin available = 5,000,000 VNĐ
-    When người dùng đặt lệnh LO mua "VNM" với giá 80,000 và khối lượng 100
-    Then hệ thống tính margin cần: 80,000 * 100 * 1.1 = 8,800,000 VNĐ
-    And hệ thống từ chối lệnh vì margin không đủ
-    And hiển thị lỗi: "Margin không đủ. Cần 8,800,000 VNĐ, có 5,000,000 VNĐ"
-
-# === EDGE CASES (từ AC3) ===
-  Scenario: Edge case - Giá là số thập phân
-    When người dùng đặt lệnh LO mua "VNM" với giá 80.5 và khối lượng 100
-    Then hệ thống làm tròn giá về số nguyên gần nhất: 81 VNĐ
-    And lệnh được chấp nhận với giá 81,000 VNĐ
-
-  Scenario: Edge case - Khối lượng rất lớn
-    Given margin available = 10,000,000,000 VNĐ
-    When người dùng đặt lệnh LO mua "VNM" với giá 80,000 và khối lượng 1,200,000
-    Then hệ thống kiểm tra margin: 80,000 * 1,200,000 * 1.1 = 105,600,000,000 VNĐ
-    And hệ thống từ chối lệnh vì vượt quá giới hạn khối lượng cho phép
-    And hiển thị lỗi: "Khối lượng tối đa: 1,000,000 cổ phiếu"
-
-# === BOUNDARY VALUES (QA TỰ BỔ SUNG) ===
-  Scenario Outline: Boundary value testing - Giá
-    When người dùng đặt lệnh LO mua "VNM" với giá <giá> và khối lượng 100
-    Then kết quả là: <result>
-
-    Examples:
-      | giá       | result   |             |
-      | 1         | Accepted | # Min valid |  
-      | 1,000     | Accepted |             |
-      | 999,999   | Accepted | # Max valid |  
-      | 1,000,000 | Rejected | # Over max  |  
-```
-
-**Lưu ý:**
-- QA expand từ 3 AC items của BA thành **8 scenarios** với test data cụ thể
-- Cover đủ: Happy path + Negative cases + Edge cases + Boundary values
-- Mỗi scenario có thể chạy được (executable)
-
----
-
-## 📊 So sánh Trực tiếp
-
-| Aspect         | BA/PO Acceptance Criteria                | QA Gherkin Scenarios                                   |
-|----------------|------------------------------------------|--------------------------------------------------------|
-| **Format**     | Business Checklist                       | Given-When-Then                                        |
-| **Level**      | High-level                               | Chi tiết                                               |
-| **Test Data**  | Không có                                 | Có cụ thể (VNM, 80000, 100)                            |
-| **Coverage**   | Trường hợp chính + edge cases quan trọng | ĐỦ CÁC trường hợp (happy + negative + edge + boundary) |
-| **Ngôn ngữ**   | Business terms                           | Technical + Business                                   |
-| **Executable** | Không                                    | Có (automation test)                                   |
-| **Audience**   | Stakeholders, DEV, QA                    | QA, Automation Engineers                               |
-| **Số lượng**   | 3-10 items                               | 8-30 scenarios (expansion 3-5x)                        |
-
----
-
-## 🔄 Workflow Transform
-
-```
-BA/PO writes AC (Section 9)
-         ↓
-      *-final.md
-         ↓
-QA reads AC ────────────────────┐
-         ↓                      │
-QA creates Checklist            │
-  (P0/P1/P2 priority)           │
-         ↓                      │
-QA writes Gherkin               │← Expansion 3-5x
-  - Happy path (từ AC)          │
-  - Alternative flows (từ AC)   │
-  - Edge cases (từ AC + tự bổ sung)
-  - Negative cases (tự bổ sung) │
-  - Boundary values (tự bổ sung)│
-         ↓                      │
-   {issueKey}.feature ──────────┘
+    Examples: Kiểm thử giá trị biên trần + 1 tick và sàn - 1 tick
+      | san  | ma_ck | gia_tran | gia_san | loai_bien      | gia_vi_pham | ma_loi       | thong_bao_loi                    |
+      | HOSE | SHB   | 11750    | 10250   | Vượt giá trần  | 11800       | ERR_PRICE_CE | Giá đặt vượt quá giá trần        |
+      | HOSE | SHB   | 11750    | 10250   | Thấp hơn sàn   | 10200       | ERR_PRICE_FL | Giá đặt thấp hơn giá sàn         |
+      | HNX  | SHS   | 16500    | 13500   | Sai bước giá   | 15250       | ERR_TICK     | Giá đặt không đúng bước giá 100đ |
 ```
 
 ---
 
-## ✅ CHECKLIST: BA/PO viết AC
+## 📊 3. Bảng So Sánh Đối Chiếu Trực Tiếp
 
-Khi viết Acceptance Criteria trong `*-final.md`, BA/PO cần:
-
-- [ ] Dùng **Business Checklist format** (không phải Gherkin)
-- [ ] Tập trung vào **trường hợp chính** (happy path + main alternatives)
-- [ ] Bổ sung **edge cases quan trọng** (không cần liệt kê đủ mọi boundary)
-- [ ] Dùng ngôn ngữ business (tránh technical jargon)
-- [ ] KHÔNG viết test data cụ thể (để QA bổ sung)
-- [ ] KHÔNG viết Given-When-Then (để QA transform)
-- [ ] Mỗi AC item phải **testable** (QA có thể verify được)
-
----
-
-## ✅ CHECKLIST: QA transform AC
-
-Khi nhận `*-final.md` từ BA/PO, QA cần:
-
-- [ ] Đọc Section 9 (Acceptance Criteria)
-- [ ] Transform mỗi AC item thành **nhiều Gherkin scenarios**
-- [ ] Bổ sung test data cụ thể cho mỗi scenario
-- [ ] Cover **ĐỦ CÁC trường hợp**:
-  - [ ] Happy path
-  - [ ] Alternative flows
-  - [ ] Edge cases (từ AC + tự bổ sung)
-  - [ ] Negative cases (tự bổ sung)
-  - [ ] Boundary values (tự bổ sung)
-- [ ] Viết assertions rõ ràng (expected results)
-- [ ] Đảm bảo mỗi scenario **executable**
-- [ ] Nếu AC mơ hồ → Feedback cho BA/PO (KHÔNG tự đoán)
+| Tiêu chí | BA/PO Acceptance Criteria (`ba-spec` / `ba-refine`) | QA/SDET Executable Gherkin (`qa-test-design`) |
+|---|---|---|
+| **Mục tiêu cốt lõi** | Xác định **WHAT** (Quy tắc & hành vi nghiệp vụ cần đạt) | Xác định **HOW TO TEST** (Cách kiểm chứng tự động & toàn diện) |
+| **Định dạng** | Checklist nghiệp vụ (`final.md`) hoặc **Business Gherkin sạch** (`refined.md`) | **Executable BDD Gherkin** (`Scenario` / `Scenario Outline` + `Examples`) |
+| **Thẻ `@tags` & `[AC-x.y]`** | ❌ **Cấm tuyệt đối** (được chặn bởi `validate-ba-refine.js`) | ✅ **Bắt buộc có** (`@issueKey`, `@BR-xx`, `@P0/P1`, `@market`) |
+| **Dữ liệu kiểm thử (Test Data)** | ❌ **Trừu tượng hóa** (không điền mã CK, giá hay số TK cụ thể) | ✅ **Cụ thể 100%** (lấy từ TimescaleDB UAT `security_definition_v3`) |
+| **Phạm vi bao phủ** | 3 nhóm đại diện: `Happy`, `Validation`, `Edge` (3–6 scenarios) | Mở rộng gấp 3–5x: bao phủ đủ 4 sàn, các phiên, BVA (`min-1`, `max+1`), lỗi ORS (15–30 test cases) |
+| **Ngôn ngữ** | 100% Ngôn ngữ Nghiệp vụ (Zero Technical Noise) | Ngôn ngữ Nghiệp vụ + Thông số Kiểm thử khả thi (Status, Mã lỗi, Giá trị biên) |
+| **Đối tượng sử dụng** | PO, Stakeholders, DEV, QA (đồng thuận yêu cầu trên Jira) | QA, Automation Framework (Playwright/Pytest) & Squash TM |
 
 ---
 
-## 🚫 Anti-patterns (Tránh)
+## 🔄 4. Luồng Chuyển Hóa & Bàn Giao Giữa BA và QA
 
-### ❌ BA/PO viết quá chi tiết
-
-```markdown
-## 9. Acceptance Criteria (SAI)
-
-Scenario: Đặt lệnh LO thành công
-  Given người dùng đã đăng nhập với username "trader001"
-  And margin available = 100,000,000 VNĐ
-  When người dùng đặt lệnh LO mua "VNM" với giá 80,000 và khối lượng 100
-  Then lệnh được chấp nhận
+```text
+[BA/PO: /ba-refine hoặc /ba-spec]
+   ├── Xuất spec/refined.md (hoặc spec/final.md):
+   │     • Business Rules: [BR-01], [BR-02]...
+   │     • Clean Business Gherkin: Happy / Validation / Edge (không @tags, không data cứng)
+   └── Xuất spec/testability-manifest.json (danh sách phần tử UI Delta ① ② ③ + selector gợi ý)
+                     │
+                     ▼ (Handoff qua workspace/issues/{issueKey}/spec/)
+[QA/SDET: /qa-test-design]
+   ├── Bước 1: Tạo test/checklist.md (phân rã EP, BVA, ma trận đa sàn từ [BR-*] và AC)
+   ├── Bước 2: Truy vấn dữ liệu thật từ Metabase/TimescaleDB & /webhook/securities-rule-matrix
+   └── Bước 3: Sinh test/{issueKey}.feature (Executable Gherkin có @tags + Scenario Outline + Examples)
+                     │
+                     ▼
+[QA/SDET: /qa-squash-push & /qa-auto-design]
+   ├── Đồng bộ lên Squash TM Campaign
+   └── Kết hợp test/{issueKey}.feature + spec/testability-manifest.json + sdk-map.json ➔ Sinh code test POM
 ```
 
-**Vấn đề:** BA đã viết Gherkin → QA chỉ cần copy → Duplicate công việc
-
-**Sửa:** BA chỉ viết high-level checklist, để QA expand thành Gherkin
-
 ---
 
-### ❌ QA chỉ copy AC của BA
+## 🚫 5. Các Phản Mẫu Cần Tránh (Anti-Patterns)
 
-```gherkin
-Feature: Đặt lệnh LO (SAI)
-
-Scenario: AC1
-  Given người dùng có thể đặt lệnh LO với giá > 0
-  Then hệ thống kiểm tra margin trước khi cho phép đặt lệnh
-```
-
-**Vấn đề:** QA chỉ copy AC → Không có test data, không executable, không cover đủ
-
-**Sửa:** QA phải expand với test data cụ thể và cover đủ các trường hợp
-
----
-
-### ❌ QA tự quyết định thay đổi Business Rules
-
-```gherkin
-# BA viết: "Giá phải > 0"
-# QA tự đổi thành: "Giá phải >= 1000" (SAI)
-
-Scenario: Validation (SAI)
-  When người dùng đặt lệnh với giá 500
-  Then hệ thống từ chối vì giá < 1000
-```
-
-**Vấn đề:** QA thay đổi business rule (>0 thành >=1000) mà không hỏi BA
-
-**Sửa:** Nếu có thắc mắc → Feedback cho BA/PO, KHÔNG tự đoán
-
----
-
-## 🎯 Kết luận
-
-**BA/PO và QA KHÔNG overlap:**
-- BA viết **WHAT** (business rules, trường hợp chính)
-- QA viết **HOW TO TEST** (test scenarios chi tiết, cover đủ các trường hợp)
-
-**Transform ratio:** 1 AC item (BA) → 3-5 Gherkin scenarios (QA)
-
-**Feedback loop:** QA phát hiện AC mơ hồ → Feedback BA/PO → BA update `*-final.md` → QA đọc lại → Continue
-
----
-
-**Generated by:** Claude Sonnet 5  
-**Date:** 2026-08-30  
-**Version:** 1.0
+1. **❌ BA nhồi nhét `@tags`, `[AC-1.1]`, mã lỗi kỹ thuật hoặc dữ liệu cứng vào `refined.md`:**
+   - *Hậu quả:* Làm bẩn mô tả nghiệp vụ trên Jira và bị chặn ngay bởi cổng kiểm định `validate-ba-refine.js`.
+   - *Cách làm đúng:* BA giữ Gherkin ở mức hành vi nghiệp vụ trong sáng; phần `@tags` và bảng `Examples` đa sàn thuộc về file `.feature` của QA.
+2. **❌ QA chỉ copy-paste nguyên xi 3 Scenario của BA sang file `{issueKey}.feature`:**
+   - *Hậu quả:* Thiếu dữ liệu kiểm thử thực tế, thiếu kiểm thử biên (`min-1`, `max+1`) và vi phạm quy tắc Tham số hóa Đa sàn.
+   - *Cách làm đúng:* QA phải mở rộng mỗi quy tắc/AC của BA thành các `Scenario Outline` bao phủ đầy đủ các sàn và giá trị biên.
+3. **❌ QA tự ý suy diễn hoặc sửa đổi quy tắc nghiệp vụ khi thấy AC mơ hồ:**
+   - *Hậu quả:* Viết test sai lệch so với yêu cầu thực tế (vi phạm `grounding-contract.md`).
+   - *Cách làm đúng:* Khi phát hiện điểm mù trong đặc tả, gắn cờ `# NEEDS-SPEC` và kích hoạt `ba-interview-me` / phản hồi lại bước BA để cập nhật `spec/` trước.

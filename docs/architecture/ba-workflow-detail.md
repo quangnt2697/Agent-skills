@@ -1,27 +1,28 @@
-# Ranh giới BA/PO — Chi tiết
+# Ranh Giới & Quy Trình BA/PO — Chi Tiết
 
-> Tài liệu tham chiếu. Luật rút gọn nằm ở [CLAUDE.md](../../CLAUDE.md#3-personas--pipelines). File này chứa phần diễn giải chi tiết, lý do thiết kế, và các case đặc biệt.
+> Tài liệu tham chiếu chuyên sâu. Quy trình tổng quan nằm ở [AGENTS.md](../../AGENTS.md#3-các-quy-trình-pipeline) và danh mục đầy đủ 10 kỹ năng BA/PO nằm ở [CATALOG.md](../../CATALOG.md#3-danh-mục-kỹ-năng-skills-31-skills).
 
-### BA/PO: Import, Analyze, Clarify → `*-final.md`
+### BA/PO: Thu Thập, Phân Tích, Mài Giũa & Dựng Mockup → `spec/final.md` & `spec/refined.md`
 
-**Trách nhiệm:**
-- Import tài liệu từ Jira/Confluence (scan references, download files)
-- Phân tích gaps theo 3 loại: Thiếu / Mơ hồ / Xung đột
-- Phỏng vấn stakeholders làm rõ gaps (chỉ phỏng vấn khi có 🔴 Critical gap theo autonomy-contract.md)
-- Tổng hợp thành `*-final.md` với đầy đủ 13 sections
+**Trách nhiệm cốt lõi:**
+- Import tài liệu từ Jira/Confluence (quét liên kết, trích xuất từ khóa tiêu đề, tải tài liệu vào `source/refs/`)
+- Phân tích khoảng cách (gaps) theo 3 loại: Thiếu / Mơ hồ / Xung đột
+- Phỏng vấn làm rõ qua `ba-interview-me` (chỉ hỏi câu 🔴 Critical theo `autonomy-contract.md` cho tới khi đạt Confidence ≥ 90%)
+- Trực quan hóa sơ đồ quy trình/kiến trúc qua `ba-design-flowchart` và dựng Prod-Twin UI Mockup bám sát codebase qua `ba-design-mockup` (Fidelity Score ≥ 90%)
+- Xuất bản đặc tả chuẩn hóa (`spec/final.md` hoặc `spec/refined.md` + `spec/testability-manifest.json`) và đồng bộ lên Jira Description dạng ADF
 
-**Output:** `/project-root/workspace/issues/{issueKey}/spec/final.md`
+**Output:** `workspace/issues/{issueKey}/spec/final.md`, `spec/refined.md`, `spec/testability-manifest.json`, `spec/asis-inventory.*`, `spec/diagrams/`
 
-**Handoff to:**
-- QA: Section 9 (AC) + Section 5 (User Flow) + Section 8 (Edge Cases) → Transform thành Checklist + Gherkin
-- DEV: Section 8 (Business Rules) + Data Requirements + Dependencies → Transform thành Tech-Spec
+**Handoff sang các vai trò khác:**
+- **QA/SDET:** Nhận `spec/final.md` (hoặc `spec/refined.md`) + `spec/testability-manifest.json` → Chạy `/qa-test-design` sinh `test/checklist.md` & `test/{issueKey}.feature` và `/qa-auto-design` sinh code automation POM
+- **DEV:** Nhận Business Rules (`[BR-xx]`), UI Mockup đa trạng thái (`mockup-case-1..3.png`) và Acceptance Criteria → Thiết kế kỹ thuật và lập trình trên repo microservice
 
 **KHÔNG làm:**
-- ❌ Viết Tech-Spec, API Contract, Database Schema (do DEV/Architecture đảm nhiệm)
-- ❌ Viết mã nguồn kiểm thử tự động, Test Cases chi tiết với test data cụ thể (do QA đảm nhiệm)
-- ❌ Thiết kế đồ họa UI pixel-perfect trong Figma (nhưng trực tiếp dựng Prod-Twin UI Mockup bám sát codebase qua skill `ba-design-mockup` để kẹp vào đặc tả nghiệp vụ)
+- ❌ Viết Tech-Spec, API Contract, Database Schema, SQL (do DEV/Architecture đảm nhiệm)
+- ❌ Viết mã nguồn kiểm thử tự động, Test Cases thực thi chứa `@tags` hoặc test data cứng (do QA đảm nhiệm)
+- ❌ Thiết kế đồ họa UI tự do thoát ly codebase (mọi mockup UI bắt buộc đi qua `ba-design-mockup` bám sát `ui-component-map.json` và `asis-inventory.json`)
 
-**2 Skills chính:**
+**2 Cổng Điều Phối Đầu Vào Chính (Kết hợp cùng 8 kỹ năng bổ trợ trong `plugins/ba-po`):**
 
 #### 1. ba-spec — Import & Analyze Jira có requirements rõ ràng
 

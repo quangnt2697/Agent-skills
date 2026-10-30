@@ -1,7 +1,7 @@
-# Ai sở hữu loại test nào
+# Phân Quyền Sở Hữu Kiểm Thử & Đánh Giá Chất Lượng (Test Ownership)
 
-> Tài liệu tham chiếu, kèm ví dụ code. Bảng tổng kết ngắn gọn nằm ở
-> [CLAUDE.md](../../CLAUDE.md#tổng-kết-ranh-giới). File này chứa phần diễn giải chi tiết, lý do thiết kế, và các case đặc biệt.
+> Tài liệu tham chiếu kèm ví dụ minh họa. Bảng tổng kết ma trận trách nhiệm nằm ở
+> [AGENTS.md](../../AGENTS.md#ma-trận-trách-nhiệm-responsibility-matrix). File này giải thích chi tiết ranh giới giữa đội phát triển (DEV trên repo microservice) và các Personas tự động hóa trên nhánh `main` (**QA/SDET**, **Code Reviewer**, **Security Auditor**, **Web Performance Auditor**).
 
 ### Unit Test: Thuộc DEV
 
@@ -136,33 +136,32 @@ def step_impl(context):
 
 ---
 
-### Code Review: DEV self-review + QA review
+### Code Review: CR Multi-Axis Review (`cr-review-code-and-quality`) + QA Testability Review
 
-**2 rounds:**
+**2 góc nhìn bổ trợ trong `/cr-review`:**
 
-#### Round 1: DEV Self-Review
-- **Khi nào:** Sau khi code xong, trước khi commit
-- **Ai làm:** DEV tự review code của mình
+#### Góc nhìn 1: Code Reviewer Persona (Kiến trúc & Chất lượng Mã nguồn)
+- **Khi nào:** Sau khi code xong (application code hoặc test code), trước khi merge MR/PR
+- **Ai làm:** Code Reviewer persona (`code-reviewer.md`) hoặc DEV tự kiểm tra
+- **Focus (5 trục đánh giá):**
+  - Correctness (logic đúng với spec, không có lỗi tiềm ẩn?)
+  - Architecture & Clean Code (design rõ ràng, dễ đọc, tuân thủ quy ước?)
+  - Security & Data Integrity (không rò rỉ dữ liệu, validate đầu vào?)
+  - Performance (có N+1, memory leak hay bottleneck không?)
+- **Command:** `/cr-review` (hoặc `/cr-code-simplify` để giảm độ phức tạp mã nguồn/test mock)
+
+#### Góc nhìn 2: QA Review (Testability & Độ bao phủ kịch bản)
+- **Khi nào:** Trước khi merge MR hoặc khi review bộ test automation
+- **Ai làm:** QA review từ góc độ khả năng kiểm thử (testability) và độ phủ nghiệp vụ
 - **Focus:**
-  - Correctness (logic đúng không?)
-  - Readability (code dễ đọc không?)
-  - Architecture (design tốt không?)
-  - Performance (có bottleneck không?)
-- **Command:** `/cr-review` với persona=dev
+  - Test coverage (đã bao phủ đủ kịch bản từ `checklist.md` và `.feature` chưa?)
+  - Edge cases (có bỏ sót biên độ giá, phiên giao dịch, hay mã lỗi nào không?)
+  - Error handling & Observability (xử lý lỗi đúng chuẩn và đủ log để truy vết không?)
+- **Command:** `/cr-review` (tập trung trục QA Testability)
 
-#### Round 2: QA Review (Optional)
-- **Khi nào:** Sau DEV self-review, trước merge
-- **Ai làm:** QA review từ góc độ testability
-- **Focus:**
-  - Test coverage (đủ test chưa?)
-  - Edge cases (có miss scenario nào không?)
-  - Error handling (handle lỗi đúng không?)
-  - Logging (đủ log để debug không?)
-- **Command:** `/cr-review` với persona=qa
-
-**Không bắt buộc QA review mọi PR** — chỉ review:
-- Critical features (payment, auth, security)
-- Complex features (nhiều edge cases)
-- Bug fixes (verify fix đúng root cause)
+**Ưu tiên QA review kỹ các MR:**
+- Tính năng trọng yếu (đặt lệnh, thanh toán, xác thực, bảo mật)
+- Tính năng nghiệp vụ phức tạp (nhiều edge cases, đa sàn HSX/HNX/UPCOM)
+- Các bản vá lỗi (verify fix đúng root cause và có regression test đi kèm)
 
 ---

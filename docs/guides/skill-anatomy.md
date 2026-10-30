@@ -1,6 +1,6 @@
 # Cấu Phẫu Kỹ Năng (Skill Anatomy)
 
-Tài liệu này mô tả cấu trúc và định dạng chuẩn mực của các file kỹ năng (skill files) trong `agent-skills` theo nguyên lý **Progressive Disclosure (Lazy Loading 3 tầng)**.
+Tài liệu này mô tả cấu trúc và định dạng chuẩn mực của các file kỹ năng (`SKILL.md`) trong `agent-skills` theo nguyên lý **Progressive Disclosure (Lazy Loading 3 tầng)** và các quy tắc kiểm định của Gate 1 (`npm run validate:skills`).
 
 ## Vị Trí Lưu Trữ & Cấu Trúc Thư Mục
 
@@ -8,61 +8,69 @@ Mỗi skill nằm trong một thư mục riêng biệt bên trong `plugins/<plug
 
 ```text
 plugins/<plugin-name>/skills/<skill-name>/
-  ├── SKILL.md       # Bắt buộc: Level 1 (Metadata) & Level 2 (Body tinh gọn 50–100 dòng)
-  ├── assets/        # Tùy chọn: Level 3 (Templates khung sườn, script thực thi, dữ liệu mẫu)
-  └── references/    # Tùy chọn: Level 3 (Tài liệu logic, cẩm nang nghiệp vụ, checklist kiểm định)
+  ├── SKILL.md       # Bắt buộc: Level 1 (Metadata) & Level 2 (Body tinh gọn 50–120 dòng)
+  ├── assets/        # Tùy chọn: Level 3 (Templates khung sườn, scripts thực thi .js/.py/.sh, HTML shells, dữ liệu mẫu)
+  └── references/    # Tùy chọn: Level 3 (Tài liệu logic, cẩm nang nghiệp vụ, checklists kiểm định, từ điển JSON)
 ```
 
-- **`assets/` (Công cụ dùng ngay):** Chứa file mẫu (`.md`, `.json`, `.yaml`), script tự động (`.py`, `.js`, `.sh`), dữ liệu mock. Agent nạp vào để copy-paste hoặc chạy trực tiếp mà không cần phân tích tri thức.
-- **`references/` (Tài liệu nghiên cứu):** Chứa kiến thức nền tảng, cẩm nang chi tiết, checklist kiểm định, quy chuẩn nghiệp vụ (`.md`, `.txt`). Agent đọc để suy luận logic.
-- **Quy tắc vàng:** Tuyệt đối không để tài liệu tham chiếu dài hàng trăm dòng trong `SKILL.md`. Luôn tách sang `references/` để giữ `SKILL.md` dưới 120 dòng.
+- **`assets/` (Công cụ & Mẫu thực thi dùng ngay):** Chứa file mẫu (`.md`, `.json`, `.html`), script tự động (`.js`, `.py`, `.sh`), dữ liệu mock. Agent nạp vào để copy-paste hoặc chạy lệnh trực tiếp.
+- **`references/` (Tài liệu nghiên cứu & Quy chuẩn):** Chứa kiến thức nền tảng, cẩm nang chi tiết, checklist kiểm định, từ điển linh kiện hoặc quy chuẩn nghiệp vụ (`.md`, `.json`). Agent đọc để suy luận logic khi cần.
+- **Quy tắc vàng:** Tuyệt đối không để tài liệu tham chiếu dài hàng trăm dòng trong `SKILL.md`. Luôn tách sang `references/` để giữ `SKILL.md` tinh gọn (dưới 120 dòng). Không tạo các thư mục phi chuẩn như `templates/`, `scripts/`, `examples/`, `resources/` bên trong thư mục skill.
 
 ---
 
-## Định Dạng Của SKILL.md
+## Định Dạng Của `SKILL.md`
 
-### Level 1: Frontmatter (Bắt Buộc)
+### Level 1: YAML Frontmatter (Bắt Buộc)
 
 ```yaml
 ---
 name: skill-name-with-hyphens
-description: 1-2 câu ngắn gọn mô tả skill làm gì ở ngôi thứ ba. Không viết quy trình vào đây.
+description: 1-2 câu ngắn gọn mô tả skill làm gì ở ngôi thứ ba và khi nào KHÔNG dùng.
 trigger: Điều kiện kích hoạt cụ thể (khi user yêu cầu X, chạy lệnh /cmd, hoặc cung cấp tệp Y).
+disable-auto-invoke: true # Chỉ bật khi skill có tác dụng phụ ghi ra hệ thống ngoài (Jira, Squash, Git, Mattermost)
 ---
 ```
 
 **Quy tắc:**
-- `name`: Kebab-case tiếng Anh viết thường, trùng khớp với tên thư mục.
-- `description`: Ngắn gọn 1-2 câu, nêu rõ *Làm cái gì* và *Giải quyết bài toán gì*.
-- `trigger`: Khai báo tách biệt điều kiện kích hoạt cụ thể để Router của hệ thống nhận diện nhanh và chuẩn xác.
+- `name`: Kebab-case tiếng Anh viết thường, trùng khớp 100% với tên thư mục chứa skill.
+- `description`: Ngắn gọn 1–2 câu ở ngôi thứ ba, nêu rõ *Làm cái gì*, *Giải quyết bài toán gì* và *Phân biệt với skill lân cận*. Chứa các từ khóa thực tế người dùng hay gõ để bộ định tuyến (`npm run evals`) đạt tỷ lệ xếp hạng 1 ≥ 90%.
+- `trigger`: Khai báo tách biệt điều kiện kích hoạt cụ thể để Router nhận diện nhanh và chuẩn xác.
 
 ### Level 2: Body Tinh Gọn (Recommended Pattern)
 
-Phần thân bài của `SKILL.md` chỉ tải khi Agent đã nhận diện khớp Skill. Độ dài lý tưởng từ **50 đến 100 dòng**:
+Phần thân của `SKILL.md` chỉ được nạp vào ngữ cảnh khi Agent đã khớp nhu cầu với Skill đó. Độ dài lý tưởng từ **50 đến 120 dòng**:
 
 ```markdown
-# [Tên Kỹ Năng]
+# [Tên Kỹ Năng Tiếng Việt] (`<skill-name>`)
+
+> 🛡️ **Grounding (grounding-contract):** Mọi thông tin, assertion, endpoint, mã lỗi phải lấy từ nguồn thực tế (Jira/Spec/DB/Code); thiếu thì gắn `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG tự suy diễn. Chỉ công bố hoàn thành khi có bằng chứng thực (file tồn tại, lệnh exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG. Cấm sao chép số liệu từ ví dụ mẫu.
+
+## Input Bắt Buộc & Bằng Chứng Hoàn Thành
+- **Input bắt buộc:** `<Tham số hoặc đường dẫn file đầu vào trong workspace/issues/{issueKey}/>`.
+- **Bằng chứng hoàn thành:** `<File đầu ra tồn tại thực tế trên đĩa và script validator trả về exit code 0>`.
 
 ## 1. Khi nào dùng?
-- Danh sách các trường hợp áp dụng.
+- Danh sách các trường hợp áp dụng cụ thể.
 - **Khi KHÔNG sử dụng:** Các ngoại lệ và chỉ dẫn trỏ sang skill khác phù hợp hơn.
 
 ## 2. Quy trình thực hiện từng bước
 Tóm tắt ngắn gọn 3 - 5 bước hành động chính:
-- **Bước 1 (Khảo sát/Đầu vào):** Tiếp nhận dữ liệu, kiểm tra điều kiện tiên quyết.
-- **Bước 2 (Xử lý cốt lõi):** Các bước xử lý chính.
-- **Bước 3 (Định dạng & Thẩm định):** Tiêu chuẩn nghiệm thu trước khi bàn giao.
+- **Giai đoạn 1 (Khảo sát & Đầu vào):** Tiếp nhận dữ liệu, kiểm tra điều kiện tiên quyết.
+- **Giai đoạn 2 (Xử lý cốt lõi):** Các bước xử lý chính (trỏ sang tài liệu Level 3 khi cần).
+- **Giai đoạn 3 (Kiểm định & Bàn giao):** Chạy validator và ghi kết quả vào đúng 1 trong 5 thư mục chuẩn `workspace/issues/{issueKey}/{source,spec,tech,test,trace}/`.
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 - 🛠️ **Công cụ & Mẫu thực thi (assets/):**
-  - `assets/template_output.md`: Khung mẫu chuẩn.
-  - `assets/helper_script.py`: Script hỗ trợ.
+  - [template-output.md](assets/template-output.md): Khung mẫu chuẩn.
+  - [helper-script.js](assets/helper-script.js): Script hỗ trợ tự động hóa.
 - 📖 **Tài liệu nghiên cứu & Hướng dẫn (references/):**
-  - `references/detailed_guide.md`: Cẩm nang hướng dẫn chuyên sâu.
-  - `references/verification_checklist.md`: Checklist xác minh.
+  - [detailed-guide.md](references/detailed-guide.md): Cẩm nang hướng dẫn chuyên sâu.
+  - [verification-checklist.md](references/verification-checklist.md): Checklist xác minh.
 
 ## 4. Ví dụ mẫu (Few-shot Example)
-Bắt buộc có ít nhất 1 ví dụ định dạng chuẩn mong đợi:
+> ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
+
 - **Input:** `<Yêu cầu mẫu>`
 - **Output:**
   ```markdown
@@ -70,115 +78,68 @@ Bắt buộc có ít nhất 1 ví dụ định dạng chuẩn mong đợi:
   ```
 ```
 
-## Mục Đích Của Các Phần
+---
 
-### Tổng Quan (Overview)
-Lời giới thiệu ngắn gọn (elevator pitch) cho skill. Phải trả lời được câu hỏi: Skill này làm gì, và tại sao agent nên làm theo nó?
+## Mục Đích Của Các Phần Trọng Tâm
 
-### Khi Nào Sử Dụng (When to Use)
-Giúp agents và con người quyết định xem skill này có áp dụng cho task hiện tại hay không. Phải bao gồm cả các trigger tích cực ("Sử dụng khi X") và các trường hợp loại trừ tiêu cực ("KHÔNG dùng cho Y").
+### Khối Grounding & Input Bắt Buộc / Bằng Chứng Hoàn Thành
+Chốt chặn chống ảo giác (Anti-Hallucination) bắt buộc trên toàn bộ các skills thực thi. Giúp agent biết rõ: nếu thiếu đầu vào thì phải dừng và hỏi, không được tự bịa dữ liệu; chỉ được báo cáo hoàn thành khi file đầu ra thực sự tồn tại trên đĩa và vượt qua script kiểm định.
+
+### Khi Nào Sử Dụng & Khi KHÔNG Sử Dụng (Scope & Negative Scope)
+Giúp cả agent và người dùng phân định ranh giới rạch ròi giữa các skills gần nhau (ví dụ: khi nào dùng `ba-spec` vs khi nào dùng `ba-refine`; khi nào dùng `qa-test-design` vs `qa-auto-design`).
 
 ### Quy Trình Cốt Lõi (Core Process)
-Trái tim của skill. Đây là luồng công việc từng bước một (step-by-step) mà agent phải tuân theo. Phải cụ thể và có thể hành động được (actionable) — không đưa ra lời khuyên chung chung.
+Trái tim của skill — luồng công việc từng bước cụ thể và có thể hành động ngay (actionable):
+- **Tốt:** *"Chạy `node scripts/validators/validate-ba-refine.js workspace/issues/{issueKey}/spec/refined.md` và đảm bảo exit code = 0"*
+- **Kém:** *"Đảm bảo rằng tài liệu đặc tả có chất lượng tốt"*
 
-**Tốt:** "Chạy `npm test` và xác minh rằng tất cả các tests đều pass"
-**Kém:** "Đảm bảo rằng các tests hoạt động tốt"
+### Chống Ngụy Biện (Anti-Rationalization) & Cờ Đỏ (Red Flags)
+Ngăn chặn việc agent tự viện cớ để bỏ qua các bước bắt buộc (như tự ý dựng mockup khi chưa chạy `extract-asis-ui.js`, hoặc tự bịa giá chứng khoán khi chưa truy vấn TimescaleDB).
 
-### Những Sự Ngụy Biện Phổ Biến (Common Rationalizations)
-Đặc điểm khác biệt nhất của một skill được thiết kế tốt. Đây là những lời bào chữa mà agents thường dùng để bỏ qua các bước quan trọng, đi kèm với các phản bác. Chúng ngăn chặn việc agent tự viện cớ (rationalize) để trốn tránh việc tuân thủ quy trình.
+---
 
-Hãy nghĩ về tất cả những lần agent từng nói "Tôi sẽ thêm tests sau" hoặc "Cái này đơn giản quá không cần viết spec" — hãy đưa chúng vào đây kèm theo một lập luận phản bác thực tế.
+## Tài Liệu Tham Khảo Dùng Chung (`references/` Gốc) & Đóng Gói Plugin Độc Lập
 
-### Cờ Đỏ (Red Flags)
-Các dấu hiệu có thể quan sát được cho thấy skill đang bị vi phạm. Hữu ích trong quá trình code review và tự giám sát (self-monitoring).
+Các tài liệu tri thức dùng chung cho nhiều plugins — chẳng hạn như cẩm nang nghiệp vụ chứng khoán KRX [`references/securities-domain-rules.md`](../../references/securities-domain-rules.md) và từ điển schema [`references/timescale-schema.md`](../../references/timescale-schema.md) — được lưu tại thư mục `references/` ở gốc kho lưu trữ để đảm bảo **Single Source of Truth** (không bị trùng lặp hay lệch phiên bản giữa `ba-po`, `qa` và `fintech-data`).
 
-### Xác Minh (Verification)
-Các tiêu chí hoàn thành (exit criteria). Một checklist mà agent sử dụng để xác nhận rằng quy trình của skill đã hoàn tất. Mỗi hộp kiểm (checkbox) đều phải có thể xác minh được bằng bằng chứng (test output, build result, screenshot, v.v.).
+Khi bạn cần xuất một plugin độc lập để mang sang cài đặt cho một repo microservice khác, hãy chạy công cụ đóng gói tự động:
+```bash
+npm run plugin:export -- -p qa --tar
+```
+Script `scripts/release/export-plugin.js` sẽ tự động đóng gói kèm các tài liệu dùng chung trong `references/` và viết lại các đường dẫn tương đối để plugin xuất ra hoạt động độc lập 100% mà không có bất kỳ liên kết gãy nào.
 
-## Các File Hỗ Trợ (Supporting Files)
+---
 
-Chỉ tạo các file hỗ trợ khi:
-- Tài liệu tham khảo vượt quá 100 dòng (hãy giữ cho file SKILL.md chính tập trung)
-- Cần các công cụ code hoặc scripts
-- Checklists đủ dài để biện minh cho việc tách ra file riêng
+## Hiệu Suất Ngữ Cảnh (Context Efficiency) & Quy Ước Script
 
-Nên giữ các patterns và nguyên tắc ngay bên trong (inline) nếu chúng dưới 50 dòng.
+1. **Giữ `SKILL.md` tinh gọn (50–120 dòng):** Được kiểm soát ngân sách tự động qua Gate 9 (`npm run validate:tokens`).
+2. **Ưu tiên gọi CLI Script trong `assets/` hoặc `scripts/` hơn là nhúng code dài trong Markdown:** Việc chạy một script Node.js/Bash chỉ tiêu tốn token ở phần kết quả in ra (`stdout`), trong khi nhúng hàng trăm dòng code vào `SKILL.md` sẽ làm tốn token ở mọi lần nạp skill.
+3. **Quy ước viết Script thực thi (`assets/*.sh`, `assets/*.js`):**
+   - Với Bash script: dùng `#!/usr/bin/env bash` và `set -euo pipefail` để dừng ngay khi gặp lỗi (fail-fast).
+   - Luôn kiểm tra tham số đầu vào và trả về mã thoát (`exit code`) khác 0 khi thất bại để Agent nhận diện chính xác theo nguyên tắc *Evidence-or-Stop*.
+   - Mọi đường dẫn tới script trong `SKILL.md` đều được kiểm tra sự tồn tại tự động bởi Gate 5 (`npm run validate:refs`).
 
-Nếu một skill không cần các helpers dạng thực thi được (runnable helpers), đừng tạo một thư mục `scripts/` trống trơn chỉ để làm cho giống các skills khác. Các thư mục trống tạo ra sự nhiễu loạn mà không thay đổi cách skill hoạt động.
+---
 
-## Tài Liệu Tham Khảo Dùng Chung (Shared References)
+## Tham Chiếu Chéo Giữa Các Kỹ Năng (Cross-Skill References)
 
-Các checklists được sử dụng bởi nhiều hơn một skill — như testing, security, performance, accessibility, definition-of-done — sẽ được lưu ở thư mục `references/` ở gốc kho lưu trữ, cố ý *không* nằm trong bất kỳ thư mục skill nào.
-
-Đây là một sự lựa chọn thiết kế ở cấp độ gói (pack-level). Mặc dù chuẩn Agent Skills mô tả mỗi skill như một thư mục tự chứa độc lập (self-contained), nhưng có nhiều skills ở đây cùng trỏ đến chung một checklists. Nếu để chung vào một thư mục, chúng ta sẽ phải đối mặt với một trong hai lựa chọn: sao chép (copy) checklist đó vào mọi skill sử dụng nó, hoặc chọn một skill để "sở hữu" nó và bắt các skills khác chọc ngang sang thư mục đó. Cả hai cách này đều sẽ bị sai lệch (drift) theo thời gian. Một bản copy duy nhất ở thư mục gốc (repo-root) sẽ luôn giữ được vai trò là nguồn sự thật duy nhất (source of truth).
-
-Sự đánh đổi ở đây là tính di động (portability): việc cài đặt toàn bộ repo (như đối với Claude Code marketplace plugin) sẽ mang theo cả thư mục `references/`, nhưng nếu cài đặt trên từng skill bằng cách chỉ copy thư mục `skills/<name>/`, bản sao ở thư mục gốc sẽ bị bỏ lại, và các links tham chiếu sẽ bị gãy. Lỗ hổng này đang được theo dõi ở [#361](https://github.com/addyosmani/agent-skills/issues/361).
-
-Quy ước hiện tại: các tài liệu chỉ dùng cho đúng một skill thì để dưới dạng file hỗ trợ (supporting file) bên trong thư mục của skill đó; các tài liệu dùng chung cho nhiều skills thì để ở `references/`.
-
-## Hiệu Suất Ngữ Cảnh (Context Efficiency)
-
-Các skills chỉ được load khi cần (load on demand): chỉ có tên và description của skill nằm trong ngữ cảnh lúc khởi động. Toàn bộ `SKILL.md` chỉ được load khi một agent quyết định rằng skill đó liên quan. Để giữ cho việc tải này tiết kiệm chi phí:
-
-- **Giữ `SKILL.md` dưới 500 dòng.** Chuyển các tài liệu tham khảo chi tiết vào các file hỗ trợ.
-- **Viết descriptions thật cụ thể.** Một description chính xác giúp agent kích hoạt skill đúng lúc và bỏ qua nó khi không cần thiết.
-- **Sử dụng tiết lộ lũy tiến (progressive disclosure).** Trỏ tham chiếu tới các file hỗ trợ, và chúng chỉ được đọc khi workflow chạy đến bước cần thiết.
-- **Ưu tiên scripts hơn là inline code.** Việc thực thi một script không tốn tài nguyên context; chỉ có đầu ra (output) của nó mới tốn. Các block code inline (inline code blocks) sẽ bị tính phí token mỗi khi được load.
-- **Giữ các file references ở độ sâu 1 tầng.** Dẫn link trực tiếp từ `SKILL.md` tới các file hỗ trợ thay vì đi qua (chaining) các tài liệu trung gian.
-
-## Yêu Cầu Về Script
-
-Khi một skill cung cấp các helpers dạng thực thi được dưới thư mục `scripts/`, mỗi script phải tuân theo các quy ước sau:
-
-- Dùng `#!/bin/bash` shebang.
-- Dùng `set -e` để có hành vi fail-fast (lỗi là dừng).
-- Ghi các messages trạng thái vào stderr: `echo "Message" >&2`.
-- Ghi output để máy đọc được (JSON) vào stdout.
-- Bao gồm một cleanup trap (bẫy dọn dẹp) cho các file tạm.
-- Tham chiếu đường dẫn script theo dạng `plugins/<plugin-name>/skills/<skill-name>/scripts/<script>.sh` (tương đối so với repo).
-
-## Nguyên Tắc Viết (Writing Principles)
-
-1. **Quy trình quan trọng hơn kiến thức (Process over knowledge).** Skills là các workflows, không phải tài liệu tham khảo. Cần các bước, không phải các sự thật.
-2. **Cụ thể thay vì chung chung.** "Chạy `npm test`" ăn đứt "hãy xác minh xem các tests có hoạt động không".
-3. **Bằng chứng quan trọng hơn sự giả định.** Mọi hộp kiểm xác minh (verification checkbox) đều cần có bằng chứng.
-4. **Chống ngụy biện (Anti-rationalization).** Bất kỳ bước nào mà agent có xu hướng muốn bỏ qua đều cần phải có một lập luận phản bác trong bảng rationalizations.
-5. **Tiết lộ lũy tiến (Progressive disclosure).** SKILL.md chính là điểm nhập (entry point). Các file hỗ trợ chỉ được load khi cần.
-6. **Ý thức về Token (Token-conscious).** Mọi section đều phải biện minh được sự có mặt của nó. Nếu xóa nó đi mà không làm thay đổi hành vi của agent, hãy xóa nó.
-
-## Quy Ước Đặt Tên (Naming Conventions)
-
-- Thư mục skill: `viet-thuong-va-gach-ngang` (lowercase-hyphen-separated)
-- File skill: `SKILL.md` (luôn luôn viết hoa toàn bộ)
-- Các file hỗ trợ: `viet-thuong-va-gach-ngang.md`
-- Các tài liệu dùng chung: lưu trữ ở thư mục `references/` ở gốc repo, không nằm trong các thư mục skill (xem [Tài Liệu Tham Khảo Dùng Chung](#shared-references) để hiểu tại sao).
-- Các tài liệu dùng riêng cho skill: một tài liệu hỗ trợ duy nhất có thể được thả lỏng dưới dạng file nằm trực tiếp trong thư mục skill (mục `Các file hỗ trợ` ở bên trên); khi có nhiều docs liên quan cùng đi liền với skill, quy ước đang thành hình cho các skill tự chứa (self-contained) và có thể phân phối được là nhóm chúng lại trong một thư mục `references/` nằm bên trong thư mục skill đó, để bản thân skill tự mang theo các tài liệu hỗ trợ của chính nó.
-
-## Tham Chiếu Chéo Giữa Các Skill (Cross-Skill References)
-
-Tham chiếu các skills khác bằng tên:
+Khi một kỹ năng cần phối hợp với kỹ năng khác trong hệ sinh thái, hãy gọi đúng tên kỹ năng đó thay vì sao chép lại hướng dẫn:
 
 ```markdown
-Hãy làm theo skill `dev-test-driven-development` để viết tests.
-Nếu build bị vỡ, hãy dùng skill `dev-debugging`.
+- Nếu phát hiện yêu cầu còn điểm mù 🔴 Critical, hãy kích hoạt skill `ba-interview-me`.
+- Nếu tính năng có thay đổi màn hình giao diện (WEB/APP), hãy ủy quyền cho skill `ba-design-mockup`.
+- Sau khi hoàn tất `spec/final.md`, bàn giao sang skill `qa-test-design` để thiết kế Checklist và BDD Gherkin.
 ```
 
-Đừng sao chép lặp lại (duplicate) nội dung giữa các skills — hãy tham chiếu và liên kết (link) tới chúng.
+---
 
-Bắt buộc:
+## Checklist Kiểm Định Bắt Buộc Cho Mọi `SKILL.md`
 
-- Phải có file `plugins/<plugin-name>/skills/<skill-name>/SKILL.md`
-- Phải có frontmatter YAML hợp lệ với trường `name`, `description`, và `trigger`
-- Nếu skill có tác dụng phụ lên hệ thống bên ngoài (đẩy lên Jira/Squash, đồng bộ/pull git, gửi Mattermost, chạy pipeline): bắt buộc khai báo `disable-auto-invoke: true`. Skill chỉ đọc dữ liệu và ghi file cục bộ trong `workspace/` không thuộc diện này
-- Phải có mục `## Input Bắt Buộc & Bằng Chứng Hoàn Thành` (input cần có, hành vi khi thiếu, và bằng chứng kiểm chứng được); linter cảnh báo khi thiếu
-- Phải có mục `Khi KHÔNG sử dụng` (Negative scope) để phân định ranh giới rõ ràng
-- Phải tuân thủ Hợp đồng Bắt rễ Dữ liệu: trích dẫn [grounding-contract.md](../../../../.agents/rules/grounding-contract.md)
-- Mọi mục ví dụ mẫu (Few-shot) bắt buộc có cảnh báo minh họa chống sao chép số liệu giả
-- Mọi quy trình thực thi bắt buộc tuân thủ Evidence-or-Stop (chỉ công bố xong khi có exit code 0 hoặc file thật trên đĩa)
-
-Khuyên dùng:
-
-- Luồng các sections tiêu chuẩn như đã minh họa ở trên
-- Các tiêu đề (headings) tương đương như `Cách Nó Hoạt Động (How It Works)`, `Quy Trình Cốt Lõi (Core Process)`, hay `Quy Trình (Workflow)` khi chúng có cảm giác tự nhiên hơn cho skill đó
-- Chỉ dùng các file hỗ trợ (Supporting files) khi chúng thực sự giúp giữ cho `SKILL.md` chính được tập trung
-- Đánh giá Confidence dựa trên tỷ lệ bằng chứng thực tế (không chấm cảm tính)
+- [ ] File nằm tại `plugins/<plugin-name>/skills/<skill-name>/SKILL.md`
+- [ ] YAML frontmatter hợp lệ gồm `name`, `description`, `trigger` (và `disable-auto-invoke: true` nếu có tác dụng phụ bên ngoài)
+- [ ] Có khối trích dẫn `Grounding (grounding-contract)`
+- [ ] Có mục `## Input Bắt Buộc & Bằng Chứng Hoàn Thành`
+- [ ] Có mục phân định rõ `Khi KHÔNG sử dụng`
+- [ ] Mọi đường dẫn output tuân thủ đúng 5 thư mục chuẩn `workspace/issues/{issueKey}/{source,spec,tech,test,trace}/`
+- [ ] Mục Ví dụ mẫu (Few-shot) có dòng cảnh báo chống sao chép số liệu giả (*Few-Shot Quarantine*)
+- [ ] Có file đánh giá tương ứng tại `evals/cases/<skill-name>.json` và pass 100% khi chạy `npm test`
