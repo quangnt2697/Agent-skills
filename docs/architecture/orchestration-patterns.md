@@ -1,208 +1,182 @@
-# Orchestration Patterns
+# Các Mẫu Điều Phối Tác Tử (Orchestration Patterns)
 
-Reference catalog of agent orchestration patterns this repo endorses, plus anti-patterns to avoid. Read this before adding a new slash command that coordinates multiple personas, or before introducing a new persona that "wraps" existing ones.
+Danh mục tham chiếu các mẫu điều phối đa tác tử (agent orchestration patterns) được kho lưu trữ này chuẩn hóa và khuyến nghị sử dụng, kèm theo các phản mẫu (anti-patterns) cần tránh. Hãy đọc kỹ tài liệu này trước khi thêm một slash command mới phối hợp nhiều vai trò (personas), hoặc trước khi tạo một persona mới "bọc" các persona đã có.
 
-The governing rule: **the user (or a slash command) is the orchestrator. Personas do not invoke other personas.** Skills are mandatory hops inside a persona's workflow.
+Quy tắc cốt lõi: **Người dùng (hoặc một slash command) chính là bộ điều phối (orchestrator). Các Persona không tự ý gọi chéo Persona khác.** Các kỹ năng (skills) là các bước thực thi chuyên môn bên trong luồng công việc của một Persona.
 
 ---
 
-## Endorsed patterns
+## Các Mẫu Điều Phối Được Khuyến Nghị (Endorsed Patterns)
 
-### 1. Direct invocation (no orchestration)
+### 1. Gọi Trực Tiếp (Direct Invocation — Không điều phối trung gian)
 
-Single persona, single perspective, single artifact. The default and the cheapest option.
+Một persona duy nhất, một góc nhìn chuyên môn duy nhất, một sản phẩm đầu ra (artifact) duy nhất. Đây là phương án mặc định và tiết kiệm chi phí nhất.
 
-```
+```text
 user → code-reviewer → report → user
 ```
 
-**Use when:** the work is one perspective on one artifact and you can describe it in one sentence.
+**Khi nào dùng:** Khi công việc chỉ cần đánh giá hoặc xử lý từ một góc độ chuyên môn trên một đối tượng cụ thể và có thể diễn đạt gọn trong một câu.
 
-**Examples:**
-- "Review this PR" → `code-reviewer`
-- "Find security issues in `auth.ts`" → `security-auditor`
-- "What tests are missing for the checkout flow?" → `qa`
+**Ví dụ:**
+- *"Review Merge Request này"* → `code-reviewer`
+- *"Rà soát lỗ hổng bảo mật trong `auth.ts`"* → `security-auditor`
+- *"Thiết kế kịch bản kiểm thử cho luồng đặt lệnh"* → `qa`
 
-**Cost:** one round trip. The baseline you should always compare orchestrated patterns against.
-
----
-
-### 2. Single-persona slash command
-
-A slash command that wraps one persona with the project's skills. Saves the user from re-explaining the workflow every time.
-
-```
-/cr-review → code-reviewer (with cr-review-code-and-quality skill) → report
-```
-
-**Use when:** the same single-persona invocation happens repeatedly with the same setup.
-
-**Examples in this repo:** `/cr-review`, `/dev-unit-test`, `/cr-code-simplify`.
-
-**Cost:** same as direct invocation. The slash command is just a saved prompt.
-
-**Anti-signal:** if the slash command's body is mostly "decide which persona to call," delete it and let the user call the persona directly.
+**Chi phí:** Một lượt gọi duy nhất (1 round trip). Đây là mức chuẩn cơ sở (baseline) để so sánh hiệu quả với mọi mẫu điều phối phức tạp hơn.
 
 ---
 
-### 3. Parallel fan-out with merge
+### 2. Slash Command Đơn Vai Trò (Single-Persona Slash Command)
 
-Multiple personas operate on the same input concurrently, each producing an independent report. A merge step (in the main agent's context) synthesizes them into a single decision.
+Một lệnh tắt (slash command) đóng gói sẵn một persona cùng với kỹ năng chuyên biệt của dự án. Giúp người dùng không phải giải thích lại quy trình ở mỗi lần gọi.
 
-```
-                    ┌─→ code-reviewer    ─┐
-/dev-audit → fan out ───┼─→ security-auditor ─┤→ merge → go/no-go + rollback
-                    └─→ qa               ─┘
+```text
+/cr-review → code-reviewer (với kỹ năng cr-review-code-and-quality) → report
 ```
 
-**Use when:**
-- The sub-tasks are genuinely independent (no shared mutable state, no ordering dependency)
-- Each sub-agent benefits from its own context window
-- The merge step is small enough to stay in the main context
-- Wall-clock latency matters
+**Khi nào dùng:** Khi cùng một thao tác gọi persona lặp đi lặp lại thường xuyên với cùng một cấu hình và quy trình chuẩn.
 
-**Examples in this repo:** `/dev-audit`.
+**Ví dụ trong repo này:** `/ba-spec`, `/ba-refine`, `/qa-test-design`, `/cr-review`, `/cr-code-simplify`, `/sm-daily-standup`.
 
-**Cost:** N parallel sub-agent contexts + one merge turn. Higher than direct invocation, but faster wall-clock and produces better reports because each sub-agent stays focused on its single perspective.
+**Chi phí:** Tương đương với gọi trực tiếp. Slash command thực chất là một bản prompt chuẩn hóa được lưu sẵn.
 
-**Validation checklist before adopting this pattern:**
-- [ ] Can I run all sub-agents at the same time without ordering issues?
-- [ ] Does each persona produce a different *kind* of finding, not just the same finding from a different angle?
-- [ ] Will the merge step fit in the main agent's remaining context?
-- [ ] Is the user's wait time long enough that parallelism is actually noticeable?
-
-If any answer is "no," fall back to direct invocation or a single-persona command.
+**Dấu hiệu cảnh báo (Anti-signal):** Nếu nội dung của slash command chủ yếu chỉ là *"hãy suy nghĩ xem nên gọi persona nào"*, hãy xóa nó đi và để người dùng gọi trực tiếp persona cần thiết.
 
 ---
 
-### 4. Sequential pipeline as user-driven slash commands
+### 3. Phân Nhánh Song Song & Hợp Nhất (Parallel Fan-Out with Merge)
 
-The user runs slash commands in a defined order, carrying context (or commit history) between them. There is no orchestrator agent — the user IS the orchestrator.
+Nhiều personas cùng xử lý một đầu vào đồng thời (song song), mỗi persona sinh ra một báo cáo độc lập theo chuyên môn của mình. Sau đó một bước hợp nhất (nằm trong ngữ cảnh của agent chính) sẽ tổng hợp lại thành quyết định cuối cùng.
 
+```text
+                     ┌─→ code-reviewer    ─┐
+/e2e-audit → fan out ┼─→ security-auditor ─┤→ merge → quyết định Go/No-Go + phương án rollback
+                     └─→ qa               ─┘
 ```
-user runs:  /dev-tech-spec  →  /dev-plan  →  /dev-build  →  /dev-unit-test  →  /cr-review
-```
 
-**Use when:** the workflow has dependencies (each step needs the previous step's output) and human judgment between steps adds value.
+**Khi nào dùng:**
+- Các tác vụ con thực sự độc lập với nhau (không dùng chung trạng thái biến đổi, không phụ thuộc thứ tự trước sau).
+- Mỗi subagent được hưởng lợi khi có cửa sổ ngữ cảnh (context window) riêng biệt, không bị nhiễu bởi tiêu chí của vai trò khác.
+- Bước hợp nhất đủ gọn để xử lý ngay trong ngữ cảnh của agent chính.
+- Cần tối ưu tổng thời gian chờ đợi thực tế (wall-clock latency).
 
-**Examples in this repo:** the entire DEFINE → PLAN → BUILD → VERIFY → REVIEW lifecycle.
+**Chi phí:** $N$ ngữ cảnh subagent chạy song song + 1 lượt tổng hợp. Tốn nhiều token hơn gọi đơn lẻ, nhưng thời gian phản hồi thực tế nhanh và chất lượng báo cáo sâu sắc hơn vì mỗi subagent chỉ tập trung 100% vào một lăng kính chuyên môn.
 
-**Cost:** one sub-agent context per step. Free for the orchestration layer because there is no orchestrator agent.
+**Checklist thẩm định trước khi áp dụng mẫu này:**
+- [ ] Có thể chạy đồng thời tất cả các subagents mà không gặp xung đột ghi file hay phụ thuộc thứ tự không?
+- [ ] Mỗi persona có tạo ra một *loại phát hiện* khác biệt thực sự không (hay chỉ nói lại cùng một ý bằng từ ngữ khác)?
+- [ ] Bước tổng hợp kết quả có vừa vặn trong cửa sổ ngữ cảnh còn lại của agent chính không?
+- [ ] Thời gian chờ của người dùng có đủ dài để việc chạy song song mang lại lợi ích rõ rệt không?
 
-**Why not automate it:** an LLM "lifecycle orchestrator" would (a) lose nuance between steps because it has to summarize for hand-off, (b) skip the human checkpoints that catch wrong-direction work early, and (c) double the token cost via paraphrasing turns.
+Nếu bất kỳ câu trả lời nào là *"Không"*, hãy quay về mẫu gọi trực tiếp hoặc Slash Command đơn vai trò.
 
 ---
 
-### 5. Research isolation (context preservation)
+### 4. Chuỗi Pipeline Tuần Tự Do Người Dùng Điều Khiển (Sequential Pipeline)
 
-When a task requires reading large amounts of material that shouldn't pollute the main context, spawn a research sub-agent that returns only a digest.
+Người dùng chủ động chạy các slash commands theo một trình tự xác định, truyền ngữ cảnh thông qua các file artifacts chuẩn trong `workspace/issues/{issueKey}/`. Không có một "agent điều phối trung gian" nào đứng giữa — chính người dùng (hoặc pipeline định sẵn với các cổng kiểm tra tất định) là người điều phối.
 
+```text
+Người dùng chạy:  /ba-spec  →  /qa-test-design  →  /qa-auto-design  →  /qa-run-test
 ```
-main agent → research sub-agent (reads 50 files) → digest → main agent continues
-```
 
-**Use when:**
-- The main session needs to stay focused on a downstream task
-- The investigation result is much smaller than the input it consumes
-- The decision quality benefits from the main agent having room to think after
+**Khi nào dùng:** Khi quy trình có tính phụ thuộc tuần tự (bước sau cần sản phẩm đầu ra đã được kiểm duyệt của bước trước) và sự phán đoán/phê duyệt của con người giữa các bước mang lại giá trị kiểm soát chất lượng cao.
 
-**Examples:** "Find every call site of this deprecated API across the monorepo," "Summarize what these 30 ADRs say about caching."
+**Ví dụ trong repo này:** Chuỗi BA Pipeline (`/ba-spec` hoặc `/ba-refine` với Gate 1 & Gate 2) chuyển giao sang QA Pipeline (`/qa-test-design` → `/qa-auto-design` → `/qa-run-test`).
 
-**Cost:** one isolated sub-agent context. Worth it any time the alternative is loading hundreds of files into the main context.
+**Chi phí:** Một ngữ cảnh cho mỗi bước. Chi phí tầng điều phối bằng 0 vì không cần nuôi một agent trung gian chỉ để đọc đi đọc lại.
 
-**On Claude Code, use the built-in `Explore` subagent** rather than defining a custom research persona. `Explore` runs on Haiku, is denied write/edit tools, and is purpose-built for this pattern. Define a custom research subagent only when `Explore` doesn't fit (e.g. you need a domain-specific system prompt the model wouldn't infer).
+**Tại sao không để một LLM tự động gọi nối tiếp không cần cổng chặn:** Một "siêu agent điều phối" chạy tự do thường (a) làm rơi rớt chi tiết nghiệp vụ quan trọng khi tự tóm tắt để truyền giữa các bước, (b) bỏ qua các cổng phê duyệt (Approval Gates) của con người khiến sai sót ở bước đặc tả lan truyền sang tận bước viết code test, và (c) làm tăng gấp đôi chi phí token do phải diễn giải lại kết quả ở mỗi bước chuyển tiếp.
 
 ---
 
-## Claude Code compatibility
+### 5. Cách Ly Nghiên Cứu Để Bảo Toàn Ngữ Cảnh (Research Isolation)
 
-This catalog is harness-agnostic, but most readers will run it on Claude Code. Here's how each pattern maps onto Claude Code's primitives — and where the platform enforces our rules for us.
+Khi một tác vụ đòi hỏi phải đọc và quét một lượng lớn tài liệu hoặc mã nguồn mà nếu nạp thẳng sẽ làm tràn hoặc làm loãng ngữ cảnh của phiên làm việc chính, hãy tách riêng một subagent nghiên cứu (chỉ đọc) để nó trả về bản tóm tắt tinh gọn (digest).
 
-### Where personas live
+```text
+main agent → research sub-agent (đọc 50 files codebase) → bản tóm tắt (digest) → main agent tiếp tục xử lý
+```
 
-Plugin subagents go in `agents/` at the plugin root. This repo is a plugin (`.claude-plugin/plugin.json`), so `agents/code-reviewer.md`, `agents/security-auditor.md`, and `agents/qa.md` are auto-discovered when the plugin is enabled. No path configuration needed.
+**Khi nào dùng:**
+- Phiên làm việc chính cần giữ sự tập trung cao độ cho tác vụ thiết kế/triển khai phía sau.
+- Kết quả đúc kết nhỏ gọn hơn rất nhiều so với khối lượng dữ liệu thô phải đọc.
+- Chất lượng quyết định của agent chính tốt hơn khi cửa sổ ngữ cảnh còn nhiều khoảng trống.
+
+**Ví dụ:** *"Tìm toàn bộ các nơi gọi API đặt lệnh cũ trên khắp monorepo"*, *"Quét cây component UI để trích xuất danh sách linh kiện AS-IS"*.
+
+**Chi phí:** Một ngữ cảnh subagent cô lập. Rất đáng giá khi phương án thay thế là phải nhồi hàng trăm file vào phiên làm việc chính.
+
+**Trên Claude Code / Antigravity:** Hãy ưu tiên dùng subagent `research` / `Explore` dựng sẵn (chế độ chỉ đọc — read-only, tốc độ cao) thay vì tự định nghĩa lại một persona nghiên cứu mới, trừ khi bạn cần nạp sẵn một bộ quy tắc domain đặc thù.
+
+---
+
+## Tương Thích Với Claude Code & Antigravity
+
+Danh mục này được thiết kế độc lập với nền tảng, nhưng dưới đây là cách từng mẫu ánh xạ trực tiếp vào các cơ chế thực thi của Claude Code và Antigravity — cũng như các quy tắc được nền tảng cưỡng chế tự động.
+
+### Vị Trí Lưu Trữ Personas
+
+Các subagent đại diện cho từng vai trò nằm trong thư mục `plugins/<plugin-name>/agents/` (ví dụ: `plugins/ba-po/agents/ba-po.md`, `plugins/qa/agents/qa.md`, `plugins/code-reviewer/agents/code-reviewer.md`). Khi plugin được kích hoạt, hệ thống sẽ tự động nhận diện mà không cần cấu hình đường dẫn thủ công.
 
 ### Subagents vs. Agent Teams
 
-Claude Code has two parallelism primitives. Pattern 3 (parallel fan-out with merge) maps to **subagents**. If you need teammates that talk to each other, use **Agent Teams** instead.
+Claude Code cung cấp hai cơ chế chạy song song: Mẫu số 3 (Phân nhánh song song & Hợp nhất) ánh xạ vào **Subagents**. Nếu bạn cần các tác tử thảo luận và phản biện trực tiếp với nhau, hãy dùng **Agent Teams**.
 
-|              | Subagents                                        | Agent Teams                                                      |
-|--------------|--------------------------------------------------|------------------------------------------------------------------|
-| Coordination | Main agent fans out, sub-agents only report back | Teammates message each other, share a task list                  |
-| Context      | Own context window per subagent                  | Own context window per teammate                                  |
-| When to use  | Independent tasks producing reports              | Collaborative work needing discussion                            |
-| Status       | Stable                                           | Experimental — requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
-| Cost         | Lower                                            | Higher — each teammate is a separate Claude instance             |
+| Tiêu chí | Subagents | Agent Teams |
+|---|---|---|
+| **Cơ chế phối hợp** | Agent chính phân việc, các subagent chỉ báo cáo kết quả về agent chính | Các thành viên (teammates) nhắn tin trực tiếp cho nhau, dùng chung bảng công việc |
+| **Ngữ cảnh (Context)** | Cửa sổ ngữ cảnh riêng cho từng subagent | Cửa sổ ngữ cảnh riêng cho từng thành viên |
+| **Khi nào sử dụng** | Các tác vụ độc lập tạo báo cáo riêng biệt | Công việc phức tạp cần tranh biện, đối chiếu giả thuyết |
+| **Trạng thái** | Ổn định (Stable) | Thử nghiệm (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) |
+| **Chi phí** | Thấp hơn | Cao hơn — mỗi thành viên là một phiên Claude độc lập |
 
-**The personas in this repo work in both modes.** When spawned as subagents (e.g. by `/dev-audit`), they report findings to the main session. When spawned as teammates (`Spawn a teammate using the security-auditor agent type…`), they can challenge each other's findings directly. The persona definition is the same; only the spawning context changes.
+**Các persona trong kho lưu trữ này hoạt động tốt ở cả hai chế độ.** Khi được gọi như subagent, chúng báo cáo phát hiện về phiên chính. Khi được khởi tạo như thành viên trong đội (Agent Team), chúng có thể chất vấn và kiểm chứng chéo kết quả của nhau.
 
-One subtlety: the `skills` and `mcpServers` frontmatter fields in a persona are honored when it runs as a subagent but **ignored when it runs as a teammate** — teammates load skills and MCP servers from your project and user settings, the same as a regular session. If a persona depends on a specific skill or MCP server being loaded, configure it at the session level so it's available in both modes.
+### Các Quy Tắc Được Nền Tảng Cưỡng Chế Tự Động
 
-### Platform-enforced rules
+Hai quy tắc quan trọng trong danh mục này được chính nền tảng cưỡng chế ở tầng hệ thống:
+- **"Subagent không thể tự sinh ra subagent con khác"**: Phản mẫu B (persona gọi persona) và Phản mẫu D (cây persona đa tầng) bị chặn ngay từ kiến trúc hệ thống.
+- **"Không lồng ghép đội trong đội (No nested teams)"**: Các thành viên trong đội không thể tự tạo đội con mới.
 
-Two rules in this catalog aren't just convention — Claude Code enforces them:
+### Các Subagent Dựng Sẵn Cần Biết
 
-- **"Subagents cannot spawn other subagents"** (verbatim from the docs). Anti-pattern B (persona-calls-persona) and Anti-pattern D (deep persona trees) cannot exist on Claude Code by construction.
-- **"No nested teams"** — teammates cannot spawn their own teams. Same anti-patterns blocked at the team level.
+Trước khi tạo mới một subagent tùy chỉnh, hãy kiểm tra xem các subagent dựng sẵn của nền tảng đã đáp ứng được nhu cầu chưa:
 
-This means you can adopt the patterns in this catalog without worrying about contributors accidentally building the anti-patterns. They'll just fail to load.
+| Subagent dựng sẵn | Mục đích sử dụng |
+|---|---|
+| `Explore` / `research` | Tìm kiếm và phân tích codebase ở chế độ chỉ đọc (Read-only). Dùng cho Mẫu số 5 (Cách ly nghiên cứu). |
+| `Plan` | Nghiên cứu chỉ đọc trong chế độ lập kế hoạch. |
+| `general-purpose` / `self` | Các tác vụ nhiều bước cần cả khám phá lẫn chỉnh sửa file trong ngữ cảnh tách biệt. |
 
-### Built-in subagents to know about
+### Khởi Tạo Nhiều Subagents Song Song
 
-Before defining a custom subagent, check whether one of these covers the role:
-
-| Built-in          | Purpose                                                                              |
-|-------------------|--------------------------------------------------------------------------------------|
-| `Explore`         | Read-only codebase search and analysis. Use this for Pattern 5 (research isolation). |
-| `Plan`            | Read-only research during plan mode.                                                 |
-| `general-purpose` | Multi-step tasks needing both exploration and modification.                          |
-
-Don't redefine these. Layer your specialist personas (code-reviewer, security-auditor, qa) on top of them.
-
-### Frontmatter restrictions for plugin agents
-
-Plugin subagents do **not** support the `hooks`, `mcpServers`, or `permissionMode` frontmatter fields — these are silently ignored. If a future persona needs any of those, the user must copy the file into `.claude/agents/` or `~/.claude/agents/` instead.
-
-The fields that DO work in plugin agents are: `name`, `description`, `tools`, `disallowedTools`, `model`, `maxTurns`, `skills`, `memory`, `background`, `effort`, `isolation`, `color`, `initialPrompt`. Use `model` per-persona if you want to optimize cost (e.g. Haiku for `qa` coverage scans, Sonnet for `code-reviewer`, Opus for `security-auditor`).
-
-### Spawning multiple subagents in parallel
-
-In Claude Code, parallel fan-out (Pattern 3) requires issuing **multiple Agent tool calls in a single assistant turn**. Sequential turns serialize execution. `/dev-audit` calls this out explicitly. Any new orchestrator command should do the same.
+Để thực thi Mẫu số 3 (Phân nhánh song song) thực sự chạy đồng thời, agent chính **bắt buộc phải phát ra nhiều lệnh gọi công cụ Agent/Subagent trong cùng một lượt phản hồi duy nhất**. Nếu gọi ở các lượt kế tiếp nhau, hệ thống sẽ chạy tuần tự. Ví dụ trong lệnh `/e2e-delivery`, sau khi có `spec/final.md`, cả hai nhánh DEV track và QA test-design track đều được phát lệnh trong cùng một lượt để chạy song song trên hai thư mục tách biệt (`tech/` và `test/`).
 
 ---
 
-## Worked example: Agent Teams for competing-hypothesis debugging
+## Ví Dụ Thực Tế: Sử Dụng Agent Teams Để Gỡ Lỗi Theo Các Giả Thuyết Cạnh Tranh
 
-This example shows when to reach for **Agent Teams** instead of `/dev-audit`'s subagent fan-out. The two patterns look similar from a distance — both spawn the same three personas — but the value comes from a different place.
+Ví dụ này minh họa thời điểm nên dùng **Agent Teams** thay vì chỉ phân nhánh subagent độc lập.
 
-### The scenario
+### Tình Huống Sự Cố
 
-> *Checkout occasionally hangs for ~30 seconds before completing. It happens roughly once every 50 sessions. No errors in logs. Started after last week's release.*
+> *Luồng đặt lệnh đôi khi bị treo khoảng 30 giây trước khi hoàn tất. Hiện tượng xảy ra ngẫu nhiên khoảng 1/50 phiên giao dịch. Không có dòng lỗi nào trong log. Bắt đầu xuất hiện sau bản phát hành tuần trước.*
 
-Plausible root causes (mutually exclusive, all fit the symptoms):
+Các nguyên nhân gốc rễ khả dĩ (đều khớp với triệu chứng):
+1. Điều kiện tranh chấp (race condition) trong luồng xác nhận lệnh mới.
+2. Bước kiểm tra xác thực/phiên đôi khi bị rơi vào một lệnh gọi mạng đồng bộ bị nghẽn.
+3. Thiếu chỉ mục (index) trên một câu truy vấn kiểm tra danh mục tăng dần theo số lượng tiểu khoản.
+4. Một API bên thứ ba chập chờn khiến SDK âm thầm thử lại (retry) nhiều lần trước khi timeout.
 
-1. A race condition in the new payment-confirmation flow
-2. An auth check that occasionally falls through to a slow synchronous network call
-3. A missing index on a query that scales with cart size
-4. A flaky third-party API where the SDK retries silently before timing out
+Một agent đơn lẻ thường sẽ bám vào giả thuyết hợp lý đầu tiên mà nó nghĩ ra và dừng tìm kiếm. Còn nếu chỉ dùng subagent fan-out thông thường, mỗi persona sẽ nộp một báo cáo riêng lẻ mà không đối chất với nhau để loại trừ các giả thuyết sai.
 
-A single agent will pick the first plausible theory and stop investigating. A `/dev-audit`-style subagent fan-out would have each persona report independently — but their reports never meet, so nothing rules out the wrong theories.
+Với **Agent Teams**, nhiều điều tra viên độc lập sẽ chủ động tìm bằng chứng để bác bỏ giả thuyết của nhau — giả thuyết nào trụ vững sau cùng qua các bằng chứng thực nghiệm sẽ có xác suất cao nhất là nguyên nhân gốc rễ thực sự.
 
-This is exactly the case the Agent Teams docs describe: *"With multiple independent investigators actively trying to disprove each other, the theory that survives is much more likely to be the actual root cause."*
+### Thiết Lập & Câu Lệnh Kích Hoạt Mẫu
 
-### Why this is *not* a `/dev-audit` job
-
-|                | `/dev-audit` (subagents)               | Agent Teams                                      |
-|----------------|----------------------------------------|--------------------------------------------------|
-| Sub-agents see | The same diff, different lenses        | A shared task list, each other's messages        |
-| Output         | Three independent reports → one merge  | Adversarial debate → consensus root cause        |
-| Right when     | You want a verdict on a known artifact | You want to *find* the artifact among hypotheses |
-
-`/dev-audit` is a verdict; Agent Teams is an investigation.
-
-### Setup (one-time, per-environment)
-
-Agent Teams is experimental. In `~/.claude/settings.json`:
+Trong `~/.claude/settings.json`, bật cờ thử nghiệm:
 
 ```json
 {
@@ -212,159 +186,112 @@ Agent Teams is experimental. In `~/.claude/settings.json`:
 }
 ```
 
-Requires Claude Code v2.1.32 or later. The personas in this repo are picked up automatically — no team-config files to author by hand.
+Sau đó nhập yêu cầu vào phiên chính:
 
-### The trigger prompt
+```text
+Người dùng báo cáo luồng đặt lệnh thỉnh thoảng bị treo ~30 giây sau bản
+release tuần trước và không có lỗi trong log.
 
-Type into the lead session, in natural language:
+Hãy tạo một agent team để điều tra theo các giả thuyết cạnh tranh với 3 thành viên:
+  - code-reviewer    — điều tra race conditions và các lệnh gọi đồng bộ gây chặn (blocking calls)
+  - security-auditor — kiểm tra bước xác thực phiên và các kết nối mạng phát sinh trong luồng auth
+  - qa               — đề xuất kịch bản kiểm thử giúp phân biệt rõ các giả thuyết và kiểm tra lỗ hổng độ phủ test
 
-```
-Users report checkout hangs for ~30 seconds intermittently after last
-week's release. No errors in logs.
-
-Create an agent team to debug this with competing hypotheses. Spawn
-three teammates using the existing agent types:
-
-  - code-reviewer  — investigate race conditions and blocking calls
-                     in the checkout code path
-  - security-auditor — investigate auth checks, session handling,
-                       and any synchronous network calls added recently
-  - qa           — propose tests that would distinguish between the
-                     hypotheses and check coverage gaps in checkout
-
-Have them message each other directly to challenge each other's
-theories. Update findings as consensus emerges. Only converge when
-two teammates agree they can disprove the others'.
+Yêu cầu các thành viên nhắn tin trực tiếp để phản biện giả thuyết của nhau và chỉ hội tụ khi có bằng chứng thực nghiệm bác bỏ các giả thuyết còn lại.
 ```
 
-The lead spawns three teammates referencing the existing persona names. The persona body is **appended** to each teammate's system prompt as additional instructions (on top of the team-coordination instructions the lead installs); the trigger prompt above becomes their task.
+### Khi Nào *Không* Dùng Agent Teams
 
-### What happens
+- Cần kết luận nghiệm thu trên một bản diff/MR đã biết rõ → Dùng subagents độc lập.
+- Chỉ cần một góc nhìn chuyên môn trên một tài liệu/code → Gọi trực tiếp 1 persona (Mẫu số 1).
+- Quy trình tuần tự qua các cổng phê duyệt (Spec → Test Design → Auto Code) → Chạy slash commands tuần tự (Mẫu số 4).
+- Quét tìm kiếm dữ liệu lớn để lấy bản tóm tắt → Dùng subagent `Explore` / `research` (Mẫu số 5).
 
-1. Each teammate runs in its own context window, exploring the codebase from its own lens.
-2. Teammates use `message` to send findings to each other directly. The lead doesn't have to relay.
-3. The shared task list shows who's investigating what — visible at any time with `Ctrl+T` (in-process mode) or in a tmux pane (split mode).
-4. When `code-reviewer` finds a `Promise.all` that should be sequential, it messages `security-auditor` to confirm the auth call isn't part of the race. `security-auditor` checks and replies — either confirming the race is the real issue or producing counter-evidence.
-5. `qa` proposes a focused integration test for whichever theory is winning, which the team uses to verify before declaring consensus.
-6. The lead synthesizes the converged finding and presents it to you.
-
-You can interrupt at any teammate by cycling with `Shift+Down` and typing — useful for redirecting an investigator who's gone down a wrong path.
-
-### When to clean up
-
-When the investigation lands on a root cause, tell the lead:
-
-```
-Clean up the team
-```
-
-Always cleanup through the lead, not a teammate (per the docs: teammates lack full team context for cleanup).
-
-### Cost expectation
-
-Three Sonnet teammates running for ~10–15 minutes of investigation costs noticeably more than the same three personas spawned as subagents by `/dev-audit`. The justification is *quality of conclusion* — for production debugging where the wrong fix is expensive, the extra tokens are a bargain. For a routine PR review, stick with `/dev-audit`.
-
-### Anti-pattern in this scenario
-
-Do **not** rebuild this as a `/debug` slash command that fans out subagents. Subagents can't message each other — you'd lose the adversarial debate that makes the pattern work. If a workflow keeps coming up, document the trigger prompt above as a snippet rather than wrapping it in a slash command that misuses subagents.
-
-### When *not* to use Agent Teams
-
-- Production-bound verdict on a known diff → use `/dev-audit` (subagents).
-- One specialist perspective on one artifact → direct persona invocation.
-- Sequential lifecycle (spec → plan → build) → user-driven slash commands (Pattern 4).
-- Read-heavy research with a small digest → built-in `Explore` subagent.
-
-Reach for Agent Teams only when teammates **need** to challenge each other to produce the right answer.
+Chỉ dùng Agent Teams khi các thành viên **thực sự cần phản biện trực tiếp với nhau** để tìm ra câu trả lời đúng.
 
 ---
 
-## Anti-patterns
+## Các Phản Mẫu Cần Tránh (Anti-Patterns)
 
-### A. Router persona ("meta-orchestrator")
+### A. Persona Chỉ Làm Nhiệm Vụ Định Tuyến ("Meta-Orchestrator")
 
-A persona whose job is to decide which other persona to call.
+Một persona mà công việc duy nhất chỉ là đọc câu hỏi rồi quyết định xem nên gọi persona nào tiếp theo.
 
+```text
+/work → router-persona → "việc này cần review code" → code-reviewer → router (tóm tắt lại) → user
 ```
-/work → router-persona → "this needs a review" → code-reviewer → router (paraphrases) → user
-```
 
-**Why it fails:**
-- Pure routing layer with no domain value
-- Adds two paraphrasing hops → information loss + roughly 2× token cost
-- The user already knew they wanted a review; they could have called `/cr-review` directly
-- Replicates the work that slash commands and intent mapping in `AGENTS.md` already do
+**Tại sao thất bại:**
+- Tầng trung gian thuần túy không tạo ra bất kỳ giá trị nghiệp vụ hay kỹ thuật nào.
+- Phát sinh thêm 2 bước diễn giải lại → làm rơi rớt thông tin gốc và tốn gấp đôi chi phí token.
+- Người dùng vốn đã biết mình cần review code và có thể gõ thẳng `/cr-review`.
+- Lặp lại vô ích công việc mà bảng điều hướng trong `AGENTS.md` và `CATALOG.md` đã làm.
 
-**What to do instead:** add or refine slash commands. Document intent → command mapping in `AGENTS.md`.
+**Giải pháp đúng:** Chuẩn hóa hệ thống slash commands và bảng định tuyến rõ ràng trong `AGENTS.md`.
 
 ---
 
-### B. Persona that calls another persona
+### B. Persona Tự Ý Gọi Chéo Persona Khác
 
-A `code-reviewer` that internally invokes `security-auditor` when it sees auth code.
+Ví dụ: `code-reviewer` tự động gọi ngầm `security-auditor` bên trong nó khi nhìn thấy code xác thực.
 
-**Why it fails:**
-- Personas were designed to produce a single perspective; chaining them defeats that
-- The summary the calling persona passes loses context the called persona needs
-- Failure modes multiply (which persona's output format wins? whose rules apply?)
-- Hides cost from the user
+**Tại sao thất bại:**
+- Mỗi persona được thiết kế để giữ một lăng kính chuyên môn sắc bén; việc nối chuỗi ngầm làm mờ ranh giới đó.
+- Bản tóm tắt mà persona thứ nhất truyền sang làm mất ngữ cảnh gốc mà persona thứ hai cần.
+- Khó kiểm soát định dạng đầu ra và ẩn giấu chi phí thực thi khỏi người dùng.
 
-**What to do instead:** have the calling persona *recommend* a follow-up audit in its report. The user or a slash command runs the second pass.
-
----
-
-### C. Sequential orchestrator that paraphrases
-
-An agent that calls `/dev-tech-spec`, then `/dev-plan`, then `/dev-build`, etc. on the user's behalf.
-
-**Why it fails:**
-- Loses the human checkpoints that catch wrong-direction work
-- Each hand-off summarizes context — accumulated drift over a long pipeline
-- Doubles token cost: orchestrator turn + sub-agent turn for every step
-- Removes user agency at exactly the points where judgment matters most
-
-**What to do instead:** keep the user as the orchestrator. Document the recommended sequence in `README.md` and let users invoke it.
+**Giải pháp đúng:** Persona hiện tại hoàn thành tốt báo cáo của mình và **đề xuất rõ ở mục Bước tiếp theo** (ví dụ: *"Phát hiện thay đổi trong luồng xác thực — khuyến nghị chạy tiếp `/security-audit`"*).
 
 ---
 
-### D. Deep persona trees
+### C. Bộ Điều Phối Tuần Tự Tự Động Diễn Giải Lại (Paraphrasing Sequential Orchestrator)
 
-`/dev-audit` calls a `pre-ship-coordinator` that calls a `quality-coordinator` that calls `code-reviewer`.
+Một agent trung gian tự ý gọi nối tiếp hàng loạt bước mà không qua cổng kiểm định tất định hoặc sự phê duyệt của người dùng, đồng thời tự tóm tắt lại đầu ra của bước trước để làm đầu vào cho bước sau.
 
-**Why it fails:**
-- Each layer adds latency and tokens with no decision value
-- Debugging becomes a multi-level investigation
-- The leaf personas lose context to multiple summarization steps
+**Tại sao thất bại:**
+- Làm mất các cổng kiểm soát (Approval Gates) của con người giúp phát hiện lệch hướng ngay từ khâu đặc tả.
+- Mỗi lần tóm tắt qua lời văn của LLM sẽ tích lũy độ lệch (context drift) qua chuỗi pipeline dài.
+- Tăng gấp đôi chi phí token ở mọi bước.
 
-**What to do instead:** keep the orchestration depth at most 1 (slash command → personas). The merge happens in the main agent.
+**Giải pháp đúng:** Truyền dữ liệu giữa các bước thông qua **file artifacts chuẩn hóa trên đĩa** (`spec/final.md`, `spec/testability-manifest.json`, `test/checklist.md`) kèm theo các script kiểm định tất định (`validate-ba-refine.js`, `trace-check.js`), và giữ quyền phê duyệt của người dùng tại các cổng chặn quan trọng.
 
 ---
 
-## Decision flow
+### D. Cây Điều Phối Đa Tầng (Deep Persona Trees)
 
-When considering a new orchestrated workflow, walk this flow:
+Lệnh gọi một `coordinator-cap-1`, rồi gọi tiếp `coordinator-cap-2`, rồi mới gọi tới `code-reviewer`.
 
-```
-Is the work one perspective on one artifact?
-├── Yes → Direct invocation. Stop.
-└── No  → Will the same composition repeat?
-         ├── No  → Direct invocation, ad hoc. Stop.
-         └── Yes → Are sub-tasks independent?
-                  ├── No  → Sequential slash commands run by user (Pattern 4).
-                  └── Yes → Parallel fan-out with merge (Pattern 3).
-                           Validate against the checklist above.
-                           If any check fails → fall back to single-persona command (Pattern 2).
+**Tại sao thất bại:**
+- Mỗi tầng trung gian cộng dồn độ trễ và chi phí token mà không đóng góp giá trị quyết định.
+- Việc gỡ lỗi khi kết quả sai trở thành một mê cung đa tầng.
+- Persona thực thi ở tầng lá bị mất ngữ cảnh gốc sau nhiều lần tóm tắt qua các tầng cha.
+
+**Giải pháp đúng:** Giữ độ sâu điều phối tối đa là **1 cấp** (Slash command / Main agent → Personas). Bước hợp nhất (nếu có) diễn ra trực tiếp tại agent chính.
+
+---
+
+## Sơ Đồ Quyết Định Lựa Chọn Mẫu Điều Phối
+
+Khi thiết kế một luồng công việc mới, hãy đi theo cây quyết định sau:
+
+```text
+Công việc chỉ cần 1 góc nhìn chuyên môn trên 1 artifact?
+├── Có  → Gọi trực tiếp Persona (Mẫu 1) hoặc Slash Command đơn vai trò (Mẫu 2). Dừng.
+└── Không → Tổ hợp phối hợp này có lặp lại thường xuyên không?
+          ├── Không → Gọi trực tiếp từng bước theo nhu cầu phát sinh. Dừng.
+          └── Có    → Các tác vụ con có hoàn toàn độc lập với nhau không?
+                    ├── Không → Chuỗi Slash Commands tuần tự qua file artifacts chuẩn (Mẫu 4).
+                    └── Có    → Phân nhánh song song & Hợp nhất (Mẫu 3).
+                                Kiểm tra với Checklist thẩm định ở Mẫu 3.
+                                Nếu bất kỳ tiêu chí nào không đạt → Quay về Mẫu 2 hoặc Mẫu 4.
 ```
 
 ---
 
-## When to add a new pattern to this catalog
+## Khi Nào Mới Thêm Mẫu Mới Vào Danh Mục Này
 
-Add a new entry only after:
-
-1. You've used the pattern at least twice in real work
-2. You can name a concrete artifact in this repo that demonstrates it
-3. You can explain why an existing pattern wouldn't have worked
-4. You can describe its anti-pattern shadow (what people will mistakenly build instead)
-
-Premature catalog entries become aspirational documentation that no one follows.
+Chỉ bổ sung một mẫu điều phối mới vào tài liệu này sau khi:
+1. Bạn đã áp dụng mẫu đó thành công ít nhất 2 lần trong công việc thực tế của dự án.
+2. Bạn chỉ ra được một lệnh hoặc artifact cụ thể trong kho lưu trữ này đang vận hành theo mẫu đó.
+3. Bạn giải thích rõ vì sao cả 5 mẫu hiện có đều không đáp ứng được bài toán.
+4. Bạn mô tả được "cái bóng phản mẫu" của nó (những sai lầm mà người khác dễ mắc phải khi áp dụng sai).

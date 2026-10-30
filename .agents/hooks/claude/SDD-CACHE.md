@@ -1,16 +1,16 @@
-# sdd-cache hook
+# Hook Bộ Nhớ Đệm Trích Dẫn (`sdd-cache`)
 
-Cross-session citation cache for `source-driven-development` (skill `dev-source-driven-development`). Skips redundant `WebFetch` calls without weakening the skill's "verify against current docs" guarantee.
+Bộ nhớ đệm (cache) lưu trữ trích dẫn tài liệu xuyên suốt các phiên làm việc dành cho kỹ năng phát triển dựa trên nguồn chính thống (`dev-source-driven-development`). Giúp bỏ qua các lệnh gọi `WebFetch` trùng lặp mà không làm suy yếu cam kết *"luôn đối chiếu với tài liệu mới nhất"* của kỹ năng.
 
-## Why
+## Tại Sao Cần Hook Này?
 
-`source-driven-development` fetches official docs for every framework-specific decision. Working on the same project across sessions means fetching the same pages over and over. Caching the content as local memory would contradict the skill — docs change, and a stale cache hides that.
+Quy trình phát triển dựa trên tài liệu nguồn yêu cầu truy xuất tài liệu chính thức (official docs) cho mỗi quyết định phụ thuộc vào framework/thư viện. Khi làm việc trên cùng một dự án qua nhiều phiên, agent sẽ phải tải đi tải lại cùng một trang tài liệu. Tuy nhiên, nếu chỉ lưu nội dung vào bộ nhớ cục bộ vô thời hạn thì sẽ vi phạm nguyên tắc cốt lõi — vì tài liệu có thể đã cập nhật mà bản cache cũ không hề hay biết.
 
-This hook caches fetched content on disk, but **revalidates with the origin server on every reuse** via HTTP `If-None-Match` / `If-Modified-Since`. Content is only served from cache when the server responds `304 Not Modified`, which is a fresh verification — not a memory read.
+Hook này lưu nội dung đã tải xuống ổ đĩa, nhưng **luôn xác thực lại (revalidate) với máy chủ gốc trong mỗi lần tái sử dụng** thông qua tiêu đề HTTP `If-None-Match` / `If-Modified-Since`. Nội dung chỉ được lấy từ bộ nhớ đệm khi máy chủ gốc phản hồi mã `304 Not Modified` — tức là một bước xác minh độ tươi mới thực sự chứ không phải đọc mù từ bộ nhớ cũ.
 
-## Setup
+## Cài Đặt (Setup)
 
-1. Add hooks to `.claude/settings.json` (or `.claude/settings.local.json` for personal use):
+1. Thêm cấu hình hooks vào `.claude/settings.json` (hoặc `.claude/settings.local.json` cho cấu hình cá nhân):
 
 ```json
 {
@@ -21,7 +21,7 @@ This hook caches fetched content on disk, but **revalidates with the origin serv
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR}/hooks/claude/sdd-cache-pre.sh\"",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/sdd-cache-pre.sh\"",
             "timeout": 10
           }
         ]
@@ -33,7 +33,7 @@ This hook caches fetched content on disk, but **revalidates with the origin serv
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR}/hooks/claude/sdd-cache-post.sh\"",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/sdd-cache-post.sh\"",
             "async": true,
             "timeout": 10
           }
@@ -44,124 +44,120 @@ This hook caches fetched content on disk, but **revalidates with the origin serv
 }
 ```
 
-   `${CLAUDE_PROJECT_DIR}` resolves to the directory you launched Claude Code from. The snippet above works when the hooks live inside the same project. If you installed `agent-skills` elsewhere (e.g. as a shared plugin under `~/agent-skills`), replace `${CLAUDE_PROJECT_DIR}/hooks/...` with the absolute path to each script.
+   Biến `${CLAUDE_PROJECT_DIR}` trỏ tới thư mục gốc nơi bạn khởi chạy Claude Code. Đoạn cấu hình trên hoạt động ngay khi các script hook nằm trong cùng dự án. Nếu bạn cài đặt `agent-skills` ở một thư mục dùng chung khác, hãy thay thế đường dẫn bằng đường dẫn tuyệt đối tới từng script.
 
-2. Make sure `.claude/sdd-cache/` is in your `.gitignore` (already included in this repo).
+2. Đảm bảo thư mục `.claude/sdd-cache/` đã được khai báo trong `.gitignore` (đã có sẵn trong kho lưu trữ này).
 
-3. Use `/source-driven-development` (or the skill) as usual. No changes to the skill or the agent's workflow — the cache is transparent.
+3. Sử dụng kỹ năng phát triển dựa trên tài liệu nguồn như bình thường. Không cần thay đổi quy trình làm việc của agent — cơ chế cache hoạt động hoàn toàn tự động và trong suốt ở tầng dưới.
 
-## Mental model
+## Mô Hình Hoạt Động (Mental Model)
 
-HTTP resource cache keyed by URL. Freshness is delegated to the origin via `ETag` / `Last-Modified`; no TTL, no prompt in the key.
+Đây là bộ nhớ đệm tài nguyên HTTP được đánh khóa theo URL (`sha256(url)`). Việc kiểm tra độ tươi mới được ủy quyền cho máy chủ gốc thông qua `ETag` / `Last-Modified`; không dùng thời gian sống cố định (TTL) và không trộn prompt vào khóa cache.
 
-The stored body is not raw HTML — `WebFetch` post-processes each response through a model using the caller's prompt, so what we cache is one agent's reading of the page. The key stays URL-only so reads reuse across sessions; the original prompt is kept as metadata and surfaced in the hit message so the next agent can tell whether the earlier reading fits.
+Nội dung được lưu không phải là mã HTML thô — vì công cụ `WebFetch` đã hậu xử lý trang web qua một mô hình ngôn ngữ theo câu lệnh `prompt` của người gọi, nên thứ được lưu lại là kết quả trích xuất của lần đọc đầu tiên trên trang đó. Khóa cache chỉ giữ nguyên theo URL để các phiên làm việc sau có thể tái sử dụng; còn câu `prompt` gốc được lưu kèm dưới dạng siêu dữ liệu (metadata) và hiển thị lại khi trúng cache (cache hit) để agent hiện tại tự đánh giá xem bản tóm tắt trước đó có đủ thông tin mình cần hay không.
 
-## How it works
+## Cơ Chế Xử Lý Chi Tiết
 
-One cache entry per URL, stored as JSON in `.claude/sdd-cache/<sha>.json`:
+Mỗi URL tương ứng với một bản ghi JSON lưu tại `.claude/sdd-cache/<sha>.json`:
 
-| Event | Action |
+| Sự kiện (Event) | Hành động thực thi |
 |---|---|
-| `PreToolUse WebFetch` | If an entry exists, sends a `HEAD` request with `If-None-Match` / `If-Modified-Since`. On `304`, blocks the fetch and returns the cached content to the agent via stderr, with the original prompt surfaced as metadata. Otherwise allows the fetch. |
-| `PostToolUse WebFetch` | Captures the response, issues a `HEAD` request to record the current `ETag` / `Last-Modified`, and stores `{url, prompt, etag, last_modified, content, fetched_at}`. |
+| `PreToolUse WebFetch` | Nếu đã có bản ghi cache của URL này, gửi một truy vấn `HEAD` kèm header `If-None-Match` / `If-Modified-Since`. Nếu máy chủ trả về `304`, chặn lệnh tải mới và trả nội dung trong cache về cho agent qua luồng `stderr` kèm theo `prompt` gốc. Ngược lại, cho phép `WebFetch` chạy bình thường. |
+| `PostToolUse WebFetch` | Thu nhận kết quả trả về, gửi một truy vấn `HEAD` để lấy giá trị `ETag` / `Last-Modified` hiện hành, và lưu cấu trúc `{url, prompt, etag, last_modified, content, fetched_at}` xuống file JSON. |
 
-**Freshness rules:**
+**Quy tắc đảm bảo độ mới (Freshness rules):**
 
-- Entry is served only if the origin confirms `304 Not Modified`.
-- Entries without an `ETag` or `Last-Modified` header are never cached — without a validator, the hook cannot verify freshness later, and caching would mean trusting memory.
-- Cache key is `sha256(url)`. The same URL asked with a different prompt hits the same entry; the cached body reflects the prompt used on the first fetch, and that prompt is shown alongside the hit so the agent can decide whether to re-use or re-fetch manually.
+- Bản ghi chỉ được phục vụ từ cache khi máy chủ gốc xác nhận `304 Not Modified`.
+- Các trang web không trả về header `ETag` hoặc `Last-Modified` sẽ **không bao giờ được lưu cache** — vì thiếu bộ kiểm chứng (validator), hook không thể xác minh trang đã thay đổi hay chưa ở các lần gọi sau.
+- Khóa cache là `sha256(url)`. Cùng một URL được hỏi với một prompt khác vẫn sẽ chạm vào cùng bản ghi đó; nội dung trả về sẽ hiển thị rõ câu prompt của lần tải đầu tiên để agent quyết định dùng luôn hay chủ động tải lại.
 
-**What the agent sees:**
+**Những gì Agent nhìn thấy:**
 
-- Cache hit: `WebFetch` is blocked via exit code 2. Claude Code delivers the hook's stderr payload back to the agent as a tool error — this is the intended signal for a cache hit, not a failure. The payload is prefixed with `[sdd-cache] Cache hit for <url>` and wraps the cached body between `----- BEGIN CACHED CONTENT -----` / `----- END CACHED CONTENT -----` markers so the agent can use it as if `WebFetch` had just returned it.
-- Cache miss or stale: `WebFetch` runs normally; the result is stored for next time.
+- **Khi trúng cache (Cache hit):** Lệnh `WebFetch` bị chặn thông qua mã thoát `exit code 2`. Claude Code chuyển tiếp luồng `stderr` của hook về cho agent dưới dạng thông báo công cụ — đây là tín hiệu chủ đích báo hiệu đã có dữ liệu trong cache chứ không phải lỗi hệ thống. Dữ liệu trả về bắt đầu bằng dòng `[sdd-cache] Cache hit for <url>` và bọc nội dung trong cặp thẻ `----- BEGIN CACHED CONTENT -----` / `----- END CACHED CONTENT -----` để agent sử dụng ngay lập tức.
+- **Khi trượt cache hoặc tài liệu đã đổi (Cache miss / stale):** `WebFetch` tải trang mới như bình thường và cập nhật lại bản ghi cho lần sau.
 
-The skill itself is unchanged. It continues to follow `DETECT → FETCH → IMPLEMENT → CITE`. The hook only changes what happens under the hood when `FETCH` runs.
+## Kiểm Thử Cục Bộ (Local Testing)
 
-## Local testing
-
-### 1. Smoke test the scripts directly
+### 1. Chạy thử trực tiếp các script (Smoke test)
 
 ```bash
-# Simulate a PostToolUse payload: cache a page
+# Giả lập sự kiện PostToolUse: lưu một trang tài liệu vào cache
 echo '{
   "tool_input": {
     "url": "https://react.dev/reference/react/useActionState",
     "prompt": "extract the signature"
   },
   "tool_response": "useActionState(action, initialState) returns [state, formAction, isPending]"
-}' | bash hooks/claude/sdd-cache-post.sh
+}' | bash .agents/hooks/claude/sdd-cache-post.sh
 
-# Inspect the stored entry
+# Kiểm tra bản ghi đã lưu
 ls .claude/sdd-cache/
 cat .claude/sdd-cache/*.json | jq .
 
-# Simulate the next PreToolUse on the same URL + prompt
+# Giả lập sự kiện PreToolUse kế tiếp trên cùng URL đó
 echo '{
   "tool_input": {
     "url": "https://react.dev/reference/react/useActionState",
     "prompt": "extract the signature"
   }
-}' | bash hooks/claude/sdd-cache-pre.sh
+}' | bash .agents/hooks/claude/sdd-cache-pre.sh
 echo "exit=$?"
 ```
 
-Expected:
+Kết quả kỳ vọng:
+- Lệnh đầu tiên tạo ra một file JSON trong `.claude/sdd-cache/` (nếu máy chủ đích có trả về `ETag` hoặc `Last-Modified`).
+- Lệnh thứ hai thoát với mã `exit=2` và in nội dung cache ra `stderr` khi máy chủ gốc phản hồi `304`, hoặc thoát với mã `exit=0` nếu nội dung đã thay đổi.
 
-- First command creates one file under `.claude/sdd-cache/` (only if the server returned an `ETag` or `Last-Modified`).
-- Second command exits `2` with the cached content on stderr when the origin replies `304`, or exits `0` silently otherwise.
+### 2. Kiểm thử End-to-End trong phiên làm việc thực tế
 
-### 2. End-to-end in a real session
+1. Đăng ký cấu hình hooks vào `.claude/settings.local.json` như hướng dẫn ở mục Cài đặt.
+2. Khởi động một phiên Claude Code trong kho lưu trữ này.
+3. Yêu cầu agent tải một trang tài liệu (ví dụ: *"tải trang `https://react.dev/reference/react/useActionState` và tóm tắt chữ ký hàm"*).
+4. Xác nhận file JSON xuất hiện trong `.claude/sdd-cache/`.
+5. Yêu cầu agent tải lại đúng trang đó một lần nữa.
+6. Xác nhận lệnh `WebFetch` thứ hai được phục vụ ngay từ cache (hiển thị tiền tố `[sdd-cache]` trong nhật ký phiên).
 
-1. Register the hooks in `.claude/settings.local.json` as shown above.
-2. Start a Claude Code session in this repo.
-3. Ask the agent to fetch a documentation page (e.g. "fetch `https://react.dev/reference/react/useActionState` and summarize").
-4. Verify a file appears under `.claude/sdd-cache/`.
-5. Ask the agent to fetch the same page with the same prompt again.
-6. Verify the second `WebFetch` is blocked and the cached content is returned (visible in the session transcript as a tool error with `[sdd-cache]` prefix).
+### 3. Kiểm tra cơ chế tự hủy cache khi tài liệu thay đổi
 
-### 3. Freshness verification
-
-To confirm the cache invalidates when docs change, force an `ETag` mismatch. Pick one specific entry — `*.json` is unsafe once the cache holds more than one file:
+Để xác nhận cache tự động vô hiệu hóa khi tài liệu trên server thay đổi, hãy thử sửa giá trị `ETag` trong một file cache cụ thể:
 
 ```bash
-# Pick the entry you want to corrupt (swap in the actual filename)
+# Chọn một bản ghi cụ thể trong thư mục cache
 ENTRY=.claude/sdd-cache/e49c9f378670cfbb1d7d871b6dee16d9.json
 
-# Patch its ETag to something the origin will not recognize
+# Sửa ETag thành một giá trị giả để server không khớp
 jq '.etag = "W/\"stale-etag-forced\""' "$ENTRY" > "$ENTRY.tmp" && mv "$ENTRY.tmp" "$ENTRY"
 
-# Next PreToolUse should miss (server returns 200, not 304)
-echo '{"tool_input":{"url":"...", "prompt":"..."}}' | bash hooks/claude/sdd-cache-pre.sh
-echo "exit=$?"   # expect 0 (fetch allowed through)
+# Lần gọi PreToolUse tiếp theo sẽ trượt cache (vì server trả về 200 thay vì 304)
+echo '{"tool_input":{"url":"...", "prompt":"..."}}' | bash .agents/hooks/claude/sdd-cache-pre.sh
+echo "exit=$?"   # kỳ vọng exit=0 (cho phép tải mới)
 ```
 
-### 4. Debugging
+### 4. Gỡ lỗi (Debugging)
 
-Both hooks write timestamped events to `.claude/sdd-cache/.debug.log` when debug mode is on. Enable it with either:
+Cả hai hook đều ghi nhật ký sự kiện kèm dấu thời gian vào `.claude/sdd-cache/.debug.log` khi bật chế độ debug bằng một trong hai cách:
 
 ```bash
-# Option A: env var (per-session)
+# Cách A: Biến môi trường (áp dụng cho phiên hiện tại)
 SDD_CACHE_DEBUG=1 claude
 
-# Option B: sentinel file (persistent)
+# Cách B: Tạo file cờ (duy trì qua nhiều phiên)
 mkdir -p .claude/sdd-cache && touch .claude/sdd-cache/.debug
-# …disable with: rm .claude/sdd-cache/.debug
+# Tắt debug bằng lệnh: rm .claude/sdd-cache/.debug
 ```
 
-The log captures URL, detected `tool_response` shape, HEAD status, and why each invocation hit or missed. Useful when a cache miss looks unexpected (typically: the origin stopped emitting validators).
+File log ghi lại URL, cấu trúc `tool_response`, mã trạng thái `HEAD`, và lý do vì sao mỗi lần gọi trúng hoặc trượt cache.
 
-## Known limitations
+## Các Giới Hạn Đã Biết
 
-- **Body is prompt-shaped.** A hit returns the earlier agent's reading of the page, with the original prompt surfaced so the current agent can decide whether it applies. If it doesn't, delete the file under `.claude/sdd-cache/` to force a re-fetch.
-- **Every cache write costs an extra HEAD.** Claude Code doesn't expose the response headers that `WebFetch` already received, so the post hook re-queries the origin to capture `ETag` / `Last-Modified`. One extra roundtrip per miss — the price of keeping this a pure hook with no core changes.
-- **Servers without `ETag` or `Last-Modified` are never cached.** Most official doc sites (react.dev, docs.djangoproject.com, developer.mozilla.org) emit validators. Sites that don't are always re-fetched.
-- **A misbehaving server can serve a wrong `304`.** That's a server bug to diagnose, not a cache invariant to defend against; we don't paper over it with a TTL. Delete the entry if you spot a stale one.
-- **Cache is local and per-project.** There is no team-wide shared cache. Adding one would require a signed-content-addressable storage layer, which is out of scope.
+- **Nội dung phụ thuộc vào prompt lần đầu:** Khi trúng cache, hook trả về bản đọc của agent trước đó kèm câu prompt gốc. Nếu tác vụ mới cần khai thác một khía cạnh hoàn toàn khác trên cùng trang đó, hãy xóa file tương ứng trong `.claude/sdd-cache/` để tải lại.
+- **Mỗi lần ghi cache mới tốn thêm một truy vấn `HEAD`:** Do Claude Code không truyền các HTTP response headers của `WebFetch` xuống cho hook, nên script `post` phải gửi thêm một lệnh `HEAD` tới máy chủ gốc để lấy `ETag` / `Last-Modified`.
+- **Các máy chủ không hỗ trợ `ETag` hoặc `Last-Modified` sẽ không được lưu cache:** Hầu hết các trang tài liệu chính thức (react.dev, developer.mozilla.org, docs.djangoproject.com...) đều hỗ trợ đầy đủ. Những trang không hỗ trợ sẽ luôn được tải trực tiếp.
+- **Phạm vi cache là cục bộ theo từng dự án:** Không chia sẻ chung giữa nhiều máy khác nhau.
 
-## Requirements
+## Yêu Cầu Hệ Thống
 
 - `jq`
 - `curl`
-- `shasum` or `sha256sum` (auto-detected)
+- `shasum` hoặc `sha256sum` (tự động nhận diện)
 - Bash 3.2+

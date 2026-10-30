@@ -1,67 +1,67 @@
-# Definition of Done
+# Tiêu Chuẩn Hoàn Thành (Definition of Done)
 
-A standing, project-wide bar that every change must clear before it counts as done. Unlike acceptance criteria, which vary per task and answer "did we build the right thing?", the Definition of Done is the same every time and answers "is this finished to our standard?". Use it as the final gate in `dev-planning-and-task-breakdown` and `dev-incremental-implementation`.
+Ngưỡng chuẩn mực cố định toàn dự án mà mọi thay đổi đều phải vượt qua trước khi được tính là hoàn thành. Khác với tiêu chí chấp nhận (Acceptance Criteria) thay đổi theo từng task và trả lời câu hỏi *"chúng ta đã xây đúng thứ được yêu cầu chưa?"*, Tiêu chuẩn Hoàn thành (Definition of Done) luôn giữ nguyên cho mọi lần bàn giao và trả lời câu hỏi *"sản phẩm này đã hoàn thiện đạt chuẩn chất lượng của chúng ta chưa?"*. Hãy dùng tài liệu này làm cổng kiểm tra cuối cùng trong quy trình triển khai và nghiệm thu.
 
 ## Definition of Done vs. Acceptance Criteria
 
-|         | Acceptance Criteria                      | Definition of Done                         |
-|---------|------------------------------------------|--------------------------------------------|
-| Scope   | Specific to one task or spec             | Applies to every increment                 |
-| Changes | Different for each item                  | Fixed and reused                           |
-| Answers | "Did we build *this thing*?"             | "Is it *ready*?"                           |
-| Owner   | Defined when planning the task           | Defined once for the project               |
-| Example | "User can reset password via email link" | "Tests pass, no regressions, docs updated" |
+| Tiêu chí | Acceptance Criteria (Tiêu chí chấp nhận) | Definition of Done (Tiêu chuẩn hoàn thành) |
+|---|---|---|
+| **Phạm vi** | Riêng biệt cho từng task hoặc bản đặc tả | Áp dụng cho mọi bản bàn giao (increment) |
+| **Tính biến đổi** | Khác nhau ở mỗi hạng mục công việc | Cố định và tái sử dụng xuyên suốt |
+| **Câu hỏi trả lời** | *"Chúng ta đã làm đúng tính năng này chưa?"* | *"Nó đã sẵn sàng để bàn giao/merge chưa?"* |
+| **Người định nghĩa** | Được xác định khi lập đặc tả / kế hoạch cho task | Được định nghĩa một lần cho toàn dự án |
+| **Ví dụ** | *"Người dùng có thể đặt lại mật khẩu qua link email"* | *"Tests pass 100%, không gây lỗi hồi quy, tài liệu đã cập nhật"* |
 
-The two are complementary. A task is done only when **its** acceptance criteria are met **and** the standing Definition of Done is satisfied. Skipping either leaves work that looks finished but is not.
+Hai khái niệm này bổ trợ cho nhau. Một task chỉ thực sự hoàn tất khi **thỏa mãn toàn bộ Acceptance Criteria của riêng nó** **VÀ** **đáp ứng đầy đủ Tiêu chuẩn Hoàn thành (Definition of Done) chung**. Bỏ qua một trong hai sẽ tạo ra những công việc nhìn tưởng như đã xong nhưng thực chất chưa thể đưa vào vận hành.
 
-## The Standing Checklist
+## Danh Mục Kiểm Tra Cố Định (The Standing Checklist)
 
-Apply this to every change before declaring it done.
+Áp dụng danh sách này cho mọi thay đổi trước khi tuyên bố hoàn thành.
 
-### Correctness
-- [ ] All acceptance criteria for the task are met
-- [ ] Code runs and behaves as intended, verified at runtime, not just compiled or typechecked
-- [ ] New behavior is covered by tests that fail without the change and pass with it
-- [ ] Existing tests still pass; no regressions introduced
-- [ ] Edge cases and error paths are handled, not just the happy path
+### 1. Tính Đúng Đắn (Correctness)
+- [ ] Mọi tiêu chí chấp nhận (Acceptance Criteria) của task đều đã đạt
+- [ ] Code chạy và hoạt động đúng như thiết kế, đã được kiểm chứng lúc thực thi (runtime) chứ không chỉ biên dịch hoặc kiểm tra kiểu (typecheck)
+- [ ] Hành vi mới được bao phủ bởi các bài test (test sẽ fail nếu chưa có thay đổi và pass khi có thay đổi)
+- [ ] Toàn bộ các bài test hiện có vẫn pass; không làm phát sinh lỗi hồi quy (regression)
+- [ ] Các trường hợp biên (edge cases) và luồng lỗi (error paths) đều được xử lý triệt để, không chỉ riêng luồng thành công (happy path)
 
-### Quality
-- [ ] Code reveals intent through naming and structure; no comments needed to explain *what* it does
-- [ ] No duplicated business logic
-- [ ] No dead code, debug output, or commented-out blocks left behind
-- [ ] Changes are scoped to the task; no unrelated refactors snuck in
-- [ ] Linting and formatting pass
+### 2. Chất Lượng Mã Nguồn (Quality)
+- [ ] Code thể hiện rõ ý đồ thông qua cách đặt tên và cấu trúc; không cần comment chỉ để giải thích code *đang làm cái gì*
+- [ ] Không lặp lại logic nghiệp vụ (No duplicated business logic)
+- [ ] Không để sót code chết (dead code), lệnh in debug, hoặc các khối code bị comment
+- [ ] Phạm vi thay đổi bám sát đúng task hiện tại; không tự ý trộn lẫn các chỉnh sửa/refactor ngoài luồng
+- [ ] Vượt qua toàn bộ các bước kiểm tra linter, validator và định dạng chuẩn (`npm test`)
 
-The depth behind these items lives in `cr-review-code-and-quality` (the five-axis review) and `cr-code-simplification` (reducing complexity without changing behavior).
+Chi tiết chuyên sâu của các mục này nằm trong kỹ năng `cr-review-code-and-quality` (review 5 trục) và `cr-code-simplification` (tối giản độ phức tạp mà không làm đổi hành vi).
 
-### Integration
-- [ ] Change works with the rest of the system, not just in isolation
-- [ ] Database migrations, config changes, and feature flags are accounted for
-- [ ] Backward compatibility considered for any public interface or API change
+### 3. Tính Tích Hợp (Integration)
+- [ ] Thay đổi hoạt động trơn tru với phần còn lại của hệ thống, không chỉ chạy đúng khi đứng độc lập
+- [ ] Đã tính đến kịch bản migration cơ sở dữ liệu, thay đổi cấu hình (`.env`, `config/`), và cờ tính năng (feature flags)
+- [ ] Đã kiểm tra tính tương thích ngược (backward compatibility) đối với mọi thay đổi trên giao diện công khai (public interface) hoặc hợp đồng API
 
-### Documentation
-- [ ] Public interfaces, APIs, and user-facing behavior are documented
-- [ ] Architectural decisions worth preserving are recorded (see `documentation-and-adrs`)
-- [ ] Documentation describes the current state in timeless language, not the change history
+### 4. Tài Liệu Hóa (Documentation)
+- [ ] Các giao diện công khai, API, kỹ năng mới và hành vi hướng người dùng đã được cập nhật vào tài liệu (`CATALOG.md`, `AGENTS.md`, `README.md`)
+- [ ] Các quyết định kiến trúc quan trọng cần lưu giữ đã được ghi nhận rõ ràng
+- [ ] Tài liệu mô tả trạng thái hiện tại của hệ thống bằng ngôn ngữ chuẩn xác, không viết kiểu nhật ký lịch sử thay đổi rời rạc
 
-### Ship-readiness
-- [ ] Security implications reviewed for any untrusted input, auth, or data handling (see `dev-security`)
-- [ ] Observability in place for new critical paths (logs, metrics, traces)
-- [ ] Rollback path exists for anything risky (see `.claude/rules/git-workflow.md`)
-- [ ] The human has reviewed and approved before merge or deploy
+### 5. Sẵn Sàng Triển Khai (Ship-readiness)
+- [ ] Đã rà soát các tác động bảo mật đối với mọi đầu vào từ người dùng, xác thực/phân quyền, hoặc xử lý dữ liệu nhạy cảm (xem `security-code-audit`)
+- [ ] Đã có cơ chế quan sát và ghi vết (logs, metrics, traces) cho các luồng xử lý trọng yếu mới
+- [ ] Có phương án hoàn tác (rollback path) an toàn cho mọi thay đổi tiềm ẩn rủi ro (xem `.agents/rules/git-workflow.md`)
+- [ ] Đã được người dùng / reviewer kiểm tra và phê duyệt trước khi merge vào nhánh chính hoặc triển khai
 
-## How to Apply
+## Cách Áp Dụng
 
-- **Per task**: confirm the Correctness and Quality sections before checking the task off.
-- **Per feature**: confirm Integration and Documentation before considering the feature complete.
-- **Per release**: the full checklist is the floor; `.claude/rules/git-workflow.md` adds the branch and merge gates on top.
+- **Theo từng task (Per task):** Xác nhận hoàn tất mục *Tính Đúng Đắn* và *Chất Lượng Mã Nguồn* trước khi đánh dấu xong task.
+- **Theo từng tính năng (Per feature):** Xác nhận mục *Tính Tích Hợp* và *Tài Liệu Hóa* trước khi coi tính năng là hoàn chỉnh.
+- **Theo từng bản phát hành (Per release):** Toàn bộ checklist này là mức sàn tối thiểu; `.agents/rules/git-workflow.md` bổ sung thêm các cổng kiểm soát phân nhánh và merge ở tầng trên.
 
-Tailor the list to the project once, then reuse it unchanged. A Definition of Done that is renegotiated every sprint is not a Definition of Done.
+Hãy chuẩn hóa danh sách này một lần cho dự án, sau đó áp dụng nhất quán. Một Tiêu chuẩn Hoàn thành bị thương lượng lại ở mỗi sprint thì không còn là Tiêu chuẩn Hoàn thành nữa.
 
-## Red Flags
+## Dấu Hiệu Cảnh Báo (Red Flags)
 
-- "It's done, I just haven't run it yet": unverified work is not done.
-- "Tests pass" used as a synonym for done while docs, regressions, or runtime verification are skipped.
-- A different bar applied depending on deadline pressure.
-- Acceptance criteria treated as the whole bar, with no standing quality floor.
-- "Done" declared before human review on changes that need it.
+- *"Xong rồi, tôi chỉ chưa chạy thử thôi"*: Công việc chưa được kiểm chứng thực tế thì chưa phải là đã xong.
+- Dùng câu *"Tests pass"* như từ đồng nghĩa với *"Đã hoàn thành"* trong khi bỏ qua cập nhật tài liệu, kiểm tra hồi quy, hoặc xác minh runtime.
+- Áp dụng tiêu chuẩn chất lượng thấp hơn khi gặp áp lực tiến độ.
+- Coi Acceptance Criteria là rào cản duy nhất mà bỏ qua sàn chất lượng chung (Definition of Done).
+- Tự tuyên bố *"Đã xong"* trước khi có sự phê duyệt của con người đối với các thay đổi bắt buộc phải duyệt.
