@@ -282,14 +282,14 @@ Cho export lớn:
 
 **Bảng Tổng hợp:**
 
-| Biến thể | Thời gian | Giá trị User | Khác biệt | Rủi ro | Tổng |
-|----------|-----------|-------------|-----------|--------|------|
-| A. PDF Đơn giản | 3 ngày | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | 12/20 |
-| B. Đa định dạng | 1 tuần | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | 14/20 |
-| C. Tuân thủ | 2 tuần | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 18/20 |
-| D. Chia sẻ trực tiếp | 1.5 tuần | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | 14/20 |
-| E. Thư viện | 2 tháng | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | 16/20 |
-| F. Hàng đợi Async | 2 tuần | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 15/20 |
+| Biến thể             | Thời gian | Giá trị User | Khác biệt | Rủi ro | Tổng  |
+| -------------------- | --------- | ------------ | --------- | ------ | ----- |
+| A. PDF Đơn giản      | 3 ngày    | ⭐⭐⭐          | ⭐⭐        | ⭐⭐⭐⭐   | 12/20 |
+| B. Đa định dạng      | 1 tuần    | ⭐⭐⭐⭐         | ⭐⭐⭐⭐      | ⭐⭐⭐    | 14/20 |
+| C. Tuân thủ          | 2 tuần    | ⭐⭐⭐⭐         | ⭐⭐⭐⭐⭐     | ⭐⭐⭐⭐⭐  | 18/20 |
+| D. Chia sẻ trực tiếp | 1.5 tuần  | ⭐⭐⭐          | ⭐⭐⭐⭐⭐     | ⭐⭐⭐    | 14/20 |
+| E. Thư viện          | 2 tháng   | ⭐⭐⭐⭐⭐        | ⭐⭐⭐⭐⭐     | ⭐⭐     | 16/20 |
+| F. Hàng đợi Async    | 2 tuần    | ⭐⭐⭐⭐         | ⭐⭐⭐       | ⭐⭐⭐⭐⭐  | 15/20 |
 
 Bạn thấy hướng nào hay? Hay có góc nhìn nào tôi bỏ sót?
 ```
@@ -453,13 +453,6 @@ Agent: Bắt đầu Giai đoạn 3...
   - *Trong phạm vi (In-Scope):* Xuất báo cáo P&L, Lịch sử giao dịch và Tổng hợp danh mục sang định dạng PDF/A có chữ ký số và nhật ký kiểm toán.
   - *Ngoài phạm vi (Out-of-Scope):* Xuất báo cáo tự động định kỳ theo lịch hoặc tùy chỉnh mẫu báo cáo riêng.
 
-## 📜 Business Rules
-
-- **[BR-01] Định dạng chuẩn pháp quy:** Báo cáo xuất ra bắt buộc ở định dạng PDF/A kèm chữ ký số của hệ thống và đóng dấu mờ (watermark) mã định danh nhà đầu tư.
-- **[BR-02] Thời hạn đường dẫn tải:** Đường dẫn tải báo cáo được mã hóa bảo mật và tự động hết hiệu lực sau 24 giờ kể từ thời điểm khởi tạo.
-- **[BR-03] Ngưỡng xử lý báo cáo lớn:** Báo cáo có từ 10.000 giao dịch trở xuống được tải trực tiếp; báo cáo trên 10.000 giao dịch được xử lý nền và gửi thông báo qua email trong vòng tối đa 5 phút.
-- **[BR-04] Giới hạn tần suất xuất báo cáo:** Mỗi nhà đầu tư được phép yêu cầu xuất tối đa 10 báo cáo trong mỗi khung giờ 60 phút.
-
 ## ✅ Acceptance Criteria
 
 ```gherkin
@@ -500,28 +493,28 @@ Feature: Xuất Báo cáo Giao dịch Ưu tiên Tuân thủ
 
 ### Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)
 
-| Ký hiệu | Tên phần tử / Trường thông tin | Loại thay đổi | Mô tả hành vi & Quy tắc hiển thị | Quy tắc áp dụng |
-|:---:|---|---|---|---|
-| **①** | Bộ chọn Loại Báo Cáo | Giữ nguyên | Cho phép chọn loại báo cáo giao dịch cần trích xuất | `[BR-01]` |
-| **②** | Nút "Xuất Báo cáo" | Thêm mới | Kích hoạt xuất báo cáo PDF/A hoặc chuyển sang xử lý nền nếu > 10.000 dòng | `[BR-01]`, `[BR-03]`, `[BR-04]` |
+| Ký hiệu | Tên phần tử / Trường thông tin | Loại thay đổi | Mô tả hành vi & Quy tắc hiển thị                                          | Quy tắc áp dụng                 |
+| :-----: | ------------------------------ | ------------- | ------------------------------------------------------------------------- | ------------------------------- |
+|  **①**  | Bộ chọn Loại Báo Cáo           | Giữ nguyên    | Cho phép chọn loại báo cáo giao dịch cần trích xuất                       | `[BR-01]`                       |
+|  **②**  | Nút "Xuất Báo cáo"             | Thêm mới      | Kích hoạt xuất báo cáo PDF/A hoặc chuyển sang xử lý nền nếu > 10.000 dòng | `[BR-01]`, `[BR-03]`, `[BR-04]` |
 
 ## ☀️ Success Criteria & Tracking
 
 ### Success Metrics
 
-| Chỉ số | Hiện tại | Mục tiêu | Cách đo |
-|---|---|---|---|
-| Ticket hỗ trợ (liên quan xuất báo cáo) | 87/quý | <30/quý | Phân tích nhãn hỗ trợ khách hàng |
-| Tỷ lệ sử dụng tính năng xuất báo cáo | 0% | >40% nhà đầu tư hoạt động | Báo cáo phân tích sản phẩm |
-| Thời gian phản hồi truy vấn kiểm toán | Thủ công (chậm) | <1 giờ phản hồi | Thời gian tra cứu nhật ký kiểm toán |
+| Chỉ số                                 | Hiện tại        | Mục tiêu                  | Cách đo                             |
+| -------------------------------------- | --------------- | ------------------------- | ----------------------------------- |
+| Ticket hỗ trợ (liên quan xuất báo cáo) | 87/quý          | <30/quý                   | Phân tích nhãn hỗ trợ khách hàng    |
+| Tỷ lệ sử dụng tính năng xuất báo cáo   | 0%              | >40% nhà đầu tư hoạt động | Báo cáo phân tích sản phẩm          |
+| Thời gian phản hồi truy vấn kiểm toán  | Thủ công (chậm) | <1 giờ phản hồi           | Thời gian tra cứu nhật ký kiểm toán |
 
 ### Tracking
 
-| Sự kiện | Dashboard / Báo cáo | Chủ sở hữu |
-|---|---|---|
-| Khởi tạo yêu cầu xuất báo cáo | Bảng theo dõi tăng trưởng sản phẩm | Product |
-| Hoàn tất xuất báo cáo PDF/A | Bảng theo dõi tăng trưởng sản phẩm | Product |
-| Xuất báo cáo thất bại hoặc chạm hạn mức | Bảng cảnh báo vận hành | Vận hành |
+| Sự kiện                                 | Dashboard / Báo cáo                | Chủ sở hữu |
+| --------------------------------------- | ---------------------------------- | ---------- |
+| Khởi tạo yêu cầu xuất báo cáo           | Bảng theo dõi tăng trưởng sản phẩm | Product    |
+| Hoàn tất xuất báo cáo PDF/A             | Bảng theo dõi tăng trưởng sản phẩm | Product    |
+| Xuất báo cáo thất bại hoặc chạm hạn mức | Bảng cảnh báo vận hành             | Vận hành   |
 ```
 
 ```
