@@ -49,37 +49,14 @@ Tự động nhận diện profile từ `spec/testability-manifest.json` hoặc 
 
 ## 1.2. Công thức Ma trận 6 Trục Bao phủ (6-Axis Coverage Matrix) chống sót Case
 
-Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y]`) bắt buộc quét qua 6 lớp lưới lọc cố định sau:
+Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y]`) bắt buộc quét qua 6 trục sau (chi tiết tại [qa-testing-checklist.md](references/qa-testing-checklist.md)):
 
-1. **Lớp 1 — Luồng Chính theo Phân khúc Người dùng (`@happy-path` & `@persona`):**
-   Kiểm thử luồng thành công chuẩn trên từng nhóm đối tượng định nghĩa trong `references/securities/08-persona-matrix.md` (Normal User, VIP User, Ultimate User, Tiểu khoản Thường đuôi 1 vs Tiểu khoản Margin đuôi 6).
-
-2. **Lớp 2 — Phân tích Giá trị Biên & Phân vùng Tương đương (`@boundary` / `@bva`):**
-   > 🧠 **CHỈ THỊ EXTENDED THINKING (Ngân sách suy luận 4k - 8k tokens):**
-   > Khi phân tích Boundary Value Analysis (BVA), yêu cầu kích hoạt tư duy chuỗi suy luận sâu (Extended Thinking) nhằm rà soát triệt để các edge cases ẩn: giao thoa giữa các phiên chuyển tiếp (ATO → Liên tục, Liên tục → ATC), trạng thái cổ phiếu đặc thù (chia cổ tức, điều chỉnh giá trần/sàn ngày GDKHQ), và sai số làm tròn số học tài chính khi tính lãi vay margin từng ngày.
-
-   Áp dụng quy ước 4 điểm biên bắt buộc cho mọi biến số định lượng:
-   - **Biên Giá:** Giá Sàn - 1 tick, Giá Sàn, Giá Tham chiếu, Giá Trần, Giá Trần + 1 tick, Sai bước giá (Tick size).
-   - **Biên Khối lượng:** 0, Lô lẻ (1, 99), Lô chẵn tối thiểu (100), Sai bước khối lượng (150 trên HOSE), Khối lượng tối đa mỗi lệnh (MAX), Vượt khối lượng tối đa (MAX + 100).
-   - **Biên Hạn mức / Cấu hình:** Đúng bằng `MAX_CONNECTOR` / `MAX_STREAM` và vượt quá +1.
-
-3. **Lớp 3 — Tổ hợp Ma trận Nghiệp vụ Chứng khoán (`@domain-matrix`):**
-   Tự động sinh kịch bản `Scenario Outline` kèm bảng `Examples` đa sàn theo công thức:
-   $$\text{Sàn (HOSE/HNX/UPCoM/Phái sinh)} \times \text{Phiên (ATO/Liên tục/ATC/PLO/Nghỉ)} \times \text{Trạng thái mã (Normal/CR/CA/RES/SUS)}$$
-   Tuân thủ tuyệt đối Quy tắc Tham số hóa Đa sàn / Đa mã trong `AGENTS.md`.
-
-4. **Lớp 4 — Kịch bản Phủ định & Vi phạm Quy tắc (`@negative`):**
-   - **Tầng Dữ liệu:** Thiếu trường bắt buộc (null, chuỗi rỗng), sai kiểu dữ liệu, số âm, ký tự đặc biệt.
-   - **Tầng Quyền hạn:** Không có token, token hết hạn, dùng token của Normal User gọi tính năng của VIP/Ultimate, truy cập chéo tiểu khoản của nhà đầu tư khác (IDOR).
-   - **Tầng Nghiệp vụ:** Đặt lệnh MTL cho cổ phiếu diện cảnh báo (CR/RES), đặt lệnh MP trên sàn UPCoM, sửa/hủy lệnh trong phiên khớp lệnh định kỳ ATO/ATC.
-
-5. **Lớp 5 — Chuyển đổi Trạng thái, Tương tranh & Chống trùng (`@state-concurrency`):**
-   - **State Matrix:** Thử thực hiện hành động ở trạng thái không hợp lệ (Hủy lệnh đã Filled, Sửa lệnh đã Cancelled, Đặt lệnh khi thị trường Halt).
-   - **Concurrency (Race Condition):** Gửi đồng thời 2 lệnh mua sử dụng cùng một khoản Sức mua khả dụng (kiểm tra lỗi check-then-act).
-   - **Idempotency:** Gửi lặp lại cùng một request đặt lệnh/chuyển tiền với cùng `requestId` / `clientOrderId`.
-
-6. **Lớp 6 — Độ bền & Phục hồi kết nối (`@resilience`):**
-   Mất kết nối WebSocket đột ngột và kiểm tra cơ chế tự động kết nối lại (`WS_AUTO_RECONNECT`), hết thời gian chờ của topic (Watchdog timeout), hoặc phản hồi chậm vượt ngưỡng SLA.
+1. **Lớp 1 (`@happy-path`, `@persona`):** Luồng chuẩn theo phân khúc (Normal/VIP/Ultimate, tiểu khoản 1 vs 6 theo `references/securities/08-persona-matrix.md`).
+2. **Lớp 2 (`@boundary`, `@bva`):** Phân tích 4 điểm biên: Biên giá (Sàn - 1, Sàn, TC, Trần, Trần + 1, Tick size); Biên KL (0, lẻ 1-99, chẵn 100, sai bước, MAX, MAX + 100); Hạn mức kết nối (`MAX_CONNECTOR`, `MAX_STREAM`, +1).
+3. **Lớp 3 (`@domain-matrix`):** Tổ hợp: Sàn (HOSE/HNX/UPCoM/Phái sinh) × Phiên (ATO/Liên tục/ATC/PLO/Nghỉ) × Trạng thái mã (Normal/CR/CA/RES/SUS). Tham số hóa qua `Scenario Outline` + `Examples`.
+4. **Lớp 4 (`@negative`):** Thiếu/sai dữ liệu (null, chuỗi rỗng, số âm); Vi phạm quyền (hết hạn token, IDOR chéo user); Vi phạm nghiệp vụ (lệnh MTL cho mã cảnh báo, sửa/hủy trong ATO/ATC).
+5. **Lớp 5 (`@state-concurrency`):** Chuyển đổi trạng thái sai (hủy lệnh Filled, sửa lệnh Cancelled); Concurrency (2 lệnh mua cùng vét sức mua); Idempotency trùng lặp.
+6. **Lớp 6 (`@resilience`):** Mất kết nối WS đột ngột, reconnect tự động, Watchdog topic timeout, SLA vượt ngưỡng.
 
 ## 2. Quy trình 3 Giai đoạn Thiết kế
 

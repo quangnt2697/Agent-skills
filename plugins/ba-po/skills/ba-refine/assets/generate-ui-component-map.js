@@ -20,7 +20,7 @@ const __dirname = path.dirname(__filename);
 // Root của agent-skills
 const agentSkillsRoot = path.resolve(__dirname, '../../../../..');
 const configProjectsPath = path.join(agentSkillsRoot, 'config/projects.json');
-const outputPath = path.resolve(__dirname, '../references/ui-component-map.json');
+const outputPath = path.resolve(__dirname, '../../ba-design-mockup/references/ui-component-map.json');
 
 // Đọc đường dẫn repo từ projects.json (hỗ trợ cả git worktree)
 let projects = {};
@@ -712,7 +712,7 @@ const fullIndex = {
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, JSON.stringify(fullIndex, null, 2), 'utf8');
 
-console.log(`✅ Đã xuất bản thành công: ${outputPath}`);
+console.log(`✅ Đã xuất bản thành công Single Source of Truth: ${outputPath}`);
 console.log(`   - Web Screens: ${Object.keys(WEB_CORE_SCREENS).length}`);
 console.log(`   - Mobile Screens: ${Object.keys(APP_CORE_SCREENS).length}`);
 console.log(`   - UI Primitives detected: ${detectedWebUiComponents.length}`);

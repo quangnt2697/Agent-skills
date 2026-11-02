@@ -105,7 +105,7 @@ Mặc định **TỰ ĐỘNG ÁP DỤNG 100% (Always-on)** cho mọi skill và m
 - **Mặc định là TỰ CHẠY.** Chỉ dừng hỏi user khi rơi vào 5 trường hợp của danh sách đóng trong `.agents/rules/autonomy-contract.md`: thiếu input bắt buộc, thiếu credential, có câu hỏi 🔴 Critical, sắp commit/merge vào main, hoặc hành động không hoàn tác được bằng `git revert`.
 - Không được hỏi "có tiếp không", "đã đủ chưa", "có apply không" — mọi trường hợp đó đều tự quyết và chạy tiếp.
 - Nếu phát hiện Spec có lỗ hổng logic, chủ động dùng `ba-interview-me` để chất vấn user.
-- Nếu gặp lỗi (Test fail, Build fail), chủ động tự sửa code (Self-fix) và chạy lại — tối đa 3 vòng rồi mới báo cáo.
+- Nếu gặp lỗi (Test fail, Build fail), chủ động tự sửa code (Self-fix) và chạy lại — tối đa 3 vòng rồi mới báo cáo. *(Ngoại lệ: Với các cổng kiểm định spec khi Push Jira hoặc đo lường trong `qa-run-test`, Agent TUYỆT ĐỐI KHÔNG tự ý sửa file đặc tả hoặc sửa assertion để lách gate; xem chi tiết tại `autonomy-contract.md`).*
 
 ### 5.1. Git Workflow — Branch-based Development
 

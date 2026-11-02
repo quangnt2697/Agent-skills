@@ -104,7 +104,7 @@ Bước 3.1: Tạo refined-draft.md (Khung Jira Description chuẩn 6 phần)
              5. ## 🎨 UI Design / Mockup (Ảnh inline từng Case & UI Delta)
              6. ## ☀️ Success Criteria & Tracking (Metrics & Tracking)
           └─ Nếu task liên quan UI (WEB hoặc APP):
-             • Tra cứu references/ui-component-map.json (chống thiết kế bừa)
+             • Tra cứu ../ba-design-mockup/references/ui-component-map.json (chống thiết kế bừa)
              • Dựng Delta-Only: Giữ 90% AS-IS mờ nhẹ, viền nhấn added/modified kèm badge ① ② ③
              • Phân tách theo từng Case: Case 1 (Thao tác chính), Case 2 (Ngoại lệ/Lỗi), Case 3 (Khóa phiên/Biên)
              • CẤM mô tả design bằng text lan man; mỗi ảnh đi kèm ghi chú thao tác người dùng (Action) & phản hồi hệ thống (Response) gắn [BR-*]

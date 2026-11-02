@@ -581,15 +581,17 @@ async function main() {
     loadEnv();
 
     const args = process.argv.slice(2);
-    if (args.length < 2) {
-        console.error("Usage: node jira-push-spec.js <issueKey> <markdownFilePath> [--dry-run]");
-        console.error("   VD: node jira-push-spec.js G3PTP-17057 workspace/issues/G3PTP-17057/spec/refined.md");
+    const positionalArgs = args.filter(a => !a.startsWith('--'));
+
+    if (positionalArgs.length < 1) {
+        console.error("Usage: node jira-push-spec.js <issueKey> [markdownFilePath] [--dry-run] [--force|--skip-validation]");
+        console.error("   VD: node jira-push-spec.js G3PTP-17057");
+        console.error("   VD: node jira-push-spec.js G3PTP-17057 workspace/issues/G3PTP-17057/spec/refined.md --dry-run");
+        console.error("   VD: node jira-push-spec.js G3PTP-17057 --force");
         process.exit(1);
     }
 
-    const rawIssueKey = args[0];
-    const mdFilePath = path.resolve(args[1]);
-
+    const rawIssueKey = positionalArgs[0];
     const issueKey = normalizeIssueKey(rawIssueKey);
     if (!issueKey) {
         console.error(`❌ Không nhận diện được Jira issue key từ: "${rawIssueKey}"`);
@@ -598,6 +600,28 @@ async function main() {
     }
     if (issueKey !== rawIssueKey) {
         console.log(`ℹ️  Issue key chuẩn hoá: "${rawIssueKey}" → "${issueKey}"`);
+    }
+
+    // Tự động phân giải file spec nếu không truyền đường dẫn cụ thể
+    let mdFilePath;
+    if (positionalArgs[1]) {
+        mdFilePath = path.resolve(positionalArgs[1]);
+    } else {
+        const defaultRefined = path.resolve(process.cwd(), 'workspace', 'issues', issueKey, 'spec', 'refined.md');
+        const defaultFinal = path.resolve(process.cwd(), 'workspace', 'issues', issueKey, 'spec', 'final.md');
+
+        if (fs.existsSync(defaultRefined)) {
+            mdFilePath = defaultRefined;
+        } else if (fs.existsSync(defaultFinal)) {
+            mdFilePath = defaultFinal;
+        } else {
+            console.error(`❌ Không tìm thấy file spec mặc định cho ticket ${issueKey}.`);
+            console.error(`   Đã kiểm tra:`);
+            console.error(`   - ${defaultRefined}`);
+            console.error(`   - ${defaultFinal}`);
+            console.error(`   👉 Vui lòng chỉ định rõ đường dẫn file: node jira-push-spec.js ${issueKey} <đường_dẫn_file>`);
+            process.exit(1);
+        }
     }
 
     // .env của repo dùng ATLASSIAN_*; JIRA_* giữ lại cho các shell đã export sẵn.
@@ -619,17 +643,32 @@ async function main() {
     const markdownContent = fs.readFileSync(mdFilePath, 'utf8');
 
     // Chốt chặn Kiểm định Chất lượng Spec (Deterministic Quality Gate)
-    console.log(`🛡️  Đang chạy Pre-flight Validation cho spec: ${path.basename(mdFilePath)}...`);
-    const valResult = validateRefinedSpec(mdFilePath);
-    if (!valResult.valid) {
-        console.error("❌ CẤM PUSH LÊN JIRA — Spec chưa đạt chuẩn nghiệp vụ hoặc vi phạm quy tắc:");
-        valResult.errors.forEach(e => console.error(`   - ${e}`));
-        process.exit(1);
+    const isForce = process.env.FORCE_PUSH === '1' || args.includes('--force') || args.includes('--skip-validation');
+    const isFinalSpec = path.basename(mdFilePath).includes('final');
+
+    if (isForce) {
+        console.log(`⚠️  Bỏ qua Pre-flight Validation (--force/--skip-validation được bật).`);
+    } else if (isFinalSpec) {
+        console.log(`ℹ️  Phát hiện spec chuẩn ba-spec (${path.basename(mdFilePath)}). Chạy kiểm tra cơ bản...`);
+        // Kiểm tra không rỗng và có nội dung
+        if (!markdownContent.trim()) {
+            console.error("❌ CẤM PUSH LÊN JIRA — File spec rỗng.");
+            process.exit(1);
+        }
+    } else {
+        console.log(`🛡️  Đang chạy Pre-flight Validation cho spec: ${path.basename(mdFilePath)}...`);
+        const valResult = validateRefinedSpec(mdFilePath);
+        if (!valResult.valid) {
+            console.error("❌ CẤM PUSH LÊN JIRA — Spec chưa đạt chuẩn nghiệp vụ hoặc vi phạm quy tắc:");
+            valResult.errors.forEach(e => console.error(`   - ${e}`));
+            console.error("\n💡 GỢI Ý: Nếu bạn muốn đẩy spec nguyên trạng mà không qua bộ kiểm định cấu trúc, hãy chạy kèm cờ --force hoặc --skip-validation.");
+            process.exit(1);
+        }
+        if (valResult.warnings.length > 0) {
+            valResult.warnings.forEach(w => console.warn(`⚠️  Cảnh báo: ${w}`));
+        }
+        console.log("✅ Spec đạt chuẩn 100% về cấu trúc User Story, AC Gherkin sạch và không rò rỉ mã tag.");
     }
-    if (valResult.warnings.length > 0) {
-        valResult.warnings.forEach(w => console.warn(`⚠️  Cảnh báo: ${w}`));
-    }
-    console.log("✅ Spec đạt chuẩn 100% về cấu trúc User Story, AC Gherkin sạch và không rò rỉ mã tag.");
 
     const authHeader = 'Basic ' + Buffer.from(`${email}:${apiToken}`).toString('base64');
     let attachmentMap = {};

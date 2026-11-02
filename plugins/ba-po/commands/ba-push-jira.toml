@@ -1,0 +1,66 @@
+description = "Đẩy đặc tả nghiệp vụ (spec/refined.md hoặc spec/final.md) trực tiếp lên Jira Issue Description dạng ADF chuẩn kèm inline mockup images mà không chạy lại toàn bộ quy trình mài giũa."
+
+prompt = """
+# Command: ba-push-jira
+
+Đẩy trực tiếp file đặc tả nghiệp vụ lên Jira Issue Description dạng ADF (Atlassian Document Format) kèm inline mockup images.
+
+## Usage
+
+```bash
+/ba-push-jira {issueKey}
+/ba-push-jira {issueKey} --force
+/ba-push-jira {issueKey} --dry-run
+/ba-push-jira {issueKey} --file workspace/issues/{issueKey}/spec/custom-spec.md
+```
+
+## Arguments
+
+- `{issueKey}` (required) — Jira issue key (VD: `PROJ-123`, `G3PTP-17057`). Chấp nhận cả URL Jira đầy đủ.
+- `--file <path>` (optional) — Đường dẫn file markdown cần đẩy. Mặc định: tự tìm `workspace/issues/{issueKey}/spec/refined.md`, nếu không có sẽ tìm `spec/final.md`.
+- `--force` hoặc `--skip-validation` (optional) — Bỏ qua cổng kiểm định `validateRefinedSpec` khi cần đẩy spec nguyên trạng.
+- `--dry-run` (optional) — Chỉ in ADF ra terminal để kiểm tra cấu trúc và inline mockup, không gọi API Jira thật.
+
+## Examples
+
+```bash
+# Push spec chuẩn mặc định
+/ba-push-jira G3PTP-17057
+
+# Push spec bỏ qua kiểm định cấu trúc
+/ba-push-jira G3PTP-17057 --force
+
+# Kiểm tra ADF trước khi push thật
+/ba-push-jira G3PTP-17057 --dry-run
+```
+
+## Workflow
+
+```
+1. Xác định file Spec mục tiêu:
+   - Nếu có cờ --file: dùng file chỉ định.
+   - Nếu không: tự tìm workspace/issues/{issueKey}/spec/refined.md.
+   - Fallback: nếu không thấy refined.md, tìm tiếp workspace/issues/{issueKey}/spec/final.md.
+   - Nếu cả 2 đều không tồn tại: Báo lỗi SPEC_NOT_FOUND và DỪNG LẠI NGAY.
+   ↓
+2. Thực thi Push (Fast-path):
+   - Fast-path n8n (ưu tiên): Gửi POST webhook pushSpecToJira qua scripts/lib/n8n-client.js
+   - CLI Direct: node plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} {filePath} [options]
+   ↓
+3. Xử lý Kết Quả & Báo cáo:
+   - Thành công: Trả về Jira URL và xuất bản spec/testability-manifest.json cho QA.
+   - Thất bại: In nguyên văn mã lỗi và lý do từ validator/API.
+```
+
+## Immutable Rules (Bắt buộc tuân thủ 100%)
+
+1. **NO SCOPE CREEP:** Lệnh này CHỈ làm nhiệm vụ push file spec có sẵn lên Jira. TUYỆT ĐỐI KHÔNG tự ý quét tài liệu liên quan, không phân kỳ ý tưởng (Divergent), không hội tụ (Convergent), không gọi `ba-interview-me`.
+2. **SPEC IMMUTABILITY (CẤM SỬA SPEC):** Khi script báo lỗi validator (thiếu mục, có @tag, v.v.), Agent TUYỆT ĐỐI KHÔNG ĐƯỢC tự ý mở file spec ra sửa lại nội dung để lách gate. BẮT BUỘC dừng lại, in chi tiết lỗi và để người dùng quyết định (hoặc dùng cờ `--force` nếu người dùng cho phép).
+3. **LOG TRUTH (TRUNG THỰC BÁO CÁO):** Chỉ báo thành công khi có phản hồi HTTP 200/204 từ Jira API.
+
+## Output
+
+- **Jira Description:** Cập nhật dạng ADF chuẩn kèm inline mockup images (mediaSingle).
+- **Testability Artifact:** `workspace/issues/{issueKey}/spec/testability-manifest.json` (tự động cập nhật để QA SDET bám sát kiểm thử).
+"""
+

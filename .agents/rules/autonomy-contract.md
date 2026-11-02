@@ -61,8 +61,11 @@ Agent chỉ được dừng luồng để hỏi khi rơi vào đúng một trong
 | "Có 2 cách làm, bạn chọn cách nào?"              | Chọn cách đơn giản hơn, ghi lý do vào output. Chỉ hỏi nếu rơi vào mục 2.3 |
 | "Tôi đã xong phase 2, có tiếp phase 3 không?"    | Tiếp. Pipeline nghĩa là chạy hết                                          |
 | "Test fail 3/28, có tiếp không?"                 | Nếu là `qa-run-test`, **DỪNG** và báo cáo nguyên văn (xem ngoại lệ). Các skill sinh code khác: tự sửa |
+| "Validator báo spec thiếu mục/có tag, có sửa spec để push Jira không?" | **CẤM TỰ SỬA SPEC**. Luồng push chỉ đồng bộ, không tự tiện sửa đặc tả người dùng đã duyệt (xem ngoại lệ) |
 
 > ⚠️ **Ngoại lệ cho `qa-run-test`:** Đây là skill **đo lường**, không phải skill sửa code. Khi `qa-run-test` chạy lỗi (test fail, lỗi cú pháp, thiếu môi trường), agent BẮT BUỘC ghi nhận nguyên văn, dừng luồng, và đề xuất user gọi skill chuyên trách (`qa-auto-design`, `dev-debugging`). Tuyệt đối KHÔNG tự ý sửa test, cài package hay đổi cấu hình để "thử cho qua". Vòng lặp sửa lỗi phải do Pipeline Orchestrator hoặc User quyết định.
+
+> 🔒 **Ngoại lệ Bất biến cho Luồng Push Jira (`ba-push-jira`, Phase 4 `ba-refine`):** Luồng push spec lên Jira là hành động **đồng bộ (synchronization)**, hoàn toàn KHÔNG phải hành động sinh hay mài giũa đặc tả. Nếu pre-flight validator báo lỗi (ví dụ spec thiếu mục, có automation @tag, không đạt chuẩn Gherkin), Agent **TUYỆT ĐỐI CẤM tự ý mở file spec (`refined.md`, `final.md`) ra sửa, thêm hoặc xóa nội dung** để lách qua validator. Agent BẮT BUỘC DỪNG lại, trích xuất chính xác mã lỗi và dòng vi phạm gửi cho user, hoặc hỏi ý kiến user có muốn push với cờ `--force` / `--skip-validation` hay không. Mọi hành vi tự sửa spec trong lúc thực hiện lệnh push đều bị coi là vi phạm nghiêm trọng Grounding Contract.
 
 ---
 

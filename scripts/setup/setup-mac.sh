@@ -69,8 +69,19 @@ echo "⚙️ Khởi động n8n lần đầu để khởi tạo cơ sở dữ li
 # Cần chạy n8n 1 lần để tạo file database.sqlite trước khi import workflow
 n8n start &
 N8N_INIT_PID=$!
-echo "⏳ Đợi n8n khởi tạo DB (8 giây)..."
-sleep 8
+echo "⏳ Đợi n8n khởi tạo DB (poll /healthz tối đa 30 giây)..."
+n8n_ready=0
+for i in $(seq 1 30); do
+    if curl -sf http://localhost:5678/healthz >/dev/null 2>&1; then
+        n8n_ready=1
+        echo "✅ n8n sẵn sàng sau ${i} giây."
+        break
+    fi
+    sleep 1
+done
+if [ "$n8n_ready" -eq 0 ]; then
+    echo "⚠️ n8n chưa phản hồi sau 30 giây — tiếp tục nhưng có thể lỗi import."
+fi
 kill $N8N_INIT_PID 2>/dev/null || true
 wait $N8N_INIT_PID 2>/dev/null || true
 echo "✅ Database n8n đã được khởi tạo."

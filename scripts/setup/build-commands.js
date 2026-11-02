@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PLUGINS_DIR = path.resolve(__dirname, '..', '..', 'plugins');
 
-function parseToml(content) {
+function parseToml(content, tomlPath) {
   try {
     const data = parse(content);
     return {
@@ -23,8 +23,8 @@ function parseToml(content) {
       prompt: typeof data.prompt === 'string' ? data.prompt.trim() : ''
     };
   } catch (err) {
-    console.error(`Error parsing TOML: ${err.message}`);
-    return { description: '', prompt: '' };
+    console.error(`ERROR: Failed to parse TOML ${tomlPath ? `at ${tomlPath}` : ''}: ${err.message}`);
+    process.exit(1);
   }
 }
 
@@ -47,11 +47,11 @@ function processPlugin(pluginDir) {
     const mdPath = path.join(outDir, mdName);
     
     const content = fs.readFileSync(tomlPath, 'utf8');
-    const { description, prompt } = parseToml(content);
+    const { description, prompt } = parseToml(content, tomlPath);
     
     if (!prompt) {
-      console.warn(`Warning: No prompt found in ${tomlPath}`);
-      continue;
+      console.error(`ERROR: No prompt found in ${tomlPath} — build aborted. Fix the TOML file and retry.`);
+      process.exit(1);
     }
     
     const mdContent = `---

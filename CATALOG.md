@@ -1,8 +1,8 @@
 # Danh Mục Tính Năng & Kỹ Năng (Feature & Skill Catalog)
 
-> **Bảng tra cứu nhanh toàn diện:** Tổng hợp 31 Skills, 29 Slash Commands, 6 Personas, 6 Plugins, 6 Core Rules và các Workflow tự động hóa trong hệ thống `agent-skills` (Nhánh `main` chuyên trách BA - QA - SM - Code Review).
+> **Bảng tra cứu nhanh toàn diện:** Tổng hợp 31 Skills, 30 Slash Commands, 6 Personas, 6 Plugins, 6 Core Rules và các Workflow tự động hóa trong hệ thống `agent-skills` (Nhánh `main` chuyên trách BA - QA - SM - Code Review).
 
-**Điều hướng nhanh:** [Tổng quan](#1-tổng-quan-hệ-thống) | [Slash Commands](#2-danh-mục-slash-commands-29-lệnh) | [Kỹ năng Skills](#3-danh-mục-kỹ-năng-skills-31-skills) | [Ma trận Vai trò Personas](#4-ma-trận-vai-trò-personas--ranh-giới) | [Luật Cốt lõi Rules](#5-hệ-thống-luật-rules--chính-sách) | [Domain & References](#6-tài-liệu-nghiệp-vụ--references)
+**Điều hướng nhanh:** [Tổng quan](#1-tổng-quan-hệ-thống) | [Slash Commands](#2-danh-mục-slash-commands-30-lệnh) | [Kỹ năng Skills](#3-danh-mục-kỹ-năng-skills-31-skills) | [Ma trận Vai trò Personas](#4-ma-trận-vai-trò-personas--ranh-giới) | [Luật Cốt lõi Rules](#5-hệ-thống-luật-rules--chính-sách) | [Domain & References](#6-tài-liệu-nghiệp-vụ--references)
 
 ---
 
@@ -13,23 +13,24 @@
 | **Plugins** | 6 | `plugins/` | Các gói module: `ba-po`, `qa`, `code-reviewer`, `scrum-master`, `fintech-data`, `core` |
 | **Vai trò (Personas)** | 6 | `plugins/*/agents/` | BA/PO, QA/SDET, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor |
 | **Skills** | 31 | `plugins/*/skills/` | Kỹ năng chuyên môn thực thi theo chuẩn Progressive Disclosure 3 tầng |
-| **Slash Commands** | 29 | `plugins/*/commands/` | Lệnh tắt kích hoạt nhanh quy trình nghiệp vụ |
+| **Slash Commands** | 30 | `plugins/*/commands/` | Lệnh tắt kích hoạt nhanh quy trình nghiệp vụ |
 | **Core Rules** | 6 | `.agents/rules/` + `AGENTS.md` | Luật định hình hành vi, an toàn git, và chuẩn mực output |
 | **n8n Nodes / Workflows** | 28+ nodes | `n8n-workflows/`, `scripts/n8n-nodes/` | Tự động hóa fast-path ChatOps, Cron & Webhooks |
 | **Domain Guides** | 40+ docs | `references/`, `docs/` | Tri thức chứng khoán KRX, Trading API, TimescaleDB, QA SDK |
 
 ---
 
-## 2. Danh mục Slash Commands (29 lệnh)
+## 2. Danh mục Slash Commands (30 lệnh)
 
 Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/commands/`) và tự động nạp vào CLI / Claude Code / Antigravity.
 
-### 2.1. Phân tích Nghiệp vụ & Sản phẩm — BA/PO (`plugins/ba-po` — 9 lệnh)
+### 2.1. Phân tích Nghiệp vụ & Sản phẩm — BA/PO (`plugins/ba-po` — 10 lệnh)
 
 | Command | Tham số | Đầu ra chính | Mục đích & Khi nào dùng |
 |---|---|---|---|
 | `/ba-spec` | `{issueKey}` | `spec/*-final.md` | Import từ Jira/Confluence, quét gaps, lập Business Spec bàn giao. |
 | `/ba-refine` | `{issueKey}` | `spec/refined.md` + `testability-manifest.json` | Brainstorm phân kỳ/hội tụ ý tưởng thô và cập nhật spec lên Jira. |
+| `/ba-push-jira` | `{issueKey}` | Jira Description ADF | Đẩy trực tiếp spec lên Jira kèm inline mockup (không chạy lại quy trình refine). |
 | `/ba-interview` | `{issueKey}` | Spec Clarifications | Phỏng vấn tương tác 1-1 làm rõ điểm mù logic nghiệp vụ. |
 | `/ba-user-stories` | `{issueKey}` | `spec/user-stories.md` | Viết User Stories theo chuẩn INVEST kèm Acceptance Criteria Gherkin. |
 | `/ba-gap-analysis` | `{issueKey}` | `spec/gap-analysis.md` | Phân tích khoảng cách AS-IS vs TO-BE và lộ trình chuyển đổi. |

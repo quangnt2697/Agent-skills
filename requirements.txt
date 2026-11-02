@@ -1,0 +1,13 @@
+pytest
+pytest-bdd
+pytest-playwright
+pytest-asyncio
+pytest-xdist
+pytest-html
+requests
+httpx
+websockets
+websocket-client
+jsonschema
+pydantic
+protobuf

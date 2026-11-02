@@ -1,5 +1,35 @@
 {
   "name": "agent-skills",
   "version": "1.0.0",
-  "description": "Bộ sưu tập kỹ năng cấp sản xuất cho AI coding agents — BA, DEV, QA, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor."
+  "description": "Bộ sưu tập kỹ năng cấp sản xuất cho AI coding agents — BA, DEV, QA, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor.",
+  "author": {
+    "name": "QuangNT"
+  },
+  "homepage": "https://github.com/addyosmani/agent-skills",
+  "repository": "https://github.com/addyosmani/agent-skills",
+  "license": "MIT",
+  "skills": [
+    "./plugins/ba-po/skills",
+    "./plugins/code-reviewer/skills",
+    "./plugins/core/skills",
+    "./plugins/fintech-data/skills",
+    "./plugins/qa/skills",
+    "./plugins/scrum-master/skills"
+  ],
+  "commands": [
+    "./plugins/ba-po/.claude/commands",
+    "./plugins/code-reviewer/.claude/commands",
+    "./plugins/core/.claude/commands",
+    "./plugins/fintech-data/.claude/commands",
+    "./plugins/qa/.claude/commands",
+    "./plugins/scrum-master/.claude/commands"
+  ],
+  "agents": [
+    "./plugins/ba-po/agents/ba-po.md",
+    "./plugins/code-reviewer/agents/code-reviewer.md",
+    "./plugins/code-reviewer/agents/security-auditor.md",
+    "./plugins/code-reviewer/agents/web-performance-auditor.md",
+    "./plugins/qa/agents/qa.md",
+    "./plugins/scrum-master/agents/scrum-master.md"
+  ]
 }

@@ -115,7 +115,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
   - [generate-ui-component-map.js](assets/generate-ui-component-map.js): Script quét tự động codebase Web & Mobile.
 
 - 📖 **Tài liệu chi tiết (references/):**
-  - [ui-component-map.json](references/ui-component-map.json): Chỉ mục Màn hình UI & Component Design System chuẩn.
+  - [ui-component-map.json](../ba-design-mockup/references/ui-component-map.json): Chỉ mục Màn hình UI & Component Design System chuẩn.
   - [workflow-and-phases.md](references/workflow-and-phases.md): Chi tiết 4 phase theo tư duy nghiệp vụ.
   - [quality-rules.md](references/quality-rules.md): Bộ lọc chống kỹ thuật & Confidence Score.
   - [refinement-criteria.md](references/refinement-criteria.md): Rubric 4 tiêu chí stress-test nghiệp vụ.

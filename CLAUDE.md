@@ -4,7 +4,7 @@ Hệ thống kỹ năng (skills) cấp sản xuất cho AI coding agents — chu
 
 > 📖 **Single Source of Truth:**
 > Toàn bộ luật (Rules), Vai trò (Personas), Ma trận trách nhiệm và Quy trình Pipeline chi tiết được chuẩn hóa tại: [AGENTS.md](AGENTS.md).
-> Tra cứu nhanh toàn bộ 31 skills và 29 commands tại: [CATALOG.md](CATALOG.md).
+> Tra cứu nhanh toàn bộ 31 skills và 30 commands tại: [CATALOG.md](CATALOG.md).
 > Hướng dẫn lộ trình làm quen từng bước tại: [LEARNING-ROADMAP.md](LEARNING-ROADMAP.md).
 
 ---
@@ -15,7 +15,7 @@ Hệ thống kỹ năng (skills) cấp sản xuất cho AI coding agents — chu
 # Kích hoạt hooks bảo vệ nhánh main và workspace
 npm run setup:hooks
 
-# Kiểm tra toàn bộ 8 cổng validators hệ thống (skills, commands, versions, links, paths, icons, nodes, tokens)
+# Kiểm tra toàn bộ 9 cổng validators hệ thống (skills, commands, versions, links, refs, paths, icons, nodes, tokens)
 npm run validate
 
 # Chạy toàn bộ test suite (unit tests + eval benchmark)
