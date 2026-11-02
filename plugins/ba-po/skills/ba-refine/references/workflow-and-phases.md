@@ -219,7 +219,7 @@ Chất vấn user qua kỹ năng `/ba-interview-me` (chỉ hỏi khi có điểm
 
 ## Giai đoạn 3: Mài sắc & Cấu trúc (Business Spec Sharpening)
 
-**Mục tiêu:** Chốt hướng đi và cấu trúc thành spec thuần nghiệp vụ theo khung Jira Description chuẩn 6 phần (kèm Mockup trực quan nếu task có UI).
+**Mục tiêu:** Chốt hướng đi và cấu trúc thành spec thuần nghiệp vụ theo khung Jira Description chuẩn 5 phần (kèm Mockup trực quan nếu task có UI).
 
 ### Bước 3.1: Tạo bản nháp (Draft) theo Khung Jira Description Chuẩn mực
 
@@ -227,10 +227,9 @@ Tạo file nháp tại: `workspace/issues/{issueKey}/spec/refined-draft.md` từ
 
 1. **`## 🧩 User Story`** (`**As a** [role/persona cụ thể]`, `**I want** [hành động]`, `**So that** [giá trị đạt được]`)
 2. **`## 💼 Business Context`** (`Vấn đề (Problem)`, `Mục tiêu (Goal)`, `Tính cấp thiết (Urgency)`, `Phạm vi (Scope)`)
-3. **`## 📜 Business Rules`** (Danh mục quy tắc nghiệp vụ `[BR-01]`, `[BR-02]`, công thức tính toán)
-4. **`## ✅ Acceptance Criteria`** (Khối `gherkin` sạch: **tuyệt đối không có automation `@tags`**, **không có tiền tố `[AC-x.y]`**, sử dụng `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
-5. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: ảnh inline từng Case kèm điểm chạm thao tác `①`, `②`, `③` và Bảng UI Delta Mapping; ghi `N/A` nếu task backend)
-6. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
+3. **`## ✅ Acceptance Criteria`** (Khối `gherkin` sạch: **tuyệt đối không có automation `@tags`**, **không có tiền tố `[AC-x.y]`**, sử dụng `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
+4. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: ảnh inline từng Case kèm điểm chạm thao tác `①`, `②`, `③` và Bảng UI Delta Mapping; ghi `N/A` nếu task backend)
+5. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
 
 **🛡️ KIỂM ĐỊNH HARD GATE TRƯỚC GATE 2 (BẮT BUỘC):**
 Chạy lệnh kiểm định trước khi trình user:
@@ -284,9 +283,9 @@ Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App, kíc
 
 ---
 
-1. Trình bày TOÀN BỘ 6 phần bản nháp chuẩn Jira cho user xem trực tiếp trong chat.
+1. Trình bày TOÀN BỘ 5 phần bản nháp chuẩn Jira cho user xem trực tiếp trong chat.
 2. **Khi task có UI:** Trình đồng thời:
-   - **Nội dung Spec 6 phần chuẩn Jira**
+   - **Nội dung Spec 5 phần chuẩn Jira**
    - **Các ảnh Mockup trực quan theo từng Case** (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`)
    - **Ghi chú điểm chạm thao tác `①`, `②`, `③` dưới từng ảnh**
    - **Bảng chú thích UI Delta Mapping tổng hợp**

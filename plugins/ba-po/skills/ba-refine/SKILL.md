@@ -22,7 +22,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 | Tải và phân tích Jira task, Confluence, attachments | Viết code, test script, SQL, API contract |
 | Khai phóng ý tưởng theo 5 chiều nghiệp vụ cốt lõi | Bàn luận kiến trúc hệ thống, microservices, DB Schema |
 | Stress-test xung đột quy tắc nghiệp vụ và phiên giao dịch | Viết JSON payload mẫu (camelCase, snake_case) |
-| Viết `refined.md` 6 phần chuẩn Jira thuần nghiệp vụ (kèm Mục UI khi có thay đổi màn hình) & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
+| Viết `refined.md` 5 phần chuẩn Jira thuần nghiệp vụ (kèm Mục UI khi có thay đổi màn hình) & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
 | Xuất bản `spec/final.md` chuẩn hóa bàn giao cho DEV & QA | Tự ý thiết kế bừa, lệch khỏi `ui-component-map.json` |
 
 ### 🛡️ Bảng Ranh giới Ngôn ngữ Bất biến (Strict Business-Only Guardrail)
@@ -48,7 +48,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 | Gate | Vị trí | Hành động bắt buộc |
 |---|---|---|
 | **Gate 1** | Cuối Phase 0 | Trình bảng tài liệu → **DỪNG chờ user gõ OK** |
-| **Gate 2** | Bước 3.2 | Trình đồng thời: Toàn bộ draft 6 phần chuẩn Jira + Ảnh `mockup.png` + Bảng chú thích UI Delta ① ② ③ → **DỪNG chờ user approve** trước khi lưu `refined.md` |
+| **Gate 2** | Bước 3.2 | Trình đồng thời: Toàn bộ draft 5 phần chuẩn Jira + Ảnh `mockup.png` + Bảng chú thích UI Delta ① ② ③ → **DỪNG chờ user approve** trước khi lưu `refined.md` |
 
 ## 2. Quy trình 4 Giai đoạn Theo Tư Duy Nghiệp Vụ
 
@@ -82,13 +82,12 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
   - Gom các biến thể thành 2-3 hướng đi nghiệp vụ rõ ràng để user lựa chọn.
 
 - **Giai đoạn 3 (Chuẩn hóa Tài liệu Đặc tả Nghiệp vụ & Dựng Mockup — Gate 2):**
-  - Tạo `refined-draft.md` theo cấu trúc **Jira Description chuẩn mực 6 phần**:
+  - Tạo `refined-draft.md` theo cấu trúc **Jira Description chuẩn mực 5 phần**:
     1. **`## 🧩 User Story`** (`**As a** [role/persona cụ thể]`, `**I want** [hành động]`, `**So that** [giá trị đạt được]`)
     2. **`## 💼 Business Context`** (`Vấn đề (Problem)`, `Mục tiêu (Goal)`, `Tính cấp thiết (Urgency)`, `Phạm vi (Scope)`)
-    3. **`## 📜 Business Rules`** (Danh mục quy tắc nghiệp vụ `[BR-01]`, `[BR-02]`, công thức tính toán)
-    4. **`## ✅ Acceptance Criteria`** (Khối `gherkin` sạch: **tuyệt đối không có automation `@tags`**, **không có tiền tố `[AC-x.y]`**, sử dụng `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
-    5. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: ảnh inline từng Case kèm điểm chạm thao tác `①`, `②`, `③` và Bảng UI Delta Mapping; ghi `N/A` nếu task backend)
-    6. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
+    3. **`## ✅ Acceptance Criteria`** (Khối `gherkin` sạch: **tuyệt đối không có automation `@tags`**, **không có tiền tố `[AC-x.y]`**, sử dụng `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
+    4. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: ảnh inline từng Case kèm điểm chạm thao tác `①`, `②`, `③` và Bảng UI Delta Mapping; ghi `N/A` nếu task backend)
+    5. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
   - **Kiểm định Hard Gate trước Gate 2:** Chạy lệnh `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md"` — BẮT BUỘC PASS 100% trước khi trình user.
   - **Quy tắc Dựng Mockup Giao diện Chuẩn Prod (Khi task có UI):**
     - BẮT BUỘC gọi kỹ năng chuyên biệt `ba-design-mockup` để tự động bóc tách AS-IS codebase từ master/main (hoặc Live DOM), chọn Production App Shell tương ứng (`assets/shells/`), dựng Delta-Only và chạy kiểm định tự động `validate-mockup-fidelity.js` (Fidelity Score ≥ 90%).
@@ -109,7 +108,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 
 - 🛠️ **Công cụ & Assets:**
   - [jira-push-spec.js](assets/jira-push-spec.js): CLI helper push ADF, upload ảnh Mockup và xuất manifest.
-  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 6 phần chuẩn Jira.
+  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 5 phần chuẩn Jira.
   - [mockup-harness.html](assets/mockup-harness.html): Bộ khung HTML UI Kit chuẩn và styling Delta-Only.
   - [render-mockup.js](assets/render-mockup.js): Script chụp ảnh Retina 2x qua Playwright.
   - [generate-ui-component-map.js](assets/generate-ui-component-map.js): Script quét tự động codebase Web & Mobile.
@@ -138,16 +137,26 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 - **Tính cấp thiết (Urgency):** Đối thủ đã tung các gói lãi suất linh hoạt; cần triển khai ngay trước thềm mùa báo cáo tài chính quý.
 - **Phạm vi (Scope):** Áp dụng cho tài khoản ký quỹ cá nhân đã kích hoạt hạn mức; ngoài phạm vi: tài khoản thường và tài khoản phái sinh.
 
-## 📜 Business Rules
-- [BR-01] Lãi suất ưu đãi chỉ áp dụng cho các món giải ngân mới phát sinh trong thời gian hiệu lực của gói.
-- [BR-02] Khi hết thời hạn gói, lãi suất tự động quay về mức thả nổi chuẩn theo quy định biểu phí hiện hành.
-
 ## ✅ Acceptance Criteria
 ```gherkin
 Feature: Đăng ký gói vay margin ưu đãi theo kỳ hạn
 
   Scenario: Happy - Đăng ký gói vay ưu đãi T+10 thành công
     Given Tài khoản ký quỹ có trạng thái hoạt động bình thường
+    When Nhà đầu tư chọn gói T+10 và xác nhận đăng ký
+    Then hệ thống áp dụng lãi suất ưu đãi cho các món giải ngân mới phát sinh
+    And hiển thị thông báo đăng ký thành công kèm ngày hết hạn gói
+
+  Scenario: Validation - Từ chối khi tài khoản chưa kích hoạt hạn mức
+    Given Tài khoản chưa hoàn tất hợp đồng ký quỹ
+    When Nhà đầu tư chọn đăng ký gói vay
+    Then hệ thống từ chối và hướng dẫn kích hoạt hạn mức ký quỹ
+
+  Scenario: Edge - Hết thời hạn gói ưu đãi
+    Given Gói lãi suất ưu đãi chạm mốc hết hạn
+    When phát sinh dư nợ sau ngày hết hạn
+    Then lãi suất tự động quay về mức thả nổi chuẩn theo quy định biểu phí hiện hành
+```
     When Khách hàng chọn gói vay T+10 và xác nhận đăng ký
     Then Hệ thống ghi nhận mức lãi suất ưu đãi cho các lệnh giải ngân mới trong ngày
 

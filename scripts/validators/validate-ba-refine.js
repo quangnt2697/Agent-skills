@@ -5,7 +5,7 @@
  *
  * Kiểm tra tính chuẩn xác tuyệt đối của tài liệu spec refine theo 8 mã Gate:
  * - GATE-KW-01:   Đã trích xuất từ khóa từ summary (`extractedKeywords` trong `source/jira-issue.json` hoặc `source/metadata.json` nếu tồn tại)
- * - GATE-TPL-01:  Đầy đủ 6 section chuẩn Jira (`## 🧩 User Story`, `## 💼 Business Context`, `## 📜 Business Rules`,
+ * - GATE-TPL-01:  Đầy đủ 5 section chuẩn Jira (`## 🧩 User Story`, `## 💼 Business Context`,
  *                 `## ✅ Acceptance Criteria`, `## 🎨 UI Design / Mockup`, `## ☀️ Success Criteria & Tracking`)
  *                 và cấm dùng template 8 mục đánh số cũ (`## 1. Mục tiêu...`, `## 6. Tiêu chí...`)
  * - GATE-US-01:   Cấu trúc User Story (`**As a**`, `**I want**`, `**So that**`, không dùng role chung chung, không còn placeholder)
@@ -71,17 +71,16 @@ export function validateRefinedSpec(filePath, options = {}) {
     });
   }
 
-  // GATE-TPL-01: Cấm dùng cấu trúc 8 mục đánh số cũ và bắt buộc 6 section chuẩn Jira
+  // GATE-TPL-01: Cấm dùng cấu trúc 8 mục đánh số cũ và bắt buộc 5 section chuẩn Jira
   const legacyNumberedHeading = content.match(/^##\s*[1-8]\.\s*(?:Mục tiêu|Đối tượng|Phạm vi|Quy tắc|Luồng|Tiêu chí|Giả định|Thiết kế)[^\n]*/im);
   if (legacyNumberedHeading) {
-    errors.push(`[GATE-TPL-01] Phát hiện heading đánh số kiểu cũ ("${legacyNumberedHeading[0].trim()}"). Bắt buộc dùng đúng khung 6 phần chuẩn Jira (` +
-      '`## 🧩 User Story`, `## 💼 Business Context`, `## 📜 Business Rules`, `## ✅ Acceptance Criteria`, `## 🎨 UI Design / Mockup`, `## ☀️ Success Criteria & Tracking`).');
+    errors.push(`[GATE-TPL-01] Phát hiện heading đánh số kiểu cũ ("${legacyNumberedHeading[0].trim()}"). Bắt buộc dùng đúng khung 5 phần chuẩn Jira (` +
+      '`## 🧩 User Story`, `## 💼 Business Context`, `## ✅ Acceptance Criteria`, `## 🎨 UI Design / Mockup`, `## ☀️ Success Criteria & Tracking`).');
   }
 
   const requiredSections = [
     { regex: /^##\s*(?:🧩\s*)?User Story\b/im, label: '## 🧩 User Story' },
     { regex: /^##\s*(?:💼\s*)?Business Context\b/im, label: '## 💼 Business Context' },
-    { regex: /^##\s*(?:📜\s*)?Business Rules\b/im, label: '## 📜 Business Rules' },
     { regex: /^##\s*(?:✅\s*)?Acceptance Criteria\b/im, label: '## ✅ Acceptance Criteria' },
     { regex: /^##\s*(?:🎨\s*)?UI Design\s*\/\s*Mockup\b/im, label: '## 🎨 UI Design / Mockup' },
     { regex: /^##\s*(?:☀️\s*)?Success Criteria\s*&\s*Tracking\b/im, label: '## ☀️ Success Criteria & Tracking' }

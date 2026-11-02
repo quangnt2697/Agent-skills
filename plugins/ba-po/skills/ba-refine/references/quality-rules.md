@@ -176,7 +176,7 @@ Options:
 
 ## Ví dụ Output Chất lượng Cao
 
-Xem [SKILL.md](../SKILL.md) (Mục 4) và [Jira Description Template](../assets/jira-description-template.md) để có ví dụ đầy đủ về cấu trúc một phiên refine đạt chuẩn 6 mục.
+Xem [SKILL.md](../SKILL.md) (Mục 4) và [Jira Description Template](../assets/jira-description-template.md) để có ví dụ đầy đủ về cấu trúc một phiên refine đạt chuẩn 5 mục.
 
 **Đặc điểm của session tốt:**
 - Không vội vàng (dành thời gian làm rõ)

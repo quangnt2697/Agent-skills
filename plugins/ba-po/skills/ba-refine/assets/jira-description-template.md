@@ -11,11 +11,6 @@
 - **Tính cấp thiết (Urgency):** [1 câu giải thích lý do cần triển khai ngay]
 - **Phạm vi (Scope):** [Đối tượng áp dụng (In-Scope Actors), phạm vi chức năng, và những gì ngoài phạm vi (Out-of-Scope)]
 
-## 📜 Business Rules
-
-- **[BR-01]** [Tên quy tắc]: [Mô tả chi tiết quy tắc, điều kiện ràng buộc hoặc công thức tính toán làm tròn]
-- **[BR-02]** [Tên quy tắc]: [Mô tả chi tiết quy tắc, điều kiện ràng buộc hoặc công thức tính toán làm tròn]
-
 ## ✅ Acceptance Criteria
 
 ```gherkin
@@ -60,12 +55,12 @@ Feature: [Tên tính năng nghiệp vụ]
 - **④ [Điểm chạm khóa thao tác]:** [Điều kiện biên / Khung giờ đặc thù] ➔ [Trạng thái vô hiệu hóa thành phần UI & tooltip giải thích]
 
 ### Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)
-| Ký hiệu trên Mockup | Thành phần Giao diện | Loại thay đổi (Thêm/Sửa/Xóa) | Thao tác Người dùng & Phản hồi Hệ thống | Ràng buộc Nghiệp vụ |
+| Ký hiệu trên Mockup | Thành phần Giao diện | Loại thay đổi (Thêm/Sửa/Xóa) | Thao tác Người dùng & Phản hồi Hệ thống | Kịch bản / Ràng buộc áp dụng |
 | :---: | --- | :---: | --- | :---: |
-| **①** | [Tên phần tử UI 1] | Thêm mới (Dropdown) | [Thao tác chọn giá trị] ➔ [Cập nhật thông số tương ứng] | [BR-01] |
-| **②** | [Tên phần tử UI 2] | Sửa đổi (Badge/Stepper) | [Thao tác tăng giảm] ➔ [Làm tròn theo bước giá/khối lượng sàn] | [BR-02] |
-| **③** | [Tên phần tử UI 3] | Thêm mới (Banner lỗi) | [Khi vi phạm hạn mức] ➔ [Hiện cảnh báo đỏ và disable nút gửi lệnh] | [BR-01] |
-| **④** | [Tên phần tử UI 4] | Sửa đổi (Disabled) | [Trong phiên ATO/ATC] ➔ [Vô hiệu hóa nút hủy lệnh kèm tooltip] | [BR-02] |
+| **①** | [Tên phần tử UI 1] | Thêm mới (Dropdown) | [Thao tác chọn giá trị] ➔ [Cập nhật thông số tương ứng] | Scenario: Happy |
+| **②** | [Tên phần tử UI 2] | Sửa đổi (Badge/Stepper) | [Thao tác tăng giảm] ➔ [Làm tròn theo bước giá/khối lượng sàn] | Scenario: Happy |
+| **③** | [Tên phần tử UI 3] | Thêm mới (Banner lỗi) | [Khi vi phạm hạn mức] ➔ [Hiện cảnh báo đỏ và disable nút gửi lệnh] | Scenario: Validation |
+| **④** | [Tên phần tử UI 4] | Sửa đổi (Disabled) | [Trong phiên ATO/ATC] ➔ [Vô hiệu hóa nút hủy lệnh kèm tooltip] | Scenario: Edge |
 
 > *(Lưu ý: Nếu task hoàn toàn không thay đổi giao diện người dùng, ghi rõ: `N/A — Task thuần xử lý logic nghiệp vụ backend hoặc dữ liệu`)*
 

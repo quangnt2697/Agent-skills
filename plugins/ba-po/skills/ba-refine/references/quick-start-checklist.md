@@ -95,14 +95,13 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 ## BƯỚC 5 — Phase 3: Draft (kèm Mockup) → **GATE 2** → Chốt
 
 ```
-Bước 3.1: Tạo refined-draft.md (Khung Jira Description chuẩn 6 phần)
+Bước 3.1: Tạo refined-draft.md (Khung Jira Description chuẩn 5 phần)
           └─ Copy skeleton từ assets/jira-description-template.md:
              1. ## 🧩 User Story (As a / I want / So that)
              2. ## 💼 Business Context (Problem / Goal / Urgency / Scope)
-             3. ## 📜 Business Rules ([BR-01], [BR-02]...)
-             4. ## ✅ Acceptance Criteria (Gherkin sạch: KHÔNG @tag, KHÔNG [AC-x.y])
-             5. ## 🎨 UI Design / Mockup (Ảnh inline từng Case & UI Delta)
-             6. ## ☀️ Success Criteria & Tracking (Metrics & Tracking)
+             3. ## ✅ Acceptance Criteria (Gherkin sạch: KHÔNG @tag, KHÔNG [AC-x.y])
+             4. ## 🎨 UI Design / Mockup (Ảnh inline từng Case & UI Delta)
+             5. ## ☀️ Success Criteria & Tracking (Metrics & Tracking)
           └─ Nếu task liên quan UI (WEB hoặc APP):
              • Tra cứu ../ba-design-mockup/references/ui-component-map.json (chống thiết kế bừa)
              • Dựng Delta-Only: Giữ 90% AS-IS mờ nhẹ, viền nhấn added/modified kèm badge ① ② ③
@@ -114,7 +113,7 @@ Bước 3.1: Tạo refined-draft.md (Khung Jira Description chuẩn 6 phần)
              node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md"
 
 Bước 3.2: TRÌNH TOÀN BỘ NỘI DUNG cho user (GATE 2)
-          └─ Trình ĐỒNG THỜI: Spec 6 mục + Các ảnh mockup từng Case + Ghi chú thao tác ① ② ③ + Bảng UI Delta
+          └─ Trình ĐỒNG THỜI: Spec 5 mục + Các ảnh mockup từng Case + Ghi chú thao tác ① ② ③ + Bảng UI Delta
           └─ DỪNG, chờ user "OK" (sửa lại vị trí nút/label ngay trong vòng lặp ≤ 5 vòng)
 
 Bước 3.3: Copy refined-draft.md → refined.md

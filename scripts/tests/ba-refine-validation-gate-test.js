@@ -64,7 +64,7 @@ Feature: Tính năng
   }
 });
 
-test('validate-ba-refine: pass khi spec chuẩn template Jira Description 6 phần', () => {
+test('validate-ba-refine: pass khi spec chuẩn template Jira Description 5 phần', () => {
   const tmpGoodSpec = path.join(__dirname, 'temp_good_spec.md');
 
   const goodContent = `
@@ -78,10 +78,6 @@ test('validate-ba-refine: pass khi spec chuẩn template Jira Description 6 ph�
 - **Mục tiêu (Goal):** Giảm thời gian tải biểu đồ xuống dưới 500ms.
 - **Tính cấp thiết (Urgency):** Nâng cao trải nghiệm trong mùa cao điểm thanh khoản.
 - **Phạm vi (Scope):** Áp dụng cho màn hình chi tiết mã cổ phiếu trên App.
-
-## 📜 Business Rules
-- [BR-01] Biểu đồ nến cập nhật giá khớp thời gian thực.
-- [BR-02] Tự động hiển thị đường giá hòa vốn khi có Deal mở.
 
 ## ✅ Acceptance Criteria
 \`\`\`gherkin

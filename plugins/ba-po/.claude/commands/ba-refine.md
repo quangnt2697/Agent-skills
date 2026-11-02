@@ -44,8 +44,8 @@ Phase 2: Phản biện Nghiệp vụ & Tình huống Biên (Convergent)
     - Stress-test xung đột quy tắc nghiệp vụ & xử lý ngoại lệ
     - Làm lộ diện các giả định ngầm (Surface hidden assumptions)
     ↓
-Phase 3: Chuẩn hóa Đặc tả 6 Mục & Dựng Mockup Prod-Twin (APPROVAL GATE 2)
-    - User chọn hướng đi cuối cùng → Tạo refined-draft.md chuẩn 6 phần Jira
+Phase 3: Chuẩn hóa Đặc tả 5 Mục & Dựng Mockup Prod-Twin (APPROVAL GATE 2)
+    - User chọn hướng đi cuối cùng → Tạo refined-draft.md chuẩn 5 phần Jira
     - Viết Acceptance Criteria dạng Gherkin sạch (KHÔNG @tags, KHÔNG [AC-x.y])
     - Nếu có UI: gọi ba-design-mockup dựng Prod-Twin mockup đa trạng thái (mockup-case-1..3.png, Fidelity ≥ 90%)
     - Chạy Hard Gate validate-ba-refine.js → Trình user duyệt (Gate 2) → Chốt refined.md
@@ -62,7 +62,7 @@ Phase 4: Đồng bộ lên Jira & Handoff Kỹ thuật
 - **Multi-source & Cache-aware:** Đọc Jira PDF + Confluence pages + attachments, tái sử dụng file đã tải trong `source/refs/`
 - **5 Chiều Nghiệp vụ & Stress-test:** Khai phóng thuần nghiệp vụ (Zero Technical Noise), kiểm định xung đột quy tắc ngành
 - **Prod-Twin UI Mockup (`ba-design-mockup`):** Bóc tách AS-IS từ codebase, dựng Delta-Only kèm huy hiệu `① ② ③`, kiểm định `validate-mockup-fidelity.js` (Fidelity ≥ 90%)
-- **Hard Gate & Clean Gherkin (Gate 2):** Kiểm định cấu trúc 6 mục qua `validate-ba-refine.js` trước khi trình duyệt và push Jira
+- **Hard Gate & Clean Gherkin (Gate 2):** Kiểm định cấu trúc 5 mục qua `validate-ba-refine.js` trước khi trình duyệt và push Jira
 
 ## Output
 
