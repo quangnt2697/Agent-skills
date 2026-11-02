@@ -486,3 +486,9 @@ Tất cả acceptance criteria đã pass, tests đã xanh, code đã review. Fea
 - `/qa-full-pipeline` — QA-only pipeline (Phases 7a-7c consolidated)
 - `/dev-build` — DEV-only implementation (Phase 4-6)
 - `meta-cross-validation` — Traceability validation
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 3 - FULL SDLC ORCHESTRATOR):** Lệnh này điều phối tuần tự 8 phases từ Spec đến Code và Tests trên feature branch `feature/{issueKey}`.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM tự ý merge vào `main`/`master` (Phase 8 là Cổng Người duy nhất: bắt buộc phải có sự phê duyệt rõ ràng từ user).
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Khi hoàn tất Phase 8 (Code Review & Verification), DỪNG LẠI NGAY và trình kết quả để người dùng phê duyệt merge.

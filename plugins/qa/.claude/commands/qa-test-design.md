@@ -41,6 +41,11 @@ KHÔNG được bỏ qua Giai đoạn 1 — checklist là nguồn sự thật du
 3. KHÔNG tạo code automation và KHÔNG tự động push Squash TM — việc đó thuộc về `/qa-auto-design` và `/qa-squash-push`.
 4. BẮT BUỘC chỉ sinh ra chính xác 1 file checklist và 1 file .feature duy nhất cho toàn bộ Jira task.
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ thiết kế `checklist.md` và `{issueKey}.feature` trong thư mục `workspace/issues/{issueKey}/test/`.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
+   - TUYỆT ĐỐI CẤM viết mã test tự động (Python/Playwright/Pytest, conftest.py, services/, pages/).
+   - TUYỆT ĐỐI CẤM tự ý push lên Squash TM hoặc thực thi test lên server.
+   - CẤM can thiệp vào bất kỳ file mã nguồn nào ngoài thư mục `workspace/issues/{issueKey}/test/`.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi chạy `qa-validate.sh` kiểm tra cú pháp Gherkin thành công, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt `/qa-auto-design` hay `/qa-squash-push`.

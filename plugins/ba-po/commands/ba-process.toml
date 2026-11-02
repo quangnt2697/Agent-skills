@@ -92,4 +92,10 @@ Tuân theo chuẩn Editorial HTML/inline SVG (`plugins/ba-po/skills/ba-design-fl
 - Validate diagram với stakeholders — Ensure accuracy trước khi finalize
 
 LƯU Ý: Tất cả labels trong diagram phải bằng TIẾNG VIỆT.
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ mô hình hóa quy trình nghiệp vụ và lưu vào `workspace/issues/{issueKey}/spec/process-model.md`.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM viết code application hoặc can thiệp file mã nguồn hệ thống.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file quy trình, DỪNG LẠI NGAY và xuất trình kết quả.
 """

@@ -82,11 +82,14 @@ $ARGUMENTS có thể chứa:
 - ❌ KHÔNG làm detailed task breakdown (đó là việc của team trong sprint planning)
 - ❌ KHÔNG commit team velocity mà chưa consult team (đó là team self-organize)
 
-**Handoff**: Sau khi hoàn thành Prioritization:
-- **Planning:** `/dev-plan {issueKey}` → Breakdown prioritized stories thành tasks
-- **DEV:** DEV làm stories theo priority order (Sprint 1 trước)
-- **QA:** `/qa-test-design {issueKey}` → Design test cases theo priority order
-- **Sprint Planning:** Present prioritized backlog cho team, adjust dựa trên team feedback
+**Handoff**: Sau khi hoàn thành Prioritization, hiển thị gợi ý cho người dùng:
+- `/qa-test-design {issueKey}` → Thiết kế test cases theo thứ tự ưu tiên
 
 LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT.
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ ưu tiên hóa backlog theo MoSCoW/WSJF và lưu vào `workspace/issues/{issueKey}/spec/prioritization.md`.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM tự ý thay đổi trạng thái, sprint, hoặc giá trị fields trên Jira API. CẤM can thiệp mã nguồn.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file `spec/prioritization.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt lệnh tiếp theo.
 """

@@ -25,8 +25,10 @@ Tập trung vào:
 - Luôn trích xuất code nguyên văn từ diff (Existing Code) và đề xuất sửa đổi cụ thể để triệt tiêu lỗi lệch dòng.
 
 Mọi đánh giá phải được phân loại (Nghiêm trọng, Bắt buộc, Đề xuất).
-Xuất kết quả dưới định dạng có cấu trúc bao gồm vị trí (file:line) và khuyến nghị sửa chữa cụ thể.
+Xuất kết quả dưới định dạng có cấu trúc bao gồm vị trí (file:line) và khuyến nghị sửa chữa cụ thể vào `workspace/issues/{issueKey}/trace/cr-report.md` (hoặc `workspace/adhoc/review/trace/cr-report.md`).
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 1 - READ-ONLY):** Lệnh này CHỈ làm nhiệm vụ đọc, phân tích mã nguồn/diff và xuất báo cáo đánh giá chất lượng.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM gọi tool `edit_file` hoặc `write_file` để sửa đổi mã nguồn sản phẩm của developer. CẤM tự ý commit hoặc merge.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi hoàn thành xuất báo cáo review, DỪNG LẠI NGAY và bàn giao cho người dùng. CẤM tự động kích hoạt bất kỳ lệnh downstream nào khác.

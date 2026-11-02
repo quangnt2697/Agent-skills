@@ -66,3 +66,11 @@ workspace/issues/{issueKey}/
 - `plugins/qa/skills/qa-full-pipeline/references/pipeline-states.md` — sơ đồ trạng thái
 - `/e2e-delivery` — pipeline SDLC đầy đủ (BA → DEV → QA)
 - `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md` — cổng dừng/chạy tiếp
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 3 - PIPELINE ORCHESTRATOR):** Lệnh này điều phối chuỗi QA Pipeline theo đúng các phase tuần tự được định nghĩa trong SKILL.md.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
+   - TUYỆT ĐỐI CẤM tự ý sửa đổi code ứng dụng sản phẩm (`src/`, `app/`).
+   - CẤM commit hoặc merge vào main khi chưa có sự phê duyệt của người dùng.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Hoàn tất Phase 4 và xuất bản báo cáo tổng kết xong, DỪNG LẠI NGAY và xuất trình kết quả.

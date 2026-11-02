@@ -22,4 +22,10 @@ Tuyệt đối KHÔNG phân tích sâu kiến trúc, không đọc logic nghiệ
 
 ## 3. Báo Cáo Kết Quả
 In trực tiếp bảng báo cáo Markdown từ kết quả thực thi của script: Tên repo, Branch, Trạng thái (Pulled, Up-to-date, Dirty Skipped, Diverged), Commit SHA và ghi chú.
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ fetch/pull mã nguồn về máy cục bộ và in bảng báo cáo trạng thái.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM phân tích logic nghiệp vụ, cấm viết spec, cấm viết test, cấm sửa đổi mã nguồn. Mặc định cấm reset mất uncommitted changes khi không có cờ `--force`.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** In bảng báo cáo pull code xong là DỪNG LẠI NGAY.
 """

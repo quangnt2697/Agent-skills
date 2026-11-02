@@ -12,6 +12,15 @@ trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có,
 - **Input bắt buộc:** Đường dẫn file mã nguồn thật. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** Commit SHA lấy từ git thật; `spec/final.md` tồn tại.
 
+## ⚠️ RANH GIỚI NHIỆM VỤ (Strict Boundary - Tier 2 Artifact-Only)
+
+| ✅ qa-code2spec LÀM | ❌ qa-code2spec KHÔNG LÀM |
+|---|---|
+| Đọc hiểu và dịch ngược mã nguồn thành spec | Sửa đổi, refactor hoặc xóa file mã nguồn ứng dụng |
+| Truy vết 5 yếu tố backend qua Git | Tự ý commit hoặc push lên GitLab |
+| Phỏng vấn user làm rõ điểm mù logic | Tự ý thiết kế kịch bản kiểm thử (đó là qa-test-design) |
+| Xuất tài liệu `workspace/.../spec/final.md` | Can thiệp file ngoài thư mục workspace ticket |
+
 ## 1. Khi nào dùng?
 - Dự án có mã nguồn đang chạy nhưng không có tài liệu Jira/Spec tương ứng hoặc tài liệu đã lỗi thời.
 - Tiếp nhận module legacy cần viết test tự động mà chưa rõ toàn bộ logic rẽ nhánh.

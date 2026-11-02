@@ -20,7 +20,11 @@ Tập trung vào:
 
 Dù ở persona nào, BẮT BUỘC duy trì nguyên vẹn hành vi và các bài kiểm tra (tests) hiện có vẫn phải vượt qua. Đừng đụng chạm những gì không hiểu.
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 3 - REFACTOR MUTATION):** Lệnh này CHỈ làm nhiệm vụ tinh gọn, đơn giản hóa các file được chỉ định mà không thay đổi logic.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
+   - TUYỆT ĐỐI CẤM làm sai lệch hành vi logic nghiệp vụ (Zero Behavioral Drift). Toàn bộ tests hiện hữu phải tiếp tục PASS.
+   - CẤM commit trực tiếp vào nhánh `main` hoặc `master`.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi refactor và chạy test xác minh thành công, DỪNG LẠI NGAY và xuất trình diff cho người dùng.
 """

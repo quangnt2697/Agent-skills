@@ -4,8 +4,10 @@ description: "Xử lý sự cố kẹt ticket và đề xuất chiến lược g
 
 Kích hoạt kỹ năng sm-impediment-triage.
 
-Đọc chi tiết trong plugins/scrum-master/skills/sm-impediment-triage/SKILL.md và thực thi quy trình gỡ rối. Lưu ý kết quả phải được ghi vào file bằng Tool Call.
+Đọc chi tiết trong plugins/scrum-master/skills/sm-impediment-triage/SKILL.md và thực thi quy trình gỡ rối. Báo cáo ghi vào `workspace/sprints/{sprintId}/trace/impediment-report.md`.
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ quét các ticket bị kẹt lâu và đề xuất phương án xử lý bottleneck.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM tự ý thay đổi status hoặc đóng ticket trên Jira. CẤM can thiệp mã nguồn.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file báo cáo gỡ rối, DỪNG LẠI NGAY và xuất trình kết quả.

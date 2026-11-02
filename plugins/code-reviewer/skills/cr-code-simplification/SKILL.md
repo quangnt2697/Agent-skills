@@ -12,6 +12,15 @@ trigger: Sử dụng khi code hiện tại đang chạy tốt nhưng quá khó �
 - **Input bắt buộc:** Đường dẫn file hoặc diff cụ thể cần đơn giản hóa. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** Test chạy trước và sau đều exit code 0 (hành vi không đổi); diff thực tế được trình bày.
 
+## ⚠️ RANH GIỚI NHIỆM VỤ (Strict Boundary - Tier 3 Refactor Mutation)
+
+| ✅ cr-code-simplification LÀM | ❌ cr-code-simplification KHÔNG LÀM |
+|---|---|
+| Tinh gọn, giảm độ phức tạp cho các hàm/files chỉ định | Làm sai lệch hành vi nghiệp vụ (Zero Behavioral Drift) |
+| Lược bỏ code lặp lại (DRY) và tách guard clauses | Tự ý thêm tính năng mới hoặc đổi API signature |
+| Chạy unit test trước và sau để xác minh hành vi | Tự ý commit hoặc merge vào nhánh main/master |
+| Trình bày diff rõ ràng cho người dùng xem xét | Refactor những đoạn code mà bản thân chưa hiểu rõ |
+
 ## Tổng quan
 
 Đơn giản hóa code bằng cách giảm bớt sự phức tạp trong khi vẫn giữ nguyên vẹn hành vi của nó. Mục tiêu không phải là viết ít số dòng đi — mục tiêu là viết ra đoạn code dễ đọc hơn, dễ hiểu hơn, dễ sửa đổi, và dễ debug hơn. Mọi nỗ lực đơn giản hóa phải vượt qua bài test: "Liệu một thành viên mới đọc vào cái này có hiểu nó nhanh hơn so với phiên bản gốc không?"

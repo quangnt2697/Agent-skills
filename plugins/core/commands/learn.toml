@@ -8,4 +8,10 @@ Xác định vấn đề ban đầu, sai lầm đã mắc phải, nguyên nhân 
 TIẾP THEO, đánh giá xem lỗi này có bắt nguồn từ việc file hướng dẫn `SKILL.md` của kỹ năng đang dùng bị lủng/kém hiệu quả hay không.
 - NẾU CÓ: Thực hiện luồng Tự Tiến Hóa (Self-Improving). Trình bày đề xuất sửa đổi bước/quy trình đó và CHỜ user "Approve". Nếu user duyệt, dùng tool để ghi đè cập nhật vào chính file `SKILL.md` bị lỗi.
 - NẾU KHÔNG (lỗi chung chung, bài học kinh nghiệm): Chuẩn hóa thành một "Lesson Learned" (Ngữ cảnh, Chỉ thị, Tham chiếu) và Append vào file `{PROJECT_ROOT}/.agents/rules/lessons-learned.md` (với `{PROJECT_ROOT}` là thư mục gốc của dự án hiện tại).
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ đúc kết bài học và lưu vào `lessons-learned.md` hoặc đề xuất cập nhật SKILL.md khi được duyệt.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM tự ý sửa đổi file mã nguồn dự án đang làm việc. CẤM tự ý sửa SKILL.md khi chưa có sự phê duyệt rõ ràng từ user.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi bài học hoặc hiển thị đề xuất, DỪNG LẠI NGAY.
 """

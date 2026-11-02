@@ -12,6 +12,15 @@ trigger: Sử dụng khi cần audit bảo mật trước khi deploy production 
 - **Input bắt buộc:** Đường dẫn mã nguồn cần audit. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** Mỗi lỗ hổng trích `file:dòng` thật; kết quả `npm audit` là output thật.
 
+## ⚠️ RANH GIỚI NHIỆM VỤ (Strict Boundary - Tier 1 Read-Only)
+
+| ✅ security-code-audit LÀM | ❌ security-code-audit KHÔNG LÀM |
+|---|---|
+| Quét tĩnh/động mã nguồn và dependencies | Tự ý sửa đổi file mã nguồn dự án |
+| Truy vết luồng dữ liệu ô nhiễm (Tainted data flow) | Tự ý refactor hoặc vá lỗi trực tiếp |
+| Phát hiện secrets và phân cấp lỗ hổng OWASP | Chạy live penetration testing lên production |
+| Xuất báo cáo tại `workspace/.../trace/` | Gọi tool write/edit ngoài thư mục workspace |
+
 ## 1. Tổng quan & Khi nào sử dụng
 
 Quét toàn bộ mã nguồn để phát hiện các lỗ hổng bảo mật theo OWASP Top 10 và các best practices an toàn thông tin trước khi phần mềm được triển khai.

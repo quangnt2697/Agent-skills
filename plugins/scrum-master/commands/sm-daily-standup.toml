@@ -3,9 +3,13 @@ description = "Báo cáo tiến độ hằng ngày, tính thời gian tồn tạ
 prompt = """
 Kích hoạt kỹ năng sm-daily-standup.
 
-Đọc chi tiết trong plugins/scrum-master/skills/sm-daily-standup/SKILL.md và thực thi quy trình điều hành Daily Standup. Lưu ý kết quả phải được ghi vào file bằng Tool Call.
+Đọc chi tiết trong plugins/scrum-master/skills/sm-daily-standup/SKILL.md và thực thi quy trình điều hành Daily Standup. Báo cáo ghi vào `workspace/sprints/{sprintId}/trace/daily-standup-report.md`.
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ đọc dữ liệu tiến độ từ Jira và lập báo cáo Daily Standup.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
+   - TUYỆT ĐỐI CẤM tự ý gửi tin nhắn qua Webhook Mattermost khi người dùng chưa review và phê duyệt nội dung.
+   - CẤM can thiệp vào bất kỳ file mã nguồn nào của dự án.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file báo cáo standup, DỪNG LẠI NGAY và xuất trình kết quả cho người dùng.
 """

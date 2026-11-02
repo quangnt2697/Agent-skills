@@ -106,6 +106,28 @@ Không dùng token đánh dấu đặc biệt (`[STOP_AND_WAIT]` hay tương t�
 - `git-workflow.md` — trường hợp 4 của danh sách đóng. Rule đó vẫn giữ nguyên hiệu lực đầy đủ.
 - `confidence-level.md` — Confidence Level từ nay **chỉ dùng để báo cáo chất lượng** trong output, **KHÔNG dùng làm cổng chặn luồng**. Cổng chặn luồng duy nhất là mục 1 và mục 2 của file này.
 
+---
+
+## 7. Ranh giới Quyền hạn Thực thi & Chống Tự Động Hóa Vượt Cấp (Scope Containment & Anti-Autopilot)
+
+Mỗi lệnh và skill trong hệ thống được phân định rõ ràng theo 3 Cấp Quyền Hạn (Permission Tiers). Agent TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP vượt cấp quyền này khi thực thi:
+
+1. **Cấp 1: READ-ONLY (Chỉ đọc & Lập báo cáo):**
+   - Áp dụng cho: `cr-review`, `security-audit`, `webperf-audit`, `db-recon`, `ba-gap-analysis`.
+   - **Luật Thép:** Agent CHỈ ĐƯỢC PHÉP đọc mã nguồn, đọc diff, chạy query đọc dữ liệu (SELECT only). TUYỆT ĐỐI CẤM gọi tool `edit_file` / `write_file` sửa đổi file mã nguồn dự án (`src/`, `app/`, `tests/`) hoặc chạy DML/DDL. Mọi báo cáo bắt buộc ghi vào `workspace/.../trace/`.
+
+2. **Cấp 2: ARTIFACT-ONLY (Chỉ tạo/sửa Artifact trong Workspace Ticket):**
+   - Áp dụng cho: `ba-spec`, `ba-refine`, `ba-push-jira`, `ba-interview`, `ba-user-stories`, `ba-prioritize`, `ba-process`, `flowchart`, `qa-test-design`, `qa-squash-push`, `qa-code2spec`, `sm-*`.
+   - **Luật Thép:** Agent CHỈ ĐƯỢC PHÉP tạo hoặc chỉnh sửa các file đặc tả, checklist, kịch bản test nằm trong `workspace/issues/{issueKey}/` (hoặc `workspace/adhoc/`, `workspace/sprints/`). CẤM can thiệp vào mã nguồn ứng dụng hay tự ý thay đổi dữ liệu Jira/Squash/Mattermost ngoài phạm vi được chỉ định rõ.
+
+3. **Cấp 3: MUTATION & PIPELINE (Được sửa mã nguồn theo phạm vi hẹp):**
+   - Áp dụng cho: `qa-auto-design` (chỉ trong `tests/`), `cr-code-simplify` (chỉ refactor vùng code được chỉ định, cấm làm drift logic), `qa-full-pipeline`, `e2e-delivery`.
+   - **Luật Thép:** Mọi hành vi sửa code phải có bằng chứng kiểm thử xác minh (test + build pass) trước khi bàn giao.
+
+4. **Khóa Đơn Nhiệm & Điểm Dừng Bắt Buộc (Single-Task Lock & Hard Stop):**
+   - Khi một lệnh độc lập hoàn thành sinh artifact mục tiêu (ví dụ: `qa-test-design` sinh xong `checklist.md` và `.feature`), Agent **BẮT BUỘC DỪNG LẠI** tại `Single Next Action`.
+   - **CẤM TUYỆT ĐỐI** tự ý kích hoạt lệnh downstream tiếp theo (ví dụ: cấm tự chạy tiếp sang `qa-auto-design` hoặc `dev-tech-spec`). Mọi gợi ý bước tiếp theo chỉ được viết dưới dạng văn bản tư vấn cho người dùng.
+
 ## Xem thêm
 
 - `.claude/rules/git-workflow.md` — cổng commit/merge

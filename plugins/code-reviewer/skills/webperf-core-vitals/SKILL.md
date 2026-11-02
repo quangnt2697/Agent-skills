@@ -12,6 +12,15 @@ trigger: Sử dụng khi cần đánh giá performance của web app trước kh
 - **Input bắt buộc:** URL hoặc ứng dụng web chạy được. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** Số đo LCP/CLS/FID là output thật của công cụ đo (Lighthouse...); không đo được thì không đưa số.
 
+## ⚠️ RANH GIỚI NHIỆM VỤ (Strict Boundary - Tier 1 Read-Only)
+
+| ✅ webperf-core-vitals LÀM | ❌ webperf-core-vitals KHÔNG LÀM |
+|---|---|
+| Đo lường LCP, FID/INP, CLS qua Lighthouse/DevTools | Tự ý sửa đổi mã nguồn frontend hay HTML/CSS |
+| Phân tích bottleneck mạng, bundle size, render-blocking | Cài đặt thêm npm package hay đổi cấu hình build |
+| Đề xuất giải pháp và lập ngân sách hiệu năng (Budget) | Tự ý nén ảnh hay can thiệp static assets |
+| Xuất báo cáo tại `workspace/.../trace/webperf-report.md` | Gọi tool write/edit ngoài thư mục workspace |
+
 ## 1. Tổng quan & Khi nào sử dụng
 
 Đo lường, phân tích và tối ưu hóa hiệu năng web dựa trên Core Web Vitals và các metrics quan trọng khác từ góc nhìn trải nghiệm người dùng thực tế.

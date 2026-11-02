@@ -37,9 +37,11 @@ npm run db:recon:core -- --date YYYY-MM-DD
    - `MATCH` (Khớp hoàn toàn 100%): Dữ liệu V3 và V2/Raw nhất quán.
    - `MISMATCH` (Lệch số lượng hoặc giá trị): Phân tích nguyên nhân (độ trễ streaming, bộ lọc filter lô lẻ/lô chẵn, cờ hủy lệnh, v.v.).
    - `MISSING` (Thiếu bản ghi ở 1 bên): Xác định mã chứng khoán hoặc khung giờ bị thiếu.
-3. **Báo cáo:** Trình bày kết quả dưới dạng bảng Markdown so sánh chi tiết, chỉ ra rõ mã chứng khoán hoặc thời điểm xuất hiện độ lệch.
+3. **Báo cáo:** Trình bày kết quả dưới dạng bảng Markdown so sánh chi tiết, chỉ ra rõ mã chứng khoán hoặc thời điểm xuất hiện độ lệch vào `workspace/adhoc/database/recon-report.md`.
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 1 - READ-ONLY):** Lệnh này CHỈ làm nhiệm vụ chạy các query đối chiếu đọc dữ liệu (SELECT/WITH) và xuất báo cáo so sánh độ lệch.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM chạy bất kỳ câu lệnh nào làm thay đổi dữ liệu (INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE) trên database TimescaleDB/Metabase. CẤM gọi tool sửa đổi file mã nguồn dự án.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi in bảng kết quả đối chiếu, DỪNG LẠI NGAY và bàn giao cho người dùng. CẤM tự ý sửa dữ liệu.
 """

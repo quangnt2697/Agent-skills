@@ -20,8 +20,12 @@ $ARGUMENTS chứa đầu vào. Agent PHẢI tự nhận diện loại input:
 **Bộ lọc file:** Tải: .pdf, .doc, .docx, .xls, .xlsx, .csv, .txt, .md, .png, .jpg, .svg, .webp, .drawio, .json, .yaml, .sql. Bỏ qua: video (.mp4), file nén (.zip, .rar).
 **Quy ước tên file Confluence:** `{tên-ngắn-gọn-slug}-{pageId}.pdf` (viết thường, bỏ dấu, thay khoảng trắng bằng -, tối đa 50 ký tự phần tên).
 
-LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT. BẮT BUỘC dùng Tool Call để tạo/sửa file trực tiếp.
+LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT. BẮT BUỘC dùng Tool Call để tạo/sửa file trực tiếp trong workspace.
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ nhập khẩu, trích xuất yêu cầu và tạo Business Spec tại `workspace/issues/{issueKey}/spec/*-final.md`.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
+   - TUYỆT ĐỐI CẤM viết code, thiết kế test cases, hoặc sửa đổi mã nguồn ứng dụng.
+   - CẤM can thiệp vào bất kỳ file nào ngoài thư mục `workspace/issues/{issueKey}/`.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi xuất bản `*-final.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt `/qa-test-design` hay `/dev-tech-spec`.

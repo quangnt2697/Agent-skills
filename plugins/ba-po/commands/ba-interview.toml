@@ -46,10 +46,14 @@ $ARGUMENTS có thể chứa:
 - ❌ KHÔNG hỏi về technical implementation (database schema, API design) — đó là việc của DEV
 - ❌ KHÔNG hỏi về test strategy (framework, tool) — đó là việc của QA
 
-**Handoff**: Sau khi đạt ≥90% confidence, suggest:
-- `/ba-spec {issueKey}` → Tổng hợp lại final.md với thông tin đã clarify
-- `/qa-test-design {issueKey}` → Nếu đã có đủ thông tin, handoff to QA
-- `/dev-tech-spec {issueKey}` → Nếu đã có đủ thông tin, handoff to DEV
+**Handoff**: Sau khi đạt ≥90% confidence, gợi ý cho người dùng bước tiếp theo:
+- `/ba-spec {issueKey}` → Cập nhật lại spec với thông tin đã làm rõ
 
 LƯU Ý: Tất cả câu hỏi và câu trả lời phải bằng TIẾNG VIỆT.
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ phỏng vấn 1-1 từng câu hỏi để làm rõ các điểm mù nghiệp vụ.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM tự ý chốt spec hoặc tự ý sửa đổi file mã nguồn.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Khi hoàn tất phiên phỏng vấn hoặc đạt độ tin cậy, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt lệnh tiếp theo.
 """

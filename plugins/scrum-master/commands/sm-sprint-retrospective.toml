@@ -3,9 +3,11 @@ description = "Tổng kết Sprint, đánh giá vận tốc và rút ra bài h�
 prompt = """
 Kích hoạt kỹ năng sm-sprint-retrospective.
 
-Đọc chi tiết trong plugins/scrum-master/skills/sm-sprint-retrospective/SKILL.md và thực thi quy trình tổng kết Sprint. Lưu ý kết quả phải được ghi vào file bằng Tool Call.
+Đọc chi tiết trong plugins/scrum-master/skills/sm-sprint-retrospective/SKILL.md và thực thi quy trình tổng kết Sprint. Báo cáo ghi vào `workspace/sprints/{sprintId}/trace/retrospective-report.md`.
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ phân tích dữ liệu Sprint (Velocity, What went well, What to improve) và xuất báo cáo Retrospective.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM tự ý tạo mới ticket hoặc action items trên Jira. CẤM can thiệp mã nguồn.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file báo cáo Retrospective, DỪNG LẠI NGAY và xuất trình kết quả.
 """

@@ -71,12 +71,19 @@ Phase 4: Đồng bộ lên Jira & Handoff Kỹ thuật
 - **Jira:** Updated description dạng ADF chuẩn kèm inline mockup images (KHÔNG comment, KHÔNG label)
 - **Confidence level:** ≥90% required for handoff
 
-## Next Steps
+## Next Steps (Chỉ gợi ý cho người dùng, CẤM tự ý kích hoạt)
 
-After refinement, suggest:
-- `/qa-test-design {issueKey}` — Design test cases
-- `/dev-tech-spec {issueKey}` — Write tech spec
-- `/e2e-delivery {issueKey}` — Full delivery pipeline
+Sau khi refinement hoàn tất, hiển thị gợi ý cho user:
+- `/qa-test-design {issueKey}` — Thiết kế test cases và checklist
+- `/dev-tech-spec {issueKey}` — Viết tech spec kiến trúc
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ refine đặc tả nghiệp vụ, dựng mockup Delta-Only và cập nhật lên Jira Description theo phê duyệt qua 2 Approval Gates.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
+   - TUYỆT ĐỐI CẤM viết code application, viết mã test tự động, hoặc can thiệp file ngoài thư mục `workspace/issues/{issueKey}/`.
+   - CẤM tự ý sửa đổi đặc tả để lách cổng kiểm định `validate-ba-refine.js`.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi hoàn tất cập nhật Jira và xuất `testability-manifest.json`, DỪNG LẠI NGAY và bàn giao. CẤM tự ý chạy các lệnh trong Next Steps.
 
 ## Related
 

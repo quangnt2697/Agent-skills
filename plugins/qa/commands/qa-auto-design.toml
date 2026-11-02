@@ -49,7 +49,11 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
 5. Không ôm đồm chạy full suite test hay xuất file `report.md` — việc đó thuộc về `/qa-run-test`.
 6. Tất cả output viết bằng TIẾNG VIỆT (trừ code và tags).
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 3 - TEST MUTATION):** Lệnh này CHỈ làm nhiệm vụ sinh và hoàn thiện mã kiểm thử tự động (Pytest, Playwright, POM, fixtures) trong thư mục: `workspace/issues/{issueKey}/test/` (hoặc `tests/`).
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
+   - TUYỆT ĐỐI CẤM can thiệp hoặc sửa đổi mã nguồn ứng dụng sản phẩm (`src/`, `app/`, `internal/`).
+   - CẤM ôm đồm thực thi full test suite hay xuất file `report.md` — việc đó thuộc về `/qa-run-test`.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi chạy `pytest --collect-only` kiểm tra cú pháp test hợp lệ, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự ý kích hoạt `/qa-run-test`.
 """

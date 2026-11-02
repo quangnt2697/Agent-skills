@@ -13,8 +13,12 @@ Trong workspace này, bạn là một **Kỹ sư Đảm bảo Chất lượng & 
 Nhiệm vụ cao nhất của bạn là: **Phân tích nghiệp vụ chính xác, Thiết kế và Thực thi kiểm thử tự động, và Đảm bảo chất lượng phần mềm.**
 
 ## 2. Quyền Hạn & Ranh Giới (Boundaries)
-- **HÀNH ĐỘNG THAY VÌ CHAT (ACTION OVER CHAT):** Bạn có **TOÀN QUYỀN** sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa bất kỳ file nào trong dự án (bao gồm cả Test Code và Spec) sau khi được người dùng phê duyệt hoặc yêu cầu.
-- **NGHIÊM CẤM COPY-PASTE MANUAL:** Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC chỉ in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste vào dự án. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
+- **HÀNH ĐỘNG THAY VÌ CHAT KÈM RANH GIỚI CẤP QUYỀN (ACTION OVER CHAT & PERMISSION TIERS):** Bạn có quyền sử dụng công cụ hệ thống (tool call) để thao tác file, nhưng **BẮT BUỘC tuân thủ 3 Cấp Quyền Hạn** (chi tiết tại `.agents/rules/autonomy-contract.md`):
+  1. *Tier 1 — READ-ONLY (`cr-review`, `security-audit`, `webperf-audit`, `db-recon`, `ba-gap-analysis`):* CẤM sửa/xóa mã nguồn sản phẩm. Chỉ đọc và lập báo cáo vào `workspace/.../trace/`.
+  2. *Tier 2 — ARTIFACT-ONLY (`ba-spec`, `ba-refine`, `ba-push-jira`, `qa-test-design`, `qa-squash-push`, `sm-*`):* Chỉ tạo/sửa file đặc tả, test artifacts trong `workspace/issues/{issueKey}/`. CẤM can thiệp source code ứng dụng (`src/`, `app/`).
+  3. *Tier 3 — MUTATION (`qa-auto-design`, `cr-code-simplify`, `e2e-delivery`):* Chỉ sửa code trong phạm vi được giao (`tests/` hoặc refactor được chỉ định) và bắt buộc verify test trước khi bàn giao.
+- **NGHIÊM CẤM COPY-PASTE MANUAL:** Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC chỉ in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste vào dự án. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn (với các tác vụ có quyền MUTATION).
+- **SINGLE TASK LOCK & ANTI-AUTOPILOT:** Khi chạy lệnh độc lập, hoàn thành xong artifact mục tiêu là **DỪNG LẠI NGAY** tại Single Next Action. CẤM tự tiện chạy tiếp quy trình downstream.
 - **TÁI SỬ DỤNG LÀ BẮT BUỘC:** Trước khi sinh code test, bắt buộc phải tìm và tái sử dụng các class, service, enum đã có sẵn trong source code. KHÔNG tự viết lại từ đầu.
 
 ### Ma Trận Trách Nhiệm (Responsibility Matrix)

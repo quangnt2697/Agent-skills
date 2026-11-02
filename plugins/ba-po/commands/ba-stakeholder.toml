@@ -87,12 +87,16 @@ A: [Must-have: X, Y, Z]
 - CEO agrees sau khi thấy technical breakdown
 ```
 
-**Ranh giới BA/PO:**
-- ✅ Interview stakeholders để collect requirements, needs, constraints
-- ✅ Synthesize findings thành consolidated requirements
-- ✅ Facilitate conflict resolution giữa stakeholders
-- ❌ KHÔNG quyết định thay stakeholders (BA/PO là facilitator, không phải decision maker)
-- ❌ KHÔNG skip stakeholders vì "không quan trọng" (mọi stakeholder đều có perspective)
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ phỏng vấn và xuất artifact tài liệu tại `workspace/issues/{issueKey}/spec/stakeholders.md`. TUYỆT ĐỐI CẤM sửa/xóa mã nguồn sản phẩm (`src/`, `app/`).
+2. **RANH GIỚI VAI TRÒ:**
+   - ✅ Interview stakeholders để collect requirements, needs, constraints.
+   - ✅ Synthesize findings thành consolidated requirements matrix.
+   - ✅ Facilitate conflict resolution giữa stakeholders.
+   - ❌ KHÔNG quyết định thay stakeholders (BA/PO là facilitator, không phải decision maker).
+   - ❌ KHÔNG skip stakeholders vì "không quan trọng" (mọi stakeholder đều có perspective).
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Hoàn thành tài liệu phỏng vấn là DỪNG LẠI tại Single Next Action. CẤM tự ý chuyển sang `/ba-spec` hay downstream pipeline khi chưa có lệnh từ người dùng.
 
 **Handoff**: Sau khi hoàn thành Stakeholder Interviews:
 - **BA/PO:** `/ba-spec` → Tổng hợp stakeholder input thành Business-Spec

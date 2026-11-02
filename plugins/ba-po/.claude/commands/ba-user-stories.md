@@ -60,10 +60,14 @@ $ARGUMENTS có thể chứa:
 - ❌ KHÔNG viết Technical Stories (developer tasks, refactoring, DB migration)
 - ❌ KHÔNG nhảy vào implementation detail trong User Story
 
-**Handoff**: Sau khi hoàn thành User Stories:
-- `/ba-ac {issueKey}` → Viết Acceptance Criteria chi tiết cho từng User Story
+**Handoff**: Sau khi hoàn thành User Stories, gợi ý cho người dùng:
 - `/ba-prioritize {issueKey}` → Ưu tiên backlog theo MoSCoW/WSJF
-- `/dev-tech-spec {issueKey}` → DEV transform User Stories thành Tech-Spec
-- `/qa-test-design {issueKey}` → QA transform User Stories thành Test Cases
+- `/qa-test-design {issueKey}` → Thiết kế test cases từ User Stories
 
 LƯU Ý: Tất cả User Stories phải bằng TIẾNG VIỆT.
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ phân tách yêu cầu thành các User Stories theo chuẩn INVEST và lưu vào `workspace/issues/{issueKey}/spec/user-stories.md`.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM viết code, can thiệp mã nguồn ứng dụng, hoặc tự ý sinh test automation.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file `spec/user-stories.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt lệnh tiếp theo.

@@ -32,6 +32,8 @@ $ARGUMENTS có thể chứa Jira issue key (VD: G3PTP-16825) hoặc đường d�
 2. **KHÔNG điều tra backend:** CẤM dùng `grep_search`, `view_file` lục lọi source code. CẤM gọi cURL.
 3. **ĐỘC BẢN OUTPUT:** Các file trong `test/result/` do n8n tự tạo, cấm sửa bằng file edit tool.
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Tuân thủ quy tắc "Chạy lỗi trả lỗi", kết thúc phản hồi bằng ĐÚNG 1 hành động đề xuất cho người dùng.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 3 - TEST RUNNER):** Lệnh này CHỈ làm nhiệm vụ kích hoạt runner đo lường kết quả kiểm thử và báo cáo trung thực.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM sửa đổi mã nguồn ứng dụng hoặc sửa test assertions khi test fail. CẤM tự ý cài đặt package hoặc lục lọi backend code.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Báo cáo kết quả kiểm thử xong là DỪNG LẠI NGAY và đề xuất duy nhất 1 bước tiếp theo cho người dùng.

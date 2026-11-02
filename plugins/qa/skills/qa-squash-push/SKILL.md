@@ -13,6 +13,15 @@ disable-auto-invoke: true
 - **Input bắt buộc:** `.feature` đã pass `qa-validate`, `final.md`, cấu hình Squash trong `.env`. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** `squash-push.sh` exit 0 và `squash_sync.json` tồn tại.
 
+## ⚠️ RANH GIỚI NHIỆM VỤ (Strict Boundary - Tier 2 Artifact-Only)
+
+| ✅ qa-squash-push LÀM | ❌ qa-squash-push KHÔNG LÀM |
+|---|---|
+| Đọc file `{issueKey}.feature` có sẵn | Tự ý sửa đổi nội dung kịch bản `.feature` |
+| Gọi script `squash-push.sh` đẩy lên Squash TM API | Sửa đổi file `final.md` hoặc mã nguồn ứng dụng |
+| Lưu kết quả đồng bộ vào `test/squash_sync.json` | Tự động chạy test hoặc viết code automation |
+| Báo cáo kết quả và dừng lại | Can thiệp file ngoài thư mục workspace của ticket |
+
 ## 1. Khi nào dùng?
 - Đã hoàn thiện kịch bản BDD Gherkin (`workspace/issues/{issueKey}/test/{issueKey}.feature`) và đã pass qua script kiểm tra `node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-validate.js` (hoặc `plugins/qa/skills/qa-test-design/assets/qa-validate.sh`).
 - Cần đồng bộ test case lên hệ thống Squash TM (Test Case Workspace) và tự động gán vào Sprint Test Plan (Campaign Workspace).

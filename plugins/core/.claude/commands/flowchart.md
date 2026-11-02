@@ -14,3 +14,9 @@ $ARGUMENTS có thể chứa:
 3. Chạy script tương ứng (VD: `python ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-flowchart/assets/export.py`) để render diagram HTML thành file PNG.
 4. Nếu CLI báo lỗi cú pháp (Exit Code > 0), tự động nhận diện lỗi theo verify-geometry và sửa lại mã HTML, sau đó thử lại.
 5. Trả kết quả (đường dẫn file ảnh) hoặc nội dung đã sửa lỗi cho người dùng.
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ kết xuất diagram sang ảnh PNG/SVG tĩnh.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM can thiệp vào mã nguồn logic của ứng dụng.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi render ra file ảnh, DỪNG LẠI NGAY và trả đường dẫn file cho người dùng.

@@ -23,6 +23,10 @@ $ARGUMENTS chứa Issue Key (VD: PROJ-123).
      lý do bỏ qua (nếu có) cho người dùng.
    - Nếu Phase B bị bỏ qua, tra bảng chẩn đoán sự cố trong `references/troubleshooting_and_edge_cases.md` để gợi ý cách khắc phục.
 
-<critical_instruction>
-HÀNH ĐỘNG THAY VÌ CHAT: Bạn có TOÀN QUYỀN sử dụng các công cụ hệ thống (tool call) để trực tiếp Thêm, Sửa, Xóa file. NGHIÊM CẤM COPY-PASTE MANUAL: Tuyệt đối không in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn.
-</critical_instruction>
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ đọc file `.feature` có sẵn và gọi API đồng bộ lên Squash TM.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
+   - TUYỆT ĐỐI CẤM tự ý sửa đổi nội dung file `.feature` hoặc `final.md`.
+   - CẤM can thiệp vào bất kỳ file mã nguồn nào của dự án.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi script push xong (in rõ trạng thái Phase A và Phase B), DỪNG LẠI NGAY và báo cáo cho người dùng. CẤM tự động chạy tiếp test.

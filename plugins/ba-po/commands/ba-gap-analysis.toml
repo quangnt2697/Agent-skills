@@ -67,11 +67,15 @@ $ARGUMENTS có thể chứa:
 - ❌ KHÔNG làm technical architecture design chi tiết (đó là việc của DEV)
 - ❌ KHÔNG làm effort estimation chi tiết cho từng task (đó là việc của DEV/QA)
 
-**Handoff**: Sau khi hoàn thành Gap Analysis:
-- **Planning:** `/dev-plan {issueKey}` → Breakdown roadmap thành tasks
-- **Prioritization:** `/ba-prioritize {issueKey}` → Prioritize gaps theo MoSCoW/WSJF
-- **DEV:** `/dev-tech-spec {issueKey}` → Transform gaps thành Tech-Spec
-- **Stakeholder:** Present Gap Analysis document cho leadership approval (budget + timeline)
+**Handoff**: Sau khi hoàn thành Gap Analysis, gợi ý cho người dùng bước tiếp theo:
+- `/ba-prioritize {issueKey}` → Ưu tiên gaps theo MoSCoW/WSJF
+- `/ba-user-stories {issueKey}` → Viết User Stories từ gaps
 
 LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT.
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 1 - READ-ONLY):** Lệnh này CHỈ làm nhiệm vụ phân tích khoảng cách AS-IS vs TO-BE và xuất tài liệu tại `workspace/issues/{issueKey}/spec/gap-analysis.md`.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM viết code, sửa code ứng dụng, hoặc tự ý thay đổi file spec gốc.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file `spec/gap-analysis.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt bất kỳ lệnh nào trong phần Handoff.
 """

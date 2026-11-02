@@ -6,4 +6,9 @@ Kích hoạt kỹ năng meta-session-checkpoint ở chế độ TẢI.
 1. Đọc nội dung file `{PROJECT_ROOT}/.agents/workspace_state.md` (với `{PROJECT_ROOT}` là thư mục gốc của dự án hiện tại).
 2. Phục hồi ngữ cảnh và tự thiết lập lại suy nghĩ cho khớp với nội dung Facts và Progress.
 3. Đọc mục "Next Steps" và TỰ ĐỘNG THỰC THI bước tiếp theo mà không cần chờ người dùng xác nhận.
+
+## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
+
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ khôi phục ngữ cảnh từ checkpoint đã lưu và chạy đúng bước kế tiếp được ghi nhận trong `workspace_state.md`.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM tự ý chạy các tác vụ ngoài phạm vi ghi trong checkpoint.
 """
