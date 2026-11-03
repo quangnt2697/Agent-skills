@@ -14,7 +14,7 @@
 | Đọc ĐA NGUỒN (toàn bộ file đã tải, không đọc sót) | Tự đoán yêu cầu thay vì phỏng vấn (`ba-interview-me`) |
 | Phát hiện gaps (Thiếu / Mơ hồ / Xung đột) | Tự tiện tải file khi chưa có user approval |
 | Phỏng vấn từng câu một qua `ba-interview-me` (≥90% confidence) | Bỏ trống các section trong 13 sections chuẩn |
-| Xuất `final.md` chuẩn 13 sections bàn giao cho QA/DEV | Dừng hỏi user "có chạy tiếp sang QA không" (tự chuyển tiếp) |
+| Xuất `final.md` chuẩn 13 sections bàn giao cho QA/DEV | Tự động kích hoạt QA downstream khi chưa có yêu cầu (phải dừng sau khi tạo final.md) |
 
 **Phân định với các kỹ năng khác:**
 - **ba-spec**: Yêu cầu đã có sẵn trên Jira/Confluence → Import, đọc đa nguồn, làm rõ gap → `final.md`.

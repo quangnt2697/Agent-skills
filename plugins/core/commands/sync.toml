@@ -25,7 +25,7 @@ In trực tiếp bảng báo cáo Markdown từ kết quả thực thi của scr
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 
-1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ fetch/pull mã nguồn về máy cục bộ và in bảng báo cáo trạng thái.
-2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM phân tích logic nghiệp vụ, cấm viết spec, cấm viết test, cấm sửa đổi mã nguồn. Mặc định cấm reset mất uncommitted changes khi không có cờ `--force`.
+1. **CHỈ LÀM (TIER 2b - EXTERNAL-WRITE):** Lệnh này CHỈ làm nhiệm vụ fetch/pull mã nguồn của các repositories cấu hình về máy cục bộ an toàn và in bảng báo cáo trạng thái.
+2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM phân tích logic nghiệp vụ, cấm viết spec, cấm viết test, cấm sửa đổi mã nguồn. Mặc định cấm reset làm mất uncommitted changes; cờ `--force` (`git reset --hard` + `git clean -fd`) là hành vi không thể hoàn tác (Trường hợp #5 của `autonomy-contract.md`), bắt buộc phải có sự chỉ định hoặc xác nhận rõ từ người dùng.
 3. **ĐIỀU KIỆN DỪNG (HARD STOP):** In bảng báo cáo pull code xong là DỪNG LẠI NGAY.
 """

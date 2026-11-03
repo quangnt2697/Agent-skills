@@ -10,6 +10,8 @@ metadata:
 
 > 🛡️ **Grounding (grounding-contract):** Toàn bộ nhãn trường, màu sắc, vị trí nút bấm và layout BẮT BUỘC lấy từ mã nguồn thật trên nhánh `master`/`main` của dự án (`dnse-trading` hoặc `arrow-app`) hoặc Live DOM UAT. **NGHIÊM CẤM TỰ BỊA ĐẶT GIAO DIỆN / TỰ THIẾT KẾ BỪA.**
 
+> 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** `issueKey`, loại task (`WEB` hoặc `APP`), và tên màn hình đích (`screenKey`). Thiếu input thì dừng và hỏi lại, không tự suy diễn.
 - **Bằng chứng hoàn thành:** File `spec/asis-inventory.json`, `spec/asis-inventory.md`, `spec/diagrams/mockup.html`, `validate-mockup-fidelity.js` exit code 0 với Fidelity Score ≥ 90%, và tồn tại các file ảnh `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`.

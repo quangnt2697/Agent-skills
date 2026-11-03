@@ -8,6 +8,8 @@ trigger: Khi cần chuyển hóa yêu cầu nghiệp vụ thành User Stories, c
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
+> 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** Yêu cầu/nhu cầu nghiệp vụ có nguồn. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** Mỗi story có AC Gherkin truy được về yêu cầu nguồn.
@@ -15,11 +17,11 @@ trigger: Khi cần chuyển hóa yêu cầu nghiệp vụ thành User Stories, c
 ## 1. Khi nào dùng?
 - Có tài liệu Business-Spec (`final.md`) hoặc yêu cầu nghiệp vụ thô cần bóc tách thành các User Stories cho Sprint Backlog.
 - Chuẩn hóa các task Jira chưa có Acceptance Criteria hoặc chưa đáp ứng nguyên tắc **INVEST**.
-- Chuẩn bị đầu vào cho DEV lập kế hoạch công việc (`dev-planning-and-task-breakdown`) và QA thiết kế test (`qa-test-design`).
+- Chuẩn bị đầu vào cho DEV triển khai và QA thiết kế test (`qa-test-design`).
 
 **Khi KHÔNG sử dụng:**
 - Yêu cầu còn quá mơ hồ, chưa rõ bài toán kinh doanh → Dùng `ba-refine` hoặc `ba-interview-me`.
-- Thiết kế đặc tả kỹ thuật kiến trúc → Dùng `dev-spec-driven-development`.
+- Thiết kế đặc tả kỹ thuật kiến trúc → Việc của lập trình viên (DEV implementation).
 
 ## 2. Quy trình Thực hiện 5 Bước
 - **Bước 1 (Xác định Tác nhân - Role/Persona):** Làm rõ người dùng cụ thể là ai (Nhà đầu tư cá nhân, Môi giới, Quản trị viên hệ thống...), không dùng chung chung "Người dùng".

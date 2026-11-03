@@ -106,10 +106,11 @@ Mặc định **TỰ ĐỘNG ÁP DỤNG 100% (Always-on)** cho mọi skill và m
 - 📖 **Chi tiết toàn văn:** [`.agents/rules/grounding-contract.md`](.agents/rules/grounding-contract.md)
 
 ## 5. Tự Chủ & Chủ Động
-- **Mặc định là TỰ CHẠY.** Chỉ dừng hỏi user khi rơi vào 5 trường hợp của danh sách đóng trong `.agents/rules/autonomy-contract.md`: thiếu input bắt buộc, thiếu credential, có câu hỏi 🔴 Critical, sắp commit/merge vào main, hoặc hành động không hoàn tác được bằng `git revert`.
-- Không được hỏi "có tiếp không", "đã đủ chưa", "có apply không" — mọi trường hợp đó đều tự quyết và chạy tiếp.
+- **Mặc định là DỪNG SAU MỖI ARTIFACT (Single-Task Hard Stop).** Mỗi lệnh đơn lẻ sau khi sinh artifact xong phải dừng lại và đưa ra đúng 1 bước tiếp theo bằng văn bản. Chuỗi tự động chuyển phase (Phase Gates) CHỈ kích hoạt khi người dùng gọi Orchestrator (`/qa-full-pipeline`, `/e2e-qa-delivery`) hoặc truyền cờ `--auto`.
+- Trong Orchestrator, chỉ dừng hỏi user khi rơi vào 5 trường hợp của danh sách đóng trong `.agents/rules/autonomy-contract.md`: thiếu input bắt buộc, thiếu credential, có câu hỏi 🔴 Critical, sắp commit/merge vào main, hoặc hành động không hoàn tác được bằng `git revert`.
+- Không được hỏi các câu ngoài danh sách đóng (như "có tiếp không", "đã đủ chưa", "confidence 78% có tiếp không") — mọi trường hợp đó đều tự quyết theo cổng kiểm chứng lệnh thật.
 - Nếu phát hiện Spec có lỗ hổng logic, chủ động dùng `ba-interview-me` để chất vấn user.
-- Nếu gặp lỗi (Test fail, Build fail), chủ động tự sửa code (Self-fix) và chạy lại — tối đa 3 vòng rồi mới báo cáo. *(Ngoại lệ: Với các cổng kiểm định spec khi Push Jira hoặc đo lường trong `qa-run-test`, Agent TUYỆT ĐỐI KHÔNG tự ý sửa file đặc tả hoặc sửa assertion để lách gate; xem chi tiết tại `autonomy-contract.md`).*
+- **Quy chuẩn Self-fix:** Tuyệt đối tuân thủ Bảng Self-Fix trong `autonomy-contract.md`: chỉ cho phép tự sửa cú pháp Gherkin hoặc cú pháp test script vừa sinh tối đa 1 vòng duy nhất. CẤM tự sửa spec, CẤM tự sửa assertion, CẤM tự sửa app code, CẤM tự chạy cài đặt package (`pip`/`npm install`). Khi gặp lỗi ngoài phạm vi: DỪNG và báo cáo nguyên văn.
 
 ### 5.1. Git Workflow — Branch-based Development
 

@@ -8,6 +8,8 @@ trigger: Khi cần phân tích một Jira Issue lần đầu tiên hoặc import
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
+> 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** `issueKey` Jira hoặc đường dẫn/từ khóa Confluence; n8n đang chạy. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** `spec/final.md` tồn tại; mọi gap gắn mức nghiêm trọng; Gate 1 đã được user duyệt.
@@ -25,7 +27,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 **Không sử dụng khi:**
 - Jira chỉ có ý tưởng sơ khai cần brainstorm phân kỳ/hội tụ → dùng `ba-refine`.
 - Chỉ có mã nguồn backend không có tài liệu → dùng `qa-code2spec`.
-- Cần viết Tech-Spec kiến trúc/API/DB → việc của DEV (`dev-spec-driven-development`).
+- Cần viết Tech-Spec kiến trúc/API/DB → việc của lập trình viên (DEV implementation).
 
 ## ⚠️ RANH GIỚI NHIỆM VỤ (Bắt buộc đọc trước)
 
@@ -36,7 +38,7 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 | Đọc ĐA NGUỒN (toàn bộ file Jira gốc + references) | Tự đoán yêu cầu thay vì phỏng vấn (`ba-interview-me`) |
 | Phát hiện gaps (Thiếu, Mơ hồ, Xung đột) và phân cấp nghiêm trọng | Tự ý tải file khi chưa có user approval |
 | Phỏng vấn từng câu một qua `ba-interview-me` (đạt ≥90% confidence) | Bỏ trống các section trong template chuẩn 13 sections |
-| Xuất `final.md` chuẩn làm căn cứ duy nhất cho QA/DEV | Dừng hỏi user "có chạy tiếp sang QA không" (tự chuyển tiếp) |
+| Xuất `final.md` chuẩn làm căn cứ duy nhất cho QA/DEV | Tự động kích hoạt QA downstream khi chưa có yêu cầu (phải dừng sau khi tạo final.md) |
 
 **Phân định với các kỹ năng liên quan:**
 - **ba-spec**: Yêu cầu đã có sẵn trên Jira/Confluence → Phân tích, làm rõ gap → `final.md` bàn giao.

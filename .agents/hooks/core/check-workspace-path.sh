@@ -29,7 +29,7 @@ if [[ -z "$TARGET_PATH" ]]; then
 fi
 
 # Chuẩn hóa đường dẫn tương đối
-PROJECT_ROOT="$(pwd)"
+PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 REL_PATH="${TARGET_PATH#"${PROJECT_ROOT}/"}"
 REL_PATH="${REL_PATH#./}"
 REL_PATH="${REL_PATH#/}"

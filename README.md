@@ -297,7 +297,7 @@ Business Rule → Tech Spec → Code → Unit Test → Integration Test → E2E 
 ```
 
 ### 3. Autonomous Execution & Confidence Assessment
-Mặc định tự chạy (Autonomous by default). Không dùng Confidence Level làm cổng chặn luồng. Chỉ dừng hỏi user trong 5 trường hợp danh sách đóng quy định tại [.agents/rules/autonomy-contract.md](.agents/rules/autonomy-contract.md). Confidence level dùng để đánh giá độ hoàn thiện và độ tin cậy của artifact tại [.agents/rules/confidence-level.md](.agents/rules/confidence-level.md).
+Mặc định dừng sau mỗi artifact (Single-Task Hard Stop). Chuỗi tự động chuyển phase chỉ áp dụng trong Orchestrator (`/qa-full-pipeline`, `/e2e-qa-delivery`) hoặc khi có cờ `--auto`. Trong Orchestrator, chỉ dừng hỏi user trong 5 trường hợp danh sách đóng quy định tại [.agents/rules/autonomy-contract.md](.agents/rules/autonomy-contract.md). Confidence level dùng để đánh giá độ hoàn thiện và độ tin cậy của artifact tại [.agents/rules/confidence-level.md](.agents/rules/confidence-level.md).
 
 ### 4. Git Workflow Safety
 - Branch-based development (no direct commits to main)

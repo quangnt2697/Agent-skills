@@ -8,6 +8,8 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
+> 🔒 **Scope & Permission:** Tier 3 (TEST MUTATION) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** `{issueKey}.feature` và `checklist.md` đã tồn tại. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** `check-sdk.js` exit 0; `reuse-scan.json` tồn tại; `pytest --collect-only` exit 0; `qa-lint.js` exit 0.
@@ -28,7 +30,7 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 > - Nếu Jira chưa mô tả rõ → ghi comment `# NEEDS-SPEC` và dừng để hỏi lại trước khi tiếp tục.
 > - Đây là tương đương với quy tắc 1.9 (Self-fix Loop): không bao giờ sửa assertion để ép match response thực tế (green-washing).
 
-**Khi có test fail sau khi `qa-run-test` chạy:** Bàn giao cho `dev-debugging` (lỗi hệ thống) hoặc cập nhật script qua `qa-auto-design` nếu script bị lỗi kỹ thuật (ImportError, fixture sai).
+**Khi có test fail sau khi `qa-run-test` chạy:** Bàn giao cho Developer (nếu lỗi hệ thống) hoặc cập nhật script qua `qa-auto-design` nếu script bị lỗi kỹ thuật (ImportError, fixture sai).
 
 ## 1. Khi nào dùng?
 - Đã có kịch bản BDD Gherkin (`workspace/issues/{issueKey}/test/{issueKey}.feature`) và Checklist kiểm thử (`checklist.md`).
@@ -38,7 +40,7 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
 **Khi KHÔNG sử dụng:**
 - Chưa có kịch bản Gherkin hoặc Checklist → dùng `qa-test-design` trước.
 - Chỉ cần chạy test suite và xuất báo cáo kết quả → dùng `qa-run-test`.
-- Cần debug lỗi hệ thống hoặc tìm root cause → dùng `dev-debugging` hoặc `cr-review-code-and-quality`.
+- Cần debug lỗi hệ thống hoặc tìm root cause → Bàn giao cho Developer hoặc dùng `cr-review-code-and-quality`.
 
 ## 2. Quy trình 6 Giai đoạn Thực thi
 

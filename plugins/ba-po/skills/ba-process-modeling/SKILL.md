@@ -8,6 +8,8 @@ trigger: Khi cần trực quan hóa quy trình phức tạp, làm rõ workflow c
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
+> 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** Mô tả quy trình, tác nhân và điểm quyết định từ user hoặc spec. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** File sơ đồ tồn tại; mọi bước/nút đều truy được về nguồn.
@@ -18,7 +20,7 @@ trigger: Khi cần trực quan hóa quy trình phức tạp, làm rõ workflow c
 - Tạo tài liệu trao đổi chung giữa nghiệp vụ (BA/PO), kỹ thuật (DEV) và kiểm thử (QA).
 
 **Khi KHÔNG sử dụng:**
-- Chỉ cần vẽ sơ đồ kiến trúc hạ tầng kỹ thuật (Network/Infra diagram) → Dùng `dev-spec-driven-development`.
+- Chỉ cần vẽ sơ đồ kiến trúc hạ tầng kỹ thuật (Network/Infra diagram) → Việc của DEV/Architect (dùng `ba-design-flowchart`).
 - Chỉ cần render một đoạn mã Mermaid có sẵn → Dùng `ba-design-flowchart`.
 
 ## 2. Quy trình Thực hiện 5 Bước

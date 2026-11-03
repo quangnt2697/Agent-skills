@@ -7,7 +7,7 @@
 4. **Chuẩn BVA 3 Giá Trị (3-Value BVA):** Giá trị tài chính, khối lượng, tiền phải test đủ bộ: `{Boundary - ε, Boundary, Boundary + ε}`.
 5. **Tham Số Hóa Đa Sàn / Đa Mã (Multi-Symbol Parameterization):** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** phải tách riêng Scenario độc lập hoặc sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa chi tiết. **CẤM TUYỆT ĐỐI** viết scenario gộp chung làm mờ ranh giới thời gian và kênh dữ liệu.
 6. **Grounding Dữ Liệu Định Danh Thật:** Mọi dữ liệu định danh (accountNo, symbol, orderId) dùng trong test happy-path/precondition (loại a) phải được tra cứu từ môi trường UAT thật và ghi nhận vào `data-grounding.json`. Nếu không thể, BẮT BUỘC gắn thẻ `[DATA-ASSUMED]` cảnh báo.
-7. **Cổng Kiểm Tra Tự Động:** File `.feature` bắt buộc chạy qua script `qa-validate.sh` và tự sửa lỗi (Self-fix Loop ≤ 3 vòng) trước khi bàn giao.
+7. **Cổng Kiểm Tra Tự Động:** File `.feature` bắt buộc chạy qua script `qa-validate.sh` và tự sửa lỗi cú pháp (Self-fix Loop ≤ 1 vòng duy nhất) trước khi bàn giao.
 
 ## 2. Quy Trình 3 Giai Đoạn Thiết Kế
 
