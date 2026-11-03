@@ -41,9 +41,12 @@ const apps = [
   }
 ];
 
+// Ngrok Tunnel: Mặc định TẮT hoàn toàn khi chạy local Fast-Path.
+// Chỉ kích hoạt khi người dùng chủ động cấu hình ENABLE_NGROK_TUNNEL=true và NGROK_DOMAIN.
+const enableNgrok = process.env.ENABLE_NGROK_TUNNEL === 'true';
 const ngrokDomain = process.env.NGROK_DOMAIN;
 const n8nPort = process.env.N8N_PORT || '5678';
-if (ngrokDomain) {
+if (enableNgrok && ngrokDomain) {
   apps.push({
     name: 'ngrok-tunnel',
     cwd: projectRoot,
