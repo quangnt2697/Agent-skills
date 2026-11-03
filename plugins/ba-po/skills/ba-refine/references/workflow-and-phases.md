@@ -336,6 +336,6 @@ Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App, kíc
 
 ## Các bước tiếp theo
 
-Sau khi push spec lên Jira thành công, **BẮT BUỘC** không được dừng lại để hỏi user. Bạn phải tự động chuyển sang kỹ năng `/qa-test-design` để bắt đầu làm Checklist cho task vừa refine.
+Sau khi push spec lên Jira thành công, **DỪNG LẠI** (Single-Task Hard Stop). Chỉ gợi ý bước tiếp theo bằng văn bản: `/qa-test-design {issueKey}`. Không tự động gọi kỹ năng downstream; chuỗi nhiều phase chỉ chạy khi user gọi orchestrator (`/qa-full-pipeline`, `/e2e-delivery`) hoặc truyền cờ `--auto`.
 
 ---

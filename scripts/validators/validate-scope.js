@@ -21,7 +21,8 @@ const FORBIDDEN_PHRASES = [
   { pattern: /tự động chuyển sang/i, name: 'tự động chuyển sang (vi phạm Single Task Hard Stop)' },
   { pattern: /(tối đa\s+[23]\s+vòng|≤\s*[23]\s*vòng)/i, name: 'tối đa 2-3 vòng (chỉ cho phép tối đa 1 vòng theo autonomy-contract.md)' },
   { pattern: /mặc định (là )?tự chạy/i, name: 'mặc định tự chạy (phải là dừng sau mỗi artifact)' },
-  { pattern: /cài rồi chạy lại/i, name: 'cài rồi chạy lại (cấm tự ý cài package)' }
+  { pattern: /cài rồi chạy lại/i, name: 'cài rồi chạy lại (cấm tự ý cài package)' },
+  { pattern: /không được dừng lại để hỏi/i, name: 'không được dừng lại để hỏi (vi phạm Single Task Hard Stop)' }
 ];
 
 const DEAD_REFERENCES = [
@@ -113,8 +114,49 @@ function checkCommands() {
   }
 }
 
+function walkMarkdown(dir, out = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkMarkdown(full, out);
+    else if (entry.name.endsWith('.md')) out.push(full);
+  }
+  return out;
+}
+
+// Quét references/ của từng skill: các cụm cấm và dead reference ở đây vẫn được agent đọc
+// như chỉ dẫn, nên phải chịu cùng cổng kiểm với SKILL.md.
+function checkReferences() {
+  const pluginsDir = path.join(REPO_ROOT, 'plugins');
+  for (const plugin of fs.readdirSync(pluginsDir)) {
+    const skillsDir = path.join(pluginsDir, plugin, 'skills');
+    if (!fs.existsSync(skillsDir)) continue;
+
+    for (const skill of fs.readdirSync(skillsDir)) {
+      const refDir = path.join(skillsDir, skill, 'references');
+      if (!fs.existsSync(refDir)) continue;
+
+      for (const filePath of walkMarkdown(refDir)) {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const rel = path.relative(REPO_ROOT, filePath);
+
+        for (const { pattern, name } of FORBIDDEN_PHRASES) {
+          if (pattern.test(content)) {
+            errors.push(`[FORBIDDEN PHRASE] ${rel} chứa cụm: "${name}".`);
+          }
+        }
+        for (const deadRef of DEAD_REFERENCES) {
+          if (content.includes(deadRef)) {
+            errors.push(`[DEAD REFERENCE] ${rel} tham chiếu không tồn tại: "${deadRef}".`);
+          }
+        }
+      }
+    }
+  }
+}
+
 checkSkills();
 checkCommands();
+checkReferences();
 
 if (errors.length > 0) {
   console.error('\n❌ Phát hiện vi phạm Scope Containment / Autonomy:');

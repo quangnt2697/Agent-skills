@@ -74,4 +74,12 @@ test('Scope Containment & Permission Tiers Policy', async (t) => {
     assert.match(syncCmd, /TIER 2b - EXTERNAL-WRITE/);
     assert.match(syncCmd, /--force/);
   });
+
+  await t.test('skill references/ do not force auto-chain to a downstream skill', () => {
+    const refFile = path.join(rootDir, 'plugins/ba-po/skills/ba-refine/references/workflow-and-phases.md');
+    const content = fs.readFileSync(refFile, 'utf8');
+    assert.doesNotMatch(content, /tự động chuyển sang/i);
+    assert.doesNotMatch(content, /không được dừng lại để hỏi/i);
+    assert.match(content, /Single-Task Hard Stop/);
+  });
 });
