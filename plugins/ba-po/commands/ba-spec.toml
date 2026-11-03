@@ -27,5 +27,5 @@ LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT. BẮT BUỘC dùng Tool
 2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
    - TUYỆT ĐỐI CẤM viết code, thiết kế test cases, hoặc sửa đổi mã nguồn ứng dụng.
    - CẤM can thiệp vào bất kỳ file nào ngoài thư mục `workspace/issues/{issueKey}/`.
-3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi xuất bản `*-final.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt `/qa-test-design` hay `/dev-tech-spec`.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi xuất bản `*-final.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt `/qa-test-design` hay bất kỳ lệnh kế tiếp nào.
 """

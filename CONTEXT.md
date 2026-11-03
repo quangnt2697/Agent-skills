@@ -80,7 +80,7 @@ Agent đọc file này một lần mỗi session để giảm token giải thíc
 ```
 Jira Issue (issueKey)
   └─► BA: ba-spec / ba-refine → final.md
-         ├─► DEV: dev-spec-driven-development → tech-spec → app code
+         ├─► DEV: Bàn giao DEV → tech-spec → app code
          └─► QA: qa-test-design → checklist.md + .feature
                     └─► qa-auto-design → test code (Pytest/Playwright)
                               └─► qa-run-test → test-output.log + report.md

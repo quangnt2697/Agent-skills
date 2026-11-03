@@ -34,7 +34,8 @@
       "expected_output": "Báo cáo standup có thống kê tiến độ, ticket tồn đọng và phân bổ tải DEV.",
       "expectations": [
         "Thống kê rõ ràng trạng thái các ticket theo người thực hiện",
-        "Đưa ra cảnh báo nếu có thành viên bị quá tải"
+        "Đưa ra cảnh báo nếu có thành viên bị quá tải",
+        "Writes report strictly to workspace/sprints/{sprintId}/trace/ and does not send chat messages to Mattermost by default"
       ]
     },
     {

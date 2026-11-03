@@ -34,7 +34,9 @@
       "expected_output": "Checklist kiểm thử phân loại BVA/EP và kịch bản Gherkin chuẩn Scenario Outline.",
       "expectations": [
         "Phân tích đầy đủ ca kiểm thử biên và lớp tương đương",
-        "Kịch bản BDD rõ ràng Given/When/Then có test data thực tế"
+        "Kịch bản BDD rõ ràng Given/When/Then có test data thực tế",
+        "Stops immediately after generating checklist.md and .feature without auto-invoking qa-auto-design",
+        "Self-fix is strictly limited to 1 round on syntax error and never modifies business assertions"
       ]
     },
     {

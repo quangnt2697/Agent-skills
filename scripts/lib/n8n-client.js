@@ -123,7 +123,7 @@ export async function batchSquashPush(params = {}, options = {}) {
 }
 
 /**
- * Fast-Path: Lấy dữ liệu báo cáo Standup từ n8n để lưu vào workspace/sprints/sprint/trace/
+ * Fast-Path: Lấy dữ liệu báo cáo Standup từ n8n để lưu vào workspace/sprints/{sprintId}/trace/
  * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}
  */

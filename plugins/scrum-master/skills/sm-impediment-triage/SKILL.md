@@ -54,8 +54,8 @@ Skill này truy xuất dữ liệu ticket từ Jira REST API với cấu hình x
    - Nguyên nhân có thể là gì? (Thiếu tài liệu từ BA? Đang chờ QA? Đang chờ bên thứ 3?).
    - Đề xuất Action Item cụ thể để gỡ rối (Unblock).
 6. **Xuất file**:
-   - Nếu thư mục `{PROJECT_ROOT}/workspace/sprint/` chưa tồn tại, chạy `mkdir -p` để tạo.
-   - Ghi đè file **`{PROJECT_ROOT}/workspace/sprints/sprint/trace/blockers-triage.md`**. File cập nhật hằng ngày.
+   - Nếu thư mục `{PROJECT_ROOT}/workspace/sprints/{sprintId}/` chưa tồn tại, chạy `mkdir -p` để tạo.
+   - Ghi đè file **`{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/blockers-triage.md`** (mặc định `{sprintId}` là `sprint` khi không truyền tham số). File cập nhật hằng ngày.
    - ⚠️ Lưu ý: `workspace` ở đây là **tên thư mục con** bên trong PROJECT_ROOT, KHÔNG phải "workspace root" của IDE.
 
 
@@ -75,6 +75,6 @@ Kích hoạt kỹ năng này khi:
 
 ## Verification
 
-- File `blockers-triage.md` được sinh ra đúng tại `workspace/sprints/sprint/trace/` chứa action items chi tiết.
+- File `blockers-triage.md` được sinh ra đúng tại `workspace/sprints/{sprintId}/trace/` chứa action items chi tiết.
 
 ---

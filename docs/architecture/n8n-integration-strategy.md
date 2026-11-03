@@ -135,7 +135,7 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
   ```
 
 ### 3.5. Phân Hệ Scrum Master & Kênh Thông Báo (Tách Bạch Fast-Path & ChatOps)
-Hệ thống mặc định vận hành theo cơ chế **Fast-Path cục bộ** (`NOTIFY_CHANNEL=none`), xuất báo cáo ra `workspace/sprints/sprint/trace/daily-standup-report.md`. Tích hợp Mattermost là tùy chọn mở rộng khi `NOTIFY_CHANNEL=mattermost`:
+Hệ thống mặc định vận hành theo cơ chế **Fast-Path cục bộ** (`NOTIFY_CHANNEL=none`), xuất báo cáo ra `workspace/sprints/{sprintId}/trace/daily-standup-report.md`. Tích hợp Mattermost là tùy chọn mở rộng khi `NOTIFY_CHANNEL=mattermost`:
 - **Báo cáo Standup:** Fast-Path n8n phân tích vé Jira kẹt > 3 ngày, tiến độ Story Points và cân bằng tải, trả dữ liệu markdown cho Skill lưu vào trace/. Nếu `NOTIFY_CHANNEL=mattermost`, n8n sẽ chuyển tiếp tin nhắn qua webhook Mattermost.
 - **Jira Ready to Test Handler:** Lắng nghe/xử lý Webhook Jira lọc task Board G.3.1 trong Active Sprint chuyển sang Ready to test, quét workspace local báo `✅/❌ Gherkin file` và `✅/❌ Autoscript test`, gửi card `### 🎯 READY TO TEST` kèm gợi ý lệnh.
 - **ChatOps Single Router (Tùy chọn):** Khi cần điều hành từ xa qua Mattermost, Slash Command `/agent` gửi payload tới n8n router để điều phối thực thi. Mặc định router này ở trạng thái inactive khi chưa bật ChatOps.

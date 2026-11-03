@@ -34,7 +34,8 @@
       "expected_output": "Kích hoạt repo-group-sync với project order-service hoặc thực thi script repo-sync với cờ -p order-service.",
       "expectations": [
         "Nhận diện đúng project alias order-service",
-        "Thực hiện kiểm tra an toàn working tree và pull bằng --ff-only"
+        "Thực hiện kiểm tra an toàn working tree và pull bằng --ff-only",
+        "Never resets dirty repositories by default; skips dirty repos unless explicit --force is provided and confirmed"
       ]
     }
   ]

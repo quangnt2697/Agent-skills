@@ -38,7 +38,8 @@
         "All sections extracted: Summary, User Stories, Business Rules, API Requirements, Error Scenarios",
         "Gap analysis completed with open questions",
         "Output saved to workspace/{issueKey}/spec/final.md",
-        "Confidence level calculated based on completeness"
+        "Confidence level calculated based on completeness",
+        "Stops immediately after generating spec/final.md without auto-chaining to qa-test-design or downstream skills"
       ]
     },
     {

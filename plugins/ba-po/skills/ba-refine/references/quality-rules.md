@@ -218,11 +218,8 @@ Nếu thiếu bất kỳ điều nào, QUAY LẠI Giai đoạn 1-3 để fix.
    ```
    → Generate checklist + Gherkin từ refined AC
 
-2. **Viết tech spec:**
-   ```
-   /dev-tech-spec {issueKey}
-   ```
-   → Transform thành API contract + data model
+2. **Bàn giao kiến trúc DEV:**
+   → Bàn giao tài liệu cho developer triển khai API contract + data model
 
 3. **Full pipeline:**
    ```

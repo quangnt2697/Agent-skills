@@ -34,9 +34,7 @@ CONTENT="$(echo "$INPUT" | jq -r '
 if [[ -n "$TARGET" ]]; then
   PATH_ERR=""
   if ! PATH_ERR="$(bash "$REPO_ROOT/.agents/hooks/core/check-workspace-path.sh" "$TARGET" 2>&1 >/dev/null)"; then
-    # Escape JSON string an toàn qua jq
-    REASON="$(echo "$PATH_ERR" | jq -Rs .)"
-    echo "{\"decision\": \"deny\", \"reason\": $REASON}"
+    jq -n --arg reason "$PATH_ERR" '{"decision": "deny", "reason": $reason}'
     exit 0
   fi
 fi
@@ -45,8 +43,7 @@ fi
 if [[ -n "$CONTENT" ]]; then
   SEC_ERR=""
   if ! SEC_ERR="$(bash "$REPO_ROOT/.agents/hooks/core/check-secrets.sh" "$TARGET" "$CONTENT" 2>&1 >/dev/null)"; then
-    REASON="$(echo "$SEC_ERR" | jq -Rs .)"
-    echo "{\"decision\": \"deny\", \"reason\": $REASON}"
+    jq -n --arg reason "$SEC_ERR" '{"decision": "deny", "reason": $reason}'
     exit 0
   fi
 fi

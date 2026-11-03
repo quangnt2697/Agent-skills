@@ -19,7 +19,7 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
 const FORBIDDEN_PHRASES = [
   { pattern: /tự động chuyển sang/i, name: 'tự động chuyển sang (vi phạm Single Task Hard Stop)' },
-  { pattern: /tối đa 3 vòng/i, name: 'tối đa 3 vòng (chỉ cho phép tối đa 1 vòng theo autonomy-contract.md)' },
+  { pattern: /(tối đa\s+[23]\s+vòng|≤\s*[23]\s*vòng)/i, name: 'tối đa 2-3 vòng (chỉ cho phép tối đa 1 vòng theo autonomy-contract.md)' },
   { pattern: /mặc định (là )?tự chạy/i, name: 'mặc định tự chạy (phải là dừng sau mỗi artifact)' },
   { pattern: /cài rồi chạy lại/i, name: 'cài rồi chạy lại (cấm tự ý cài package)' }
 ];
@@ -29,7 +29,9 @@ const DEAD_REFERENCES = [
   'dev-debugging',
   'dev-spec-driven-development',
   'dev-planning-and-task-breakdown',
-  'dev-incremental-implementation'
+  'dev-incremental-implementation',
+  'dev-tech-spec',
+  'skills/dev-performance'
 ];
 
 let errors = [];

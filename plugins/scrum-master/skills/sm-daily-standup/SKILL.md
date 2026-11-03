@@ -36,7 +36,7 @@ disable-auto-invoke: true
   ```
   Webhook `/webhook/sm-standup` trả về báo cáo phân tích tiến độ Sprint (chỉ gửi Mattermost nếu `NOTIFY_CHANNEL=mattermost`).
   > ⛔ Nếu n8n offline hoặc lỗi: báo ngay "n8n chưa chạy — khởi động bằng `npm run n8n`" và **DỪNG**. CẤM tự bịa số liệu SP.
-- **Bước 2 (Lưu Trữ Báo Cáo):** Nhận nội dung markdown từ phản hồi của n8n và ghi vào file `{PROJECT_ROOT}/workspace/sprints/sprint/trace/daily-standup-report.md` (tạo thư mục cha nếu chưa có).
+- **Bước 2 (Lưu Trữ Báo Cáo):** Nhận nội dung markdown từ phản hồi của n8n và ghi vào file `{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/daily-standup-report.md` (mặc định `{sprintId}` là `sprint` khi không chỉ định; tạo thư mục cha nếu chưa có).
 - **Bước 3 (Xác Minh & Tóm tắt Kết quả):** Xác minh file đã tồn tại trên đĩa bằng công cụ đọc file. Chỉ sau khi file tồn tại mới gửi tóm tắt ngắn gọn 1-2 câu cho người dùng kèm liên kết tới file vừa lưu.
 
 ## 4. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
@@ -53,7 +53,7 @@ disable-auto-invoke: true
   - **Cân bằng tải:** 
     - DEV 1: 3 In Progress (8 SP) - Bình thường
     - DEV 2: 5 In Progress (16 SP) - ⚠️ Quá tải, cần hỗ trợ
-  - **Báo cáo chi tiết:** Đã xuất file `workspace/sprints/sprint/trace/daily-standup-report.md` (kênh chat tắt khi `NOTIFY_CHANNEL=none`).
+  - **Báo cáo chi tiết:** Đã xuất file `workspace/sprints/{sprintId}/trace/daily-standup-report.md` (kênh chat tắt khi `NOTIFY_CHANNEL=none`).
   ```
 
 ---

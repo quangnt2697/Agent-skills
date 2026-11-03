@@ -114,7 +114,7 @@ Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y
      ```
   3. Ghi kết quả ma trận traceability ra `workspace/issues/{issueKey}/trace/matrix.md`.
   4. Ghi trạng thái và SHA256 của feature file vào `workspace/issues/{issueKey}/.pipeline-state.json`.
-  5. Tự sửa lỗi (≤ 3 vòng) nếu không qua linter. Sau khi pass, bàn giao cho `qa-auto-design`.
+  5. Tự sửa lỗi cú pháp .feature vừa sinh tối đa 1 vòng duy nhất nếu không qua linter (tuân thủ autonomy-contract.md). Sau khi pass, DỪNG và gợi ý bước tiếp theo.
 
 ## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
 

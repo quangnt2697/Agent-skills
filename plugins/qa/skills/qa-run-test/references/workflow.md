@@ -28,7 +28,7 @@
 - Ghi báo cáo chính thức vào DUY NHẤT một file `result/report.md`.
 - Trả kết quả tóm tắt cho người dùng trên console.
 - **NẾU CÓ TEST BỊ FAIL ➔ ĐỀ XUẤT NGAY KỸ NĂNG XỬ LÝ CHUYÊN TRÁCH:**
-  - 🛠️ **Gỡ lỗi Backend / Trace log:** Đề xuất dùng skill `dev-debugging` hoặc subagent `dev` để đào sâu mã nguồn backend và khắc phục lỗi.
+  - 🛠️ **Gỡ lỗi Backend / Trace log:** Bàn giao developer điều tra mã nguồn backend và khắc phục lỗi.
   - 🔍 **Review Chất lượng & Logic Code:** Đề xuất dùng skill `cr-review-code-and-quality` hoặc subagent `code-reviewer` để review mã nguồn ứng dụng.
   - ⚙️ **Cập nhật Test Script:** Đề xuất dùng skill `qa-auto-design` nếu các tham số test cần đồng bộ lại với yêu cầu nghiệp vụ mới.
 
@@ -40,7 +40,7 @@
 ❌ **CẤM điều tra mã nguồn backend:** Không dùng `view_file`, `grep_search` để soi code backend (Go, Java, Python service...). Việc tìm nguyên nhân gốc rễ và sửa code là của DEV/CR.  
 ❌ **CẤM tự chế request ngoài luồng:** Tuyệt đối không tự viết script Python `urllib` hay lệnh cURL để gửi request lên server nhằm "kiểm tra lại" endpoint bị fail.  
 ❌ **CẤM sửa assertion (Cheating):** Thấy test fail do lỗi hệ thống liền tự ý sửa test code hoặc nới lỏng assertion để biến FAIL thành PASS.  
-❌ **CẤM sửa test khi bị TIMEOUT:** Khi test bị timeout, KHÔNG tự sửa test script để tăng threshold hay loại bỏ assertion. Timeout là kết quả FAILED hợp lệ — ghi nhận và bàn giao cho `qa-auto-design` hoặc `dev-debugging`.  
+❌ **CẤM sửa test khi bị TIMEOUT:** Khi test bị timeout, KHÔNG tự sửa test script để tăng threshold hay loại bỏ assertion. Timeout là kết quả FAILED hợp lệ — ghi nhận và bàn giao cho `qa-auto-design` hoặc bàn giao developer điều tra.  
 ❌ **CẤM chờ vô hạn:** Nếu toàn bộ suite chạy quá 10 phút mà chưa kết thúc, agent DỪNG NGAY và xuất báo cáo kết quả hiện tại.  
 ❌ **CẤM sinh code mới:** Skill này CHỈ CHẠY test đã có sẵn, tuyệt đối không tự sinh test case mới.  
 ❌ **CẤM thừa thãi file báo cáo:** Tuân thủ quy tắc độc bản output (đúng 1 file `.xml`, 1 file `.html`, 1 file `.log`, 1 file `.md`).
@@ -67,6 +67,6 @@
 - [ ] Trả kết quả trung thực, không sửa assertion gian lận.
 - [ ] Không tự sửa test script khi bị TIMEOUT — ghi nhận và bàn giao.
 - [ ] Xuất báo cáo độc bản tại `workspace/issues/{issueKey}/test/result/report.md`.
-- [ ] Đã đề xuất kỹ năng `dev-debugging` / `cr-review-code-and-quality` / `qa-auto-design` nếu phát hiện lỗi hoặc timeout.
+- [ ] Đã đề xuất kỹ năng `cr-review-code-and-quality` / `qa-auto-design` hoặc bàn giao developer nếu phát hiện lỗi hoặc timeout.
 
 ---

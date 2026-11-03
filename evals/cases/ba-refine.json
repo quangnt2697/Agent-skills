@@ -40,7 +40,8 @@
         "Open questions from previous version resolved",
         "Cross-references added between related requirements",
         "Examples added for complex rules",
-        "Confidence level improved from previous version"
+        "Confidence level improved from previous version",
+        "Gate 2 enforces explicit user approval before pushing (PUT) spec to Jira Description and backs up current description"
       ]
     },
     {
