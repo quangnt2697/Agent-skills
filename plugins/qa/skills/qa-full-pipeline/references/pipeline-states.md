@@ -10,7 +10,7 @@ Cổng dừng/chạy tiếp do `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-c
 | 0 Validation | — | `spec/final.md` tồn tại, không rỗng |
 | 1 Test design | `test/checklist.md`, `test/{issueKey}.feature` | `qa-validate.sh` exit 0; số scenario ≥ số mục P0 |
 | 2 Automation | `test/steps/test_*.py` | `pytest --collect-only` exit 0; số test ≥ số scenario |
-| 3 Execution | `test/result/report.md`, `test/result/test-output.log` | pass rate ≥ 90% (tự sửa ≤ 3 vòng) |
+| 3 Execution | `test/result/report.md`, `test/result/test-output.log` | pass rate ≥ 90% (nếu < 90%: DỪNG + phân loại lỗi) |
 | 4 Summary | `trace/matrix.md`, `test/result/summary.md` | `trace-check.js --stage=all` exit 0; Squash push chỉ khi Phase 3 PASS |
 
 Tất cả cổng đều PASS → chạy tiếp, chỉ log 1 dòng `[AUTO] Phase X → Phase Y (...)`.
@@ -64,8 +64,8 @@ Mỗi issueKey có thư mục `workspace/{issueKey}/` riêng nên artifact khôn
 | Lỗi | Phase | Xử lý |
 |---|---|---|
 | Thiếu spec | 0 | Dừng (trường hợp 1) — chạy `/ba-spec {issueKey}` trước |
-| `qa-validate.sh` exit 1 | 1 | Tự sửa Gherkin ≤ 3 vòng |
-| Syntax/import error | 2 | Tự sửa ≤ 3 vòng; thiếu package → cài rồi chạy lại |
-| Pass rate < 90% | 3 | Phân loại lỗi (test code / app code / env), tự sửa test code ≤ 3 vòng, còn lại ghi bug |
-| `trace-check.js` exit 1 | 4 | Bổ sung scenario cho mã BR/AC thiếu ≤ 3 vòng |
+| `qa-validate.sh` exit 1 | 1 | Tự sửa cú pháp Gherkin ≤ 1 vòng |
+| Syntax/import error | 2 | Tự sửa cú pháp test script ≤ 1 vòng; thiếu package → DỪNG báo user |
+| Pass rate < 90% | 3 | DỪNG, phân loại lỗi (Loại 1/2/3), ghi log và bug report, KHÔNG tự sửa |
+| `trace-check.js` exit 1 | 4 | Ghi danh sách mã BR/AC thiếu vào `trace/gaps.md`, DỪNG báo cáo |
 | `trace-check.js` exit 2 | 4 | Ghi gap "final.md thiếu mã BR/AC" vào `trace/gaps.md`, chạy tiếp |

@@ -2,11 +2,14 @@
 name: sm-impediment-triage
 description: Kỹ năng xử lý sự cố. Lấy danh sách ticket bị treo quá lâu trên một trạng thái (Open, In progress, Ready to test...) và đề xuất chiến lược giải quyết.
 trigger: Use when cần khơi thông luồng công việc Sprint.
+disable-auto-invoke: true
 ---
 
 # sm-impediment-triage
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
+
+> 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** `sm-config.yaml`, `.env` Jira. Thiếu input thì dừng và hỏi lại, không tự điền.

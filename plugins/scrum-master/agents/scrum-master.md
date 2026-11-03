@@ -17,39 +17,38 @@ Mọi kỹ năng của bạn đều được thiết kế để đọc thông ti
 ## Quy tắc Đường dẫn (BẮT BUỘC)
 
 > **THUẬT NGỮ QUAN TRỌNG – KHÔNG ĐƯỢC NHẦM LẪN:**
-> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/` (mặc định: `~/.gemini/config/plugins/agent-skills` hoặc thư mục cài đặt plugin).
-> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án, xác định động qua `git rev-parse --show-toplevel` hoặc thư mục workspace đang mở).
-> - **`workspace/sprint/`** = Một **thư mục con** nằm bên trong `PROJECT_ROOT`. Đây là **tên thư mục theo nghĩa đen (literal)**, KHÔNG phải "workspace root".
+> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/`.
+> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (xác định động qua `git rev-parse --show-toplevel` hoặc thư mục workspace đang mở).
+> - **`workspace/sprints/`** = Thư mục con nằm bên trong `PROJECT_ROOT` lưu trữ toàn bộ artifacts theo sprint.
 
 ### Vị trí file Config (Đọc)
-File `sm-config.yaml` nằm **cố định** trong thư mục plugin:
+File `sm-config.yaml` nằm cố định tại `{PROJECT_ROOT}/sm-config.yaml` (hoặc `{PLUGIN_DIR}/sm-config.yaml` làm fallback):
 ```
-{PLUGIN_DIR}/sm-config.yaml
+{PROJECT_ROOT}/sm-config.yaml
 ```
-Khi chạy bất kỳ skill SM nào, luôn đọc file này từ `PLUGIN_DIR`, **KHÔNG** tìm ở `PROJECT_ROOT`.
 
 ### Vị trí file Output (Ghi)
-Toàn bộ file output của bộ skill SM **PHẢI** được ghi vào:
+Toàn bộ file output của bộ skill SM **PHẢI** được ghi vào các phân vùng chuẩn của Sprint (`tech/` cho sprint plan, `trace/` cho báo cáo):
 ```
-{PROJECT_ROOT}/workspace/sprint/<tên-file>
+{PROJECT_ROOT}/workspace/sprints/sprint/trace/<tên-file>
 ```
 **Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output sẽ ghi vào `/path/to/project/workspace/sprints/sprint/trace/daily-standup-report.md`.
 
-**Quy tắc tạo thư mục:** Nếu thư mục `workspace/sprint/` chưa tồn tại bên trong `PROJECT_ROOT`, chạy `mkdir -p` trước khi ghi file.
+**Quy tắc tạo thư mục:** Nếu thư mục `workspace/sprints/sprint/` chưa tồn tại bên trong `PROJECT_ROOT`, chạy `mkdir -p` trước khi ghi file.
 
 ### Vị trí file `.env` (Credentials Jira)
-File `.env` chứa biến xác thực Jira (`ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`). File này nằm **cố định** trong thư mục plugin, giống `sm-config.yaml`:
+File `.env` chứa biến xác thực Jira (`ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`):
 ```
-{PLUGIN_DIR}/.env    ← Nguồn chính (luôn có sẵn trong plugin)
+{PROJECT_ROOT}/.env    ← Nguồn chính tại thư mục gốc dự án
 ```
-Nếu project hiện tại có file `{PROJECT_ROOT}/.env` → các biến trong đó sẽ **ghi đè** (override) biến cùng tên từ plugin. Điều này cho phép từng project dùng credentials riêng nếu cần, nhưng **không bắt buộc** phải tạo file `.env` ở project.
+Nếu `{PROJECT_ROOT}/.env` thiếu biến, có thể fallback sang `{PLUGIN_DIR}/.env`.
 
 ### Bảng ánh xạ tổng hợp
 
 | Loại       | File                              | Vị trí                                          |
 |------------|-----------------------------------|-------------------------------------------------|
-| **Config** | `sm-config.yaml`                  | `{PLUGIN_DIR}/sm-config.yaml` (cố định)         |
-| **Env**    | `.env`                            | `{PLUGIN_DIR}/.env` (cố định) — override bởi `{PROJECT_ROOT}/.env` nếu có |
+| **Config** | `sm-config.yaml`                  | `{PROJECT_ROOT}/sm-config.yaml` (fallback `{PLUGIN_DIR}`) |
+| **Env**    | `.env`                            | `{PROJECT_ROOT}/.env`                           |
 | **Output** | `sprint-plan.md`                  | `{PROJECT_ROOT}/workspace/sprints/sprint/tech/`              |
 | **Output** | `daily-standup-report.md`         | `{PROJECT_ROOT}/workspace/sprints/sprint/trace/`              |
 | **Output** | `blockers-triage.md`              | `{PROJECT_ROOT}/workspace/sprints/sprint/trace/`              |
@@ -63,12 +62,11 @@ Nếu project hiện tại có file `{PROJECT_ROOT}/.env` → các biến trong 
 
 ## Pipeline Scrum Master
 Quy trình làm việc chuẩn của bạn khi được gọi:
-1. Xác định `PLUGIN_DIR` (thư mục plugin `agent-skills`, chứa file `sm-config.yaml`).
-2. Xác định `PROJECT_ROOT` (thư mục gốc mà user đang mở trong IDE).
-3. Đọc file `{PLUGIN_DIR}/sm-config.yaml` để lấy cấu hình Sprint và Team.
-4. Đọc file `{PLUGIN_DIR}/.env` để lấy Jira credentials (nguồn chính). Nếu `{PROJECT_ROOT}/.env` tồn tại → các biến trùng tên sẽ ghi đè.
-5. Thực thi skill được yêu cầu.
-6. Ghi kết quả vào file tương ứng trong thư mục `{PROJECT_ROOT}/workspace/sprint/<root>/`.
+1. Xác định `PROJECT_ROOT` (thư mục gốc dự án qua `git rev-parse --show-toplevel`).
+2. Đọc file `{PROJECT_ROOT}/sm-config.yaml` để lấy cấu hình Sprint và Team (fallback `{PLUGIN_DIR}/sm-config.yaml`).
+3. Đọc file `{PROJECT_ROOT}/.env` để lấy Jira credentials.
+4. Thực thi skill được yêu cầu.
+5. Ghi kết quả vào file tương ứng trong thư mục `{PROJECT_ROOT}/workspace/sprints/sprint/<root>/`.
 
 ## Tổ hợp (Composition)
 

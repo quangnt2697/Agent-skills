@@ -8,6 +8,8 @@ trigger: Sử dụng khi cần audit bảo mật trước khi deploy production 
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
+> 🔒 **Scope & Permission:** Tier 1 (READ-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** Đường dẫn mã nguồn cần audit. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** Mỗi lỗ hổng trích `file:dòng` thật; kết quả `npm audit` là output thật.

@@ -9,6 +9,8 @@ disable-auto-invoke: true
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
+> 🔒 **Scope & Permission:** Tier 3 (EXECUTION MEASURE) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** Mã test đã tồn tại và n8n runner online. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** `run-status.json`, `junit.xml`, `test-output.log`, `report.md` do runner ghi; agent không tự tạo hay sửa.
@@ -20,7 +22,7 @@ disable-auto-invoke: true
 **Khi KHÔNG sử dụng:**
 - Chưa có mã kiểm thử hoặc cần sinh mới mã test từ file Gherkin → Dùng `qa-auto-design`.
 - Cần chạy toàn bộ luồng E2E từ spec đến report trong 1 lệnh duy nhất → Dùng `qa-full-pipeline`.
-- Cần điều tra sửa lỗi hệ thống (root cause fix) → Bàn giao cho Developer / `dev-debugging`.
+- Cần điều tra sửa lỗi hệ thống (root cause fix) → Bàn giao cho Developer xử lý.
 
 ## 2. Bảng Vi Phạm (Agent CẦN LÀM / KHÔNG LÀM)
 

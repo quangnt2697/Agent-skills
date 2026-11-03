@@ -73,7 +73,7 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 - **TUYỆT ĐỐI CẤM HARD SLEEP:** Không sử dụng `time.sleep()` hoặc `page.wait_for_timeout()`. BẮT BUỘC sử dụng Web-First Auto-Retrying Assertions của Playwright (`expect(locator).to_be_visible()`, `expect(locator).to_have_text()`, v.v.) với polling retry tự động.
 
 ### 1.9. Self-fix Loop
-- Self-fix Loop chỉ dùng để sửa **lỗi kỹ thuật của script** (ImportError, SyntaxError, fixture thiếu, timeout config sai, connection refused...).
+- Self-fix Loop chỉ dùng để sửa **lỗi kỹ thuật của script vừa sinh** (ImportError, SyntaxError) với **tối đa 1 vòng duy nhất** theo `autonomy-contract.md`. CẤM tự ý cài package mới qua pip/npm.
 - **KHÔNG ĐƯỢC sửa code để ép test case từ FAIL thành PASS.** Nếu test case FAIL vì ứng dụng/API trả kết quả sai so với spec → đó là kết quả hợp lệ, ghi nhận vào báo cáo, KHÔNG can thiệp.
 
 ### 1.10. Chuẩn Thiết Kế Log Kiểm Thử (Test Logging Standard)

@@ -29,7 +29,7 @@ Quy tắc áp dụng cho mọi phản hồi và mọi thao tác kỹ thuật c�
 
 ### 3.2. Triệt Tiêu Điểm Rẽ Nhánh (No Rabbit Holes)
 - Khi phát hiện vấn đề phụ ngoài scope chính trong quá trình thực thi:
-  - **Ghi nhận:** Chèn chú thích `<!-- TODO: {mô tả vấn đề} -->` trực tiếp vào mã nguồn hoặc file liên quan.
+  - **Ghi nhận:** Ghi chú vào phần *TODO* cuối phản hồi hoặc file báo cáo/trace (`trace/`); TUYỆT ĐỐI KHÔNG tự ý chèn chú thích vào mã nguồn sản phẩm hay sửa file ngoài scope.
   - **Không dừng lại:** Tiếp tục mạch công việc chính, không rẽ nhánh điều tra vấn đề phụ.
 
 ### 3.3. Kiểm Soát Phạm Vi (Scope Guard)

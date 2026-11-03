@@ -40,7 +40,7 @@ Agent đọc file này một lần mỗi session để giảm token giải thíc
 | **Plugin** | Bundle `skills/ + agents/ + commands/` theo nhóm chức năng (ba-po, qa, dev, code-reviewer...) |
 | **Subagent** | Agent chuyên biệt được spawn để thực thi một persona cụ thể |
 | **Confidence Level** | Điểm tự tin 0-100% của agent về output: `confidence = (completeness*0.6) + (certainty*0.4)` |
-| **Self-fix Loop** | Vòng tự sửa lỗi tối đa 3 lần khi test fail hoặc build fail trước khi báo user |
+| **Self-fix Loop** | Vòng tự sửa lỗi tối đa 1 lần chỉ cho cú pháp test/Gherkin vừa sinh theo autonomy-contract.md |
 
 ### Domain Chứng khoán & Fintech (KRX)
 
@@ -71,7 +71,7 @@ Agent đọc file này một lần mỗi session để giảm token giải thíc
 | `# test-intent: <mục tiêu>` | Test code (Pytest/Playwright) | Ghi rõ mục tiêu kiểm thử — thay cho comment "# test case X" |
 | `# simplify: <lý do>` | Test code | Gộp/rút gọn test có chủ đích, ghi rõ tradeoff |
 | `# boundary: <giá trị>` | Test data | Đánh dấu giá trị biên BVA — phân biệt TRONG/TAI/VUOT hạn mức |
-| `<!-- TODO: {vấn đề} -->` | Mọi file | Ghi chú vấn đề phụ phát sinh — không dừng xử lý (Focus Protocol) |
+| `<!-- TODO: {vấn đề} -->` | Cuối báo cáo / trace | Ghi chú vấn đề phụ phát sinh — cấm tự tiện chèn vào mã nguồn (Focus Protocol) |
 
 ---
 

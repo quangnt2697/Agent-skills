@@ -15,7 +15,7 @@ Phase 1: Test Design (qa-test-design)
 Phase 2: Test Automation (qa-auto-design)
          ├─ Recon & Generate POM/Service
          ├─ Generate test_*.py
-         └─ Self-fix loop (syntax errors)
+         └─ Self-fix loop (syntax errors tối đa 1 vòng)
 
 Phase 3: Test Execution (qa-run-test)
          ├─ Run test suite (pytest)
@@ -46,18 +46,18 @@ Theo hợp đồng tự trị (`autonomy-contract.md`), tự động chạy ti�
 - Script validate exit code = 0.
 - Số test case sinh ra $\ge$ số scenario.
 
-**Pass rate < 90% ở Phase 3:** tự debug tối đa 3 vòng (phân loại lỗi: test code → sửa ở `qa-auto-design`; app code → ghi bug), vẫn < 90% → dừng báo cáo, KHÔNG push Squash. Đây là quy tắc duy nhất cho cổng pass-rate — `e2e-delivery` và `agents/qa.md` dùng chung quy tắc này.
+**Pass rate < 90% ở Phase 3:** dừng báo cáo phân loại lỗi (Loại 1/2/3), KHÔNG push Squash. Tuyệt đối không tự ý sửa assertion hay app code.
 
-**Chỉ dừng khi:** Thiếu file đầu vào bắt buộc, hoặc có item `[Blocked]`, hoặc ở mode `--step`, hoặc hết 3 vòng tự sửa.
+**Chỉ dừng khi:** Thiếu file đầu vào bắt buộc, hoặc có item `[Blocked]`, hoặc ở mode `--step`, hoặc có test fail / syntax fail sau 1 vòng tự sửa.
 
 ## 4. Cơ chế Phục hồi (Graceful Degradation & Resume)
-- **Tự sửa trước, hỏi sau:** Gặp lỗi, thử tự sửa tối đa 3 vòng. Nếu vẫn lỗi $\rightarrow$ Dừng và hỏi user.
+- **Tự sửa cú pháp tối đa 1 vòng:** Chỉ áp dụng cho lỗi syntax/import của script test vừa sinh theo `autonomy-contract.md`. Nếu vẫn lỗi $\rightarrow$ Dừng và báo cáo nguyên văn cho user.
 - **Tự động Resume:** Nếu phát hiện file của phase trước đã tồn tại, báo `Skipping Phase X...` và chạy tiếp.
 
 ## 5. Cờ Đỏ Cảnh Báo (Red Flags)
 - Pipeline chạy xong quá nhanh (một phase bị skip âm thầm).
 - Số test case sinh ra ở Phase 2 ít hơn số scenario trong Gherkin.
-- Vòng self-fix chạy quá 3 vòng (lỗi hệ thống, không phải syntax lẻ).
+- Vòng self-fix chạy quá 1 vòng.
 - Dừng lại hỏi user ở chỗ không nằm trong danh sách đóng của hợp đồng tự trị.
 - File trạng thái `.pipeline-state.json` bị commit vào git.
 

@@ -116,7 +116,7 @@ SPEC/final.md
 |  +- AI DOM Recon (chi WEB): inspect real DOM             |
 |  +- Zero-Hardcode Gate: 100% test params stored in .env  |
 |  +- Generate steps/test_*.py + conftest.py               |
-|  +- Self-fix loop (<=3 lan): syntax/import errors        |
+|  +- Self-fix loop (<=1 lan): syntax/import errors        |
 +---------------------------+------------------------------+
                             | PASS (scripts parse OK)
                             v
@@ -125,7 +125,7 @@ SPEC/final.md
 |  +- Pre-flight: env vars, dependencies, test target      |
 |  +- Run: pytest --junitxml --html --cov                  |
 |  +- Analyze: failures phan loai (flaky/real/env)         |
-|  +- Self-fix (<=3 lan): loi test code -> qa-auto-design   |
+|  +- Test fail -> DUNG + bao cao phan loai loi            |
 |  +- Generate: summary.md + junit.xml + report.html       |
 +---------------------------+------------------------------+
                             |
@@ -168,9 +168,9 @@ SPEC/final.md
 |------|---------------|--------------------|
 | **G0** (pre-flight) | `spec/final.md` tồn tại, có ≥1 AC | STOP — yêu cầu BA/PO tạo spec trước |
 | **G1** (checklist) | ≥1 P0, 0 [Blocked], mọi BR → ≥1 item | STOP — list items cần bổ sung |
-| **G2** (automation) | Scripts parse OK (không syntax error) | Self-fix ≤3 lần → nếu vẫn fail, STOP |
-| **G3** (execution) | Pass rate ≥ 90% | Self-fix ≤3 lần → nếu <90%, STOP + bug report |
-| **G4** (traceability) | `trace-check.js --stage=all` exit 0 | Bổ sung scenario ≤3 lần → vẫn thiếu, STOP — list mã BR/AC chưa được test |
+| **G2** (automation) | Scripts parse OK (không syntax error) | Self-fix ≤1 lần cú pháp → nếu vẫn fail, STOP |
+| **G3** (execution) | Pass rate ≥ 90% | DỪNG, báo cáo phân loại lỗi (Loại 1/2/3) + bug report |
+| **G4** (traceability) | `trace-check.js --stage=all` exit 0 | Ghi nhận gap vào `trace/gaps.md`, STOP báo cáo |
 
 ---
 
@@ -311,7 +311,7 @@ Domain tài chính cần test concurrent:
 - **AI DOM Recon first** (WEB): Bắt buộc dùng Playwright MCP (`playwright_navigate`, `playwright_login_*`, `playwright_screenshot`, `playwright_get_dom`, `playwright_inspect_element`) để mở trình duyệt thật Full HD 1920x1080 và inspect real DOM — TUYỆT ĐỐI KHÔNG suy đoán locator
 - **Smart Waits**: Không `time.sleep()` — dùng `expect(locator).to_be_visible()`
 - **Deterministic data**: Data test phải unique + traceable — KHÔNG hardcode
-- **Self-fix loop**: Script lỗi runtime → tự đọc log, sửa, chạy lại (≤3 lần)
+- **Self-fix loop**: Script test vừa sinh lỗi cú pháp/import → tự sửa tối đa 1 lần theo `autonomy-contract.md`; cấm tự sửa assertion
 </workflow>
 
 ---
@@ -540,8 +540,8 @@ Feature: Đặt lệnh chứng khoán
 14. **Bao phủ WebSocket theo User Tier & Rate Limit bằng Ngôn ngữ Nghiệp vụ**: khi task liên quan đến WebSocket, thiết kế test cases bao phủ 3 bậc User Tier (`normal`, `vip`, `ultimate`), hạn mức socket đồng thời, quota theo dõi luồng/mã, topic authorization, và Rate Limit. BẮT BUỘC dùng ngôn ngữ nghiệp vụ thuần túy và mô hình Ranh giới Tượng trưng (`TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`, `VUOT_NGUONG`); TUYỆT ĐỐI KHÔNG đưa tên biến code (`MAX_CONNECTOR`, `MAX_STREAM`) hay tên file `.env` vào file Gherkin. Tầng automation (`qa-auto-design`) sẽ tự động ánh xạ các vị trí biên này sang cấu hình thực tế.
 
 ### Quy tắc tự chủ
-15. Mặc định **tự chạy tiếp** theo `autonomy-contract.md`. Chỉ dừng khi: thiếu `spec/final.md`, có câu hỏi Critical chưa được trả lời, hoặc chuẩn bị commit/merge
-16. Self-fix loop **tối đa 3 lần** — sau đó báo cáo, KHÔNG tiếp tục loop vô hạn
+15. Mặc định **dừng sau mỗi artifact** theo `autonomy-contract.md`. Chỉ tự chạy tiếp khi nằm trong Orchestrator (`qa-full-pipeline`) hoặc có cờ `--auto`.
+16. Self-fix loop **tối đa 1 lần duy nhất** cho lỗi syntax/import của script vừa sinh — sau đó báo cáo, KHÔNG loop và CẤM sửa assertion/spec/app code.
 
 ### Quy tắc SDK & Quản lý Biến Môi trường (Zero-Hardcode)
 17. **Quét SDK `openapi-tyk/sdk/python/` & Zero-Hardcode với `.env`**: Khi task liên quan đến API hoặc WebSocket, BẮT BUỘC quét thư mục `openapi-tyk/sdk/python/` để tìm kiếm và kế thừa codebase SDK chính thức (`DNSEClient`, `trading-api`, `marketdata-api`, `websocket-trading`, `websocket-marketdata`). Toàn bộ biến kiểm thử (URLs, credentials, account numbers, test symbols, limits, timeouts) BẮT BUỘC lưu ở `.env`; trong test script CHỈ ĐƯỢC gọi qua `os.getenv()`, TUYỆT ĐỐI KHÔNG hardcode bất kỳ giá trị nào.

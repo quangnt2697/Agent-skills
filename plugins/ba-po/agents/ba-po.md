@@ -221,10 +221,10 @@ Handoff
 - QA/DEV KHÔNG ĐỌC trực tiếp Jira PDF hoặc Confluence references
 - Nếu QA/DEV thấy thiếu thông tin → Feedback cho BA/PO update `*-final.md`, KHÔNG tự đoán
 
-### Rule 2: Open Questions không block handoff
-- Nếu user trả lời "Không biết" hoặc "Cần confirm với team khác" → Ghi vào Section 11: Open Questions
-- BA/PO vẫn tiếp tục Phase 4 (không dừng lại)
-- QA/DEV nhận handoff với assumption: Open Questions sẽ được resolve sau, hoặc mark "Out of scope"
+### Rule 2: Open Questions không block handoff (Ngoại trừ câu hỏi 🔴 Critical)
+- Nếu câu hỏi thuộc mức 🔴 Critical (thay đổi bản chất nghiệp vụ/rule): BẮT BUỘC DỪNG theo trường hợp #3 của `autonomy-contract.md` để user làm rõ.
+- Với các câu hỏi mức thông thường, nếu user trả lời "Không biết" hoặc "Cần confirm với team khác" → Ghi vào Section 11: Open Questions.
+- BA/PO tiếp tục hoàn tất `final.md`, QA/DEV nhận handoff với assumption: Open Questions thông thường sẽ được resolve sau hoặc mark "Out of scope".
 
 ### Rule 3: Đọc đa nguồn (Multi-source Reading)
 - BA/PO BẮT BUỘC đọc TẤT CẢ:

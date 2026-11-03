@@ -9,6 +9,8 @@ disable-auto-invoke: true
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
+> 🔒 **Scope & Permission:** Tier 2b (EXTERNAL-WRITE) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** Cấu hình dự án/group cần đồng bộ. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** Output thật của `repo-sync` (số repo, trạng thái); repo dirty được báo là đã bỏ qua.
@@ -16,23 +18,22 @@ disable-auto-invoke: true
 ## Tổng quan
 
 Trong kiến trúc microservices và đa kho lưu trữ (multi-repo), mã nguồn thường xuyên được các đội ngũ cập nhật liên tục trên GitLab. Khi AI Agent hoặc kỹ sư làm việc trên môi trường cục bộ (Local Workspace):
-1. Mã nguồn cũ (stale code) sẽ làm sai lệch kết quả phân tích đặc tả (`qa-code2spec`, `dev-spec-driven-development`).
+1. Mã nguồn cũ (stale code) sẽ làm sai lệch kết quả phân tích đặc tả (`qa-code2spec`).
 2. Giao thức API, Data Contracts, Event schemas không khớp dẫn đến kiểm thử tự động thất bại giả (false failures).
 3. Các file sửa dở (uncommitted/untracked) cản trở quá trình checkout và pull các nhánh mới.
 4. Thao tác kéo mã thủ công cho từng nhánh và từng thư mục rất mất thời gian và dễ bỏ sót các dịch vụ phụ thuộc.
 
-Kỹ năng `repo-group-sync` tự động hóa việc đưa working tree về trạng thái sạch ban đầu (`git reset --hard HEAD && git clean -fd`), tải về toàn bộ metadata và commit của tất cả các nhánh từ remote (`git fetch --all --prune`), và kéo mã nguồn mới nhất (`git pull --ff-only`) cho toàn bộ các nhánh local trong từng repository đơn lẻ hoặc toàn bộ cụm dịch vụ. Sau khi đồng bộ, hệ thống tự động checkout trả lại nhánh ban đầu cho kỹ sư. Kỹ năng hỗ trợ định danh qua alias cấu hình trong `projects.json`, có thể kích hoạt trực tiếp từ terminal hoặc Mattermost.
+Kỹ năng `repo-group-sync` tự động hóa việc đồng bộ mã nguồn an toàn: tải về toàn bộ metadata và commit của tất cả các nhánh từ remote (`git fetch --all --prune`), và kéo mã nguồn mới nhất (`git pull --ff-only`) cho toàn bộ các nhánh local trong từng repository đơn lẻ hoặc toàn bộ cụm dịch vụ. Mặc định an toàn: hệ thống tự động bỏ qua các repository có uncommitted changes để chống mất code dở dang. Chỉ khi có cờ `--force` và được sự đồng ý rõ ràng của người dùng, hệ thống mới thực hiện reset sạch (`git reset --hard HEAD && git clean -fd`). Sau khi đồng bộ, hệ thống tự động checkout trả lại nhánh ban đầu cho kỹ sư. Kỹ năng hỗ trợ định danh qua alias cấu hình trong `projects.json`, có thể kích hoạt trực tiếp từ terminal.
 
 ## Khi nào sử dụng
 
 - Trước khi bắt đầu phân tích mã nguồn để dịch ngược đặc tả (`/qa-code2spec`).
-- Trước khi thiết kế kỹ thuật (`/dev-tech-spec`) hoặc thực hiện kiểm thử toàn trình (`/e2e-delivery`).
+- Trước khi thực hiện kiểm thử toàn trình (`/e2e-delivery` hoặc `/qa-full-pipeline`).
 - Khi tiếp nhận một tính năng mới cần đảm bảo các microservices phụ thuộc đều ở commit mới nhất.
 - Khi người dùng yêu cầu "pull code mới", "sync repo", "cập nhật code dự án", "fetch code mới nhất về local".
-- Khi điều phối Agent từ xa qua Mattermost thông qua lệnh `/agent sync -p <project>`.
 
 **Khi KHÔNG sử dụng:**
-- Khi bạn đang trong quá trình commit hoặc rebase dở dang trên repository và muốn giữ nguyên thay đổi cục bộ (trừ khi bật cờ `--no-reset --stash`).
+- Khi bạn đang trong quá trình commit hoặc rebase dở dang trên repository và muốn giữ nguyên thay đổi cục bộ (trừ khi bật cờ `--stash` hoặc `--no-reset`).
 - Khi mục tiêu là push mã nguồn lên remote (kỹ năng này chỉ thực hiện kéo về: fetch/pull an toàn, **nghiêm cấm tuyệt đối mọi lệnh push**).
 - Khi repository không có upstream tracking branch và chưa được cấu hình remote origin.
 

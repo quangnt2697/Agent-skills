@@ -24,7 +24,7 @@ Khi thực thi test (`qa-run-test` trong `qa-full-pipeline`), nếu test fail, A
 
 - **[Loại 1: Test Script / Harness Error]**
   - Dấu hiệu: `SyntaxError`, `ModuleNotFoundError`, `ImportError`, `AttributeError`, sai tên hàm SDK so với `sdk-map.json`, thiếu fixture cấu hình hoặc sai selector Web UI.
-  - Hành động: **ĐƯỢC PHÉP tự động sửa mã test (Self-Fix tối đa 2 vòng)** qua `qa-auto-design` và chạy lại.
+  - Hành động: **ĐƯỢC PHÉP tự động sửa cú pháp/import mã test vừa sinh (Self-Fix tối đa 1 vòng duy nhất)** qua `qa-auto-design` và chạy lại. CẤM tự ý cài package mới qua pip/npm hoặc sửa assertion. Nếu vẫn lỗi: DỪNG và báo cáo.
 - **[Loại 2: Stale Test Data / Env Timeout]**
   - Dấu hiệu: Lệnh bị từ chối do giá vượt biên độ trần/sàn khi test chạy khác ngày giao dịch, hoặc gặp 502/504 gateway timeout tạm thời.
   - Hành động: **ĐƯỢC PHÉP tự động refresh `data-grounding.json` từ Metabase UAT (`$METABASE_UAT_DB_TIMESCALE_ID`) và retry 1 lần duy nhất.**

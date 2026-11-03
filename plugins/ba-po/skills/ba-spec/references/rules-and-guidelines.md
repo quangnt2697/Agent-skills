@@ -45,6 +45,4 @@ Trước khi bàn giao spec cho QA hoặc DEV:
 
 ## 7. Sau khi hoàn thành (Next Steps)
 
-**BẮT BUỘC:** Không dừng lại hỏi user muốn tiếp tục với pipeline nào. Tự động chuyển sang kỹ năng `qa-test-design` để bắt đầu làm Checklist, và chạy tiếp xuyên suốt theo `${AGENT_SKILLS_HOME:-.}/.agents/rules/autonomy-contract.md` — bao gồm cả cổng Giai đoạn 1 → Giai đoạn 2 của `qa-test-design`.
-
-> Chỉ dừng khi rơi vào danh sách đóng 5 trường hợp của `autonomy-contract.md`, hoặc khi user chạy với `--step`.
+**BẮT BUỘC (Single-Task Hard Stop):** Sau khi xuất bản file `final.md`, Agent **DỪNG LẠI NGAY** theo `autonomy-contract.md` §7.4. Kết thúc bằng đúng 1 gợi ý bước tiếp theo bằng văn bản (ví dụ: `/qa-test-design {issueKey}`). TUYỆT ĐỐI CẤM tự ý kích hoạt các lệnh downstream nếu người dùng không truyền cờ `--auto` hoặc không gọi Orchestrator toàn trình.

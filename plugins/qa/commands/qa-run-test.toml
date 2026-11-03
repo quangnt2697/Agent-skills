@@ -21,7 +21,7 @@ $ARGUMENTS có thể chứa Jira issue key (VD: G3PTP-16825) hoặc đường d�
 3. **Giao Tiếp Lỗi (Error Contract):**
    - Nếu test fail hoặc có lỗi, trình bày lỗi NGUYÊN VĂN (errorCode, dòng lỗi đầu tiên).
    - Đề xuất kỹ năng xử lý tiếp theo:
-     - 🛠️ `dev-debugging`: Nếu FAIL (bug ứng dụng).
+     - 🛠️ Bàn giao Developer: Nếu FAIL (bug ứng dụng).
      - ⚙️ `qa-auto-design`: Nếu ERROR (lỗi script, import, no tests).
      - 🚀 User: Nếu RUNNER_UNAVAILABLE (`npm run n8n`).
 

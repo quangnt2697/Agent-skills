@@ -704,6 +704,33 @@ async function main() {
     const apiUrl = `${baseUrl}/rest/api/3/issue/${issueKey}`;
     console.log(`🌐 Đang đẩy Description lên Jira: ${apiUrl}`);
 
+    // Tự động sao lưu description hiện tại về workspace trước khi ghi đè (Safety Backup)
+    try {
+        const getIssueUrl = `${baseUrl}/rest/api/3/issue/${issueKey}?fields=description`;
+        const currentRes = await fetch(getIssueUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': authHeader,
+                'Accept': 'application/json'
+            }
+        });
+        if (currentRes.ok) {
+            const currentData = await currentRes.json();
+            const currentDesc = currentData?.fields?.description;
+            if (currentDesc) {
+                const sourceDir = path.resolve(process.cwd(), `workspace/issues/${issueKey}/source`);
+                if (!fs.existsSync(sourceDir)) {
+                    fs.mkdirSync(sourceDir, { recursive: true });
+                }
+                const backupPath = path.join(sourceDir, `jira-description-backup-${Date.now()}.json`);
+                fs.writeFileSync(backupPath, JSON.stringify(currentDesc, null, 2), 'utf8');
+                console.log(`💾 Đã sao lưu description cũ vào: ${path.relative(process.cwd(), backupPath)}`);
+            }
+        }
+    } catch (backupErr) {
+        console.warn(`⚠️ Không thể backup description cũ (bỏ qua): ${backupErr.message}`);
+    }
+
     const body = {
         fields: {
             description: adfContent
