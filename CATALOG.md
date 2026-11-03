@@ -15,7 +15,7 @@
 | **Skills** | 31 | `plugins/*/skills/` | Kỹ năng chuyên môn thực thi theo chuẩn Progressive Disclosure 3 tầng |
 | **Slash Commands** | 30 | `plugins/*/commands/` | Lệnh tắt kích hoạt nhanh quy trình nghiệp vụ |
 | **Core Rules** | 6 | `.agents/rules/` + `AGENTS.md` | Luật định hình hành vi, an toàn git, và chuẩn mực output |
-| **n8n Nodes / Workflows** | 28+ nodes | `n8n-workflows/`, `scripts/n8n-nodes/` | Tự động hóa fast-path ChatOps, Cron & Webhooks |
+| **n8n Nodes / Workflows** | 28+ nodes | `n8n-workflows/`, `scripts/n8n-nodes/` | Tự động hóa Fast-Path, Cron & Webhooks |
 | **Domain Guides** | 40+ docs | `references/`, `docs/` | Tri thức chứng khoán KRX, Trading API, TimescaleDB, QA SDK |
 
 ---
@@ -211,7 +211,7 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 | **SDK Index Tra cứu Code Test** | [`plugins/qa/skills/qa-auto-design/references/sdk-map.json`](plugins/qa/skills/qa-auto-design/references/sdk-map.json) | Bản đồ tái sử dụng class Auth, Trading API, MarketData API, WS Client |
 | **Quy chuẩn Subagents Handoff** | [`docs/architecture/subagent-handoff-protocol.md`](docs/architecture/subagent-handoff-protocol.md) | Phân quyền Tool Scoping, Context Window cách ly và quy trình bàn giao |
 | **Quy tắc Vận hành QA** | [`plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md`](plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md) | Chuẩn mực ghi log 100%, tham số hóa đa sàn, cấm hardcode giá |
-| **Chiến lược n8n Fast-Path** | [`docs/architecture/n8n-integration-strategy.md`](docs/architecture/n8n-integration-strategy.md) | Kiến trúc n8n Fast-Path Fabric cục bộ và tùy chọn ChatOps |
+| **Chiến lược n8n Fast-Path** | [`docs/architecture/n8n-integration-strategy.md`](docs/architecture/n8n-integration-strategy.md) | Kiến trúc n8n Fast-Path Fabric cục bộ |
 | **Editorial Diagram Style Guide** | [`plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md`](plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md) | Chuẩn thiết kế sơ đồ phẳng, tinh tế, typography hiện đại |
 | **UI Component Map & Design System** | [`plugins/ba-po/skills/ba-design-mockup/references/ui-component-map.json`](plugins/ba-po/skills/ba-design-mockup/references/ui-component-map.json) | Từ điển linh kiện giao diện Web/Mobile Trading phục vụ dựng mockup |
 

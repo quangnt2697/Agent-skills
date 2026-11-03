@@ -14,7 +14,7 @@
  *   - Kiểm tra file `.feature`: có -> `✅ Gherkin file`, không -> `❌ Gherkin file`.
  *   - Kiểm tra file `steps/test-*.py` (hoặc `test_*.py`): có -> `✅ Autoscript test`, không -> `❌ Autoscript test`.
  * - Đưa ra gợi ý lệnh tương ứng tùy theo tình trạng file (mỗi lệnh trên 1 dòng riêng biệt).
- * - Soạn thẻ Markdown gửi thông báo về Mattermost.
+ * - Soạn thẻ Markdown báo cáo (reportText) trả về cho caller.
  */
 
 const fs = require('fs');
@@ -306,7 +306,7 @@ for (const rawItem of candidateItems) {
   const suggestedCommands = commandList.map(c => c.cmd);
   const suggestedCommand = suggestedCommands[0] || '';
 
-  // 8. Tạo thẻ thông báo Mattermost bắt mắt
+  // 8. Tạo thẻ Markdown báo cáo
   const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');
   const jiraUrl = `${baseUrl}/browse/${issueKey}`;
   const summary = fields.summary || item.summary || '-';
@@ -332,12 +332,7 @@ for (const rawItem of candidateItems) {
       suggestedCommand,
       suggestedCommands,
       situationSummary,
-      reportText,
-      mattermostPayload: {
-        text: reportText,
-        username: 'Jira QA Bot',
-        icon_emoji: ':dart:'
-      }
+      reportText
     }
   });
 

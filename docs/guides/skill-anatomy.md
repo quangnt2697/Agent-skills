@@ -28,7 +28,7 @@ plugins/<plugin-name>/skills/<skill-name>/
 name: skill-name-with-hyphens
 description: 1-2 câu ngắn gọn mô tả skill làm gì ở ngôi thứ ba và khi nào KHÔNG dùng.
 trigger: Điều kiện kích hoạt cụ thể (khi user yêu cầu X, chạy lệnh /cmd, hoặc cung cấp tệp Y).
-disable-auto-invoke: true # Chỉ bật khi skill có tác dụng phụ ghi ra hệ thống ngoài (Jira, Squash, Git, Mattermost)
+disable-auto-invoke: true # Chỉ bật khi skill có tác dụng phụ ghi ra hệ thống ngoài (Jira, Squash, Git)
 ---
 ```
 

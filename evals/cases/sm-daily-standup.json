@@ -35,7 +35,7 @@
       "expectations": [
         "Thống kê rõ ràng trạng thái các ticket theo người thực hiện",
         "Đưa ra cảnh báo nếu có thành viên bị quá tải",
-        "Writes report strictly to workspace/sprints/{sprintId}/trace/ and does not send chat messages to Mattermost by default"
+        "Writes report strictly to workspace/sprints/{sprintId}/trace/ and does not send chat messages or post the report to any external channel"
       ]
     },
     {

@@ -4,7 +4,7 @@ const body = json.body || json;
 const params = body.params || json.params || {};
 
 // 1. Nhận diện nguồn gọi
-let triggerSource = 'mattermost';
+let triggerSource = 'internal';
 try {
   const trigWebhook = $('Webhook Trigger (jira-prep)').first();
   if (trigWebhook && trigWebhook.json) {

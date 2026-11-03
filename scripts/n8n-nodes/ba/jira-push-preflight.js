@@ -5,7 +5,7 @@ const input = $input.first();
 const resolveRes = (input && input.json) || {};
 const prepContext = $('Prepare Resolver Input').first()?.json || {};
 
-const triggerSource = prepContext._triggerSource || resolveRes._triggerSource || 'mattermost';
+const triggerSource = prepContext._triggerSource || resolveRes._triggerSource || 'internal';
 const issueKey = prepContext.issueKey || resolveRes.issueKey || '';
 const userName = prepContext.userName || resolveRes.userName || 'User';
 const isDryRun = Boolean(prepContext.dryRun || resolveRes.dryRun);

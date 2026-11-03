@@ -102,34 +102,6 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ text: $json.reportText, username: 'QA Bot', icon_emoji: ':test_tube:' }) }}",
-        "options": {}
-      },
-      "id": "http-mattermost",
-      "name": "Send to Mattermost",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        1320,
-        400
-      ],
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
         "jsCode": "return $input.all();"
       },
       "id": "qa-return-to-sub-workflow",
@@ -214,13 +186,7 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Send to Mattermost",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     }
   },

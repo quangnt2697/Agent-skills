@@ -7,7 +7,7 @@ const json = (input && input.json) || {};
 // Lấy thông tin từ các node trước
 const prepIssuesNode = $('Prepare Sprint Issues Request').first()?.json || {};
 const prepReqNode = $('Prepare Standup Request').first()?.json || {};
-const triggerSource = prepIssuesNode._triggerSource || prepReqNode._triggerSource || 'mattermost';
+const triggerSource = prepIssuesNode._triggerSource || prepReqNode._triggerSource || 'internal';
 const sprintName = prepIssuesNode.sprintName || 'Sprint đang mở';
 const sprintId = prepIssuesNode.sprintId || '';
 const boardId = prepReqNode.boardId || 61;
@@ -175,7 +175,7 @@ for (const issue of issues) {
   }
 }
 
-// ── Soạn Báo Cáo Markdown Ngắn Gọn Cho Mattermost ──
+// ── Soạn Báo Cáo Markdown Ngắn Gọn ──
 const dateStr = now.toISOString().split('T')[0];
 const boardUrl = `${baseUrl}/jira/software/c/projects/G3PTP/boards/${boardId}/backlog`;
 const totalIssues = issues.length;

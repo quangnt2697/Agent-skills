@@ -48,7 +48,7 @@ disable-auto-invoke: true
     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testFiles":"workspace/issues/{issueKey}/test/steps/"}'
     ```
   - Runner sẽ tự áp dụng cờ `--timeout`, `--junitxml` và timeout toàn suite (600s).
-  - ⚡ **Chế độ Chạy Nền Bất Đồng Bộ (Background Async Mode):** Đối với các suite kiểm thử E2E Playwright hoặc regression kéo dài (>3 phút), agent kích hoạt webhook n8n ở chế độ nền (không chờ đồng bộ trong chat). Thông báo kết quả sẽ được n8n tự động bắn về kênh Mattermost của dự án khi hoàn tất.
+  - ⚡ **Chế độ Chạy Nền Bất Đồng Bộ (Background Async Mode):** Đối với các suite kiểm thử E2E Playwright hoặc regression kéo dài (>3 phút), agent kích hoạt webhook n8n ở chế độ nền (không chờ đồng bộ trong chat). Kết quả được ghi vào `test/result/` (report.md, test-output.log) khi hoàn tất; agent đọc lại các file này để báo cáo.
 - **Bước 3: Verify (Xác minh kết quả)**
   - Kết quả trả về gồm `verdict` và `errorCode` theo Error Contract.
   - Phân loại 4 trạng thái: `PASS` (xanh), `FAIL` (có test trượt), `ERROR` (hỏng script/hạ tầng), `TIMEOUT`.

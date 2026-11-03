@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Bật/tắt tự khởi động n8n (+ ngrok nếu có NGROK_DOMAIN) cùng macOS qua PM2 + launchd.
+ * Bật/tắt tự khởi động n8n cùng macOS qua PM2 + launchd.
  *   node scripts/setup/n8n-autostart.js on    → start + save + in lệnh sudo cần chạy
  *   node scripts/setup/n8n-autostart.js off   → gỡ launchd startup
  */

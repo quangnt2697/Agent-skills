@@ -9,7 +9,7 @@
  *   3. UPCOM (market_id = 8): Mã `OIL`.
  *   4. HNX (market_id = 7): Mã `SHS`.
  * - Tự động nạp `apiKey`, `apiSecret`, `baseUrl` từ biến môi trường (.env).
- * - KHÔNG gửi Mattermost — trả về JSON thuần túy để tăng tốc quy trình sinh test tự động.
+ * - trả về JSON thuần túy để tăng tốc quy trình sinh test tự động.
  */
 
 const input = $input.first();

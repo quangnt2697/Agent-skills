@@ -88,34 +88,6 @@
         960,
         300
       ]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "={{ $env.MATTERMOST_WEBHOOK_URL }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ text: $json.msg, username: 'RepoSync Bot', icon_emoji: ':sunrise:' }) }}",
-        "options": {}
-      },
-      "id": "4",
-      "name": "Notify Mattermost",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        960,
-        420
-      ],
-      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -168,13 +140,7 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Notify Mattermost",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     }
   },

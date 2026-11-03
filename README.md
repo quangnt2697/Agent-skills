@@ -55,9 +55,9 @@ npm test              # kiểm tra cài đặt
 Windows/Linux: làm thủ công theo "Tùy chọn B" trong guide.
 
 *Tài liệu trên bao gồm:*
-- *Yêu cầu hệ thống và các mức cài đặt: Tối thiểu (chỉ dùng skills), Đầy đủ (kèm n8n Fast-Path cục bộ) và Nâng cao (ChatOps tùy chọn).*
+- *Yêu cầu hệ thống và các mức cài đặt: Tối thiểu (chỉ dùng skills), Đầy đủ (kèm n8n Fast-Path cục bộ).*
 - *Hướng dẫn kết nối Agent Plugins cho Antigravity / Gemini CLI.*
-- *Tích hợp n8n Fast-Path cục bộ, tùy chọn ChatOps Mattermost Slash Command và tự khởi động cùng macOS.*
+- *Tích hợp n8n Fast-Path cục bộ và tự khởi động cùng macOS.*
 - *Bảng xử lý sự cố thường gặp.*
 - [docs/guides/adoption-guide.md](docs/guides/adoption-guide.md) — Cẩm nang áp dụng theo quy trình Agile/Scrum
 
@@ -104,7 +104,7 @@ agent-skills/
 │   ├── scrum-master/           → Scrum Master persona & skills (4 skills)
 │   └── fintech-data/           → TimescaleDB KRX MDDS data reconciler
 ├── .agents/                    → Workspace customizations (rules, hooks)
-├── n8n-workflows/               → Các workflow tự động (ChatOps, Cron)
+├── n8n-workflows/               → Các workflow tự động (Webhook Fast-Path, Cron)
 ├── scripts/                     → Automation scripts, validators, setup & testing
 ├── references/                  → Domain knowledge base & checklists dùng chung
 ├── workspace/                   → Output artifacts theo issueKey (spec, tech, test, trace)

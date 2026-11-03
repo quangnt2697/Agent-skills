@@ -4,7 +4,7 @@ const prepNode = $('Prepare Standup Request').first()?.json || {};
 const baseUrl = prepNode.baseUrl || 'https://entrade.atlassian.net';
 const authHeader = prepNode.authHeader || '';
 const boardId = prepNode.boardId || 61;
-const triggerSource = prepNode._triggerSource || 'mattermost';
+const triggerSource = prepNode._triggerSource || 'internal';
 
 const sprints = sprintData.values || [];
 if (!sprints || sprints.length === 0) {

@@ -27,14 +27,6 @@ else
     echo "✅ Node.js đã sẵn sàng ($NODE_VERSION)."
 fi
 
-# 3. Kiểm tra & Cài đặt Ngrok
-if ! command -v ngrok &> /dev/null; then
-    echo "📦 Ngrok chưa được cài đặt. Đang cài đặt Ngrok qua Homebrew..."
-    brew install ngrok/ngrok/ngrok
-else
-    echo "✅ Ngrok đã sẵn sàng."
-fi
-
 # 4. Tạo .env nếu chưa có
 if [ ! -f .env ]; then
     if [ -f .env.example ]; then
@@ -102,13 +94,11 @@ echo ""
 echo "🎉 XONG! TOÀN BỘ MÔI TRƯỜNG ĐÃ ĐƯỢC CÀI ĐẶT THÀNH CÔNG."
 echo "============================================================"
 echo "Các bước tiếp theo dành cho bạn:"
-echo "1. Điền API keys/token vào file .env (tối thiểu: GEMINI_API_KEY, MATTERMOST_WEBHOOK_URL)."
-echo "2. (Chỉ khi dùng ChatOps) Lấy Authtoken tại ngrok.com:"
-echo "   ngrok config add-authtoken <TOKEN_CỦA_BẠN>"
-echo "   rồi điền NGROK_DOMAIN=<static-domain>.ngrok-free.app vào .env"
-echo "3. Khởi động n8n (+ ngrok nếu có NGROK_DOMAIN) chạy ngầm:"
+echo "1. Điền API keys/token vào file .env (tối thiểu: thông tin Jira/Atlassian; GEMINI_API_KEY nếu dùng)."
+echo "   Xem .env.example để biết các biến bắt buộc."
+echo "2. Khởi động n8n chạy ngầm:"
 echo "   npm run n8n:bg"
-echo "4. (Tuỳ chọn) Tự khởi động cùng macOS:"
+echo "3. (Tuỳ chọn) Tự khởi động cùng macOS:"
 echo "   npm run n8n:autostart   # rồi chạy lệnh sudo mà script in ra"
 echo "Chi tiết: docs/guides/installation-guide.md"
 echo "============================================================"

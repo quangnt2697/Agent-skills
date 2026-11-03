@@ -6,7 +6,7 @@ try {
   specContext = $('Pre-flight Gate & ADF Converter').first()?.json || {};
 } catch (e) {}
 
-const triggerSource = specContext._triggerSource || json._triggerSource || 'mattermost';
+const triggerSource = specContext._triggerSource || json._triggerSource || 'internal';
 const issueKey = specContext.issueKey || json.issueKey || '';
 const userName = specContext.userName || json.userName || 'User';
 const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');

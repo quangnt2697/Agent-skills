@@ -17,7 +17,7 @@ if (triggerSource !== 'webhook') {
   try {
     const trigExec = $('Execute Workflow Trigger').first();
     if (trigExec && trigExec.json) {
-      triggerSource = trigExec.json._triggerSource || 'mattermost';
+      triggerSource = trigExec.json._triggerSource || 'internal';
       rawBody = trigExec.json.body?.params || trigExec.json.body || trigExec.json.params || trigExec.json;
     }
   } catch (e) {}

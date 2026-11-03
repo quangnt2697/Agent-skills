@@ -6,7 +6,7 @@
  * - Loại bỏ 100% file rác (lockfiles, minified bundle, sourcemaps, SVG, ảnh, dist/, build/).
  * - Phân nhóm các thay đổi thành 5 tầng kiến trúc (Domain, API, Database, Config, Test).
  * - Áp trần (cap) các file quá lớn (>500 dòng) để chống tràn ngữ cảnh và ảo giác.
- * - KHÔNG gửi Mattermost — trả về diff ngữ nghĩa thuần túy cho agent skill.
+ * - trả về diff ngữ nghĩa thuần túy cho agent skill.
  */
 
 const input = $input.first();

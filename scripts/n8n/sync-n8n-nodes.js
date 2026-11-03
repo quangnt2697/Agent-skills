@@ -36,16 +36,10 @@ export const mappings = [
     scriptFile: 'scripts/n8n-nodes/qa/qa-format-result.js'
   },
   {
-    workflowFile: 'n8n-workflows/ops/mattermost-single-router.json',
-    nodeName: 'Verify Mattermost Token',
-    nodeId: 'node-verify-token',
-    scriptFile: 'scripts/n8n-nodes/router/router-verify-token.js'
-  },
-  {
-    workflowFile: 'n8n-workflows/ops/mattermost-single-router.json',
-    nodeName: 'Parse AI Output',
+    workflowFile: 'n8n-workflows/ops/global-error-handler.json',
+    nodeName: 'Write Error Log',
     nodeId: '3',
-    scriptFile: 'scripts/n8n-nodes/router/router-parse-ai-output.js'
+    scriptFile: 'scripts/n8n-nodes/ops/error-log-writer.js'
   },
   {
     workflowFile: 'n8n-workflows/qa-squash/squash-batch-pusher.json',

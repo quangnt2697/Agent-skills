@@ -2,7 +2,7 @@ const input = $input.first();
 const httpRes = (input && input.json) || {};
 const context = $('Prepare & Sanitize Query').first()?.json || {};
 
-const triggerSource = context._triggerSource || httpRes._triggerSource || 'mattermost';
+const triggerSource = context._triggerSource || httpRes._triggerSource || 'internal';
 const userName = context.userName || 'User';
 const dbName = context.dbName || 'DB';
 const envName = context.environment || 'UAT';
@@ -74,7 +74,7 @@ if (isTruncated) {
   warnings.push('⚠️ CẢNH BÁO: Kết quả trả về từ Metabase chạm ngưỡng giới hạn (bị cắt cụt tại ' + rowCount + ' dòng). Cần thu hẹp WHERE hoặc gom nhóm SQL.');
 }
 
-// 5. Render Bảng Markdown trực quan cho Mattermost
+// 5. Render Bảng Markdown trực quan
 let reportText = '';
 let headerTitle = `🔍 **[Metabase Query Result]**\n- **Cơ sở dữ liệu:** \`${dbName.toUpperCase()} (${envName})\` | **Bản ghi:** **${rowCount}** records`;
 if (userQuestion) {
