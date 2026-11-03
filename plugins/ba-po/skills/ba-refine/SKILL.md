@@ -101,7 +101,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
   - Cập nhật mô tả Jira qua n8n hoặc CLI helper `jira-push-spec.js`.
   - **Tự động upload toàn bộ ảnh `mockup*.png` và dán trực tiếp (inline image ADF `mediaSingle`) vào Mục UI Design / Mockup trong Description của Jira ticket**, đúng theo từng Case kèm ghi chú thao tác (không chỉ đính kèm file ở tab attachments).
   - **Tự động xuất bản `spec/testability-manifest.json`** chứa danh sách phần tử UI (kèm selector/badge/BR/AC gợi ý) để QA tự động sinh test code POM mà không phải gõ tay.
-  - Handoff sang DEV (`/dev-tech-spec`) và QA (`/qa-test-design`).
+  - Handoff sang DEV và QA (`/qa-test-design`).
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 

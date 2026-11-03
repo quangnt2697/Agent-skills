@@ -3,7 +3,7 @@
     "PreInvocation": [
       {
         "type": "command",
-        "command": "bash .agents/hooks/antigravity/session-start.sh",
+        "command": "bash hooks/antigravity/session-start.sh",
         "timeout": 10
       }
     ]
@@ -12,7 +12,7 @@
     "Stop": [
       {
         "type": "command",
-        "command": "bash .agents/hooks/antigravity/session-end.sh",
+        "command": "bash hooks/antigravity/session-end.sh",
         "timeout": 10
       }
     ]
@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .agents/hooks/antigravity/branch-guard.sh",
+            "command": "bash hooks/antigravity/branch-guard.sh",
             "timeout": 5
           }
         ]
@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .agents/hooks/antigravity/workspace-path-guard.sh",
+            "command": "bash hooks/antigravity/workspace-path-guard.sh",
             "timeout": 5
           }
         ]
@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .agents/hooks/antigravity/post-tool-guard.sh",
+            "command": "bash hooks/antigravity/post-tool-guard.sh",
             "timeout": 10
           }
         ]
@@ -64,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .agents/hooks/antigravity/sdd-cache-pre.sh",
+            "command": "bash hooks/antigravity/sdd-cache-pre.sh",
             "timeout": 10
           }
         ]
@@ -76,7 +76,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .agents/hooks/antigravity/sdd-cache-post.sh",
+            "command": "bash hooks/antigravity/sdd-cache-post.sh",
             "timeout": 15
           }
         ]

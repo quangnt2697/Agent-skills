@@ -13,7 +13,7 @@ disable-auto-invoke: true
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** `sm-config.yaml`, `.env` Jira. Thiếu input thì dừng và hỏi lại, không tự điền.
-- **Bằng chứng hoàn thành:** Dữ liệu Sprint/Backlog từ Jira thật; `workspace/sprints/sprint/tech/sprint-plan.md` tồn tại.
+- **Bằng chứng hoàn thành:** Dữ liệu Sprint/Backlog từ Jira thật; `workspace/sprints/{sprintId}/tech/sprint-plan.md` tồn tại.
 
 ## 1. Khi nào dùng?
 - Lập kế hoạch Sprint mới, tính toán Velocity trung bình và phân bổ Story Points vào Sprint Backlog.
@@ -39,8 +39,8 @@ disable-auto-invoke: true
   - Xác định Sprint Goal dựa trên task ưu tiên High/Critical.
   - Phân bổ ticket theo role: Web/Mobile/Backend/QA tương ứng.
 - **Bước 4 (Xuất bản Báo cáo Kế hoạch):**
-  - Đảm bảo thư mục tồn tại: `mkdir -p workspace/sprints/sprint/tech/`.
-  - Ghi đè vào file **`workspace/sprints/sprint/tech/sprint-plan.md`** sử dụng template tại `assets/sprint-plan.md`.
+  - Đảm bảo thư mục tồn tại: `mkdir -p workspace/sprints/{sprintId}/tech/`.
+  - Ghi đè vào file **`workspace/sprints/{sprintId}/tech/sprint-plan.md`** (mặc định `{sprintId}` là `sprint` khi không chỉ định) sử dụng template tại `assets/sprint-plan.md`.
 
 ## 3. Tài Nguyên Mở Rộng (Level 3 - Progressive Disclosure)
 - 📖 [jira-sprint-api.md](references/jira-sprint-api.md): Công thức tính chu kỳ Sprint tự động và tài liệu Jira REST API endpoints.
@@ -49,7 +49,7 @@ disable-auto-invoke: true
 ## 4. Ví dụ mẫu (Few-shot Example)
 > ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng. TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
 
-- **Output:** File `workspace/sprints/sprint/tech/sprint-plan.md` chuẩn:
+- **Output:** File `workspace/sprints/{sprintId}/tech/sprint-plan.md` chuẩn:
   ```markdown
   # Sprint 35 Planning
   - **Mục tiêu Sprint:** Hoàn thiện luồng xác thực Smart OTP và đặt lệnh phái sinh.
@@ -58,6 +58,6 @@ disable-auto-invoke: true
   ```
 
 ## 5. Dấu Hiệu Cảnh Báo & Xác Minh (Verification)
-- [ ] File `workspace/sprints/sprint/tech/sprint-plan.md` tồn tại và thay thế 100% placeholders bằng số liệu Jira thật
+- [ ] File `workspace/sprints/{sprintId}/tech/sprint-plan.md` tồn tại và thay thế 100% placeholders bằng số liệu Jira thật
 - [ ] Sprint có mục tiêu rõ ràng (Sprint Goal)
 - [ ] Phân bổ tải công việc cân bằng giữa các thành viên theo role

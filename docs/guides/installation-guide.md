@@ -5,7 +5,8 @@ Tài liệu này là nguồn chân lý duy nhất cho việc thiết lập `agen
 | Mức | Bạn muốn | Làm các giai đoạn | Thời gian |
 |---|---|---|---|
 | **Tối thiểu** | Dùng skills/slash commands trong AI Agent (Claude Code / Antigravity / Gemini CLI) | 0 → 1 → 2 | ~5 phút |
-| **Đầy đủ** | Thêm n8n Fast-Path + ChatOps Mattermost `/agent` | 0 → 1 → 2 → 3 (→ 4 nếu muốn tự chạy cùng máy) | ~20 phút |
+| **Đầy đủ** | Thêm n8n Fast-Path cục bộ (Jira, Confluence, Metabase, Squash TM) | 0 → 1 → 2 → (n8n:bg) | ~10 phút |
+| **Nâng cao (ChatOps)** | Tích hợp Mattermost Slash Command `/agent` qua ngrok | Thêm Giai đoạn 3 (opt-in) | ~20 phút |
 
 ---
 
@@ -16,7 +17,7 @@ Tài liệu này là nguồn chân lý duy nhất cho việc thiết lập `agen
 | Git + quyền truy cập GitLab (SSH key) | — | `git --version` | Mọi mức |
 | Node.js | **>= 20** | `node -v` | Mọi mức |
 | n8n CLI | Cài toàn cục (script tự cài) | `n8n --version` | Mức đầy đủ |
-| ngrok | Tài khoản ngrok miễn phí | `ngrok version` | Chỉ ChatOps/Mattermost |
+| ngrok | Tài khoản ngrok miễn phí (tùy chọn) | `ngrok version` | Chỉ khi bật ChatOps/Mattermost |
 | Hệ điều hành | macOS (tự động hoá hoàn toàn); Windows/Linux làm thủ công (Tuỳ chọn B) | — | — |
 
 > PM2 **không cần cài riêng**: đã nằm trong `dependencies`, các lệnh `npm run n8n:*` tự dùng bản cục bộ.
@@ -51,9 +52,10 @@ Mở `.env` và điền theo mức bạn dùng. File `.env`, `config/projects.js
 |---|---|---|
 | `AGENT_WORKSPACE_DIR` | Mọi mức | Đường dẫn tuyệt đối tới thư mục repo này |
 | `PROJECT_SCAN_DIRS` | Tuỳ chọn | Các thư mục chứa repo cần agent scan, phân tách bằng dấu phẩy |
-| `GEMINI_API_KEY` | ChatOps | Lấy miễn phí tại [Google AI Studio](https://aistudio.google.com/app/apikey) |
-| `MATTERMOST_WEBHOOK_URL` | ChatOps | Incoming Webhook của Mattermost |
-| `NGROK_DOMAIN` | ChatOps | Static domain ngrok, không gồm `https://` |
+| `NOTIFY_CHANNEL` | Tùy chọn | Kênh thông báo (`none` mặc định, hoặc `mattermost`) |
+| `GEMINI_API_KEY` | ChatOps | Lấy miễn phí tại [Google AI Studio](https://aistudio.google.com/app/apikey) (chỉ cần khi dùng router AI) |
+| `MATTERMOST_WEBHOOK_URL` | ChatOps | Incoming Webhook của Mattermost (chỉ cần khi `NOTIFY_CHANNEL=mattermost`) |
+| `NGROK_DOMAIN` | ChatOps | Static domain ngrok (chỉ cần khi `ENABLE_NGROK_TUNNEL=true`) |
 | `ATLASSIAN_*`, `SQUASH_*`, `GITLAB_*`, `METABASE_*` | Skill tương ứng | Chỉ điền cho tích hợp bạn thực sự dùng |
 
 ### Kiểm tra cài đặt
@@ -111,9 +113,10 @@ Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` c�
 
 ---
 
-## Giai đoạn 3: Tích hợp ChatOps (n8n + Mattermost + ngrok)
+## Giai đoạn 3 (Tùy chọn nâng cao): Tích hợp ChatOps Mattermost
 
-*Bỏ qua giai đoạn này nếu bạn chỉ dùng skills trong Agent CLI.*
+> ℹ️ **Lưu ý quan trọng:** Dự án mặc định hoạt động ở chế độ **Fast-Path cục bộ thuần túy** (`NOTIFY_CHANNEL=none`). Toàn bộ kỹ năng của BA, QA, CR, SM tương tác với Jira, Confluence, Squash TM, Metabase đều chạy trực tiếp qua `http://localhost:5678` mà **không cần ngrok** và **không cần Mattermost**.
+> Chỉ kích hoạt Giai đoạn 3 này nếu bạn chủ động có nhu cầu tiếp nhận thông báo hoặc điều hành Agent từ xa qua kênh Mattermost.
 
 n8n giúp tạo **Mattermost Slash Command** `/agent` với chi phí $0 và phản hồi < 1s (Fast-Path).
 
@@ -121,10 +124,12 @@ n8n giúp tạo **Mattermost Slash Command** `/agent` với chi phí $0 và ph�
 1. Đăng ký tài khoản miễn phí tại [ngrok.com](https://ngrok.com/).
 2. Lấy **Authtoken** và chạy: `ngrok config add-authtoken <TOKEN_CỦA_BẠN>`
 3. Tạo 1 **Static Domain** miễn phí trên giao diện web ngrok (VD: `dinosaur-cute.ngrok-free.app`).
-4. Điền vào `.env`: `NGROK_DOMAIN=dinosaur-cute.ngrok-free.app`
+4. Điền vào `.env`: `NGROK_DOMAIN=dinosaur-cute.ngrok-free.app` và `ENABLE_NGROK_TUNNEL=true`
 
 ### Bước 2: Điền khoá tích hợp vào `.env`
 ```env
+NOTIFY_CHANNEL=mattermost
+ENABLE_NGROK_TUNNEL=true
 GEMINI_API_KEY=...                    # https://aistudio.google.com/app/apikey
 MATTERMOST_WEBHOOK_URL=https://mattermost.example.com/hooks/xxx-yyy-zzz
 NGROK_DOMAIN=dinosaur-cute.ngrok-free.app
@@ -132,12 +137,12 @@ NGROK_DOMAIN=dinosaur-cute.ngrok-free.app
 
 ### Bước 3: Khởi động n8n (+ ngrok) chạy ngầm
 ```bash
-npm run n8n:bg        # n8n và ngrok-tunnel (nếu có NGROK_DOMAIN) chạy dưới PM2
-npm run n8n:status    # cả hai phải ở trạng thái "online"
+npm run n8n:bg        # n8n và ngrok-tunnel (khi có ENABLE_NGROK_TUNNEL=true) chạy dưới PM2
+npm run n8n:status    # kiểm tra trạng thái tiến trình
 ```
 Mở http://localhost:5678 để vào giao diện n8n (lần đầu sẽ yêu cầu tạo tài khoản owner cục bộ). Bạn có thể tắt Terminal thoải mái. **Mỗi lần sửa `.env` phải chạy `npm run n8n:restart`** để nạp cấu hình mới.
 
-> Không tự chạy thêm `pm2 start ngrok` thủ công — `ecosystem.config.cjs` đã quản lý tiến trình ngrok, chạy thêm sẽ bị trùng.
+> Không tự chạy thêm `pm2 start ngrok` thủ công — `ecosystem.config.cjs` đã quản lý tiến trình ngrok khi được bật.
 
 ### Bước 4: Tạo Slash Command `/agent` trên Mattermost
 1. Đăng nhập Mattermost (yêu cầu quyền Admin).

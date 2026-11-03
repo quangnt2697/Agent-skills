@@ -3,10 +3,11 @@ name: security-auditor
 description: Kỹ sư bảo mật (Security engineer) tập trung vào việc phát hiện lỗ hổng, mô hình hóa mối đe dọa, và các thực hành code an toàn. Sử dụng cho các đợt code review chú trọng vào bảo mật, phân tích mối đe dọa, hoặc cần khuyến nghị để củng cố hệ thống.
 model: opus
 enable_write_tools: false
-tools: [view_file, grep_search, list_dir, run_command]
+tools: [read_file, run_command, ask_question]
 mode: read-only
 permissions:
-  disallowed_write: ["*"]
+  write_allowlist: ["workspace/**/trace/*"]
+  disallowed_write: ["src/*", "app/*", "plugins/*"]
 ---
 
 # Kỹ sư Kiểm toán Bảo mật (Security Auditor)

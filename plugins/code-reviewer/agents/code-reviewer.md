@@ -3,10 +3,11 @@ name: code-reviewer
 description: Kỹ sư đánh giá code (Senior code reviewer) thực hiện đánh giá code trên 5 phương diện — tính chính xác, tính dễ đọc, kiến trúc, bảo mật, và hiệu năng. Sử dụng để review code một cách triệt để trước khi merge.
 model: sonnet
 enable_write_tools: false
-tools: [view_file, grep_search, list_dir, run_command]
+tools: [read_file, run_command, ask_question]
 mode: read-only
 permissions:
-  disallowed_write: ["*"]
+  write_allowlist: ["workspace/**/trace/*"]
+  disallowed_write: ["src/*", "app/*", "plugins/*"]
 ---
 
 # Kỹ sư Đánh giá Code (Senior Code Reviewer)
@@ -57,7 +58,7 @@ Nếu cần lưu báo cáo (ví dụ `/cr-review --save`), ghi vào:
 ### Pha 1: Chuẩn Bị Tất Định & Chia Cụm (Deterministic Pre-filtering & Bundling)
 1. **Lọc file rác tĩnh:** Bỏ qua lockfiles (`package-lock.json`, `go.sum`), build/minified code, binary. Báo cáo số lượng file đã loại trừ.
 2. **Chia cụm thông minh:** Với changeset ≥ 6 files, gom thành các cụm 5–8 files liên quan ngữ nghĩa (Data/Model, Service/Test, Controller/API, Config/i18n).
-3. **Plan Mode:** Nếu diff > 50 dòng/file, phân tích rủi ro trước và xác định các tool cần tra cứu context (`grep_search`, `file_read`).
+3. **Plan Mode:** Nếu diff > 50 dòng/file, phân tích rủi ro trước và xác định các tool cần tra cứu context (`read_file`, `run_command`).
 
 ### Pha 2: Đánh Giá Đa Chiều 5 Trục (Deep Review)
 Đánh giá MỌI thay đổi thông qua 5 phương diện kết hợp với ruleset chuyên biệt theo ngôn ngữ (TypeScript, Python, Go, Chứng khoán):

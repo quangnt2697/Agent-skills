@@ -64,7 +64,7 @@ Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/comm
 | Command | Tham số | Đầu ra chính | Mục đích & Khi nào dùng |
 |---|---|---|---|
 | `/sm-sprint-planning` | `[sprintId]` | Sprint backlog plan | Tính velocity, phân tích năng lực và kéo backlog cho Sprint mới. |
-| `/sm-daily-standup` | `[sprintId]` | Daily standup report | Thống kê tiến độ Jira, phân tích cân bằng tải và gửi Mattermost. |
+| `/sm-daily-standup` | `[sprintId]` | Daily standup report | Thống kê tiến độ Jira, phân tích cân bằng tải và lưu file trace. |
 | `/sm-impediment-triage`| `[sprintId]` | Risk triage report | Quét các ticket bị treo/kẹt quá lâu trên board và đề xuất hướng xử lý. |
 | `/sm-sprint-retrospective`| `[sprintId]` | Retrospective summary | Phân tích burndown, rút ra bài học What went well / To improve. |
 
@@ -135,7 +135,7 @@ graph TD
 | **code-reviewer** | `security-code-audit` | Quét bảo mật OWASP Top 10 | Kiểm toán an ninh mã nguồn |
 | **code-reviewer** | `webperf-core-vitals` | Kiểm toán Core Web Vitals | Đo lường LCP, INP, CLS trên trang web |
 | **scrum-master** | `sm-sprint-planning` | Lập kế hoạch Sprint tự động | Tính velocity, chốt sprint backlog |
-| **scrum-master** | `sm-daily-standup` | Báo cáo Daily Standup tự động | Họp standup, gửi Mattermost |
+| **scrum-master** | `sm-daily-standup` | Báo cáo Daily Standup tự động | Họp standup, lưu báo cáo trace |
 | **scrum-master** | `sm-impediment-triage` | Xử lý sự cố và blockers | Ticket bị treo, phát hiện điểm nghẽn |
 | **scrum-master** | `sm-sprint-retrospective`| Tổng kết và rút kinh nghiệm Sprint | Kết thúc Sprint, họp retrospective |
 | **fintech-data** | `db-timescale-reconciler` | Đối chiếu dữ liệu KRX MDDS | Quét sai lệch số liệu sàn trên TimescaleDB |
@@ -211,7 +211,7 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 | **SDK Index Tra cứu Code Test** | [`plugins/qa/skills/qa-auto-design/references/sdk-map.json`](plugins/qa/skills/qa-auto-design/references/sdk-map.json) | Bản đồ tái sử dụng class Auth, Trading API, MarketData API, WS Client |
 | **Quy chuẩn Subagents Handoff** | [`docs/architecture/subagent-handoff-protocol.md`](docs/architecture/subagent-handoff-protocol.md) | Phân quyền Tool Scoping, Context Window cách ly và quy trình bàn giao |
 | **Quy tắc Vận hành QA** | [`plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md`](plugins/qa/skills/qa-full-pipeline/references/qa-operational-rules.md) | Chuẩn mực ghi log 100%, tham số hóa đa sàn, cấm hardcode giá |
-| **Chiến lược n8n Fast-Path** | [`docs/architecture/n8n-integration-strategy.md`](docs/architecture/n8n-integration-strategy.md) | Webhooks n8n cho ChatOps Mattermost và tự động hóa CI/CD |
+| **Chiến lược n8n Fast-Path** | [`docs/architecture/n8n-integration-strategy.md`](docs/architecture/n8n-integration-strategy.md) | Kiến trúc n8n Fast-Path Fabric cục bộ và tùy chọn ChatOps |
 | **Editorial Diagram Style Guide** | [`plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md`](plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md) | Chuẩn thiết kế sơ đồ phẳng, tinh tế, typography hiện đại |
 | **UI Component Map & Design System** | [`plugins/ba-po/skills/ba-design-mockup/references/ui-component-map.json`](plugins/ba-po/skills/ba-design-mockup/references/ui-component-map.json) | Từ điển linh kiện giao diện Web/Mobile Trading phục vụ dựng mockup |
 

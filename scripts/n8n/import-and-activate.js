@@ -69,6 +69,7 @@ for (const filePath of workflowFiles) {
 
     const existing = db.prepare('SELECT id, versionId, activeVersionId FROM workflow_entity WHERE id = ?').get(id);
     const newVersionId = crypto.randomUUID();
+    const isActive = wf.active !== false ? 1 : 0;
 
     // 1. Ghi bản ghi lịch sử vào workflow_history
     const histStmt = db.prepare(`
@@ -82,21 +83,21 @@ for (const filePath of workflowFiles) {
       const updateStmt = db.prepare(`
         UPDATE workflow_entity 
         SET name = ?, nodes = ?, connections = ?, settings = ?, staticData = COALESCE(?, staticData),
-            pinData = COALESCE(?, pinData), versionId = ?, activeVersionId = ?, active = 1, updatedAt = CURRENT_TIMESTAMP
+            pinData = COALESCE(?, pinData), versionId = ?, activeVersionId = ?, active = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE id = ?
       `);
-      updateStmt.run(name, nodes, connections, settings, staticData, pinData, newVersionId, newVersionId, id);
+      updateStmt.run(name, nodes, connections, settings, staticData, pinData, newVersionId, newVersionId, isActive, id);
       updatedCount++;
-      console.log(`  🔄 [UPDATED & ACTIVE] ${name} (${id})`);
+      console.log(`  🔄 [UPDATED & ${isActive ? 'ACTIVE' : 'INACTIVE'}] ${name} (${id})`);
     } else {
       // 2b. Thêm mới workflow_entity
       const insertStmt = db.prepare(`
         INSERT INTO workflow_entity (id, name, active, nodes, connections, settings, staticData, pinData, versionId, activeVersionId, nodeGroups, createdAt, updatedAt)
-        VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, '[]', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `);
-      insertStmt.run(id, name, nodes, connections, settings, staticData, pinData, newVersionId, newVersionId);
+      insertStmt.run(id, name, isActive, nodes, connections, settings, staticData, pinData, newVersionId, newVersionId);
       insertedCount++;
-      console.log(`  ➕ [INSERTED & ACTIVE] ${name} (${id})`);
+      console.log(`  ➕ [INSERTED & ${isActive ? 'ACTIVE' : 'INACTIVE'}] ${name} (${id})`);
     }
   } catch (err) {
     console.error(`❌ Lỗi xử lý ${filePath}:`, err.message);

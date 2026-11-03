@@ -53,11 +53,11 @@ Skill này truy xuất dữ liệu Sprint từ Jira REST API với cấu hình x
      - Số lượng bug phát sinh trong Sprint.
 4. **Đánh giá & Insight**:
    - **What went well**: Điểm sáng của Sprint này (chẳng hạn không có blocker quá hạn lâu, hoặc nhóm Backend chia việc đều).
-   - **What needs improvement**: Các vấn đề kẹt ticket, mất cân bằng tải, scope creep. Tham khảo lại dữ liệu từ `{PROJECT_ROOT}/workspace/sprints/sprint/trace/blockers-triage.md` nếu có.
+   - **What needs improvement**: Các vấn đề kẹt ticket, mất cân bằng tải, scope creep. Tham khảo lại dữ liệu từ `{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/blockers-triage.md` nếu có.
    - **Action Items**: Nhiệm vụ cải tiến cụ thể cho Sprint sau (Ví dụ: Yêu cầu QA test sớm hơn, BA viết doc rõ hơn, v.v.).
 5. **Xuất file**:
-   - Nếu thư mục `{PROJECT_ROOT}/workspace/sprint/` chưa tồn tại, chạy `mkdir -p` để tạo.
-   - Tạo file **`{PROJECT_ROOT}/workspace/sprints/sprint/trace/sprint-retrospective-report.md`**.
+   - Nếu thư mục `{PROJECT_ROOT}/workspace/sprints/{sprintId}/` chưa tồn tại, chạy `mkdir -p` để tạo.
+   - Tạo file **`{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/sprint-retrospective-report.md`** (mặc định `{sprintId}` là `sprint` khi không chỉ định).
    - ⚠️ Lưu ý: `workspace` ở đây là **tên thư mục con** bên trong PROJECT_ROOT, KHÔNG phải "workspace root" của IDE.
 
 

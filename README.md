@@ -41,7 +41,7 @@ Kỹ sư dữ liệu thị trường và kiểm toán dữ liệu chứng khoán
 
 ## ⚡ Hướng Dẫn Cài Đặt (Installation Guide)
 
-Do dự án bao gồm nhiều hệ sinh thái (Agent Plugins, n8n Fast-Path, Ngrok Tunnel, Mattermost Webhook), toàn bộ quy trình thiết lập đã được hợp nhất vào một tài liệu duy nhất để dễ theo dõi.
+Do dự án bao gồm nhiều thành phần (Agent Plugins, n8n Fast-Path Fabric, các tích hợp bên ngoài), toàn bộ quy trình thiết lập đã được hợp nhất vào một tài liệu duy nhất để dễ theo dõi.
 
 👉 **Mời bạn xem: [Cẩm Nang Cài Đặt & Tích Hợp (Installation Guide)](docs/guides/installation-guide.md)**
 
@@ -55,9 +55,9 @@ npm test              # kiểm tra cài đặt
 Windows/Linux: làm thủ công theo "Tùy chọn B" trong guide.
 
 *Tài liệu trên bao gồm:*
-- *Yêu cầu hệ thống và hai mức cài đặt: Tối thiểu (chỉ dùng skills) và Đầy đủ (kèm ChatOps).*
+- *Yêu cầu hệ thống và các mức cài đặt: Tối thiểu (chỉ dùng skills), Đầy đủ (kèm n8n Fast-Path cục bộ) và Nâng cao (ChatOps tùy chọn).*
 - *Hướng dẫn kết nối Agent Plugins cho Antigravity / Gemini CLI.*
-- *Tích hợp ChatOps qua n8n, ngrok và Mattermost Slash Command, kèm tự khởi động n8n cùng macOS.*
+- *Tích hợp n8n Fast-Path cục bộ, tùy chọn ChatOps Mattermost Slash Command và tự khởi động cùng macOS.*
 - *Bảng xử lý sự cố thường gặp.*
 - [docs/guides/adoption-guide.md](docs/guides/adoption-guide.md) — Cẩm nang áp dụng theo quy trình Agile/Scrum
 

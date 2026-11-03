@@ -87,8 +87,8 @@ trigger: Khi đã có kịch bản Gherkin (.feature) và checklist, cần viế
     node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-lint.js {issueKey}
     ```
   - `qa-lint.js` sẽ kiểm tra: Phủ đủ Scenario, cấm sleep/mock/hardcode, assert đúng tầng.
-  - Nếu có lỗi cú pháp/lint ➤ Tự sửa (≤ 3 vòng).
-  - Cập nhật kết quả vào `workspace/issues/{issueKey}/.pipeline-state.json` và bàn giao cho `qa-run-test`.
+  - Nếu có lỗi cú pháp/lint file test vừa sinh ➤ Tự sửa tối đa 1 vòng duy nhất trong test/ (tuân thủ autonomy-contract.md).
+  - Cập nhật kết quả vào `workspace/issues/{issueKey}/.pipeline-state.json`; DỪNG và gợi ý `/qa-run-test`.
 
 ## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
 

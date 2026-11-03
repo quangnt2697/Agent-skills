@@ -48,7 +48,8 @@ Phase 3: Chuẩn hóa Đặc tả 5 Mục & Dựng Mockup Prod-Twin (APPROVAL GA
     - User chọn hướng đi cuối cùng → Tạo refined-draft.md chuẩn 5 phần Jira
     - Viết Acceptance Criteria dạng Gherkin sạch (KHÔNG @tags, KHÔNG [AC-x.y])
     - Nếu có UI: gọi ba-design-mockup dựng Prod-Twin mockup đa trạng thái (mockup-case-1..3.png, Fidelity ≥ 90%)
-    - Chạy Hard Gate validate-ba-refine.js → Trình user duyệt (Gate 2) → Chốt refined.md
+    - Chạy Hard Gate validate-ba-refine.js → Trình user duyệt nội dung (Gate 2a) → Chốt refined.md
+    - Xin phê duyệt trước khi ghi đè Jira Description (Gate 2b)
     ↓
 Phase 4: Đồng bộ lên Jira & Handoff Kỹ thuật
     - Cập nhật Jira Description dạng ADF kèm inline image mediaSingle (KHÔNG comment, KHÔNG label)
@@ -62,7 +63,7 @@ Phase 4: Đồng bộ lên Jira & Handoff Kỹ thuật
 - **Multi-source & Cache-aware:** Đọc Jira PDF + Confluence pages + attachments, tái sử dụng file đã tải trong `source/refs/`
 - **5 Chiều Nghiệp vụ & Stress-test:** Khai phóng thuần nghiệp vụ (Zero Technical Noise), kiểm định xung đột quy tắc ngành
 - **Prod-Twin UI Mockup (`ba-design-mockup`):** Bóc tách AS-IS từ codebase, dựng Delta-Only kèm huy hiệu `① ② ③`, kiểm định `validate-mockup-fidelity.js` (Fidelity ≥ 90%)
-- **Hard Gate & Clean Gherkin (Gate 2):** Kiểm định cấu trúc 5 mục qua `validate-ba-refine.js` trước khi trình duyệt và push Jira
+- **Hard Gate & Clean Gherkin (Gate 2):** Kiểm định cấu trúc 5 mục qua `validate-ba-refine.js` trước khi trình duyệt nội dung (Gate 2a) và xin phép push Jira (Gate 2b)
 
 ## Output
 
@@ -76,7 +77,7 @@ Phase 4: Đồng bộ lên Jira & Handoff Kỹ thuật
 
 Sau khi refinement hoàn tất, hiển thị gợi ý cho user:
 - `/qa-test-design {issueKey}` — Thiết kế test cases và checklist
-- `/dev-tech-spec {issueKey}` — Viết tech spec kiến trúc
+- Bàn giao DEV kiến trúc hoặc thực thi tiếp theo nhu cầu
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 

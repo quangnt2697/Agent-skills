@@ -150,4 +150,4 @@ bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate
 ```
 
 ✅ **`"status": "pass"`** → Gợi ý chạy `/qa-auto-design {issueKey}`
-❌ **`"status": "fail"`** → Đọc `failures[]`, tự sửa, chạy lại (tối đa 3 vòng)
+❌ **`"status": "fail"`** → Đọc `failures[]`, tự sửa lỗi cú pháp vừa sinh, chạy lại (tối đa 1 vòng duy nhất theo autonomy-contract.md); nếu vẫn lỗi thì DỪNG và báo user

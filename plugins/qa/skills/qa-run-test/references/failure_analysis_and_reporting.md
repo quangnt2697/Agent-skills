@@ -12,7 +12,7 @@ Tài liệu này hướng dẫn định dạng chuẩn của file báo cáo đ�
   - ❌ **KHÔNG** mở file mã nguồn backend hoặc database để tự truy tìm "Root Cause" tầng service.
   - ❌ **KHÔNG** tự đưa ra giải pháp sửa mã nguồn ứng dụng (việc này thuộc về DEV).
   - ❌ **KHÔNG** tự chạy thêm các lệnh curl/urllib ngoài luồng kiểm thử.
-  - ✅ **BẮT BUỘC:** Đề xuất kỹ năng xử lý phù hợp (`dev-debugging`, `cr-review-code-and-quality`, `qa-auto-design`) để các persona tương ứng tiếp quản điều tra.
+  - ✅ **BẮT BUỘC:** Đề xuất kỹ năng xử lý phù hợp (`cr-review-code-and-quality`, `qa-auto-design`, hoặc bàn giao developer) để các persona tương ứng tiếp quản điều tra.
 
 ---
 
@@ -108,7 +108,7 @@ workspace/issues/{issueKey}/test/result/
 
 Phát hiện test case thất bại. Đề xuất các kỹ năng/vai trò chuyên trách để xử lý tiếp:
 
-1. 🛠️ **Gỡ lỗi Backend / Điều tra nguyên nhân:** Sử dụng skill `dev-debugging` hoặc gọi subagent `dev` để kiểm tra mã nguồn backend, reproduce và sửa lỗi xử lý dữ liệu.
+1. 🛠️ **Gỡ lỗi Backend / Điều tra nguyên nhân:** Bàn giao cho Developer để kiểm tra mã nguồn backend, reproduce và sửa lỗi xử lý dữ liệu.
 2. 🔍 **Review Mã nguồn:** Sử dụng skill `cr-review-code-and-quality` hoặc gọi subagent `code-reviewer` để rà soát toàn diện implementation mã nguồn.
 3. ⚙️ **Cập nhật Kịch bản Test:** Sử dụng skill `qa-auto-design` nếu các tham số test cần được đồng bộ lại theo đặc tả mới nhất.
 ```
@@ -133,7 +133,7 @@ Phát hiện test case thất bại. Đề xuất các kỹ năng/vai trò chuy�
 
 ### 🎯 Đề Xuất Hành Động Tiếp Theo:
 Phát hiện 16 test case thất bại do hệ thống trả về mã lỗi hoặc timeout. Đề xuất lựa chọn kỹ năng xử lý:
-1. 🛠️ **Gỡ lỗi & Sửa mã nguồn:** Sử dụng skill `dev-debugging` hoặc gọi subagent `dev` để trace mã nguồn backend và kiểm tra mapping tham số.
+1. 🛠️ **Gỡ lỗi & Sửa mã nguồn:** Bàn giao cho Developer để trace mã nguồn backend và kiểm tra mapping tham số.
 2. 🔍 **Review mã nguồn:** Sử dụng skill `cr-review-code-and-quality` hoặc gọi subagent `code-reviewer` để rà soát toàn diện implementation.
 3. ⚙️ **Cập nhật kịch bản test:** Sử dụng skill `qa-auto-design` nếu các tham số kiểm thử cần được cập nhật lại theo spec mới nhất.
 ```

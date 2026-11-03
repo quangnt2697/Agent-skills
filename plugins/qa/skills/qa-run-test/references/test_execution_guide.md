@@ -89,7 +89,7 @@ Khi test suite có kết quả FAILED:
 
 3. **Đề xuất kỹ năng xử lý (Skill Handoff):**
    - Đề xuất user lựa chọn kỹ năng chuyên trách:
-     - 🛠️ `dev-debugging`: Giao cho Developer điều tra mã nguồn backend và fix bug logic.
+     - 🛠️ Bàn giao Developer điều tra mã nguồn backend và fix bug logic.
      - 🔍 `cr-review-code-and-quality`: Giao cho Code Reviewer review mã nguồn và kiến trúc.
      - ⚙️ `qa-auto-design`: Giao cho QA cập nhật lại test script nếu spec có sự thay đổi **hoặc khi timeout xảy ra do logic test sai / threshold quá thấp**.
 
@@ -101,7 +101,7 @@ Khi test suite có kết quả FAILED:
 |---|---|
 | 1 test case chạy > 60s | pytest-timeout kill tự động → kết quả `FAILED (timeout)` |
 | Toàn suite chạy > 10 phút | Agent DỪNG NGAY → xuất báo cáo kết quả hiện tại với ghi chú `Suite Timeout` |
-| Test bị timeout | **KHÔNG tự sửa test script** → Đề xuất `qa-auto-design` hoặc `dev-debugging` |
-| pytest-timeout chưa cài | Chạy `pip install pytest-timeout` trước rồi chạy lại |
+| Test bị timeout | **KHÔNG tự sửa test script** → Đề xuất `qa-auto-design` hoặc bàn giao developer |
+| pytest-timeout chưa cài | Báo thiếu dependency môi trường, yêu cầu cài đặt bên ngoài (cấm tự cài) |
 
 > ❌ **CẤM:** Khi test timeout, tự sửa test script để tăng giá trị timeout hoặc loại bỏ assertion — đây là vi phạm nghiêm trọng nhất của skill `qa-run-test`.

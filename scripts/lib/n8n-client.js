@@ -123,7 +123,7 @@ export async function batchSquashPush(params = {}, options = {}) {
 }
 
 /**
- * Fast-Path: Lấy báo cáo Standup từ n8n để hiển thị trực tiếp lên Mattermost
+ * Fast-Path: Lấy dữ liệu báo cáo Standup từ n8n để lưu vào workspace/sprints/{sprintId}/trace/
  * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}
  */
@@ -245,7 +245,7 @@ export async function runSecurityDigest(projectPath = '', options = {}) {
 }
 
 /**
- * Fast-Path: Gửi sự kiện chuyển trạng thái Jira Ready To Test lên Mattermost (WF-11)
+ * Fast-Path: Nhận/xử lý sự kiện chuyển trạng thái Jira Ready To Test (WF-11, routing theo NOTIFY_CHANNEL)
  * @param {object} payload Dữ liệu Jira Webhook hoặc test payload
  * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}

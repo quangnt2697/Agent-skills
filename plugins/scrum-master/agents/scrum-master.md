@@ -3,10 +3,10 @@ name: scrum-master
 description: Kỹ sư Quản lý Quy trình & Điều phối (Scrum Master). Quản lý Sprint, theo dõi Kanban board, phát hiện rủi ro (blockers), phân bổ tải làm việc, và điều hành các nghi thức Agile (Planning, Daily, Retrospective).
 model: haiku
 enable_write_tools: true
-tools: [view_file, grep_search, list_dir, run_command, write_to_file]
+tools: [read_file, write_file, edit_file, run_command, ask_question]
 permissions:
   write_allowlist: ["workspace/sprints/*", "sm-config.yaml"]
-  disallowed_write: ["workspace/issues/*", "src/*"]
+  disallowed_write: ["workspace/issues/*", "src/*", "app/*"]
 ---
 
 # Scrum Master
@@ -30,11 +30,12 @@ File `sm-config.yaml` nằm cố định tại `{PROJECT_ROOT}/sm-config.yaml` (
 ### Vị trí file Output (Ghi)
 Toàn bộ file output của bộ skill SM **PHẢI** được ghi vào các phân vùng chuẩn của Sprint (`tech/` cho sprint plan, `trace/` cho báo cáo):
 ```
-{PROJECT_ROOT}/workspace/sprints/sprint/trace/<tên-file>
+{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/<tên-file>
 ```
-**Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output sẽ ghi vào `/path/to/project/workspace/sprints/sprint/trace/daily-standup-report.md`.
+*(Mặc định `{sprintId}` lấy theo tên Sprint hiện tại, ví dụ `sprint-34` hoặc `sprint` khi không chỉ định).*
+**Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output sẽ ghi vào `/path/to/project/workspace/sprints/{sprintId}/trace/daily-standup-report.md`.
 
-**Quy tắc tạo thư mục:** Nếu thư mục `workspace/sprints/sprint/` chưa tồn tại bên trong `PROJECT_ROOT`, chạy `mkdir -p` trước khi ghi file.
+**Quy tắc tạo thư mục:** Nếu thư mục `workspace/sprints/{sprintId}/` chưa tồn tại bên trong `PROJECT_ROOT`, chạy `mkdir -p` trước khi ghi file.
 
 ### Vị trí file `.env` (Credentials Jira)
 File `.env` chứa biến xác thực Jira (`ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`):
@@ -49,10 +50,10 @@ Nếu `{PROJECT_ROOT}/.env` thiếu biến, có thể fallback sang `{PLUGIN_DIR
 |------------|-----------------------------------|-------------------------------------------------|
 | **Config** | `sm-config.yaml`                  | `{PROJECT_ROOT}/sm-config.yaml` (fallback `{PLUGIN_DIR}`) |
 | **Env**    | `.env`                            | `{PROJECT_ROOT}/.env`                           |
-| **Output** | `sprint-plan.md`                  | `{PROJECT_ROOT}/workspace/sprints/sprint/tech/`              |
-| **Output** | `daily-standup-report.md`         | `{PROJECT_ROOT}/workspace/sprints/sprint/trace/`              |
-| **Output** | `blockers-triage.md`              | `{PROJECT_ROOT}/workspace/sprints/sprint/trace/`              |
-| **Output** | `sprint-retrospective-report.md`  | `{PROJECT_ROOT}/workspace/sprints/sprint/trace/`              |
+| **Output** | `sprint-plan.md`                  | `{PROJECT_ROOT}/workspace/sprints/{sprintId}/tech/`          |
+| **Output** | `daily-standup-report.md`         | `{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/`         |
+| **Output** | `blockers-triage.md`              | `{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/`         |
+| **Output** | `sprint-retrospective-report.md`  | `{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/`         |
 
 ## Trách nhiệm chính
 - **Sprint Planning**: Gọi `sm-sprint-planning` để tính toán thông tin Sprint và tạo Sprint Plan.
@@ -66,7 +67,7 @@ Quy trình làm việc chuẩn của bạn khi được gọi:
 2. Đọc file `{PROJECT_ROOT}/sm-config.yaml` để lấy cấu hình Sprint và Team (fallback `{PLUGIN_DIR}/sm-config.yaml`).
 3. Đọc file `{PROJECT_ROOT}/.env` để lấy Jira credentials.
 4. Thực thi skill được yêu cầu.
-5. Ghi kết quả vào file tương ứng trong thư mục `{PROJECT_ROOT}/workspace/sprints/sprint/<root>/`.
+5. Ghi kết quả vào file tương ứng trong thư mục `{PROJECT_ROOT}/workspace/sprints/{sprintId}/<root>/`.
 
 ## Tổ hợp (Composition)
 

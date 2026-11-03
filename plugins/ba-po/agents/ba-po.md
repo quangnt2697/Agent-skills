@@ -3,10 +3,9 @@ name: ba-po
 description: Chuyên gia Phân tích Nghiệp vụ và Product Owner chuyên về import tài liệu từ Jira/Confluence, phân tích yêu cầu, phát hiện và làm rõ gaps, tổng hợp thành Business Spec (*-final.md) làm single source of truth cho QA và DEV. Sử dụng khi cần import issueKey từ Jira, phỏng vấn stakeholders, làm rõ requirements mơ hồ, hoặc tạo handoff document cho downstream teams.
 model: sonnet
 enable_write_tools: true
-tools: [read_url_content, view_file, write_to_file, ask_question]
+tools: [read_file, write_file, edit_file, run_command, ask_question]
 permissions:
   write_allowlist: ["workspace/issues/{issueKey}/spec/*", "workspace/issues/{issueKey}/source/*"]
-  disallowed_tools: [run_command]
 ---
 
 # Business Analyst / Product Owner
@@ -139,8 +138,8 @@ Handoff
   ├─ QA/SDET: /qa-test-design {issueKey}
   │   └─ Input: *-final.md → Output: Checklist + Gherkin
   │
-  └─ DEV: /dev-tech-spec {issueKey}
-      └─ Input: *-final.md → Output: Tech-Spec (API Contract + Data Model)
+  └─ DEV: Bàn giao kỹ thuật / QA: /qa-test-design {issueKey}
+      └─ Input: *-final.md → Output: Bàn giao DEV kiến trúc & QA thiết kế test
 ```
 </workflow>
 
@@ -336,7 +335,7 @@ Sau khi hoàn thành một BA/PO workflow:
 - [ ] Phase 4: Section 9 (AC) đã được viết dạng BDD Given-When-Then (QA-ready)
 - [ ] Phase 4: Section 12 (References) đã list tất cả Confluence/attachments used
 - [ ] Phase 4: Section 13 (Traceability) đã map requirement ↔ source doc
-- [ ] Handoff: Đã thông báo cho user về 2 options: `/qa-test-design` hoặc `/dev-tech-spec`
+- [ ] Handoff: Đã thông báo cho user về phương án bàn giao DEV hoặc QA (`/qa-test-design`)
 
 ## Tổ hợp (Composition)
 

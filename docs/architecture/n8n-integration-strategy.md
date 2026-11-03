@@ -6,7 +6,7 @@ Hệ thống `agent-skills` áp dụng mô hình kiến trúc lai giữa **Tần
 
 ### Nguyên Tắc n8n-Only Fabric
 
-Mọi kỹ năng (Skill) cần tương tác với dịch vụ bên ngoài (Jira, Confluence, Squash TM, Mattermost, TimescaleDB) đều đi qua n8n Fast-Path Fabric:
+Mọi kỹ năng (Skill) cần tương tác với dịch vụ bên ngoài (Jira, Confluence, Squash TM, TimescaleDB, và kênh thông báo tùy chọn) đều đi qua n8n Fast-Path Fabric:
 
 ```
 [Agent Skill / CLI] ──(HTTP JSON)──▶ [n8n Fast-Path Webhook] ──▶ [External Service]
@@ -33,12 +33,12 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 | `/webhook/web-ui-locator-discovery` | `POST` | QA | Khám phá locator Web UI thật: probe URL, login thật, dump DOM | `{"issueKey": "STK-201", "targetPage": "order"}` | `{"success", "loginSuccess", "locatorCount", "outputFile", "login_locators", "page_locators"}` |
 | `/webhook/squash-batch` | `POST` | QA | Đẩy hàng loạt Test Cases & Gherkin lên Squash TM | `{"baseUrl", "apiToken", "folderId", "testCases": [...]}` | `{"status": "success", "importedCount": 15}` |
 | `/webhook/qa-run-test` | `POST` | QA | Kích hoạt bộ test chạy ngầm (Non-blocking) | `{"issueKey": "...", "testCommand": "pytest ..."}` | `{"jobId": "...", "status": "queued"}` |
-| `/webhook/jira-ready-to-test` | `POST` | QA / ChatOps | Nhận Webhook Jira chuyển trạng thái Ready to Test, báo Mattermost | `{"issue": {...}, "changelog": {...}}` | `{"isReadyToTest", "gherkinBadge", "autoScriptBadge", "suggestedCommand"}` |
+| `/webhook/jira-ready-to-test` | `POST` | QA / Fast-Path | Nhận Webhook Jira chuyển trạng thái Ready to Test, trả kết quả kiểm tra test artifacts | `{"issue": {...}, "changelog": {...}}` | `{"isReadyToTest", "gherkinBadge", "autoScriptBadge", "suggestedCommand"}` |
 | `/webhook/cr-diff-clean` | `POST` | Code Reviewer | Lọc bỏ lockfiles, minified bundle, phân tầng git diff | `{"rawDiff": "..."}` | `{"summary", "categorizedFiles", "cleanedDiffText"}` |
 | `/webhook/security-scan` | `POST` | Security | Quét ngầm npm audit và rà soát secrets rò rỉ | `{"projectPath": "..."}` | `{"securityStatus", "vulnerabilities", "scorecardMarkdown"}` |
 | `/webhook/securities-rule-matrix` | `POST` | QA | Lấy ma trận loại lệnh hợp lệ và bảng Examples tham số hóa đa sàn | `{"marketId": "STO", "boardId": "G1", "symbol": "SSI", "adminStatus": "CR"}` | `{"allowedOrders", "disallowedOrders", "isMtlFiltered", "multiSymbolExamples"}` |
 | `/webhook/qa-domain-lint` | `POST` | QA | Kiểm định kịch bản Gherkin (.feature) tuân thủ quy tắc nghiệp vụ chứng khoán | `{"issueKey": "STK-100", "gherkinContent": "..."}` | `{"valid", "errorCount", "errors", "warnings", "checkedRules"}` |
-| `/webhook/sm-standup` | `POST` | Scrum Master | Lấy báo cáo Standup và đẩy thẳng qua Mattermost | `{}` | `{"reportText", "totalIssues", "stuckCount"}` |
+| `/webhook/sm-standup` | `POST` | Scrum Master | Lấy báo cáo Standup tiến độ Sprint để lưu file trace/ (Mattermost tùy chọn) | `{}` | `{"reportText", "totalIssues", "stuckCount"}` |
 
 ---
 
@@ -134,11 +134,11 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
   // Trích xuất CVEs High/Critical và cảnh báo rò rỉ secret nhạy cảm.
   ```
 
-### 3.5. Phân Hệ Scrum Master & ChatOps (Single Router Pattern & Jira Ready-to-Test Notifier)
-Hệ thống sử dụng **Mattermost** làm giao diện tương tác duy nhất (Single Entry Point):
-- **Tự động hóa Standup:** Cron workflow trên n8n kích hoạt lúc 08:30 sáng, phân tích vé Jira kẹt > 3 ngày và đẩy báo cáo Markdown vào kênh Mattermost qua Incoming Webhook.
-- **Jira Ready to Test Notifier:** Lắng nghe Webhook Jira, lọc task Board G.3.1 trong Active Sprint chuyển sang Ready to test, quét workspace local báo `✅/❌ Gherkin file` và `✅/❌ Autoscript test`, gửi card `### 🎯 READY TO TEST` kèm gợi ý lệnh lên Mattermost.
-- **Single Router (Lệnh `/agent`):** Khai báo duy nhất một Slash Command `/agent` trên Mattermost. n8n đóng vai trò là Router, hứng toàn bộ payload text, cắt chuỗi và gọi đúng Agent Skill cục bộ thay vì phải cấu hình hàng chục lệnh nhỏ nhặt.
+### 3.5. Phân Hệ Scrum Master & Kênh Thông Báo (Tách Bạch Fast-Path & ChatOps)
+Hệ thống mặc định vận hành theo cơ chế **Fast-Path cục bộ** (`NOTIFY_CHANNEL=none`), xuất báo cáo ra `workspace/sprints/{sprintId}/trace/daily-standup-report.md`. Tích hợp Mattermost là tùy chọn mở rộng khi `NOTIFY_CHANNEL=mattermost`:
+- **Báo cáo Standup:** Fast-Path n8n phân tích vé Jira kẹt > 3 ngày, tiến độ Story Points và cân bằng tải, trả dữ liệu markdown cho Skill lưu vào trace/. Nếu `NOTIFY_CHANNEL=mattermost`, n8n sẽ chuyển tiếp tin nhắn qua webhook Mattermost.
+- **Jira Ready to Test Handler:** Lắng nghe/xử lý Webhook Jira lọc task Board G.3.1 trong Active Sprint chuyển sang Ready to test, quét workspace local báo `✅/❌ Gherkin file` và `✅/❌ Autoscript test`, gửi card `### 🎯 READY TO TEST` kèm gợi ý lệnh.
+- **ChatOps Single Router (Tùy chọn):** Khi cần điều hành từ xa qua Mattermost, Slash Command `/agent` gửi payload tới n8n router để điều phối thực thi. Mặc định router này ở trạng thái inactive khi chưa bật ChatOps.
 
 ---
 
@@ -199,9 +199,10 @@ https://generativelanguage.googleapis.com/v1beta/models/{{ $env.GEMINI_AGENT_MOD
 
 ---
 
-## 7. Hướng Dẫn Cấu Hình Mattermost + Slash Command `/agent`
+## 7. Cấu Hình Tùy Chọn: Mattermost + Slash Command `/agent`
 
-> 📖 **Xem hướng dẫn đầy đủ từng bước tại:** `docs/guides/installation-guide.md` (Phần Cài đặt n8n & Mattermost)
+> ℹ️ **Lưu ý:** Phần này là tùy chọn mở rộng. Mặc định dự án không yêu cầu Mattermost hay ngrok tunnel.
+> 📖 **Xem hướng dẫn chi tiết tại:** `docs/guides/installation-guide.md` (Giai đoạn 3: Tích hợp ChatOps Mattermost)
 
 Tóm tắt nhanh:
 
