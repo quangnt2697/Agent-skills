@@ -5,7 +5,7 @@
  * - Phân tích kết quả quét phụ thuộc (Dependency Audit: `npm audit --json`) và quét secret rò rỉ.
  * - Lọc bỏ các cảnh báo Low / Moderate, chỉ tập trung trích xuất High và Critical CVEs theo chuẩn OWASP.
  * - Phát hiện các token nhạy cảm bị hardcode (Atlassian Token, GitLab PAT, Private Key, Passwords).
- * - KHÔNG gửi Mattermost — trả về trực tiếp cho `security-code-audit` và `dev-security`.
+ * - trả về trực tiếp cho `security-code-audit` và `dev-security`.
  */
 
 const input = $input.first();

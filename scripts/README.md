@@ -19,7 +19,6 @@ scripts/
 │   ├── qa-init-test.js              # Kiểm thử khởi tạo thư mục test, fixtures & scaffolding
 │   ├── qa-validate-test.js          # Kiểm thử quy tắc checklist & BDD syntax
 │   ├── repo-sync-test.js            # Kiểm thử tính năng Git fetch/pull đa nhánh & 2-tier scanning
-│   ├── router-verify-token-test.js  # Kiểm thử xác thực slash token Mattermost
 │   ├── run-evals-test.js            # Kiểm thử runner đánh giá trigger rank-1
 │   ├── setup-claude-test.js         # Kiểm thử tạo symlink & biến môi trường Claude Code
 │   ├── skill-lint-test.js           # Kiểm thử lint cấu trúc SKILL.md đa ngôn ngữ
@@ -78,7 +77,7 @@ scripts/
     ├── sm/                          # Node scripts domain Scrum Master (Daily standup aggregator)
     ├── cr/                          # Node scripts domain Code Review (Diff cleaner & layer classifier)
     ├── security/                    # Node scripts domain Security (Audit digest & secrets scanner)
-    └── router/                      # Node scripts Router (Mattermost parser & action dispatcher)
+    └── ops/                         # Node scripts vận hành (Global Error Handler → workspace/.n8n-errors.log)
 ```
 
 ---

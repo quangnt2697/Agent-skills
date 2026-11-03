@@ -22,7 +22,7 @@ test('Core Recon: Workflow db-mdds-recon-core.json tồn tại và có đủ 4 n
   assert.ok(nodeNames.includes('Webhook Trigger (db-recon-core)'), 'Thiếu Webhook Trigger');
   assert.ok(nodeNames.includes('Run Core Recon Engine'), 'Thiếu Node Run Core Recon Engine');
   assert.ok(nodeNames.includes('Format 4 Separate Messages'), 'Thiếu Node Format 4 Separate Messages');
-  assert.ok(nodeNames.includes('Notify Mattermost (Sequential 4 Messages)'), 'Thiếu Node Notify Mattermost');
+  assert.ok(!nodeNames.some(n => /mattermost/i.test(n)), 'Workflow không còn node Mattermost');
 });
 
 test('Core Recon: 4 câu query cốt lõi tuân thủ Zero-Mutation & Partition-First', async () => {
@@ -47,7 +47,7 @@ test('Core Recon: 4 câu query cốt lõi tuân thủ Zero-Mutation & Partition-
   }
 });
 
-test('Core Recon: Node format sinh chính xác 4 items Mattermost độc lập', () => {
+test('Core Recon: Node format sinh chính xác 4 items độc lập', () => {
   const formatScript = fs.readFileSync(path.join(projectRoot, 'scripts', 'n8n-nodes', 'db', 'db-recon-core-format.js'), 'utf8');
 
   // Giả lập môi trường n8n cho script

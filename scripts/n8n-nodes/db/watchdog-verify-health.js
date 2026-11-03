@@ -562,7 +562,7 @@ try {
   // Lỗi alert state tracking không làm ngắt pipeline
 }
 
-// ── 11. Định dạng thông báo Markdown gửi lên Mattermost ─────────────────────
+// ── 11. Định dạng báo cáo Markdown trả về cho caller ─────────────────────
 let msgTitle = '';
 if (isHealthy) {
   msgTitle = `✅ **[MDDS PRODUCTION ${isPreOpen ? '08:20 AM' : 'WATCHDOG'}] Dữ Liệu Security Definition V3 & Bảng Giá Đầu Ngày ỔN ĐỊNH**`;

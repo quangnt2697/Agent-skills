@@ -36,7 +36,7 @@ scripts/n8n-nodes/
 ├── cr/                                # Domain Code Review (WF-07)
 │   └── cr-filter-diff.js              # Lọc bỏ lockfiles, binary và phân tầng diff
 ├── db/                                # Domain Cơ Sở Dữ Liệu & MDDS Recon (WF-09, WF-10, WF-12)
-│   ├── db-recon-core-format.js        # Tách kết quả đối chiếu thành 4 tin nhắn Mattermost
+│   ├── db-recon-core-format.js        # Tách kết quả đối chiếu thành 4 mục riêng biệt
 │   ├── db-recon-core-runner.js        # Thực thi runner db-recon-core.js
 │   ├── metabase-normalize-response.js # Chuẩn hóa bảng kết quả truy vấn Metabase
 │   ├── metabase-prepare-query.js      # Kiểm tra sanitizer & chuẩn bị câu SQL Metabase
@@ -51,8 +51,8 @@ scripts/n8n-nodes/
 │   ├── securities-fixture-engine.js   # Tạo bộ test fixtures chứng khoán 4 sàn
 │   ├── squash-format-report.js        # Định dạng báo cáo Markdown đẩy Squash TM
 │   └── squash-push-engine.js          # Batch push test cases lên Squash TM API
-├── router/                            # Domain Mattermost Routing (WF-00)
-│   └── router-parse-ai-output.js      # Phân tích cú pháp lệnh `/agent` từ Mattermost
+├── ops/                               # Domain Vận hành (Global Error Handler)
+│   └── error-log-writer.js            # Ghi lỗi workflow ra workspace/.n8n-errors.log
 ├── security/                          # Domain Bảo Mật (WF-08)
 │   └── security-digest-engine.js      # Trích xuất CVE High/Critical & quét secret rò rỉ
 └── sm/                                # Domain Scrum Master (WF-13)
@@ -87,4 +87,4 @@ scripts/n8n-nodes/
 | **SM** | `sm/sm-prepare-standup.js` | `n8n-workflows/sm-daily-standup-cron.json` | `Prepare Standup Request` |
 | **CR** | `cr/cr-filter-diff.js` | `n8n-workflows/cr-diff-cleaner.json` | `CR Filter Diff` |
 | **Security** | `security/security-digest-engine.js` | `n8n-workflows/security-vulnerability-digest.json` | `Security Digest Engine` |
-| **Router** | `router/router-parse-ai-output.js` | `n8n-workflows/mattermost-single-router.json` | `Parse AI Output` |
+| **Ops** | `ops/error-log-writer.js` | `n8n-workflows/global-error-handler.json` | `Write Error Log` |

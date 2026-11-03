@@ -6,7 +6,7 @@
  * - Bóc tách định dạng Confluence Storage XHTML (`body.storage.value` hoặc `body.view.value`).
  * - Loại bỏ toàn bộ CSS, style inline, layout div, macro rác, script tracking.
  * - Chuyển đổi thành Markdown chuẩn tinh gọn (Tables, Code blocks, Lists, Headings).
- * - KHÔNG gửi Mattermost — trả về trực tiếp cho BA/PO agent skill (tiết kiệm >90% token).
+ * - trả về trực tiếp cho BA/PO agent skill (tiết kiệm >90% token).
  */
 
 const input = $input.first();

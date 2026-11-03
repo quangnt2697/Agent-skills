@@ -9,7 +9,7 @@ Kích hoạt kỹ năng sm-daily-standup.
 
 1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ đọc dữ liệu tiến độ từ Jira và lập báo cáo Daily Standup.
 2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
-   - TUYỆT ĐỐI CẤM tự ý gửi tin nhắn qua Webhook Mattermost khi người dùng chưa review và phê duyệt nội dung.
+   - TUYỆT ĐỐI CẤM tự ý gửi báo cáo ra kênh chat hoặc hệ thống bên ngoài khi người dùng chưa review và phê duyệt nội dung.
    - CẤM can thiệp vào bất kỳ file mã nguồn nào của dự án.
 3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file báo cáo standup, DỪNG LẠI NGAY và xuất trình kết quả cho người dùng.
 """

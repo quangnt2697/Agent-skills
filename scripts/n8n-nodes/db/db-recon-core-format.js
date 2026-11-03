@@ -3,7 +3,7 @@
  * (`scripts/n8n-nodes/db/db-recon-core-format.js`)
  *
  * Nhận kết quả từ bộ runner `runAllCoreRecon` và tách thành 4 items độc lập
- * để n8n gửi 4 tin nhắn riêng biệt lên Mattermost (1 tin nhắn cho mỗi query).
+ * thành 4 mục riêng biệt (1 mục cho mỗi query).
  */
 
 const input = $input.first();

@@ -9,7 +9,7 @@ const resolveRes = input.json || {};
 const context = $('Extract & Prepare Input').first()?.json || {};
 const issueKey = context.issueKey || resolveRes.issueKey || '';
 const project = context.project || resolveRes.project || '';
-const triggerSource = context._triggerSource || context.triggerSource || 'mattermost';
+const triggerSource = context._triggerSource || context.triggerSource || 'internal';
 const userName = context.userName || 'User';
 
 if (!issueKey) {

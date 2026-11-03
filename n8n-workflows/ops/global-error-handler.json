@@ -28,31 +28,16 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ $env.MATTERMOST_ALERT_WEBHOOK_URL || $env.MATTERMOST_WEBHOOK_URL }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ text: $json.reportText, username: 'n8n Sentinel Bot', icon_emoji: ':rotating_light:' }) }}",
-        "options": {}
+        "jsCode": "/**\n * Node Script: Error Log Writer (`scripts/n8n-nodes/ops/error-log-writer.js`)\n *\n * Mục đích: ghi lỗi workflow n8n (dead-letter) ra file `workspace/.n8n-errors.log`\n * (mỗi dòng 1 JSON) thay vì gửi qua kênh chat. `/workspace/` đã nằm trong .gitignore.\n * KHÔNG nuốt lỗi: nếu không ghi được file thì node lỗi để n8n hiển thị execution thất bại.\n */\nconst fs = require('fs');\nconst path = require('path');\n\nconst procCwd = (() => { try { return require('process').cwd(); } catch (_) { return ''; } })();\nconst root = ($env && $env.AGENT_WORKSPACE_DIR) || procCwd;\nif (!root) {\n  throw new Error('Không xác định được thư mục gốc dự án (AGENT_WORKSPACE_DIR) để ghi .n8n-errors.log');\n}\n\nconst item = $input.first().json || {};\nconst entry = {\n  timestamp: item.timestamp || new Date().toISOString(),\n  workflowName: item.workflowName || 'Unknown Workflow',\n  workflowId: item.workflowId || 'N/A',\n  failedNode: item.failedNode || 'Unknown Node',\n  errorMessage: item.errorMessage || 'Không có chi tiết lỗi',\n  executionId: item.executionId || 'N/A'\n};\n\nconst logDir = path.join(root, 'workspace');\nconst logFile = path.join(logDir, '.n8n-errors.log');\nfs.mkdirSync(logDir, { recursive: true });\nfs.appendFileSync(logFile, JSON.stringify(entry) + '\\n', 'utf8');\n\nreturn [{ json: { ...item, logFile } }];\n"
       },
       "id": "3",
-      "name": "Send Alert to Mattermost",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "name": "Write Error Log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         700,
         300
-      ],
-      "onError": "continueRegularOutput"
+      ]
     }
   ],
   "connections": {
@@ -71,7 +56,7 @@
       "main": [
         [
           {
-            "node": "Send Alert to Mattermost",
+            "node": "Write Error Log",
             "type": "main",
             "index": 0
           }

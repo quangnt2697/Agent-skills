@@ -316,7 +316,7 @@ Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App, kíc
    ```
 
 3. **Cập nhật Jira description & Dán trực tiếp ảnh Mockup vào Description:**
-   - **Ưu tiên 1 (n8n Fast-Path - Tức thời & đồng bộ Mattermost):**
+   - **Ưu tiên 1 (n8n Fast-Path - Tức thời):**
      ```bash
      node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js pushSpecToJira {issueKey} "workspace/issues/{issueKey}/spec/refined.md"
      ```

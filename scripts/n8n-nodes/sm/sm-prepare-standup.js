@@ -2,14 +2,14 @@ const input = $input.first();
 const json = (input && input.json) || {};
 const body = json.body || json;
 
-let triggerSource = 'mattermost';
+let triggerSource = 'internal';
 try {
   const trigNode = $('Webhook Trigger (sm-standup)').first();
   if (trigNode && trigNode.json && Object.keys(trigNode.json).length > 0) {
     triggerSource = 'webhook';
   }
 } catch (e) {
-  triggerSource = 'mattermost';
+  triggerSource = 'internal';
 }
 
 const baseUrl = (body.baseUrl || json.baseUrl || ($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');

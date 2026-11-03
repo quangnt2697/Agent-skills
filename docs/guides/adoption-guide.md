@@ -63,7 +63,7 @@ Jira / Confluence               Checklist, BDD & Auto Test       Review, Securit
 - **Kỹ năng cốt lõi:** `sm-sprint-planning`, `sm-daily-standup`, `sm-impediment-triage`, `sm-sprint-retrospective`.
 - **Quy trình chuẩn:**
   1. Đầu chu kỳ Sprint, chạy `/sm-sprint-planning` để tính toán năng lực đội ngũ (Velocity) và lập kế hoạch Sprint (`workspace/sprints/{sprintId}/tech/sprint-plan.md`).
-  2. Hằng ngày, chạy `/sm-daily-standup` để tự động thống kê tiến độ từ Jira, phân tích cân bằng tải và gửi báo cáo qua Mattermost.
+  2. Hằng ngày, chạy `/sm-daily-standup` để tự động thống kê tiến độ từ Jira, phân tích cân bằng tải và lưu báo cáo vào `workspace/sprints/{sprintId}/trace/`.
   3. Định kỳ chạy `/sm-impediment-triage` để phát hiện sớm các ticket bị treo lâu ngày (bottlenecks/blockers) và đề xuất phương án gỡ rối.
   4. Cuối Sprint, chạy `/sm-sprint-retrospective` để tổng kết chỉ số hoàn thành và đúc kết bài học cải tiến.
 

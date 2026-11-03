@@ -135,7 +135,7 @@ trigger: <Điều kiện kích hoạt cụ thể khi user yêu cầu X, chạy l
 - **Output:** `<Định dạng kết quả đầu ra mẫu>`
 ```
 
-> 📌 **Lưu ý về `disable-auto-invoke: true`:** Nếu skill có tác dụng phụ ghi lên hệ thống bên ngoài (push Jira, push Squash TM, pull/sync Git, gửi Mattermost), bắt buộc thêm dòng `disable-auto-invoke: true` vào YAML frontmatter.
+> 📌 **Lưu ý về `disable-auto-invoke: true`:** Nếu skill có tác dụng phụ ghi lên hệ thống bên ngoài (push Jira, push Squash TM, pull/sync Git), bắt buộc thêm dòng `disable-auto-invoke: true` vào YAML frontmatter.
 
 ---
 

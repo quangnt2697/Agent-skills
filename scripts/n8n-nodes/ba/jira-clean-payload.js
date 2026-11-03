@@ -4,8 +4,8 @@ const path = require('path');
 const input = $input.first();
 const json = (input && input.json) || {};
 
-// 1. Nhận diện nguồn gọi (Webhook Fast-Path vs Mattermost Router)
-let triggerSource = 'mattermost';
+// 1. Nhận diện nguồn gọi (Webhook Fast-Path vs gọi nội bộ/sub-workflow)
+let triggerSource = 'internal';
 let reqIssueKey = '';
 let targetProject = '';
 let userName = 'User';
@@ -16,7 +16,7 @@ try {
     reqIssueKey = prepNode.json.issueKey || '';
     targetProject = prepNode.json.project || '';
     userName = prepNode.json.userName || 'User';
-    triggerSource = prepNode.json._triggerSource || 'mattermost';
+    triggerSource = prepNode.json._triggerSource || 'internal';
   }
 } catch (e) {}
 
@@ -37,7 +37,7 @@ if (!reqIssueKey) {
   try {
     const trigExec = $('Execute Workflow Trigger').first();
     if (trigExec && trigExec.json) {
-      triggerSource = 'mattermost';
+      triggerSource = 'internal';
       const b = trigExec.json.body?.params || trigExec.json.body || trigExec.json.params || trigExec.json;
       reqIssueKey = b.issueKey || '';
       targetProject = b.project || '';
@@ -721,7 +721,7 @@ try {
   }
 } catch (_) {}
 
-// 6. Xây dựng thẻ báo cáo Markdown chi tiết cho Mattermost & Slack
+// 6. Xây dựng thẻ báo cáo Markdown chi tiết (dùng cho trace/báo cáo)
 const jiraUrl = `${baseUrl}/browse/${issueKey}`;
 
 let localStatusText = '⚠️ *Chưa tìm thấy workspace local* (👉 Chạy `/ba-spec` hoặc `/ba-refine` để khởi tạo)';

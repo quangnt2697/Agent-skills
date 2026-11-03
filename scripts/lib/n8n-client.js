@@ -245,7 +245,7 @@ export async function runSecurityDigest(projectPath = '', options = {}) {
 }
 
 /**
- * Fast-Path: Nhận/xử lý sự kiện chuyển trạng thái Jira Ready To Test (WF-11, routing theo NOTIFY_CHANNEL)
+ * Fast-Path: Nhận/xử lý sự kiện chuyển trạng thái Jira Ready To Test (WF-11)
  * @param {object} payload Dữ liệu Jira Webhook hoặc test payload
  * @param {object} [options] { timeoutMs: number }
  * @returns {Promise<object>}

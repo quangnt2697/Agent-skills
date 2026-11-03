@@ -70,7 +70,7 @@ Kỹ năng `repo-group-sync` tự động hóa việc đồng bộ mã nguồn a
 ```
 
 ### Bước 1: Tra Cứu Alias & Định Vị Repository
-Phân tích tham số người dùng truyền vào (hoặc directive từ Mattermost):
+Phân tích tham số người dùng truyền vào:
 - Nếu có cờ `-p <tên>`, tra cứu trong `projects.json`.
 - Nếu alias trỏ tới một git repository cụ thể (chứa thư mục `.git`): Chọn duy nhất repo đó.
 - Nếu alias trỏ tới một thư mục cha chứa nhiều repo con (ví dụ folder `3.1`): Quét và thu thập toàn bộ các git repository con bên trong.
@@ -102,7 +102,7 @@ Tại từng repository mục tiêu:
 ### Bước 5: Báo Cáo Kết Quả Chi Tiết
 Xuất bảng tổng hợp Markdown đầy đủ các cột: Repository, Nhánh Đồng Bộ, Trạng Thái, Delta, Commit SHA, Thời gian thực thi và Chi tiết/Ghi chú (bao gồm chi tiết từng nhánh và thông báo reset nếu có).
 
-## Cú pháp & Hệ thống Cờ (CLI & Mattermost)
+## Cú pháp & Hệ thống Cờ (CLI)
 
 Kỹ năng hỗ trợ trọn bộ cú pháp cờ tương thích:
 
@@ -123,7 +123,6 @@ Kỹ năng hỗ trợ trọn bộ cú pháp cờ tương thích:
 - `/sync -p 3.1`
 - `/sync -p backend --stash`
 - CLI: `npm run sync -- -p order-service`
-- Mattermost: `/agent sync -p order-service`
 
 ## Những lời Biện minh Thường gặp
 

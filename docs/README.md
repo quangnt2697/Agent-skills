@@ -23,7 +23,7 @@ Cẩm nang áp dụng Agent Skills vào quy trình thực tế của đội ngũ
 Chi tiết về **6 Agent Personas** và sự phân tách giữa 3 tầng (*Persona — Skill — Slash Command*):
 - **BA/PO (`ba-po`):** Phân tích yêu cầu, mài giũa ý tưởng, dựng sơ đồ Editorial & Prod-Twin UI Mockup (10 skills).
 - **QA/SDET (`qa`):** Thiết kế Checklist BVA + Gherkin, sinh code Automation POM, chạy test & đồng bộ Squash TM (6 skills).
-- **Scrum Master (`scrum-master`):** Lập kế hoạch Sprint, Daily Standup Mattermost, xử lý điểm nghẽn, tổng kết Sprint (4 skills).
+- **Scrum Master (`scrum-master`):** Lập kế hoạch Sprint, Daily Standup (lưu báo cáo vào `trace/`), xử lý điểm nghẽn, tổng kết Sprint (4 skills).
 - **Code Reviewer (`code-reviewer`):** Đánh giá code đa chiều 5 trục và đơn giản hóa mã nguồn (2 skills).
 - **Security Auditor (`security-auditor`):** Kiểm toán an ninh mã nguồn theo OWASP Top 10 & Supply-chain (`security-code-audit`).
 - **Web Performance Auditor (`web-performance-auditor`):** Đo lường và tối ưu Core Web Vitals (`webperf-core-vitals`).

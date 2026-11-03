@@ -38,7 +38,7 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 | `/webhook/security-scan` | `POST` | Security | Quét ngầm npm audit và rà soát secrets rò rỉ | `{"projectPath": "..."}` | `{"securityStatus", "vulnerabilities", "scorecardMarkdown"}` |
 | `/webhook/securities-rule-matrix` | `POST` | QA | Lấy ma trận loại lệnh hợp lệ và bảng Examples tham số hóa đa sàn | `{"marketId": "STO", "boardId": "G1", "symbol": "SSI", "adminStatus": "CR"}` | `{"allowedOrders", "disallowedOrders", "isMtlFiltered", "multiSymbolExamples"}` |
 | `/webhook/qa-domain-lint` | `POST` | QA | Kiểm định kịch bản Gherkin (.feature) tuân thủ quy tắc nghiệp vụ chứng khoán | `{"issueKey": "STK-100", "gherkinContent": "..."}` | `{"valid", "errorCount", "errors", "warnings", "checkedRules"}` |
-| `/webhook/sm-standup` | `POST` | Scrum Master | Lấy báo cáo Standup tiến độ Sprint để lưu file trace/ (Mattermost tùy chọn) | `{}` | `{"reportText", "totalIssues", "stuckCount"}` |
+| `/webhook/sm-standup` | `POST` | Scrum Master | Lấy báo cáo Standup tiến độ Sprint để lưu file trace/ | `{}` | `{"reportText", "totalIssues", "stuckCount"}` |
 
 ---
 
@@ -134,11 +134,11 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
   // Trích xuất CVEs High/Critical và cảnh báo rò rỉ secret nhạy cảm.
   ```
 
-### 3.5. Phân Hệ Scrum Master & Kênh Thông Báo (Tách Bạch Fast-Path & ChatOps)
-Hệ thống mặc định vận hành theo cơ chế **Fast-Path cục bộ** (`NOTIFY_CHANNEL=none`), xuất báo cáo ra `workspace/sprints/{sprintId}/trace/daily-standup-report.md`. Tích hợp Mattermost là tùy chọn mở rộng khi `NOTIFY_CHANNEL=mattermost`:
-- **Báo cáo Standup:** Fast-Path n8n phân tích vé Jira kẹt > 3 ngày, tiến độ Story Points và cân bằng tải, trả dữ liệu markdown cho Skill lưu vào trace/. Nếu `NOTIFY_CHANNEL=mattermost`, n8n sẽ chuyển tiếp tin nhắn qua webhook Mattermost.
-- **Jira Ready to Test Handler:** Lắng nghe/xử lý Webhook Jira lọc task Board G.3.1 trong Active Sprint chuyển sang Ready to test, quét workspace local báo `✅/❌ Gherkin file` và `✅/❌ Autoscript test`, gửi card `### 🎯 READY TO TEST` kèm gợi ý lệnh.
-- **ChatOps Single Router (Tùy chọn):** Khi cần điều hành từ xa qua Mattermost, Slash Command `/agent` gửi payload tới n8n router để điều phối thực thi. Mặc định router này ở trạng thái inactive khi chưa bật ChatOps.
+### 3.5. Phân Hệ Scrum Master & Báo Cáo
+Hệ thống vận hành theo cơ chế **Fast-Path cục bộ**: n8n trả dữ liệu cho skill, skill xuất báo cáo ra `workspace/sprints/{sprintId}/trace/daily-standup-report.md`. Không có kênh chat nào được n8n tự gửi.
+- **Báo cáo Standup:** Fast-Path n8n phân tích vé Jira kẹt > 3 ngày, tiến độ Story Points và cân bằng tải, trả dữ liệu markdown cho Skill lưu vào trace/.
+- **Jira Ready to Test Handler:** Lắng nghe/xử lý Webhook Jira lọc task Board G.3.1 trong Active Sprint chuyển sang Ready to test, quét workspace local báo `✅/❌ Gherkin file` và `✅/❌ Autoscript test`, trả card `### 🎯 READY TO TEST` kèm gợi ý lệnh cho caller.
+- **Lỗi workflow:** `Global Error Handler` ghi mỗi lỗi thành 1 dòng JSON vào `workspace/.n8n-errors.log` (đã `.gitignore` nhờ `/workspace/`). Node ghi log không nuốt lỗi: nếu không ghi được file, execution báo thất bại.
 
 ---
 
@@ -176,50 +176,8 @@ Hệ thống mặc định vận hành theo cơ chế **Fast-Path cục bộ** (
 
 ---
 
-## 6. Chiến Lược Sử Dụng AI Model (Gemini) trên n8n
+## 6. AI Model trên n8n
 
-Dự án tích hợp mô hình **AI Studio (Antigravity & Gemini Flash)** trực tiếp vào các luồng workflow của n8n qua node HTTP Request gọi Google AI Studio API:
+Hiện không workflow nào gọi AI Model (luồng phân loại intent của router đã được gỡ cùng với tích hợp Mattermost). `GEMINI_API_KEY` và `GEMINI_FLASH_MODEL` trong `.env.example` chỉ còn là tùy chọn cho các tác vụ tóm tắt khi cần.
 
-**Endpoint chuẩn hóa (hỗ trợ biến môi trường & fallback):**
-```
-https://generativelanguage.googleapis.com/v1beta/models/{{ $env.GEMINI_AGENT_MODEL || 'antigravity' }}:generateContent?key={{ $env.GEMINI_API_KEY }}
-```
-
-1. **AI Intent Recognition (Fuzzy Matching):**
-   - Áp dụng tại luồng Single Router (Mattermost). Thay vì match text cứng nhắc, n8n đẩy câu lệnh của người dùng (VD: *"chạy giùm test vé G3PTP-17059"*) vào AI Model.
-   - Trả về JSON chuẩn: `{"intent": "test", "params": {"issueKey": "G3PTP-17059"}}`.
-   - Dùng `system_instruction` + `responseMimeType: "application/json"` để đảm bảo output là JSON thuần túy (không cần regex cleanup).
-2. **Help Menu & Mattermost Message Attachments:**
-   - Nếu AI nhận diện ý định là "hỏi đáp / danh sách lệnh", n8n tự động chặn luồng gọi terminal và trả về tin nhắn Mattermost.
-3. **Phân tầng Model Quotas & Fallback (HTTP 429):**
-   - **Mặc định:** `GEMINI_AGENT_MODEL=antigravity` (tốc độ cao, tối ưu phân loại intent và xử lý nhanh context).
-   - **Cơ chế Fallback (HTTP 429):** Khi gặp lỗi Rate Limit hoặc Quota Exceeded (HTTP 429), workflow tự động chuyển sang mô hình dự phòng `GEMINI_FLASH_MODEL` (mặc định: `gemini-2.0-flash` hoặc `gemini-2.5-flash`) để duy trì tính sẵn sàng liên tục của dịch vụ.
-
-> 📖 **Hướng dẫn chi tiết kết nối + test:** `docs/guides/installation-guide.md`
-
----
-
-## 7. Cấu Hình Tùy Chọn: Mattermost + Slash Command `/agent`
-
-> ℹ️ **Lưu ý:** Phần này là tùy chọn mở rộng. Mặc định dự án không yêu cầu Mattermost hay ngrok tunnel.
-> 📖 **Xem hướng dẫn chi tiết tại:** `docs/guides/installation-guide.md` (Giai đoạn 3: Tích hợp ChatOps Mattermost)
-
-Tóm tắt nhanh:
-
-1. **Incoming Webhook** (n8n → Mattermost):
-   ```env
-   MATTERMOST_WEBHOOK_URL=https://your-mattermost.com/hooks/xxx-yyy-zzz
-   ```
-   Dùng trong n8n: `{{ $env.MATTERMOST_WEBHOOK_URL }}`
-
-2. **Slash Command** `/agent` (Mattermost → n8n):
-   - Request URL: `https://<tunnel-url>/webhook/mattermost-router`
-   - Method: `POST`
-   - Xem `docs/guides/installation-guide.md` để biết cách tạo.
-
-3. **n8n Tunnel** (khi Mattermost Cloud hoặc khác mạng nội bộ):
-   ```bash
-   npm run n8n -- --tunnel    # Built-in tunnel, URL thay đổi mỗi lần restart
-   # Hoặc dùng ngrok/Cloudflare Tunnel cho URL cố định
-   ```
-   Xem `docs/guides/installation-guide.md` để biết chi tiết.
+> 📖 **Hướng dẫn cài đặt:** `docs/guides/installation-guide.md`
