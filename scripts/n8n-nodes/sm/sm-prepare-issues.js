@@ -11,7 +11,7 @@ if (!sprints || sprints.length === 0) {
   return [{
     json: {
       isError: true,
-      error: 'Không tìm thấy Sprint đang hoạt động trên Board 61',
+      error: 'Không tìm thấy Sprint đang hoạt động trên Board G3.1',
       reportText: `🚨 **[Lỗi Báo Cáo Daily Standup]** Không tìm thấy Sprint đang hoạt động (active) trên Board 61 (G.3.1).\n> Vui lòng kiểm tra lại trạng thái Sprint tại: ${baseUrl}/jira/software/c/projects/G3PTP/boards/61/backlog`,
       totalIssues: 0,
       stuckCount: 0,

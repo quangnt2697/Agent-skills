@@ -31,7 +31,8 @@ if (prepIssuesNode.isError || json.error || json.errorMessages || (json.message 
 
 // Đọc cấu hình team từ sm-config.yaml
 let team = [
-  { name: "Phan Hữu Thắng", role: "Developer APP" },
+  { name: "Nguyễn Văn Tuyền", role: "Developer Mobile" },
+  { name: "Phan Hữu Thắng", role: "Developer Mobile" },
   { name: "Lương Tuấn Linh", role: "Developer WEB" },
   { name: "Trịnh Quốc Đạt", role: "Developer Backend" },
   { name: "Nguyễn Thành Sơn", role: "Developer Backend" },
@@ -40,6 +41,12 @@ let team = [
   { name: "Nguyễn Thanh Quang", role: "QA" },
   { name: "Nguyễn Trung Hiếu", role: "PO" }
 ];
+
+let stuckDaysThreshold = 4;
+if ($env && $env.STANDUP_STUCK_DAYS_THRESHOLD) {
+  const parsed = parseInt($env.STANDUP_STUCK_DAYS_THRESHOLD, 10);
+  if (!isNaN(parsed) && parsed > 0) stuckDaysThreshold = parsed;
+}
 
 try {
   let wsDir = ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills';
@@ -56,6 +63,10 @@ try {
   const configPath = configCandidates.find(p => fs.existsSync(p)) || null;
   if (configPath) {
     const rawYaml = fs.readFileSync(configPath, 'utf8');
+    const stuckMatch = rawYaml.match(/stuck_days_threshold:\s*(\d+)/);
+    if (stuckMatch) {
+      stuckDaysThreshold = parseInt(stuckMatch[1], 10);
+    }
     // Simple YAML parser cho team list
     const teamMatches = rawYaml.match(/- name:\s*"([^"]+)"\s*\n\s*role:\s*"([^"]+)"/g);
     if (teamMatches && teamMatches.length > 0) {
@@ -156,8 +167,8 @@ for (const issue of issues) {
     openIssues.push(issueItem);
   }
 
-  // Cảnh báo ticket bị treo (> 3 ngày) và chưa Done
-  if (!isDone && daysInStatus >= 3) {
+  // Cảnh báo ticket bị treo (> stuckDaysThreshold ngày, ví dụ > 4 ngày) và chưa Done
+  if (!isDone && daysInStatus > stuckDaysThreshold) {
     stuckIssues.push({
       ...issueItem,
       level: daysInStatus > 7 ? '🔴 Nghiêm trọng' : '🟡 Cảnh báo'
@@ -167,7 +178,7 @@ for (const issue of issues) {
   // Cập nhật workload cho active tickets (chưa Done)
   if (!isDone && assignee !== 'Chưa phân bổ') {
     if (!memberStats[assignee]) {
-      memberStats[assignee] = { tickets: 0, sp: 0, inProgress: 0, role: 'Thành viên khác' };
+      memberStats[assignee] = { tickets: 0, sp: 0, inProgress: 0, role: 'Khác' };
     }
     memberStats[assignee].tickets += 1;
     memberStats[assignee].sp = Math.round((memberStats[assignee].sp + sp) * 10) / 10;
@@ -187,8 +198,8 @@ const shortRole = (role) => {
   return role.replace(/^Developer\s+/i, '').replace(/Backend/i, 'BE').replace(/WEB/i, 'Web').replace(/APP/i, 'App');
 };
 
-let reportText = `### ☀️ DAILY STANDUP — [${sprintName}](${boardUrl}) (${dateStr})\n`;
-reportText += `> 📌 Group 3.1 ᐧ **Sprint ID:** \`${sprintId}\`\n\n`;
+let reportText = `### ☀️ DAILY STANDUP G3.1\n`;
+reportText += `> 📌 ${dateStr} - [${sprintName}](${boardUrl})\n\n`;
 
 // 1. Tóm tắt tiến độ & trạng thái
 reportText += `- 📈 **Tiến độ:** **${doneIssues.length}/${totalIssues}** issues (${donePct}%) ᐧ **${completedPoints}/${committedPoints} SP** (${spPct}%)\n`;
@@ -225,17 +236,20 @@ if (activeMembers.length > 0) {
   reportText += `\n`;
 }
 
-// 3. Cảnh Báo Ticket Bị Treo (> 3 ngày) - Rút gọn dạng list
+// 3. Bảng Cảnh Báo Ticket Bị Treo (> stuckDaysThreshold ngày)
 if (stuckIssues.length > 0) {
-  reportText += `#### 🚨 Cảnh Báo Treo (> 3 ngày)\n`;
-  for (const s of stuckIssues) {
+  const sortedStuck = [...stuckIssues].sort((a, b) => b.days - a.days);
+  reportText += `#### 🚨 Cảnh Báo Treo (> ${stuckDaysThreshold} ngày)\n`;
+  reportText += `| Ticket | Tiêu đề | Thành viên | Treo | Mức độ |\n`;
+  reportText += `| :--- | :--- | :--- | :---: | :--- |\n`;
+  for (const s of sortedStuck) {
     const jiraLink = `[${s.key}](${baseUrl}/browse/${s.key})`;
-    const shortTitle = s.title.length > 40 ? s.title.slice(0, 40) + '...' : s.title;
-    reportText += `- ${jiraLink} ${shortTitle} (👤 **${s.assignee}** ᐧ ⏳ **${s.days} ngày** ᐧ ${s.level})\n`;
+    const fullTitle = s.title.replace(/\|/g, '/').replace(/\s+/g, ' ').trim();
+    reportText += `| ${jiraLink} | ${fullTitle} | **${s.assignee}** | **${s.days} ngày** | ${s.level} |\n`;
   }
   reportText += `\n`;
 } else {
-  reportText += `> ✅ **Không có ticket nào bị treo quá 3 ngày.**\n\n`;
+  reportText += `> ✅ **Không có ticket nào bị treo quá ${stuckDaysThreshold} ngày.**\n\n`;
 }
 
 return [{
