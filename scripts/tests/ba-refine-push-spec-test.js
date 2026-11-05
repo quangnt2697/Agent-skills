@@ -171,14 +171,14 @@ test('splits a document into md and table blocks in order', () => {
 
 // --- Template ------------------------------------------------------------------
 
-test('the shipped template converts with all three of its tables intact', () => {
+test('the shipped template converts with both of its tables intact (no UI Delta table in template)', () => {
   const templatePath = path.join(
     __dirname, '..', '..', 'plugins', 'ba-po', 'skills', 'ba-refine', 'assets', 'jira-description-template.md',
   );
   const doc = markdownToAdf(fs.readFileSync(templatePath, 'utf8'));
 
-  // 3 bảng: Success Metrics, Tracking, và Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)
-  assert.strictEqual(doc.content.filter(n => n.type === 'table').length, 3);
+  // 2 bảng: Success Metrics và Tracking (Mục UI Design / Mockup chỉ chứa ảnh mockup, không có bảng ghi chú)
+  assert.strictEqual(doc.content.filter(n => n.type === 'table').length, 2);
 });
 
 test('the shipped template carries no leftover meta text', () => {
@@ -267,13 +267,12 @@ test('splitBlocks identifies markdown image line as image block', () => {
   assert.strictEqual(blocks[2].type, 'md');
 });
 
-test('markdownToAdf converts markdown image into mediaSingle ADF node with attachment id', () => {
+test('markdownToAdf converts markdown image into mediaSingle ADF node with attachment url or id', () => {
   const md = '![Case 1: Thao tác chính](mockup-case-1.png)';
   const attachmentMap = {
     'mockup-case-1.png': {
       id: '99881',
       filename: 'mockup-case-1.png',
-      content: 'https://jira.example.com/attachments/99881',
     },
   };
 

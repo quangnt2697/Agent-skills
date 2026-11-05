@@ -13,7 +13,7 @@
  * - GATE-AC-02:   Nghiêm cấm tiền tố hoặc hậu tố [AC-x.y] / [AC] trong phần Acceptance Criteria
  * - GATE-AC-03:   Tối thiểu ≥ 3 Scenarios có Given/When/Then và tuân thủ phân loại (`Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
  * - GATE-TECH-01: Bộ lọc chống kỹ thuật (Zero Technical Noise: cấm SQL, DB type, HTTP endpoint, `Technical Notes`)
- * - GATE-UI-01:   Kiểm tra Task UI (`asis-inventory.md`, `Fidelity Score: >= 90%`, ảnh `mockup-case-*.png`)
+ * - GATE-UI-01:   Kiểm tra Mục `## 🎨 UI Design / Mockup`: chỉ sử dụng ảnh mockup (`![...](...)`), cấm mô tả design bằng text hay ghi chú thêm; kiểm định `asis-inventory.md` và `validate-mockup-fidelity.js` khi là UI task.
  */
 
 import fs from 'node:fs';
@@ -112,7 +112,7 @@ export function validateRefinedSpec(filePath, options = {}) {
     }
   }
 
-  // GATE-AC-01, GATE-AC-02, GATE-AC-03: Kiểm tra khối Gherkin (quét mọi khối ```gherkin kể cả khi đặt sai tên heading)
+  // GATE-AC-01, GATE-AC-02, GATE-AC-03: Kiểm tra khối Gherkin
   const gherkinMatch = content.match(/```gherkin([\s\S]*?)```/i);
   if (!gherkinMatch) {
     errors.push('[GATE-AC-03] Acceptance Criteria bắt buộc phải được đặt trong codeblock ```gherkin ... ```');
@@ -176,7 +176,28 @@ export function validateRefinedSpec(filePath, options = {}) {
     }
   });
 
-  // GATE-UI-01: Kiểm tra UI Task nếu được chỉ định
+  // GATE-UI-01: Kiểm tra mục ## 🎨 UI Design / Mockup (Chỉ sử dụng ảnh mockup, không mô tả bằng text, không ghi chú gì thêm)
+  const uiSectionMatch = content.match(/(?:^|\n)##\s*(?:🎨\s*)?UI Design\s*\/\s*Mockup[^\n]*\n([\s\S]*?)(?=\n##\s|$)/i);
+  if (uiSectionMatch) {
+    const uiBodyClean = uiSectionMatch[1].replace(/<!--[\s\S]*?-->/g, '').trim();
+    const uiNonEmptyLines = uiBodyClean.split('\n').map(l => l.trim()).filter(Boolean);
+
+    const isBackendNA = uiNonEmptyLines.length === 1 && /^N\/A\b/i.test(uiNonEmptyLines[0]);
+    if (!isBackendNA) {
+      const imageLines = uiNonEmptyLines.filter(l => /^!\[[^\]]*\]\([^)]+\)$/.test(l));
+      const nonImageLines = uiNonEmptyLines.filter(l => !/^!\[[^\]]*\]\([^)]+\)$/.test(l));
+
+      if (imageLines.length === 0) {
+        errors.push('[GATE-UI-01] Mục `## 🎨 UI Design / Mockup` bắt buộc phải nhúng ảnh mockup (`![...](...)`) hoặc ghi `N/A` nếu là task backend.');
+      }
+
+      if (nonImageLines.length > 0) {
+        errors.push(`[GATE-UI-01] Mục \`## 🎨 UI Design / Mockup\` chỉ được phép chứa ảnh mockup, TUYỆT ĐỐI KHÔNG mô tả design bằng text hoặc ghi chú thêm. Phát hiện dòng dư thừa: "${nonImageLines[0]}"`);
+      }
+    }
+  }
+
+  // Kiểm tra nâng cao khi truyền cờ --ui (isUiTask)
   if (options.isUiTask) {
     const asisPath = path.join(specDir, 'asis-inventory.md');
     const asisJsonPath = path.join(specDir, 'asis-inventory.json');
@@ -190,7 +211,6 @@ export function validateRefinedSpec(filePath, options = {}) {
       warnings.push(`[GATE-UI-01] Chưa tìm thấy file ${asisJsonPath} sinh từ ba-design-mockup.`);
     }
 
-    // Nếu có file mockup.html, chạy trực tiếp hàm kiểm định Fidelity
     if (fs.existsSync(mockupHtmlPath)) {
       const fidelityRes = validateMockupFidelity(mockupHtmlPath, fs.existsSync(asisJsonPath) ? asisJsonPath : '');
       if (!fidelityRes.valid) {
@@ -205,11 +225,6 @@ export function validateRefinedSpec(filePath, options = {}) {
       }
     }
 
-    if (!/Fidelity Score\s*:\s*([9][0-9]|100)%/i.test(content)) {
-      errors.push('[GATE-UI-01] Bắt buộc ghi nhận Fidelity Score >= 90% trong Mục UI Design / Mockup (kiểm định qua validate-mockup-fidelity.js).');
-    }
-
-    // Khi ở giai đoạn chuẩn bị push Jira (stage === 'push' hoặc options.isPushStage), kiểm tra đủ ảnh đa case
     if (options.stage === 'push' || options.isPushStage) {
       const diagramsDir = path.dirname(mockupHtmlPath);
       const case1Png = path.join(diagramsDir, 'mockup-case-1.png');
@@ -219,7 +234,7 @@ export function validateRefinedSpec(filePath, options = {}) {
 
       const hasCaseImages = fs.existsSync(case1Png) && fs.existsSync(case2Png) && fs.existsSync(case3Png);
       if (!hasCaseImages && !fs.existsSync(mainPng)) {
-        errors.push(`[GATE-UI-01] Chưa tìm thấy ảnh render mockup đa trạng thái (mockup-case-1.png, mockup-case-2.png, mockup-case-3.png) trong ${diagramsDir}. Hãy chạy render-mockup.js fit 2 all.`);
+        errors.push(`[GATE-UI-01] Chưa tìm thấy ảnh render mockup trong ${diagramsDir}. Hãy chạy render-mockup.js.`);
       }
     }
   }
