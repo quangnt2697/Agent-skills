@@ -7,16 +7,16 @@
   },
   "guardrails": {
     "strict_ui_rules": [
-      "1. CẤM tự viết inline CSS sáng tạo layout tự do. BẮT BUỘC lắp ghép từ các component chuẩn đã khai báo.",
-      "2. BẮT BUỘC áp dụng cơ chế Delta-Only: Giữ nguyên khung màn hình gốc (as-is, opacity: 0.75) và chỉ làm nổi bật phần thay đổi ([data-change='added|modified|removed']) kèm Huy hiệu đánh số ① ② ③.",
-      "3. Tên nhãn, button, dropdown BẮT BUỘC dùng đúng thuật ngữ tiếng Việt đang có trong screens của dự án (tra cứu bên dưới).",
-      "4. Bảng màu chứng khoán: Tím #c80096 (Trần), Xanh sàn #00ced1 (Sàn), Vàng #f5a623 (TC), Xanh lá #00d084 (Tăng), Đỏ #ff4d4f (Giảm)."
+      "1. Thiết kế đúng theo phong cách có sẵn của web/mobile được cung cấp qua codebase hoặc link trực tiếp (tuyệt đối không tự suy diễn layout/style).",
+      "2. Độ phân giải tối thiểu cho Web/Desktop là Full HD (1920x1080). Bắt buộc review ảnh sau khi render để đảm bảo không bị vỡ layout.",
+      "3. Trong mockup chỉ thiết kế đúng các yêu cầu của task và highlight vào phần được thiết kế mới/sửa đổi ([data-change='added|modified']) để client dễ nhận ra; TUYỆT ĐỐI KHÔNG thiết kế các ghi chú, huy hiệu ① ② ③ hay bảng UI Delta Mapping cho QA/BA.",
+      "4. Bảng màu chứng khoán chuẩn: Tím #c80096 (Trần), Xanh sàn #00ced1 (Sàn), Vàng #f5a623 (TC), Xanh lá #00d084 (Tăng), Đỏ #ff4d4f (Giảm)."
     ],
     "delta_syntax": {
-      "as_is_element": "class=\"as-is-context\" hoặc data-ui=\"as-is\" (Hiển thị mờ nhẹ làm nền ngữ cảnh)",
-      "added_element": "data-change=\"added\" kèm <span class=\"delta-badge\">①</span> (Viền xanh viền nổi bật)",
-      "modified_element": "data-change=\"modified\" kèm <span class=\"delta-badge\">②</span> (Viền vàng cam nổi bật)",
-      "removed_element": "data-change=\"removed\" kèm <span class=\"delta-badge\">③</span> (Gạch ngang mờ đỏ)"
+      "as_is_element": "class=\"as-is-context\" hoặc data-ui=\"as-is\" (Giữ nguyên giao diện gốc)",
+      "added_element": "data-change=\"added\" (Viền xanh highlight nổi bật phần thiết kế mới cho client)",
+      "modified_element": "data-change=\"modified\" (Viền vàng cam highlight nổi bật phần sửa đổi cho client)",
+      "removed_element": "data-change=\"removed\" (Viền đỏ đánh dấu phần loại bỏ)"
     }
   },
   "discovery_helpers": {

@@ -13,7 +13,7 @@ disable-auto-invoke: true
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** `issueKey` Jira và ý tưởng thô; metadata Jira lấy qua n8n (`prepJiraContext`). Thiếu input thì dừng và hỏi lại, không tự điền.
-- **Bằng chứng hoàn thành:** File `refined.md`/`final.md` tồn tại; chỉ báo đã đẩy Jira khi nhận phản hồi HTTP thật; không dựng mockup khi chưa có `spec/asis-inventory.md`.
+- **Bằng chứng hoàn thành:** File `refined.md`/`final.md` tồn tại; chỉ báo đã đẩy Jira khi nhận phản hồi HTTP thật; không dựng mockup khi chưa có `spec/asis-inventory.md` hoặc snapshot từ link/codebase.
 
 Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần túy theo tư duy nghiệp vụ (Zero Technical Noise) → Push lại lên Jira theo cấu trúc chuẩn và xuất bản `spec/final.md`.
 
@@ -24,8 +24,8 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 | Tải và phân tích Jira task, Confluence, attachments | Viết code, test script, SQL, API contract |
 | Khai phóng ý tưởng theo 5 chiều nghiệp vụ cốt lõi | Bàn luận kiến trúc hệ thống, microservices, DB Schema |
 | Stress-test xung đột quy tắc nghiệp vụ và phiên giao dịch | Viết JSON payload mẫu (camelCase, snake_case) |
-| Viết `refined.md` 5 phần chuẩn Jira thuần nghiệp vụ (kèm Mục UI khi có thay đổi màn hình) & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
-| Xuất bản `spec/final.md` chuẩn hóa bàn giao cho DEV & QA | Tự ý thiết kế bừa, lệch khỏi `ui-component-map.json` |
+| Viết `refined.md` 5 phần chuẩn Jira thuần nghiệp vụ (kèm ảnh Mockup trong mục UI khi có thay đổi màn hình) & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
+| Xuất bản `spec/final.md` chuẩn hóa bàn giao cho DEV & QA | Tự suy diễn giao diện/phong cách hoặc viết mô tả design bằng text trong mục UI |
 
 ### 🛡️ Bảng Ranh giới Ngôn ngữ Bất biến (Strict Business-Only Guardrail)
 
@@ -50,7 +50,7 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 | Gate | Vị trí | Hành động bắt buộc |
 |---|---|---|
 | **Gate 1** | Cuối Phase 0 | Trình bảng tài liệu → **DỪNG chờ user gõ OK** |
-| **Gate 2** | Bước 3.2 | Trình đồng thời: Toàn bộ draft 5 phần chuẩn Jira + Ảnh `mockup.png` + Bảng chú thích UI Delta ① ② ③ → **DỪNG chờ user approve** trước khi lưu `refined.md` |
+| **Gate 2** | Bước 3.2 | Trình đồng thời: Toàn bộ draft 5 phần chuẩn Jira (trong đó mục `## 🎨 UI Design / Mockup` chỉ nhúng ảnh mockup đã highlight phần thiết kế mới, không mô tả bằng text) → **DỪNG chờ user approve** trước khi lưu `refined.md` |
 
 ## 2. Quy trình 4 Giai đoạn Theo Tư Duy Nghiệp Vụ
 
@@ -61,11 +61,11 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
   - **Trích xuất từ khóa từ Tiêu đề Task (Summary):** Tự động bóc tách từ khóa nghiệp vụ (loại bỏ prefix `[WEB]`, `[APP]` và stopwords) để tìm kiếm các task Jira và trang Confluence liên quan mật thiết.
   - Tự động tra cứu các quy định nghiệp vụ liên quan trong `references/securities/` (cấu trúc thị trường, phiên giao dịch, vòng đời lệnh, quy tắc margin) để nắm vững nền tảng nghiệp vụ trước khi phân tích.
   - **AS-IS Screen Discovery & Mockup Generation (ba-design-mockup):** Khi task liên quan UI (WEB/APP), ủy quyền cho kỹ năng `ba-design-mockup` thực hiện:
-    1. Chạy `extract-asis-ui.js` đọc trực tiếp từ **nhánh master/main** của `dnse-trading` hoặc `arrow-app` để sinh ra `spec/asis-inventory.json` và `spec/asis-inventory.md`. **⛔ CẤM dựng mockup khi chưa có file này.**
-    2. Chọn Production App Shell tương ứng (`web-trading-shell.html` hoặc `mobile-app-shell.html`).
-    3. Lắp ghép điểm thay đổi Delta-Only (`data-change="added|modified"`) kèm huy hiệu `①`, `②`, `③` và hỗ trợ đa Case (Case 1: Chuẩn, Case 2: Cảnh báo, Case 3: Khóa phiên).
+    1. Trích xuất giao diện gốc từ link được cung cấp (`capture-asis-dom.js` ở độ phân giải Full HD `1920x1080`) hoặc đọc trực tiếp từ codebase (`extract-asis-ui.js`) để sinh `spec/asis-inventory.json` và `spec/asis-inventory.md`. **⛔ CẤM dựng mockup khi chưa có dữ liệu gốc, CẤM tự suy diễn phong cách.**
+    2. Thiết kế giao diện đúng theo phong cách có sẵn của web/mobile được cung cấp, đảm bảo **độ phân giải tối thiểu Full HD (`1920x1080`)** đối với Web.
+    3. Trong mockup **chỉ thiết kế theo đúng các yêu cầu của task**, đồng thời **highlight vào phần được thiết kế mới/sửa đổi (`data-change="added|modified"`)** để client dễ nhận ra đâu là phần mới so với thiết kế cũ. **TUYỆT ĐỐI KHÔNG thiết kế các ghi chú cho QA/BA** (không gắn huy hiệu `① ② ③`, không chèn bảng `UI Delta Mapping` vào mockup).
     4. Chạy `validate-mockup-fidelity.js` chấm điểm tự động (Fidelity Score ≥ 90%).
-    5. Render ảnh Retina 2x (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`) để trình Gate 2.
+    5. Render ảnh Retina 2x qua `render-mockup.js`, kiểm tra `layout_check.layoutValid === true` và **bắt buộc dùng `read_file` mở ảnh `.png` để review trực quan đảm bảo không bị vỡ layout**.
   - Quét Confluence + attachments, trình bảng tài liệu và task liên quan cho user duyệt qua **Gate 1**.
 
 - **Giai đoạn 1 (Khai phóng theo 5 Chiều Nghiệp vụ — Business-Driven Divergence):**
@@ -88,19 +88,21 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
     1. **`## 🧩 User Story`** (`**As a** [role/persona cụ thể]`, `**I want** [hành động]`, `**So that** [giá trị đạt được]`)
     2. **`## 💼 Business Context`** (`Vấn đề (Problem)`, `Mục tiêu (Goal)`, `Tính cấp thiết (Urgency)`, `Phạm vi (Scope)`)
     3. **`## ✅ Acceptance Criteria`** (Khối `gherkin` sạch: **tuyệt đối không có automation `@tags`**, **không có tiền tố `[AC-x.y]`**, sử dụng `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
-    4. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: ảnh inline từng Case kèm điểm chạm thao tác `①`, `②`, `③` và Bảng UI Delta Mapping; ghi `N/A` nếu task backend)
+    4. **`## 🎨 UI Design / Mockup`** (**CHỈ sử dụng hình ảnh mockup `![...](...)` trong phần design, TUYỆT ĐỐI KHÔNG mô tả design bằng text và KHÔNG ghi chú gì thêm**; ghi `N/A` nếu task backend)
     5. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
-  - **Kiểm định Hard Gate trước Gate 2:** Chạy lệnh `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md"` — BẮT BUỘC PASS 100% trước khi trình user.
-  - **Quy tắc Dựng Mockup Giao diện Chuẩn Prod (Khi task có UI):**
-    - BẮT BUỘC gọi kỹ năng chuyên biệt `ba-design-mockup` để tự động bóc tách AS-IS codebase từ master/main (hoặc Live DOM), chọn Production App Shell tương ứng (`assets/shells/`), dựng Delta-Only và chạy kiểm định tự động `validate-mockup-fidelity.js` (Fidelity Score ≥ 90%).
-    - Kết xuất đủ bộ ảnh Retina 2x theo từng kịch bản nghiệp vụ qua `render-mockup.js fit 2 all`: `mockup-case-1.png` (Chuẩn / Happy Path), `mockup-case-2.png` (Cảnh báo ngoại lệ / Lỗi), `mockup-case-3.png` (Khóa phiên / Điều kiện biên).
-    - Dưới mỗi ảnh mockup, ghi rõ chú thích thao tác người dùng (Action) và phản hồi hệ thống (Response) gắn với mã quy tắc `[BR-*]`.
-  - Trình toàn bộ draft kèm ảnh Mockup từng Case và Ghi chú thao tác qua **Gate 2** để user phê duyệt.
+  - **Quy tắc Dựng & Kiểm định Mockup (Khi task có UI):**
+    - Thiết kế đúng theo phong cách có sẵn của web/mobile được cung cấp qua codebase hoặc link (không tự suy diễn).
+    - Độ phân giải tối thiểu **Full HD (`1920x1080`)** đối với Web.
+    - Trong mockup chỉ thiết kế theo các yêu cầu của task và **highlight vào phần được thiết kế mới (`data-change="added|modified"`)** để client dễ nhận ra; không thiết kế các ghi chú cho QA/BA (`① ② ③`, bảng `UI Delta Mapping`).
+    - Sau khi render ảnh bằng `render-mockup.js`, **bắt buộc review ảnh `.png` để đảm bảo không bị vỡ layout**.
+    - Trên file `refined-draft.md`, mục `## 🎨 UI Design / Mockup` chỉ nhúng ảnh mockup đó, không viết bất kỳ mô tả text hay ghi chú nào thêm.
+  - **Kiểm định Hard Gate trước Gate 2:** Chạy lệnh `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md" --ui` — BẮT BUỘC PASS 100% trước khi trình user.
+  - Trình toàn bộ draft kèm ảnh Mockup qua **Gate 2** để user phê duyệt.
 
 - **Giai đoạn 4 (Đồng bộ lên Jira & Handoff Kỹ thuật):**
   - Cập nhật mô tả Jira qua n8n hoặc CLI helper `jira-push-spec.js`.
-  - **Tự động upload toàn bộ ảnh `mockup*.png` và dán trực tiếp (inline image ADF `mediaSingle`) vào Mục UI Design / Mockup trong Description của Jira ticket**, đúng theo từng Case kèm ghi chú thao tác (không chỉ đính kèm file ở tab attachments).
-  - **Tự động xuất bản `spec/testability-manifest.json`** chứa danh sách phần tử UI (kèm selector/badge/BR/AC gợi ý) để QA tự động sinh test code POM mà không phải gõ tay.
+  - **Tự động upload toàn bộ ảnh `mockup*.png` và dán trực tiếp (inline image ADF `mediaSingle`) vào Mục UI Design / Mockup trong Description của Jira ticket** (không chỉ đính kèm file ở tab attachments).
+  - **Tự động xuất bản `spec/testability-manifest.json`** để QA tự động sinh test code POM.
   - Handoff sang DEV và QA (`/qa-test-design`).
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
@@ -111,8 +113,8 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 - 🛠️ **Công cụ & Assets:**
   - [jira-push-spec.js](assets/jira-push-spec.js): CLI helper push ADF, upload ảnh Mockup và xuất manifest.
   - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 5 phần chuẩn Jira.
-  - [mockup-harness.html](assets/mockup-harness.html): Bộ khung HTML UI Kit chuẩn và styling Delta-Only.
-  - [render-mockup.js](assets/render-mockup.js): Script chụp ảnh Retina 2x qua Playwright.
+  - [mockup-harness.html](assets/mockup-harness.html): Bộ khung HTML UI Kit chuẩn Full HD và styling Highlight.
+  - [render-mockup.js](assets/render-mockup.js): Script chụp ảnh Retina 2x Full HD kèm kiểm tra vỡ layout qua Playwright.
   - [generate-ui-component-map.js](assets/generate-ui-component-map.js): Script quét tự động codebase Web & Mobile.
 
 - 📖 **Tài liệu chi tiết (references/):**
@@ -159,19 +161,24 @@ Feature: Đăng ký gói vay margin ưu đãi theo kỳ hạn
     When phát sinh dư nợ sau ngày hết hạn
     Then lãi suất tự động quay về mức thả nổi chuẩn theo quy định biểu phí hiện hành
 ```
-    When Khách hàng chọn gói vay T+10 và xác nhận đăng ký
-    Then Hệ thống ghi nhận mức lãi suất ưu đãi cho các lệnh giải ngân mới trong ngày
 
-  Scenario: Validation - Từ chối khi tài khoản đang diện Call Margin
-    Given Tài khoản ký quỹ đang chạm tỷ lệ cảnh báo Call Margin
-    When Khách hàng yêu cầu đăng ký gói lãi suất ưu đãi
-    Then Hệ thống từ chối và hiển thị thông báo "Tài khoản đang diện cảnh báo, không thể đăng ký gói ưu đãi"
+## 🎨 UI Design / Mockup
 
-  Scenario: Edge - Giải ngân vào ngày cuối cùng của hiệu lực gói
-    Given Gói ưu đãi đang ở ngày cuối cùng của chu kỳ hiệu lực
-    When Lệnh mua ký quỹ khớp thành công trong phiên liên tục
-    Then Món vay vẫn được áp dụng lãi suất ưu đãi cho đến hết ngày theo đúng quy chế
-```
+![Đăng ký gói vay margin ưu đãi](workspace/issues/PROJ-123/spec/diagrams/mockup-case-1.png)
+
+## ☀️ Success Criteria & Tracking
+
+### Success Metrics
+
+| Metric | Current | Target | Measurement |
+|---|---|---|---|
+| Tỷ lệ kích hoạt gói vay kỳ hạn | 0% | 35% | Đo lường qua báo cáo dư nợ Margin hàng tuần |
+
+### Tracking
+
+| Event | Dashboard / Report | Owner |
+|---|---|---|
+| Đăng ký gói vay ưu đãi | Margin Growth Dashboard | Khối Nguồn vốn & Margin |
 ```
 
 ---

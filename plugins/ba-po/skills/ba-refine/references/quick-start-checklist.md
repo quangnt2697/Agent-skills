@@ -53,12 +53,12 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 3. Quét: `issuelinks` (Confluence), `attachment`, `description` (URL pattern `*/wiki/*`)
 4. Kiểm tra cache: `workspace/issues/{issueKey}/source/refs/` đã có file nào chưa
 5. Nếu task liên quan UI (WEB/APP) — **ba-design-mockup Protocol (BẮT BUỘC):**
-   - 5a. Chạy bóc tách AS-IS tự động: `node plugins/ba-po/skills/ba-design-mockup/assets/extract-asis-ui.js --project <web-trading|mobile-trading> --screen <ScreenKey> --output "workspace/issues/{issueKey}/spec"`
-   - 5b. Chọn Production App Shell phù hợp (`web-trading-shell.html`, `mobile-order-sheet-shell.html`...)
-   - 5c. Chèn Delta-Only (`data-change="added|modified"`) kèm badge `①`, `②`, `③`
+   - 5a. Trích xuất giao diện gốc từ link được cung cấp (`capture-asis-dom.js` ở Full HD `1920x1080`) hoặc bóc tách từ codebase: `node plugins/ba-po/skills/ba-design-mockup/assets/extract-asis-ui.js --project <web-trading|mobile-trading> --screen <ScreenKey> --output "workspace/issues/{issueKey}/spec"`
+   - 5b. Thiết kế đúng theo phong cách có sẵn của web/mobile được cung cấp (không tự suy diễn), độ phân giải tối thiểu **Full HD (`1920x1080`)** cho Web
+   - 5c. Trong mockup chỉ thiết kế theo yêu cầu của task và **highlight vào phần được thiết kế mới (`data-change="added|modified"`)** để client dễ nhận ra; **KHÔNG thiết kế các ghi chú cho QA/BA** (`① ② ③`, bảng `UI Delta Mapping`)
    - 5d. Chạy Hard Gate kiểm định: `node plugins/ba-po/skills/ba-design-mockup/assets/validate-mockup-fidelity.js "workspace/issues/{issueKey}/spec/diagrams/mockup.html" "workspace/issues/{issueKey}/spec/asis-inventory.json"` (Fidelity Score ≥ 90%)
-   - 5e. Render ảnh Retina 2x: `node plugins/ba-po/skills/ba-refine/assets/render-mockup.js "mockup.html" "mockup.png" fit 2 all`
-   - **⛔ GATE CỨNG:** CẤM trình Gate 2 khi chưa có `asis-inventory.md` và 3 ảnh `mockup-case-*.png` đạt Fidelity Score ≥ 90%
+   - 5e. Render ảnh Retina 2x: `node plugins/ba-po/skills/ba-refine/assets/render-mockup.js "mockup.html" "mockup.png" fit 2 all` và **bắt buộc mở ảnh `.png` bằng `read_file` để review đảm bảo không bị vỡ layout**
+   - **⛔ GATE CỨNG:** CẤM trình Gate 2 khi chưa có `asis-inventory.md` và ảnh `mockup*.png` đạt chuẩn Full HD không vỡ layout
 
 ---
 
@@ -100,20 +100,18 @@ Bước 3.1: Tạo refined-draft.md (Khung Jira Description chuẩn 5 phần)
              1. ## 🧩 User Story (As a / I want / So that)
              2. ## 💼 Business Context (Problem / Goal / Urgency / Scope)
              3. ## ✅ Acceptance Criteria (Gherkin sạch: KHÔNG @tag, KHÔNG [AC-x.y])
-             4. ## 🎨 UI Design / Mockup (Ảnh inline từng Case & UI Delta)
+             4. ## 🎨 UI Design / Mockup (Chỉ sử dụng ảnh mockup, không mô tả bằng text, không ghi chú gì thêm)
              5. ## ☀️ Success Criteria & Tracking (Metrics & Tracking)
           └─ Nếu task liên quan UI (WEB hoặc APP):
-             • Tra cứu ../ba-design-mockup/references/ui-component-map.json (chống thiết kế bừa)
-             • Dựng Delta-Only: Giữ 90% AS-IS mờ nhẹ, viền nhấn added/modified kèm badge ① ② ③
-             • Phân tách theo từng Case: Case 1 (Thao tác chính), Case 2 (Ngoại lệ/Lỗi), Case 3 (Khóa phiên/Biên)
-             • CẤM mô tả design bằng text lan man; mỗi ảnh đi kèm ghi chú thao tác người dùng (Action) & phản hồi hệ thống (Response) gắn [BR-*]
-             • Dựng spec/diagrams/mockup.html → Chạy render-mockup.js sinh đủ mockup-case-1.png, mockup-case-2.png, mockup-case-3.png
-             • Hoàn thành Mục UI kèm Bảng chú thích UI Delta Mapping
+             • Thiết kế đúng theo phong cách có sẵn từ codebase hoặc link (không tự suy diễn), độ phân giải tối thiểu Full HD (1920x1080) cho Web
+             • Chỉ thiết kế theo yêu cầu của task, highlight vào phần được thiết kế mới (data-change="added|modified") để client dễ nhận ra; KHÔNG thiết kế ghi chú cho QA/BA (① ② ③, bảng UI Delta Mapping)
+             • Dựng spec/diagrams/mockup.html → Chạy render-mockup.js → Bắt buộc mở ảnh .png review chống vỡ layout
+             • Trên refined-draft.md, phần ## 🎨 UI Design / Mockup chỉ nhúng ảnh mockup đó, không mô tả design bằng text và không ghi chú gì thêm
           └─ Chạy Hard Gate Validator:
-             node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md"
+             node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md" --ui
 
 Bước 3.2: TRÌNH TOÀN BỘ NỘI DUNG cho user (GATE 2)
-          └─ Trình ĐỒNG THỜI: Spec 5 mục + Các ảnh mockup từng Case + Ghi chú thao tác ① ② ③ + Bảng UI Delta
+          └─ Trình ĐỒNG THỜI: Spec 5 mục (với ảnh mockup trong mục UI)
           └─ DỪNG, chờ user "OK" (sửa lại vị trí nút/label ngay trong vòng lặp ≤ 5 vòng)
 
 Bước 3.3: Copy refined-draft.md → refined.md
@@ -122,15 +120,15 @@ Bước 3.3: Copy refined-draft.md → refined.md
 
 **Checklist refined.md trước khi push:**
 - [ ] Có đầy đủ `## 🧩 User Story` với `As a` cụ thể (không role chung chung)
-- [ ] Business Context ngắn gọn đúng trọng tâm (đúng 3 gạch đầu dòng: Vấn đề, Mục tiêu, Tính cấp thiết; không dùng sub-heading H3 lan man)
+- [ ] Business Context ngắn gọn đúng trọng tâm (Vấn đề, Mục tiêu, Tính cấp thiết, Phạm vi; không dùng sub-heading H3 lan man)
 - [ ] Không có placeholder `[...]` còn sót
 - [ ] AC có ≥ 3 Scenario (Happy, Edge, Validation) dạng Given/When/Then; **TUYỆT ĐỐI KHÔNG chứa `@tags` và KHÔNG chứa `[AC-x.y]`**
-- [ ] Mục UI có đầy đủ AS-IS Screen, các ảnh `mockup-case-*.png` kèm ghi chú thao tác `① ② ③` (không tả text lan man) và Bảng UI Delta
+- [ ] Mục `## 🎨 UI Design / Mockup` **chỉ chứa ảnh `![...](...)`**, không mô tả design bằng text và không ghi chú gì thêm
 - [ ] Không có heading nội bộ: "Giả định & Rủi ro", "Đánh giá Độ tin cậy", "Technical Notes"
 - [ ] Không có đường kẻ ngang `---` giữa sections
-- [ ] `spec/asis-inventory.md` đã tạo (nếu task UI), đọc từ `origin/master` (ghi rõ commit hash)
-- [ ] Fidelity Score ≥ 90% (ghi trong Mục UI, dạng: `🎯 Fidelity Score: XX%`)
-- [ ] KHÔNG có phần tử UI tự sáng tạo không có trong `asis-inventory.md`
+- [ ] `spec/asis-inventory.md` đã tạo (nếu task UI) từ codebase hoặc link được cung cấp
+- [ ] Ảnh mockup đạt chuẩn tối thiểu Full HD (`1920x1080`), đã review không vỡ layout, có highlight phần mới cho client và không chứa ghi chú QA/BA
+- [ ] KHÔNG có phần tử UI tự suy diễn lệch khỏi phong cách gốc
 
 ---
 

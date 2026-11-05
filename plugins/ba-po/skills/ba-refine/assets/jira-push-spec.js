@@ -264,7 +264,25 @@ function imageBlockToAdf(block, attachmentMap = {}) {
         || attachmentMap[block.src] 
         || Object.values(attachmentMap).find(a => a && a.filename === filename);
 
-    // 1. Nếu đã upload lên Jira và có attachment ID chuẩn
+    // 1. Ưu tiên dùng content URL (type: external) vì Jira Cloud API v3 chấp nhận trực tiếp URL attachment
+    if (attach && (attach.content || attach.url)) {
+        return {
+            type: 'mediaSingle',
+            attrs: { layout: 'center' },
+            content: [
+                {
+                    type: 'media',
+                    attrs: {
+                        type: 'external',
+                        url: attach.content || attach.url,
+                        alt: block.alt || filename
+                    }
+                }
+            ]
+        };
+    }
+
+    // 2. Nếu chỉ có attachment ID chuẩn
     if (attach && attach.id) {
         return {
             type: 'mediaSingle',
@@ -276,24 +294,6 @@ function imageBlockToAdf(block, attachmentMap = {}) {
                         id: String(attach.id),
                         type: 'file',
                         collection: '',
-                        alt: block.alt || filename
-                    }
-                }
-            ]
-        };
-    }
-
-    // 2. Nếu có URL trực tiếp (external content URL)
-    if (attach && (attach.content || attach.url)) {
-        return {
-            type: 'mediaSingle',
-            attrs: { layout: 'center' },
-            content: [
-                {
-                    type: 'media',
-                    attrs: {
-                        type: 'external',
-                        url: attach.content || attach.url,
                         alt: block.alt || filename
                     }
                 }
@@ -409,6 +409,32 @@ function exportTestabilityManifest(issueKey, mdContent, mdFilePath) {
             rules: elemBrs,
             criteria: elemAcs
         });
+    }
+
+    // Nếu trên refined.md chỉ nhúng ảnh mockup (không có bảng text), tự động quét các phần tử [data-change] từ spec/diagrams/mockup.html
+    if (uiElements.length === 0) {
+        const issueDir = path.dirname(mdFilePath);
+        const mockupHtmlPath = path.join(issueDir, 'diagrams', 'mockup.html');
+        if (fs.existsSync(mockupHtmlPath)) {
+            try {
+                const html = fs.readFileSync(mockupHtmlPath, 'utf8');
+                const tagRegex = /<([a-z0-9]+)[^>]*\bdata-change=["'](added|modified|removed)["'][^>]*>([\s\S]*?)<\/\1>/gi;
+                let m;
+                let idx = 1;
+                while ((m = tagRegex.exec(html)) !== null) {
+                    const changeType = m[2].toLowerCase();
+                    const innerText = m[3].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+                    uiElements.push({
+                        id: `delta-${idx++}`,
+                        name: innerText || `UI Element (${m[1]})`,
+                        change_type: changeType,
+                        description: innerText,
+                        rules: uniqueBrs,
+                        criteria: uniqueAcs
+                    });
+                }
+            } catch (_) {}
+        }
     }
 
     const manifest = {

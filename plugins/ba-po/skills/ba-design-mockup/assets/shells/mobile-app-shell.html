@@ -102,8 +102,7 @@
       padding: 14px;
     }
 
-    /* DELTA-ONLY MARKING */
-    .as-is-context, [data-ui="as-is"] { opacity: 0.78; }
+    /* HIGHLIGHT PHẦN THIẾT KẾ MỚI / SỬA ĐỔI CHO CLIENT */
     [data-change="added"] {
       position: relative;
       outline: 2px dashed var(--delta-added);
@@ -118,23 +117,6 @@
       border-radius: 8px;
       background: rgba(245, 158, 11, 0.08);
     }
-    .delta-pin {
-      position: absolute;
-      top: -10px;
-      right: -8px;
-      min-width: 20px;
-      height: 20px;
-      border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #052e16;
-      background: #00d084;
-    }
-    .badge-modified { background: #f59e0b; color: #451a03; }
 
     .bottom-bar {
       height: 34px;
@@ -176,9 +158,8 @@
         </div>
       </div>
 
-      <!-- [TO-BE DELTA ①] THÊM MỚI: Thẻ Deal Kèm Gói Margin Ưu Đãi -->
+      <!-- HIGHLIGHT PHẦN THÊM MỚI: Thẻ Deal Kèm Gói Margin Ưu Đãi -->
       <div class="ui-card" data-change="added" id="deltaDealCard">
-        <span class="delta-pin">①</span>
         <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
           <span style="font-size: 12px; color: var(--text-secondary);">Gói Vay Deal #9842</span>
           <span style="font-size: 11px; color: var(--stock-green); background: rgba(0, 208, 132, 0.12); padding: 2px 6px; border-radius: 4px;">T+10 Miễn Lãi</span>
@@ -191,9 +172,8 @@
         </div>
       </div>
 
-      <!-- [TO-BE DELTA ②] SỬA ĐỔI: Nút Chuyển Gói Vay Nhanh Ngay Trên Mobile -->
+      <!-- HIGHLIGHT PHẦN SỬA ĐỔI: Nút Chuyển Gói Vay Nhanh Ngay Trên Mobile -->
       <div style="margin-top: 8px;" data-change="modified" id="deltaBtnAction">
-        <span class="delta-pin badge-modified">②</span>
         <button style="width: 100%; height: 44px; background: #1068eb; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer;">
           Đổi Sang Gói Lãi Suất T+10
         </button>
@@ -201,7 +181,6 @@
 
       <!-- BANNER CẢNH BÁO CHO CASE 2 -->
       <div id="bannerWarning" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1px solid var(--delta-modified); padding: 10px; border-radius: 8px; font-size: 12px;" data-change="added">
-        <span class="delta-pin badge-modified">③</span>
         ⚠️ <strong>Cảnh báo Hạn mức Vay:</strong> Gói T+10 chỉ áp dụng cho giải ngân dưới 500 triệu đồng.
       </div>
     </div>
@@ -210,41 +189,6 @@
     <div class="bottom-bar as-is-context">
       <div class="home-indicator"></div>
     </div>
-  </div>
-
-  <!-- BẢNG CHÚ THÍCH UI DELTA MAPPING -->
-  <div class="delta-legend-card" style="width: 390px; margin: 16px auto; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px;">
-    <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">📋 Bảng Chú Thích Thay Đổi Giao Diện (UI Delta Mapping)</h3>
-    <table class="delta-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
-      <thead>
-        <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); text-align: left;">
-          <th style="padding: 6px;">Badge</th>
-          <th style="padding: 6px;">Thành Phần</th>
-          <th style="padding: 6px;">Thay Đổi</th>
-          <th style="padding: 6px;">Quy Tắc</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="padding: 6px;"><span class="delta-pin" style="position: static; display: inline-flex;">①</span></td>
-          <td style="padding: 6px;"><strong>Thẻ Deal Margin</strong></td>
-          <td style="padding: 6px;">Thêm mới (Deal Card) - Hiển thị gói lãi suất áp dụng</td>
-          <td style="padding: 6px;"><code>[BR-01]</code></td>
-        </tr>
-        <tr>
-          <td style="padding: 6px;"><span class="delta-pin badge-modified" style="position: static; display: inline-flex;">②</span></td>
-          <td style="padding: 6px;"><strong>Nút Đổi Gói Lãi Suất</strong></td>
-          <td style="padding: 6px;">Sửa đổi (Button) - Nút chuyển đổi nhanh gói T+10</td>
-          <td style="padding: 6px;"><code>[BR-02]</code></td>
-        </tr>
-        <tr>
-          <td style="padding: 6px;"><span class="delta-pin badge-modified" style="position: static; display: inline-flex;">③</span></td>
-          <td style="padding: 6px;"><strong>Banner Hạn Mức</strong></td>
-          <td style="padding: 6px;">Thêm mới (Banner) - Cảnh báo hạn mức gói giải ngân</td>
-          <td style="padding: 6px;"><code>[BR-03]</code></td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 
   <script>
@@ -274,4 +218,3 @@
   </script>
 </body>
 </html>
-

@@ -34,35 +34,10 @@ Feature: [Tên tính năng nghiệp vụ]
 
 ## 🎨 UI Design / Mockup
 
-<!-- ÁP DỤNG KHI TASK CÓ THAY ĐỔI GIAO DIỆN NGƯỜI DÙNG THEO CHỐT CHẶN 3 & 4. KHÔNG MÔ TẢ DESIGN BẰNG TEXT LAN MAN; DÁN TRỰC TIẾP ẢNH TỪNG CASE VÀ GHI CHÚ THEO THAO TÁC -->
-- **Màn hình gốc (AS-IS Screen):** [Tên màn hình trên Web/App hiện tại, đường dẫn file codebase tương ứng từ ui-component-map.json]
-- **Mã nguồn Mockup HTML:** `workspace/issues/{issueKey}/spec/diagrams/mockup.html`
-
-### 📱 Case 1: [Tên kịch bản thao tác chính / Luồng chuẩn]
-![Case 1: Thao tác chính](workspace/issues/{issueKey}/spec/diagrams/mockup-case-1.png)
-
-- **① [Điểm chạm thao tác 1]:** [Thao tác người dùng: Click/Nhập/Chọn...] ➔ [Phản hồi hệ thống & trạng thái UI hiển thị]
-- **② [Điểm chạm thao tác 2]:** [Thao tác người dùng: Click/Hover...] ➔ [Phản hồi hệ thống & trạng thái UI hiển thị]
-
-### ⚠️ Case 2: [Tình huống cảnh báo ngoại lệ / Xử lý lỗi]
-![Case 2: Cảnh báo ngoại lệ](workspace/issues/{issueKey}/spec/diagrams/mockup-case-2.png)
-
-- **③ [Điểm chạm cảnh báo]:** [Điều kiện kích hoạt lỗi/vượt hạn mức] ➔ [Hiển thị banner/thông báo lỗi & vô hiệu hóa nút bấm]
-
-### 🔒 Case 3: [Tình huống biên / Khóa điều kiện phiên giao dịch]
-![Case 3: Tình huống biên](workspace/issues/{issueKey}/spec/diagrams/mockup-case-3.png)
-
-- **④ [Điểm chạm khóa thao tác]:** [Điều kiện biên / Khung giờ đặc thù] ➔ [Trạng thái vô hiệu hóa thành phần UI & tooltip giải thích]
-
-### Bảng Chú thích Thay đổi Giao diện (UI Delta Mapping)
-| Ký hiệu trên Mockup | Thành phần Giao diện | Loại thay đổi (Thêm/Sửa/Xóa) | Thao tác Người dùng & Phản hồi Hệ thống | Kịch bản / Ràng buộc áp dụng |
-| :---: | --- | :---: | --- | :---: |
-| **①** | [Tên phần tử UI 1] | Thêm mới (Dropdown) | [Thao tác chọn giá trị] ➔ [Cập nhật thông số tương ứng] | Scenario: Happy |
-| **②** | [Tên phần tử UI 2] | Sửa đổi (Badge/Stepper) | [Thao tác tăng giảm] ➔ [Làm tròn theo bước giá/khối lượng sàn] | Scenario: Happy |
-| **③** | [Tên phần tử UI 3] | Thêm mới (Banner lỗi) | [Khi vi phạm hạn mức] ➔ [Hiện cảnh báo đỏ và disable nút gửi lệnh] | Scenario: Validation |
-| **④** | [Tên phần tử UI 4] | Sửa đổi (Disabled) | [Trong phiên ATO/ATC] ➔ [Vô hiệu hóa nút hủy lệnh kèm tooltip] | Scenario: Edge |
-
-> *(Lưu ý: Nếu task hoàn toàn không thay đổi giao diện người dùng, ghi rõ: `N/A — Task thuần xử lý logic nghiệp vụ backend hoặc dữ liệu`)*
+<!-- CHỈ SỬ DỤNG ẢNH MOCKUP TRONG PHẦN DESIGN, TUYỆT ĐỐI KHÔNG MÔ TẢ DESIGN BẰNG TEXT VÀ KHÔNG GHI CHÚ GÌ THÊM (GHI N/A NẾU TASK BACKEND) -->
+![Case 1: Giao diện chuẩn](workspace/issues/{issueKey}/spec/diagrams/mockup-case-1.png)
+![Case 2: Trạng thái cảnh báo / ngoại lệ](workspace/issues/{issueKey}/spec/diagrams/mockup-case-2.png)
+![Case 3: Trạng thái khóa / điều kiện biên](workspace/issues/{issueKey}/spec/diagrams/mockup-case-3.png)
 
 ## ☀️ Success Criteria & Tracking
 

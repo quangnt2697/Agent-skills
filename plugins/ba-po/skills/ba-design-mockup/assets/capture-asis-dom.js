@@ -48,7 +48,7 @@ for (let i = 0; i < args.length; i++) {
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
+    viewport: { width: 1920, height: 1080 },
     deviceScaleFactor: 2.0
   });
   const page = await context.newPage();

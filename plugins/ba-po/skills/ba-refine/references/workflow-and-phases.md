@@ -137,28 +137,22 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
 11. **Tự động Quét Màn hình Hiện tại & Thiết kế Mockup Prod-Twin (ba-design-mockup):**
    Khi phát hiện task có liên quan tới giao diện (`task_type = "WEB"` hoặc `"APP"`):
    - **Ủy quyền cho kỹ năng `ba-design-mockup` thực thi:**
-     1. Chạy script bóc tách tự động từ `origin/master`:
+     1. Trích xuất giao diện gốc từ link được cung cấp (`capture-asis-dom.js` ở độ phân giải Full HD `1920x1080`) hoặc đọc trực tiếp từ `origin/master` qua `extract-asis-ui.js`:
         ```bash
         node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-mockup/assets/extract-asis-ui.js \
           --project web-trading --screen {ScreenKey} --output "workspace/issues/{issueKey}/spec"
         ```
         *(Sinh ra cặp file: `spec/asis-inventory.json` và `spec/asis-inventory.md`)*
-     2. Chọn Production App Shell phù hợp trong `plugins/ba-po/skills/ba-design-mockup/assets/shells/`:
-        - `web-trading-shell.html` (Giao dịch 2 cột)
-        - `web-assets-dashboard-shell.html` (Quản lý tài sản & Dashboard)
-        - `web-modal-confirm-shell.html` (Modal xác nhận lệnh / OTP)
-        - `mobile-order-sheet-shell.html` (Đặt lệnh Mobile)
-        - `mobile-app-shell.html` (Sổ lệnh & Quản lý Deal)
-        - `mobile-bottom-sheet-shell.html` (Xác thực Smart OTP)
-     3. Copy shell vào `workspace/issues/{issueKey}/spec/diagrams/mockup.html` và chèn phần tử Delta-Only (`data-change="added|modified"`) kèm huy hiệu `①`, `②`, `③`.
-     4. Chạy kiểm định Hard Gate độ giống Prod:
+     2. Thiết kế giao diện đúng theo phong cách có sẵn của web/mobile được cung cấp (không tự suy diễn), đảm bảo **độ phân giải tối thiểu Full HD (`1920x1080`)** cho Web (hoặc sử dụng Production App Shell tương ứng trong `plugins/ba-po/skills/ba-design-mockup/assets/shells/`).
+     3. Trong `workspace/issues/{issueKey}/spec/diagrams/mockup.html`, chỉ thiết kế đúng các yêu cầu của task và **highlight vào phần được thiết kế mới/sửa đổi (`data-change="added|modified"`)** để client dễ nhận ra; **TUYỆT ĐỐI KHÔNG thiết kế các ghi chú cho QA/BA** (không gắn huy hiệu `①`, `②`, `③`, không chèn bảng `UI Delta Mapping`).
+     4. Chạy kiểm định Hard Gate:
         ```bash
         node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-mockup/assets/validate-mockup-fidelity.js \
           "workspace/issues/{issueKey}/spec/diagrams/mockup.html" \
           "workspace/issues/{issueKey}/spec/asis-inventory.json"
         ```
         *(Bắt buộc đạt Fidelity Score ≥ 90% trước khi chuyển sang Gate 2)*
-     5. Render ảnh Retina 2x đa Case qua Playwright:
+     5. Render ảnh Retina 2x qua Playwright và **bắt buộc dùng `read_file` mở ảnh `.png` để review chống vỡ layout**:
         ```bash
         node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/render-mockup.js \
           "workspace/issues/{issueKey}/spec/diagrams/mockup.html" \
@@ -228,16 +222,16 @@ Tạo file nháp tại: `workspace/issues/{issueKey}/spec/refined-draft.md` từ
 1. **`## 🧩 User Story`** (`**As a** [role/persona cụ thể]`, `**I want** [hành động]`, `**So that** [giá trị đạt được]`)
 2. **`## 💼 Business Context`** (`Vấn đề (Problem)`, `Mục tiêu (Goal)`, `Tính cấp thiết (Urgency)`, `Phạm vi (Scope)`)
 3. **`## ✅ Acceptance Criteria`** (Khối `gherkin` sạch: **tuyệt đối không có automation `@tags`**, **không có tiền tố `[AC-x.y]`**, sử dụng `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
-4. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: ảnh inline từng Case kèm điểm chạm thao tác `①`, `②`, `③` và Bảng UI Delta Mapping; ghi `N/A` nếu task backend)
+4. **`## 🎨 UI Design / Mockup`** (BẮT BUỘC khi task có UI: **chỉ sử dụng ảnh mockup `![...](...)` trong phần design, tuyệt đối không mô tả design bằng text và không ghi chú gì thêm**; ghi `N/A` nếu task backend)
 5. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
 
 **🛡️ KIỂM ĐỊNH HARD GATE TRƯỚC GATE 2 (BẮT BUỘC):**
 Chạy lệnh kiểm định trước khi trình user:
 ```bash
 node ${AGENT_SKILLS_HOME:-.}/scripts/validators/validate-ba-refine.js \
-  "workspace/issues/{issueKey}/spec/refined-draft.md"
+  "workspace/issues/{issueKey}/spec/refined-draft.md" --ui
 ```
-*Script sẽ kiểm tra: Cấu trúc User Story, AC sạch không chứa `@tag` hay `[AC]`, bộ lọc Zero Technical Noise và tính đầy đủ của các sections. BẮT BUỘC PASS 100% (Exit 0).*
+*Script sẽ kiểm tra: Cấu trúc User Story, AC sạch không chứa `@tag` hay `[AC]`, bộ lọc Zero Technical Noise, mục UI chỉ chứa ảnh mockup (không chứa text/ghi chú dư thừa) và tính đầy đủ của các sections. BẮT BUỘC PASS 100% (Exit 0).*
 
 **❌ BỘ LỌC CHỐNG KỸ THUẬT (BẮT BUỘC):**
 - TUYỆT ĐỐI KHÔNG đưa vào: Tên bảng DB, kiểu dữ liệu SQL, HTTP Methods, JSON keys, Kafka topic, Exception names, section `## 🧱 Technical Notes`.
@@ -245,13 +239,13 @@ node ${AGENT_SKILLS_HOME:-.}/scripts/validators/validate-ba-refine.js \
 
 **🎨 QUY TRÌNH DỰNG MOCKUP GIAO DIỆN CHUẨN PROD (Kỹ năng ba-design-mockup):**
 Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App, kích hoạt kỹ năng chuyên biệt `ba-design-mockup`:
-1. **Trích xuất AS-IS Codebase:** Chạy `extract-asis-ui.js` từ `origin/master` (hoặc `origin/main`) sinh `spec/asis-inventory.json` và `spec/asis-inventory.md`.
-2. **Chọn Production App Shell:** Chọn 1 trong 6 khung shell chuẩn từ `plugins/ba-po/skills/ba-design-mockup/assets/shells/` chép vào `spec/diagrams/mockup.html`.
-3. **Lắp ghép Delta-Only & Đa trạng thái:**
-   - Giữ nguyên 90% khung màn hình gốc làm nền ngữ cảnh (`class="as-is-context"`, opacity 0.75).
-   - Điểm thay đổi gắn viền nhấn (`data-change="added|modified"`) kèm **Huy hiệu đánh số chú thích `①`, `②`, `③`**.
-   - Cài đặt hàm `switchState(state)` hỗ trợ 3 trạng thái: `default` (Luồng chuẩn), `error` (Cảnh báo lỗi/vượt hạn mức), `locked` (Khóa phiên/điều kiện biên).
-   - Điền **Bảng Chú Thích Thay Đổi Giao Diện (UI Delta Mapping)** ở cuối file mockup khớp 1-1 các huy hiệu `①`, `②`, `③`.
+1. **Trích xuất Phong cách & Giao diện Gốc AS-IS:** Chạy `capture-asis-dom.js` từ link được cung cấp (ở độ phân giải Full HD `1920x1080`) hoặc chạy `extract-asis-ui.js` từ codebase (`origin/master` / `origin/main`) sinh `spec/asis-inventory.json` và `spec/asis-inventory.md`. Tuyệt đối không tự suy diễn phong cách thiết kế.
+2. **Đảm bảo Độ phân giải Tối thiểu Full HD (`1920x1080`):** Khung giao diện Web bắt buộc đạt tối thiểu `1920x1080` (`min-width: 1920px; min-height: 1080px`).
+3. **Thiết kế theo Yêu cầu Task & Highlight Phần Mới (Không Ghi Chú QA/BA):**
+   - Trong `spec/diagrams/mockup.html`, chỉ thiết kế đúng các yêu cầu của task theo phong cách có sẵn.
+   - **Highlight vào phần được thiết kế mới/sửa đổi (`data-change="added|modified"`)** để client dễ nhận ra đâu là phần được thêm mới so với thiết kế cũ.
+   - **TUYỆT ĐỐI KHÔNG thiết kế các ghi chú cho QA/BA/Dev trong mockup:** Không gắn huy hiệu `①`, `②`, `③`, không chèn bảng `UI Delta Mapping` (`delta-table`), không hiển thị thanh công cụ preview.
+   - Cài đặt hàm `switchState(state)` hỗ trợ 3 trạng thái: `default` (Luồng chuẩn), `error` (Cảnh báo lỗi/ngoại lệ), `locked` (Khóa phiên/điều kiện biên).
 4. **Kiểm định Fidelity tự động (Automated Hard Gate):**
    ```bash
    node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-mockup/assets/validate-mockup-fidelity.js \
@@ -259,37 +253,26 @@ Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App, kíc
      "workspace/issues/{issueKey}/spec/asis-inventory.json"
    ```
    *Bắt buộc PASS (Fidelity Score ≥ 90%).*
-5. **Render ảnh Retina 2x đa trạng thái:**
+5. **Render ảnh Retina 2x & Review Chống Vỡ Layout:**
    ```bash
    node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/render-mockup.js \
      "workspace/issues/{issueKey}/spec/diagrams/mockup.html" \
      "workspace/issues/{issueKey}/spec/diagrams/mockup.png" fit 2 all
    ```
-   *Tự động sinh: `mockup.png`, `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`.*
-6. **Điền Mục `## 🎨 UI Design / Mockup` vào `refined-draft.md`:** Khai báo Fidelity Score, nhúng ảnh 3 Case kèm ghi chú thao tác người dùng (Action) và phản hồi hệ thống (Response) gắn với `[BR-*]`.
+   *Tự động sinh `mockup.png`, `mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png` và kiểm tra `layout_check.layoutValid === true`.*
+   - **BẮT BUỘC mở file ảnh `.png` vừa render bằng công cụ `read_file`** để kiểm tra trực quan, đảm bảo sau khi mockup hoàn toàn không bị vỡ layout (không tràn bảng, không lệch cột, không hụt màu nền).
+6. **Điền Mục `## 🎨 UI Design / Mockup` vào `refined-draft.md`:** Chỉ sử dụng ảnh mockup đó trong phần design (`![...](workspace/issues/{issueKey}/spec/diagrams/...)`), **chứ không mô tả design bằng text và không ghi chú gì thêm**.
 
 ### Bước 3.2: Trình bày bản nháp cho User duyệt (Gate 2 — APPROVAL GATE)
 
-**[Bước 3.2.0 — Xác thực Fidelity Gate TRƯỚC khi trình user]**
-- Chạy lệnh kiểm định: `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md"`
-- Bắt buộc kiểm định PASS 100% với Fidelity Score ≥ 90% (tính tự động bởi `validate-mockup-fidelity.js`).
-- CẤM trình Gate 2 nếu script báo lỗi hoặc thiếu bộ 3 ảnh render đa Case.
-
-**Fidelity Score được ghi nhận vào đầu Mục `## 🎨 UI Design / Mockup` của `refined-draft.md`:**
-```markdown
-## 🎨 UI Design / Mockup
-> 🎯 Fidelity Score: XX% (kiểm định tự động qua validate-mockup-fidelity.js từ origin/master @ {commit-hash})
-```
+**[Bước 3.2.0 — Xác thực Hard Gate TRƯỚC khi trình user]**
+- Chạy lệnh kiểm định: `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md" --ui`
+- Bắt buộc kiểm định PASS 100% và đã review ảnh mockup không vỡ layout.
 
 ---
 
 1. Trình bày TOÀN BỘ 5 phần bản nháp chuẩn Jira cho user xem trực tiếp trong chat.
-2. **Khi task có UI:** Trình đồng thời:
-   - **Nội dung Spec 5 phần chuẩn Jira**
-   - **Các ảnh Mockup trực quan theo từng Case** (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`)
-   - **Ghi chú điểm chạm thao tác `①`, `②`, `③` dưới từng ảnh**
-   - **Bảng chú thích UI Delta Mapping tổng hợp**
-   - **Fidelity Score (≥ 90% từ validate-mockup-fidelity.js)**
+2. **Khi task có UI:** Trong phần `## 🎨 UI Design / Mockup` chỉ hiển thị ảnh mockup trực quan (đã highlight phần thiết kế mới, không kèm text mô tả hay bảng ghi chú).
 3. **DỪNG LẠI VÀ CHỜ USER PHẢN HỒI ("OK" hoặc chỉnh sửa).**
    User có quyền yêu cầu điều chỉnh lại vị trí nút bấm, nhãn trường, hoặc màu sắc trạng thái ngay trong vòng lặp Gate 2 (tối đa 5 vòng cho tới khi user hài lòng).
 
