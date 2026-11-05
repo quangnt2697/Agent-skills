@@ -40,7 +40,7 @@ test("global-error-handler ghi lỗi ra file thay vì gọi webhook chat", () =>
 });
 
 test("cấu hình môi trường không còn ngrok / Mattermost / NOTIFY_CHANNEL", () => {
-  assert.doesNotMatch(read("config/ecosystem.config.cjs"), /ngrok/i);
+  assert.doesNotMatch(read("docker-compose.yml"), /ngrok/i);
   assert.doesNotMatch(read(".env.example"), /mattermost|ngrok|NOTIFY_CHANNEL/i);
 });
 

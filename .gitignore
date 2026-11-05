@@ -20,6 +20,7 @@ config/projects.json
 export.json
 *.backup.json
 .n8n/
+.n8n-data/
 
 # Caches & Temp data
 .cache/

@@ -252,10 +252,149 @@ if (stuckIssues.length > 0) {
   reportText += `> ✅ **Không có ticket nào bị treo quá ${stuckDaysThreshold} ngày.**\n\n`;
 }
 
+// ── Tạo Slack Payload (Monospace Workload Table + Native Block Kit Table cho Cảnh Báo Treo) ──
+const convertMdTables = (txt) => {
+  const lines = String(txt || '').split('\n');
+  const out = [];
+  let tbl = [];
+  const clean = (r) =>
+    String(r || '')
+      .trim()
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '$1')
+      .normalize('NFC');
+  const isSep = (cells) => cells.length > 0 && cells.every((c) => /^:?-{2,}:?$/.test(c.trim()));
+  const getAligns = (cells) =>
+    cells.map((c) => {
+      const t = c.trim();
+      if (t.startsWith(':') && t.endsWith(':')) return 'center';
+      if (t.endsWith(':')) return 'right';
+      return 'left';
+    });
+  const pad = (s, w, al) => {
+    const d = Math.max(0, w - [...s].length);
+    if (al === 'right') return ' '.repeat(d) + s;
+    if (al === 'center') return ' '.repeat(Math.floor(d / 2)) + s + ' '.repeat(d - Math.floor(d / 2));
+    return s + ' '.repeat(d);
+  };
+  const flush = () => {
+    if (tbl.length === 0) return;
+    if (tbl.length < 2) {
+      out.push(...tbl);
+      tbl = [];
+      return;
+    }
+    const rows = tbl.map((l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(clean));
+    let aligns = [];
+    const data = [];
+    for (let i = 0; i < rows.length; i++) {
+      if (i === 1 && isSep(rows[i])) aligns = getAligns(rows[i]);
+      else data.push(rows[i]);
+    }
+    const cols = Math.max(...data.map((r) => r.length));
+    const widths = new Array(cols).fill(0);
+    for (const r of data) {
+      for (let c = 0; c < cols; c++) widths[c] = Math.max(widths[c], [...(r[c] || '')].length);
+    }
+    const rendered = data.map((r, rIdx) => {
+      const cells = [];
+      for (let c = 0; c < cols; c++) {
+        const v = r[c] || '';
+        const al = rIdx === 0 || c === cols - 1 ? 'left' : (aligns[c] || 'left');
+        cells.push(c === cols - 1 ? v : pad(v, widths[c], al));
+      }
+      return cells.join(' │ ');
+    });
+    if (rendered.length > 1) {
+      rendered.splice(1, 0, widths.map((w, c) => '─'.repeat(c === cols - 1 ? Math.min(w, 12) : w)).join('─┼─'));
+    }
+    out.push('```\n' + rendered.join('\n') + '\n```');
+    tbl = [];
+  };
+  for (const l of lines) {
+    const t = l.trim();
+    if (t.startsWith('|') && t.endsWith('|') && t.length > 2) tbl.push(l);
+    else {
+      flush();
+      out.push(l);
+    }
+  }
+  flush();
+  return out.join('\n');
+};
+
+const toMrkdwn = (txt) =>
+  convertMdTables(txt)
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<$2|$1>')
+    .replace(/^#{1,4}\s+(.+)$/gm, '*$1*')
+    .replace(/\*\*([^*]+)\*\*/g, '*$1*');
+
+const makeRichCell = (rawCell, isHeader = false) => {
+  const raw = String(rawCell || '').trim().normalize('NFC');
+  const linkMatch = raw.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+  if (linkMatch) {
+    return {
+      type: 'rich_text',
+      elements: [{ type: 'rich_text_section', elements: [{ type: 'link', url: linkMatch[2], text: linkMatch[1], style: { bold: true } }] }]
+    };
+  }
+  const isBold = isHeader || /^\*\*([^*]+)\*\*$/.test(raw);
+  const isCode = /^`([^`]+)`$/.test(raw);
+  const cleanText = raw.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1') || ' ';
+  const style = {};
+  if (isBold) style.bold = true;
+  if (isCode) style.code = true;
+  return {
+    type: 'rich_text',
+    elements: [{ type: 'rich_text_section', elements: [{ type: 'text', text: cleanText, ...(Object.keys(style).length ? { style } : {}) }] }]
+  };
+};
+
+const buildSlackPayload = () => {
+  const fullSlackText = toMrkdwn(reportText);
+  if (stuckIssues.length === 0) {
+    return { text: fullSlackText };
+  }
+  const [beforeStuckTable] = reportText.split('| Ticket | Tiêu đề |');
+  const sectionMrkdwn = toMrkdwn((beforeStuckTable || '').trim());
+  const sortedStuck = [...stuckIssues].sort((a, b) => b.days - a.days);
+  const tableRows = [
+    ['Ticket', 'Tiêu đề', 'Thành viên', 'Treo', 'Mức độ'].map((h) => makeRichCell(h, true)),
+    ...sortedStuck.slice(0, 95).map((s) => [
+      makeRichCell(`[${s.key}](${baseUrl}/browse/${s.key})`),
+      makeRichCell(s.title.replace(/\|/g, '/').replace(/\s+/g, ' ').trim()),
+      makeRichCell(`**${s.assignee}**`),
+      makeRichCell(`**${s.days} ngày**`),
+      makeRichCell(s.level)
+    ])
+  ];
+  return {
+    text: fullSlackText,
+    blocks: [
+      { type: 'section', text: { type: 'mrkdwn', text: sectionMrkdwn.slice(0, 3000) } },
+      {
+        type: 'table',
+        column_settings: [
+          { align: 'left', is_wrapped: true },
+          { align: 'left', is_wrapped: true },
+          { align: 'left', is_wrapped: true },
+          { align: 'center', is_wrapped: true },
+          { align: 'left', is_wrapped: true }
+        ],
+        rows: tableRows
+      }
+    ]
+  };
+};
+
+const slackPayload = buildSlackPayload();
+
 return [{
   json: {
     isError: false,
     reportText,
+    slackPayload,
     totalIssues,
     totalSP: committedPoints,
     completedSP: completedPoints,

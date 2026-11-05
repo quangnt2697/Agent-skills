@@ -10,7 +10,7 @@ Thư mục này chứa toàn bộ tài liệu hướng dẫn cài đặt, vận 
 Hướng dẫn cài đặt từ A–Z trên máy mới và tích hợp vào đa nền tảng AI Agent:
 - Cài đặt và đồng bộ 6 plugins (31 skills, 29 commands, 6 subagents) cho **Claude Code**, **Antigravity IDE**, **Gemini CLI**.
 - Kích hoạt Git Protection Hooks (`npm run setup:hooks`).
-- Khởi chạy và quản lý n8n Fast-Path daemon qua PM2 (`npm run n8n:bg`).
+- Khởi chạy và quản lý n8n Fast-Path Container qua Colima + Docker Compose (`npm run colima:start && npm run n8n:up`).
 - Đóng gói và xuất (export) plugin độc lập sang các repo microservice (`npm run plugin:export`).
 
 ### [guides/adoption-guide.md](guides/adoption-guide.md)

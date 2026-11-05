@@ -16,7 +16,7 @@ Mọi kỹ năng (Skill) cần tương tác với dịch vụ bên ngoài (Jira,
 
 **Nguyên tắc cốt lõi:**
 - **n8n-Only:** 100% tích hợp dữ liệu bên ngoài đi qua n8n Webhooks (`scripts/lib/n8n-client.js`). Không sử dụng MCP servers.
-- **Fail-Fast:** Nếu n8n offline hoặc timeout, báo ngay cho user khởi động bằng `npm run n8n` (hoặc `npm run n8n:bg`) và DỪNG.
+- **Fail-Fast:** Nếu n8n offline hoặc timeout, báo ngay cho user khởi động bằng `npm run n8n` (hoặc `npm run n8n:up`) và DỪNG.
 - **Ngoại lệ duy nhất cho Squash TM Sync:** Kỹ năng `/qa-squash-push` sử dụng shell script chuyên dụng `squash-push.sh` để quản lý session XSRF cookie nội bộ, dọn dẹp execution cũ và gán Campaign tự động.
 
 ---
@@ -135,26 +135,37 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
   ```
 
 ### 3.5. Phân Hệ Scrum Master & Báo Cáo
-Hệ thống vận hành theo cơ chế **Fast-Path cục bộ**: n8n trả dữ liệu cho skill, skill xuất báo cáo ra `workspace/sprints/{sprintId}/trace/daily-standup-report.md`. Không có kênh chat nào được n8n tự gửi.
-- **Báo cáo Standup:** Fast-Path n8n phân tích vé Jira kẹt > 3 ngày, tiến độ Story Points và cân bằng tải, trả dữ liệu markdown cho Skill lưu vào trace/.
+Hệ thống vận hành theo cơ chế **Fast-Path cục bộ kết hợp Lịch Cron tự động**:
+- **Báo cáo Standup (`/webhook/sm-standup` & Cron 08:50 AM Mon–Fri):**
+  - Tự động lấy Active Sprint của **Board 61 (`G.3.1 - Partners & Open API`, Project `G3PTP`)**.
+  - Phân tích tiến độ Story Points (`customfield_10022`), bảng cân bằng tải công việc và danh sách ticket bị treo **> 4 ngày** (`stuckDaysThreshold = 4`).
+  - Trả về `reportText` (Markdown chuẩn để Agent lưu vào `workspace/sprints/{sprintId}/trace/daily-standup-report.md`) đồng thời tạo sẵn `slackPayload` (kết hợp bảng Monospace + Native Slack Block Kit `table` với link Jira có thể click và tự động xuống dòng `is_wrapped: true`) để bắn trực tiếp vào kênh Slack `SLACK_WEBHOOK_URL` lúc 08:50 sáng thứ Hai – thứ Sáu.
 - **Jira Ready to Test Handler:** Lắng nghe/xử lý Webhook Jira lọc task Board G.3.1 trong Active Sprint chuyển sang Ready to test, quét workspace local báo `✅/❌ Gherkin file` và `✅/❌ Autoscript test`, trả card `### 🎯 READY TO TEST` kèm gợi ý lệnh cho caller.
 - **Lỗi workflow:** `Global Error Handler` ghi mỗi lỗi thành 1 dòng JSON vào `workspace/.n8n-errors.log` (đã `.gitignore` nhờ `/workspace/`). Node ghi log không nuốt lỗi: nếu không ghi được file, execution báo thất bại.
 
 ---
 
-## 4. Quản Lý & Vận Hành Chi Phí 0 Đồng
+## 4. Quản Lý & Vận Hành Container Chi Phí 0 Đồng (Colima + Docker Compose)
 
-1. **Khởi động n8n:**
+Dự án đóng gói sẵn môi trường n8n trong [`docker-compose.yml`](../../docker-compose.yml) (`agent-skills-n8n`), giúp cô lập hoàn toàn dependencies (không làm phình `node_modules`) và không cần quyền `sudo`/root khi cài đặt trên máy mới:
+
+1. **Khởi động máy ảo Colima (nếu chưa bật):**
    ```bash
-   npm run n8n
+   npm run colima:start
    ```
-2. **Khởi động kèm Tunnel (nhận Webhook ngoài Internet):**
+2. **Khởi động container n8n & tự động nạp + kích hoạt (`active = 1`) toàn bộ 18 workflows:**
    ```bash
-   npm run n8n -- --tunnel
+   npm run n8n:up
    ```
-3. **Chạy ngầm (Daemon qua PM2):**
+   *(Dữ liệu SQLite của n8n được lưu bền vững tại `./.n8n-data/database.sqlite` và thư mục dự án được mount vào `/workspace` bên trong container).*
+3. **Xem log hoạt động hoặc dừng container:**
    ```bash
-   npm run n8n:bg
+   npm run n8n:logs
+   npm run n8n:down
+   ```
+4. **Đồng bộ code từ `scripts/n8n-nodes/` vào `n8n-workflows/` sau khi chỉnh sửa logic node:**
+   ```bash
+   npm run n8n:sync-nodes && npm run n8n:up
    ```
 
 ---

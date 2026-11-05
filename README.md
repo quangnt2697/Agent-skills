@@ -41,25 +41,46 @@ Kỹ sư dữ liệu thị trường và kiểm toán dữ liệu chứng khoán
 
 ## ⚡ Hướng Dẫn Cài Đặt (Installation Guide)
 
-Do dự án bao gồm nhiều thành phần (Agent Plugins, n8n Fast-Path Fabric, các tích hợp bên ngoài), toàn bộ quy trình thiết lập đã được hợp nhất vào một tài liệu duy nhất để dễ theo dõi.
+Toàn bộ quy trình thiết lập từ A–Z (dành cho cả người mới bắt đầu chưa cài môi trường) được trình bày chi tiết tại:
+👉 **[Cẩm Nang Cài Đặt Chi Tiết Cho Người Mới (Installation Guide)](docs/guides/installation-guide.md)**
 
-👉 **Mời bạn xem: [Cẩm Nang Cài Đặt & Tích Hợp (Installation Guide)](docs/guides/installation-guide.md)**
-
-**Bắt đầu nhanh (macOS):**
+### Cách 1: Cài đặt tự động 1 lệnh trên macOS (Khuyên dùng)
+Script sẽ tự động kiểm tra và cài đặt **Homebrew, Node.js (>=20), Colima, Docker CLI, Docker Compose**, tạo file cấu hình `.env`, khởi chạy container `n8n` (nạp sẵn 18 workflows) và đồng bộ toàn bộ kỹ năng vào AI Agent:
 ```bash
 git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
 cd agent-skills
-npm run setup:mac     # cài công cụ, tạo .env, nạp n8n workflows, đồng bộ plugins
-npm test              # kiểm tra cài đặt
+npm run setup:mac     # Tự động cài Colima + Docker + n8n + đồng bộ Agent Plugins
+npm test              # Kiểm tra toàn bộ hệ thống
 ```
-Windows/Linux: làm thủ công theo "Tùy chọn B" trong guide.
 
-*Tài liệu trên bao gồm:*
-- *Yêu cầu hệ thống và các mức cài đặt: Tối thiểu (chỉ dùng skills), Đầy đủ (kèm n8n Fast-Path cục bộ).*
-- *Hướng dẫn kết nối Agent Plugins cho Antigravity / Gemini CLI.*
-- *Tích hợp n8n Fast-Path cục bộ và tự khởi động cùng macOS.*
-- *Bảng xử lý sự cố thường gặp.*
-- [docs/guides/adoption-guide.md](docs/guides/adoption-guide.md) — Cẩm nang áp dụng theo quy trình Agile/Scrum
+### Cách 2: Cài đặt từng bước tường minh (Step-by-Step)
+Nếu bạn muốn tự cài đặt và kiểm soát từng thành phần:
+```bash
+# 1. Cài đặt Node.js và bộ 3 Colima + Docker CLI + Docker Compose qua Homebrew (không cần quyền sudo)
+brew install node colima docker docker-compose
+
+# 2. Tải dự án & cài đặt thư viện
+git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
+cd agent-skills
+npm install
+
+# 3. Tạo các file cấu hình từ file mẫu (sau đó mở file .env để điền Jira/Slack token)
+cp .env.example .env
+cp config/projects.json.example config/projects.json
+cp config/sm-config.example.yaml config/sm-config.yaml
+
+# 4. Bật máy ảo Colima, nạp chứng chỉ mạng công ty & khởi chạy n8n Container (18 workflows)
+npm run n8n:setup
+
+# 5. Đồng bộ kỹ năng vào Antigravity IDE / Gemini CLI / Claude Code & kích hoạt Git Hooks
+npm run setup:plugins
+npm run setup:claude
+npm run setup:hooks
+```
+
+*Xem thêm:*
+- **[docs/guides/installation-guide.md](docs/guides/installation-guide.md)** — Hướng dẫn chi tiết cách lấy Jira/Slack token, cấu hình `.env`, tự khởi động cùng macOS và xử lý sự cố.
+- **[docs/guides/adoption-guide.md](docs/guides/adoption-guide.md)** — Cẩm nang áp dụng theo quy trình Agile/Scrum.
 
 ### Workflow cơ bản
 
@@ -95,7 +116,7 @@ Dự án được cấu trúc như một monorepo chứa nhiều plugin độc l
 
 ```
 agent-skills/
-├── config/                     → Tập trung file cấu hình hệ thống (projects.json, sm-config.yaml, ecosystem...)
+├── config/                     → Tập trung file cấu hình hệ thống (projects.json, sm-config.yaml)
 ├── plugins/                    → Chứa các plugin chuyên biệt (6 plugins)
 │   ├── core/                   → Meta-skills, shared commands (/sync, /learn, /e2e-delivery)
 │   ├── ba-po/                  → BA/PO persona & skills (10 skills)
@@ -191,8 +212,8 @@ plugins/qa/
 
 ### 1. Đọc Documentation
 
-- **[Installation Guide](docs/guides/installation-guide.md)** — Hướng dẫn cài đặt trọn gói monorepo
-- **[Cài đặt từng Plugin độc lập](docs/guides/installation-guide.md#giai-đoạn-5-hướng-dẫn-cài-đặt-từng-plugin-độc-lập-cho-dự-án-microservice-standalone-plugin-installation)** — Xuất và nạp riêng lẻ plugin vào các dự án microservice bên ngoài
+- **[Installation Guide](docs/guides/installation-guide.md)** — Hướng dẫn cài đặt trọn gói monorepo (kèm Colima + Docker Compose n8n Fast-Path)
+- **[Cài đặt từng Plugin độc lập](docs/guides/installation-guide.md#giai-đoạn-4-hướng-dẫn-cài-đặt-từng-plugin-độc-lập-cho-dự-án-microservice-standalone-plugin-installation)** — Xuất và nạp riêng lẻ plugin vào các dự án microservice bên ngoài
 - **[Skill Anatomy](docs/guides/skill-anatomy.md)** — Cấu trúc một skill
 - **[Agents Guide](docs/guides/agents.md)** — Hiểu rõ 6 personas
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — Hướng dẫn tạo skill và plugin mới
