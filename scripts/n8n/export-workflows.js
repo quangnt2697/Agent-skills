@@ -85,11 +85,26 @@ function main() {
 
   const catalog = buildExistingCatalog();
 
+  let isDockerRunning = false;
   try {
-    execSync(`n8n export:workflow --all --separate --output="${tempExportDir}"`, {
-      stdio: 'pipe',
-      encoding: 'utf8'
-    });
+    const containerCheck = execSync('docker ps --filter "name=agent-skills-n8n" --format "{{.Names}}"', { encoding: 'utf8' }).trim();
+    if (containerCheck.includes('agent-skills-n8n')) {
+      isDockerRunning = true;
+    }
+  } catch (_) {}
+
+  try {
+    if (isDockerRunning) {
+      execSync(`docker exec agent-skills-n8n n8n export:workflow --all --separate --output="/workspace/n8n-workflows/.tmp-export"`, {
+        stdio: 'pipe',
+        encoding: 'utf8'
+      });
+    } else {
+      execSync(`n8n export:workflow --all --separate --output="${tempExportDir}"`, {
+        stdio: 'pipe',
+        encoding: 'utf8'
+      });
+    }
   } catch (err) {
     // If n8n CLI is not active or offline, warn cleanly
     if (err.message.includes('command not found') || err.message.includes('ENOENT')) {

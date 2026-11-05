@@ -1,63 +1,134 @@
-# Hướng Dẫn Cài Đặt (Installation Guide)
+# Hướng Dẫn Cài Đặt Từ A–Z Cho Người Mới (Installation Guide)
 
-Tài liệu này là nguồn chân lý duy nhất cho việc thiết lập `agent-skills` trên máy mới. Chọn mức độ cài đặt bạn cần:
+Tài liệu này hướng dẫn từng bước cầm tay chỉ việc để bất kỳ ai — **kể cả người mới chưa từng cài đặt môi trường hay dùng Docker trước đây** — cũng có thể tự thiết lập thành công `agent-skills` trên máy tính mới trong chưa đầy 10 phút.
 
-| Mức | Bạn muốn | Làm các giai đoạn | Thời gian |
+### Chọn mức độ cài đặt phù hợp với bạn:
+
+| Mức độ | Dành cho ai? | Các giai đoạn cần làm | Thời gian |
 |---|---|---|---|
-| **Tối thiểu** | Dùng skills/slash commands trong AI Agent (Claude Code / Antigravity / Gemini CLI) | 0 → 1 → 2 | ~5 phút |
-| **Đầy đủ** | Thêm n8n Fast-Path cục bộ (Jira, Confluence, Metabase, Squash TM) | 0 → 1 → 2 → (n8n:bg) | ~10 phút |
+| **1. Tối thiểu** | Chỉ muốn dùng các lệnh AI (`/ba-spec`, `/qa-test-design`, `/cr-review`...) trong khung chat | **Giai đoạn 0** (bỏ qua bước Docker) → **Giai đoạn 1** → **Giai đoạn 2** | ~5 phút |
+| **2. Đầy đủ (Khuyên dùng)** | Muốn có thêm hệ thống tự động hóa **n8n Fast-Path** (tự động kéo Jira/Confluence siêu tốc, bắn báo cáo Daily Standup sang Slack lúc 08:50 sáng, lấy dữ liệu chứng khoán Metabase/Squash TM) | **Giai đoạn 0** → **Giai đoạn 1** → **Giai đoạn 2** → **Giai đoạn 3** | ~8 phút |
 
 ---
 
-## Giai đoạn 0: Yêu cầu hệ thống
+## Giai đoạn 0: Chuẩn Bị Công Cụ Nền Tảng Trên Máy Mới (Chỉ làm 1 lần)
 
-| Thành phần | Yêu cầu | Kiểm tra | Bắt buộc cho |
-|---|---|---|---|
-| Git + quyền truy cập GitLab (SSH key) | — | `git --version` | Mọi mức |
-| Node.js | **>= 20** | `node -v` | Mọi mức |
-| n8n CLI | Cài toàn cục (script tự cài) | `n8n --version` | Mức đầy đủ |
-| Hệ điều hành | macOS (tự động hoá hoàn toàn); Windows/Linux làm thủ công (Tuỳ chọn B) | — | — |
+Mở ứng dụng **Terminal** trên máy Mac của bạn (nhấn `Command + Space`, gõ `Terminal` rồi nhấn `Enter`) và kiểm tra/cài đặt lần lượt 4 công cụ sau:
 
-> PM2 **không cần cài riêng**: đã nằm trong `dependencies`, các lệnh `npm run n8n:*` tự dùng bản cục bộ.
+### Bước 0.1: Cài đặt Homebrew (Trình quản lý gói của macOS)
+Kiểm tra xem máy đã có Homebrew chưa bằng cách gõ:
+```bash
+brew --version
+```
+- Nếu hiện ra số phiên bản (ví dụ `Homebrew 4.x.x`) → **Đã có, chuyển sang Bước 0.2.**
+- Nếu báo `command not found: brew`, hãy copy và dán lệnh sau vào Terminal để cài đặt:
+  ```bash
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  ```
+
+### Bước 0.2: Cài đặt Git & Node.js (Phiên bản >= 20)
+Kiểm tra xem máy đã có Git và Node.js chưa:
+```bash
+git --version && node -v
+```
+- Nếu `node -v` hiện từ `v20.x.x` trở lên → **Đã đạt yêu cầu, chuyển sang Bước 0.3.**
+- Nếu chưa có hoặc phiên bản thấp hơn 20, chạy lệnh sau để cài đặt:
+  ```bash
+  brew install git node
+  ```
+
+### Bước 0.3: Cài đặt bộ 3 `Colima` + `Docker CLI` + `Docker Compose` (Dành cho mức Đầy đủ)
+Dự án sử dụng **n8n** để chạy các luồng tự động hóa (Jira, Confluence, Slack, Metabase). Thay vì phải cài đặt trực tiếp vào máy (dễ lỗi quyền `sudo`/Admin trên máy công ty và làm nặng thư mục dự án) hoặc cài ứng dụng Docker Desktop nặng nề, chúng ta dùng bộ 3 gọn nhẹ **Colima + Docker CLI + Docker Compose**:
+- **Colima (`colima`):** Tạo một máy ảo Linux siêu nhẹ chạy ngầm trên Mac (chỉ tốn 2GB RAM, miễn phí 100%, không cần giao diện nặng nề).
+- **Docker CLI (`docker`):** Công cụ dòng lệnh để bật/tắt container.
+- **Docker Compose (`docker-compose`):** Tự động đọc file [`docker-compose.yml`](../../docker-compose.yml) có sẵn trong dự án để tải và cấu hình n8n chuẩn xác 100%.
+
+Chạy đúng **1 lệnh duy nhất** dưới đây để cài đặt cả 3 công cụ (không cần mật khẩu Admin/`sudo`):
+```bash
+brew install colima docker docker-compose
+```
+Kiểm tra sau khi cài xong:
+```bash
+colima version && docker --version && docker-compose --version
+```
+*(Nếu cả 3 đều in ra số phiên bản là bạn đã hoàn tất Giai đoạn 0!).*
 
 ---
 
-## Giai đoạn 1: Cài đặt dự án
+## Giai đoạn 1: Tải Dự Án, Cấu Hình `.env` & Khởi Chạy Hệ Thống
 
-### Tùy chọn A: Một lệnh cho macOS (khuyên dùng)
+Bạn có thể chọn **Tùy chọn A (Tự động 1 lệnh)** hoặc **Tùy chọn B (Tự chạy từng bước để hiểu rõ bản chất)**.
+
+### Tùy chọn A: Cài Đặt Tự Động Bằng 1 Lệnh (Khuyên dùng cho macOS)
+Copy và chạy 3 dòng lệnh sau trong Terminal:
 ```bash
 git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
 cd agent-skills
 npm run setup:mac
 ```
-Script tự động: cài Homebrew/Node/n8n nếu thiếu → tạo `.env`, `config/projects.json`, `config/sm-config.yaml` từ file mẫu → `npm install` → khởi tạo database n8n và nạp workflows mẫu → đồng bộ plugins + rules vào `~/.gemini/config/` (Giai đoạn 2).
+**Lệnh `npm run setup:mac` sẽ tự động làm thay bạn toàn bộ các việc sau:**
+1. Kiểm tra và tự cài `Homebrew`, `Node.js`, `colima`, `docker`, `docker-compose` nếu bước 0 bạn chưa cài.
+2. Tạo sẵn các file cấu hình cá nhân (`.env`, `config/projects.json`, `config/sm-config.yaml`) từ file mẫu.
+3. Cài đặt thư viện của dự án (`npm install`).
+4. Bật máy ảo `Colima`, tự động nạp chứng chỉ bảo mật mạng công ty (như `DNSE Santa CA`) từ macOS Keychain vào máy ảo để không bị chặn mạng khi tải Docker image.
+5. Khởi chạy container `agent-skills-n8n` và **tự động nạp + bật (`Active = ON`) toàn bộ 18 workflows**.
+6. Đồng bộ toàn bộ 6 bộ kỹ năng (Plugins) vào công cụ AI trên máy của bạn.
 
-### Tùy chọn B: Thủ công (Windows/Linux, hoặc macOS đã có sẵn công cụ)
+👉 *Sau khi chạy xong Tùy chọn A, bạn chỉ cần xem tiếp **Mục 1.3 (Điền thông tin vào file `.env`)** bên dưới.*
+
+---
+
+### Tùy chọn B: Cài Đặt Từng Bước Tường Minh (Step-by-Step)
+Nếu bạn muốn tự tay thực hiện từng bước hoặc đang dùng Windows/Linux:
+
+**Bước 1.1 — Tải dự án và cài đặt thư viện:**
 ```bash
 git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
 cd agent-skills
+npm install
+```
+
+**Bước 1.2 — Tạo 3 file cấu hình cá nhân từ file mẫu:**
+```bash
 cp .env.example .env
 cp config/projects.json.example config/projects.json
 cp config/sm-config.example.yaml config/sm-config.yaml
-npm install
-npm run n8n:setup        # cài n8n nếu thiếu và nạp workflows mẫu (chỉ cần cho mức Đầy đủ)
 ```
 
-### Điền file `.env`
-Mở `.env` và điền theo mức bạn dùng. File `.env`, `config/projects.json`, `config/sm-config.yaml` đã nằm trong `.gitignore` — **không commit**.
+**Bước 1.3 — Mở và điền thông tin vào file `.env`:**
+Mở file `.env` bằng trình soạn thảo bất kỳ (VS Code, Antigravity, hoặc gõ `open -e .env` trên Mac). Các file `.env`, `config/projects.json`, `config/sm-config.yaml` và thư mục `.n8n-data/` đã được khóa trong `.gitignore` nên thông tin bí mật của bạn **không bao giờ bị đẩy nhầm lên Git**.
 
-| Biến | Cần cho | Ghi chú |
+Dưới đây là cách lấy từng thông tin cơ bản để điền vào `.env`:
+
+| Biến trong `.env` | Bắt buộc? | Cách lấy giá trị (Dành cho người mới) |
 |---|---|---|
-| `AGENT_WORKSPACE_DIR` | Mọi mức | Đường dẫn tuyệt đối tới thư mục repo này |
-| `PROJECT_SCAN_DIRS` | Tuỳ chọn | Các thư mục chứa repo cần agent scan, phân tách bằng dấu phẩy |
-| `GEMINI_API_KEY` | Tùy chọn | Lấy miễn phí tại [Google AI Studio](https://aistudio.google.com/app/apikey) |
-| `ATLASSIAN_*`, `SQUASH_*`, `GITLAB_*`, `METABASE_*` | Skill tương ứng | Chỉ điền cho tích hợp bạn thực sự dùng |
+| `AGENT_WORKSPACE_DIR` | **Bắt buộc** | Đường dẫn tới thư mục dự án này trên máy bạn. Gõ lệnh `pwd` trong Terminal rồi copy kết quả dán vào (ví dụ: `/Users/ten.ban/Projects/agent-skills`). |
+| `ATLASSIAN_BASE_URL` | Khi dùng Jira / Confluence | Điền: `https://entrade.atlassian.net` |
+| `ATLASSIAN_EMAIL` | Khi dùng Jira / Confluence | Email công ty của bạn dùng để đăng nhập Jira (ví dụ: `ten.ban@dnse.com.vn`). |
+| `ATLASSIAN_API_TOKEN` | Khi dùng Jira / Confluence | 1. Truy cập [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)<br/>2. Bấm **Create API token** → đặt tên bất kỳ → bấm **Copy** và dán vào đây. |
+| `SLACK_WEBHOOK_URL` | Khi dùng Báo cáo Slack | URL Incoming Webhook của kênh Slack nhận báo cáo Daily Standup / thông báo task Jira (ví dụ: `https://hooks.slack.com/services/...`). |
+| `PROJECT_SCAN_DIRS` | Tuỳ chọn | Đường dẫn thư mục chứa các repo code khác trên máy bạn để Agent tự động đồng bộ mỗi sáng (phân tách bằng dấu phẩy). |
+| `SQUASH_*`, `METABASE_*`, `GITLAB_*` | Tuỳ chọn | Chỉ cần điền nếu vai trò của bạn có dùng đến Squash TM (QA) hoặc Metabase TimescaleDB. |
 
-### Kiểm tra cài đặt
+**Bước 1.4 — Khởi động Colima & Container n8n (Nạp tự động 18 Workflows):**
+Sau khi lưu file `.env`, chạy lệnh sau:
 ```bash
-npm test      # 8 cổng validators (skills/commands/versions/links/paths/icons/nodes/tokens) + 19 unit tests + evals
+npm run n8n:setup
 ```
-Tất cả phải PASS trước khi chuyển sang giai đoạn tiếp theo.
+*(Lệnh này sẽ tự động bật máy ảo Colima, nạp chứng chỉ mạng công ty, tải container `agent-skills-n8n` và kích hoạt sẵn 18 workflows).*
+
+> 💡 **Lưu ý:** Ở những lần sau, hoặc mỗi khi bạn vừa sửa nội dung file `.env`, chỉ cần chạy lệnh ngắn gọn:
+> ```bash
+> npm run n8n:up
+> ```
+
+**Bước 1.5 — Kiểm tra xem cài đặt đã thành công 100% chưa:**
+1. **Kiểm tra giao diện Web của n8n:** Mở trình duyệt truy cập `http://localhost:5678` — bạn sẽ thấy n8n đang chạy với **18 workflows** đã được gạt công tắc sang trạng thái **Active (Published)**.
+2. **Chạy bộ kiểm định tự động của dự án:**
+   ```bash
+   npm test
+   ```
+   Nếu màn hình hiện `PASSED` cho toàn bộ 9 cổng kiểm định, 207 unit tests và 159 skill evals là môi trường của bạn đã hoàn hảo!
 
 ---
 
@@ -108,15 +179,25 @@ Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` c�
 
 ---
 
-## Giai đoạn 3 (Tuỳ chọn): Tự khởi động n8n cùng macOS
+## Giai đoạn 3: Thói Quen Sử Dụng Hàng Ngày & Tự Khởi Động Cùng Máy Mac
 
-Mặc định, sau khi reboot máy thì n8n **không** tự chạy lại. Để bật tự khởi động (PM2 + launchd):
+### 3.1. Bật tự động chạy ngầm mỗi khi mở máy Mac (Khuyên dùng)
+Container `agent-skills-n8n` đã được cấu hình tự khôi phục (`restart: unless-stopped`) trong [`docker-compose.yml`](../../docker-compose.yml). Do đó, bạn chỉ cần chạy 1 lệnh duy nhất dưới đây để máy ảo Colima tự bật khi bạn đăng nhập vào macOS (không cần quyền `sudo`):
 ```bash
-npm run n8n:autostart
+brew services start colima
 ```
-Script sẽ in ra 1 lệnh bắt đầu bằng `sudo ...` — **copy và chạy lệnh đó trong terminal** (cần mật khẩu admin). Kiểm tra: `ls ~/Library/LaunchAgents | grep pm2` phải thấy file `pm2.<tên-user>.plist`. Gỡ bỏ: `npm run n8n:autostart -- off`.
+Từ giờ trở đi, mỗi khi bạn khởi động lại máy Mac, Colima sẽ tự động bật ngầm (2GB RAM) và Docker tự động chạy lại container `agent-skills-n8n` cùng toàn bộ 18 workflows và lịch chạy Cron (như báo cáo Daily Standup lúc 08:50 sáng).
+*(Nếu muốn tắt tính năng tự khởi động: `brew services stop colima`).*
 
-> Nếu bạn thêm/xoá tiến trình PM2 sau đó, chạy lại `npx pm2 save` để cập nhật danh sách khởi động.
+### 3.2. Bảng Tóm Tắt: Hàng Ngày Khi Nào Cần Gõ Lệnh Gì?
+
+| Tình huống thực tế của bạn | Lệnh cần gõ trong Terminal |
+|---|---|
+| **Sáng bật máy lên làm việc** *(nếu chưa bật `brew services start colima`)* | `npm run colima:start && npm run n8n:up` |
+| **Vừa sửa thông tin trong file `.env`** *(ví dụ đổi token Jira/Slack)* | `npm run n8n:up` *(container sẽ tự nạp lại `.env` mới)* |
+| **Vừa kéo code mới của dự án về (`git pull`)** | `npm run setup:plugins && npm run n8n:up` |
+| **Muốn xem n8n đang chạy gì / có báo lỗi gì không** | `npm run n8n:logs` *(nhấn `Ctrl + C` để thoát xem log)* |
+| **Hết giờ làm, muốn tắt hẳn n8n và giải phóng 2GB RAM của máy ảo** | `npm run n8n:down && npm run colima:stop` |
 
 ---
 
@@ -198,12 +279,11 @@ ln -s /path/to/agent-skills/plugins/qa /path/to/my-microservice/.agents/plugins/
 
 | Triệu chứng | Nguyên nhân | Cách khắc phục |
 |---|---|---|
-| `n8n: command not found` | Chưa cài n8n toàn cục | `npm run n8n:setup` hoặc `npm install -g n8n` |
-| `EADDRINUSE :5678` | n8n đã chạy (PM2 hoặc `npm run n8n`) | `npm run n8n:status`; dừng bản trùng bằng `npm run n8n:stop` |
+| `Cannot connect to the Docker daemon` | Máy ảo Colima chưa được bật | Chạy `npm run colima:start` trước khi chạy `npm run n8n:up` |
+| `x509: certificate signed by unknown authority` khi pull image n8n | Mạng công ty dùng tường lửa/CA riêng (vd: DNSE Santa CA) | Chạy `npm run n8n:setup` (script tự động trích xuất CA từ macOS Keychain nạp vào Colima VM và khởi động lại Docker daemon) |
+| `EADDRINUSE :5678` | Cổng 5678 đang bị chiếm bởi tiến trình khác | Kiểm tra `lsof -i :5678`; dừng container bằng `npm run n8n:down` |
 | Workflow n8n lỗi âm thầm | Lỗi chỉ ghi vào execution của n8n | Xem `workspace/.n8n-errors.log` (do Global Error Handler ghi) hoặc `npm run n8n:logs` |
-| Sửa `.env` nhưng không có tác dụng | n8n chưa nạp lại cấu hình | `npm run n8n:restart` |
-| Lỗi `sqlite3`/native build khi import workflow | n8n thiếu binary sqlite3 | `npm run n8n:setup` (tự biên dịch lại) |
-| `sudo ... pm2: No such file or directory` | Dùng lệnh `pm2 startup` tự gõ | Chạy `npm run n8n:autostart` và dùng đúng lệnh script in ra |
+| Sửa `.env` nhưng không có tác dụng | Container n8n chưa nạp lại cấu hình | Chạy `npm run n8n:up` (hoặc `docker-compose up -d`) để cập nhật container |
 | Agent không thấy skills mới sau `git pull` | Chưa đồng bộ plugins | Gemini/Antigravity: `npm run setup:plugins` rồi khởi động lại agent. Claude Code: `/reload-plugins` |
 | Claude Code ở project khác không thấy skill | Chưa chạy setup Claude | `npm run setup:claude`, rồi mở phiên mới. Kiểm tra: `claude plugin list` phải có `agent-skills@skills-dir ✔ loaded` |
 | Skill báo `No such file` khi gọi script ở project khác | Thiếu `AGENT_SKILLS_HOME` | `npm run setup:claude` rồi mở phiên mới; kiểm tra `~/.claude/settings.json` có `env.AGENT_SKILLS_HOME` |
@@ -212,18 +292,19 @@ ln -s /path/to/agent-skills/plugins/qa /path/to/my-microservice/.agents/plugins/
 
 ## Phụ Lục: Các Lệnh Quản Lý Tiện Ích
 
-Tất cả các lệnh đều được tích hợp sẵn qua hệ thống `npm run`, bạn không cần nhớ cú pháp pm2 gốc:
+Tất cả các lệnh đều được tích hợp sẵn qua hệ thống `npm run`:
 
 | Lệnh npm | Chức năng |
 |---|---|
-| `npm run n8n:setup` | Chạy lại nạp workflows nếu vô tình xoá |
-| `npm run n8n:bg` | Khởi động n8n chạy ngầm |
-| `npm run n8n:autostart` | Tự khởi động n8n cùng macOS (PM2 + launchd). Cần chạy thêm 1 lệnh `sudo` do script in ra |
-| `npm run n8n:autostart -- off` | Gỡ tự khởi động |
-| `npm run n8n:status` | Kiểm tra trạng thái n8n |
-| `npm run n8n:logs` | Xem Logs thời gian thực của n8n |
-| `npm run n8n:restart`| Khởi động lại (cần thiết khi sửa `.env`) |
-| `npm run n8n:stop` | Tạm dừng n8n |
+| `npm run colima:start` | Khởi động máy ảo Colima (`--cpu 2 --memory 2 --disk 20`) |
+| `npm run colima:status` | Kiểm tra trạng thái máy ảo Colima |
+| `npm run colima:stop` | Dừng máy ảo Colima (giải phóng hoàn toàn RAM) |
+| `npm run n8n:setup` | Thiết lập tự động Colima + CA doanh nghiệp + Container n8n + Nạp 18 workflows |
+| `npm run n8n:up` | Khởi động container `agent-skills-n8n` & nạp + kích hoạt (`active = 1`) 18 workflows |
+| `npm run n8n:logs` | Xem Logs thời gian thực của container `agent-skills-n8n` |
+| `npm run n8n:down` | Dừng và gỡ container `agent-skills-n8n` (dữ liệu vẫn giữ nguyên trong `.n8n-data/`) |
+| `npm run n8n:sync-nodes` | Đồng bộ code từ `scripts/n8n-nodes/` vào các file JSON trong `n8n-workflows/` |
+| `npm run n8n:export` | Xuất workflows từ container n8n ra lại thư mục `n8n-workflows/` theo phân loại |
 | `npm run plugin:export -- --plugin <id>` | Xuất plugin độc lập cho các microservice bên ngoài |
 
 ---

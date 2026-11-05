@@ -27,6 +27,14 @@ else
     echo "✅ Node.js đã sẵn sàng ($NODE_VERSION)."
 fi
 
+# 3. Kiểm tra & Cài đặt Colima + Docker CLI + Docker Compose (Không cần quyền root/admin)
+if ! command -v colima &> /dev/null || ! command -v docker &> /dev/null || ! command -v docker-compose &> /dev/null; then
+    echo "🐳 Đang cài đặt Colima + Docker CLI + Docker Compose qua Homebrew..."
+    brew install colima docker docker-compose
+else
+    echo "✅ Colima ($(colima version | head -n 1)), Docker CLI và Docker Compose đã sẵn sàng."
+fi
+
 # 4. Tạo .env nếu chưa có
 if [ ! -f .env ]; then
     if [ -f .env.example ]; then
@@ -43,43 +51,13 @@ fi
 echo "📦 Cài đặt các thư viện Node.js (Dependencies)..."
 npm install
 
-# 5b. Cài n8n CLI toàn cục (cần có trước khi khởi tạo database)
-if ! command -v n8n &> /dev/null; then
-    echo "📦 n8n chưa được cài đặt. Đang cài n8n (npm install -g n8n)..."
-    npm install -g n8n
-else
-    echo "✅ n8n đã sẵn sàng ($(n8n --version))."
-fi
-
-# 5c. Tạo file cấu hình cục bộ từ mẫu (nếu chưa có)
+# 5b. Tạo file cấu hình cục bộ từ mẫu (nếu chưa có)
 mkdir -p config
 [ -f config/projects.json ] || [ -f projects.json ] || { [ -f config/projects.json.example ] && cp config/projects.json.example config/projects.json && echo "📄 Tạo config/projects.json từ mẫu."; }
 [ -f config/sm-config.yaml ] || [ -f sm-config.yaml ] || { [ -f config/sm-config.example.yaml ] && cp config/sm-config.example.yaml config/sm-config.yaml && echo "📄 Tạo config/sm-config.yaml từ mẫu."; }
 
-# 6. Khởi động n8n lần đầu để tạo database, sau đó import workflows
-echo "⚙️ Khởi động n8n lần đầu để khởi tạo cơ sở dữ liệu..."
-# Cần chạy n8n 1 lần để tạo file database.sqlite trước khi import workflow
-n8n start &
-N8N_INIT_PID=$!
-echo "⏳ Đợi n8n khởi tạo DB (poll /healthz tối đa 30 giây)..."
-n8n_ready=0
-for i in $(seq 1 30); do
-    if curl -sf http://localhost:5678/healthz >/dev/null 2>&1; then
-        n8n_ready=1
-        echo "✅ n8n sẵn sàng sau ${i} giây."
-        break
-    fi
-    sleep 1
-done
-if [ "$n8n_ready" -eq 0 ]; then
-    echo "⚠️ n8n chưa phản hồi sau 30 giây — tiếp tục nhưng có thể lỗi import."
-fi
-kill $N8N_INIT_PID 2>/dev/null || true
-wait $N8N_INIT_PID 2>/dev/null || true
-echo "✅ Database n8n đã được khởi tạo."
-
-# 6b. Import workflows mẫu
-echo "⚙️ Đang nạp các Workflow mẫu vào n8n..."
+# 6. Khởi động Colima + n8n Container & Nạp + Kích hoạt (active = 1) toàn bộ 18 Workflows
+echo "⚙️ Đang khởi tạo Colima VM, container agent-skills-n8n và nạp 18 Workflows..."
 npm run n8n:setup
 
 # 7. Đồng bộ plugins và rules toàn cục cho Antigravity / Gemini CLI
@@ -94,11 +72,14 @@ echo ""
 echo "🎉 XONG! TOÀN BỘ MÔI TRƯỜNG ĐÃ ĐƯỢC CÀI ĐẶT THÀNH CÔNG."
 echo "============================================================"
 echo "Các bước tiếp theo dành cho bạn:"
-echo "1. Điền API keys/token vào file .env (tối thiểu: thông tin Jira/Atlassian; GEMINI_API_KEY nếu dùng)."
-echo "   Xem .env.example để biết các biến bắt buộc."
-echo "2. Khởi động n8n chạy ngầm:"
-echo "   npm run n8n:bg"
-echo "3. (Tuỳ chọn) Tự khởi động cùng macOS:"
-echo "   npm run n8n:autostart   # rồi chạy lệnh sudo mà script in ra"
+echo "1. Điền API keys/token vào file .env (tối thiểu: thông tin Jira/Atlassian, SLACK_WEBHOOK_URL)."
+echo "   Sau khi sửa .env, chạy lại: npm run n8n:up"
+echo "2. Quản lý Colima + n8n Container hàng ngày:"
+echo "   • npm run colima:start  # Bật máy ảo Colima"
+echo "   • npm run n8n:up        # Bật n8n Container & kích hoạt 18 workflows"
+echo "   • npm run n8n:logs      # Xem log n8n Container"
+echo "   • npm run n8n:down      # Dừng n8n Container"
+echo "3. (Tuỳ chọn) Tự động bật Colima khi đăng nhập macOS:"
+echo "   brew services start colima"
 echo "Chi tiết: docs/guides/installation-guide.md"
 echo "============================================================"

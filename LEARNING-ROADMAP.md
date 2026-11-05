@@ -110,8 +110,8 @@ sequenceDiagram
 1. **Hiểu Kiến Trúc Progressive Disclosure 3 Tầng:**
    - Đọc: [`docs/guides/skill-anatomy.md`](docs/guides/skill-anatomy.md).
    - Nắm rõ cách chia: Frontmatter (~100 tokens), Body (<100 dòng), Resources (`references/`, `templates/`, `scripts/`).
-2. **Kích hoạt n8n Fast-Path:**
-   - Khởi động n8n local: `npm run n8n` hoặc chạy background: `npm run n8n:bg`.
+2. **Kích hoạt n8n Fast-Path Container:**
+   - Khởi động Colima & n8n container: `npm run colima:start && npm run n8n:up`.
    - Kết nối webhook tự động hóa chạy test, lưu báo cáo Standup vào `trace/`.
    - Đọc: [`docs/architecture/n8n-integration-strategy.md`](docs/architecture/n8n-integration-strategy.md).
 3. **Đánh Giá Chất Lượng Kỹ Năng Bằng Eval Suite:**

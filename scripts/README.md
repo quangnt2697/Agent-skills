@@ -45,20 +45,19 @@ scripts/
 │   └── metabase-sso-login.js        # Helper đăng nhập SSO tự động qua Playwright lấy Session Token
 │
 ├── setup/                    # Bộ cài đặt môi trường & liên kết Plugins
-│   ├── setup-mac.sh                 # Script bootstrap môi trường macOS (asdf, tools, config)
+│   ├── setup-mac.sh                 # Script bootstrap môi trường macOS (Homebrew, Node.js, Colima, Docker)
 │   ├── setup-plugins.js             # Symlink/copy plugins vào thư mục cấu hình của agent
-│   ├── setup-n8n.js                 # Khởi tạo n8n workspace, webhook tunnel và workflow import
+│   ├── setup-n8n.js                 # Khởi tạo Colima + CA doanh nghiệp + container n8n & nạp workflows
 │   ├── setup-claude.js              # Cài đặt / gỡ liên kết agent-skills cho Claude Code
-│   ├── n8n-autostart.js             # Cấu hình tự khởi động background daemon n8n qua PM2
+│   ├── export-plugin.js             # Xuất đóng gói plugin độc lập cho các microservice
 │   └── build-commands.js            # Tạo tự động .claude/commands/*.md từ commands/*.toml của plugins
 │
 ├── sync/                     # Bộ công cụ đồng bộ mã nguồn các microservices trong hệ thống
-│   ├── repo-sync.js                 # Smart Git pull đa repo, tự động stash/reset & chuyển nhánh
-│   └── daily-repo-sync.sh           # Shell script wrapper chạy cron sync đầu ngày
+│   └── repo-sync.js                 # Smart Git pull đa repo, tự động stash/reset & chuyển nhánh
 │
 ├── n8n/                      # Các script bảo trì hạ tầng & workflow n8n
 │   ├── sync-n8n-nodes.js            # Đồng bộ trực tiếp mã nguồn từ scripts/n8n-nodes/ vào JSON
-│   ├── n8n-clean-workflows.js       # Format, làm sạch và chuẩn hóa các file n8n-workflows/*.json
+│   ├── import-and-activate.js       # Import, dọn dẹp (--clean) và kích hoạt (active = 1) 18 workflows
 │   └── export-workflows.js          # Xuất và phân loại tự động workflows vào 4 thư mục con
 │
 ├── evals/                    # Runner đánh giá chất lượng kỹ năng (Routing & Behavioral Evals)
@@ -134,19 +133,18 @@ scripts/
 | `npm run db:recon:core` | Chạy suite 4 bài đối chiếu Core (Ticks, TopPrice, Trade Extra) | `node scripts/db/db-recon-core.js` |
 | `npm run sync` | Smart Git sync đa repo microservices trong group | `node scripts/sync/repo-sync.js` |
 
-### 5. Hạ tầng Tự Động Hóa n8n (n8n Workflows & Automation)
+### 5. Hạ tầng Tự Động Hóa n8n Container (Colima + Docker Compose)
 
 | Lệnh | Mô Tả | Script / Công Cụ Thực Thi |
 |---|---|---|
-| `npm run n8n` | Khởi động n8n server ở chế độ foreground | `n8n start` |
-| `npm run n8n:setup` | Khởi tạo cấu hình ban đầu cho n8n | `node scripts/setup/setup-n8n.js` |
-| `npm run n8n:bg` | Khởi động n8n daemon chạy ngầm qua PM2 | `pm2 start config/ecosystem.config.cjs` |
-| `npm run n8n:autostart` | Cấu hình tự động bật n8n khi khởi động máy | `node scripts/setup/n8n-autostart.js` |
-| `npm run n8n:stop` | Dừng daemon n8n đang chạy ngầm | `pm2 stop config/ecosystem.config.cjs` |
-| `npm run n8n:restart` | Khởi động lại daemon n8n | `pm2 restart config/ecosystem.config.cjs` |
-| `npm run n8n:status` | Kiểm tra trạng thái tiến trình n8n trên PM2 | `pm2 status` |
-| `npm run n8n:logs` | Xem luồng logs thời gian thực của daemon n8n | `pm2 logs` |
-| `npm run n8n:import` | Nạp toàn bộ workflows từ 4 thư mục con vào n8n | `for d in n8n-workflows/*/; do n8n import:workflow --separate --input=$d; done` |
+| `npm run colima:start` | Khởi động máy ảo Colima (`--cpu 2 --memory 2 --disk 20`) | `colima start --cpu 2 --memory 2 --disk 20` |
+| `npm run colima:status` | Kiểm tra trạng thái máy ảo Colima | `colima status` |
+| `npm run colima:stop` | Dừng máy ảo Colima | `colima stop` |
+| `npm run n8n` / `npm run n8n:up` | Khởi động container `agent-skills-n8n` & nạp + active 18 workflows | `docker-compose up -d && node scripts/n8n/import-and-activate.js` |
+| `npm run n8n:setup` | Thiết lập tự động Colima + CA doanh nghiệp + Container n8n | `node scripts/setup/setup-n8n.js` |
+| `npm run n8n:down` | Dừng và gỡ container `agent-skills-n8n` | `docker-compose down` |
+| `npm run n8n:logs` | Xem luồng logs thời gian thực của container `agent-skills-n8n` | `docker-compose logs -f n8n` |
+| `npm run n8n:activate` | Nạp và kích hoạt (`active = 1`) toàn bộ 18 workflows | `node scripts/n8n/import-and-activate.js` |
+| `npm run n8n:clean` | Xoá sạch workflow cũ trong SQLite và nạp lại 18 workflows chuẩn | `node scripts/n8n/import-and-activate.js --clean` |
 | `npm run n8n:export` | Xuất và phân loại tự động workflows n8n vào đúng 4 thư mục con | `node scripts/n8n/export-workflows.js` |
-| `npm run n8n:clean` | Chuẩn hóa, format và làm sạch các file JSON workflows | `node scripts/n8n/n8n-clean-workflows.js` |
-| `npm run n8n:sync-nodes` | Đồng bộ 22 file code node JS vào n8n workflow JSON | `node scripts/n8n/sync-n8n-nodes.js` |
+| `npm run n8n:sync-nodes` | Đồng bộ 27 file code node JS vào n8n workflow JSON | `node scripts/n8n/sync-n8n-nodes.js` |

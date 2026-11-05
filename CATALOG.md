@@ -235,11 +235,11 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 | **So sánh Checkpoint Diff** | `npm run checkpoint:diff` | So sánh biến động file `workspace/` so với snapshot gần nhất |
 | **Export Plugin Độc lập** | `npm run plugin:export -- -p <name> [--tar]` | Đóng gói 1 plugin thành thư mục độc lập hoặc file `.tar.gz` |
 | **Quét UI Design System** | `npm run scan:ui-components` | Quét UI components từ web/mobile trading sang dictionary |
-| **Nạp Workflows n8n** | `npm run n8n:import` | Import toàn bộ workflows từ 4 thư mục con vào n8n instance |
+| **Quản Lý Máy Ảo Colima** | `npm run colima:start` / `:status` / `:stop` | Khởi động/kiểm tra/dừng máy ảo Colima (2 CPU, 2GB RAM) |
+| **Quản Lý Container n8n** | `npm run n8n:up` / `:down` / `:logs` | Bật container `agent-skills-n8n` kèm kích hoạt 18 workflows, dừng hoặc xem log |
 | **Xuất Workflows n8n Phân Loại**| `npm run n8n:export` | Xuất và tự động phân loại workflows về đúng 4 thư mục con |
-| **Làm Sạch Workflows n8n** | `npm run n8n:clean` | Chuẩn hóa, format và làm sạch các file JSON workflows |
-| **Đồng Bộ Node Code n8n** | `npm run n8n:sync-nodes` | Đồng bộ 22 node scripts từ `scripts/n8n-nodes/` vào JSON |
-| **Quản Lý Daemon n8n (PM2)** | `npm run n8n:bg` / `:status` / `:logs` / `:restart` / `:stop` | Vận hành tiến trình n8n ngầm với PM2 |
+| **Làm Sạch & Nạp Lại Workflows**| `npm run n8n:clean` | Xóa sạch workflow cũ trong SQLite và nạp lại 18 workflows chuẩn |
+| **Đồng Bộ Node Code n8n** | `npm run n8n:sync-nodes` | Đồng bộ 27 node scripts từ `scripts/n8n-nodes/` vào JSON |
 | **Git Worktree Isolation** | `bash scripts/lib/qa-worktree.sh create {key}` | Cách ly môi trường chạy test E2E Playwright để không làm bẩn working tree |
 
 

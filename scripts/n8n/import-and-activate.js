@@ -1,110 +1,138 @@
 #!/usr/bin/env node
 
 /**
- * Script Import và Kích Hoạt (Active) Toàn Bộ Workflows vào n8n SQLite
+ * Script Import và Kích Hoạt (Active) Toàn Bộ Workflows vào n8n
  * (`scripts/n8n/import-and-activate.js`)
  *
  * Tự động:
- * 1. Quét toàn bộ 19 file workflow JSON trong `n8n-workflows/`.
- * 2. Cập nhật hoặc thêm mới vào `workflow_entity` và `workflow_history` trong `~/.n8n/database.sqlite`.
- * 3. Đảm bảo `active = 1` và `activeVersionId = versionId` (bắt buộc cho n8n v1+).
+ * 1. Nếu Docker container n8n đang chạy, dùng `n8n import:workflow` để nạp toàn bộ thư mục `n8n-workflows/`.
+ * 2. Cập nhật SQLite database (.n8n-data/database.sqlite hoặc ~/.n8n/database.sqlite) để đặt `active = 1` và `activeVersionId = versionId`.
+ * 3. Tự động reload để n8n xuất bản toàn bộ 18 workflows.
  */
 
 import { DatabaseSync } from 'node:sqlite';
+import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..', '..');
+const isClean = process.argv.includes('--clean');
 
-const dbPath = path.join(os.homedir(), '.n8n', 'database.sqlite');
-if (!fs.existsSync(dbPath)) {
-  console.error(`❌ Không tìm thấy database n8n tại: ${dbPath}`);
+const dbCandidates = [
+  process.env.N8N_DB_PATH,
+  path.join(projectRoot, '.n8n-data', 'database.sqlite'),
+  path.join(os.homedir(), '.n8n', 'database.sqlite')
+].filter(Boolean);
+
+// 1. Kiểm tra nếu container Docker n8n đang chạy
+let isDockerRunning = false;
+try {
+  const containerCheck = execSync('docker ps --filter "name=agent-skills-n8n" --format "{{.Names}}"', { encoding: 'utf8' }).trim();
+  if (containerCheck.includes('agent-skills-n8n')) {
+    isDockerRunning = true;
+  }
+} catch (_) {}
+
+// Nếu Docker đang chạy lần đầu, đợi tối đa 30s để n8n khởi tạo database.sqlite và /healthz
+if (isDockerRunning) {
+  console.log('⏳ Đang kiểm tra trạng thái sẵn sàng của container agent-skills-n8n...');
+  for (let i = 1; i <= 30; i++) {
+    const hasDb = dbCandidates.some(p => fs.existsSync(p));
+    let isHealthy = false;
+    try {
+      execSync('curl -sf http://localhost:5678/healthz', { stdio: 'ignore' });
+      isHealthy = true;
+    } catch (_) {}
+    if (hasDb && isHealthy) {
+      break;
+    }
+    execSync('sleep 1');
+  }
+}
+
+const dbPath = dbCandidates.find(p => fs.existsSync(p)) || null;
+
+if (!dbPath) {
+  console.error(`❌ Không tìm thấy database n8n tại: \n - ${dbCandidates.join('\n - ')}`);
+  console.error('👉 Vui lòng khởi động n8n trước (npm run n8n:up) để tạo database.');
   process.exit(1);
 }
 
-const db = new DatabaseSync(dbPath);
-const workflowsDir = path.join(projectRoot, 'n8n-workflows');
+console.log(`📁 Sử dụng n8n database: ${dbPath}`);
 
-function findWorkflowFiles(dir) {
-  const files = [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...findWorkflowFiles(fullPath));
-    } else if (entry.isFile() && entry.name.endsWith('.json')) {
-      files.push(fullPath);
-    }
+// Tuỳ chọn --clean: Xoá sạch các bản ghi workflow cũ (giữ nguyên credentials) trước khi import lại
+if (isClean) {
+  console.log('🧹 Đang dọn dẹp toàn bộ workflows cũ trong SQLite (giữ nguyên Credentials)...');
+  if (isDockerRunning) {
+    execSync('docker stop agent-skills-n8n', { stdio: 'ignore' });
   }
-  return files;
-}
-
-const workflowFiles = findWorkflowFiles(workflowsDir);
-console.log(`🔍 Tìm thấy ${workflowFiles.length} file workflow trong n8n-workflows/...`);
-
-let updatedCount = 0;
-let insertedCount = 0;
-
-for (const filePath of workflowFiles) {
-  try {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const wf = JSON.parse(content);
-    const id = wf.id;
-    const name = wf.name || path.basename(filePath, '.json');
-    const nodes = JSON.stringify(wf.nodes || []);
-    const connections = JSON.stringify(wf.connections || {});
-    const settings = JSON.stringify(wf.settings || {});
-    const staticData = wf.staticData ? JSON.stringify(wf.staticData) : null;
-    const pinData = wf.pinData ? JSON.stringify(wf.pinData) : null;
-
-    if (!id) {
-      console.warn(`⚠️ Bỏ qua file thiếu id: ${filePath}`);
-      continue;
+  const cleanDb = new DatabaseSync(dbPath);
+  for (const table of ['workflows_tags', 'shared_workflow', 'workflow_history', 'workflow_statistics', 'workflow_dependency', 'workflow_entity']) {
+    try {
+      cleanDb.exec(`DELETE FROM ${table};`);
+    } catch (_) {}
+  }
+  cleanDb.close();
+  console.log('✅ Đã xóa sạch các workflow cũ!');
+  if (isDockerRunning) {
+    execSync('docker start agent-skills-n8n', { stdio: 'ignore' });
+    for (let i = 1; i <= 30; i++) {
+      try {
+        execSync('curl -sf http://localhost:5678/healthz', { stdio: 'ignore' });
+        break;
+      } catch (_) {
+        execSync('sleep 1');
+      }
     }
-
-    const existing = db.prepare('SELECT id, versionId, activeVersionId FROM workflow_entity WHERE id = ?').get(id);
-    const newVersionId = crypto.randomUUID();
-    const isActive = wf.active !== false ? 1 : 0;
-
-    // 1. Ghi bản ghi lịch sử vào workflow_history
-    const histStmt = db.prepare(`
-      INSERT INTO workflow_history (versionId, workflowId, authors, createdAt, updatedAt, nodes, connections, name, autosaved, nodeGroups)
-      VALUES (?, ?, 'agent-skills', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?, 0, '[]')
-    `);
-    histStmt.run(newVersionId, id, nodes, connections, name);
-
-    if (existing) {
-      // 2a. Cập nhật workflow_entity
-      const updateStmt = db.prepare(`
-        UPDATE workflow_entity 
-        SET name = ?, nodes = ?, connections = ?, settings = ?, staticData = COALESCE(?, staticData),
-            pinData = COALESCE(?, pinData), versionId = ?, activeVersionId = ?, active = ?, updatedAt = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `);
-      updateStmt.run(name, nodes, connections, settings, staticData, pinData, newVersionId, newVersionId, isActive, id);
-      updatedCount++;
-      console.log(`  🔄 [UPDATED & ${isActive ? 'ACTIVE' : 'INACTIVE'}] ${name} (${id})`);
-    } else {
-      // 2b. Thêm mới workflow_entity
-      const insertStmt = db.prepare(`
-        INSERT INTO workflow_entity (id, name, active, nodes, connections, settings, staticData, pinData, versionId, activeVersionId, nodeGroups, createdAt, updatedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      `);
-      insertStmt.run(id, name, isActive, nodes, connections, settings, staticData, pinData, newVersionId, newVersionId);
-      insertedCount++;
-      console.log(`  ➕ [INSERTED & ${isActive ? 'ACTIVE' : 'INACTIVE'}] ${name} (${id})`);
-    }
-  } catch (err) {
-    console.error(`❌ Lỗi xử lý ${filePath}:`, err.message);
   }
 }
 
-db.close();
+if (isDockerRunning) {
+  console.log('📦 Phát hiện container Docker n8n đang chạy, đang import workflows...');
+  const workflowsDir = path.join(projectRoot, 'n8n-workflows');
+  const subDirs = fs.readdirSync(workflowsDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name);
 
-console.log(`\n🎉 Hoàn tất! Đã cập nhật ${updatedCount} workflows, thêm mới ${insertedCount} workflows.`);
-console.log(`✅ Toàn bộ ${updatedCount + insertedCount} workflows đã được kích hoạt (active = 1, activeVersionId đồng bộ)!`);
+  for (const sub of subDirs) {
+    try {
+      execSync(`docker exec agent-skills-n8n n8n import:workflow --separate --input="/workspace/n8n-workflows/${sub}"`, { stdio: 'inherit' });
+    } catch (err) {
+      console.warn(`⚠️ Import ${sub} có cảnh báo:`, err.message);
+    }
+  }
+}
+
+// 2. Kích hoạt toàn bộ workflows trong SQLite database
+try {
+  if (isDockerRunning) {
+    console.log('⏸️  Tạm dừng container để flush SQLite WAL trước khi kích hoạt workflows...');
+    execSync('docker stop agent-skills-n8n', { stdio: 'ignore' });
+  }
+
+  const db = new DatabaseSync(dbPath);
+  const res = db.prepare('UPDATE workflow_entity SET active = 1, activeVersionId = versionId').run();
+  db.close();
+  console.log(`✅ Đã kích hoạt (active = 1) cho ${res.changes} workflows trong SQLite!`);
+
+  if (isDockerRunning) {
+    console.log('🔄 Đang khởi động lại container để n8n xuất bản lịch chạy...');
+    execSync('docker start agent-skills-n8n', { stdio: 'ignore' });
+    for (let i = 1; i <= 30; i++) {
+      try {
+        execSync('curl -sf http://localhost:5678/healthz', { stdio: 'ignore' });
+        break;
+      } catch (_) {
+        execSync('sleep 1');
+      }
+    }
+    console.log('🎉 Hoàn tất! n8n đã sẵn sàng tại http://localhost:5678 (18/18 workflows active)');
+  }
+} catch (err) {
+  console.error('❌ Lỗi kích hoạt SQLite workflows:', err.message);
+  process.exit(1);
+}

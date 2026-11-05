@@ -6,7 +6,7 @@
  * - Các hàm chuyên biệt: prepJiraContext, pushSpecToJira, batchSquashPush, triggerAsyncTest...
  *
  * **Lưu ý:** n8n là BẮT BUỘC phải đang chạy. Không có fallback MCP hay shell.
- * Khởi động n8n bằng: `npm run n8n` hoặc `npm run n8n:bg` (background via PM2)
+ * Khởi động n8n bằng: `npm run n8n:up` (hoặc `npm run n8n`)
  */
 
 import dotenv from 'dotenv';

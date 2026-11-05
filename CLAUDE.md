@@ -27,8 +27,9 @@ npm run evals
 # Đồng bộ mã nguồn các microservices trong nhóm
 npm run sync
 
-# Khởi động n8n automation engine cục bộ
-npm run n8n
+# Khởi động Colima VM & n8n Fast-Path Container (tự động nạp + active 18 workflows)
+npm run colima:start
+npm run n8n:up
 ```
 
 ---
