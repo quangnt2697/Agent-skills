@@ -24,6 +24,7 @@
     "validate:tokens": "node scripts/validators/validate-skill-tokens.js",
     "test:unit": "node --test scripts/tests/*-test.js",
     "workspace:archive": "node scripts/workspace/archive-issues.js",
+    "workspace:clean": "node scripts/workspace/clean-issue-workspace.js",
     "checkpoint:diff": "node scripts/checkpoint/diff-checkpoint.js",
     "evals": "node scripts/evals/run-evals.js --min-rank1 90",
     "setup:plugins": "node scripts/setup/setup-plugins.js",

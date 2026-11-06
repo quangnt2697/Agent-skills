@@ -56,6 +56,10 @@ scripts/
 ├── sync/                     # Bộ công cụ đồng bộ mã nguồn các microservices trong hệ thống
 │   └── repo-sync.js                 # Smart Git pull đa repo, tự động stash/reset & chuyển nhánh
 │
+├── workspace/                # Quản lý và bảo trì không gian làm việc workspace
+│   ├── archive-issues.js            # Dọn dẹp & lưu trữ (archive) các thư mục issue cũ quá 30 ngày
+│   └── clean-issue-workspace.js     # Tự động dọn dẹp file nháp/rác sau khi push Jira, giữ bộ thành quả cuối cùng
+│
 ├── n8n/                      # Các script bảo trì hạ tầng & workflow n8n
 │   ├── sync-n8n-nodes.js            # Đồng bộ trực tiếp mã nguồn từ scripts/n8n-nodes/ vào JSON
 │   ├── import-and-activate.js       # Import, dọn dẹp (--clean) và kích hoạt (active = 1) 18 workflows
@@ -108,6 +112,7 @@ scripts/
 | Lệnh | Mô Tả | Script / Công Cụ Thực Thi |
 |---|---|---|
 | `npm run workspace:archive` | Nén và đóng gói thư mục `workspace/` phục vụ lưu trữ | `node -e "/* archive script */"` |
+| `npm run workspace:clean` | Tự động dọn dẹp file nháp/rác sau khi push Jira, giữ lại bộ thành quả cuối cùng | `node scripts/workspace/clean-issue-workspace.js` |
 | `npm run checkpoint:diff` | So sánh biến động file `workspace/` so với snapshot gần nhất | `git diff --stat workspace/` |
 
 ### 3. Cài đặt Môi trường, Plugins & Hooks (Setup & Plugins)

@@ -66,6 +66,88 @@ if (json.error || json.errorMessages || (json.status && json.status >= 400)) {
 const formattedUser = userName ? (userName.startsWith('@') ? userName : '@' + userName) : '@User';
 const projectTag = specContext.project ? specContext.project + ' ' : '';
 
+// Tự động dọn dẹp các file nháp/rác sau khi push Jira thành công (Post-Push Cleanup)
+try {
+  const fs = require('fs');
+  const path = require('path');
+  let wsDir = ($env && $env.AGENT_WORKSPACE_DIR) || '/workspace';
+  try {
+    const proc = require('process');
+    if (proc && typeof proc.cwd === 'function') wsDir = ($env && $env.AGENT_WORKSPACE_DIR) || proc.cwd();
+  } catch (_) {}
+
+  const issueDir = path.resolve(wsDir, 'workspace', 'issues', issueKey);
+  const specDir = path.join(issueDir, 'spec');
+  const refinedPath = path.join(specDir, 'refined.md');
+  const finalPath = path.join(specDir, 'final.md');
+
+  if (fs.existsSync(issueDir) && (fs.existsSync(refinedPath) || fs.existsSync(finalPath))) {
+    const mdContent = (fs.existsSync(refinedPath) ? fs.readFileSync(refinedPath, 'utf8') : '') +
+                      (fs.existsSync(finalPath) ? fs.readFileSync(finalPath, 'utf8') : '');
+    const usedImages = new Set();
+    const mdImgRegex = /!\[.*?\]\(([^)\s]+)(?:\s+["'].*?["'])?\)/g;
+    let m;
+    while ((m = mdImgRegex.exec(mdContent)) !== null) {
+      usedImages.add(path.basename(m[1].trim()));
+    }
+    const htmlImgRegex = /<img\s+[^>]*?src=["']([^"']+)["']/gi;
+    while ((m = htmlImgRegex.exec(mdContent)) !== null) {
+      usedImages.add(path.basename(m[1].trim()));
+    }
+
+    const toDelete = [
+      path.join(specDir, 'refined-draft.md'),
+      path.join(specDir, 'adf.json'),
+      path.join(specDir, '.scratch')
+    ];
+    for (const p of toDelete) {
+      if (fs.existsSync(p)) fs.rmSync(p, { recursive: true, force: true });
+    }
+
+    if (fs.existsSync(specDir)) {
+      for (const f of fs.readdirSync(specDir)) {
+        if (/\.(mmd|py|sh)$/i.test(f) || f.startsWith('asis-')) {
+          fs.rmSync(path.join(specDir, f), { force: true });
+        } else if (/\.(png|jpe?g|svg|webp|gif)$/i.test(f) && !usedImages.has(f)) {
+          fs.rmSync(path.join(specDir, f), { force: true });
+        }
+      }
+    }
+
+    const diagDir = path.join(specDir, 'diagrams');
+    if (fs.existsSync(diagDir)) {
+      for (const f of fs.readdirSync(diagDir)) {
+        if (/^(scratch-|temp-|debug-|test-|parse_|asis-)/i.test(f) || /\.(mmd|txt|bak|tmp)$/i.test(f)) {
+          fs.rmSync(path.join(diagDir, f), { force: true });
+        } else if (/\.(png|jpe?g|svg|webp|gif)$/i.test(f) && !usedImages.has(f)) {
+          fs.rmSync(path.join(diagDir, f), { force: true });
+        }
+      }
+    }
+
+    const sourceDir = path.join(issueDir, 'source');
+    if (fs.existsSync(sourceDir)) {
+      const backups = fs.readdirSync(sourceDir)
+        .filter((f) => /^jira-description-backup-\d+\.json$/.test(f))
+        .map((f) => {
+          const full = path.join(sourceDir, f);
+          return { full, mtimeMs: fs.statSync(full).mtimeMs };
+        })
+        .sort((a, b) => b.mtimeMs - a.mtimeMs);
+      for (let i = 1; i < backups.length; i++) {
+        fs.rmSync(backups[i].full, { force: true });
+      }
+    }
+
+    for (const f of fs.readdirSync(issueDir)) {
+      const full = path.join(issueDir, f);
+      if (fs.statSync(full).isFile() && f !== '.pipeline-state.json' && /\.(txt|tmp|bak|log)$/i.test(f)) {
+        fs.rmSync(full, { force: true });
+      }
+    }
+  }
+} catch (_) {}
+
 const successMsg = `### 🚀 Đẩy Đặc Tả Lên Jira Thành Công!
 - **Ticket:** **[${issueKey}](${jiraUrl})**
 - **Nguồn spec:** \`${specContext.filePath}\` (*${specContext.specType || 'Spec'}*)

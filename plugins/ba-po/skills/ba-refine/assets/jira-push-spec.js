@@ -16,6 +16,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import md2adf from 'md-to-adf';
 import { validateRefinedSpec } from '../../../../../scripts/validators/validate-ba-refine.js';
+import { cleanIssueWorkspace } from '../../../../../scripts/workspace/clean-issue-workspace.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -780,6 +781,14 @@ async function main() {
 
             // Xuất testability-manifest.json
             exportTestabilityManifest(issueKey, markdownContent, mdFilePath);
+
+            // Tự động dọn dẹp các file nháp, scratch debug sau khi đã chốt và push thành công (Post-Push Cleanup)
+            try {
+                const cleanRes = cleanIssueWorkspace(issueKey, { rootDir: process.cwd() });
+                if (cleanRes.success && cleanRes.removedFiles.length > 0) {
+                    console.log(`🧹 Đã tự động dọn dẹp ${cleanRes.removedFiles.length} file nháp/rác trong workspace: ${cleanRes.removedFiles.join(', ')}`);
+                }
+            } catch (_) {}
         } else {
             const errorText = await response.text();
             console.error(`❌ Cập nhật thất bại. HTTP Status: ${response.status}`);

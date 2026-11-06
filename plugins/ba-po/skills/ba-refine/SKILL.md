@@ -99,10 +99,11 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
   - **Kiểm định Hard Gate trước Gate 2:** Chạy lệnh `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md" --ui` — BẮT BUỘC PASS 100% trước khi trình user.
   - Trình toàn bộ draft kèm ảnh Mockup qua **Gate 2** để user phê duyệt.
 
-- **Giai đoạn 4 (Đồng bộ lên Jira & Handoff Kỹ thuật):**
+- **Giai đoạn 4 (Đồng bộ lên Jira, Tự động Dọn dẹp Workspace & Handoff Kỹ thuật):**
   - Cập nhật mô tả Jira qua n8n hoặc CLI helper `jira-push-spec.js`.
   - **Tự động upload toàn bộ ảnh `mockup*.png` và dán trực tiếp (inline image ADF `mediaSingle`) vào Mục UI Design / Mockup trong Description của Jira ticket** (không chỉ đính kèm file ở tab attachments).
   - **Tự động xuất bản `spec/testability-manifest.json`** để QA tự động sinh test code POM.
+  - **Tự động Dọn dẹp Workspace sau khi Push (Post-Push Cleanup):** Hệ thống tự động xóa sạch các file nháp (`refined-draft.md`, `adf.json`, `*.mmd`, `.scratch/`, file backup cũ và ảnh render thử nghiệm không được nhúng vào spec) để chỉ giữ lại bộ thành quả cuối cùng (`refined.md`, `final.md`, `testability-manifest.json`, `mockup.html`, script render và ảnh mockup chính thức).
   - Handoff sang DEV và QA (`/qa-test-design`).
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)

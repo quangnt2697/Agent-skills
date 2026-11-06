@@ -197,7 +197,17 @@ Issues đã hoàn thành > 30 ngày có thể archive:
 /project-root/workspace/archive/{issueKey}/
 ```
 
-Script: `node scripts/workspace/archive-issues.js`
+Script: `node scripts/workspace/archive-issues.js` (hoặc `npm run workspace:archive`)
+
+### 5. Vòng đời File & Tự Động Dọn Dẹp Sau Khi Push Jira (Post-Push Cleanup)
+
+Để tối ưu dung lượng và giữ workspace sạch sẽ, ngay sau khi chốt `refined.md` / `final.md` và đẩy lên Jira thành công:
+- **Tự động dọn dẹp:** Xóa toàn bộ file nháp (`refined-draft.md`, `adf.json`, `*.mmd`, `.scratch/`, script debug tạm, backup cũ và ảnh chụp thử nghiệm không được nhúng vào spec).
+- **Bộ Thành quả Cuối cùng được lưu giữ:**
+  - `spec/refined.md`, `spec/final.md`, `spec/testability-manifest.json`
+  - `spec/diagrams/`: `mockup.html`, script render (nếu có), và các ảnh mockup chính thức được nhúng trong spec
+  - `source/`: `jira-issue.json`, `multi-source-context.md`, và duy nhất 1 bản backup Jira mới nhất
+- **Lệnh dọn dẹp chủ động:** `npm run workspace:clean` (dọn toàn bộ) hoặc `npm run workspace:clean <issueKey>`.
 
 ---
 
