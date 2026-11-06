@@ -140,6 +140,7 @@ Hệ thống vận hành theo cơ chế **Fast-Path cục bộ kết hợp Lịc
   - Tự động lấy Active Sprint của **Board 61 (`G.3.1 - Partners & Open API`, Project `G3PTP`)**.
   - Phân tích tiến độ Story Points (`customfield_10022`), bảng cân bằng tải công việc và danh sách ticket bị treo **> 4 ngày** (`stuckDaysThreshold = 4`).
   - Trả về `reportText` (Markdown chuẩn để Agent lưu vào `workspace/sprints/{sprintId}/trace/daily-standup-report.md`) đồng thời tạo sẵn `slackPayload` (kết hợp bảng Monospace + Native Slack Block Kit `table` với link Jira có thể click và tự động xuống dòng `is_wrapped: true`) để bắn trực tiếp vào kênh Slack `SLACK_WEBHOOK_URL` lúc 08:50 sáng thứ Hai – thứ Sáu.
+  - **Cơ chế Standup Catch-up (Chống sót khi Sleep):** Khi máy Mac gập màn hình qua mốc 08:50 AM, cơ chế Watchdog của LaunchAgent (`scripts/setup/n8n-autostart.js --ensure`) sẽ tự phát hiện trong khung giờ 08:51–11:59 các ngày trong tuần và kích hoạt chạy bù báo cáo lên Slack, đồng thời ghi nhận mốc ngày vào `.n8n-data/standup-last-sent.txt` để chống gửi trùng lặp.
 - **Jira Ready to Test Handler:** Lắng nghe/xử lý Webhook Jira lọc task Board G.3.1 trong Active Sprint chuyển sang Ready to test, quét workspace local báo `✅/❌ Gherkin file` và `✅/❌ Autoscript test`, trả card `### 🎯 READY TO TEST` kèm gợi ý lệnh cho caller.
 - **Lỗi workflow:** `Global Error Handler` ghi mỗi lỗi thành 1 dòng JSON vào `workspace/.n8n-errors.log` (đã `.gitignore` nhờ `/workspace/`). Node ghi log không nuốt lỗi: nếu không ghi được file, execution báo thất bại.
 
@@ -149,21 +150,26 @@ Hệ thống vận hành theo cơ chế **Fast-Path cục bộ kết hợp Lịc
 
 Dự án đóng gói sẵn môi trường n8n trong [`docker-compose.yml`](../../docker-compose.yml) (`agent-skills-n8n`), giúp cô lập hoàn toàn dependencies (không làm phình `node_modules`) và không cần quyền `sudo`/root khi cài đặt trên máy mới:
 
-1. **Khởi động máy ảo Colima (nếu chưa bật):**
+1. **Tự động khởi động & giám sát ngầm qua macOS LaunchAgent (Khuyên dùng):**
+   ```bash
+   npm run autostart:on       # Bật tự khởi động khi login + Watchdog 5 phút/lần
+   npm run autostart:status   # Kiểm tra trạng thái LaunchAgent, Colima & Container
+   ```
+2. **Khởi động máy ảo Colima thủ công (nếu không dùng autostart):**
    ```bash
    npm run colima:start
    ```
-2. **Khởi động container n8n & tự động nạp + kích hoạt (`active = 1`) toàn bộ 18 workflows:**
+3. **Khởi động container n8n & tự động nạp + kích hoạt (`active = 1`) toàn bộ 18 workflows:**
    ```bash
    npm run n8n:up
    ```
    *(Dữ liệu SQLite của n8n được lưu bền vững tại `./.n8n-data/database.sqlite` và thư mục dự án được mount vào `/workspace` bên trong container).*
-3. **Xem log hoạt động hoặc dừng container:**
+4. **Xem log hoạt động hoặc dừng container:**
    ```bash
    npm run n8n:logs
    npm run n8n:down
    ```
-4. **Đồng bộ code từ `scripts/n8n-nodes/` vào `n8n-workflows/` sau khi chỉnh sửa logic node:**
+5. **Đồng bộ code từ `scripts/n8n-nodes/` vào `n8n-workflows/` sau khi chỉnh sửa logic node:**
    ```bash
    npm run n8n:sync-nodes && npm run n8n:up
    ```

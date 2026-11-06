@@ -182,18 +182,26 @@ Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` c�
 ## Giai đoạn 3: Thói Quen Sử Dụng Hàng Ngày & Tự Khởi Động Cùng Máy Mac
 
 ### 3.1. Bật tự động chạy ngầm mỗi khi mở máy Mac (Khuyên dùng)
-Container `agent-skills-n8n` đã được cấu hình tự khôi phục (`restart: unless-stopped`) trong [`docker-compose.yml`](../../docker-compose.yml). Do đó, bạn chỉ cần chạy 1 lệnh duy nhất dưới đây để máy ảo Colima tự bật khi bạn đăng nhập vào macOS (không cần quyền `sudo`):
+Container `agent-skills-n8n` đã được cấu hình tự khôi phục (`restart: unless-stopped`) trong [`docker-compose.yml`](../../docker-compose.yml). Để Colima và n8n tự bật ngầm khi bạn đăng nhập vào macOS (không cần quyền `sudo`), hệ thống sử dụng **macOS User LaunchAgent**:
 ```bash
-brew services start colima
+npm run autostart:on
 ```
-Từ giờ trở đi, mỗi khi bạn khởi động lại máy Mac, Colima sẽ tự động bật ngầm (2GB RAM) và Docker tự động chạy lại container `agent-skills-n8n` cùng toàn bộ 18 workflows và lịch chạy Cron (như báo cáo Daily Standup lúc 08:50 sáng).
-*(Nếu muốn tắt tính năng tự khởi động: `brew services stop colima`).*
+Từ giờ trở đi, mỗi khi bạn khởi động lại máy Mac hoặc đăng nhập, LaunchAgent sẽ:
+1. Tự động bật máy ảo Colima (2GB RAM) và container `agent-skills-n8n` trong nền.
+2. Đóng vai trò **Watchdog** (kiểm tra mỗi 5 phút) để đảm bảo n8n luôn sống.
+3. Tự động kích hoạt cơ chế **Catch-up Standup**: nếu MacBook gập màn hình (Sleep) qua mốc 08:50 sáng, ngay khi mở máy lại vào buổi sáng các ngày trong tuần (Thứ 2 - Thứ 6), hệ thống sẽ tự phát hiện và chạy bù báo cáo Daily Standup lên Slack!
+
+*Các lệnh quản lý LaunchAgent:*
+- Kiểm tra trạng thái: `npm run autostart:status`
+- Tắt tự khởi động: `npm run autostart:off`
 
 ### 3.2. Bảng Tóm Tắt: Hàng Ngày Khi Nào Cần Gõ Lệnh Gì?
 
 | Tình huống thực tế của bạn | Lệnh cần gõ trong Terminal |
 |---|---|
-| **Sáng bật máy lên làm việc** *(nếu chưa bật `brew services start colima`)* | `npm run colima:start && npm run n8n:up` |
+| **Kiểm tra xem n8n và autostart có đang chạy không** | `npm run autostart:status` |
+| **Sáng bật máy lên làm việc** *(nếu đã bật `npm run autostart:on`)* | *Không cần gõ gì, máy tự chạy ngầm và tự bù standup nếu mở trễ!* |
+| **Sáng bật máy lên làm việc** *(nếu chưa bật autostart)* | `npm run colima:start && npm run n8n:up` |
 | **Vừa sửa thông tin trong file `.env`** *(ví dụ đổi token Jira/Slack)* | `npm run n8n:up` *(container sẽ tự nạp lại `.env` mới)* |
 | **Vừa kéo code mới của dự án về (`git pull`)** | `npm run setup:plugins && npm run n8n:up` |
 | **Muốn xem n8n đang chạy gì / có báo lỗi gì không** | `npm run n8n:logs` *(nhấn `Ctrl + C` để thoát xem log)* |
@@ -296,6 +304,9 @@ Tất cả các lệnh đều được tích hợp sẵn qua hệ thống `npm r
 
 | Lệnh npm | Chức năng |
 |---|---|
+| `npm run autostart:on` | Cài đặt & kích hoạt LaunchAgent tự bật Colima + n8n khi login macOS |
+| `npm run autostart:status` | Kiểm tra trạng thái LaunchAgent, Colima, n8n và Standup hôm nay |
+| `npm run autostart:off` | Gỡ bỏ LaunchAgent và tắt chế độ tự khởi động |
 | `npm run colima:start` | Khởi động máy ảo Colima (`--cpu 2 --memory 2 --disk 20`) |
 | `npm run colima:status` | Kiểm tra trạng thái máy ảo Colima |
 | `npm run colima:stop` | Dừng máy ảo Colima (giải phóng hoàn toàn RAM) |

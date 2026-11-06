@@ -96,15 +96,28 @@ if (hasDocker && hasDockerCompose) {
   execSync(composeCmd, { cwd: projectRoot, stdio: 'inherit' });
   execSync('node scripts/n8n/import-and-activate.js', { cwd: projectRoot, stdio: 'inherit' });
 
+  // 4. Tự động cấu hình macOS LaunchAgent cho Colima + n8n (Tự bật khi login, Watchdog & Catch-up Standup)
+  if (process.platform === 'darwin') {
+    try {
+      console.log('\n⚙️ Đang cấu hình macOS LaunchAgent tự khởi động cùng máy...');
+      execSync('node scripts/setup/n8n-autostart.js on', { cwd: projectRoot, stdio: 'inherit' });
+    } catch (_) {
+      console.log('ℹ️ Bạn có thể bật tự khởi động bất cứ lúc nào qua: npm run autostart:on');
+    }
+  }
+
   console.log('\n' + '='.repeat(65));
   console.log('🎉 THIẾT LẬP N8N CONTAINER HOÀN TẤT!');
   console.log('='.repeat(65));
   console.log('Bây giờ bạn có thể quản lý Colima + n8n hoàn toàn qua npm:');
-  console.log('  • npm run colima:start --> Khởi động máy ảo Colima');
-  console.log('  • npm run n8n:up       --> Khởi động n8n Container & kích hoạt 18 workflows');
-  console.log('  • npm run n8n:logs     --> Xem log hoạt động của n8n Container');
-  console.log('  • npm run n8n:down     --> Dừng n8n Container');
-  console.log('  • Web UI               --> http://localhost:5678');
+  console.log('  • npm run autostart:status --> Kiểm tra trạng thái tự khởi động & n8n');
+  console.log('  • npm run autostart:off    --> Tắt chế độ tự khởi động cùng macOS');
+  console.log('  • npm run autostart:on     --> Bật lại chế độ tự khởi động cùng macOS');
+  console.log('  • npm run colima:start     --> Khởi động máy ảo Colima thủ công');
+  console.log('  • npm run n8n:up           --> Khởi động n8n Container & kích hoạt 18 workflows');
+  console.log('  • npm run n8n:logs         --> Xem log hoạt động của n8n Container');
+  console.log('  • npm run n8n:down         --> Dừng n8n Container');
+  console.log('  • Web UI                   --> http://localhost:5678');
   console.log('='.repeat(65));
   process.exit(0);
 }
