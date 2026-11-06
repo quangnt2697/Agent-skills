@@ -390,6 +390,29 @@ const buildSlackPayload = () => {
 
 const slackPayload = buildSlackPayload();
 
+// Ghi nhận mốc ngày gửi standup thành công vào standup-last-sent.txt khi chạy từ Cron nội bộ và đã cấu hình Slack
+const slackWebhookUrl = ($env && $env.SLACK_WEBHOOK_URL) ? String($env.SLACK_WEBHOOK_URL).trim() : '';
+const hasValidSlack = slackWebhookUrl.startsWith('https://hooks.slack.com/') &&
+  !slackWebhookUrl.includes('T00000000') &&
+  !slackWebhookUrl.includes('your_');
+
+if (triggerSource !== 'webhook' && hasValidSlack) {
+  try {
+    const candidates = [
+      path.resolve(wsDir, '.n8n-data', 'standup-last-sent.txt'),
+      path.resolve('/workspace', '.n8n-data', 'standup-last-sent.txt'),
+      path.resolve('/home/node/.n8n', 'standup-last-sent.txt')
+    ];
+    for (const targetFile of candidates) {
+      const parentDir = path.dirname(targetFile);
+      if (fs.existsSync(parentDir)) {
+        fs.writeFileSync(targetFile, `${dateStr}\n`, 'utf8');
+        break;
+      }
+    }
+  } catch (_) {}
+}
+
 return [{
   json: {
     isError: false,

@@ -48,6 +48,7 @@ scripts/
 │   ├── setup-mac.sh                 # Script bootstrap môi trường macOS (Homebrew, Node.js, Colima, Docker)
 │   ├── setup-plugins.js             # Symlink/copy plugins vào thư mục cấu hình của agent
 │   ├── setup-n8n.js                 # Khởi tạo Colima + CA doanh nghiệp + container n8n & nạp workflows
+│   ├── n8n-autostart.js             # Quản lý macOS LaunchAgent (Tự bật Colima/n8n khi login, Watchdog & Catch-up)
 │   ├── setup-claude.js              # Cài đặt / gỡ liên kết agent-skills cho Claude Code
 │   ├── export-plugin.js             # Xuất đóng gói plugin độc lập cho các microservice
 │   └── build-commands.js            # Tạo tự động .claude/commands/*.md từ commands/*.toml của plugins
@@ -137,6 +138,9 @@ scripts/
 
 | Lệnh | Mô Tả | Script / Công Cụ Thực Thi |
 |---|---|---|
+| `npm run autostart:on` | Cài đặt & kích hoạt LaunchAgent tự động chạy Colima + n8n khi mở máy | `node scripts/setup/n8n-autostart.js on` |
+| `npm run autostart:status` | Kiểm tra trạng thái LaunchAgent, Colima, n8n và Standup hôm nay | `node scripts/setup/n8n-autostart.js status` |
+| `npm run autostart:off` | Gỡ bỏ LaunchAgent và tắt chế độ tự khởi động ngầm | `node scripts/setup/n8n-autostart.js off` |
 | `npm run colima:start` | Khởi động máy ảo Colima (`--cpu 2 --memory 2 --disk 20`) | `colima start --cpu 2 --memory 2 --disk 20` |
 | `npm run colima:status` | Kiểm tra trạng thái máy ảo Colima | `colima status` |
 | `npm run colima:stop` | Dừng máy ảo Colima | `colima stop` |
