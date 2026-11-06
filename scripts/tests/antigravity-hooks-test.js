@@ -27,6 +27,20 @@ test('Antigravity PreToolUse Hooks Contract', async (t) => {
     assert.match(res.reason, /LỖI WORKSPACE PATH/);
   });
 
+  await t.test('workspace-path-guard blocks temporary scratch scripts in root scripts/ with decision deny', () => {
+    const res = runHook(workspaceGuard, {
+      toolCall: {
+        name: 'write_file',
+        args: {
+          Path: 'scripts/scratch-test-debug.mjs',
+          Content: 'console.log("temp");'
+        }
+      }
+    });
+    assert.strictEqual(res.decision, 'deny');
+    assert.match(res.reason, /CẤM TẠO SCRIPT TẠM TRONG THƯ MỤC SCRIPTS\/ GỐC/);
+  });
+
   await t.test('workspace-path-guard allows valid workspace ticket paths', () => {
     const res = runHook(workspaceGuard, {
       toolCall: {

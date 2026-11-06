@@ -106,6 +106,9 @@ node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-design-mockup/assets/captur
      - Đảm bảo hoàn toàn sạch bóng ghi chú QA/BA trên ảnh.
    - Nếu phát hiện bất kỳ lỗi vỡ layout nào → sửa ngay trong `mockup.html` và render lại cho đến khi hoàn hảo.
 4. **Nhúng vào `refined-draft.md`:** Trong mục `## 🎨 UI Design / Mockup` của `refined-draft.md`, **chỉ nhúng duy nhất ảnh mockup** (`![...](workspace/issues/{issueKey}/spec/diagrams/...)`), tuyệt đối không mô tả design bằng text và không ghi chú gì thêm.
+5. **Vòng đời & Quản lý File (Zero Repo Pollution):**
+   - Trong quá trình thiết kế, nếu cần viết script dựng DOM hoặc render tùy biến, **BẮT BUỘC** đặt tại `workspace/issues/{issueKey}/spec/diagrams/` (hoặc `.scratch/`), **CẤM TUYỆT ĐỐI** tạo file scratch/mockup runner vào thư mục `scripts/` gốc.
+   - Sau khi chốt `refined.md` và push Jira thành công, cơ chế Post-Push Cleanup sẽ tự động dọn sạch các file nháp, chỉ giữ lại đúng bộ thành quả cuối cùng: `mockup.html`, script render và các file ảnh mockup được nhúng trong spec.
 
 ## Verification (Xác minh)
 

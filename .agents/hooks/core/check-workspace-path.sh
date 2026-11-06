@@ -74,4 +74,21 @@ EOF
   fi
 done
 
+# 3. Chặn tạo các script scratch debug hoặc mockup runner tạm thời trong scripts/ gốc
+if [[ "$REL_PATH" == scripts/scratch-* || "$REL_PATH" == scripts/build-prod-mockup* || "$REL_PATH" == scripts/build-mockup* || "$REL_PATH" == scripts/render-mockup-runner* ]]; then
+  cat >&2 << EOF
+================================================================================
+❌ [LỖI WORKSPACE PATH] CẤM TẠO SCRIPT TẠM TRONG THƯ MỤC SCRIPTS/ GỐC!
+--------------------------------------------------------------------------------
+Dòng lỗi: Đường dẫn đích vi phạm '$TARGET_PATH'
+Nguyên nhân: Thư mục 'scripts/' chỉ chứa tiện ích và core runner của dự án monorepo.
+Cách khắc phục: Mọi file script scratch debug hoặc render mockup tạm thời cho ticket
+BẮT BUỘC lưu vào thư mục workspace của ticket:
+- Script render mockup: workspace/issues/{issueKey}/spec/diagrams/render-mockup.mjs
+- File debug tạm thời:   workspace/issues/{issueKey}/spec/.scratch/
+================================================================================
+EOF
+  exit 2
+fi
+
 exit 0
