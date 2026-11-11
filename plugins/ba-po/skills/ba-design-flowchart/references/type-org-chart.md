@@ -40,5 +40,3 @@ Use **Org Chart** instead of **Tree** when the nodes are people, agents, teams, 
 
 ## Examples
 - `assets/example-org-chart.html` — minimal light
-- `assets/example-org-chart-dark.html` — minimal dark
-- `assets/example-org-chart-full.html` — full editorial

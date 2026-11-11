@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "description": "QA/SDET Subagent for test design, BDD Gherkin and automation",
   "skills": ["./skills"],
-  "commands": ["./commands"],
+  "commands": ["./.claude/commands"],
   "agents": ["./agents/qa.md"]
 }

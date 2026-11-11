@@ -488,5 +488,3 @@ Everything else — viewBox sizing, chip positions, legend layout, dark-mode tok
 ## 13. Examples
 
 - `assets/example-process.html` — minimal light (quarterly survey: 11 steps, 6 divisions, data-type chips). Gallery default.
-- `assets/example-process-dark.html` — same, dark skin.
-- `assets/example-process-full.html` — same, editorial-card frame.

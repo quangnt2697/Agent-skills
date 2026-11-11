@@ -1,7 +1,7 @@
 # Quy Tắc, Hướng Dẫn & Đánh Giá (ba-spec)
 
 > 📖 **Quy tắc Chung về Xác thực & Cấu trúc:**
-> Xem chi tiết tại [../../../../references/atlassian-rules.md](../../../../references/atlassian-rules.md) về cấu hình `.env`, biến `ATLASSIAN_*`, cấu trúc thư mục `workspace/issues/{issueKey}/` và bộ lọc định dạng file được phép tải.
+> Xem chi tiết tại [../../../../../references/atlassian-rules.md](../../../../../references/atlassian-rules.md) về cấu hình `.env`, biến `ATLASSIAN_*`, cấu trúc thư mục `workspace/issues/{issueKey}/` và bộ lọc định dạng file được phép tải.
 
 ---
 

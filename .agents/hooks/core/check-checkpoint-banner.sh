@@ -8,8 +8,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 CHECKPOINT_FILE="$PROJECT_ROOT/.checkpoints/auto-save.json"
+STATE_FILE="$PROJECT_ROOT/.agents/workspace_state.md"
 
-if [[ -f "$CHECKPOINT_FILE" ]] && command -v jq >/dev/null 2>&1; then
+if [[ -f "$STATE_FILE" ]]; then
+  echo "💡 [Khôi phục Phiên Làm Việc]"
+  echo "Phát hiện ngữ cảnh dở dang tại .agents/workspace_state.md."
+  echo "👉 Gõ lệnh '/load-checkpoint' để nạp lại ngữ cảnh Facts/Progress/Next Steps."
+  echo ""
+elif [[ -f "$CHECKPOINT_FILE" ]] && command -v jq >/dev/null 2>&1; then
   TIMESTAMP="$(jq -r '.timestamp // "gần đây"' "$CHECKPOINT_FILE" 2>/dev/null || echo "gần đây")"
   BRANCH="$(jq -r '.branch // "hiện tại"' "$CHECKPOINT_FILE" 2>/dev/null || echo "hiện tại")"
   CHANGED_COUNT="$(jq -r '.changed_workspace_files | length // 0' "$CHECKPOINT_FILE" 2>/dev/null || echo "0")"

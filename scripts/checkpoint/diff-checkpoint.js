@@ -80,32 +80,76 @@ function main() {
   console.log(`🌿 Nhánh tại snapshot : ${savedBranch}`);
   console.log('-----------------------------------------------------------------');
 
-  // Lấy trạng thái git status hiện tại của workspace/
-  let currentGitStatus = '';
-  try {
-    currentGitStatus = execFileSync('git', ['status', '--porcelain', 'workspace/'], {
-      cwd: REPO_ROOT,
-      encoding: 'utf8'
-    }).trim();
-  } catch (err) {
-    console.error(`❌ Lỗi lấy git status: ${err.message}`);
-    process.exit(1);
+  // Quét danh sách file hiện tại trong workspace/
+  function scanWorkspaceFiles(dir) {
+    const result = new Map();
+    if (!fs.existsSync(dir)) return result;
+    function walk(d) {
+      try {
+        for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+          const p = path.join(d, e.name);
+          if (e.name.startsWith('.')) continue;
+          if (e.isDirectory()) walk(p);
+          else if (e.isFile()) {
+            const rel = path.relative(REPO_ROOT, p);
+            const stat = fs.statSync(p);
+            result.set(rel, { mtime: stat.mtimeMs, size: stat.size });
+          }
+        }
+      } catch (_) {}
+    }
+    walk(dir);
+    return result;
   }
 
-  if (!currentGitStatus) {
-    console.log('✅ Workspace sạch sẽ — không có file nào đang thay đổi hoặc chưa track.');
-  } else {
-    console.log('📂 Trạng thái workspace/ hiện tại:');
-    const lines = currentGitStatus.split('\n');
-    for (const line of lines) {
-      const code = line.slice(0, 2).trim();
-      const filePath = line.slice(3).trim();
-      let icon = '📝 Sửa đổi';
-      if (code === '??') icon = '✨ Mới (Untracked)';
-      else if (code === 'A')  icon = '➕ Đã add (Staged)';
-      else if (code === 'D')  icon = '🗑️ Đã xóa';
-      console.log(`  ${icon.padEnd(20)}: ${filePath}`);
+  const currentFiles = scanWorkspaceFiles(path.join(REPO_ROOT, 'workspace'));
+  const snapshotFiles = new Map();
+
+  if (Array.isArray(checkpointData.workspace_files_snapshot)) {
+    for (const item of checkpointData.workspace_files_snapshot) {
+      snapshotFiles.set(item.path, item);
     }
+  } else if (Array.isArray(checkpointData.changed_workspace_files)) {
+    for (const p of checkpointData.changed_workspace_files) {
+      snapshotFiles.set(p, { path: p });
+    }
+  }
+
+  const diffItems = [];
+
+  // File mới hoặc sửa đổi
+  for (const [filePath, currentStat] of currentFiles.entries()) {
+    if (!snapshotFiles.has(filePath)) {
+      diffItems.push({ icon: '✨ Mới (Untracked)', filePath });
+    } else {
+      const snapStat = snapshotFiles.get(filePath);
+      if (snapStat.size !== undefined && (snapStat.size !== currentStat.size || Math.abs(snapStat.mtime - currentStat.mtime) > 1000)) {
+        diffItems.push({ icon: '📝 Sửa đổi', filePath });
+      }
+    }
+  }
+
+  // File đã bị xóa
+  for (const [filePath] of snapshotFiles.entries()) {
+    if (!currentFiles.has(filePath)) {
+      diffItems.push({ icon: '🗑️ Đã xóa', filePath });
+    }
+  }
+
+  if (diffItems.length === 0) {
+    console.log(`✅ Workspace đồng nhất với checkpoint (${currentFiles.size} files).`);
+  } else {
+    console.log(`📂 Phát hiện ${diffItems.length} biến động trong workspace/ so với snapshot:`);
+    for (const item of diffItems) {
+      console.log(`  ${item.icon.padEnd(20)}: ${item.filePath}`);
+    }
+  }
+
+  // Kiểm tra trạng thái .agents/workspace_state.md
+  const stateFile = path.join(REPO_ROOT, '.agents', 'workspace_state.md');
+  if (fs.existsSync(stateFile)) {
+    console.log('-----------------------------------------------------------------');
+    console.log('📝 Trạng thái ngữ cảnh (.agents/workspace_state.md): ĐÃ CÓ');
   }
 
   console.log('=================================================================');

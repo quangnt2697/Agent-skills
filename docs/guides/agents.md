@@ -16,7 +16,8 @@ Các personas chuyên biệt đóng một vai trò duy nhất với một góc n
 Có ba tầng (layers), mỗi tầng đảm nhiệm một công việc riêng biệt:
 
 | Tầng               | Định nghĩa                                        | Ví dụ                     | Vai trò trong bố cục                                                     |
-|--------------------|--------| **Skill**          | Một quy trình với các bước và tiêu chí hoàn thành | `review-code-and-quality` | Từ *như thế nào* (how) — được gọi từ bên trong một persona hoặc một lệnh |
+|--------------------|---------------------------------------------------|---------------------------|--------------------------------------------------------------------------|
+| **Skill**          | Một quy trình với các bước và tiêu chí hoàn thành | `cr-review-code-and-quality` | Từ *như thế nào* (how) — được gọi từ bên trong một persona hoặc một lệnh |
 | **Persona**        | Một vai trò với góc nhìn và định dạng đầu ra      | `code-reviewer`           | Từ *ai* (who) — nhận một góc nhìn, đưa ra một báo cáo                    |
 | **Lệnh (Command)** | Điểm bắt đầu dành cho người dùng                  | `/cr-review`, `/qa-run-test` | Từ *khi nào* (when) — kết hợp personas và skills                      |
 

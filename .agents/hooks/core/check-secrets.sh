@@ -56,10 +56,10 @@ EOF
 fi
 
 # 2. Quét JWT token thật (3 phần cách nhau bởi dấu chấm, tối thiểu 40 ký tự)
-# Ngoại lệ: chuỗi placeholder như eyJ...xxx hoặc <token>
-if echo "$CONTENT" | grep -qE "eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_.-]{10,}"; then
-  if ! echo "$CONTENT" | grep -qE "(example|mock|placeholder|<token>|xxx)"; then
-    cat >&2 << EOF
+# Kiểm tra trên từng dòng chứa pattern, loại trừ các dòng chứa placeholder
+JWT_LINE="$(echo "$CONTENT" | grep -E "eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_.-]{10,}" | grep -vE "(example|mock|placeholder|<token>|xxx|your_)" | head -n 1 || true)"
+if [[ -n "$JWT_LINE" ]]; then
+  cat >&2 << EOF
 ================================================================================
 ❌ [LỖI BẢO MẬT] PHÁT HIỆN JWT TOKEN THỰC TẾ TRONG NỘI DUNG GHI!
 --------------------------------------------------------------------------------
@@ -68,8 +68,22 @@ Nguyên nhân: Phát hiện chuỗi có định dạng JWT token thật (Bearer 
 Cách khắc phục: BẮT BUỘC mask token (ví dụ: eyJhbGci...<masked>) hoặc dùng process.env.
 ================================================================================
 EOF
-    exit 2
-  fi
+  exit 2
+fi
+
+# 3. Quét Token các dịch vụ thông dụng (GitLab, Slack, Google/Gemini)
+TOKEN_LINE="$(echo "$CONTENT" | grep -E "(glpat-[A-Za-z0-9_-]{20,}|xox[baprs]-[0-9A-Za-z_-]{20,}|AIzaSy[A-Za-z0-9_-]{33})" | grep -vE "(example|mock|placeholder|xxx|your_)" | head -n 1 || true)"
+if [[ -n "$TOKEN_LINE" ]]; then
+  cat >&2 << EOF
+================================================================================
+❌ [LỖI BẢO MẬT] PHÁT HIỆN ACCESS TOKEN DẠNG THÔ (GITLAB/SLACK/GEMINI)!
+--------------------------------------------------------------------------------
+File: $TARGET_PATH
+Nguyên nhân: Phát hiện token định dạng thật (glpat- / xox* / AIzaSy...).
+Cách khắc phục: BẮT BUỘC dùng biến môi trường (.env), CẤM ghi token thô vào file.
+================================================================================
+EOF
+  exit 2
 fi
 
 exit 0

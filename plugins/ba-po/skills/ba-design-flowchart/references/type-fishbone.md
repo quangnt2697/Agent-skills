@@ -71,5 +71,3 @@ The tick itself is a 32px horizontal line from `(tick_x, tick_y)` to `(tick_x - 
 ## Examples
 
 - `assets/example-fishbone.html` — minimal light. Checkout p99 latency incident, 5 categories, Data confirmed as root cause.
-- `assets/example-fishbone-dark.html` — minimal dark, same data.
-- `assets/example-fishbone-full.html` — full editorial: container framing + 3 summary cards of varied widths + footer.

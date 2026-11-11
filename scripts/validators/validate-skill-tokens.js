@@ -2,7 +2,7 @@
 /**
  * validate-skill-tokens.js
  *
- * Kiểm tra ngân sách token và số dòng của toàn bộ 30 file SKILL.md.
+ * Kiểm tra ngân sách token và số dòng của toàn bộ 31 file SKILL.md.
  * Giữ kích thước mỗi SKILL.md trong mức tối ưu để tiết kiệm context window
  * và tránh tình trạng tràn token khi agent nạp skill.
  *
@@ -27,7 +27,7 @@ const MAX_RECOMMENDED_TOKENS = 4000;
 // Các skill đặc thù có bảng tra cứu lớn hoặc sơ đồ mẫu
 const TOKEN_EXEMPT_SKILLS = new Set([
   'ba-design-flowchart',   // Thư viện ký hiệu SVG & CSS styles
-  'meta-using-agent-skills', // Bảng định tuyến toàn bộ 30 skills
+  'meta-using-agent-skills', // Bảng định tuyến toàn bộ 31 skills
   'qa-auto-design'          // Bảng POM và SDK mapping
 ]);
 
@@ -63,7 +63,7 @@ function main() {
 
   skillList.sort((a, b) => a.skill.localeCompare(b.skill));
 
-  console.log('🔍 Kiểm tra Ngân sách Token & Độ dài SKILL.md (30 skills):');
+  console.log(`🔍 Kiểm tra Ngân sách Token & Độ dài SKILL.md (${skillList.length} skills):`);
   console.log('-------------------------------------------------------------------------');
   console.log('| Kỹ năng (Skill)               | Dòng | Ước lượng Tokens | Trạng thái  |');
   console.log('-------------------------------------------------------------------------');

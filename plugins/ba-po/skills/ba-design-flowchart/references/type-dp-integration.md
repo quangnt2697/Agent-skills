@@ -403,5 +403,3 @@ When this gets unwieldy:
 ## 12. Examples
 
 - `assets/example-dp-integration.html` — minimal light (1 footer = AD). Gallery default.
-- `assets/example-dp-integration-dark.html` — same, dark skin.
-- `assets/example-dp-integration-full.html` — same, editorial-card frame.

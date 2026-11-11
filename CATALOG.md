@@ -1,6 +1,6 @@
 # Danh Mục Tính Năng & Kỹ Năng (Feature & Skill Catalog)
 
-> **Bảng tra cứu nhanh toàn diện:** Tổng hợp 31 Skills, 30 Slash Commands, 6 Personas, 6 Plugins, 6 Core Rules và các Workflow tự động hóa trong hệ thống `agent-skills` (Nhánh `main` chuyên trách BA - QA - SM - Code Review).
+> **Bảng tra cứu nhanh toàn diện:** Tổng hợp 31 Skills, 30 Slash Commands, 6 Personas, 6 Plugins, 7 Core Rules và các Workflow tự động hóa trong hệ thống `agent-skills` (Nhánh `main` chuyên trách BA - QA - SM - Code Review).
 
 **Điều hướng nhanh:** [Tổng quan](#1-tổng-quan-hệ-thống) | [Slash Commands](#2-danh-mục-slash-commands-30-lệnh) | [Kỹ năng Skills](#3-danh-mục-kỹ-năng-skills-31-skills) | [Ma trận Vai trò Personas](#4-ma-trận-vai-trò-personas--ranh-giới) | [Luật Cốt lõi Rules](#5-hệ-thống-luật-rules--chính-sách) | [Domain & References](#6-tài-liệu-nghiệp-vụ--references)
 
@@ -14,8 +14,8 @@
 | **Vai trò (Personas)** | 6 | `plugins/*/agents/` | BA/PO, QA/SDET, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor |
 | **Skills** | 31 | `plugins/*/skills/` | Kỹ năng chuyên môn thực thi theo chuẩn Progressive Disclosure 3 tầng |
 | **Slash Commands** | 30 | `plugins/*/commands/` | Lệnh tắt kích hoạt nhanh quy trình nghiệp vụ |
-| **Core Rules** | 6 | `.agents/rules/` + `AGENTS.md` | Luật định hình hành vi, an toàn git, và chuẩn mực output |
-| **n8n Nodes / Workflows** | 28+ nodes | `n8n-workflows/`, `scripts/n8n-nodes/` | Tự động hóa Fast-Path, Cron & Webhooks |
+| **Core Rules** | 7 | `.agents/rules/` + `AGENTS.md` | Luật định hình hành vi, an toàn git, và chuẩn mực output |
+| **n8n Nodes / Workflows** | 19 workflows / 32 nodes | `n8n-workflows/`, `scripts/n8n-nodes/` | Tự động hóa Fast-Path, Cron & Webhooks |
 | **Domain Guides** | 40+ docs | `references/`, `docs/` | Tri thức chứng khoán KRX, Trading API, TimescaleDB, QA SDK |
 
 ---
@@ -24,7 +24,7 @@
 
 Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/commands/`) và tự động nạp vào CLI / Claude Code / Antigravity.
 
-### 2.1. Phân tích Nghiệp vụ & Sản phẩm — BA/PO (`plugins/ba-po` — 10 lệnh)
+### 2.1. Phân tích Nghiệp vụ & Sản phẩm — BA/PO (`plugins/ba-po` — 9 lệnh)
 
 | Command | Tham số | Đầu ra chính | Mục đích & Khi nào dùng |
 |---|---|---|---|
@@ -37,7 +37,6 @@ Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/comm
 | `/ba-prioritize` | `{issueKey}` | `spec/prioritization.md`| Ưu tiên tính năng/backlog theo mô hình MoSCoW hoặc WSJF. |
 | `/ba-stakeholder` | `{issueKey}` | `spec/stakeholder-notes.md` | Phỏng vấn đa đối tượng (PO, Dev Lead, Compliance, End-user). |
 | `/ba-process` | `{issueKey}` | `spec/process-model.md` | Vẽ sơ đồ quy trình nghiệp vụ (BPMN / Swimlane / Flowchart). |
-| `/flowchart` | `{path}` | `.svg` / `.png` | Xuất sơ đồ Editorial HTML/SVG sang định dạng đồ họa qua Playwright. |
 
 ### 2.2. Kiểm thử & Đảm bảo Chất lượng — QA/SDET (`plugins/qa` — 6 lệnh)
 
@@ -74,13 +73,14 @@ Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/comm
 |---|---|---|---|
 | `/db-recon` | `[topic/date]` | Reconciliation report | Quét và đối chiếu sai lệch dữ liệu thị trường KRX MDDS trên TimescaleDB. |
 
-### 2.6. Pipeline Phối hợp & Meta Skills — Core (`plugins/core` — 5 lệnh)
+### 2.6. Pipeline Phối hợp & Meta Skills — Core (`plugins/core` — 6 lệnh)
 
 | Command | Tham số | Đầu ra chính | Mục đích & Khi nào dùng |
 |---|---|---|---|
+| `/flowchart` | `{path}` | `.svg` / `.png` | Xuất sơ đồ Editorial HTML/SVG sang định dạng đồ họa sắc nét qua Playwright. |
 | `/e2e-delivery` | `{issueKey}` | Full Delivery Pipeline | Điều phối vòng đời: BA phân tích → QA thiết kế & test → CR review. |
 | `/sync` | `[group/repo]` | Git pull sync | Đồng bộ, fetch và pull mã nguồn các microservices về máy cục bộ. |
-| `/learn` | `—` | Rule mới | Đúc kết kinh nghiệm từ session vào `.agents/rules/lessons-learned.md`. |
+| `/learn` | `—` | Rule mới | Đúc kết kinh nghiệm từ session vào `.agents/rules/lessons-learned.md` (tự động sinh). |
 | `/save-checkpoint` | `—` | Checkpoint file | Nén ngữ cảnh phiên làm việc thành snapshot nhỏ gọn. |
 | `/load-checkpoint` | `[id]` | Restored session | Khôi phục trạng thái làm việc từ Checkpoint. |
 
@@ -197,7 +197,10 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 5. **[confidence-level.md](.agents/rules/confidence-level.md) — Hệ thống Điểm Tự tin**
    - Công thức: `confidence = (completeness * 0.6) + (certainty * 0.4)`.
    - Thẩm định tính đầy đủ và minh bạch của artifact trước khi bàn giao.
-6. **Anti-Leak & Zero Pollution**
+6. **[skills-contributing.md](.agents/rules/skills-contributing.md) — Quy Chuẩn Đóng Góp Kỹ Năng**
+   - Quy chuẩn tạo skill mới: cấu trúc 3 tầng (SKILL.md, references/, assets/), đặt tên `kebab-case`.
+   - Ngưỡng ngân sách token: tối ưu <= 120 dòng, cảnh báo nếu > 180 dòng.
+7. **Anti-Leak & Zero Pollution**
    - Không in prompt nội bộ (`SKILL.md`) ra báo cáo.
    - Không tự ý sinh file rác ngoài thư mục `workspace/`.
 
@@ -221,25 +224,27 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 
 | Lệnh / Tiện ích | Cú pháp | Mục đích |
 |---|---|---|
-| **Pipeline Kiểm định Toàn diện** | `npm test` hoặc `npm run lint` | Chạy toàn bộ 8 cổng validators + 19 unit test suites + evals |
-| **Kiểm định 8 Cổng Validators** | `npm run validate` | Chạy lần lượt cả 8 script kiểm định chất lượng bên dưới |
+| **Pipeline Kiểm định Toàn diện** | `npm test` hoặc `npm run lint` | Chạy toàn bộ 10 cổng validators + 30 unit test suites + evals |
+| **Kiểm định 10 Cổng Validators** | `npm run validate` | Chạy lần lượt cả 10 script kiểm định chất lượng bên dưới |
 | ↳ *Gate 1: Skills Structure* | `npm run validate:skills` | Kiểm định cấu trúc SKILL.md, frontmatter YAML và từ khóa kích hoạt |
 | ↳ *Gate 2: Command Parity* | `npm run validate:commands` | Kiểm định đồng bộ giữa commands TOML và Markdown |
-| ↳ *Gate 3: Version Manifests* | `npm run validate:versions` | Kiểm tra tính nhất quán phiên bản giữa các manifests |
-| ↳ *Gate 4: Relative Links* | `npm run validate:links` | Kiểm tra liên kết tham chiếu tương đối trong references/ |
-| ↳ *Gate 5: Canonical Workspace* | `npm run validate:paths` | Kiểm định ranh giới 5 thư mục canonical `workspace/issues/{issueKey}/` |
-| ↳ *Gate 6: Icons Gallery* | `npm run validate:icons` | Kiểm tra thư viện icon Lucide phục vụ sơ đồ flowchart |
-| ↳ *Gate 7: n8n Node Sync* | `npm run validate:nodes` | Kiểm định đồng bộ mã JavaScript với file JSON workflow n8n |
-| ↳ *Gate 8: Token Budget* | `npm run validate:tokens` | Kiểm định độ dài & ngân sách token cho 31 file `SKILL.md` |
+| ↳ *Gate 3: Scope Guard* | `npm run validate:scope` | Kiểm tra ranh giới phạm vi và ngăn ngừa scope creep |
+| ↳ *Gate 4: Version Manifests* | `npm run validate:versions` | Kiểm tra tính nhất quán phiên bản giữa các manifests |
+| ↳ *Gate 5: Relative Links* | `npm run validate:links` | Kiểm tra liên kết tham chiếu tương đối trong references/ |
+| ↳ *Gate 6: Code References* | `npm run validate:refs` | Kiểm tra tính tồn tại của các hàm/class code được tham chiếu |
+| ↳ *Gate 7: Canonical Workspace* | `npm run validate:paths` | Kiểm định ranh giới 5 thư mục canonical `workspace/issues/{issueKey}/` |
+| ↳ *Gate 8: Icons Gallery* | `npm run validate:icons` | Kiểm tra thư viện icon Lucide phục vụ sơ đồ flowchart |
+| ↳ *Gate 9: n8n Node Sync* | `npm run validate:nodes` | Kiểm định đồng bộ mã JavaScript với file JSON workflow n8n |
+| ↳ *Gate 10: Token Budget* | `npm run validate:tokens` | Kiểm định độ dài & ngân sách token cho 31 file `SKILL.md` |
 | **Lưu Trữ Workspace Issue** | `npm run workspace:archive` | Đóng gói nén thư mục `workspace/issues/` phục vụ lưu trữ |
 | **So sánh Checkpoint Diff** | `npm run checkpoint:diff` | So sánh biến động file `workspace/` so với snapshot gần nhất |
 | **Export Plugin Độc lập** | `npm run plugin:export -- -p <name> [--tar]` | Đóng gói 1 plugin thành thư mục độc lập hoặc file `.tar.gz` |
 | **Quét UI Design System** | `npm run scan:ui-components` | Quét UI components từ web/mobile trading sang dictionary |
 | **Quản Lý Máy Ảo Colima** | `npm run colima:start` / `:status` / `:stop` | Khởi động/kiểm tra/dừng máy ảo Colima (2 CPU, 2GB RAM) |
-| **Quản Lý Container n8n** | `npm run n8n:up` / `:down` / `:logs` | Bật container `agent-skills-n8n` kèm kích hoạt 18 workflows, dừng hoặc xem log |
+| **Quản Lý Container n8n** | `npm run n8n:up` / `:down` / `:logs` | Bật container `agent-skills-n8n` kèm kích hoạt 19 workflows, dừng hoặc xem log |
 | **Xuất Workflows n8n Phân Loại**| `npm run n8n:export` | Xuất và tự động phân loại workflows về đúng 4 thư mục con |
-| **Làm Sạch & Nạp Lại Workflows**| `npm run n8n:clean` | Xóa sạch workflow cũ trong SQLite và nạp lại 18 workflows chuẩn |
-| **Đồng Bộ Node Code n8n** | `npm run n8n:sync-nodes` | Đồng bộ 27 node scripts từ `scripts/n8n-nodes/` vào JSON |
+| **Làm Sạch & Nạp Lại Workflows**| `npm run n8n:clean` | Xóa sạch workflow cũ trong SQLite và nạp lại 19 workflows chuẩn |
+| **Đồng Bộ Node Code n8n** | `npm run n8n:sync-nodes` | Đồng bộ 32 node scripts từ `scripts/n8n-nodes/` vào JSON |
 | **Git Worktree Isolation** | `bash scripts/lib/qa-worktree.sh create {key}` | Cách ly môi trường chạy test E2E Playwright để không làm bẩn working tree |
 
 

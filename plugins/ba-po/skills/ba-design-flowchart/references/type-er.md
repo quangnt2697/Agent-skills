@@ -21,5 +21,3 @@
 
 ## Examples
 - `assets/example-er.html` — minimal light
-- `assets/example-er-dark.html` — minimal dark
-- `assets/example-er-full.html` — full editorial

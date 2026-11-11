@@ -40,5 +40,3 @@ Over budget: collapse a leaf cluster into one aggregate node labelled with its c
 ## Examples
 
 - `assets/example-dependency.html` — minimal light
-- `assets/example-dependency-dark.html` — minimal dark
-- `assets/example-dependency-full.html` — full editorial

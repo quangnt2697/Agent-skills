@@ -5,8 +5,8 @@
   "author": {
     "name": "QuangNT"
   },
-  "homepage": "https://github.com/addyosmani/agent-skills",
-  "repository": "https://github.com/addyosmani/agent-skills",
+  "homepage": "https://github.com/quangnt2697/Agent-skills",
+  "repository": "https://github.com/quangnt2697/Agent-skills",
   "license": "MIT",
   "skills": [
     "./plugins/ba-po/skills",

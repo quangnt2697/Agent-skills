@@ -61,6 +61,10 @@
       "Read(./.env)",
       "Read(./.env.local)",
       "Read(./.env.*.local)",
+      "Read(./.env.production)",
+      "Read(./.env.staging)",
+      "Read(./.env.uat)",
+      "Read(./.env.prod)",
       "Bash(cat .env:*)",
       "Bash(cat ./.env:*)"
     ]
@@ -100,6 +104,12 @@
           {
             "type": "command",
             "if": "Bash(pytest:*)",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/qa-log-guard.sh\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "if": "Bash(python3 -m pytest:*)",
             "command": "bash \"${CLAUDE_PROJECT_DIR}/.agents/hooks/claude/qa-log-guard.sh\"",
             "timeout": 5
           },

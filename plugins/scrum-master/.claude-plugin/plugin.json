@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "description": "Scrum Master Subagent for sprint tracking and agile rituals",
   "skills": ["./skills"],
-  "commands": ["./commands"],
+  "commands": ["./.claude/commands"],
   "agents": ["./agents/scrum-master.md"]
 }

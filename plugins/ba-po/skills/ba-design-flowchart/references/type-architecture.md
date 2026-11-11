@@ -74,5 +74,3 @@ Rules:
 
 ## Examples
 - `assets/example-architecture.html` — minimal light
-- `assets/example-architecture-dark.html` — minimal dark
-- `assets/example-architecture-full.html` — full editorial
