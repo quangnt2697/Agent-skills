@@ -178,6 +178,36 @@ export const mappings = [
     nodeName: 'Securities Domain Engine',
     nodeId: 'code-domain-engine',
     scriptFile: 'scripts/n8n-nodes/qa/securities-domain-engine.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/atlassian/jira-my-tasks-notifier.json',
+    nodeName: 'Prepare My Tasks Query',
+    nodeId: 'prep-query',
+    scriptFile: 'scripts/n8n-nodes/atlassian/jira-my-tasks-query.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/atlassian/jira-my-tasks-notifier.json',
+    nodeName: 'Detect My Tasks Delta',
+    nodeId: 'detect-delta',
+    scriptFile: 'scripts/n8n-nodes/atlassian/jira-my-tasks-delta.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/atlassian/jira-my-tasks-notifier.json',
+    nodeName: 'Build Slack Message',
+    nodeId: 'build-slack',
+    scriptFile: 'scripts/n8n-nodes/atlassian/jira-my-tasks-slack.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/atlassian/jira-my-tasks-notifier.json',
+    nodeName: 'Pre-respond Auto-Close HTML',
+    nodeId: 'pre-respond-action',
+    scriptFile: 'scripts/n8n-nodes/atlassian/jira-action-skill-pre-respond.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/atlassian/jira-my-tasks-notifier.json',
+    nodeName: 'Dispatch Action Skill',
+    nodeId: 'dispatch-action',
+    scriptFile: 'scripts/n8n-nodes/atlassian/jira-action-skill-dispatcher.js'
   }
 ];
 

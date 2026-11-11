@@ -39,6 +39,8 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 | `/webhook/securities-rule-matrix` | `POST` | QA | Lấy ma trận loại lệnh hợp lệ và bảng Examples tham số hóa đa sàn | `{"marketId": "STO", "boardId": "G1", "symbol": "SSI", "adminStatus": "CR"}` | `{"allowedOrders", "disallowedOrders", "isMtlFiltered", "multiSymbolExamples"}` |
 | `/webhook/qa-domain-lint` | `POST` | QA | Kiểm định kịch bản Gherkin (.feature) tuân thủ quy tắc nghiệp vụ chứng khoán | `{"issueKey": "STK-100", "gherkinContent": "..."}` | `{"valid", "errorCount", "errors", "warnings", "checkedRules"}` |
 | `/webhook/sm-standup` | `POST` | Scrum Master | Lấy báo cáo Standup tiến độ Sprint để lưu file trace/ | `{}` | `{"reportText", "totalIssues", "stuckCount"}` |
+| `/webhook/jira-my-tasks-poll` | `POST` | All | Kích hoạt quét thủ công các task Jira được phân công cho người dùng | `{}` | `{"polled": true, "count": 2}` |
+| `/webhook/agent-trigger-skill` | `GET/POST` | All | Nhận action link click từ Slack, tự đóng tab trình duyệt, kích hoạt skill và gửi kết quả/lỗi về Slack | `{"skill": "ba-spec", "issueKey": "G3PTP-17396"}` | `HTML auto-close tab (200 OK)` |
 
 ---
 
@@ -142,6 +144,11 @@ Hệ thống vận hành theo cơ chế **Fast-Path cục bộ kết hợp Lịc
   - Trả về `reportText` (Markdown chuẩn để Agent lưu vào `workspace/sprints/{sprintId}/trace/daily-standup-report.md`) đồng thời tạo sẵn `slackPayload` (kết hợp bảng Monospace + Native Slack Block Kit `table` với link Jira có thể click và tự động xuống dòng `is_wrapped: true`) để bắn trực tiếp vào kênh Slack `SLACK_WEBHOOK_URL` lúc 08:50 sáng thứ Hai – thứ Sáu.
   - **Cơ chế Standup Catch-up (Chống sót khi Sleep):** Khi máy Mac gập màn hình qua mốc 08:50 AM, cơ chế Watchdog của LaunchAgent (`scripts/setup/n8n-autostart.js --ensure`) sẽ tự phát hiện trong khung giờ 08:51–11:59 các ngày trong tuần và kích hoạt chạy bù báo cáo lên Slack, đồng thời ghi nhận mốc ngày vào `.n8n-data/standup-last-sent.txt` để chống gửi trùng lặp.
 - **Jira Ready to Test Handler:** Lắng nghe/xử lý Webhook Jira lọc task Board G.3.1 trong Active Sprint chuyển sang Ready to test, quét workspace local báo `✅/❌ Gherkin file` và `✅/❌ Autoscript test`, trả card `### 🎯 READY TO TEST` kèm gợi ý lệnh cho caller.
+- **Jira My Tasks Notifier & Action Links (WF-12):**
+  - **Lịch Poller:** 09:00 – 17:00 (Thứ Hai – Thứ Sáu, mỗi 5 phút).
+  - **Phát hiện Delta:** Lọc theo `assignee = currentUser()` (hoặc `JIRA_MY_ACCOUNT_ID`), so sánh state cache tại `.cache/my-tasks-state.json` để nhận diện: task mới, chuyển trạng thái, cập nhật description, bình luận mới, hoặc được re-assign.
+  - **Slack Card & Action Links:** Gửi card qua `SLACK_WEBHOOK_URL` kèm các hyperlink kích hoạt nhanh (`/ba-spec`, `/ba-refine`, `/qa-test-design`, `/qa-auto-design`, `/qa-run-test`, `/qa-full-pipeline`).
+  - **Auto-Close & Báo Lỗi Ngược Về Slack:** Khi click vào action link, n8n webhook (`/webhook/agent-trigger-skill`) trả về mã HTML tự động đóng tab ngay lập tức (`window.close()`), không làm gián đoạn người dùng. Hệ thống tiến hành thực thi skill, nếu phát sinh lỗi thì lập tức bắn card cảnh báo đỏ (`🚨 [Lỗi Thực Thi Skill]`) kèm nguyên văn lỗi về kênh Slack tương ứng.
 - **Lỗi workflow:** `Global Error Handler` ghi mỗi lỗi thành 1 dòng JSON vào `workspace/.n8n-errors.log` (đã `.gitignore` nhờ `/workspace/`). Node ghi log không nuốt lỗi: nếu không ghi được file, execution báo thất bại.
 
 ---

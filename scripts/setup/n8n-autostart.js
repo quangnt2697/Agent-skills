@@ -61,6 +61,10 @@ export function buildPlistContent({
     <true/>
     <key>StartInterval</key>
     <integer>${intervalSeconds}</integer>
+    <key>WatchPaths</key>
+    <array>
+      <string>${path.resolve(rootDir, '.n8n-data', 'skill-queue.json')}</string>
+    </array>
     <key>StandardOutPath</key>
     <string>${logFile}</string>
     <key>StandardErrorPath</key>
@@ -436,9 +440,178 @@ export function showStatus() {
 }
 
 /**
+ * Xử lý hàng đợi Skill từ Docker Container (.n8n-data/skill-queue.json) trên macOS Host
+ */
+export async function processSkillQueue({ rootDir = projectRoot } = {}) {
+  const queueFile = path.resolve(rootDir, '.n8n-data', 'skill-queue.json');
+  if (!fs.existsSync(queueFile)) return { processed: 0 };
+
+  let queue = [];
+  try {
+    queue = JSON.parse(fs.readFileSync(queueFile, 'utf8'));
+    if (!Array.isArray(queue)) return { processed: 0 };
+  } catch {
+    return { processed: 0 };
+  }
+
+  const pendingJobs = queue.filter((j) => j && j.status === 'pending');
+  if (pendingJobs.length === 0) return { processed: 0 };
+
+  const envConfig = readEnvConfig(rootDir);
+  const slackUrl = envConfig.SLACK_WEBHOOK_URL;
+  const candidateClis = [
+    envConfig.AGENT_CLI_PATH,
+    path.join(os.homedir(), '.local', 'bin', 'agy'),
+    '/opt/homebrew/bin/claude',
+    '/usr/local/bin/agy',
+    '/usr/local/bin/claude'
+  ].filter(Boolean);
+
+  const selectedCli = candidateClis.find((c) => fs.existsSync(c));
+  let processedCount = 0;
+
+  const SKILL_LABELS = {
+    'ba-refine': 'Refine task',
+    'ba-spec': 'Phân tích yêu cầu',
+    'ba-push-jira': 'Cập nhật lên Jira',
+    'qa-test-design': 'Thiết kế test',
+    'qa-auto-design': 'Tạo kịch bản tự động',
+    'qa-run-test': 'Thực thi test',
+    'qa-full-pipeline': 'Kiểm thử toàn trình',
+    'qa-squash-push': 'Đồng bộ Squash TM'
+  };
+
+  function cleanHostMsg(raw) {
+    if (!raw) return '';
+    return String(raw)
+      .replace(/<!DOCTYPE[^>]*>[\s\S]*?<\/html>/gi, 'Dịch vụ đích phản hồi lỗi kết nối.')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/workspace\/issues\/[^\s,.]+/gi, 'thư mục công việc')
+      .replace(/--[a-z-]+/gi, '')
+      .replace(/\/(ba-refine|ba-spec|ba-push-jira|qa-test-design|qa-auto-design|qa-run-test|qa-full-pipeline|qa-squash-push)/gi, (m, s) => SKILL_LABELS[s.toLowerCase()] || s)
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  for (const job of pendingJobs) {
+    job.status = 'running';
+    job.startedAt = new Date().toISOString();
+    fs.writeFileSync(queueFile, JSON.stringify(queue, null, 2), 'utf8');
+
+    const nowStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+    const baseUrl = (envConfig.ATLASSIAN_BASE_URL || 'https://entrade.atlassian.net').replace(/\/+$/, '');
+    const jiraUrl = `${baseUrl}/browse/${job.issueKey}`;
+    const n8nPort = envConfig.N8N_PORT || '5678';
+    const n8nHost = envConfig.N8N_HOST || 'localhost';
+    const webhookBase = `http://${n8nHost}:${n8nPort}/webhook/agent-trigger-skill`;
+    const threadQuery = job.threadTs ? `&thread_ts=${encodeURIComponent(job.threadTs)}` : '';
+    const threadHeader = `🧵 *<${jiraUrl}|${job.issueKey}>${job.summary ? ' — ' + job.summary : ''}*`;
+    const skillLabel = SKILL_LABELS[job.skill] || 'Thao tác công việc';
+
+    if (!selectedCli) {
+      job.status = 'failed';
+      job.error = 'Chưa tìm thấy công cụ xử lý tự động trên máy trạm.';
+      if (isSlackWebhookConfigured(slackUrl)) {
+        await fetch(slackUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `${threadHeader}\n⚠️ *Chưa thể thực hiện: ${skillLabel}*\n> • *Lý do:* ${job.error}\n> • *Thời gian:* ${nowStr}`,
+            ...(job.threadTs ? { thread_ts: job.threadTs } : {})
+          })
+        }).catch(() => {});
+      }
+      continue;
+    }
+
+    const promptToRun = job.promptCmd || `/${job.skill} ${job.issueKey} --auto`;
+    const res = spawnSync(selectedCli, ['-p', promptToRun, '--dangerously-skip-permissions'], {
+      cwd: rootDir,
+      timeout: 300000,
+      encoding: 'utf8'
+    });
+
+    if (res.status === 0) {
+      job.status = 'completed';
+      job.completedAt = new Date().toISOString();
+      processedCount++;
+
+      // Tổng hợp tóm tắt kết quả bằng ngôn ngữ tự nhiên và gợi ý thao tác tiếp theo
+      const issueDir = path.resolve(rootDir, 'workspace', 'issues', job.issueKey);
+      let artifactSummary = `Đã xử lý hoàn tất yêu cầu cho công việc *${job.issueKey}*.`;
+      const followUpLinks = [];
+
+      if (job.skill === 'ba-refine' || job.skill === 'ba-spec') {
+        const refinedFile = path.resolve(issueDir, 'spec', 'refined.md');
+        const draftFile = path.resolve(issueDir, 'spec', 'refined-draft.md');
+        const finalFile = path.resolve(issueDir, 'spec', 'final.md');
+        const foundSpec = [refinedFile, finalFile, draftFile].find((p) => fs.existsSync(p));
+        if (foundSpec) {
+          artifactSummary = `Đã hoàn thiện tài liệu phân tích yêu cầu cho *${job.issueKey}* (Sẵn sàng để bạn duyệt và cập nhật lên Jira).`;
+        }
+        followUpLinks.push(`<${webhookBase}?skill=ba-push-jira&issueKey=${job.issueKey}${threadQuery}|📤 Duyệt & cập nhật Jira>`);
+        followUpLinks.push(`<${webhookBase}?skill=qa-test-design&issueKey=${job.issueKey}${threadQuery}|🧪 Thiết kế test>`);
+      } else if (job.skill === 'qa-test-design') {
+        const clFile = path.resolve(issueDir, 'test', 'checklist.md');
+        const featFile = path.resolve(issueDir, 'test', `${job.issueKey}.feature`);
+        let clCount = 0;
+        let scCount = 0;
+        if (fs.existsSync(clFile)) {
+          clCount = (fs.readFileSync(clFile, 'utf8').match(/CL-\d+/g) || []).length;
+        }
+        if (fs.existsSync(featFile)) {
+          scCount = (fs.readFileSync(featFile, 'utf8').match(/^\s*Scenario(?: Outline)?:/gm) || []).length;
+        }
+        artifactSummary = `Đã thiết kế xong danh mục kiểm thử (${clCount} hạng mục) và ${scCount} kịch bản kiểm thử chi tiết.`;
+        followUpLinks.push(`<${webhookBase}?skill=qa-auto-design&issueKey=${job.issueKey}${threadQuery}|🤖 Tạo kịch bản tự động>`);
+        followUpLinks.push(`<${webhookBase}?skill=qa-run-test&issueKey=${job.issueKey}${threadQuery}|▶️ Thực thi test>`);
+      } else if (job.skill === 'qa-auto-design') {
+        artifactSummary = `Đã tạo xong bộ kịch bản kiểm thử tự động cho *${job.issueKey}*.`;
+        followUpLinks.push(`<${webhookBase}?skill=qa-run-test&issueKey=${job.issueKey}${threadQuery}|▶️ Thực thi test>`);
+      }
+
+      followUpLinks.push(`<${jiraUrl}|🔗 Xem chi tiết>`);
+      const followUpRow = `\n> ⚡ *Thao tác tiếp theo:* ${followUpLinks.join('  ┆  ')}`;
+
+      if (isSlackWebhookConfigured(slackUrl)) {
+        await fetch(slackUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `${threadHeader}\n✅ *Hoàn tất: ${skillLabel}*\n> • ${artifactSummary}\n> • *Thời gian:* ${nowStr}${followUpRow}`,
+            ...(job.threadTs ? { thread_ts: job.threadTs } : {})
+          })
+        }).catch(() => {});
+      }
+    } else {
+      job.status = 'failed';
+      job.error = cleanHostMsg(res.stderr || res.stdout || 'Quá trình xử lý gặp sự cố và dừng sớm.').slice(0, 350);
+      if (isSlackWebhookConfigured(slackUrl)) {
+        await fetch(slackUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `${threadHeader}\n⚠️ *Chưa thể hoàn tất: ${skillLabel}*\n> • *Lý do:* ${job.error}\n> • *Thời gian:* ${nowStr}\n> 🔗 <${jiraUrl}|Xem chi tiết>`,
+            ...(job.threadTs ? { thread_ts: job.threadTs } : {})
+          })
+        }).catch(() => {});
+      }
+    }
+  }
+
+  // Giữ lại tối đa 30 bản ghi gần nhất để tránh phình file
+  const trimmedQueue = queue.slice(-30);
+  fs.writeFileSync(queueFile, JSON.stringify(trimmedQueue, null, 2), 'utf8');
+  return { processed: processedCount };
+}
+
+/**
  * Watchdog runner (--ensure)
  */
 export async function runEnsure() {
+  // Xử lý ngay hàng đợi skill (nếu được đánh thức bởi WatchPaths từ nút bấm Slack)
+  await processSkillQueue();
+
   const colimaRes = ensureColimaRunning();
   if (colimaRes.started) {
     console.log('[Watchdog] ✅ Colima đã khởi động xong.');
