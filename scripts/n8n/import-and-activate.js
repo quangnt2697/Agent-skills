@@ -116,6 +116,13 @@ try {
 
   const db = new DatabaseSync(dbPath);
   const res = db.prepare('UPDATE workflow_entity SET active = 1, activeVersionId = versionId').run();
+  // Đồng bộ workflow_history với workflow_entity để n8n v2 thực thi đúng code mới nhất của activeVersionId
+  db.prepare(`
+    UPDATE workflow_history
+    SET nodes = (SELECT nodes FROM workflow_entity WHERE workflow_entity.id = workflow_history.workflowId),
+        connections = (SELECT connections FROM workflow_entity WHERE workflow_entity.id = workflow_history.workflowId)
+    WHERE EXISTS (SELECT 1 FROM workflow_entity WHERE workflow_entity.id = workflow_history.workflowId)
+  `).run();
   db.close();
   console.log(`✅ Đã kích hoạt (active = 1) cho ${res.changes} workflows trong SQLite!`);
 

@@ -256,6 +256,30 @@ export async function notifyJiraReadyToTest(payload = {}, options = {}) {
 }
 
 /**
+ * Fast-Path: Quét thủ công các task Jira được phân công cho người dùng (WF-12)
+ * @param {object} payload Tùy chọn filter hoặc manual trigger
+ * @param {object} [options] { timeoutMs: number }
+ * @returns {Promise<object>}
+ */
+export async function pollMyJiraTasks(payload = {}, options = {}) {
+  const timeoutMs = options.timeoutMs || 25000;
+  return await callN8nWebhook('jira-my-tasks-poll', payload, timeoutMs);
+}
+
+/**
+ * Fast-Path: Kích hoạt Agent Skill qua action webhook (từ Slack link click hoặc CLI)
+ * @param {string} skill Tên skill (VD: 'ba-spec', 'qa-auto-design')
+ * @param {string} issueKey Mã Jira issue (VD: 'G3PTP-17396')
+ * @param {object} [extraParams] Tham số bổ sung
+ * @param {object} [options] { timeoutMs: number }
+ * @returns {Promise<object>}
+ */
+export async function triggerAgentSkill(skill, issueKey, extraParams = {}, options = {}) {
+  const timeoutMs = options.timeoutMs || 30000;
+  return await callN8nWebhook('agent-trigger-skill', { skill, issueKey, ...extraParams }, timeoutMs);
+}
+
+/**
  * Fast-Path: Lấy ma trận loại lệnh hợp lệ và bảng Examples tham số hóa đa sàn (WF-18)
  * Tra cứu theo sàn, phiên, và cờ trạng thái SI (CR/RES filter).
  * @param {object} params { marketId, boardId, eventId, symbol, adminStatus, sanctionStatus, methodStatus }
@@ -360,6 +384,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
           break;
         case 'lintDomainGherkin':
           result = await lintDomainGherkin(args[1] && args[1].startsWith('{') ? JSON.parse(args[1]) : args[1]);
+          break;
+        case 'pollMyJiraTasks':
+          result = await pollMyJiraTasks(JSON.parse(args[1] || '{}'));
+          break;
+        case 'triggerAgentSkill':
+          result = await triggerAgentSkill(args[1], args[2], JSON.parse(args[3] || '{}'));
           break;
         default:
           console.error(`Unknown action: ${action}`);

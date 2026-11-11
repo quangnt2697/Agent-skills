@@ -1,0 +1,434 @@
+{
+  "name": "AgentSkills - Jira My Tasks Notifier",
+  "id": "JiraMyTasksNotifier001",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/5 9-16 * * 1-5"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 17 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "trigger-schedule",
+      "name": "Schedule Trigger (9:00-17:00 Mon-Fri)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jira-my-tasks-poll",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-webhook-poll",
+      "name": "Webhook Trigger (jira-my-tasks-poll)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        180,
+        420
+      ],
+      "webhookId": "jira-my-tasks-poll"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Jira My Tasks Query Preparer (`scripts/n8n-nodes/atlassian/jira-my-tasks-query.js`)\n *\n * Chuẩn bị tham số truy vấn Jira Cloud API:\n * - Lọc tất cả task được assign cho người dùng hiện tại (currentUser() hoặc JIRA_MY_ACCOUNT_ID / JIRA_MY_EMAIL)\n * - Khung thời gian: cập nhật trong vòng 20 phút gần nhất (buffer chống miss giữa chu kỳ 5 phút)\n * - Mở rộng changelog để phát hiện chính xác trường nào thay đổi\n */\n\nconst baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst email = ($env && $env.ATLASSIAN_EMAIL) || '';\nconst token = ($env && $env.ATLASSIAN_API_TOKEN) || '';\nconst authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');\n\nconst rawAccountId = ($env && $env.JIRA_MY_ACCOUNT_ID) ? String($env.JIRA_MY_ACCOUNT_ID).trim() : '';\nconst myAccountId = rawAccountId.split('?')[0].trim();\nconst myEmail = ($env && $env.JIRA_MY_EMAIL) ? String($env.JIRA_MY_EMAIL).trim() : email;\n\n// Xây dựng mệnh đề JQL lọc assignee\nlet assigneeClause = 'assignee = currentUser()';\nif (myAccountId && myEmail) {\n  assigneeClause = `assignee in (currentUser(), \"${myAccountId}\", \"${myEmail}\")`;\n} else if (myAccountId) {\n  assigneeClause = `assignee in (currentUser(), \"${myAccountId}\")`;\n} else if (myEmail) {\n  assigneeClause = `assignee in (currentUser(), \"${myEmail}\")`;\n}\n\n// JQL tìm các task được assign cho tôi có cập nhật trong 20 phút qua\nconst jql = `${assigneeClause} AND updated >= -20m ORDER BY updated DESC`;\nconst searchUrl = `${baseUrl}/rest/api/3/search/jql`;\n\nconst searchBody = {\n  jql,\n  fields: [\n    'summary',\n    'status',\n    'assignee',\n    'priority',\n    'reporter',\n    'issuetype',\n    'updated',\n    'created',\n    'comment',\n    'customfield_10018', // Sprint field (Jira Cloud)\n    'customfield_10020',\n    'description',\n    'project'\n  ],\n  expand: 'changelog',\n  maxResults: 30\n};\n\nreturn [{\n  json: {\n    baseUrl,\n    authHeader,\n    searchUrl,\n    searchBody,\n    myAccountId,\n    myEmail,\n    _triggerSource: 'schedule'\n  }\n}];\n\n"
+      },
+      "id": "prep-query",
+      "name": "Prepare My Tasks Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.searchUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json.authHeader }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.searchBody) }}",
+        "options": {}
+      },
+      "id": "query-jira",
+      "name": "Query Jira API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        340
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Jira My Tasks Delta Detector (`scripts/n8n-nodes/atlassian/jira-my-tasks-delta.js`)\n *\n * Phát hiện chính xác các thay đổi (delta) trên các task được assign cho người dùng:\n * 1. Task mới tạo trong chu kỳ (created)\n * 2. Được phân công lại cho tôi (reassigned_to_me)\n * 3. Chuyển trạng thái (status_changed)\n * 4. Cập nhật mô tả (description_updated)\n * 5. Có comment mới (comment_added)\n *\n * Tối ưu hóa chuẩn n8n-io/n8n:\n * - Sắp xếp changelog histories mới nhất lên đầu để lấy đúng trạng thái mới nhất\n * - Dùng mốc cutoffTime = prev.updated (khi đã có cache) hoặc (now - 25m) (khi chưa có cache)\n *   để chống lặp thông báo cũ khi task có nhiều cập nhật liên tiếp trong 25 phút\n * - Chống nhận diện nhầm khi Cold-Start (task cũ không bị gán thành \"Task Mới\")\n * - Bắt đa sự kiện độc lập trong cùng chu kỳ polling (Item Loop pattern)\n * - Dual-layer persistence: File cache `.cache/my-tasks-state.json` + staticData\n */\n\nconst fs = require('fs');\nconst path = require('path');\n\nconst firstInput = (typeof $input !== 'undefined' && typeof $input.first === 'function') ? $input.first() : null;\nconst rawFirst = (firstInput && firstInput.json) || {};\n\n// Kiểm tra lỗi trả về từ Jira REST API (401/403/500/Network)\nif (rawFirst.error || (Array.isArray(rawFirst.errorMessages) && rawFirst.errorMessages.length > 0)) {\n  const rawErr = (Array.isArray(rawFirst.errorMessages) && rawFirst.errorMessages.join('; ')) ||\n    (typeof rawFirst.error === 'object' ? (rawFirst.error.message || JSON.stringify(rawFirst.error)) : String(rawFirst.error));\n  const cleanErr = String(rawErr).replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 200);\n  return [{\n    json: {\n      isApiError: true,\n      issueKey: 'JIRA-ALERT',\n      changeType: 'api_error',\n      summary: 'Không thể kết nối tới Jira để kiểm tra công việc mới',\n      issueType: 'Cảnh báo hệ thống',\n      status: 'Gián đoạn',\n      priority: 'Highest',\n      reporter: 'Hệ thống',\n      changeDetail: `Chi tiết: ${cleanErr || 'Vui lòng kiểm tra lại kết nối mạng hoặc tài khoản Jira.'}`\n    }\n  }];\n}\n\nconst prepNode = (typeof $ !== 'undefined' && $('Prepare My Tasks Query')?.first()?.json) || {};\nconst rawAccountId = prepNode.myAccountId || ($env && $env.JIRA_MY_ACCOUNT_ID) || '';\nconst myAccountId = String(rawAccountId).split('?')[0].trim();\nconst myEmail = ((prepNode.myEmail || ($env && $env.JIRA_MY_EMAIL) || ($env && $env.ATLASSIAN_EMAIL) || '')).toLowerCase().trim();\n\nlet procCwd = '';\ntry {\n  const proc = require('process');\n  if (proc && typeof proc.cwd === 'function') procCwd = proc.cwd();\n} catch (_) {}\n\nconst candidateRoots = [\n  ($env && $env.AGENT_WORKSPACE_DIR),\n  procCwd,\n  '/Users/quang.nguyen3/Projects/Agent/agent-skills',\n  '/workspace'\n].filter(Boolean);\n\nlet primaryRoot = candidateRoots[0] || '';\nfor (const r of candidateRoots) {\n  if (fs.existsSync(r)) {\n    primaryRoot = r;\n    break;\n  }\n}\n\n// 1. Khởi tạo Dual-Layer Cache: $getWorkflowStaticData + File System\nlet staticData = {};\ntry {\n  if (typeof $getWorkflowStaticData === 'function') {\n    staticData = $getWorkflowStaticData('global');\n  }\n} catch (_) {}\n\nconst cacheDir = path.join(primaryRoot, '.cache');\nconst cacheFile = path.join(cacheDir, 'my-tasks-state.json');\nlet taskCache = staticData.taskCache || {};\nlet cacheUpdated = false;\n\ntry {\n  if (!fs.existsSync(cacheDir)) {\n    fs.mkdirSync(cacheDir, { recursive: true });\n  }\n  if (fs.existsSync(cacheFile)) {\n    const diskCache = JSON.parse(fs.readFileSync(cacheFile, 'utf8') || '{}');\n    taskCache = { ...diskCache, ...taskCache };\n  }\n} catch (_) {}\n\nconst issues = Array.isArray(rawFirst.issues) ? rawFirst.issues : [];\nconst detectedEvents = [];\nconst now = new Date();\nconst windowMs = 25 * 60 * 1000; // 25 phút buffer cho poller 5 phút khi chưa có prev cache\n\nfor (const issue of issues) {\n  const issueKey = (issue.key || '').toUpperCase().trim();\n  const fields = issue.fields || {};\n  if (!issueKey) continue;\n\n  const assignee = fields.assignee || {};\n  const assigneeAccountId = (assignee.accountId || '').trim();\n  const assigneeEmail = (assignee.emailAddress || '').toLowerCase().trim();\n\n  // Xác minh assignee thuộc về user\n  const isMine = (myAccountId && assigneeAccountId === myAccountId) ||\n                 (myEmail && assigneeEmail === myEmail) ||\n                 (!myAccountId && !myEmail); // Fallback: JQL currentUser() đã lọc ở server Jira\n\n  if (!isMine) continue;\n\n  const statusName = fields.status?.name || 'Unknown';\n  const updatedTime = fields.updated || issue.updated || '';\n  const createdTime = fields.created || issue.created || '';\n  const isRecentlyCreated = createdTime ? (now - new Date(createdTime)) <= windowMs : false;\n\n  const comments = Array.isArray(fields.comment?.comments) ? fields.comment.comments : [];\n  const commentCount = fields.comment?.total ?? comments.length;\n\n  // Trích xuất description snippet\n  let descText = '';\n  if (typeof fields.description === 'string') {\n    descText = fields.description;\n  } else if (fields.description?.content) {\n    try {\n      descText = JSON.stringify(fields.description.content);\n    } catch (_) {}\n  }\n  const descSnippet = descText.slice(0, 200);\n\n  const prev = taskCache[issueKey];\n\n  // Nếu đã có prev và mốc updated không mới hơn -> bỏ qua ngay\n  if (prev && prev.updated && updatedTime && new Date(updatedTime) <= new Date(prev.updated)) {\n    continue;\n  }\n\n  // Mốc thời gian chặn dưới (cutoffTime):\n  // - Nếu đã có prev.updated: chỉ xét các thay đổi diễn ra SAU prev.updated (chống lặp sự kiện cũ!)\n  // - Nếu chưa có prev: chỉ xét các thay đổi trong vòng 25 phút gần nhất\n  const cutoffTime = (prev && prev.updated)\n    ? new Date(prev.updated)\n    : new Date(now.getTime() - windowMs);\n\n  const rawHistories = (issue.changelog && issue.changelog.histories) || [];\n  // Sắp xếp changelog giảm dần theo thời gian (mới nhất lên đầu)\n  const sortedHistories = [...rawHistories].sort((a, b) => new Date(b.created) - new Date(a.created));\n\n  let recentStatusChange = null;\n  let recentAssigneeChange = null;\n  let recentDescChange = false;\n\n  for (const hist of sortedHistories) {\n    const histTime = new Date(hist.created);\n    // Chỉ xét các lịch sử mới hơn cutoffTime\n    if (prev && prev.updated ? histTime <= cutoffTime : histTime < cutoffTime) break;\n\n    for (const item of (hist.items || [])) {\n      const fieldName = (item.field || '').toLowerCase();\n      if (fieldName === 'status' && !recentStatusChange) {\n        recentStatusChange = { from: item.fromString, to: item.toString, created: hist.created };\n      } else if (fieldName === 'assignee' && !recentAssigneeChange) {\n        recentAssigneeChange = { from: item.fromString, to: item.toString, toId: item.to, created: hist.created };\n      } else if (fieldName === 'description') {\n        recentDescChange = true;\n      }\n    }\n  }\n\n  // Kiểm tra comment mới nhất có mới hơn cutoffTime không\n  const latestComment = comments.length > 0 ? comments[comments.length - 1] : null;\n  const latestCommentTime = latestComment?.updated || latestComment?.created || '';\n  const isLatestCommentNew = latestCommentTime\n    ? (prev && prev.updated ? new Date(latestCommentTime) > cutoffTime : new Date(latestCommentTime) >= cutoffTime)\n    : false;\n\n  let commentAuthor = latestComment?.author?.displayName || 'Thành viên';\n  let commentBody = '';\n  if (typeof latestComment?.body === 'string') {\n    commentBody = latestComment.body;\n  } else if (latestComment?.body?.content) {\n    try {\n      commentBody = latestComment.body.content\n        .map(block => (block.content || []).map(c => c.text || '').join(''))\n        .join(' ');\n    } catch (_) {}\n  }\n  commentBody = String(commentBody).replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\n\n  const baseEvent = {\n    issueKey,\n    summary: fields.summary || '',\n    issueType: fields.issuetype?.name || 'Task',\n    status: statusName,\n    priority: fields.priority?.name || 'Medium',\n    reporter: fields.reporter?.displayName || '',\n    assigneeName: assignee.displayName || '',\n    updatedTime,\n    threadTs: (prev && prev.threadTs) ? prev.threadTs : null,\n    issue\n  };\n\n  // PHÂN LOẠI SỰ KIỆN:\n  if (!prev) {\n    // Trường hợp 1: Task chưa có trong cache\n    if (isRecentlyCreated) {\n      detectedEvents.push({\n        ...baseEvent,\n        changeType: 'created',\n        changeDetail: 'Task mới được tạo và giao cho bạn'\n      });\n    } else {\n      if (recentAssigneeChange && (recentAssigneeChange.toId === myAccountId || (myEmail && recentAssigneeChange.to?.toLowerCase().includes(myEmail)))) {\n        detectedEvents.push({\n          ...baseEvent,\n          changeType: 'reassigned_to_me',\n          changeDetail: `Được phân công từ: ${recentAssigneeChange.from || 'người khác'}`\n        });\n      }\n      if (recentStatusChange) {\n        detectedEvents.push({\n          ...baseEvent,\n          changeType: 'status_changed',\n          fromStatus: recentStatusChange.from,\n          toStatus: recentStatusChange.to,\n          changeDetail: `${recentStatusChange.from} ➔ ${recentStatusChange.to}`\n        });\n      }\n      if (isLatestCommentNew && commentBody) {\n        detectedEvents.push({\n          ...baseEvent,\n          changeType: 'comment_added',\n          commentAuthor,\n          commentText: commentBody.slice(0, 150),\n          changeDetail: `${commentAuthor}: \"${commentBody.slice(0, 120)}${commentBody.length > 120 ? '...' : ''}\"`\n        });\n      }\n      if (recentDescChange) {\n        detectedEvents.push({\n          ...baseEvent,\n          changeType: 'description_updated',\n          changeDetail: 'Nội dung mô tả công việc vừa được cập nhật'\n        });\n      }\n    }\n    // Nếu là task cũ và không có sự kiện nào mới hơn cutoffTime: CHỈ lập baseline cache, KHÔNG báo spam!\n  } else {\n    // Trường hợp 2: Task đã có trong cache và có updatedTime > prev.updated\n    let hasEvent = false;\n\n    // A. Re-assigned sang cho tôi\n    if (recentAssigneeChange && (recentAssigneeChange.toId === myAccountId || (myEmail && recentAssigneeChange.to?.toLowerCase().includes(myEmail)))) {\n      detectedEvents.push({\n        ...baseEvent,\n        changeType: 'reassigned_to_me',\n        changeDetail: `Được chuyển giao từ: ${recentAssigneeChange.from || 'thành viên khác'}`\n      });\n      hasEvent = true;\n    }\n\n    // B. Chuyển trạng thái (chỉ khi status thực sự khác prev.status hoặc có changelog status mới hơn prev.updated)\n    if (prev.status !== statusName || recentStatusChange) {\n      const fromSt = recentStatusChange?.from || prev.status;\n      const toSt = recentStatusChange?.to || statusName;\n      detectedEvents.push({\n        ...baseEvent,\n        changeType: 'status_changed',\n        fromStatus: fromSt,\n        toStatus: toSt,\n        changeDetail: `${fromSt} ➔ ${toSt}`\n      });\n      hasEvent = true;\n    }\n\n    // C. Comment mới (chỉ khi số comment tăng hoặc có comment mới hơn prev.updated)\n    if (commentCount > (prev.commentCount || 0) || (isLatestCommentNew && commentBody)) {\n      detectedEvents.push({\n        ...baseEvent,\n        changeType: 'comment_added',\n        commentAuthor,\n        commentText: commentBody.slice(0, 150),\n        changeDetail: `${commentAuthor}: \"${commentBody.slice(0, 120)}${commentBody.length > 120 ? '...' : ''}\"`\n      });\n      hasEvent = true;\n    }\n\n    // D. Cập nhật description\n    if (recentDescChange || (prev.descSnippet !== undefined && descSnippet !== prev.descSnippet)) {\n      detectedEvents.push({\n        ...baseEvent,\n        changeType: 'description_updated',\n        changeDetail: 'Nội dung mô tả công việc vừa được cập nhật'\n      });\n    }\n  }\n\n  // Cập nhật trạng thái mới nhất vào cache (giữ nguyên threadTs nếu đã có)\n  taskCache[issueKey] = {\n    status: statusName,\n    updated: updatedTime,\n    commentCount,\n    descSnippet,\n    assignee: assigneeAccountId || assigneeEmail,\n    summary: fields.summary || '',\n    threadTs: (prev && prev.threadTs) ? prev.threadTs : null\n  };\n  cacheUpdated = true;\n}\n\n// Lưu cache bền vững\nif (cacheUpdated) {\n  if (staticData) staticData.taskCache = taskCache;\n  try {\n    fs.writeFileSync(cacheFile, JSON.stringify(taskCache, null, 2), 'utf8');\n  } catch (_) {}\n}\n\nif (detectedEvents.length === 0) {\n  return []; // Không có thay đổi nào mới -> dừng luồng, không gửi Slack\n}\n\nreturn detectedEvents.map(evt => ({ json: evt }));\n"
+      },
+      "id": "detect-delta",
+      "name": "Detect My Tasks Delta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Jira My Tasks Slack Builder (`scripts/n8n-nodes/atlassian/jira-my-tasks-slack.js`)\n *\n * Xây dựng Slack Message Payload (Block Kit tương thích Incoming Webhook)\n * Đính kèm các Action Links (hyperlink) trỏ tới localhost webhook n8n:\n * - Khi click link, browser tự đóng ngay (qua HTML response window.close)\n * - n8n lập tức kích hoạt skill tương ứng và báo kết quả/lỗi về Slack\n *\n * Tối ưu hóa chuẩn n8n-io/n8n Item Loop:\n * - Duyệt qua toàn bộ $input.all() để không bỏ sót bất kỳ task nào khi có nhiều task cùng cập nhật.\n */\n\nconst allInputs = (typeof $input !== 'undefined' && typeof $input.all === 'function') ? $input.all() : [];\nif (allInputs.length === 0) return [];\n\nconst baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst n8nPort = ($env && $env.N8N_PORT) || '5678';\nconst n8nHost = ($env && $env.N8N_HOST) || 'localhost';\nconst webhookBase = `http://${n8nHost}:${n8nPort}/webhook/agent-trigger-skill`;\n\n// Cấu hình nhãn & biểu tượng theo loại sự kiện\nconst eventMap = {\n  'created':             { emoji: '🆕', label: 'Task Mới Được Giao' },\n  'reassigned_to_me':    { emoji: '👤', label: 'Vừa Được Phân Công' },\n  'status_changed':      { emoji: '🔄', label: 'Chuyển Trạng Thái' },\n  'comment_added':       { emoji: '💬', label: 'Bình Luận Mới' },\n  'description_updated': { emoji: '📝', label: 'Cập Nhật Mô Tả' },\n  'api_error':           { emoji: '🚨', label: 'Lỗi Kết Nối Jira API' }\n};\n\nconst prioMap = {\n  'Highest':  '🔴 Highest',\n  'High':     '🟠 High',\n  'Medium':   '🟡 Medium',\n  'Low':      '🟢 Low',\n  'Lowest':   '⚪ Lowest'\n};\n\nconst outputItems = [];\n\nfor (const inputItem of allInputs) {\n  const data = inputItem.json || {};\n  const issueKey = data.issueKey || '';\n  if (!issueKey) continue;\n\n  const jiraUrl = `${baseUrl}/browse/${issueKey}`;\n  const cfg = eventMap[data.changeType] || { emoji: '📋', label: 'Cập Nhật Task' };\n  const priorityDisplay = prioMap[data.priority] || `🟡 ${data.priority || 'Medium'}`;\n\n  // Sprint Name\n  let sprintName = 'N/A';\n  const issueFields = data.issue?.fields || {};\n  const sprintField = issueFields.customfield_10018 || issueFields.customfield_10020 || issueFields.sprint;\n  if (Array.isArray(sprintField) && sprintField.length > 0) {\n    const activeS = sprintField.find(s => s && (s.state || '').toLowerCase() === 'active') || sprintField[sprintField.length - 1];\n    if (activeS) sprintName = activeS.name || (typeof activeS === 'string' && activeS.match(/name=([^,\\]]+)/)?.[1]) || 'Active Sprint';\n  } else if (sprintField && typeof sprintField === 'object') {\n    sprintName = sprintField.name || 'Active Sprint';\n  }\n\n  // Xây dựng Action Links theo đúng TRẠNG THÁI TASK (data.status):\n  // - Open / To Do / Backlog / Reopened -> hiển thị /ba-refine\n  // - Ready to test / Testing / QA -> hiển thị /qa-test-design và /qa-run-test\n  // - In Progress / In Review -> hiển thị /ba-refine và /qa-test-design\n  // - Done / Closed / Resolved -> hiển thị /qa-run-test\n  const actionLinks = [];\n  const statusLower = (data.status || '').toLowerCase().trim();\n  const threadQuery = data.threadTs ? `&thread_ts=${encodeURIComponent(data.threadTs)}` : '';\n\n  const isOpenState = ['open', 'to do', 'todo', 'backlog', 'reopened', 'new', 'draft'].some(s => statusLower === s || statusLower.includes(s));\n  const isReadyToTestState = statusLower.includes('ready') || statusLower.includes('test') || statusLower.includes('qa') || statusLower.includes('uat');\n  const isDoneState = ['done', 'closed', 'resolved', 'completed'].some(s => statusLower === s || statusLower.includes(s));\n\n  if (data.changeType !== 'api_error') {\n    if (isReadyToTestState) {\n      actionLinks.push(`<${webhookBase}?skill=qa-test-design&issueKey=${issueKey}${threadQuery}|🧪 Thiết kế test>`);\n      actionLinks.push(`<${webhookBase}?skill=qa-run-test&issueKey=${issueKey}${threadQuery}|▶️ Thực thi test>`);\n    } else if (isOpenState) {\n      actionLinks.push(`<${webhookBase}?skill=ba-refine&issueKey=${issueKey}${threadQuery}|✏️ Refine task>`);\n    } else if (isDoneState) {\n      actionLinks.push(`<${webhookBase}?skill=qa-run-test&issueKey=${issueKey}${threadQuery}|▶️ Thực thi test>`);\n    } else {\n      // In Progress / In Review hoặc trạng thái trung gian\n      actionLinks.push(`<${webhookBase}?skill=ba-refine&issueKey=${issueKey}${threadQuery}|✏️ Refine task>`);\n      actionLinks.push(`<${webhookBase}?skill=qa-test-design&issueKey=${issueKey}${threadQuery}|🧪 Thiết kế test>`);\n    }\n    actionLinks.push(`<${jiraUrl}|🔗 Xem chi tiết>`);\n  }\n\n  // Slack Block Kit sections\n  const blocks = [\n    {\n      type: 'section',\n      text: {\n        type: 'mrkdwn',\n        text: `${cfg.emoji} *${cfg.label}* — <${jiraUrl}|*${issueKey}*>\\n*${data.summary}*`\n      }\n    },\n    {\n      type: 'section',\n      fields: [\n        { type: 'mrkdwn', text: `*Loại:* ${data.issueType}` },\n        { type: 'mrkdwn', text: `*Trạng thái:* ${data.status}` },\n        { type: 'mrkdwn', text: `*Độ ưu tiên:* ${priorityDisplay}` },\n        { type: 'mrkdwn', text: `*Sprint:* ${sprintName}` }\n      ]\n    }\n  ];\n\n  // Chi tiết thay đổi (làm sạch mọi thẻ HTML kỹ thuật nếu có)\n  if (data.changeDetail) {\n    const cleanDetail = String(data.changeDetail).replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\n    blocks.push({\n      type: 'section',\n      text: {\n        type: 'mrkdwn',\n        text: `*Nội dung cập nhật:* ${cleanDetail}`\n      }\n    });\n  }\n\n  // Hành động nhanh (Action Links)\n  blocks.push({\n    type: 'section',\n    text: {\n      type: 'mrkdwn',\n      text: `⚡ *Kích hoạt:* ${actionLinks.join('  ┆  ')}`\n    }\n  });\n\n  // Context footer\n  const nowStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });\n  blocks.push({\n    type: 'context',\n    elements: [\n      {\n        type: 'mrkdwn',\n        text: `🕒 ${nowStr}`\n      }\n    ]\n  });\n\n  const fallbackText = `${cfg.emoji} [${issueKey}] ${cfg.label}: ${data.summary}`;\n\n  const slackPayload = {\n    text: fallbackText,\n    blocks\n  };\n  if (data.threadTs) {\n    slackPayload.thread_ts = data.threadTs;\n  }\n\n  outputItems.push({\n    json: {\n      issueKey,\n      changeType: data.changeType,\n      threadTs: data.threadTs || null,\n      slackPayload\n    }\n  });\n}\n\nreturn outputItems;\n"
+      },
+      "id": "build-slack",
+      "name": "Build Slack Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1140,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const slackUrl = ($env && $env.SLACK_WEBHOOK_URL) ? String($env.SLACK_WEBHOOK_URL).trim() : '';\nif (!slackUrl || !slackUrl.startsWith('https://hooks.slack.com/') || slackUrl.includes('T00000000') || slackUrl.includes('your_')) {\n  return [];\n}\nreturn $input.all();"
+      },
+      "id": "guard-slack",
+      "name": "Guard Slack URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.slackPayload) }}",
+        "options": {}
+      },
+      "id": "send-slack",
+      "name": "Send My Tasks to Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1620,
+        340
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ polled: true, count: $items().length }) }}",
+        "options": {}
+      },
+      "id": "respond-poll-webhook",
+      "name": "Respond Poll Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1140,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "agent-trigger-skill",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-action-webhook",
+      "name": "Webhook Trigger (agent-trigger-skill)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        180,
+        700
+      ],
+      "webhookId": "agent-trigger-skill"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Jira Action Skill Pre-Respond (`scripts/n8n-nodes/atlassian/jira-action-skill-pre-respond.js`)\n *\n * Chạy ngay sau Webhook để trả HTML tự động đóng tab cho trình duyệt siêu tốc (< 5ms):\n * - Browser nhận HTML và đóng tab tức thì, không bị treo chờ xử lý\n * - Truyền toàn bộ thông tin query sang các node thực thi phía sau\n */\n\nconst firstInput = (typeof $input !== 'undefined' && typeof $input.first === 'function') ? $input.first() : null;\nconst rawFirst = (firstInput && firstInput.json) || {};\n\nconst query = rawFirst.query || rawFirst;\nconst skill = String(query.skill || rawFirst.skill || '').trim().replace(/^\\//, '');\nconst issueKey = String(query.issueKey || rawFirst.issueKey || '').toUpperCase().trim();\n\nconst SKILL_LABELS = {\n  'ba-refine': 'Refine task',\n  'ba-spec': 'Phân tích yêu cầu',\n  'ba-push-jira': 'Cập nhật lên Jira',\n  'qa-test-design': 'Thiết kế test',\n  'qa-auto-design': 'Tạo kịch bản tự động',\n  'qa-run-test': 'Thực thi test',\n  'qa-full-pipeline': 'Kiểm thử toàn trình',\n  'qa-squash-push': 'Đồng bộ Squash TM'\n};\nconst skillLabel = SKILL_LABELS[skill] || 'Yêu cầu xử lý';\n\nconst autoCloseHtml = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <title>Đang xử lý</title>\n  <script>\n    try { window.open('', '_self').close(); } catch (_) {}\n    try { window.close(); } catch (_) {}\n    setTimeout(() => { try { window.close(); } catch (_) {} }, 50);\n  </script>\n</head>\n<body style=\"background:#0d1117;color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;\">\n  <div style=\"text-align:center;padding:24px;border-radius:8px;border:1px solid #30363d;background:#161b22;max-width:420px;box-shadow:0 8px 24px rgba(0,0,0,0.5);\">\n    <div style=\"font-size:36px;margin-bottom:12px;\">⚡</div>\n    <h3 style=\"margin:0 0 8px 0;color:#58a6ff;\">Đang thực hiện: ${skillLabel}</h3>\n    <p style=\"margin:0 0 12px 0;font-size:14px;color:#8b949e;\">Công việc: <strong>${issueKey || 'N/A'}</strong></p>\n    <p style=\"margin:0;font-size:12px;color:#6e7681;\">Cửa sổ này sẽ tự động đóng. Kết quả sẽ được gửi về kênh Slack.</p>\n  </div>\n</body>\n</html>`;\n\nreturn [{\n  json: {\n    ...rawFirst,\n    skill,\n    issueKey,\n    autoCloseHtml\n  }\n}];\n\n"
+      },
+      "id": "pre-respond-action",
+      "name": "Pre-respond Auto-Close HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.autoCloseHtml }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-action-html",
+      "name": "Respond Auto-Close HTML",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Node Script: Jira Action Skill Dispatcher (`scripts/n8n-nodes/atlassian/jira-action-skill-dispatcher.js`)\n *\n * Thực thi skill thật khi người dùng click vào Action Link trên Slack:\n * 1. Phân loại skill theo cơ chế Fast-Path nội bộ của n8n:\n *    - `qa-run-test`: Gọi webhook nội bộ `qa-run-test` để chạy pytest thật, lấy log và exitCode\n *    - `ba-spec` / `ba-refine`: Gọi webhook nội bộ `jira-prep` để bóc tách dữ liệu Jira sạch và tạo workspace issue\n *    - Các skill khác: Khởi chạy qua CLI (nếu có) hoặc kích hoạt Fast-Path pipeline\n * 2. Bắt lỗi nguyên văn (Catch Error) và gửi thông báo đỏ chi tiết về SLACK_WEBHOOK_URL\n * 3. Báo cáo trung thực kết quả, tuyệt đối không báo giả \"thành công\" khi chưa thực thi thật.\n */\n\nconst fs = require('fs');\nconst path = require('path');\nconst { spawnSync } = require('child_process');\n\nconst firstInput = (typeof $input !== 'undefined' && typeof $input.first === 'function') ? $input.first() : null;\nconst rawFirst = (firstInput && firstInput.json) || {};\n\n// Trích xuất query parameters (từ Webhook GET) hoặc body (POST)\nconst query = rawFirst.query || rawFirst;\nconst skill = String(query.skill || rawFirst.skill || '').trim().replace(/^\\//, '');\nconst issueKey = String(query.issueKey || rawFirst.issueKey || '').toUpperCase().trim();\nlet threadTs = String(query.thread_ts || query.threadTs || rawFirst.thread_ts || rawFirst.threadTs || '').trim();\n\nconst nowStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });\n\nconst SKILL_LABELS = {\n  'ba-refine': 'Refine task',\n  'ba-spec': 'Phân tích yêu cầu',\n  'ba-push-jira': 'Cập nhật lên Jira',\n  'qa-test-design': 'Thiết kế test',\n  'qa-auto-design': 'Tạo kịch bản tự động',\n  'qa-run-test': 'Thực thi test',\n  'qa-full-pipeline': 'Kiểm thử toàn trình',\n  'qa-squash-push': 'Đồng bộ Squash TM'\n};\n\n// Hàm làm sạch thông báo cho người dùng cuối (loại bỏ HTML, đường dẫn kỹ thuật, câu lệnh CLI)\nfunction toCleanUserText(raw) {\n  if (!raw) return '';\n  return String(raw)\n    .replace(/<!DOCTYPE[^>]*>[\\s\\S]*?<\\/html>/gi, 'Dịch vụ đích phản hồi lỗi kết nối.')\n    .replace(/<[^>]*>/g, ' ')\n    .replace(/workspace\\/issues\\/[^\\s,.]+/gi, 'thư mục công việc')\n    .replace(/\\.n8n-data\\/[^\\s,.]+/gi, 'hàng đợi hệ thống')\n    .replace(/--[a-z-]+/gi, '')\n    .replace(/\\/(ba-refine|ba-spec|ba-push-jira|qa-test-design|qa-auto-design|qa-run-test|qa-full-pipeline|qa-squash-push)/gi, (m, s) => SKILL_LABELS[s.toLowerCase()] || s)\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nconst skillLabel = SKILL_LABELS[skill] || 'Thao tác công việc';\n\nif (!skill || !issueKey) {\n  const errorMsg = 'Thiếu thông tin mã công việc hoặc thao tác cần thực hiện.';\n  return [{\n    json: {\n      success: false,\n      isError: true,\n      skill,\n      issueKey,\n      error: errorMsg,\n      slackNotifyPayload: {\n        text: `⚠️ *Chưa thể thực hiện yêu cầu*\\nLý do: ${errorMsg}`,\n        ...(threadTs ? { thread_ts: threadTs } : {})\n      }\n    }\n  }];\n}\n\nlet wsDir = ($env && $env.AGENT_WORKSPACE_DIR) || '';\nif (!wsDir || !fs.existsSync(wsDir)) {\n  if (fs.existsSync('/workspace/package.json')) {\n    wsDir = '/workspace';\n  } else {\n    try {\n      const proc = require('process');\n      if (proc && typeof proc.cwd === 'function') wsDir = proc.cwd();\n    } catch (_) {}\n  }\n}\n\n// Đọc threadTs và summary từ .cache/my-tasks-state.json nếu có\nlet taskSummary = '';\ntry {\n  const cacheFile = path.resolve(wsDir, '.cache', 'my-tasks-state.json');\n  if (fs.existsSync(cacheFile)) {\n    const diskCache = JSON.parse(fs.readFileSync(cacheFile, 'utf8') || '{}');\n    const cachedTask = diskCache[issueKey];\n    if (cachedTask) {\n      if (!threadTs && cachedTask.threadTs) threadTs = String(cachedTask.threadTs);\n      if (cachedTask.summary) taskSummary = String(cachedTask.summary);\n    }\n  }\n} catch (_) {}\n\nconst baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\\/+$/, '');\nconst jiraUrl = `${baseUrl}/browse/${issueKey}`;\nconst n8nPort = ($env && $env.N8N_PORT) || '5678';\nconst n8nHost = ($env && $env.N8N_HOST) || 'localhost';\nconst webhookBase = `http://${n8nHost}:${n8nPort}/webhook/agent-trigger-skill`;\nconst email = ($env && $env.ATLASSIAN_EMAIL) || '';\nconst token = ($env && $env.ATLASSIAN_API_TOKEN) || '';\nconst authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');\n\nlet executionSuccess = false;\nlet executionMessage = '';\nlet executionError = null;\nlet nextActionLinks = [];\n\nconst ALLOWED_SKILLS = [\n  'ba-spec',\n  'ba-refine',\n  'ba-push-jira',\n  'qa-test-design',\n  'qa-auto-design',\n  'qa-run-test',\n  'qa-full-pipeline',\n  'qa-squash-push'\n];\n\n// HÀM GỌI TRỰC TIẾP JIRA CLOUD REST API (Tránh gọi vòng lại webhook n8n gây nghẽn Single Task Runner)\nasync function fetchJiraIssueDirect(key) {\n  const fields = 'summary,description,status,assignee,priority,reporter,issuetype,comment,parent,issuelinks,attachment,customfield_10018';\n  const url = `${baseUrl}/rest/api/3/issue/${key}?fields=${fields}`;\n  const headers = {\n    'Authorization': authHeader,\n    'Accept': 'application/json'\n  };\n\n  if (typeof fetch === 'function') {\n    const res = await fetch(url, { method: 'GET', headers });\n    if (!res.ok) {\n      const txt = await res.text().catch(() => '');\n      throw new Error(`Jira API trả về HTTP ${res.status} cho ${key}: ${txt.slice(0, 200)}`);\n    }\n    return await res.json();\n  }\n\n  const inlineScript = `\n    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';\n    (async () => {\n      const res = await fetch(${JSON.stringify(url)}, {\n        method: 'GET',\n        headers: ${JSON.stringify(headers)}\n      });\n      const txt = await res.text();\n      if (!res.ok) {\n        process.stderr.write('Jira API HTTP ' + res.status + ': ' + txt.slice(0, 200));\n        process.exit(1);\n      }\n      process.stdout.write(txt);\n    })().catch(e => {\n      process.stderr.write(e.message || String(e));\n      process.exit(1);\n    });\n  `;\n  const sub = spawnSync('node', ['-e', inlineScript], { encoding: 'utf8', timeout: 25000 });\n  if (sub.status !== 0) {\n    throw new Error(`Không thể lấy dữ liệu Jira cho ${key}: ${sub.stderr || sub.stdout || 'exit ' + sub.status}`);\n  }\n  return JSON.parse(sub.stdout || '{}');\n}\n\n// Hàm trích xuất văn bản từ Jira ADF hoặc string\nfunction extractPlainDescription(node) {\n  if (!node) return '';\n  if (typeof node === 'string') return node;\n  if (Array.isArray(node)) return node.map(extractPlainDescription).join('');\n  const type = node.type || '';\n  const content = node.content || [];\n  if (type === 'text') return node.text || '';\n  if (type === 'hardBreak') return '\\n';\n  if (type === 'paragraph' || type === 'heading' || type === 'listItem' || type === 'codeBlock') {\n    return content.map(extractPlainDescription).join('') + '\\n';\n  }\n  return content.map(extractPlainDescription).join('');\n}\n\n// HÀM THỬ CHẠY AGENT CLI TRỰC TIẾP HOẶC ĐẨY VÀO HOST QUEUE (.n8n-data/skill-queue.json)\nfunction dispatchToAgentCliOrHostQueue(skillName, key, extraNote = '') {\n  const autoFlag = ['ba-refine', 'ba-spec', 'qa-test-design', 'qa-auto-design', 'qa-full-pipeline'].includes(skillName) ? ' --auto' : '';\n  const promptCmd = `/${skillName} ${key}${autoFlag}`;\n  const label = SKILL_LABELS[skillName] || skillName;\n\n  const candidateClis = [\n    ($env && $env.AGENT_CLI_PATH),\n    '/Users/quang.nguyen3/.local/bin/agy',\n    '/opt/homebrew/bin/claude',\n    '/usr/local/bin/agy',\n    '/usr/local/bin/claude',\n    'agy',\n    'claude'\n  ].filter(Boolean);\n\n  for (const cli of candidateClis) {\n    try {\n      const check = spawnSync('which', [cli], { encoding: 'utf8' });\n      if (check.status === 0 || fs.existsSync(cli)) {\n        const runCmd = spawnSync(cli, ['-p', promptCmd, '--dangerously-skip-permissions'], {\n          cwd: wsDir,\n          timeout: 180000,\n          encoding: 'utf8'\n        });\n        if (runCmd.status === 0) {\n          return {\n            ok: true,\n            msg: `${extraNote ? extraNote + '\\n> ' : ''}Đã hoàn tất *${label}* cho *${key}*.`\n          };\n        } else {\n          return {\n            ok: false,\n            err: toCleanUserText(runCmd.stderr || runCmd.stdout || 'Quá trình xử lý gặp sự cố và dừng sớm.')\n          };\n        }\n      }\n    } catch (_) {}\n  }\n\n  // Nếu đang chạy trong Docker container (không có binary agy/claude của macOS host),\n  // ghi vào .n8n-data/skill-queue.json để Host Runner (n8n-autostart.js) thực thi tức thì qua WatchPaths và báo kết quả về thread Slack\n  const queueDir = path.resolve(wsDir, '.n8n-data');\n  if (!fs.existsSync(queueDir)) fs.mkdirSync(queueDir, { recursive: true });\n  const queueFile = path.resolve(queueDir, 'skill-queue.json');\n  let queue = [];\n  if (fs.existsSync(queueFile)) {\n    try {\n      queue = JSON.parse(fs.readFileSync(queueFile, 'utf8'));\n      if (!Array.isArray(queue)) queue = [];\n    } catch (_) {\n      queue = [];\n    }\n  }\n  queue.push({\n    id: `${key}-${skillName}-${Date.now()}`,\n    skill: skillName,\n    promptCmd,\n    issueKey: key,\n    summary: taskSummary || '',\n    threadTs: threadTs || null,\n    requestedAt: new Date().toISOString(),\n    status: 'pending'\n  });\n  fs.writeFileSync(queueFile, JSON.stringify(queue, null, 2), 'utf8');\n\n  const issueTraceDir = path.resolve(wsDir, 'workspace', 'issues', key, 'trace');\n  if (!fs.existsSync(issueTraceDir)) fs.mkdirSync(issueTraceDir, { recursive: true });\n  const auditFile = path.resolve(issueTraceDir, 'action-trigger.log');\n  fs.appendFileSync(auditFile, `[${new Date().toISOString()}] QUEUED: ${promptCmd} for ${key}\\n`, 'utf8');\n\n  return {\n    ok: true,\n    msg: `${extraNote ? extraNote + '\\n> ' : ''}Đã tiếp nhận yêu cầu *${label}* và đang xử lý tự động (kết quả sẽ gửi vào luồng này ngay khi hoàn tất).`\n  };\n}\n\nconst threadQuery = threadTs ? `&thread_ts=${encodeURIComponent(threadTs)}` : '';\n\ntry {\n  if (!ALLOWED_SKILLS.includes(skill)) {\n    throw new Error('Thao tác yêu cầu không hợp lệ hoặc không được hỗ trợ.');\n  }\n\n  if (skill === 'qa-run-test') {\n    // 1. PRE-FLIGHT & THỰC THI PYTEST CHO QA-RUN-TEST\n    const testDir = path.resolve(wsDir, 'workspace', 'issues', issueKey, 'test');\n    if (!fs.existsSync(testDir)) {\n      nextActionLinks.push(`<${webhookBase}?skill=qa-test-design&issueKey=${issueKey}${threadQuery}|🧪 Thiết kế test>`);\n      throw new Error(`Chưa có dữ liệu kiểm thử cho công việc ${issueKey}. Vui lòng chọn Thiết kế test trước.`);\n    }\n    const resultDir = path.resolve(testDir, 'result');\n    if (!fs.existsSync(resultDir)) fs.mkdirSync(resultDir, { recursive: true });\n    const logFile = path.join(resultDir, 'test-output.log');\n    const junitFile = path.join(resultDir, 'junit.xml');\n\n    const pyCheck = spawnSync('which', ['pytest'], { encoding: 'utf8' });\n    if (pyCheck.status === 0) {\n      const pyRes = spawnSync('pytest', [\n        testDir,\n        '-v',\n        '--tb=short',\n        '--timeout=60',\n        `--junitxml=${junitFile}`\n      ], { cwd: wsDir, encoding: 'utf8', timeout: 300000 });\n      fs.writeFileSync(logFile, (pyRes.stdout || '') + '\\n' + (pyRes.stderr || ''), 'utf8');\n      if (pyRes.status === 0) {\n        executionSuccess = true;\n        executionMessage = `Toàn bộ kịch bản kiểm thử của *${issueKey}* đã vượt qua thành công ✅.`;\n      } else {\n        nextActionLinks.push(`<${webhookBase}?skill=qa-auto-design&issueKey=${issueKey}${threadQuery}|🤖 Tạo kịch bản tự động>`);\n        nextActionLinks.push(`<${webhookBase}?skill=qa-run-test&issueKey=${issueKey}${threadQuery}|▶️ Thực thi test>`);\n        throw new Error(toCleanUserText(pyRes.stderr || pyRes.stdout || 'Có kịch bản kiểm thử chưa đạt yêu cầu.').slice(-350));\n      }\n    } else {\n      const cliRes = dispatchToAgentCliOrHostQueue(skill, issueKey);\n      executionSuccess = cliRes.ok;\n      executionMessage = cliRes.msg || '';\n      executionError = cliRes.err || null;\n    }\n  } else if (skill === 'qa-auto-design') {\n    // 2. PRE-FLIGHT CHECK CHO QA-AUTO-DESIGN: Bắt buộc phải có file .feature trước\n    const testDir = path.resolve(wsDir, 'workspace', 'issues', issueKey, 'test');\n    const hasFeature = fs.existsSync(testDir) && fs.readdirSync(testDir).some(f => f.endsWith('.feature'));\n    if (!hasFeature) {\n      nextActionLinks.push(`<${webhookBase}?skill=qa-test-design&issueKey=${issueKey}${threadQuery}|🧪 Thiết kế test>`);\n      throw new Error(`Chưa có kịch bản kiểm thử cho công việc ${issueKey}. Vui lòng chọn Thiết kế test trước.`);\n    }\n    const cliRes = dispatchToAgentCliOrHostQueue(skill, issueKey);\n    executionSuccess = cliRes.ok;\n    executionMessage = cliRes.msg || '';\n    executionError = cliRes.err || null;\n    nextActionLinks.push(`<${webhookBase}?skill=qa-run-test&issueKey=${issueKey}${threadQuery}|▶️ Thực thi test>`);\n  } else if (skill === 'ba-push-jira') {\n    // 3. PUSH SPEC ĐÃ DUYỆT LÊN JIRA (Khi user bấm Duyệt & Push từ Slack)\n    const specDir = path.resolve(wsDir, 'workspace', 'issues', issueKey, 'spec');\n    const refinedPath = path.resolve(specDir, 'refined.md');\n    const draftPath = path.resolve(specDir, 'refined-draft.md');\n    const finalPath = path.resolve(specDir, 'final.md');\n    const targetSpec = [refinedPath, draftPath, finalPath].find(p => fs.existsSync(p));\n    if (!targetSpec) {\n      nextActionLinks.push(`<${webhookBase}?skill=ba-refine&issueKey=${issueKey}${threadQuery}|✏️ Refine task>`);\n      throw new Error(`Chưa có tài liệu phân tích cho công việc ${issueKey}. Vui lòng chọn Refine task trước.`);\n    }\n    const pushScript = path.resolve(wsDir, 'plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js');\n    if (fs.existsSync(pushScript)) {\n      const pushRes = spawnSync('node', [pushScript, issueKey, targetSpec], {\n        cwd: wsDir,\n        env: { ...process.env, NODE_TLS_REJECT_UNAUTHORIZED: '0' },\n        encoding: 'utf8',\n        timeout: 60000\n      });\n      if (pushRes.status === 0) {\n        executionSuccess = true;\n        executionMessage = `Đã cập nhật nội dung phân tích lên mô tả công việc *${issueKey}* trên Jira ✅.`;\n        nextActionLinks.push(`<${webhookBase}?skill=qa-test-design&issueKey=${issueKey}${threadQuery}|🧪 Thiết kế test>`);\n      } else {\n        throw new Error(toCleanUserText(pushRes.stderr || pushRes.stdout || 'Không thể cập nhật nội dung lên Jira.').slice(-350));\n      }\n    } else {\n      const cliRes = dispatchToAgentCliOrHostQueue(skill, issueKey);\n      executionSuccess = cliRes.ok;\n      executionMessage = cliRes.msg || '';\n      executionError = cliRes.err || null;\n    }\n  } else if (skill === 'ba-spec' || skill === 'ba-refine' || skill === 'qa-test-design' || skill === 'qa-full-pipeline') {\n    // 4. ĐỒNG BỘ TRỰC TIẾP JIRA CLOUD API + AUTO-BOOTSTRAP SPEC + DISPATCH SKILL\n    const jiraData = await fetchJiraIssueDirect(issueKey);\n    const fields = jiraData.fields || {};\n    const summary = fields.summary || '';\n    if (!summary) {\n      throw new Error(`Không thể lấy thông tin công việc ${issueKey} từ Jira.`);\n    }\n    taskSummary = summary;\n\n    const issueDir = path.resolve(wsDir, 'workspace', 'issues', issueKey);\n    const sourceDir = path.resolve(issueDir, 'source');\n    const specDir = path.resolve(issueDir, 'spec');\n    const traceDir = path.resolve(issueDir, 'trace');\n    if (!fs.existsSync(sourceDir)) fs.mkdirSync(sourceDir, { recursive: true });\n    if (!fs.existsSync(specDir)) fs.mkdirSync(specDir, { recursive: true });\n    if (!fs.existsSync(traceDir)) fs.mkdirSync(traceDir, { recursive: true });\n\n    const descPlain = extractPlainDescription(fields.description).trim();\n    const cleanContext = {\n      issueKey: jiraData.key || issueKey,\n      summary,\n      status: fields.status?.name || 'Unknown',\n      issueType: fields.issuetype?.name || 'Task',\n      priority: fields.priority?.name || 'Medium',\n      assignee: fields.assignee?.displayName || '',\n      reporter: fields.reporter?.displayName || '',\n      description: fields.description || null,\n      descriptionText: descPlain,\n      fetchedAt: new Date().toISOString()\n    };\n\n    fs.writeFileSync(path.resolve(sourceDir, 'jira-issue.json'), JSON.stringify(jiraData, null, 2), 'utf8');\n    fs.writeFileSync(path.resolve(specDir, `${issueKey}-context.json`), JSON.stringify(cleanContext, null, 2), 'utf8');\n\n    // Nếu chạy qa-test-design hoặc qa-full-pipeline mà chưa có spec/final.md,\n    // tự động khởi tạo spec/final.md từ refined.md hoặc từ nội dung Jira Description để không bị chặn ở Gate thiếu file\n    const finalMdPath = path.resolve(specDir, 'final.md');\n    const refinedMdPath = path.resolve(specDir, 'refined.md');\n    if ((skill === 'qa-test-design' || skill === 'qa-full-pipeline') && !fs.existsSync(finalMdPath)) {\n      if (fs.existsSync(refinedMdPath)) {\n        fs.copyFileSync(refinedMdPath, finalMdPath);\n      } else {\n        const bootstrapMd = `# Đặc Tả Nghiệp Vụ: [${issueKey}] ${summary}\\n\\n` +\n          `- **Loại:** ${cleanContext.issueType} | **Trạng thái:** ${cleanContext.status} | **Ưu tiên:** ${cleanContext.priority}\\n` +\n          `- **Assignee:** ${cleanContext.assignee} | **Reporter:** ${cleanContext.reporter}\\n\\n` +\n          `## Mô Tả Yêu Cầu & Tiêu Chí Nghiệm Thu (Từ Jira)\\n\\n` +\n          `${descPlain || summary}\\n`;\n        fs.writeFileSync(finalMdPath, bootstrapMd, 'utf8');\n      }\n    }\n\n    if (skill === 'ba-refine') {\n      nextActionLinks.push(`<${webhookBase}?skill=ba-push-jira&issueKey=${issueKey}${threadQuery}|📤 Duyệt & cập nhật Jira>`);\n      nextActionLinks.push(`<${webhookBase}?skill=qa-test-design&issueKey=${issueKey}${threadQuery}|🧪 Thiết kế test>`);\n    } else if (skill === 'qa-test-design') {\n      nextActionLinks.push(`<${webhookBase}?skill=qa-auto-design&issueKey=${issueKey}${threadQuery}|🤖 Tạo kịch bản tự động>`);\n      nextActionLinks.push(`<${webhookBase}?skill=qa-run-test&issueKey=${issueKey}${threadQuery}|▶️ Thực thi test>`);\n    }\n\n    const prepNote = `Đã đồng bộ nội dung mới nhất từ Jira cho *${issueKey}*.`;\n    const cliRes = dispatchToAgentCliOrHostQueue(skill, issueKey, prepNote);\n    executionSuccess = cliRes.ok;\n    executionMessage = cliRes.msg || prepNote;\n    executionError = cliRes.err || null;\n  } else {\n    // 5. CÁC SKILL KHÁC (như qa-squash-push)\n    const cliRes = dispatchToAgentCliOrHostQueue(skill, issueKey);\n    executionSuccess = cliRes.ok;\n    executionMessage = cliRes.msg || '';\n    executionError = cliRes.err || null;\n  }\n} catch (err) {\n  executionSuccess = false;\n  executionError = toCleanUserText(err.message || String(err));\n}\n\nnextActionLinks.push(`<${jiraUrl}|🔗 Xem chi tiết>`);\nconst actionRowText = `\\n> ⚡ *Thao tác tiếp theo:* ${nextActionLinks.join('  ┆  ')}`;\nconst threadHeader = `🧵 *<${jiraUrl}|${issueKey}>${taskSummary ? ' — ' + taskSummary : ''}*`;\n\n// SOẠN PAYLOAD BÁO CÁO GỬI VỀ ĐÚNG THREAD TASK TRÊN SLACK (Thuần văn bản, ngắn gọn, không chứa lệnh kỹ thuật)\nlet slackNotifyPayload = null;\n\nif (!executionSuccess || executionError) {\n  slackNotifyPayload = {\n    text: `${threadHeader}\\n⚠️ *Chưa thể thực hiện: ${skillLabel}*\\n> • *Lý do:* ${toCleanUserText(executionError)}\\n> • *Thời gian:* ${nowStr}${actionRowText}`,\n    ...(threadTs ? { thread_ts: threadTs } : {})\n  };\n} else {\n  slackNotifyPayload = {\n    text: `${threadHeader}\\n⏳ *Đang xử lý: ${skillLabel}*\\n> • ${executionMessage}\\n> • *Thời gian:* ${nowStr}${actionRowText}`,\n    ...(threadTs ? { thread_ts: threadTs } : {})\n  };\n}\n\nreturn [{\n  json: {\n    success: executionSuccess,\n    isError: !executionSuccess,\n    skill,\n    issueKey,\n    threadTs: threadTs || null,\n    executionMessage,\n    error: executionError,\n    slackNotifyPayload\n  }\n}];\n"
+      },
+      "id": "dispatch-action",
+      "name": "Dispatch Action Skill",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const slackUrl = ($env && $env.SLACK_WEBHOOK_URL) ? String($env.SLACK_WEBHOOK_URL).trim() : '';\nif (!slackUrl || !slackUrl.startsWith('https://hooks.slack.com/') || slackUrl.includes('T00000000') || slackUrl.includes('your_')) {\n  return [];\n}\nconst item = $input.first()?.json || {};\nif (!item.slackNotifyPayload) return [];\nreturn $input.all();"
+      },
+      "id": "guard-action-slack",
+      "name": "Guard Action Slack URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.slackNotifyPayload) }}",
+        "options": {}
+      },
+      "id": "send-action-slack",
+      "name": "Send Action Result to Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1140,
+        780
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (9:00-17:00 Mon-Fri)": {
+      "main": [
+        [
+          {
+            "node": "Prepare My Tasks Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (jira-my-tasks-poll)": {
+      "main": [
+        [
+          {
+            "node": "Prepare My Tasks Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare My Tasks Query": {
+      "main": [
+        [
+          {
+            "node": "Query Jira API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Jira API": {
+      "main": [
+        [
+          {
+            "node": "Detect My Tasks Delta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect My Tasks Delta": {
+      "main": [
+        [
+          {
+            "node": "Build Slack Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond Poll Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Slack Message": {
+      "main": [
+        [
+          {
+            "node": "Guard Slack URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard Slack URL": {
+      "main": [
+        [
+          {
+            "node": "Send My Tasks to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger (agent-trigger-skill)": {
+      "main": [
+        [
+          {
+            "node": "Pre-respond Auto-Close HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-respond Auto-Close HTML": {
+      "main": [
+        [
+          {
+            "node": "Respond Auto-Close HTML",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Dispatch Action Skill",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dispatch Action Skill": {
+      "main": [
+        [
+          {
+            "node": "Guard Action Slack URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guard Action Slack URL": {
+      "main": [
+        [
+          {
+            "node": "Send Action Result to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "errorWorkflow": "GlobalErrorHandler001"
+  }
+}
