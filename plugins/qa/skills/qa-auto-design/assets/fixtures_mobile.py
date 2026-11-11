@@ -18,7 +18,7 @@ import pytest
 def pytest_addoption(parser):
     """Đăng ký CLI options cho Mobile Testing."""
     options = [
-        ("--appium-server-url", os.getenv("APPIUM_SERVER_URL", "http://127.0.0.1:4723"), "URL của Appium Server"),
+        ("--appium-server-url", os.getenv("APPIUM_SERVER_URL", ""), "URL của Appium Server"),
         ("--app-package", os.getenv("APP_PACKAGE", "com.example.trading"), "Package ID của ứng dụng Android"),
         ("--app-activity", os.getenv("APP_ACTIVITY", ".MainActivity"), "Launcher Activity của ứng dụng"),
         ("--platform-name", os.getenv("MOBILE_PLATFORM", "Android"), "Hệ điều hành di động (Android / iOS)"),
@@ -61,12 +61,12 @@ def appium_driver(request):
     Tự động đọc thông số từ CLI hoặc biến môi trường.
     """
     try:
-        appium_server_url = request.config.getoption("--appium-server-url") or os.getenv("APPIUM_SERVER_URL", "http://127.0.0.1:4723")
+        appium_server_url = request.config.getoption("--appium-server-url") or os.getenv("APPIUM_SERVER_URL", "")
         app_package = request.config.getoption("--app-package") or os.getenv("APP_PACKAGE", "com.example.trading")
         app_activity = request.config.getoption("--app-activity") or os.getenv("APP_ACTIVITY", ".MainActivity")
         platform_name = request.config.getoption("--platform-name") or os.getenv("MOBILE_PLATFORM", "Android")
     except Exception:
-        appium_server_url = os.getenv("APPIUM_SERVER_URL", "http://127.0.0.1:4723")
+        appium_server_url = os.getenv("APPIUM_SERVER_URL", "")
         app_package = os.getenv("APP_PACKAGE", "com.example.trading")
         app_activity = os.getenv("APP_ACTIVITY", ".MainActivity")
         platform_name = os.getenv("MOBILE_PLATFORM", "Android")

@@ -7,7 +7,7 @@
  * - Mở rộng changelog để phát hiện chính xác trường nào thay đổi
  */
 
-const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');
+const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || '').replace(/\/+$/, '');
 const email = ($env && $env.ATLASSIAN_EMAIL) || '';
 const token = ($env && $env.ATLASSIAN_API_TOKEN) || '';
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
@@ -42,7 +42,7 @@ const searchBody = {
     'updated',
     'created',
     'comment',
-    'customfield_10018', // Sprint field (Jira Cloud)
+    ($env && $env.JIRA_SPRINT_CUSTOM_FIELD) || 'customfield_10018', // Sprint field (Jira Cloud)
     'customfield_10020',
     'description',
     'project'

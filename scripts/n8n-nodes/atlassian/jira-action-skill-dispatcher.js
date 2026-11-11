@@ -95,11 +95,10 @@ try {
   }
 } catch (_) {}
 
-const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');
-const jiraUrl = `${baseUrl}/browse/${issueKey}`;
-const n8nPort = ($env && $env.N8N_PORT) || '5678';
-const n8nHost = ($env && $env.N8N_HOST) || 'localhost';
-const webhookBase = `http://${n8nHost}:${n8nPort}/webhook/agent-trigger-skill`;
+const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || '').replace(/\/+$/, '');
+const jiraUrl = baseUrl ? `${baseUrl}/browse/${issueKey}` : issueKey;
+const n8nBase = (($env && $env.N8N_BASE_URL) || `${($env && $env.N8N_PROTOCOL) || 'http'}://${($env && $env.N8N_HOST) || 'localhost'}:${($env && $env.N8N_PORT) || '5678'}`).replace(/\/+$/, '');
+const webhookBase = `${n8nBase}/webhook/agent-trigger-skill`;
 const email = ($env && $env.ATLASSIAN_EMAIL) || '';
 const token = ($env && $env.ATLASSIAN_API_TOKEN) || '';
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
@@ -122,7 +121,8 @@ const ALLOWED_SKILLS = [
 
 // HÀM GỌI TRỰC TIẾP JIRA CLOUD REST API (Tránh gọi vòng lại webhook n8n gây nghẽn Single Task Runner)
 async function fetchJiraIssueDirect(key) {
-  const fields = 'summary,description,status,assignee,priority,reporter,issuetype,comment,parent,issuelinks,attachment,customfield_10018';
+  const sprintField = ($env && $env.JIRA_SPRINT_CUSTOM_FIELD) || 'customfield_10018';
+  const fields = `summary,description,status,assignee,priority,reporter,issuetype,comment,parent,issuelinks,attachment,${sprintField}`;
   const url = `${baseUrl}/rest/api/3/issue/${key}?fields=${fields}`;
   const headers = {
     'Authorization': authHeader,
@@ -186,7 +186,7 @@ function dispatchToAgentCliOrHostQueue(skillName, key, extraNote = '') {
 
   const candidateClis = [
     ($env && $env.AGENT_CLI_PATH),
-    '/Users/quang.nguyen3/.local/bin/agy',
+    '/opt/homebrew/bin/agy',
     '/opt/homebrew/bin/claude',
     '/usr/local/bin/agy',
     '/usr/local/bin/claude',

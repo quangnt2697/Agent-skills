@@ -12,7 +12,7 @@ const tcId = meta.testCaseId;
 const tcName = meta.testCaseName || `${issueKey}-${res.namejira}`;
 const sprintName = meta.sprintName || 'Sprint mới nhất';
 const sprintReqId = meta.sprintReqVersionId;
-const baseUrl = (($env && $env.SQUASH_BASE_URL) || 'https://tm.dnse.com.vn/squash').replace(/\/+$/, '');
+const baseUrl = (($env && $env.SQUASH_BASE_URL) || '').replace(/\/+$/, '');
 
 const tcLink = tcId ? `[#${tcId} - ${tcName}](${baseUrl}/test-case-workspace/test-case/${tcId})` : `\`${tcName}\``;
 const campaignStatus = sprintReqId 

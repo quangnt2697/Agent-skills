@@ -26,8 +26,8 @@ const outputPath = path.resolve(__dirname, '../../ba-design-mockup/references/ui
 let projects = {};
 const candidateConfigPaths = [
   configProjectsPath,
-  '/Users/qa-quangnt/Projects/agent-skills/config/projects.json'
-];
+  path.join(process.env.AGENT_WORKSPACE_DIR || '', 'config/projects.json')
+].filter(Boolean);
 for (const cfgPath of candidateConfigPaths) {
   if (fs.existsSync(cfgPath)) {
     try {
@@ -37,12 +37,8 @@ for (const cfgPath of candidateConfigPaths) {
   }
 }
 
-const defaultWebPath = fs.existsSync('/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading')
-  ? '/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading'
-  : path.resolve(agentSkillsRoot, '..', 'dnse-trading');
-const defaultMobilePath = fs.existsSync('/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app')
-  ? '/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app'
-  : path.resolve(agentSkillsRoot, '..', 'arrow-app');
+const defaultWebPath = process.env.WEB_TRADING_ROOT || path.resolve(agentSkillsRoot, '..', 'dnse-trading');
+const defaultMobilePath = process.env.MOBILE_TRADING_ROOT || path.resolve(agentSkillsRoot, '..', 'arrow-app');
 
 const webTradingRoot = projects['web-trading'] || process.env.WEB_TRADING_ROOT || defaultWebPath;
 const mobileTradingRoot = projects['mobile-trading'] || process.env.MOBILE_TRADING_ROOT || defaultMobilePath;

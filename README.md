@@ -47,7 +47,7 @@ Toàn bộ quy trình thiết lập từ A–Z (dành cho cả người mới b�
 ### Cách 1: Cài đặt tự động 1 lệnh trên macOS (Khuyên dùng)
 Script sẽ tự động kiểm tra và cài đặt **Homebrew, Node.js (>=20), Colima, Docker CLI, Docker Compose**, tạo file cấu hình `.env`, khởi chạy container `n8n` (nạp sẵn 18 workflows) và đồng bộ toàn bộ kỹ năng vào AI Agent:
 ```bash
-git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
+git clone git@gitlab.example.com:my-project/agent-skills.git
 cd agent-skills
 npm run setup:mac     # Tự động cài Colima + Docker + n8n + đồng bộ Agent Plugins
 npm test              # Kiểm tra toàn bộ hệ thống
@@ -60,7 +60,7 @@ Nếu bạn muốn tự cài đặt và kiểm soát từng thành phần:
 brew install node colima docker docker-compose
 
 # 2. Tải dự án & cài đặt thư viện
-git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
+git clone git@gitlab.example.com:my-project/agent-skills.git
 cd agent-skills
 npm install
 

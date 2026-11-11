@@ -387,7 +387,8 @@ export async function sendSlackMessage({ text, blocks, channel, webhookUrl, thre
       ...(threadTs ? { thread_ts: threadTs } : {})
     };
 
-    const res = await fetch('https://slack.com/api/chat.postMessage', {
+    const slackApiUrl = `${(process.env.SLACK_API_BASE_URL || 'https://slack.com/api').replace(/\/+$/, '')}/chat.postMessage`;
+    const res = await fetch(slackApiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
@@ -421,8 +422,8 @@ export async function sendSlackMessage({ text, blocks, channel, webhookUrl, thre
  */
 export function buildJiraIssueBlocks({ issueKey, summary, status, assignee, sp, type = 'Story', priority = 'Medium', isThreadReply = false } = {}) {
   const normStatus = String(status || '').trim().toLowerCase();
-  const baseUrl = (process.env.ATLASSIAN_BASE_URL || 'https://entrade.atlassian.net').replace(/\/+$/, '');
-  const jiraUrl = `${baseUrl}/browse/${issueKey}`;
+  const baseUrl = (process.env.ATLASSIAN_BASE_URL || '').replace(/\/+$/, '');
+  const jiraUrl = baseUrl ? `${baseUrl}/browse/${issueKey}` : issueKey;
   
   let buttons = [];
 
@@ -522,11 +523,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     try {
       if (action === 'card') {
         // Usage: node slack-client.js card <issueKey> <summary> <status> [assignee] [sp] [threadTs] [type] [priority]
-        const issueKey = args[1] || 'G3PTP-17917';
-        const summary = args[2] || '[Dadmin] Là VHHT, tôi muốn update đúng trạng thái giao dịch nộp...';
+        const defaultIssueKey = `${process.env.JIRA_PROJECT_KEY || 'TEST'}-1001`;
+        const issueKey = args[1] || defaultIssueKey;
+        const summary = args[2] || '[Sample] Ticket summary';
         const status = args[3] || 'Open';
-        const assignee = args[4] || 'Trịnh Thu Hà';
-        const sp = args[5] || 3;
+        const assignee = args[4] || 'Assigned User';
+        const sp = args[5] || 1;
         const threadTs = args[6] || undefined;
         const type = args[7] || 'Story';
         const priority = args[8] || 'Medium';

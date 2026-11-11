@@ -20,7 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const args = process.argv.slice(2);
-let targetUrl = process.env.WEB_BASE_URL || 'https://dev.trading-test.dnse.com.vn';
+let targetUrl = process.env.WEB_BASE_URL || '';
 let outputDir = process.cwd();
 let shouldLogin = args.includes('--login');
 

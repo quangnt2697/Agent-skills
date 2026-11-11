@@ -20,7 +20,7 @@ const projectRoot = path.join(__dirname, '..', '..');
 
 dotenv.config({ path: path.join(projectRoot, '.env') });
 
-const FIGMA_API_BASE = 'https://api.figma.com/v1';
+const FIGMA_API_BASE = (process.env.FIGMA_API_BASE_URL || 'https://api.figma.com/v1').replace(/\/+$/, '');
 
 /**
  * Phân tích URL Figma để lấy fileKey và nodeId

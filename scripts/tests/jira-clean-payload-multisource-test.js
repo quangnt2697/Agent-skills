@@ -17,7 +17,7 @@ function runCleanPayloadNode(payload, env = {}) {
   };
   const mockEnv = {
     AGENT_WORKSPACE_DIR: path.resolve(__dirname, '..', '..'),
-    ATLASSIAN_BASE_URL: 'https://entrade.atlassian.net',
+    ATLASSIAN_BASE_URL: 'https://example.atlassian.net',
     ...env
   };
 
@@ -33,7 +33,7 @@ test('jira-clean-payload: trích xuất đa nguồn Parent, Comments, Linked Iss
         {
           id: 101,
           object: {
-            url: 'https://entrade.atlassian.net/wiki/spaces/KRX/pages/777666/RemoteLinkedSpec',
+            url: 'https://example.atlassian.net/wiki/spaces/KRX/pages/777666/RemoteLinkedSpec',
             title: 'Tài liệu KRX gắn qua Remote Link'
           }
         }
@@ -121,7 +121,7 @@ test('jira-clean-payload: trích xuất đa nguồn Parent, Comments, Linked Iss
             {
               type: 'paragraph',
               content: [
-                { type: 'text', text: 'Xem tài liệu tại https://entrade.atlassian.net/wiki/spaces/TECH/pages/999888/OrderGuide' }
+                { type: 'text', text: 'Xem tài liệu tại https://example.atlassian.net/wiki/spaces/TECH/pages/999888/OrderGuide' }
               ]
             }
           ]

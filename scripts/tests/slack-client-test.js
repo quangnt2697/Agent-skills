@@ -18,7 +18,7 @@ test('toSlackMrkdwn & markdownToSlackBlocks: converts markdown tables into monos
     '#### 🚨 Cảnh Báo Treo (> 4 ngày)',
     '| Ticket | Tiêu đề | Thành viên | Treo | Mức độ |',
     '| :--- | :--- | :--- | :---: | :--- |',
-    '| [G3PTP-17004](https://entrade.atlassian.net/browse/G3PTP-17004) | Full Jira Task Title | **Phạm Thị Thảo Linh** | **69 ngày** | 🔴 Nghiêm trọng |'
+    '| [G3PTP-17004](https://example.atlassian.net/browse/G3PTP-17004) | Full Jira Task Title | **Phạm Thị Thảo Linh** | **69 ngày** | 🔴 Nghiêm trọng |'
   ].join('\n');
   const out = toSlackMrkdwn(md);
   assert.ok(out.includes('```\n'));
@@ -29,7 +29,7 @@ test('toSlackMrkdwn & markdownToSlackBlocks: converts markdown tables into monos
   assert.equal(blocks[0].type, 'section');
   assert.equal(blocks[1].type, 'table');
   assert.equal(blocks[1].rows[1][0].elements[0].elements[0].type, 'link');
-  assert.equal(blocks[1].rows[1][0].elements[0].elements[0].url, 'https://entrade.atlassian.net/browse/G3PTP-17004');
+  assert.equal(blocks[1].rows[1][0].elements[0].elements[0].url, 'https://example.atlassian.net/browse/G3PTP-17004');
   assert.equal(blocks[1].rows[1][0].elements[0].elements[0].text, 'G3PTP-17004');
 });
 

@@ -125,7 +125,7 @@ load_hierarchical_env()
 Để các task có thể import trực tiếp SDK dùng chung và thư viện `openapi-tyk/sdk/python` mà không phải copy code:
 ```ini
 [pytest]
-pythonpath = . steps ../../.. ../../../shared ../../../sdk ../../../openapi-tyk/sdk/python /Users/qa-quangnt/Desktop/Project/3.1/openapi-tyk/sdk/python
+pythonpath = . steps ../../.. ../../../shared ../../../sdk ../../../openapi-tyk/sdk/python ${OPENAPI_TYK_PATH}/sdk/python
 ```
 
 ### 3.2. Ưu tiên Sử Dụng SDK OpenAPI Sẵn Có (`openapi-tyk/sdk/python/`)
@@ -267,15 +267,17 @@ Trong `conftest.py`, fixture `target_environment` tự động nhận diện mô
 def target_environment():
     base_url = os.getenv("BASE_URL", "")
     if "sandbox" in base_url.lower() or "sb-openapi" in base_url.lower():
+        sandbox_id = os.getenv("METABASE_UAT_DB_OPENAPI_SANDBOX_ID") or os.getenv("METABASE_DB_OPENAPI_SANDBOX_ID") or "0"
         return {
             "name": "sandbox",
-            "db_id": int(os.getenv("METABASE_DB_OPENAPI_SANDBOX_ID", "655")),
+            "db_id": int(sandbox_id),
             "db_name": "openapi-sandbox",
             "base_url": base_url
         }
+    openapi_id = os.getenv("METABASE_UAT_DB_OPENAPI_ID") or os.getenv("METABASE_DB_OPENAPI_ID") or "0"
     return {
         "name": "openapi",
-        "db_id": int(os.getenv("METABASE_DB_OPENAPI_ID", "535")),
+        "db_id": int(openapi_id),
         "db_name": "openapi",
         "base_url": base_url
     }

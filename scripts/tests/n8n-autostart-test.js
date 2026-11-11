@@ -118,8 +118,8 @@ test('isSlackWebhookConfigured & isJiraConfigured: nhận diện đúng cấu h�
 
   // Jira cấu hình thật -> true
   assert.equal(isJiraConfigured({
-    ATLASSIAN_BASE_URL: 'https://entrade.atlassian.net',
-    ATLASSIAN_EMAIL: 'dev@dnse.com.vn',
+    ATLASSIAN_BASE_URL: 'https://acme-corp.atlassian.net',
+    ATLASSIAN_EMAIL: 'dev@acme-corp.com',
     ATLASSIAN_API_TOKEN: 'ATATT3xFfGF0_real_token_123'
   }), true);
 });
@@ -151,7 +151,7 @@ test('checkAndCatchUpStandup: người mới clone repo chưa cấu hình Slack 
     fs.writeFileSync(path.join(dataDir, 'standup-last-sent.txt'), '2026-11-09\n', 'utf8');
     fs.writeFileSync(
       path.join(tmpRoot, '.env'),
-      'SLACK_WEBHOOK_URL=https://hooks.slack.com/services/T01ABCDEF/B02GHIJKL/realWebhook123\nATLASSIAN_BASE_URL=https://entrade.atlassian.net\nATLASSIAN_EMAIL=dev@dnse.com.vn\nATLASSIAN_API_TOKEN=ATATT3x_real_token\n',
+      'SLACK_WEBHOOK_URL=https://hooks.slack.com/services/T01ABCDEF/B02GHIJKL/realWebhook123\nATLASSIAN_BASE_URL=https://acme-corp.atlassian.net\nATLASSIAN_EMAIL=dev@acme-corp.com\nATLASSIAN_API_TOKEN=ATATT3x_real_token\n',
       'utf8'
     );
     const resAlreadySent = await checkAndCatchUpStandup({ rootDir: tmpRoot, dryRun: true, now: monday915 });
@@ -195,7 +195,7 @@ test('sm-analyze-standup: ghi nhận mốc ngày vào standup-last-sent.txt khi 
           _triggerSource: 'internal',
           sprintName: 'Sprint 50',
           boardId: 61,
-          baseUrl: 'https://entrade.atlassian.net'
+          baseUrl: 'https://acme-corp.atlassian.net'
         }
       })
     });

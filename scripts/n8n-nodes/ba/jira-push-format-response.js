@@ -9,8 +9,8 @@ try {
 const triggerSource = specContext._triggerSource || json._triggerSource || 'internal';
 const issueKey = specContext.issueKey || json.issueKey || '';
 const userName = specContext.userName || json.userName || 'User';
-const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');
-const jiraUrl = `${baseUrl}/browse/${issueKey}`;
+const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || '').replace(/\/+$/, '');
+const jiraUrl = baseUrl ? `${baseUrl}/browse/${issueKey}` : issueKey;
 
 // 1. Trường hợp có lỗi từ bước Resolve hoặc Pre-flight
 if (specContext.isError || json.isError) {

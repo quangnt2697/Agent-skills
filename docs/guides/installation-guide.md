@@ -62,7 +62,7 @@ Bạn có thể chọn **Tùy chọn A (Tự động 1 lệnh)** hoặc **Tùy c
 ### Tùy chọn A: Cài Đặt Tự Động Bằng 1 Lệnh (Khuyên dùng cho macOS)
 Copy và chạy 3 dòng lệnh sau trong Terminal:
 ```bash
-git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
+git clone git@gitlab.example.com:my-project/agent-skills.git
 cd agent-skills
 npm run setup:mac
 ```
@@ -83,7 +83,7 @@ Nếu bạn muốn tự tay thực hiện từng bước hoặc đang dùng Wind
 
 **Bước 1.1 — Tải dự án và cài đặt thư viện:**
 ```bash
-git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
+git clone git@gitlab.example.com:my-project/agent-skills.git
 cd agent-skills
 npm install
 ```
@@ -103,8 +103,8 @@ Dưới đây là cách lấy từng thông tin cơ bản để điền vào `.e
 | Biến trong `.env` | Bắt buộc? | Cách lấy giá trị (Dành cho người mới) |
 |---|---|---|
 | `AGENT_WORKSPACE_DIR` | **Bắt buộc** | Đường dẫn tới thư mục dự án này trên máy bạn. Gõ lệnh `pwd` trong Terminal rồi copy kết quả dán vào (ví dụ: `/Users/ten.ban/Projects/agent-skills`). |
-| `ATLASSIAN_BASE_URL` | Khi dùng Jira / Confluence | Điền: `https://entrade.atlassian.net` |
-| `ATLASSIAN_EMAIL` | Khi dùng Jira / Confluence | Email công ty của bạn dùng để đăng nhập Jira (ví dụ: `ten.ban@dnse.com.vn`). |
+| `ATLASSIAN_BASE_URL` | Khi dùng Jira / Confluence | Điền URL Atlassian Cloud của tổ chức (ví dụ: `https://example.atlassian.net`). |
+| `ATLASSIAN_EMAIL` | Khi dùng Jira / Confluence | Email công ty của bạn dùng để đăng nhập Jira (ví dụ: `user@example.com`). |
 | `ATLASSIAN_API_TOKEN` | Khi dùng Jira / Confluence | 1. Truy cập [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)<br/>2. Bấm **Create API token** → đặt tên bất kỳ → bấm **Copy** và dán vào đây. |
 | `SLACK_WEBHOOK_URL` | Khi dùng Báo cáo Slack | URL Incoming Webhook của kênh Slack nhận báo cáo Daily Standup / thông báo task Jira (ví dụ: `https://hooks.slack.com/services/...`). |
 | `PROJECT_SCAN_DIRS` | Tuỳ chọn | Đường dẫn thư mục chứa các repo code khác trên máy bạn để Agent tự động đồng bộ mỗi sáng (phân tách bằng dấu phẩy). |

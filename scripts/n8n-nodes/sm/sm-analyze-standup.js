@@ -10,8 +10,8 @@ const prepReqNode = $('Prepare Standup Request').first()?.json || {};
 const triggerSource = prepIssuesNode._triggerSource || prepReqNode._triggerSource || 'internal';
 const sprintName = prepIssuesNode.sprintName || 'Sprint đang mở';
 const sprintId = prepIssuesNode.sprintId || '';
-const boardId = prepReqNode.boardId || 61;
-const baseUrl = (prepReqNode.baseUrl || 'https://entrade.atlassian.net').replace(/\/+$/, '');
+const boardId = prepReqNode.boardId || (parseInt(($env && $env.JIRA_BOARD_ID) || '', 10) || null);
+const baseUrl = (prepReqNode.baseUrl || ($env && $env.ATLASSIAN_BASE_URL) || '').replace(/\/+$/, '');
 
 // Xử lý lỗi Jira API hoặc không có sprint
 if (prepIssuesNode.isError || json.error || json.errorMessages || (json.message && !json.issues)) {
@@ -23,7 +23,7 @@ if (prepIssuesNode.isError || json.error || json.errorMessages || (json.message 
     json: {
       isError: true,
       error: errMsg,
-      reportText: `🚨 **[Lỗi Báo Cáo Daily Standup]** Không thể lấy danh sách issue cho Board 61:\n> ${errMsg}\n\n*Gợi ý: Kiểm tra cấu hình ATLASSIAN_BASE_URL, ATLASSIAN_EMAIL và API Token trong file .env.*`,
+      reportText: `🚨 **[Lỗi Báo Cáo Daily Standup]** Không thể lấy danh sách issue cho Board ${boardId || ''}:\n> ${errMsg}\n\n*Gợi ý: Kiểm tra cấu hình ATLASSIAN_BASE_URL, ATLASSIAN_EMAIL và API Token trong file .env.*`,
       totalIssues: 0, stuckCount: 0, _triggerSource: triggerSource
     }
   }];
@@ -112,8 +112,11 @@ for (const issue of issues) {
 
   // Story Points: Board 61 (G3PTP) dùng customfield_10022 ("Story Points", number), fallback customfield_10026 ("Story point estimate", number) hoặc timeoriginalestimate (8h = 1 SP)
   // CẢNH BÁO: Tuyệt đối KHÔNG dùng customfield_10016 vì đó là "[CHART] Date of First Response" (chuỗi ISO datetime "2026-...", parseFloat sẽ ra 2026!)
-  let rawSp = f.customfield_10022;
+  const customSpKey = ($env && $env.JIRA_STORY_POINTS_FIELD) || '';
+  let rawSp = customSpKey ? f[customSpKey] : null;
+  if (rawSp === null || rawSp === undefined) rawSp = f.customfield_10022;
   if (rawSp === null || rawSp === undefined) rawSp = f.customfield_10026;
+  if (rawSp === null || rawSp === undefined) rawSp = f.customfield_10028;
 
   let sp = 0;
   if (typeof rawSp === 'number' && !isNaN(rawSp)) {
@@ -192,7 +195,10 @@ for (const issue of issues) {
 
 // ── Soạn Báo Cáo Markdown Ngắn Gọn ──
 const dateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
-const boardUrl = `${baseUrl}/jira/software/c/projects/G3PTP/boards/${boardId}/backlog`;
+const projectKey = ($env && $env.JIRA_PROJECT_KEY) || '';
+const boardUrl = projectKey
+  ? `${baseUrl}/jira/software/c/projects/${projectKey}/boards/${boardId}/backlog`
+  : `${baseUrl}/jira/software/c/boards/${boardId}`;
 const totalIssues = issues.length;
 const donePct = totalIssues > 0 ? Math.round((doneIssues.length / totalIssues) * 1000) / 10 : 0;
 const spPct = committedPoints > 0 ? Math.round((completedPoints / committedPoints) * 1000) / 10 : 0;

@@ -16,7 +16,7 @@ const input = $input.first();
 const json = (input && input.json) || {};
 
 // 1. Nạp biến môi trường xác thực từ $env hoặc process.env
-const baseUrl = ($env && $env.BASE_URL) || (process.env && process.env.BASE_URL) || 'https://openapi-uat.example.com';
+const baseUrl = ($env && $env.BASE_URL) || (process.env && process.env.BASE_URL) || '';
 const apiKey = ($env && $env.API_KEY) || (process.env && process.env.API_KEY) || '';
 const apiSecret = ($env && $env.API_SECRET) || (process.env && process.env.API_SECRET) || '';
 

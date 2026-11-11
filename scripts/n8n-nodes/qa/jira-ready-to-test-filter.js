@@ -31,9 +31,9 @@ try {
 } catch (_) {}
 
 const candidateRoots = [
-  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills',
+  ($env && $env.AGENT_WORKSPACE_DIR),
   procCwd,
-  '/Users/qa-quangnt/Projects/agent-skills'
+  '/workspace'
 ].filter(Boolean);
 
 let primaryRoot = candidateRoots[0];
@@ -95,19 +95,22 @@ for (const rawItem of candidateItems) {
 
   if (!issueKey) continue;
 
-  // 1. Điều kiện 1: Board G.3.1 (Project G3PTP hoặc chứa G.3.1)
+  // 1. Điều kiện 1: Board / Project hợp lệ
+  const targetProjectKey = (($env && $env.JIRA_PROJECT_KEY) || '').toUpperCase();
+  const targetTeam = ($env && $env.JIRA_TEAM_NAME) || '';
   const projectKey = (fields.project?.key || '').toUpperCase();
   const projectName = (fields.project?.name || '');
-  const isBoardG31 = issueKey.startsWith('G3PTP-') || projectKey === 'G3PTP' || projectName.includes('G.3.1') || (item.boardName || '').includes('G.3.1');
+  const isBoardG31 = (!targetProjectKey && !targetTeam)
+    || (targetProjectKey && (issueKey.startsWith(`${targetProjectKey}-`) || projectKey === targetProjectKey))
+    || (targetTeam && (projectName.includes(targetTeam) || (item.boardName || '').includes(targetTeam)));
 
   // 2. Điều kiện 2: Active Sprint
   let isActiveSprint = false;
   let sprintName = '';
 
   // Ưu tiên tìm sprintField:
-  // - Jira Cloud Entrade dùng customfield_10018 (schema: com.pyxis.greenhopper.jira:gh-sprint)
-  // - Các Jira instance khác: fields.sprint, customfield_10020, customfield_10010, customfield_10016
-  let sprintField = fields.customfield_10018 || fields.sprint || fields.customfield_10020 || fields.customfield_10010 || fields.customfield_10016;
+  const sprintCustomKey = ($env && $env.JIRA_SPRINT_CUSTOM_FIELD) || '';
+  let sprintField = (sprintCustomKey && fields[sprintCustomKey]) || fields.sprint;
 
   // Nếu chưa thấy, duyệt dynamic qua toàn bộ fields tìm object/array chứa sprint metadata
   if (!sprintField && typeof fields === 'object') {
@@ -307,8 +310,8 @@ for (const rawItem of candidateItems) {
   const suggestedCommand = suggestedCommands[0] || '';
 
   // 8. Tạo thẻ Markdown báo cáo
-  const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');
-  const jiraUrl = `${baseUrl}/browse/${issueKey}`;
+  const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || '').replace(/\/+$/, '');
+  const jiraUrl = baseUrl ? `${baseUrl}/browse/${issueKey}` : issueKey;
   const summary = fields.summary || item.summary || '-';
   const assignee = fields.assignee?.displayName || item.assignee || '-';
   const priority = fields.priority?.name || item.priority || 'Medium';

@@ -57,7 +57,6 @@ try {
 const candidateRoots = [
   ($env && $env.AGENT_WORKSPACE_DIR),
   procCwd,
-  '/Users/quang.nguyen3/Projects/Agent/agent-skills',
   '/workspace'
 ].filter(Boolean);
 

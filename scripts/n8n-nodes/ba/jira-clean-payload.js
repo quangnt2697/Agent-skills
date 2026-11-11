@@ -161,7 +161,8 @@ const components = (fields.components || []).map(c => c.name);
 
 // Sprint info — Jira Cloud Entrade dùng customfield_10018, các bản khác dùng customfield_10020, Server/DC dùng fields.sprint
 let sprintName = 'Không có Sprint';
-const sprintRaw = fields.customfield_10018 || fields.sprint || fields.customfield_10020;
+const sprintCustomKey = ($env && $env.JIRA_SPRINT_CUSTOM_FIELD) || 'customfield_10018';
+const sprintRaw = fields[sprintCustomKey] || fields.customfield_10018 || fields.sprint || fields.customfield_10020;
 if (Array.isArray(sprintRaw)) {
   sprintName = sprintRaw.map(s => s.name).filter(Boolean).join(', ') || sprintName;
 } else if (sprintRaw && typeof sprintRaw === 'object') {
@@ -320,10 +321,17 @@ let relatedSearchIssues = [];
 let relatedConfluencePages = [];
 
 // 5. Quét trạng thái Workspace Local
+let procCwd = '';
+try {
+  const proc = require('process');
+  if (proc && typeof proc.cwd === 'function') procCwd = proc.cwd();
+} catch (_) {}
+
 const candidateRoots = [
-  ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills',
-  '/Users/qa-quangnt/Projects/agent-skills'
-];
+  ($env && $env.AGENT_WORKSPACE_DIR),
+  procCwd,
+  '/workspace'
+].filter(Boolean);
 
 const scanDirsRaw = ($env && $env.PROJECT_SCAN_DIRS) || '';
 if (scanDirsRaw) {
@@ -397,7 +405,7 @@ for (const cRoot of candidateRoots) {
 }
 
 // 5.1. Xác định BaseUrl & AuthHeader dùng chung cho cả bước Hydrate và Báo cáo
-let baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');
+let baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || '').replace(/\/+$/, '');
 let resolvedAuthHeader = '';
 try {
   const prepNode = $('Prepare Jira Request').first();
@@ -550,7 +558,8 @@ try {
               // Thử qua n8n confluence-doc webhook trước
               const { execSync } = require('child_process');
               try {
-                const cfPost = execSync(`curl -s --max-time 10 -X POST -H 'Content-Type: application/json' -d '{"pageUrlOrId":"${pId}"}' http://localhost:5678/webhook/confluence-doc`, { encoding: 'utf8' });
+                const n8nBase = (($env && $env.N8N_BASE_URL) || `${($env && $env.N8N_PROTOCOL) || 'http'}://${($env && $env.N8N_HOST) || 'localhost'}:${($env && $env.N8N_PORT) || '5678'}`).replace(/\/+$/, '');
+                const cfPost = execSync(`curl -s --max-time 10 -X POST -H 'Content-Type: application/json' -d '{"pageUrlOrId":"${pId}"}' ${n8nBase}/webhook/confluence-doc`, { encoding: 'utf8' });
                 const cfJson = JSON.parse(cfPost);
                 if (cfJson && cfJson.markdownContent) docMd = cfJson.markdownContent;
               } catch (_) {}

@@ -292,7 +292,7 @@ test('Jira Ready To Test Filter (WF-11): enforces Board G.3.1, active sprint, an
   const fn = new Function('$input', '$env', 'require', code);
   const result = fn(
     { first: () => ({ json: mockPayload }) },
-    { AGENT_WORKSPACE_DIR: path.resolve(__dirname, '..', '..'), ATLASSIAN_BASE_URL: 'https://entrade.atlassian.net' },
+    { AGENT_WORKSPACE_DIR: path.resolve(__dirname, '..', '..'), ATLASSIAN_BASE_URL: 'https://example.atlassian.net', JIRA_PROJECT_KEY: 'G3PTP' },
     require
   );
 
@@ -322,7 +322,7 @@ test('Jira Ready To Test Filter (WF-11): enforces Board G.3.1, active sprint, an
   };
   const resEntrade = fn(
     { first: () => ({ json: mockEntrade }) },
-    { AGENT_WORKSPACE_DIR: path.resolve(__dirname, '..', '..') },
+    { AGENT_WORKSPACE_DIR: path.resolve(__dirname, '..', '..'), JIRA_PROJECT_KEY: 'G3PTP', JIRA_SPRINT_CUSTOM_FIELD: 'customfield_10018' },
     require
   );
   assert.equal(resEntrade[0].json.isReadyToTest, true);

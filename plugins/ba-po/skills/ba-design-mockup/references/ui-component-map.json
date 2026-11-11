@@ -2,8 +2,8 @@
   "_doc": "Chỉ mục Màn hình UI & Thư viện Component chuẩn cho ba-refine. BẮT BUỘC đọc file này trước khi dựng Mockup để đảm bảo bám sát 100% codebase thực tế.",
   "_updated": "2026-10-29",
   "projects": {
-    "web-trading": "/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading",
-    "mobile-trading": "/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app"
+    "web-trading": "${WEB_TRADING_ROOT}",
+    "mobile-trading": "${MOBILE_TRADING_ROOT}"
   },
   "guardrails": {
     "strict_ui_rules": [
@@ -22,7 +22,7 @@
   "discovery_helpers": {
     "web": {
       "repo_key": "web-trading",
-      "root": "/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading",
+      "root": "${WEB_TRADING_ROOT}",
       "pages_dir": "apps/web/src/pages",
       "components_dir": "apps/web/src/components",
       "ui_lib_dir": "libs/ui/src",
@@ -30,7 +30,7 @@
     },
     "mobile": {
       "repo_key": "mobile-trading",
-      "root": "/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app",
+      "root": "${MOBILE_TRADING_ROOT}",
       "pages_dir": "lib/pages",
       "screens_dir": "lib/screens",
       "widgets_dir": "lib/widgets"

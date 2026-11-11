@@ -17,12 +17,13 @@ const issueKey = (params.issueKey || body.issueKey || json.issueKey || '').trim(
 const project = (params.project || body.project || json.project || '').trim();
 const userName = json.userName || body.userName || json.user_name || body.user_name || 'User';
 
-const baseUrl = (body.baseUrl || json.baseUrl || ($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');
+const baseUrl = (body.baseUrl || json.baseUrl || ($env && $env.ATLASSIAN_BASE_URL) || '').replace(/\/+$/, '');
 const email = ($env && $env.ATLASSIAN_EMAIL) || '';
 const token = ($env && $env.ATLASSIAN_API_TOKEN) || '';
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
 
-const fields = 'summary,description,status,assignee,priority,attachment,issuelinks,reporter,labels,sprint,customfield_10018,customfield_10020,customfield_10016,issuetype,components,subtasks,parent,comment';
+const sprintField = ($env && $env.JIRA_SPRINT_CUSTOM_FIELD) || 'customfield_10018';
+const fields = `summary,description,status,assignee,priority,attachment,issuelinks,reporter,labels,sprint,${sprintField},customfield_10020,customfield_10016,issuetype,components,subtasks,parent,comment`;
 const jiraApiUrl = `${baseUrl}/rest/api/3/issue/${issueKey}?fields=${fields}`;
 
 return [{

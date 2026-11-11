@@ -47,10 +47,10 @@ const DEFAULT_STATEMENT_TIMEOUT_MS = parseInt(process.env.DB_STATEMENT_TIMEOUT |
 // ─── 3. Metabase Database ID Map ─────────────────────────────────────────────
 
 const METABASE_DB_MAP = {
-    'timescale':      parseInt(process.env.METABASE_DB_TIMESCALE_ID      || '644', 10),
-    'openapi':        parseInt(process.env.METABASE_DB_OPENAPI_ID        || '535', 10),
-    'openapi-sandbox':parseInt(process.env.METABASE_DB_OPENAPI_SANDBOX_ID|| '655', 10),
-    'sandbox':        parseInt(process.env.METABASE_DB_OPENAPI_SANDBOX_ID|| '655', 10),
+    'timescale':      parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '', 10) || null,
+    'openapi':        parseInt(process.env.METABASE_UAT_DB_OPENAPI_ID || process.env.METABASE_DB_OPENAPI_ID || '', 10) || null,
+    'openapi-sandbox':parseInt(process.env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '', 10) || null,
+    'sandbox':        parseInt(process.env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '', 10) || null,
 };
 
 function isMetabaseMode() {
@@ -95,12 +95,12 @@ function getMetabaseConfig() {
 function resolveDatabaseId(dbIdentifier) {
     const { isProd } = getMetabaseConfig();
     const timescaleId = isProd
-        ? parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '7', 10)
-        : parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '644', 10);
+        ? parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '', 10)
+        : parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '', 10);
     const openapiId = isProd
-        ? parseInt(process.env.METABASE_PROD_DB_OPENAPI_ID || '266', 10)
-        : parseInt(process.env.METABASE_UAT_DB_OPENAPI_ID || process.env.METABASE_DB_OPENAPI_ID || '535', 10);
-    const openapiSandboxId = parseInt(process.env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '655', 10);
+        ? parseInt(process.env.METABASE_PROD_DB_OPENAPI_ID || '', 10)
+        : parseInt(process.env.METABASE_UAT_DB_OPENAPI_ID || process.env.METABASE_DB_OPENAPI_ID || '', 10);
+    const openapiSandboxId = parseInt(process.env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '', 10);
 
     const activeDbMap = {
         'timescale': timescaleId,
@@ -123,15 +123,15 @@ function resolveDatabaseId(dbIdentifier) {
 
 function getDatabaseName(dbId) {
     const parsed = parseInt(dbId, 10);
-    const uatTimescale = parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '644', 10);
-    const prodTimescale = parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '7', 10);
-    const uatOpenApi = parseInt(process.env.METABASE_UAT_DB_OPENAPI_ID || process.env.METABASE_DB_OPENAPI_ID || '535', 10);
-    const prodOpenApi = parseInt(process.env.METABASE_PROD_DB_OPENAPI_ID || '266', 10);
-    const sandboxId = parseInt(process.env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '655', 10);
+    const uatTimescale = parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '', 10);
+    const prodTimescale = parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '', 10);
+    const uatOpenApi = parseInt(process.env.METABASE_UAT_DB_OPENAPI_ID || process.env.METABASE_DB_OPENAPI_ID || '', 10);
+    const prodOpenApi = parseInt(process.env.METABASE_PROD_DB_OPENAPI_ID || '', 10);
+    const sandboxId = parseInt(process.env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || process.env.METABASE_DB_OPENAPI_SANDBOX_ID || '', 10);
 
-    if (parsed === uatTimescale || parsed === prodTimescale || parsed === 644 || parsed === 7) return 'timescale';
-    if (parsed === uatOpenApi || parsed === prodOpenApi || parsed === 535 || parsed === 266) return 'openapi';
-    if (parsed === sandboxId || parsed === 655) return 'openapi-sandbox';
+    if ((uatTimescale && parsed === uatTimescale) || (prodTimescale && parsed === prodTimescale)) return 'timescale';
+    if ((uatOpenApi && parsed === uatOpenApi) || (prodOpenApi && parsed === prodOpenApi)) return 'openapi';
+    if (sandboxId && parsed === sandboxId) return 'openapi-sandbox';
     return `db-${dbId}`;
 }
 

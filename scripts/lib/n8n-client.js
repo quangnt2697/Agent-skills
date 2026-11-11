@@ -20,7 +20,7 @@ const projectRoot = path.join(__dirname, '..', '..');
 // Đảm bảo nạp .env
 dotenv.config({ path: path.join(projectRoot, '.env') });
 
-const N8N_BASE_URL = (process.env.N8N_BASE_URL || 'http://localhost:5678').replace(/\/$/, '');
+const N8N_BASE_URL = (process.env.N8N_BASE_URL || `${process.env.N8N_PROTOCOL || 'http'}://${process.env.N8N_HOST || 'localhost'}:${process.env.N8N_PORT || '5678'}`).replace(/\/$/, '');
 const DEFAULT_TIMEOUT_MS = parseInt(process.env.N8N_WEBHOOK_TIMEOUT_MS || '8000', 10);
 
 /**

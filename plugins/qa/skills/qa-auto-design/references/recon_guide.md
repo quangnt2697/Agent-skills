@@ -198,7 +198,7 @@ Bên trong `openapi-tyk/sdk/python/`, Agent cần khảo sát các phân hệ:
    Trong file `pytest.ini` của task test, bổ sung đường dẫn tới `openapi-tyk/sdk/python`:
    ```ini
    [pytest]
-   pythonpath = . steps ../../../openapi-tyk/sdk/python /Users/qa-quangnt/Desktop/Project/3.1/openapi-tyk/sdk/python
+   pythonpath = . steps ../../../openapi-tyk/sdk/python ${OPENAPI_TYK_PATH}/sdk/python
    ```
 2. **Kế thừa Service Client:**
    Trong `workspace/issues/{issueKey}/test/steps/services/`, tạo Service Wrapper kế thừa hoặc bọc `DNSEClient` hoặc các class từ `trading-api`, `websocket-trading`:

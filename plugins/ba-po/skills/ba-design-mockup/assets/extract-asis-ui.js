@@ -56,8 +56,8 @@ if (fs.existsSync(projectsConfigPath)) {
 }
 
 if (!projectRoot) {
-  if (projectKey === 'web-trading') projectRoot = '/Users/qa-quangnt/Projects/Entrade Trading/dnse-trading';
-  else projectRoot = '/Users/qa-quangnt/Projects/Entrade Trading/mobile/arrow-app';
+  if (projectKey === 'web-trading') projectRoot = process.env.WEB_TRADING_ROOT || '';
+  else projectRoot = process.env.MOBILE_TRADING_ROOT || '';
 }
 
 console.log(`🔍 Bắt đầu bóc tách AS-IS UI từ codebase: ${projectKey} -> Màn hình: ${screenKey}`);

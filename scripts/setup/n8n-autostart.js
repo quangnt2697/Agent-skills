@@ -286,14 +286,15 @@ export async function checkAndCatchUpStandup({ rootDir = projectRoot, dryRun = f
 
   try {
     // 1. Kiểm tra n8n health
-    const healthRes = await fetch('http://localhost:5678/healthz').catch(() => null);
+    const n8nBase = (envConfig.N8N_BASE_URL || `${envConfig.N8N_PROTOCOL || 'http'}://${envConfig.N8N_HOST || 'localhost'}:${envConfig.N8N_PORT || '5678'}`).replace(/\/+$/, '');
+    const healthRes = await fetch(`${n8nBase}/healthz`).catch(() => null);
     if (!healthRes || !healthRes.ok) {
       console.warn('[Standup Catch-up] ⚠️ n8n chưa phản hồi healthz, hoãn lại lần sau.');
       return { success: false, reason: 'n8n_not_ready' };
     }
 
     // 2. Kích hoạt webhook standup
-    const webhookRes = await fetch('http://localhost:5678/webhook/sm-standup', {
+    const webhookRes = await fetch(`${n8nBase}/webhook/sm-standup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({})
@@ -499,11 +500,10 @@ export async function processSkillQueue({ rootDir = projectRoot } = {}) {
     fs.writeFileSync(queueFile, JSON.stringify(queue, null, 2), 'utf8');
 
     const nowStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
-    const baseUrl = (envConfig.ATLASSIAN_BASE_URL || 'https://entrade.atlassian.net').replace(/\/+$/, '');
-    const jiraUrl = `${baseUrl}/browse/${job.issueKey}`;
-    const n8nPort = envConfig.N8N_PORT || '5678';
-    const n8nHost = envConfig.N8N_HOST || 'localhost';
-    const webhookBase = `http://${n8nHost}:${n8nPort}/webhook/agent-trigger-skill`;
+    const baseUrl = (envConfig.ATLASSIAN_BASE_URL || '').replace(/\/+$/, '');
+    const jiraUrl = baseUrl ? `${baseUrl}/browse/${job.issueKey}` : job.issueKey;
+    const n8nBase = (envConfig.N8N_BASE_URL || `${envConfig.N8N_PROTOCOL || 'http'}://${envConfig.N8N_HOST || 'localhost'}:${envConfig.N8N_PORT || '5678'}`).replace(/\/+$/, '');
+    const webhookBase = `${n8nBase}/webhook/agent-trigger-skill`;
     const threadQuery = job.threadTs ? `&thread_ts=${encodeURIComponent(job.threadTs)}` : '';
     const threadHeader = `🧵 *<${jiraUrl}|${job.issueKey}>${job.summary ? ' — ' + job.summary : ''}*`;
     const skillLabel = SKILL_LABELS[job.skill] || 'Thao tác công việc';

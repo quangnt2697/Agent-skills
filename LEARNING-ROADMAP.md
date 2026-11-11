@@ -37,7 +37,7 @@ graph TD
 
 ```bash
 # 1. Clone repository
-git clone git@gitlab.dnse.com.vn:my-project/agent-skills.git
+git clone git@gitlab.example.com:my-project/agent-skills.git
 cd agent-skills
 
 # 2. Cài đặt môi trường nhanh (macOS)

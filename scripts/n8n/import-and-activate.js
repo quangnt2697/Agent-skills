@@ -16,11 +16,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..', '..');
+dotenv.config({ path: path.join(projectRoot, '.env') });
 const isClean = process.argv.includes('--clean');
+const n8nBaseUrl = (process.env.N8N_BASE_URL || `http://${process.env.N8N_HOST || 'localhost'}:${process.env.N8N_PORT || '5678'}`).replace(/\/+$/, '');
 
 const dbCandidates = [
   process.env.N8N_DB_PATH,
@@ -44,7 +47,7 @@ if (isDockerRunning) {
     const hasDb = dbCandidates.some(p => fs.existsSync(p));
     let isHealthy = false;
     try {
-      execSync('curl -sf http://localhost:5678/healthz', { stdio: 'ignore' });
+      execSync(`curl -sf ${n8nBaseUrl}/healthz`, { stdio: 'ignore' });
       isHealthy = true;
     } catch (_) {}
     if (hasDb && isHealthy) {
@@ -82,7 +85,7 @@ if (isClean) {
     execSync('docker start agent-skills-n8n', { stdio: 'ignore' });
     for (let i = 1; i <= 30; i++) {
       try {
-        execSync('curl -sf http://localhost:5678/healthz', { stdio: 'ignore' });
+        execSync(`curl -sf ${n8nBaseUrl}/healthz`, { stdio: 'ignore' });
         break;
       } catch (_) {
         execSync('sleep 1');
@@ -131,13 +134,13 @@ try {
     execSync('docker start agent-skills-n8n', { stdio: 'ignore' });
     for (let i = 1; i <= 30; i++) {
       try {
-        execSync('curl -sf http://localhost:5678/healthz', { stdio: 'ignore' });
+        execSync(`curl -sf ${n8nBaseUrl}/healthz`, { stdio: 'ignore' });
         break;
       } catch (_) {
         execSync('sleep 1');
       }
     }
-    console.log('🎉 Hoàn tất! n8n đã sẵn sàng tại http://localhost:5678 (18/18 workflows active)');
+    console.log(`🎉 Hoàn tất! n8n đã sẵn sàng tại ${n8nBaseUrl} (18/18 workflows active)`);
   }
 } catch (err) {
   console.error('❌ Lỗi kích hoạt SQLite workflows:', err.message);

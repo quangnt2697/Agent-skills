@@ -100,22 +100,26 @@ const envVal = (payload.environment || payload.env || ($env && $env.METABASE_ENV
 const isProd = envVal === 'prod' || envVal === 'production';
 const rawDb = (payload.database || payload.db || 'openapi').toString().toLowerCase().trim();
 
+const defaultTimescale = isProd
+  ? parseInt(($env && $env.METABASE_PROD_DB_TIMESCALE_ID) || '', 10)
+  : parseInt(($env && ($env.METABASE_UAT_DB_TIMESCALE_ID || $env.METABASE_DB_TIMESCALE_ID)) || '', 10);
+const defaultOpenApi = isProd
+  ? parseInt(($env && $env.METABASE_PROD_DB_OPENAPI_ID) || '', 10)
+  : parseInt(($env && ($env.METABASE_UAT_DB_OPENAPI_ID || $env.METABASE_DB_OPENAPI_ID)) || '', 10);
+const defaultSandbox = parseInt(($env && ($env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || $env.METABASE_DB_OPENAPI_SANDBOX_ID)) || '', 10);
+
 let dbName = 'openapi';
-let databaseId = 535;
+let databaseId = defaultOpenApi;
 
 if (rawDb.includes('time') || rawDb.includes('mdds') || rawDb.includes('tick') || rawDb.includes('price')) {
   dbName = 'timescale';
-  databaseId = isProd
-    ? parseInt(($env && $env.METABASE_PROD_DB_TIMESCALE_ID) || '7', 10)
-    : parseInt(($env && ($env.METABASE_UAT_DB_TIMESCALE_ID || $env.METABASE_DB_TIMESCALE_ID)) || '644', 10);
+  databaseId = defaultTimescale;
 } else if (rawDb.includes('sand') || rawDb.includes('sb')) {
   dbName = 'openapi-sandbox';
-  databaseId = parseInt(($env && ($env.METABASE_UAT_DB_OPENAPI_SANDBOX_ID || $env.METABASE_DB_OPENAPI_SANDBOX_ID)) || '655', 10);
+  databaseId = defaultSandbox;
 } else {
   dbName = 'openapi';
-  databaseId = isProd
-    ? parseInt(($env && $env.METABASE_PROD_DB_OPENAPI_ID) || '266', 10)
-    : parseInt(($env && ($env.METABASE_UAT_DB_OPENAPI_ID || $env.METABASE_DB_OPENAPI_ID)) || '535', 10);
+  databaseId = defaultOpenApi;
 }
 
 // Nếu user truyền thẳng database ID dạng số
@@ -157,8 +161,8 @@ if (dbName === 'timescale') {
 
 // F. Phân giải URL và Session Token
 let metabaseUrl = isProd
-  ? (($env && $env.METABASE_PROD_URL) || ($env && $env.METABASE_URL) || 'https://mb.dnse.com.vn')
-  : (($env && $env.METABASE_UAT_URL) || ($env && $env.METABASE_URL) || 'https://mb-uat.dnse.com.vn');
+  ? (($env && $env.METABASE_PROD_URL) || ($env && $env.METABASE_URL) || '')
+  : (($env && $env.METABASE_UAT_URL) || ($env && $env.METABASE_URL) || '');
 metabaseUrl = metabaseUrl.replace(/\/+$/, '');
 
 let sessionToken = '';

@@ -271,16 +271,18 @@ def target_environment():
     base_url = os.getenv("BASE_URL", "")
     raw = base_url.lower()
     if "sandbox" in raw or "sb-openapi" in raw or "sb-openapi-uat" in raw:
+        sandbox_id = os.getenv("METABASE_UAT_DB_OPENAPI_SANDBOX_ID") or os.getenv("METABASE_DB_OPENAPI_SANDBOX_ID") or "0"
         return {
             "name": "sandbox",
             "base_url": base_url,
-            "db_id": int(os.getenv("METABASE_DB_OPENAPI_SANDBOX_ID", "655")),
+            "db_id": int(sandbox_id),
             "db_name": "openapi-sandbox",
         }
+    openapi_id = os.getenv("METABASE_UAT_DB_OPENAPI_ID") or os.getenv("METABASE_DB_OPENAPI_ID") or "0"
     return {
         "name": "openapi",
         "base_url": base_url,
-        "db_id": int(os.getenv("METABASE_DB_OPENAPI_ID", "535")),
+        "db_id": int(openapi_id),
         "db_name": "openapi",
     }
 

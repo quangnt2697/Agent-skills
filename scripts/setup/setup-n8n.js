@@ -117,7 +117,8 @@ if (hasDocker && hasDockerCompose) {
   console.log('  • npm run n8n:up           --> Khởi động n8n Container & kích hoạt 18 workflows');
   console.log('  • npm run n8n:logs         --> Xem log hoạt động của n8n Container');
   console.log('  • npm run n8n:down         --> Dừng n8n Container');
-  console.log('  • Web UI                   --> http://localhost:5678');
+  const n8nBaseUrl = process.env.N8N_BASE_URL || `http://${process.env.N8N_HOST || 'localhost'}:${process.env.N8N_PORT || '5678'}`;
+  console.log(`  • Web UI                   --> ${n8nBaseUrl}`);
   console.log('='.repeat(65));
   process.exit(0);
 }

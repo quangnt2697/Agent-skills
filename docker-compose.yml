@@ -4,16 +4,16 @@ services:
     container_name: agent-skills-n8n
     restart: unless-stopped
     ports:
-      - "5678:5678"
+      - "${N8N_PORT:-5678}:${N8N_PORT:-5678}"
     environment:
-      - N8N_HOST=localhost
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=http
-      - WEBHOOK_URL=http://localhost:5678/
-      - N8N_WEBHOOK_URL=http://localhost:5678/
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=${N8N_PORT:-5678}
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
+      - WEBHOOK_URL=${N8N_BASE_URL:-http://localhost:5678}/
+      - N8N_WEBHOOK_URL=${N8N_BASE_URL:-http://localhost:5678}/
       - NODE_ENV=production
-      - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
-      - TZ=Asia/Ho_Chi_Minh
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-Asia/Ho_Chi_Minh}
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
       - NODE_TLS_REJECT_UNAUTHORIZED=0
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - N8N_RUNNERS_MODE=internal

@@ -13,10 +13,9 @@
 const allInputs = (typeof $input !== 'undefined' && typeof $input.all === 'function') ? $input.all() : [];
 if (allInputs.length === 0) return [];
 
-const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || 'https://entrade.atlassian.net').replace(/\/+$/, '');
-const n8nPort = ($env && $env.N8N_PORT) || '5678';
-const n8nHost = ($env && $env.N8N_HOST) || 'localhost';
-const webhookBase = `http://${n8nHost}:${n8nPort}/webhook/agent-trigger-skill`;
+const baseUrl = (($env && $env.ATLASSIAN_BASE_URL) || '').replace(/\/+$/, '');
+const n8nBase = (($env && $env.N8N_BASE_URL) || `${($env && $env.N8N_PROTOCOL) || 'http'}://${($env && $env.N8N_HOST) || 'localhost'}:${($env && $env.N8N_PORT) || '5678'}`).replace(/\/+$/, '');
+const webhookBase = `${n8nBase}/webhook/agent-trigger-skill`;
 
 // Cấu hình nhãn & biểu tượng theo loại sự kiện
 const eventMap = {
@@ -50,7 +49,8 @@ for (const inputItem of allInputs) {
   // Sprint Name
   let sprintName = 'N/A';
   const issueFields = data.issue?.fields || {};
-  const sprintField = issueFields.customfield_10018 || issueFields.customfield_10020 || issueFields.sprint;
+  const sprintCustomKey = ($env && $env.JIRA_SPRINT_CUSTOM_FIELD) || 'customfield_10018';
+  const sprintField = issueFields[sprintCustomKey] || issueFields.customfield_10018 || issueFields.customfield_10020 || issueFields.sprint;
   if (Array.isArray(sprintField) && sprintField.length > 0) {
     const activeS = sprintField.find(s => s && (s.state || '').toLowerCase() === 'active') || sprintField[sprintField.length - 1];
     if (activeS) sprintName = activeS.name || (typeof activeS === 'string' && activeS.match(/name=([^,\]]+)/)?.[1]) || 'Active Sprint';

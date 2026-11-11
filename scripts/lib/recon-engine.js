@@ -350,8 +350,8 @@ export async function executeSingleCoreQuery(queryKey, dateStr, { env = 'prod', 
   const finalSql = applyLimit(check.cleanSql, 100);
   const isProd = env === 'prod' || env === 'production';
   const dbId = isProd
-    ? parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '7', 10)
-    : parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '644', 10);
+    ? parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '', 10)
+    : parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '', 10);
 
   const start = Date.now();
   const result = await metabaseFetch('/api/dataset', {
@@ -497,8 +497,8 @@ export function formatCoreReport(outcome) {
  * Kiểm tra đối chiếu chéo trước giờ mở phiên: UAT vs PROD (Pre-Market Environment Sync Check)
  */
 export async function checkPreMarketSync({ statementTimeout = 60000 } = {}) {
-  const prodDbId = parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '7', 10);
-  const uatDbId = parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '644', 10);
+  const prodDbId = parseInt(process.env.METABASE_PROD_DB_TIMESCALE_ID || '', 10);
+  const uatDbId = parseInt(process.env.METABASE_UAT_DB_TIMESCALE_ID || process.env.METABASE_DB_TIMESCALE_ID || '', 10);
 
   const querySql = `
     SELECT

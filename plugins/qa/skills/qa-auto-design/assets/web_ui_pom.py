@@ -40,11 +40,13 @@ def resolve_web_url(issue_key: str | None = None, timeout_sec: float = 3.0) -> s
        tự động fallback về WEB_BASE_URL (URL dev/test ổn định).
     Không nhận URL hardcode — NGHIÊM CẤM truyền URL trực tiếp vào test code.
     """
-    base_url = os.getenv("WEB_BASE_URL", "https://dev.trading-test.dnse.com.vn/").rstrip("/")
+    base_url = os.getenv("WEB_BASE_URL", "").rstrip("/")
     if not issue_key:
         return base_url
 
-    template = os.getenv("ISSUE_KEY_URL", "https://{issueKey}.trading-test.dnse.com.vn/")
+    template = os.getenv("ISSUE_KEY_URL", "")
+    if not template:
+        return base_url
     candidate_url = template.replace("{issueKey}", issue_key.lower()).rstrip("/")
 
     # Probe HTTP HEAD để kiểm tra URL per-branch có hoạt động không
