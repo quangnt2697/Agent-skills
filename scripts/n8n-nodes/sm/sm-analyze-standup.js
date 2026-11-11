@@ -48,12 +48,16 @@ if ($env && $env.STANDUP_STUCK_DAYS_THRESHOLD) {
   if (!isNaN(parsed) && parsed > 0) stuckDaysThreshold = parsed;
 }
 
-try {
-  let wsDir = ($env && $env.AGENT_WORKSPACE_DIR) || '/Users/qa-quangnt/Projects/agent-skills';
+let wsDir = ($env && $env.AGENT_WORKSPACE_DIR) || '';
+if (!wsDir) {
   try {
     const proc = require('process');
-    if (proc && typeof proc.cwd === 'function') wsDir = ($env && $env.AGENT_WORKSPACE_DIR) || proc.cwd();
+    if (proc && typeof proc.cwd === 'function') wsDir = proc.cwd();
   } catch (_) {}
+}
+if (!wsDir) wsDir = '/workspace';
+
+try {
   const configCandidates = [
     path.resolve(wsDir, 'config', 'sm-config.yaml'),
     path.resolve(wsDir, 'sm-config.yaml'),
@@ -187,7 +191,7 @@ for (const issue of issues) {
 }
 
 // ── Soạn Báo Cáo Markdown Ngắn Gọn ──
-const dateStr = now.toISOString().split('T')[0];
+const dateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
 const boardUrl = `${baseUrl}/jira/software/c/projects/G3PTP/boards/${boardId}/backlog`;
 const totalIssues = issues.length;
 const donePct = totalIssues > 0 ? Math.round((doneIssues.length / totalIssues) * 1000) / 10 : 0;
@@ -390,13 +394,8 @@ const buildSlackPayload = () => {
 
 const slackPayload = buildSlackPayload();
 
-// Ghi nhận mốc ngày gửi standup thành công vào standup-last-sent.txt khi chạy từ Cron nội bộ và đã cấu hình Slack
-const slackWebhookUrl = ($env && $env.SLACK_WEBHOOK_URL) ? String($env.SLACK_WEBHOOK_URL).trim() : '';
-const hasValidSlack = slackWebhookUrl.startsWith('https://hooks.slack.com/') &&
-  !slackWebhookUrl.includes('T00000000') &&
-  !slackWebhookUrl.includes('your_');
-
-if (triggerSource !== 'webhook' && hasValidSlack) {
+// Ghi nhận mốc ngày gửi standup thành công vào standup-last-sent.txt khi chạy từ Cron nội bộ
+if (triggerSource !== 'webhook') {
   try {
     const candidates = [
       path.resolve(wsDir, '.n8n-data', 'standup-last-sent.txt'),
@@ -410,7 +409,9 @@ if (triggerSource !== 'webhook' && hasValidSlack) {
         break;
       }
     }
-  } catch (_) {}
+  } catch (writeErr) {
+    console.error('[Standup Cron] Không thể ghi nhận mốc ngày gửi standup:', writeErr);
+  }
 }
 
 return [{
