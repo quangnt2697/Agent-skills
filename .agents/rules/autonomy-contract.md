@@ -35,7 +35,7 @@ Dù trong chế độ Orchestrator hay lệnh đơn lẻ, Agent chỉ được d
 
 | # | Trường hợp | Ví dụ |
 |---|---|---|
-| 1 | **Thiếu file input bắt buộc** mà agent không thể tự tạo | `{issueKey}-final.md` không tồn tại → hướng dẫn chạy `/ba-spec` trước |
+| 1 | **Thiếu file input bắt buộc** mà agent không thể tự tạo | `workspace/issues/{issueKey}/spec/final.md` không tồn tại → hướng dẫn chạy `/ba-spec` trước |
 | 2 | **Thiếu credential / secret** không thể tự lấy | `.env` không tồn tại, hoặc thiếu `ATLASSIAN_API_TOKEN` |
 | 3 | **Có ≥1 câu hỏi 🔴 Critical** trong gap analysis — câu trả lời làm thay đổi bản chất output | Spec không nói rõ lệnh LO hay MP → toàn bộ business rule khác nhau |
 | 4 | **Sắp commit hoặc merge vào `main`** | Theo `git-workflow.md` — đây là cổng người duy nhất của luồng code |

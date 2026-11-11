@@ -65,6 +65,9 @@
       "Read(./.env.staging)",
       "Read(./.env.uat)",
       "Read(./.env.prod)",
+      "Read(./.env.development)",
+      "Read(./.env.test)",
+      "Read(./.env.ci)",
       "Bash(cat .env:*)",
       "Bash(cat ./.env:*)"
     ]

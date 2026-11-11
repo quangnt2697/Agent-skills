@@ -10,7 +10,7 @@ Thư mục `scripts/` chứa toàn bộ các công cụ dòng lệnh (CLI), kị
 scripts/
 ├── README.md                 # Tài liệu tổng quan cấu trúc & hướng dẫn sử dụng scripts
 │
-├── tests/                    # Toàn bộ Unit Test Suite (30 file test suites, 227 test cases)
+├── tests/                    # Toàn bộ Unit Test Suite (30 file test suites, 228 test cases)
 │   ├── antigravity-hooks-test.js    # Kiểm thử hooks tích hợp Antigravity/Gemini
 │   ├── archive-issues-test.js       # Kiểm thử lưu trữ archive workspace issue
 │   ├── ba-design-mockup-test.js     # Kiểm thử engine dựng mockup giao diện
@@ -125,7 +125,7 @@ scripts/
 | `npm run validate:icons` | Gate 8: Kiểm tra thư viện icon gallery của flowchart | `node plugins/ba-po/skills/ba-design-flowchart/assets/build_icons_gallery.mjs --check` |
 | `npm run validate:nodes` | Gate 9: Kiểm định đồng bộ code node JavaScript với n8n JSON | `node scripts/n8n/sync-n8n-nodes.js --check` |
 | `npm run validate:tokens` | Gate 10: Kiểm định ngân sách token cho 31 file SKILL.md | `node scripts/validators/validate-skill-tokens.js` |
-| `npm run test:unit` | Thực thi toàn bộ 30 file unit test suites (227 test cases) | `node --test scripts/tests/*-test.js` |
+| `npm run test:unit` | Thực thi toàn bộ 30 file unit test suites (228 test cases) | `node --test scripts/tests/*-test.js` |
 | `npm run evals` | Đo lường độ nhạy kích hoạt kỹ năng (Rank-1 trigger rate ≥ 90%) | `node scripts/evals/run-evals.js --min-rank1 90` |
 
 ### 2. Quản lý Không gian Làm việc & Snapshot (Workspace & Checkpoints)

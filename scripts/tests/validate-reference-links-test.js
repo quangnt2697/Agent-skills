@@ -153,3 +153,20 @@ test('reports every unresolvable link, not just the first per skill', () => {
   assert.equal(result.status, 1, result.stdout + result.stderr);
   assert.match(result.stdout, /1 skills checked — 2 error\(s\) — FAILED/);
 });
+
+test('checks links inside colocated references/*.md files too', () => {
+  const root = makeSandbox();
+  writeFile(root, 'references/securities-domain-rules.md', '# Domain\n');
+  writeFile(root, 'plugins/ba-po/skills/ba-spec/SKILL.md', 'See `references/rules.md`.\n');
+  writeFile(
+    root,
+    'plugins/ba-po/skills/ba-spec/references/rules.md',
+    'Missing one parent segment: ../../../../references/securities-domain-rules.md\n'
+  );
+
+  const result = run(root);
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /1 skills checked — 1 error\(s\) — FAILED/);
+  assert.match(result.stdout, /L1: \.\.\/\.\.\/\.\.\/\.\.\/references\/securities-domain-rules\.md/);
+});

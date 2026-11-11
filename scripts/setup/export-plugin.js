@@ -141,6 +141,25 @@ function main() {
     console.log('   📚 Đã đính kèm references/securities dùng chung vào gói plugin.');
   }
 
+  // 2b. Đóng gói dependencies & helper nội bộ tối thiểu nếu plugin có script Node (vd: ba-po cần md-to-adf)
+  let hasPkgDeps = false;
+  if (options.plugin === 'ba-po') {
+    const rootPkg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8'));
+    const pluginPkg = {
+      name: `agent-skills-${options.plugin}`,
+      version: JSON.parse(fs.readFileSync(path.join(srcDir, 'plugin.json'), 'utf8')).version || '1.0.0',
+      private: true,
+      type: 'module',
+      dependencies: {
+        'md-to-adf': rootPkg.dependencies?.['md-to-adf'] || '^0.6.4',
+        ...(rootPkg.dependencies?.playwright ? { playwright: rootPkg.dependencies.playwright } : {}),
+      },
+    };
+    fs.writeFileSync(path.join(outDir, 'package.json'), JSON.stringify(pluginPkg, null, 2) + '\n', 'utf8');
+    hasPkgDeps = true;
+    console.log('   📦 Đã tạo package.json tối thiểu (md-to-adf) trong gói plugin.');
+  }
+
   // 3. Tạo file README.md hướng dẫn cài đặt độc lập chi tiết
   const manifest = JSON.parse(fs.readFileSync(path.join(srcDir, 'plugin.json'), 'utf8'));
   const skillsList = getPluginSkills(srcDir);
@@ -198,7 +217,7 @@ cp -r /path/to/agent-skills-${options.plugin} ~/.gemini/config/plugins/
 ---
 
 ## 📖 Kiểm Tra Hoạt Động
-Mở khung chat của AI Agent trong dự án microservice và gõ lệnh kiểm tra:
+${hasPkgDeps ? 'Nếu sử dụng các script Node đi kèm (như `jira-push-spec.js`), chạy `npm install --omit=dev` trong thư mục plugin trước.\n\n' : ''}Mở khung chat của AI Agent trong dự án microservice và gõ lệnh kiểm tra:
 \`\`\`text
 ${commandsList[0] ? `/${commandsList[0]}` : '/help'}
 \`\`\`

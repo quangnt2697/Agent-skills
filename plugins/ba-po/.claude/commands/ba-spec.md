@@ -1,5 +1,5 @@
 ---
-description: "[BA/PO] Tải Jira issue thành PDF, tự động nhận diện loại task, trích xuất & phân tích yêu cầu, tổng hợp thành *-final.md (Business-Spec)"
+description: "[BA/PO] Tải Jira issue thành PDF, tự động nhận diện loại task, trích xuất & phân tích yêu cầu, tổng hợp thành spec/final.md (Business-Spec)"
 ---
 
 Invoke the ba-spec skill. Đọc file SKILL.md để thực hiện đúng workflow.
@@ -9,12 +9,12 @@ $ARGUMENTS chứa đầu vào. Agent PHẢI tự nhận diện loại input:
 **Luồng Jira** (nếu đầu vào có dạng Issue Key, VD: `PROJ-123`, `G3PTP-16584`):
 1. **Phase 0 — Scan & Duyệt**: Gọi API Jira lấy metadata (CHƯA tải PDF). Trích xuất danh sách Confluence pages tham chiếu (từ issuelinks, remotelink, description) + file đính kèm. Kiểm tra cache trong `workspace/issues/{issueKey}/spec/` xem file nào đã tải trước đó (hiển thị path). Trình bảng danh sách cho user duyệt → DỪNG LẠI chờ "OK".
 2. **Phase 1 — Download**: Chỉ tải Jira PDF + các file Confluence/attachment CÒN THIẾU. Lưu vào `workspace/issues/{issueKey}/source/` và `source/refs/`. Tên file Confluence theo quy ước: `{tên-slug}-{pageId}.pdf`.
-3. **Phase 1.5 → Phase 5**: Nhận diện loại task → Trích xuất (đọc ĐA NGUỒN: Jira PDF + tất cả references + file đã có sẵn) → Phân tích gaps → Interview-me → Tổng hợp `{issueKey}-final.md`.
+3. **Phase 1.5 → Phase 5**: Nhận diện loại task → Trích xuất (đọc ĐA NGUỒN: Jira PDF + tất cả references + file đã có sẵn) → Phân tích gaps → Interview-me → Tổng hợp `workspace/issues/{issueKey}/spec/final.md`.
 
 **Luồng Confluence** (nếu đầu vào có từ khóa "confluence" hoặc không phải Issue Key):
 1. **Phase 1A — Tìm kiếm**: Dùng CQL search Confluence theo keyword → Hiển thị top 5 kết quả → DỪNG LẠI chờ user chọn.
 2. **Phase 1B — Scan & Duyệt References**: Quét trang đã chọn tìm link con + attachments → Kiểm tra cache → Trình danh sách duyệt → DỪNG LẠI chờ "OK".
-3. **Phase 1C → Phase 5**: Download file thiếu → Phân tích đa nguồn → Tổng hợp `{keyword}-final.md` vào `/project-root/workspace/{keyword}/`.
+3. **Phase 1C → Phase 5**: Download file thiếu → Phân tích đa nguồn → Tổng hợp `spec/final.md` vào `workspace/adhoc/{slug}/spec/final.md`.
 
 **Biến môi trường:** Dùng chung Atlassian: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`.
 **Bộ lọc file:** Tải: .pdf, .doc, .docx, .xls, .xlsx, .csv, .txt, .md, .png, .jpg, .svg, .webp, .drawio, .json, .yaml, .sql. Bỏ qua: video (.mp4), file nén (.zip, .rar).
@@ -24,8 +24,8 @@ LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT. BẮT BUỘC dùng Tool
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 
-1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ nhập khẩu, trích xuất yêu cầu và tạo Business Spec tại `workspace/issues/{issueKey}/spec/*-final.md`.
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ nhập khẩu, trích xuất yêu cầu và tạo Business Spec tại `workspace/issues/{issueKey}/spec/final.md`.
 2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
    - TUYỆT ĐỐI CẤM viết code, thiết kế test cases, hoặc sửa đổi mã nguồn ứng dụng.
-   - CẤM can thiệp vào bất kỳ file nào ngoài thư mục `workspace/issues/{issueKey}/`.
-3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi xuất bản `*-final.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt `/qa-test-design` hay bất kỳ lệnh kế tiếp nào.
+   - CẤM can thiệp vào bất kỳ file nào ngoài thư mục `workspace/issues/{issueKey}/` (hoặc `workspace/adhoc/{slug}/`).
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi xuất bản `spec/final.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt `/qa-test-design` hay bất kỳ lệnh kế tiếp nào.

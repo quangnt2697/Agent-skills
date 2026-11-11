@@ -457,7 +457,7 @@ assert str(body[item["field"]]) == str(current_value), f"[MISMATCH] ..."
 
 ## 6. Quy Chuẩn Nghiệp Vụ Chứng Khoán (Securities Domain Standards)
 
-Khi thiết kế và viết code automation test cho domain chứng khoán, Agent **BẮT BUỘC** tham chiếu và tuân thủ nghiêm ngặt cẩm nang nghiệp vụ tại [references/securities-domain-rules.md](../../../../../references/securities-domain-rules.md):
+Khi thiết kế và viết code automation test cho domain chứng khoán, Agent **BẮT BUỘC** tham chiếu và tuân thủ nghiêm ngặt cẩm nang nghiệp vụ tại [securities-domain-rules.md](../../../../../references/securities-domain-rules.md):
 - **Dữ liệu thật từ TimescaleDB (V3 > V2):** Tra cứu qua Metabase UAT / TimescaleDB (`${METABASE_UAT_DB_TIMESCALE_ID}`) hoặc n8n Fast-Path (`getSecuritiesFixture`). Tuyệt đối cấm tự bịa mã chứng khoán hoặc giá vi phạm biên độ sàn (HOSE $\pm 7\%$, HNX $\pm 10\%$, UPCOM $\pm 15\%$) và bước giá (tick size).
 - **Kiểm thử 25 kịch bản Random End (RE):** Kiểm chứng nhận diện mã RE tại ATO (`expected_price != 0`) và ATC (`expected_price != 0 & expected_quantity != 0`), mã RE giữ nguyên phiên ATO sau 09:15 cho đến khi nhận tín hiệu kết thúc từ `Prices` (`trading_session_id = 40` hoặc `type = 2 & trading_session_id = 10`), tự động reset `enableRE = false`, chặn lệnh MTL/MP và cấm sửa/hủy lệnh trong khoảng 09:15-09:17.
 - **Bao phủ 15 mã lỗi ORS & Fallback Lệnh 24/7:** Kiểm tra các ca biên sinh đúng 15 mã lỗi ORS và luồng tự động Fallback sang Lệnh 24/7 khi đặt lệnh ngoài phiên hoặc khi thị trường Halt.

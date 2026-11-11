@@ -104,7 +104,6 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 - 🛠️ **Công cụ & Assets:**
   - [jira-push-spec.js](assets/jira-push-spec.js): CLI helper push ADF, upload ảnh Mockup và xuất manifest.
   - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 5 phần chuẩn Jira.
-  - [mockup-harness.html](assets/mockup-harness.html): Bộ khung HTML UI Kit chuẩn Full HD và styling Highlight.
   - [render-mockup.js](assets/render-mockup.js): Script chụp ảnh Retina 2x Full HD kèm kiểm tra vỡ layout qua Playwright.
   - [generate-ui-component-map.js](assets/generate-ui-component-map.js): Script quét tự động codebase Web & Mobile.
 

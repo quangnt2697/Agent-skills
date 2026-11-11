@@ -58,7 +58,7 @@ dark: false
 
 **Optional `color`** (per component, hex string): tints the component's container and content while leaving connectors untouched. See §3.4. Use sparingly — a custom color is a semantic flag (e.g., red = security concern), not decoration.
 
-**Source `type` values** → icon mapping (use `references/primitive-icons.md`):
+**Source `type` values** → icon mapping (use [`primitive-icons.md`](primitive-icons.md)):
 - `db` → `database`
 - `ftp` → `bucket` or upload arrow
 - `web` → `internet`

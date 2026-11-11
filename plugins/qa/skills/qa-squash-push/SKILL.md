@@ -15,7 +15,7 @@ disable-auto-invoke: true
 - **Input bắt buộc:** `.feature` đã pass `qa-validate`, `final.md`, cấu hình Squash trong `.env`. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** `squash-push.sh` exit 0 và `squash_sync.json` tồn tại.
 
-## ⚠️ RANH GIỚI NHIỆM VỤ (Strict Boundary - Tier 2 Artifact-Only)
+## ⚠️ RANH GIỚI NHIỆM VỤ (Strict Boundary - Tier 2b External-Write)
 
 | ✅ qa-squash-push LÀM | ❌ qa-squash-push KHÔNG LÀM |
 |---|---|

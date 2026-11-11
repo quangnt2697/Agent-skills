@@ -98,7 +98,7 @@ Mọi nội dung trong `ba-refine` (từ thảo luận, draft đến `refined.md
 Khi phân tích ý tưởng, **BẮT BUỘC** phải:
 
 1. **Tra cứu Quy định & Cẩm nang Nghiệp vụ:**
-   - Đối chiếu `references/securities-domain-rules.md` về loại lệnh, phiên, biên độ giá, tỷ lệ ký quỹ margin.
+   - Đối chiếu [securities-domain-rules.md](../../../../../references/securities-domain-rules.md) về loại lệnh, phiên, biên độ giá, tỷ lệ ký quỹ margin.
    - Làm rõ quyền hạn của từng nhóm người dùng (Normal vs VIP/Ultimate, Thường vs Margin).
 
 2. **Gắn liền với Hành trình Người dùng thật:**
@@ -192,7 +192,7 @@ Xem [SKILL.md](../SKILL.md) (Mục 4) và [Jira Description Template](../assets/
 Trước khi gọi `jira-push-spec.js`, verify:
 
 - [ ] **Hard Gate:** Chạy `node scripts/validators/validate-ba-refine.js workspace/issues/{issueKey}/spec/refined.md` đạt 100% PASS
-- [ ] **UI Mockup Fidelity:** Nếu có giao diện WEB/APP, đã chạy `node scripts/validators/validate-mockup-fidelity.js workspace/issues/{issueKey}/spec/refined.md` đạt Fidelity Score ≥ 90%
+- [ ] **UI Mockup Fidelity:** Nếu có giao diện WEB/APP, đã chạy `node plugins/ba-po/skills/ba-design-mockup/assets/validate-mockup-fidelity.js "workspace/issues/{issueKey}/spec/diagrams/mockup.html" "workspace/issues/{issueKey}/spec/asis-inventory.json"` đạt Fidelity Score ≥ 90%
 - [ ] **Testability Manifest:** Đã sinh file `workspace/issues/{issueKey}/spec/testability-manifest.json` đầy đủ contracts và endpoints bàn giao cho QA
 - [ ] **User Story:** Có đầy đủ Role + Goal + Value, KHÔNG chung chung
 - [ ] **Acceptance Criteria:** ≥2 scenarios, dạng Given-When-Then chuẩn Business Gherkin, testable (bao gồm Happy Case, Edge Case, Validation Case)

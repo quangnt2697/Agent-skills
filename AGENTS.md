@@ -53,7 +53,7 @@ Khi test fail hoặc cần review chất lượng test code/MR, áp dụng `/cr-
 - **Quy tắc Tham số hóa Đa sàn / Đa mã (Multi-Symbol Parameterization):** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** phải tách riêng Scenario độc lập hoặc sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa chi tiết. **CẤM TUYỆT ĐỐI** viết scenario gộp chung làm mờ ranh giới thời gian và kênh dữ liệu.
 
 ### BA Pipeline
-- **Tạo mới Spec từ Jira/Confluence có sẵn:** `/ba-spec {issueKey} → Scan references → Extract → Gap detection → ba-interview-me → *-final.md`
+- **Tạo mới Spec từ Jira/Confluence có sẵn:** `/ba-spec {issueKey} → Scan references → Extract → Gap detection → ba-interview-me → spec/final.md`
 - **Mài giũa ý tưởng thô & Thiết kế Mockup Prod-Twin:** `/ba-refine {issueKey} → Keyword extraction & Related search → Divergent/Convergent → [ba-design-mockup nếu có UI] → Hard Gate validate-ba-refine.js → Push Jira (inline ADF images) + testability-manifest.json`
 
 ### Scrum Master Pipeline

@@ -178,7 +178,7 @@ pytest "workspace/issues/{issueKey}/test/steps" \
 ```
 
 ✅ **Pass 100%** → Bàn giao cho `qa-run-test`
-❌ **Có lỗi cú pháp** → Tự sửa, xem `references/known-errors-and-fixes.md`
+❌ **Có lỗi cú pháp** → Tự sửa, xem [known-errors-and-fixes.md](known-errors-and-fixes.md)
 
 **Checklist cuối:**
 - [ ] Không có `time.sleep()`, `print()`, `@patch` mock

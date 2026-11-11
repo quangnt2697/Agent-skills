@@ -65,7 +65,7 @@ dark: false
 - `bar` — full-zone-width strip. Default height 44 px (focal bars get 56 px). Required fields: `name`, `icon`. Optional: `subtitle`, `role`, `color`, `focal`.
 - `row` — N nodes evenly spaced across zone width. Required: `nodes` list. Each node has `name`, `icon`, optional `role`, `subtitle`, `color`, `focal`.
 
-**Source/consumer `type` values** → icon mapping (extends `references/primitive-icons.md`):
+**Source/consumer `type` values** → icon mapping (extends [`primitive-icons.md`](primitive-icons.md)):
 - `db` → cylinder, `sftp` → folder-with-arrow, `mail` → envelope, `mainframe` → server-with-vents
 - `monitor` → desktop screen, `chart` → bar-chart, `globe` → globe, `api` → curly braces
 - `key` → key + ring (identity / IDP)

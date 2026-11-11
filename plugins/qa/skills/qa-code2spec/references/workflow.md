@@ -26,8 +26,8 @@
 - Kích hoạt `ba-interview-me` (Hỏi 1 lượt dạng bảng phân loại).
 - Chỉ hỏi các câu **🔴 Critical** (ảnh hưởng luồng tiền, quy tắc, toàn vẹn dữ liệu). Những điểm thứ yếu tự đưa ra giả định.
 
-### Bước 4: Chốt hạ Đặc tả (`final.md`)
-- Tổng hợp thành file `final.md` tại `/project-root/workspace/issues/{tên_file}/spec/final.md`.
+### Bước 4: Chốt hạ Đặc tả (`code2spec.md`)
+- Tổng hợp thành file `code2spec.md` tại `workspace/issues/{issueKey}/spec/code2spec.md` (bổ sung, không ghi đè `spec/final.md` của BA).
 - File phải có Header Metadata bắt buộc (Chứa Identifier, Commit SHA, Confidence Level).
 
 ## 2. Các Biện hộ Thường gặp (Anti-patterns)
@@ -38,14 +38,14 @@
 
 ## 3. Cờ Đỏ Cảnh Báo (Red Flags)
 - Dựng spec trên nhánh local đang bị out-of-sync mà không thông báo.
-- File `final.md` thiếu metadata nguồn (Commit SHA, Branch).
+- File `code2spec.md` thiếu metadata nguồn (Commit SHA, Branch).
 - Thiếu mục Edge Cases hoặc mục Edge Cases chỉ liệt kê `raise Exception`.
 - Không truy vết đến Message Queue hoặc DB Transaction khi API có xử lý phức tạp.
 - Ghi các giá trị hardcode vào spec mà không phỏng vấn xác nhận.
 
 ## 4. Verification Checklist (Xác minh)
 - [ ] Đã xác thực trạng thái với GitLab (Có Commit SHA).
-- [ ] File `final.md` tồn tại, có đủ Header và Metadata.
+- [ ] File `code2spec.md` tồn tại, có đủ Header và Metadata.
 - [ ] Đủ các thành phần: Endpoint, Request/Response schema, Error Codes.
 - [ ] Mỗi rẽ nhánh nghiệp vụ trong code ánh xạ được tới Business Rule.
 - [ ] 5 yếu tố backend cốt lõi đã được truy vết (DB, Transaction, Queue, Security, WS).

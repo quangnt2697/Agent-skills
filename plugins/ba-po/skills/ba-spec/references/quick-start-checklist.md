@@ -1,7 +1,7 @@
 # Quick-Start Checklist — ba-spec
 
 > **Mục đích:** Tờ nhắc cực ngắn. Đọc trước khi bắt đầu import Jira/Confluence.
-> Chi tiết kỹ thuật tại `references/workflow-and-phases.md` và `references/rules-and-guidelines.md`.
+> Chi tiết kỹ thuật tại [workflow-and-phases.md](workflow-and-phases.md) và [rules-and-guidelines.md](rules-and-guidelines.md).
 
 ---
 
@@ -56,8 +56,8 @@
 
 4. **Phase 2 — Đọc Đa Nguồn & Trích Xuất (Multi-source Reading):**
    - **BẮT BUỘC ĐỌC TOÀN BỘ:** Jira PDF + tất cả Confluence refs + attachments + wireframes.
-   - Đối chiếu theo profile tương ứng: `references/profile-api.md`, `profile-app.md`, `profile-web.md`.
-   - ⚠️ **Chứng khoán / Fintech:** BẮT BUỘC đọc `references/securities-domain-rules.md` (phiên ATO/LO/ATC, biên độ giá trần/sàn, mã lỗi ORS, KRX/MDDS).
+   - Đối chiếu theo profile tương ứng: [profile-api.md](profile-api.md), [profile-app.md](profile-app.md), [profile-web.md](profile-web.md).
+   - ⚠️ **Chứng khoán / Fintech:** BẮT BUỘC đọc [securities-domain-rules.md](../../../../../references/securities-domain-rules.md) (phiên ATO/LO/ATC, biên độ giá trần/sàn, mã lỗi ORS, KRX/MDDS).
 
 5. **Phase 3 & 4 — Phát hiện Gaps & Phỏng vấn (Interview-me):**
    - Phân loại gap: ❌ Thiếu | ⚠️ Mơ hồ | 🔀 Xung đột (mức độ 🔴 Critical, 🟡 Important, 🟢 Nice-to-have).
@@ -79,6 +79,6 @@
 - [ ] Đủ 13 sections theo template `assets/spec-final-template.md`.
 - [ ] Section 8 có Symmetry Coverage (mô tả đủ Mua/Bán, Thêm/Xóa, Bật/Tắt).
 - [ ] Section 9 (AC) là các mệnh đề Pass/Fail kiểm thử được, không viết Gherkin.
-- [ ] Task chứng khoán đã tuân thủ `references/securities-domain-rules.md`.
+- [ ] Task chứng khoán đã tuân thủ [securities-domain-rules.md](../../../../../references/securities-domain-rules.md).
 - [ ] Điểm Confidence Score đạt ≥90% kèm bảng đánh giá.
 - [ ] **Next Step:** Tự động chuyển giao sang `/qa-test-design {issueKey}` theo Autonomy Contract.

@@ -128,7 +128,7 @@ npm run n8n:setup
    ```bash
    npm test
    ```
-   Nếu màn hình hiện `PASSED` cho toàn bộ 10 cổng kiểm định, 227 unit tests và 159 skill evals là môi trường của bạn đã hoàn hảo!
+   Nếu màn hình hiện `PASSED` cho toàn bộ 10 cổng kiểm định, 228 unit tests và 159 skill evals là môi trường của bạn đã hoàn hảo!
 
 ---
 
