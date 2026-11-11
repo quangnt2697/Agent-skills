@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+
+const nodeRequire = createRequire(import.meta.url);
 
 import {
   buildPlistContent,
@@ -13,7 +16,8 @@ import {
   isJiraConfigured,
   isSlackWebhookConfigured,
   isWeekdayWorkHour,
-  markStandupSentToday
+  markStandupSentToday,
+  projectRoot
 } from '../setup/n8n-autostart.js';
 
 test('buildPlistContent: sinh nội dung plist hợp lệ chuẩn macOS launchd', () => {
@@ -153,6 +157,64 @@ test('checkAndCatchUpStandup: người mới clone repo chưa cấu hình Slack 
     const resAlreadySent = await checkAndCatchUpStandup({ rootDir: tmpRoot, dryRun: true, now: monday915 });
     assert.equal(resAlreadySent.skipped, true);
     assert.equal(resAlreadySent.reason, 'already_sent_today');
+  } finally {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test('sm-analyze-standup: ghi nhận mốc ngày vào standup-last-sent.txt khi chạy từ cron để chống duplicate ở catchup', () => {
+  const scriptPath = path.resolve(projectRoot, 'scripts/n8n-nodes/sm/sm-analyze-standup.js');
+  const code = fs.readFileSync(scriptPath, 'utf8');
+
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'sm-analyze-test-'));
+  const n8nDataDir = path.join(tmpRoot, '.n8n-data');
+  fs.mkdirSync(n8nDataDir, { recursive: true });
+
+  try {
+    const $input = {
+      first: () => ({
+        json: {
+          issues: [
+            {
+              key: 'G3PTP-1',
+              fields: {
+                summary: 'Sample task',
+                status: { name: 'In Progress', statusCategory: { name: 'In Progress' } },
+                assignee: { displayName: 'Nguyễn Thanh Quang' },
+                priority: { name: 'High' }
+              }
+            }
+          ]
+        }
+      })
+    };
+
+    const $ = (nodeName) => ({
+      first: () => ({
+        json: {
+          _triggerSource: 'internal',
+          sprintName: 'Sprint 50',
+          boardId: 61,
+          baseUrl: 'https://entrade.atlassian.net'
+        }
+      })
+    });
+
+    const fn = new Function('require', '$input', '$', '$env', code);
+    const res = fn(nodeRequire, $input, $, {
+      AGENT_WORKSPACE_DIR: tmpRoot,
+      SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/T0123/B0456/token789'
+    });
+
+    assert.equal(res.length, 1);
+    assert.equal(res[0].json.isError, false);
+
+    // Kiểm tra file standup-last-sent.txt đã được ghi thành công, không bị lỗi scope wsDir
+    const lastSentFile = path.join(n8nDataDir, 'standup-last-sent.txt');
+    assert.ok(fs.existsSync(lastSentFile), 'File standup-last-sent.txt phải được tạo');
+    const content = fs.readFileSync(lastSentFile, 'utf8');
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
+    assert.ok(content.includes(todayStr), 'File phải chứa ngày hôm nay');
   } finally {
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   }
