@@ -62,7 +62,7 @@ Hệ thống quy tắc này kế thừa từ bộ quy tắc thực chiến của
 
 ## 4. Nghiệp Vụ Chứng Khoán & Fintech (Securities Domain Rules)
 
-Khi review mã nguồn liên quan đến giao dịch, đặt lệnh, tính lãi, khớp lệnh hoặc tài khoản, **BẮT BUỘC** đối soát các quy tắc sau (kế thừa từ `references/securities-domain-rules.md`):
+Khi review mã nguồn liên quan đến giao dịch, đặt lệnh, tính lãi, khớp lệnh hoặc tài khoản, **BẮT BUỘC** đối soát các quy tắc sau (kế thừa từ [securities-domain-rules.md](../../../../../references/securities-domain-rules.md)):
 
 ### A. Tiền Tệ & Làm Tròn (Monetary & Math Precision)
 - **Cấm số thực trong tài chính:** Nghiêm cấm dùng kiểu số thực (`float`, `number`, `double`) để cộng/trừ/nhân/chia số dư tài khoản, phí giao dịch, thuế, hoa hồng hoặc giá trị ký quỹ. Bắt buộc dùng thư viện số chính xác cao (`Decimal`, `BigNumber`, `BigDecimal`) hoặc lưu trữ theo đơn vị nguyên nhỏ nhất (`int64` cent/đồng).

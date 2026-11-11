@@ -23,7 +23,7 @@ zones:                       # 2..4 zones, ordered along the orientation axis
       - id: survey-solutions
         name: "Survey Solutions"
         sub:  "CAPI · PostgreSQL"
-        icon: postgres               # any id from references/primitive-icons.md
+        icon: postgres               # any id from primitive-icons.md
         kind: standard               # standard | focal | external (external → dashed stroke)
       - { id: aspnet,    name: "ASP.NET Apps",    sub: "migration · admin portals", icon: server }
       - { id: civil-reg, name: "Civil Registry",  sub: "external · CRVS data",      icon: database, kind: external }
@@ -68,7 +68,7 @@ dark: false
 - `components[i][k].id` — globally unique slug; referenced by `connectors[].from/to`.
 - `components[i][k].name` — `node-name` role (the human-readable label).
 - `components[i][k].sub` — `sublabel` role at 10px in muted (the technical sub-label; up to 2 lines via auto-wrap when component height grows to 72).
-- `components[i][k].icon` — any id from `references/primitive-icons.md`. If missing → no icon, the name shifts left. (Catalog has 41 icons; `mail` is currently missing — use `icon: file` as fallback for email hand-offs.)
+- `components[i][k].icon` — any id from [`primitive-icons.md`](primitive-icons.md). If missing → no icon, the name shifts left. (Catalog has 41 icons; `mail` is currently missing — use `icon: file` as fallback for email hand-offs.)
 - `components[i][k].kind` — `standard | focal | external`. `focal` triggers the accent palette (§5); `external` switches to a 4-2 dashed stroke and muted ink to signal "this is outside our scope."
 - `components[i][k].color` — optional per-component color override (§4). Ignored on `kind: focal` (accent wins).
 - `connectors[k].from` / `connectors[k].to` — refer to a component `id`. Cross-zone, cross-row, same-zone vertical, and same-zone horizontal all legal; routing chosen by §3.
@@ -146,7 +146,7 @@ Three visual kinds:
 | `focal` | `accent @ 0.07` | `accent` | 1.4 | — | `ink` | `accent` (line 1) + `muted` (line 2) |
 | `external` | `#FFFFFF` | `muted` | 1 | `4,3` | `ink` | `muted` |
 
-**Icon placement** (24×24, monochrome via `currentColor` — see `references/primitive-icons.md`):
+**Icon placement** (24×24, monochrome via `currentColor` — see [`primitive-icons.md`](primitive-icons.md)):
 
 ```svg
 <g transform="translate(comp_x + 12, comp_y + (comp_h - 24)/2)" color="{ink_for_kind}">
@@ -394,8 +394,6 @@ Before emitting SVG, verify **every** item:
 ## 9. Examples
 
 - `assets/example-it-state.html` — minimal light (NatStat canonical: 3 zones, 9 components, 8 connectors, 0 footer bars, SQL Server tinted olive). Gallery default.
-- `assets/example-it-state-dark.html` — same, dark skin.
-- `assets/example-it-state-full.html` — same, editorial-card frame with summary cards.
 
 ---
 

@@ -8,7 +8,7 @@ Cảm ơn bạn đã đóng góp cho **agent-skills**! Tài liệu này quy đ�
 
 Repository cung cấp hệ thống kỹ năng (Skills), lệnh tắt (Slash Commands), luật vận hành (Core Rules) và luồng tự động hóa (n8n Fast-Path) cấp sản xuất cho AI Agent (Claude Code, Antigravity IDE, Gemini CLI) trong lĩnh vực **Tài chính — Chứng khoán (KRX)**.
 
-Hệ thống được module hóa thành **6 Plugins (31 Skills, 29 Slash Commands, 6 Personas)**:
+Hệ thống được module hóa thành **6 Plugins (31 Skills, 30 Slash Commands, 6 Personas)**:
 
 | Plugin | Vị trí | Số lượng Skills | Phạm vi chuyên môn cốt lõi |
 |---|---|:---:|---|
@@ -42,7 +42,7 @@ Mọi đóng góp Plugin và Skill mới **BẮT BUỘC** tuân thủ kiến tr�
 
 2. **Bước 2 — Thiết kế Skill theo chuẩn 3 tầng (`plugins/<plugin>/skills/<skill-name>/`):**
    - **Level 1 (YAML Frontmatter):** Gồm `name` (kebab-case trùng tên thư mục), `description` (1–2 câu ngôi thứ ba) và `trigger` (điều kiện kích hoạt rõ ràng).
-   - **Level 2 (`SKILL.md` Body — tinh gọn < 120 dòng):**
+   - **Level 2 (`SKILL.md` Body — tinh gọn tối ưu <= 120 dòng, tối đa <= 180 dòng):**
      - Bắt buộc có khối **`Grounding (grounding-contract)`** và mục **`## Input Bắt Buộc & Bằng Chứng Hoàn Thành`** (trừ các skill được miễn trừ cấu trúc).
      - Nêu rõ ranh giới nhiệm vụ (*Làm gì / Không làm gì*), quy trình từng bước, đường dẫn sang Level 3 và ví dụ mẫu Few-shot có cảnh báo chống sao chép số liệu giả (*Few-Shot Quarantine*).
    - **Level 3 (`assets/` và `references/`):**
@@ -60,7 +60,7 @@ Mọi đóng góp Plugin và Skill mới **BẮT BUỘC** tuân thủ kiến tr�
 
 4. **Bước 4 — Bổ sung Bộ Đánh Giá Kỹ Năng (`evals/`) & Unit Tests (`tests/`):**
    - Tạo hoặc cập nhật file test case tại `evals/cases/<skill-name>.json` (gồm `positive` prompts để test độ nhạy router, `negative` prompts chống kích hoạt nhầm, và `assertions` kiểm tra cấu trúc output).
-   - Nếu thêm script xử lý hoặc validator mới trong `scripts/` hoặc `assets/`, bổ sung unit test tương ứng trong `tests/*.test.js`.
+   - Nếu thêm script xử lý hoặc validator mới trong `scripts/` hoặc `assets/`, bổ sung unit test tương ứng trong `scripts/tests/*-test.js`.
 
 5. **Bước 5 — Cập nhật Tài liệu & Chạy Kiểm định Toàn diện (`npm test`):**
    - Cập nhật đồng bộ số lượng và mô tả kỹ năng tại: `AGENTS.md`, `CATALOG.md`, `README.md`, `CLAUDE.md` và `plugins/<plugin>/agents/<persona>.md`.
@@ -71,7 +71,7 @@ Mọi đóng góp Plugin và Skill mới **BẮT BUỘC** tuân thủ kiến tr�
 
 ---
 
-## 3. Hệ Thống 9 Cổng Kiểm Định Tự Động (Validation Gates)
+## 3. Hệ Thống 10 Cổng Kiểm Định Tự Động (Validation Gates)
 
 Trước khi tạo Merge Request hoặc merge vào `main`, lệnh `npm test` (bao gồm `npm run validate`, `npm run test:unit`, `npm run evals`) **BẮT BUỘC PASS 100%**:
 
@@ -79,14 +79,15 @@ Trước khi tạo Merge Request hoặc merge vào `main`, lệnh `npm test` (ba
 |---|---|---|
 | `npm run validate:skills` | **Gate 1: Skills Structure** | Đủ frontmatter (`name`, `description`, `trigger`), đủ section `Grounding` & `Input Bắt Buộc`, không vượt giới hạn dòng. |
 | `npm run validate:commands` | **Gate 2: Command Parity** | Đồng bộ 1-1 giữa `commands/*.toml` và `.claude/commands/*.md`. |
-| `npm run validate:versions` | **Gate 3: Version Manifests** | Nhất quán phiên bản giữa `package.json` và toàn bộ `plugins/*/plugin.json`. |
-| `npm run validate:links` | **Gate 4: Relative Links** | Không có markdown link tương đối nào bị gãy (broken links) trong các skills. |
-| `npm run validate:refs` | **Gate 5: Script & Asset Refs** | Mọi đường dẫn gọi script/template/checklist trong `SKILL.md` đều tồn tại thực tế. |
-| `npm run validate:paths` | **Gate 6: Canonical Workspace** | Mọi đường dẫn output tuân thủ đúng 5 thư mục chuẩn `workspace/issues/{issueKey}/{source,spec,tech,test,trace}/`. |
-| `npm run validate:icons` | **Gate 7: Icons Gallery** | Các icon sử dụng trong sơ đồ `ba-design-flowchart` hợp lệ theo thư viện chuẩn. |
-| `npm run validate:nodes` | **Gate 8: n8n Node Sync** | Code JS trong `scripts/n8n-nodes/` khớp 100% với các node trong `n8n-workflows/`. |
-| `npm run validate:tokens` | **Gate 9: Token Budget** | Dung lượng token của từng file `SKILL.md` nằm trong ngưỡng ngân sách cho phép. |
-| `npm run test:unit` | **Unit Test Suite** | 100% unit tests (`tests/*.test.js`) pass, 0 fail. |
+| `npm run validate:scope` | **Gate 3: Scope Guard** | Kiểm tra ranh giới phạm vi, ngăn ngừa scope creep và lệnh không được phép. |
+| `npm run validate:versions` | **Gate 4: Version Manifests** | Nhất quán phiên bản giữa `package.json` và toàn bộ `plugins/*/plugin.json`. |
+| `npm run validate:links` | **Gate 5: Relative Links** | Không có markdown link tương đối nào bị gãy (broken links) trong các skills. |
+| `npm run validate:refs` | **Gate 6: Script & Asset Refs** | Mọi đường dẫn gọi script/template/checklist trong `SKILL.md` đều tồn tại thực tế. |
+| `npm run validate:paths` | **Gate 7: Canonical Workspace** | Mọi đường dẫn output tuân thủ đúng 5 thư mục chuẩn `workspace/issues/{issueKey}/{source,spec,tech,test,trace}/`. |
+| `npm run validate:icons` | **Gate 8: Icons Gallery** | Các icon sử dụng trong sơ đồ `ba-design-flowchart` hợp lệ theo thư viện chuẩn. |
+| `npm run validate:nodes` | **Gate 9: n8n Node Sync** | Code JS trong `scripts/n8n-nodes/` khớp 100% với các node trong `n8n-workflows/`. |
+| `npm run validate:tokens` | **Gate 10: Token Budget** | Dung lượng token của từng file `SKILL.md` nằm trong ngưỡng ngân sách cho phép (<= 180 dòng). |
+| `npm run test:unit` | **Unit Test Suite** | 100% unit tests (`scripts/tests/*-test.js`) pass, 0 fail. |
 | `npm run evals` | **Skill Evals Benchmark** | 100% case checks pass, **Trigger Rank-1 Rate ≥ 90%**. |
 
 ### Các Công Cụ Đồng Bộ Chuyên Biệt Khác
@@ -110,7 +111,7 @@ Trước khi tạo Merge Request hoặc merge vào `main`, lệnh `npm test` (ba
 ## 4. Quy Tắc Quản Trị Luật (`.agents/rules/`) & Ranh Giới Workspace
 
 1. **Single Source of Truth cho Rules:**
-   - Thư mục `.agents/rules/` là nơi duy nhất lưu trữ và chỉnh sửa các luật cốt lõi (`git-workflow.md`, `workspace-paths.md`, `grounding-contract.md`, `autonomy-contract.md`, `action-first-adhd.md`, `confidence-level.md`).
+   - Thư mục `.agents/rules/` là nơi duy nhất lưu trữ và chỉnh sửa các luật cốt lõi (`git-workflow.md`, `workspace-paths.md`, `grounding-contract.md`, `autonomy-contract.md`, `action-first-adhd.md`, `confidence-level.md`, `skills-contributing.md`).
    - Thư mục `.claude/rules` là **Symbolic Link** trỏ trực tiếp sang `../.agents/rules`. Mọi chỉnh sửa trong `.agents/rules/` sẽ tự động có hiệu lực cho cả Antigravity, Gemini CLI và Claude Code.
 
 2. **Ranh giới Output Artifacts (`workspace/`):**

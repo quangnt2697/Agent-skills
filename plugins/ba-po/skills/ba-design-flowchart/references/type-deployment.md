@@ -41,5 +41,3 @@ Over budget → split into one deployment diagram per environment.
 ## Examples
 
 - `assets/example-deployment.html` — minimal light
-- `assets/example-deployment-dark.html` — minimal dark
-- `assets/example-deployment-full.html` — full editorial

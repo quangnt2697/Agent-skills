@@ -28,7 +28,7 @@ fi
 # Kiểm tra nếu lệnh chạy kiểm thử pytest hoặc behave
 if echo "$CMD" | grep -qE "(pytest|python3[[:space:]]+-m[[:space:]]+pytest|behave)"; then
   # Ngoại lệ hợp lệ: Kiểm tra cú pháp, help, collect-only, hoặc đã có chuyển hướng log (>, >>, | tee)
-  if echo "$CMD" | grep -qE "(--help|-h|--collect-only|--version|>|tee)"; then
+  if echo "$CMD" | grep -qE "(--help|([[:space:]]|^)-h([[:space:]]|$)|--collect-only|--version|>|tee)"; then
     exit 0
   fi
 

@@ -29,8 +29,8 @@ node scripts/evals/run-evals.js
 node scripts/evals/run-evals.js --min-rank1 90  # kiểm tra ngưỡng tỷ lệ xếp hạng 1 tối thiểu
 
 # Tầng 3 — kiểm thử hành vi qua claude headless và chấm điểm tự động
-node scripts/evals/run-evals.js --behavioral qa-test-design            # có tiêu tốn token
-node scripts/evals/run-evals.js --behavioral qa-test-design --dry-run  # chỉ in kế hoạch thực thi
+node scripts/evals/run-evals.js --behavioral qa-run-test            # có tiêu tốn token
+node scripts/evals/run-evals.js --behavioral qa-run-test --dry-run  # chỉ in kế hoạch thực thi
 ```
 
 Tầng 3 hỗ trợ hai loại sản phẩm hành vi (`kind`):
@@ -45,10 +45,10 @@ Mỗi kỹ năng có một file định nghĩa riêng tại: `evals/cases/<skill
 
 ```json
 {
-  "skill_name": "qa-test-design",
+  "skill_name": "qa-run-test",
   "trigger": {
     "positive": [
-      { "prompt": "Thiết kế checklist kiểm thử và kịch bản Gherkin cho ticket G3PTP-123", "top_k": 3 }
+      { "prompt": "Chạy kiểm thử tự động pytest cho ticket G3PTP-123", "top_k": 3 }
     ],
     "negative": [
       { "prompt": "Viết code automation Playwright từ file feature đã có", "owner": "qa-auto-design" }
@@ -58,10 +58,10 @@ Mỗi kỹ năng có một file định nghĩa riêng tại: `evals/cases/<skill
     {
       "id": 1,
       "kind": "execution",
-      "prompt": "Thiết kế bộ test case đầy đủ từ file đặc tả final.md.",
-      "expected_output": "File checklist.md và {issueKey}.feature ánh xạ đầy đủ các mã BR/AC",
+      "prompt": "Thực thi bộ test automation và xuất báo cáo kết quả.",
+      "expected_output": "Báo cáo test-output.log và report.md",
       "files": [
-        "qa-test-design"
+        "qa-run-test"
       ],
       "expectations": [
         "Tạo file checklist.md bao phủ các phân vùng tương đương và giá trị biên",

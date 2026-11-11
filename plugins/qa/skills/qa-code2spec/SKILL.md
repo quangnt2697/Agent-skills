@@ -12,7 +12,7 @@ trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có,
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** Đường dẫn file mã nguồn thật. Thiếu input thì dừng và hỏi lại, không tự điền.
-- **Bằng chứng hoàn thành:** Commit SHA lấy từ git thật; `spec/final.md` tồn tại.
+- **Bằng chứng hoàn thành:** Commit SHA lấy từ git thật; `spec/code2spec.md` tồn tại.
 
 ## ⚠️ RANH GIỚI NHIỆM VỤ (Strict Boundary - Tier 2 Artifact-Only)
 
@@ -21,7 +21,7 @@ trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có,
 | Đọc hiểu và dịch ngược mã nguồn thành spec | Sửa đổi, refactor hoặc xóa file mã nguồn ứng dụng |
 | Truy vết 5 yếu tố backend qua Git | Tự ý commit hoặc push lên GitLab |
 | Phỏng vấn user làm rõ điểm mù logic | Tự ý thiết kế kịch bản kiểm thử (đó là qa-test-design) |
-| Xuất tài liệu `workspace/.../spec/final.md` | Can thiệp file ngoài thư mục workspace ticket |
+| Xuất tài liệu `workspace/.../spec/code2spec.md` | Can thiệp file ngoài thư mục workspace ticket |
 
 ## 1. Khi nào dùng?
 - Dự án có mã nguồn đang chạy nhưng không có tài liệu Jira/Spec tương ứng hoặc tài liệu đã lỗi thời.
@@ -37,7 +37,7 @@ trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có,
 - **Bước 1 (Deep Trace 5 Yếu tố Backend):** Đọc code đệ quy tối đa 3 tầng, trích xuất: DB Schema, Transaction Scope, Message Queue/Kafka, Security/RBAC, và WebSocket.
 - **Bước 2 (Gap Analysis & Đối chiếu Domain):** So sánh logic code với Cẩm nang nghiệp vụ chứng khoán/fintech để phát hiện điểm mù hoặc magic numbers.
 - **Bước 3 (Phỏng vấn User - Interview Gate):** Kích hoạt `ba-interview-me` làm rõ các câu hỏi 🔴 Critical về luồng tiền, điều kiện giao dịch và logic ngoại lệ.
-- **Bước 4 (Chốt hạ Đặc tả `final.md`):** Xuất tài liệu đặc tả kỹ thuật chuẩn tắc tại `workspace/issues/{issueKey}/spec/final.md` kèm Metadata truy vết (Commit SHA, Source Repo).
+- **Bước 4 (Chốt hạ Đặc tả `code2spec.md`):** Xuất tài liệu đặc tả kỹ thuật chuẩn tắc tại `workspace/issues/{issueKey}/spec/code2spec.md` kèm Metadata truy vết (Commit SHA, Source Repo). **Lưu ý:** File này bổ sung, không ghi đè `spec/final.md` của BA.
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 - 📖 **Tài liệu quy trình & Hướng dẫn kỹ thuật (references/):**
@@ -48,7 +48,7 @@ trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có,
 > ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
 
 - **Input:** `/qa-code2spec services/orders/router.py`
-- **Output:** File `workspace/issues/orders-router/spec/final.md` cấu trúc chuẩn:
+- **Output:** File `workspace/issues/orders-router/spec/code2spec.md` cấu trúc chuẩn:
   ```markdown
   # Business-Spec: Order Placement Router
   - Source: `services/orders/router.py` (Commit: `a8f31b2`)

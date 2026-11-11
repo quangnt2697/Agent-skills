@@ -1,7 +1,7 @@
 # Quick-Start Checklist — qa-test-design
 
 > **Mục đích:** Tờ nhắc cực ngắn. Đọc trước khi bắt đầu thiết kế test.
-> Xem chi tiết kỹ thuật tại `references/workflow.md` và `references/qa-testing-checklist.md` khi cần.
+> Xem chi tiết kỹ thuật tại [workflow.md](workflow.md) và [qa-testing-checklist.md](qa-testing-checklist.md) khi cần.
 
 ---
 
@@ -39,7 +39,7 @@ Tạo sẵn: `test/conftest.py`, `test/fixtures/` (nạp fixtures lắp ghép th
 ## BƯỚC 2 — Đọc Spec & Nhận Diện Domain
 
 - Đọc `workspace/issues/{issueKey}/spec/final.md`
-- Nếu domain **chứng khoán/fintech** → đọc thêm `references/securities-domain-rules.md`
+- Nếu domain **chứng khoán/fintech** → đọc thêm [securities-domain-rules.md](../../../../../references/securities-domain-rules.md)
 - Xác định loại task:
 
 | Spec mô tả gì? | Kỹ thuật áp dụng |

@@ -4,7 +4,7 @@
 
 Mặc định của hệ thống là **DỪNG SAU MỖI ARTIFACT (Single-Task Hard Stop)**. Mỗi lệnh hoặc skill độc lập chỉ thực hiện đúng phạm vi của nó, ghi artifact mục tiêu rồi **DỪNG LẠI NGAY** tại `Single Next Action`.
 
-Chuỗi tự động chuyển tiếp (Phase Gates) **CHỈ ÁP DỤNG** khi người dùng gọi đích danh một lệnh điều phối (Orchestrator như `/qa-full-pipeline`, `/e2e-qa-delivery`) hoặc khi truyền cờ `--auto`.
+Chuỗi tự động chuyển tiếp (Phase Gates) **CHỈ ÁP DỤNG** khi người dùng gọi đích danh một lệnh điều phối (Orchestrator như `/qa-full-pipeline`, `/e2e-delivery`) hoặc khi truyền cờ `--auto`.
 
 Rule này là nguồn sự thật duy nhất cho việc dừng/chạy tiếp. Khi bất kỳ SKILL.md, tài liệu hay command nào mâu thuẫn với rule này, **rule này thắng**.
 
@@ -35,7 +35,7 @@ Dù trong chế độ Orchestrator hay lệnh đơn lẻ, Agent chỉ được d
 
 | # | Trường hợp | Ví dụ |
 |---|---|---|
-| 1 | **Thiếu file input bắt buộc** mà agent không thể tự tạo | `{issueKey}-final.md` không tồn tại → hướng dẫn chạy `/ba-spec` trước |
+| 1 | **Thiếu file input bắt buộc** mà agent không thể tự tạo | `workspace/issues/{issueKey}/spec/final.md` không tồn tại → hướng dẫn chạy `/ba-spec` trước |
 | 2 | **Thiếu credential / secret** không thể tự lấy | `.env` không tồn tại, hoặc thiếu `ATLASSIAN_API_TOKEN` |
 | 3 | **Có ≥1 câu hỏi 🔴 Critical** trong gap analysis — câu trả lời làm thay đổi bản chất output | Spec không nói rõ lệnh LO hay MP → toàn bộ business rule khác nhau |
 | 4 | **Sắp commit hoặc merge vào `main`** | Theo `git-workflow.md` — đây là cổng người duy nhất của luồng code |
@@ -81,7 +81,7 @@ Agent **chỉ** được dùng những tín hiệu đọc được bằng mắt 
 Auto Mode = TẮT (Mặc định cho mọi lệnh độc lập như /ba-spec, /qa-test-design, /qa-auto-design, /sync...)
 
 Auto Mode = BẬT CHỈ KHI:
-  1. Người dùng gọi lệnh Orchestrator: /qa-full-pipeline, /e2e-qa-delivery
+  1. Người dùng gọi lệnh Orchestrator: /qa-full-pipeline, /e2e-delivery
   2. HOẶC chuỗi $ARGUMENTS chứa cờ "--auto"
 
 Chế độ cưỡng chế dừng từng bước (--step):
@@ -108,14 +108,14 @@ Khi rơi vào mục 2, dừng đúng một lần, nêu rõ trường hợp nào 
 
 ## 7. Ranh giới Quyền hạn Thực thi (Scope Containment & Permission Tiers)
 
-Mỗi lệnh và skill trong hệ thống được phân định rõ ràng theo 4 Cấp Quyền Hạn (Permission Tiers). Agent TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP vượt cấp quyền này khi thực thi:
+Mỗi lệnh và skill trong hệ thống được phân định rõ ràng theo các Cấp Quyền Hạn (Permission Tiers). Agent TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP vượt cấp quyền này khi thực thi:
 
 1. **Cấp 1: READ-ONLY (Chỉ đọc & Lập báo cáo):**
-   - Áp dụng cho: `cr-review`, `security-audit`, `webperf-audit`, `db-recon`, `ba-gap-analysis`.
+   - Áp dụng cho: `cr-review`, `security-audit`, `webperf-audit`, `db-recon`.
    - **Luật Thép:** Agent CHỈ ĐƯỢC PHÉP đọc mã nguồn, đọc diff, chạy query đọc dữ liệu (SELECT only). TUYỆT ĐỐI CẤM gọi tool sửa đổi file mã nguồn dự án (`src/`, `app/`, `tests/`) hoặc chạy DML/DDL. Mọi báo cáo bắt buộc ghi vào `workspace/.../trace/`.
 
 2. **Cấp 2: ARTIFACT-ONLY (Chỉ tạo/sửa Artifact trong Workspace Ticket):**
-   - Áp dụng cho: `ba-spec`, `ba-refine`, `ba-interview`, `ba-user-stories`, `ba-prioritize`, `ba-process`, `flowchart`, `qa-test-design`, `qa-code2spec`, `sm-*`, `meta-*`.
+   - Áp dụng cho: `ba-spec`, `ba-refine`, `ba-interview`, `ba-gap-analysis`, `ba-user-stories`, `ba-prioritize`, `ba-process`, `flowchart`, `qa-test-design`, `qa-code2spec`, `sm-*`, `meta-*`.
    - **Luật Thép:** Agent CHỈ ĐƯỢC PHÉP tạo hoặc chỉnh sửa các file đặc tả, checklist, kịch bản test nằm trong `workspace/issues/{issueKey}/` (hoặc `workspace/adhoc/`, `workspace/sprints/`). CẤM can thiệp vào mã nguồn ứng dụng hay tự ý thay đổi dữ liệu bên ngoài.
 
 3. **Cấp 2b: EXTERNAL-WRITE (Đồng bộ ra ngoài có kiểm soát):**
@@ -123,7 +123,7 @@ Mỗi lệnh và skill trong hệ thống được phân định rõ ràng theo 
    - **Luật Thép:** Chỉ thực hiện thao tác đồng bộ khi người dùng chỉ định rõ. Mặc định an toàn: không ghi đè mất uncommitted changes. Các hành vi xoá/reset không thể hoàn tác (`--force` reset trong repo-sync, xoá test case cũ trên Squash) BẮT BUỘC phải có cờ chỉ định rõ từ người dùng hoặc hỏi xác nhận trước.
 
 4. **Cấp 3: MUTATION & PIPELINE (Được sửa mã nguồn theo phạm vi hẹp):**
-   - Áp dụng cho: `qa-auto-design` (chỉ trong `test/`), `cr-code-simplify` (chỉ refactor vùng code được chỉ định, cấm làm drift logic), `qa-full-pipeline`, `e2e-qa-delivery`.
+   - Áp dụng cho: `qa-auto-design` (chỉ trong `test/`), `cr-code-simplify` (chỉ refactor vùng code được chỉ định, cấm làm drift logic), `qa-full-pipeline`, `e2e-delivery`.
    - **Luật Thép:** Mọi hành vi sửa code phải có bằng chứng kiểm thử xác minh (test pass) trước khi bàn giao.
 
 5. **Khóa Đơn Nhiệm & Điểm Dừng Bắt Buộc (Single-Task Lock & Hard Stop):**

@@ -6,7 +6,7 @@ Tài liệu này chứa các quy tắc sống còn mà QA Agent **bắt buộc**
 - **Metabase UAT Strict Policy:** QA pipeline CHỈ scan/query trên Metabase UAT (`${METABASE_UAT_URL}`, DB Timescale: `${METABASE_UAT_DB_TIMESCALE_ID}`). NGHIÊM CẤM chạy automation test trên Metabase Production (`${METABASE_PROD_URL}`). Code phải có Security Gate: raise `ValueError` nếu phát hiện môi trường là `prod` hoặc trỏ tới `METABASE_PROD_URL`.
 - **Zero-Mutation Policy:** Mọi truy vấn Metabase là Read-Only (chỉ `SELECT`). Tuyệt đối cấm các lệnh DDL/DML.
 - **Real Base URLs Only:** Bắt buộc kết nối `BASE_URL` và `WS_URL` cấu hình trong `.env`. NGHIÊM CẤM mock server.
-- **TimescaleDB:** Ưu tiên bảng v3, fallback v2. Chi tiết bảng xem `references/timescale-schema.md`. Mọi câu truy vấn bắt buộc dùng Tên Bảng (Table Name), không dùng Metabase Table ID.
+- **TimescaleDB:** Ưu tiên bảng v3, fallback v2. Chi tiết bảng xem [timescale-schema.md](../../../../../references/timescale-schema.md). Mọi câu truy vấn bắt buộc dùng Tên Bảng (Table Name), không dùng Metabase Table ID.
 
 ## 2. Kế thừa và Cấu hình (Recon Gate)
 - **Pre-generation Code Recon Gate:** Trước khi viết code, BẮT BUỘC quét codebase để tái sử dụng module Auth, Token, HMAC, WebSocket Client có sẵn. Khi gặp task liên quan đến API/WS, BẮT BUỘC quét thêm folder `openapi-tyk/sdk/python/` (qua `projects.json`, biến `OPENAPI_TYK_PATH`, hoặc đường dẫn tương đối) để kế thừa codebase SDK Python (`DNSEClient`, `trading-api`, `marketdata-api`, `websocket-trading`, `websocket-marketdata`, `examples`).

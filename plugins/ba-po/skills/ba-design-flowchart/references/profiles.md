@@ -8,7 +8,7 @@ This file is the source of truth for profile resolution and for the `save`, `loa
 
 - **Profile library:** `~/.diagram-design/profiles/`
 - **Profile:** `~/.diagram-design/profiles/<slug>.md`
-- **Working copy:** the current install's `references/style-guide.md`
+- **Working copy:** the current install's [`style-guide.md`](style-guide.md)
 - **Project marker:** `<project-root>/.diagram-design`
 - **Effective style guide:** the profile or working copy selected for the current generation
 
@@ -48,11 +48,11 @@ Except for the schema backfill described below, copy the body byte-for-byte. Sav
 
 ## Built-in `default`
 
-`default.md` is the recovery copy of the current package's pristine shipped `references/style-guide.md`.
+`default.md` is the recovery copy of the current package's pristine shipped [`style-guide.md`](style-guide.md).
 
 Before onboarding overwrites a pristine working copy, and again on the first `save` or `load`, check for `~/.diagram-design/profiles/default.md`. If it is absent:
 
-1. **Read** the current package's pristine shipped `references/style-guide.md`. During onboarding, use the pre-diff body retained before Step 5 writes custom tokens.
+1. **Read** the current package's pristine shipped [`style-guide.md`](style-guide.md). During onboarding, use the pre-diff body retained before Step 5 writes custom tokens.
 2. Verify it has no profile header and still has all shipped default semantic values and font families. Never snapshot a customized guide as `default`.
 3. **Bash:** create the library with `mkdir -p ~/.diagram-design/profiles`.
 4. **Write** `default.md` as a normal profile named `Default`, slug `default`, with `source-url: none`, today's created/updated dates, and note `Pristine shipped style guide`; its body is the verified pristine guide.

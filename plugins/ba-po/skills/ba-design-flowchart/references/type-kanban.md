@@ -45,5 +45,3 @@ When a column's card count `n` exceeds its stated `limit`, the WIP chip's stroke
 ## Examples
 
 - `assets/example-kanban.html` — minimal light. Platform-team board: Backlog (3), In progress (4/3, over limit), Review (2/3), Done (2), one blocked card.
-- `assets/example-kanban-dark.html` — minimal dark, same data.
-- `assets/example-kanban-full.html` — full editorial: container framing + 3 summary cards of varied widths + footer.

@@ -19,7 +19,7 @@ graph TD
     Start["🧭 Bắt Đầu: Chọn Điểm Xuất Phát"] --> Q{"Vai trò chuyên môn của bạn là gì?"}
     Q -->|Nghiệp vụ & Sản phẩm| R_BA["Lộ trình 1: BA / PO<br/>(ba-spec, ba-refine, flowchart, mockup)"]
     Q -->|Kiểm thử & Đảm bảo Chất lượng| R_QA["Lộ trình 2: QA / SDET<br/>(qa-test-design, qa-auto-design, run)"]
-    Q -->|Điều phối Quy trình Agile| R_SM["Lộ trình 3: Scrum Master<br/>(sm-daily-standup, sm-triage)"]
+    Q -->|Điều phối Quy trình Agile| R_SM["Lộ trình 3: Scrum Master<br/>(sm-daily-standup, sm-impediment-triage)"]
     Q -->|Quản trị Chất lượng & An ninh| R_CR["Lộ trình 4: Code Reviewer & Audit<br/>(cr-review, security-audit, webperf)"]
     
     R_BA --> COLLAB["🤝 Bàn Giao Liên Vai Trò & Review<br/>Đảm bảo chất lượng toàn diện SDLC"]
@@ -37,8 +37,8 @@ graph TD
 
 ```bash
 # 1. Clone repository
-git clone git@gitlab.example.com:my-project/agent-skills.git
-cd agent-skills
+git clone https://github.com/quangnt2697/Agent-skills.git
+cd Agent-skills
 
 # 2. Cài đặt môi trường nhanh (macOS)
 npm run setup:mac
@@ -109,7 +109,7 @@ sequenceDiagram
 
 1. **Hiểu Kiến Trúc Progressive Disclosure 3 Tầng:**
    - Đọc: [`docs/guides/skill-anatomy.md`](docs/guides/skill-anatomy.md).
-   - Nắm rõ cách chia: Frontmatter (~100 tokens), Body (<100 dòng), Resources (`references/`, `templates/`, `scripts/`).
+   - Nắm rõ cách chia: Frontmatter (~100 tokens), Body (tối ưu <= 120 dòng, tối đa <= 180 dòng), Resources (`references/`, `assets/`).
 2. **Kích hoạt n8n Fast-Path Container:**
    - Khởi động Colima & n8n container: `npm run colima:start && npm run n8n:up`.
    - Kết nối webhook tự động hóa chạy test, lưu báo cáo Standup vào `trace/`.

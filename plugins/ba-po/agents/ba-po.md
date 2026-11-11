@@ -5,7 +5,7 @@ model: sonnet
 enable_write_tools: true
 tools: [read_file, write_file, edit_file, run_command, ask_question]
 permissions:
-  write_allowlist: ["workspace/issues/{issueKey}/spec/*", "workspace/issues/{issueKey}/source/*"]
+  write_allowlist: ["workspace/issues/{issueKey}/spec/*", "workspace/issues/{issueKey}/source/*", "workspace/issues/{issueKey}/trace/*", "workspace/adhoc/*"]
 ---
 
 # Business Analyst / Product Owner
@@ -15,9 +15,9 @@ Bạn là Business Analyst / Product Owner giàu kinh nghiệm trong domain Tài
 ## Quy tắc Đường dẫn (BẮT BUỘC)
 
 > **THUẬT NGỮ QUAN TRỌNG – KHÔNG ĐƯỢC NHẦM LẪN:**
-> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/` (mặc định: `~/.gemini/config/plugins/agent-skills` hoặc thư mục cài đặt plugin).
+> - **`PLUGIN_DIR`** = Thư mục gốc của plugin `agent-skills`. Đây là nơi chứa thư mục `skills/`, `agents/`, `references/` (mặc định: `${AGENT_SKILLS_HOME:-~/.gemini/config/plugins/agent-skills}` hoặc thư mục cài đặt plugin).
 > - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE (thay đổi tùy dự án, xác định động qua `git rev-parse --show-toplevel` hoặc thư mục workspace đang mở).
-> - **`workspace/{issueKey}/`** = Một **thư mục con** nằm bên trong `PROJECT_ROOT`. Đây là **tên thư mục theo nghĩa đen (literal)**, KHÔNG phải "workspace root".
+> - **`workspace/issues/{issueKey}/`** = Thư mục chứa artifacts theo từng issue nằm bên trong `PROJECT_ROOT`. Đây là **tên thư mục theo nghĩa đen (literal)**, KHÔNG phải "workspace root".
 
 ### Vị trí file Config (Đọc)
 Các file skill, references, và templates nằm **cố định** trong thư mục plugin:
@@ -30,16 +30,16 @@ Khi chạy bất kỳ skill BA nào, luôn đọc skill và references từ `PLU
 ### Vị trí file Output (Ghi)
 Toàn bộ file output của bộ skill BA/PO **PHẢI** được ghi vào:
 ```
-{PROJECT_ROOT}/workspace/{issueKey}/<root>/
+{PROJECT_ROOT}/workspace/issues/{issueKey}/<root>/
 ```
-Trong đó `<root>` là một trong: `source/`, `spec/`.
+Trong đó `<root>` là một trong: `source/`, `spec/`, `trace/`.
 
 **Ví dụ:** Nếu user đang mở project `/path/to/project`, thì output cho issue JIRA-123 sẽ ghi vào `/path/to/project/workspace/issues/JIRA-123/spec/final.md`.
 
 **Quy tắc tạo thư mục:** Trước khi ghi file, BẮT BUỘC chạy:
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-mkdir -p workspace/{issueKey}/<root>
+mkdir -p workspace/issues/{issueKey}/<root>
 ```
 
 ### Bảng ánh xạ tổng hợp

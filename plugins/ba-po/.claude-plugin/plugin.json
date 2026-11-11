@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "description": "BA/PO Subagent for requirements analysis and specification",
   "skills": ["./skills"],
-  "commands": ["./commands"],
+  "commands": ["./.claude/commands"],
   "agents": ["./agents/ba-po.md"]
 }

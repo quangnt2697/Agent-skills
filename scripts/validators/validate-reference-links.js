@@ -84,16 +84,28 @@ function main() {
       if (!fs.statSync(skillDir).isDirectory() || !fs.existsSync(skillFile)) continue;
 
       checked++;
-      const violations = findViolations(skillDir, skillFile);
+      const filesToCheck = [skillFile];
+      const refsSubDir = path.join(skillDir, 'references');
+      if (fs.existsSync(refsSubDir)) {
+        for (const rf of fs.readdirSync(refsSubDir).sort()) {
+          if (rf.endsWith('.md')) filesToCheck.push(path.join(refsSubDir, rf));
+        }
+      }
 
-      if (violations.length === 0) {
-        console.log(`  ✓  plugins/${plugin}/skills/${name}/SKILL.md`);
-      } else {
-        console.log(`  ✗  plugins/${plugin}/skills/${name}/SKILL.md`);
-        for (const { line, link } of violations) {
-          const resolved = path.relative(ROOT, path.resolve(skillDir, link));
-          console.log(`       L${line}: ${link} — resolves to ${resolved}, which does not exist`);
-          errors++;
+      for (const targetFile of filesToCheck) {
+        const targetDir = path.dirname(targetFile);
+        const violations = findViolations(targetDir, targetFile);
+
+        const relPath = path.relative(ROOT, targetFile);
+        if (violations.length === 0) {
+          console.log(`  ✓  ${relPath}`);
+        } else {
+          console.log(`  ✗  ${relPath}`);
+          for (const { line, link } of violations) {
+            const resolved = path.relative(ROOT, path.resolve(targetDir, link));
+            console.log(`       L${line}: ${link} — resolves to ${resolved}, which does not exist`);
+            errors++;
+          }
         }
       }
     }

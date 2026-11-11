@@ -123,8 +123,4 @@ If you exceed, split: overview (happy path) + detail (failure / refresh path).
 
 ## Examples
 - `assets/example-sequence.html` — minimal light (cold-cache happy path)
-- `assets/example-sequence-dark.html` — minimal dark
-- `assets/example-sequence-full.html` — full editorial
 - `assets/example-sequence-oauth.html` — special: bearer call + `alt` refresh (light)
-- `assets/example-sequence-oauth-dark.html` — same special, dark
-- `assets/example-sequence-oauth-full.html` — same special, full editorial

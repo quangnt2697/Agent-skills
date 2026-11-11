@@ -37,7 +37,7 @@
 → Extract 13 sections
 → Gap analysis
 → Interview-me (if gaps found)
-→ Output: {issueKey}-final.md
+→ Output: spec/final.md
 ```
 
 **Focus:** Completeness (đủ 13 sections, không thiếu sót)

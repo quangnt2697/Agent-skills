@@ -20,15 +20,38 @@ Khi nhận được một task, xác định giai đoạn phát triển và đ�
 
 ```text
 Task đến
-    ├── Chưa biết thực sự mình muốn gì? ─────────→ ba-interview-me
-    ├── Có mã Jira, cần phân tích yêu cầu? ──────→ ba-spec
-    ├── Có concept sơ bộ, cần làm rõ/chốt hạ? ───→ ba-refine (kèm ba-design-mockup nếu có UI)
-    ├── Có code sẵn, cần dịch ra docs (spec)? ───→ qa-code2spec
-    ├── Cần lên checklist & kịch bản BDD? ───────→ qa-test-design → qa-auto-design → qa-run-test
-    ├── Đánh giá chất lượng code/test ───────────→ cr-review-code-and-quality / cr-code-simplification
-    ├── Cần quét bảo mật / Core Web Vitals? ─────→ security-code-audit / webperf-core-vitals
-    ├── Cần đối chiếu dữ liệu KRX TimescaleDB? ──→ db-timescale-reconciler
-    └── Cần tối ưu lại ngữ cảnh hiện tại? ───────→ meta-context
+    ├── Nghiệp vụ / Phân tích (BA/PO):
+    │   ├── Ý tưởng mơ hồ, cần phỏng vấn? ──────→ ba-interview-me / ba-stakeholder-interview
+    │   ├── Có mã Jira, cần lập đặc tả? ────────→ ba-spec / ba-refine
+    │   ├── Cần viết User Stories + ACs? ───────→ ba-user-story-writing
+    │   ├── Cần phân tích AS-IS vs TO-BE? ──────→ ba-gap-analysis
+    │   ├── Cần sắp xếp backlog Sprint/Release? → ba-backlog-prioritization
+    │   ├── Cần vẽ quy trình / sơ đồ kiến trúc? ─→ ba-process-modeling / ba-design-flowchart
+    │   └── Cần thiết kế mockup UI (Web/App)? ──→ ba-design-mockup
+    ├── Kiểm thử & Chất lượng (QA/SDET):
+    │   ├── Có code sẵn, cần dịch ra spec? ─────→ qa-code2spec
+    │   ├── Thiết kế checklist & BDD Gherkin? ──→ qa-test-design
+    │   ├── Sinh code kiểm thử tự động? ────────→ qa-auto-design
+    │   ├── Chạy kiểm thử tự động / đo lường? ──→ qa-run-test
+    │   ├── Đẩy test cases lên Squash TM? ──────→ qa-squash-push
+    │   └── Chạy toàn bộ pipeline QA E2E? ──────→ qa-full-pipeline
+    ├── Đánh giá Code & An ninh (Review & Security):
+    │   ├── Review kiến trúc, logic, hiệu năng? ─→ cr-review-code-and-quality
+    │   ├── Đơn giản hóa, refactor code? ────────→ cr-code-simplification
+    │   ├── Quét lỗ hổng bảo mật OWASP? ────────→ security-code-audit
+    │   └── Đo Core Web Vitals, hiệu năng Web? ─→ webperf-core-vitals
+    ├── Scrum Master & Vận hành Sprint:
+    │   ├── Lập kế hoạch Sprint? ───────────────→ sm-sprint-planning
+    │   ├── Họp Daily Standup tự động? ─────────→ sm-daily-standup
+    │   ├── Xử lý ticket bị nghẽn (impediment)? ─→ sm-impediment-triage
+    │   └── Họp tổng kết Sprint (Retro)? ───────→ sm-sprint-retrospective
+    └── Hạ tầng & Siêu kỹ năng (Core & Data Ops):
+        ├── Đồng bộ code các kho microservices? ─→ repo-group-sync
+        ├── Đối chiếu dữ liệu KRX TimescaleDB? ──→ db-timescale-reconciler
+        ├── Kiểm tra ma trận truy vết Spec-Test? ─→ meta-cross-validation
+        ├── Đúc kết bài học thành Rule mới? ─────→ meta-continuous-learning
+        ├── Tối ưu hóa ngữ cảnh hội thoại? ─────→ meta-context
+        └── Lưu / Khôi phục snapshot phiên? ────→ meta-session-checkpoint
 ```
 
 ## 2. Bảy Hành vi Vận hành Cốt lõi (Core Operating Behaviors — Bắt buộc)
@@ -48,8 +71,8 @@ Task đến
 
 | Phân hệ | Kỹ năng cốt lõi | Đầu ra chính |
 |---|---|---|
-| **BA/PO** | `ba-spec`, `ba-refine`, `ba-interview-me`, `ba-design-mockup`, `ba-design-flowchart` | `spec/final.md`, `refined.md`, Mockup PNG, Diagram SVG |
+| **BA/PO** | `ba-spec`, `ba-refine`, `ba-interview-me`, `ba-gap-analysis`, `ba-user-story-writing`, `ba-backlog-prioritization`, `ba-stakeholder-interview`, `ba-process-modeling`, `ba-design-flowchart`, `ba-design-mockup` | `spec/final.md`, `refined.md`, User Stories, Mockup PNG, Diagram SVG |
 | **QA/SDET** | `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-squash-push`, `qa-code2spec`, `qa-full-pipeline` | `checklist.md`, `.feature`, Pytest/Playwright, `report.md` |
 | **Scrum** | `sm-sprint-planning`, `sm-daily-standup`, `sm-impediment-triage`, `sm-sprint-retrospective` | Kế hoạch Sprint, Standup, Triage blockers, Retro |
 | **Review** | `cr-review-code-and-quality`, `cr-code-simplification`, `security-code-audit`, `webperf-core-vitals` | Code Review, Refactor, OWASP Audit, CWV Report |
-| **Core/Data** | `meta-context`, `meta-cross-validation`, `meta-session-checkpoint`, `repo-group-sync`, `db-timescale-reconciler` | Context, Traceability `matrix.md`, Checkpoint, DB Recon |
+| **Core/Data** | `meta-context`, `meta-cross-validation`, `meta-session-checkpoint`, `meta-continuous-learning`, `meta-using-agent-skills`, `repo-group-sync`, `db-timescale-reconciler` | Context, Traceability `matrix.md`, Checkpoint, DB Recon |

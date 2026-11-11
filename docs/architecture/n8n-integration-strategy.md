@@ -28,6 +28,7 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 | Endpoint | Method | Persona | Mục đích | Payload Input | Response Output |
 |---|:---:|:---:|---|---|---|
 | `/webhook/jira-prep` | `POST` | BA/PO | Lấy tóm tắt và mô tả Jira sạch (bỏ ADF rác) | `{"issueKey": "G3PTP-17396"}` | `{"issueKey", "summary", "status", "assignee", "descriptionSnippet"}` |
+| `/webhook/jira-push-spec` | `POST` | BA/PO | Đẩy đặc tả Markdown hoàn chỉnh lên Jira issue thành mô tả hoặc comment ADF | `{"issueKey": "...", "specPath": "..."}` | `{"success": true, "issueKey": "..."}` |
 | `/webhook/confluence-doc` | `POST` | BA/PO | Bóc tách Confluence Storage XHTML sang Markdown tinh gọn | `{"pageUrlOrId": "..."}` | `{"title", "version", "markdownContent", "stats"}` |
 | `/webhook/securities-fixture` | `POST` | QA | Lấy Test Fixtures chứng khoán 4 sàn từ security_definition_v3 | `{}` | `{"auth", "segments": {derivatives, hose, upcom, hnx}, "sampleOrders"}` |
 | `/webhook/web-ui-locator-discovery` | `POST` | QA | Khám phá locator Web UI thật: probe URL, login thật, dump DOM | `{"issueKey": "STK-201", "targetPage": "order"}` | `{"success", "loginSuccess", "locatorCount", "outputFile", "login_locators", "page_locators"}` |
@@ -38,6 +39,9 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
 | `/webhook/security-scan` | `POST` | Security | Quét ngầm npm audit và rà soát secrets rò rỉ | `{"projectPath": "..."}` | `{"securityStatus", "vulnerabilities", "scorecardMarkdown"}` |
 | `/webhook/securities-rule-matrix` | `POST` | QA | Lấy ma trận loại lệnh hợp lệ và bảng Examples tham số hóa đa sàn | `{"marketId": "STO", "boardId": "G1", "symbol": "SSI", "adminStatus": "CR"}` | `{"allowedOrders", "disallowedOrders", "isMtlFiltered", "multiSymbolExamples"}` |
 | `/webhook/qa-domain-lint` | `POST` | QA | Kiểm định kịch bản Gherkin (.feature) tuân thủ quy tắc nghiệp vụ chứng khoán | `{"issueKey": "STK-100", "gherkinContent": "..."}` | `{"valid", "errorCount", "errors", "warnings", "checkedRules"}` |
+| `/webhook/metabase-query` | `POST` | Data / All | Thực thi query SQL lên Metabase TimescaleDB UAT | `{"databaseId": 2, "sql": "..."}` | `{"rows": [...], "rowCount": 10}` |
+| `/webhook/db-recon-core` | `POST` | Data / Recon | Quét và đối chiếu sai lệch dữ liệu KRX MDDS TimescaleDB theo topic | `{"topic": "orderbook", "symbol": "SSI"}` | `{"topic", "discrepancies", "status"}` |
+| `/webhook/workspace-resolve` | `POST` | Core / All | Phân giải đường dẫn workspace cục bộ của issue hoặc sprint | `{"issueKey": "STK-100"}` | `{"issueKey", "workspacePath", "exists"}` |
 | `/webhook/sm-standup` | `POST` | Scrum Master | Lấy báo cáo Standup tiến độ Sprint để lưu file trace/ | `{}` | `{"reportText", "totalIssues", "stuckCount"}` |
 | `/webhook/jira-my-tasks-poll` | `POST` | All | Kích hoạt quét thủ công các task Jira được phân công cho người dùng | `{}` | `{"polled": true, "count": 2}` |
 | `/webhook/agent-trigger-skill` | `GET/POST` | All | Nhận action link click từ Slack, tự đóng tab trình duyệt, kích hoạt skill và gửi kết quả/lỗi về Slack | `{"skill": "ba-spec", "issueKey": "G3PTP-17396"}` | `HTML auto-close tab (200 OK)` |
@@ -79,7 +83,7 @@ Các workflow n8n được lưu trữ mẫu tại thư mục `n8n-workflows/`. K
      // matrix.multiSymbolExamples -> Bảng mẫu 4 sàn chuẩn xác 100% để paste vào Examples!
      ```
   2. *Kiểm Định Quy Tắc Nghiệp Vụ Chứng Khoán Gherkin (Domain Linter):*
-     Tại Giai đoạn 3 (Xác minh & Bàn giao), song song với `qa-validate.sh` (kiểm tra cú pháp), Agent kích hoạt linter nghiệp vụ:
+     Tại Giai đoạn 3 (Xác minh & Bàn giao), song song với `qa-validate.js` (kiểm tra cú pháp), Agent kích hoạt linter nghiệp vụ:
      ```javascript
      import { lintDomainGherkin } from './scripts/lib/n8n-client.js';
 
@@ -166,7 +170,7 @@ Dự án đóng gói sẵn môi trường n8n trong [`docker-compose.yml`](../..
    ```bash
    npm run colima:start
    ```
-3. **Khởi động container n8n & tự động nạp + kích hoạt (`active = 1`) toàn bộ 18 workflows:**
+3. **Khởi động container n8n & tự động nạp + kích hoạt (`active = 1`) toàn bộ 19 workflows:**
    ```bash
    npm run n8n:up
    ```

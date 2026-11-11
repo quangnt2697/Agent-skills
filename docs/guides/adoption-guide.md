@@ -40,7 +40,7 @@ Jira / Confluence               Checklist, BDD & Auto Test       Review, Securit
   4. **Trực quan hóa Sơ đồ & Mockup Giao diện:**
      - Gọi `ba-design-flowchart` (`/flowchart`) khi cần vẽ sơ đồ quy trình, kiến trúc, sequence hoặc ERD theo phong cách Editorial.
      - Gọi `ba-design-mockup` khi tính năng có thay đổi giao diện WEB/APP để bóc tách AS-IS từ codebase (`extract-asis-ui.js`), dựng Prod-Twin mockup đa trạng thái (`mockup-case-1..3.png`) và kiểm định độ trung thực `validate-mockup-fidelity.js` (Fidelity Score ≥ 90%).
-  5. **Kiểm định Hard Gate & Đồng bộ Jira:** Chạy `validate-ba-refine.js` đạt 100% PASS, đẩy đặc tả 6 mục kèm ảnh inline ADF lên Jira Description và xuất `spec/testability-manifest.json` bàn giao cho QA.
+  5. **Kiểm định Hard Gate & Đồng bộ Jira:** Chạy `validate-ba-refine.js` đạt 100% PASS, đẩy đặc tả chuẩn kèm ảnh inline ADF lên Jira Description và xuất `spec/testability-manifest.json` bàn giao cho QA.
 
 ### 2.2. Kỹ Sư Đảm Bảo Chất Lượng & Tự Động Hóa (`plugins/qa` — 6 Skills)
 - **Kỹ năng cốt lõi:** `qa-test-design`, `qa-auto-design`, `qa-run-test`, `qa-squash-push`, `qa-code2spec`, `qa-full-pipeline`.
@@ -72,7 +72,7 @@ Jira / Confluence               Checklist, BDD & Auto Test       Review, Securit
 - **Quy trình chuẩn:**
   1. Trước khi phân tích spec, bóc tách UI hoặc viết test, chạy `/sync` (`npm run sync`) để cập nhật mã nguồn mới nhất của toàn bộ các repo microservices trong nhóm.
   2. Khi cần kiểm tra chất lượng dữ liệu thị trường KRX MDDS trên TimescaleDB Production/UAT, chạy `/db-recon` để quét sai lệch số lượng bản ghi (count parity), trôi giá/khối lượng (value drift), dữ liệu trễ và khoảng trống nến OHLC trên 11 topics nghiệp vụ.
-  3. Sử dụng `meta-cross-validation` (`node scripts/validators/trace-check.js {issueKey}`) để thẩm định ma trận truy vết giữa `spec/final.md` và `test/` (xuất `trace/matrix.md` và `trace/gaps.md`).
+  3. Sử dụng `meta-cross-validation` (`node plugins/core/skills/meta-cross-validation/assets/trace-check.js {issueKey}`) để thẩm định ma trận truy vết giữa `spec/final.md` và `test/` (xuất `trace/matrix.md` và `trace/gaps.md`).
 
 ---
 

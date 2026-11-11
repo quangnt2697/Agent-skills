@@ -26,7 +26,7 @@ const __dirname = path.dirname(__filename);
 // hình "invisible separator", không xuất hiện trong văn bản người viết.
 const HARD_BREAK_TOKEN = '⁣HARDBREAK⁣';
 
-// --- Hỗ trợ parse .env thủ công (vì không cài dotenv) ---
+// --- Hỗ trợ parse .env thủ công phòng khi chạy script độc lập ngoài node_modules ---
 function parseEnvFile(envPath) {
     if (!fs.existsSync(envPath)) return;
     const envConfig = fs.readFileSync(envPath, 'utf8');

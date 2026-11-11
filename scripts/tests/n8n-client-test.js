@@ -104,9 +104,7 @@ test('n8n ADF Parser: decodes ADF tree into clean markdown/plain text', () => {
 });
 
 test('Watchdog Query Builder: generates correct pre-trading definition & reset SQL', () => {
-  const step1 = fs.readFileSync(path.join(__dirname, '..', 'n8n-nodes', 'db', 'watchdog-prepare-query.js'), 'utf-8');
-  const step2 = fs.readFileSync(path.join(__dirname, '..', 'n8n-nodes', 'db', 'watchdog-prepare-query-realtime.js'), 'utf-8');
-  const scriptContent = step1 + '\n' + step2;
+  const scriptContent = fs.readFileSync(path.join(__dirname, '..', 'n8n-nodes', 'db', 'watchdog-prepare-query.js'), 'utf-8');
   assert.ok(scriptContent.includes('security_definition_v3'));
   assert.ok(scriptContent.includes('krx_mdds_v2_stock_infos'));
   assert.ok(scriptContent.includes('basic_price'));

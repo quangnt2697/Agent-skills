@@ -45,6 +45,11 @@ if [[ -f "${PROJECT_ROOT}/.env" ]]; then
     source "${PROJECT_ROOT}/.env"
 fi
 
+# Fallback biến ATLASSIAN_* nếu chưa có JIRA_*
+JIRA_BASE_URL="${JIRA_BASE_URL:-${ATLASSIAN_BASE_URL:-}}"
+JIRA_EMAIL="${JIRA_EMAIL:-${ATLASSIAN_EMAIL:-}}"
+JIRA_API_TOKEN="${JIRA_API_TOKEN:-${ATLASSIAN_API_TOKEN:-}}"
+
 # --- Kiểm tra biến môi trường ---
 echo ""
 echo "🔍 Kiểm tra biến môi trường..."

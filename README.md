@@ -45,10 +45,10 @@ Toàn bộ quy trình thiết lập từ A–Z (dành cho cả người mới b�
 👉 **[Cẩm Nang Cài Đặt Chi Tiết Cho Người Mới (Installation Guide)](docs/guides/installation-guide.md)**
 
 ### Cách 1: Cài đặt tự động 1 lệnh trên macOS (Khuyên dùng)
-Script sẽ tự động kiểm tra và cài đặt **Homebrew, Node.js (>=20), Colima, Docker CLI, Docker Compose**, tạo file cấu hình `.env`, khởi chạy container `n8n` (nạp sẵn 18 workflows) và đồng bộ toàn bộ kỹ năng vào AI Agent:
+Script sẽ tự động kiểm tra và cài đặt **Homebrew, Node.js (>=20), Colima, Docker CLI, Docker Compose**, tạo file cấu hình `.env`, khởi chạy container `n8n` (nạp sẵn 19 workflows) và đồng bộ toàn bộ kỹ năng vào AI Agent:
 ```bash
-git clone git@gitlab.example.com:my-project/agent-skills.git
-cd agent-skills
+git clone https://github.com/quangnt2697/Agent-skills.git
+cd Agent-skills
 npm run setup:mac     # Tự động cài Colima + Docker + n8n + đồng bộ Agent Plugins
 npm test              # Kiểm tra toàn bộ hệ thống
 ```
@@ -60,8 +60,8 @@ Nếu bạn muốn tự cài đặt và kiểm soát từng thành phần:
 brew install node colima docker docker-compose
 
 # 2. Tải dự án & cài đặt thư viện
-git clone git@gitlab.example.com:my-project/agent-skills.git
-cd agent-skills
+git clone https://github.com/quangnt2697/Agent-skills.git
+cd Agent-skills
 npm install
 
 # 3. Tạo các file cấu hình từ file mẫu (sau đó mở file .env để điền Jira/Slack token)
@@ -160,6 +160,7 @@ plugins/qa/
 | `/ba-stakeholder`             | Phỏng vấn multi-stakeholders                       |
 | `/ba-process {issueKey}`      | Vẽ process diagram (BPMN/Swim Lane)                |
 | `/ba-refine {issueKey}`       | Mài giũa ý tưởng, dựng mockup Prod-Twin, bổ sung Gherkin AC & cập nhật Jira ADF |
+| `/ba-push-jira {issueKey}`    | Đồng bộ spec và inline ADF images lên Jira issue   |
 
 ### QA Commands (`plugins/qa`)
 
@@ -318,7 +319,7 @@ Business Rule → Tech Spec → Code → Unit Test → Integration Test → E2E 
 ```
 
 ### 3. Autonomous Execution & Confidence Assessment
-Mặc định dừng sau mỗi artifact (Single-Task Hard Stop). Chuỗi tự động chuyển phase chỉ áp dụng trong Orchestrator (`/qa-full-pipeline`, `/e2e-qa-delivery`) hoặc khi có cờ `--auto`. Trong Orchestrator, chỉ dừng hỏi user trong 5 trường hợp danh sách đóng quy định tại [.agents/rules/autonomy-contract.md](.agents/rules/autonomy-contract.md). Confidence level dùng để đánh giá độ hoàn thiện và độ tin cậy của artifact tại [.agents/rules/confidence-level.md](.agents/rules/confidence-level.md).
+Mặc định dừng sau mỗi artifact (Single-Task Hard Stop). Chuỗi tự động chuyển phase chỉ áp dụng trong Orchestrator (`/qa-full-pipeline`, `/e2e-delivery`) hoặc khi có cờ `--auto`. Trong Orchestrator, chỉ dừng hỏi user trong 5 trường hợp danh sách đóng quy định tại [.agents/rules/autonomy-contract.md](.agents/rules/autonomy-contract.md). Confidence level dùng để đánh giá độ hoàn thiện và độ tin cậy của artifact tại [.agents/rules/confidence-level.md](.agents/rules/confidence-level.md).
 
 ### 4. Git Workflow Safety
 - Branch-based development (no direct commits to main)
@@ -347,7 +348,7 @@ Xem chi tiết: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **6 Plugins** (`ba-po`, `code-reviewer`, `core`, `fintech-data`, `qa`, `scrum-master`)
 - **6 vai trò** (BA/PO, QA/SDET, Scrum Master, Code Reviewer, Security Auditor, Web Performance Auditor)
 - **31 Skills** (10 BA + 6 QA + 4 SM + 4 CR/Sec/WebPerf + 1 Fintech Data + 6 Core Meta)
-- **29 Slash Commands**
+- **30 Slash Commands**
 - **40+ Reference Documents**
 - **Production-Ready** — Dùng trong real projects (Finance/Trading domain)
 

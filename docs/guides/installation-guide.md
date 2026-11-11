@@ -71,7 +71,7 @@ npm run setup:mac
 2. Tạo sẵn các file cấu hình cá nhân (`.env`, `config/projects.json`, `config/sm-config.yaml`) từ file mẫu.
 3. Cài đặt thư viện của dự án (`npm install`).
 4. Bật máy ảo `Colima`, tự động nạp chứng chỉ bảo mật mạng công ty (như `DNSE Santa CA`) từ macOS Keychain vào máy ảo để không bị chặn mạng khi tải Docker image.
-5. Khởi chạy container `agent-skills-n8n` và **tự động nạp + bật (`Active = ON`) toàn bộ 18 workflows**.
+5. Khởi chạy container `agent-skills-n8n` và **tự động nạp + bật (`Active = ON`) toàn bộ 19 workflows**.
 6. Đồng bộ toàn bộ 6 bộ kỹ năng (Plugins) vào công cụ AI trên máy của bạn.
 
 👉 *Sau khi chạy xong Tùy chọn A, bạn chỉ cần xem tiếp **Mục 1.3 (Điền thông tin vào file `.env`)** bên dưới.*
@@ -115,7 +115,7 @@ Sau khi lưu file `.env`, chạy lệnh sau:
 ```bash
 npm run n8n:setup
 ```
-*(Lệnh này sẽ tự động bật máy ảo Colima, nạp chứng chỉ mạng công ty, tải container `agent-skills-n8n` và kích hoạt sẵn 18 workflows).*
+*(Lệnh này sẽ tự động bật máy ảo Colima, nạp chứng chỉ mạng công ty, tải container `agent-skills-n8n` và kích hoạt sẵn 19 workflows).*
 
 > 💡 **Lưu ý:** Ở những lần sau, hoặc mỗi khi bạn vừa sửa nội dung file `.env`, chỉ cần chạy lệnh ngắn gọn:
 > ```bash
@@ -123,12 +123,12 @@ npm run n8n:setup
 > ```
 
 **Bước 1.5 — Kiểm tra xem cài đặt đã thành công 100% chưa:**
-1. **Kiểm tra giao diện Web của n8n:** Mở trình duyệt truy cập `http://localhost:5678` — bạn sẽ thấy n8n đang chạy với **18 workflows** đã được gạt công tắc sang trạng thái **Active (Published)**.
+1. **Kiểm tra giao diện Web của n8n:** Mở trình duyệt truy cập `http://localhost:5678` — bạn sẽ thấy n8n đang chạy với **19 workflows** đã được gạt công tắc sang trạng thái **Active (Published)**.
 2. **Chạy bộ kiểm định tự động của dự án:**
    ```bash
    npm test
    ```
-   Nếu màn hình hiện `PASSED` cho toàn bộ 9 cổng kiểm định, 207 unit tests và 159 skill evals là môi trường của bạn đã hoàn hảo!
+   Nếu màn hình hiện `PASSED` cho toàn bộ 10 cổng kiểm định, 228 unit tests và 159 skill evals là môi trường của bạn đã hoàn hảo!
 
 ---
 
@@ -141,7 +141,7 @@ npm run n8n:setup
 npm run setup:claude
 ```
 Lệnh này (idempotent, `setup:mac` đã chạy sẵn) làm 2 việc:
-1. Tạo symlink `~/.claude/skills/agent-skills` → thư mục repo. Claude Code nạp nó như plugin `agent-skills@skills-dir` ở **mọi project**, gồm 31 skills, 29 slash commands và 6 subagents (`agent-skills:ba-po`, `agent-skills:qa`, `agent-skills:code-reviewer`…).
+1. Tạo symlink `~/.claude/skills/agent-skills` → thư mục repo. Claude Code nạp nó như plugin `agent-skills@skills-dir` ở **mọi project**, gồm 31 skills, 30 slash commands và 6 subagents (`agent-skills:ba-po`, `agent-skills:qa`, `agent-skills:code-reviewer`…).
 2. Ghi `env.AGENT_SKILLS_HOME` vào `~/.claude/settings.json` để skill gọi được script của repo (`node ${AGENT_SKILLS_HOME}/scripts/...`) từ bất kỳ thư mục làm việc nào. Bản sao lưu: `settings.json.agent-skills.bak`.
 
 Vì là symlink nên **sửa nội dung skill trong repo là có hiệu lực ngay** ở mọi project (phiên mới). Thêm/xoá skill thì gõ `/reload-plugins` trong phiên đang mở. `git pull` cũng tự cập nhật, không cần chạy lại lệnh nào. Gỡ bỏ: `npm run unlink:claude`.
@@ -310,8 +310,8 @@ Tất cả các lệnh đều được tích hợp sẵn qua hệ thống `npm r
 | `npm run colima:start` | Khởi động máy ảo Colima (`--cpu 2 --memory 2 --disk 20`) |
 | `npm run colima:status` | Kiểm tra trạng thái máy ảo Colima |
 | `npm run colima:stop` | Dừng máy ảo Colima (giải phóng hoàn toàn RAM) |
-| `npm run n8n:setup` | Thiết lập tự động Colima + CA doanh nghiệp + Container n8n + Nạp 18 workflows |
-| `npm run n8n:up` | Khởi động container `agent-skills-n8n` & nạp + kích hoạt (`active = 1`) 18 workflows |
+| `npm run n8n:setup` | Thiết lập tự động Colima + CA doanh nghiệp + Container n8n + Nạp 19 workflows |
+| `npm run n8n:up` | Khởi động container `agent-skills-n8n` & nạp + kích hoạt (`active = 1`) 19 workflows |
 | `npm run n8n:logs` | Xem Logs thời gian thực của container `agent-skills-n8n` |
 | `npm run n8n:down` | Dừng và gỡ container `agent-skills-n8n` (dữ liệu vẫn giữ nguyên trong `.n8n-data/`) |
 | `npm run n8n:sync-nodes` | Đồng bộ code từ `scripts/n8n-nodes/` vào các file JSON trong `n8n-workflows/` |

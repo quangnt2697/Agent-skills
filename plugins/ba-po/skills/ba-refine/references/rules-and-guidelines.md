@@ -3,7 +3,7 @@
 Tài liệu này chứa các quy tắc, cấu hình và danh sách kiểm tra (checklist) phục vụ cho kỹ năng `ba-refine`. Bắt buộc tham chiếu khi thực thi phân tích.
 
 > 📖 **Quy tắc Chung về Xác thực, Cấu trúc Thư mục & Bộ lọc File:**
-> Xem chi tiết tại [../../../../references/atlassian-rules.md](../../../../references/atlassian-rules.md) về cấu hình `.env`, biến `ATLASSIAN_*`, cấu trúc thư mục `workspace/issues/{issueKey}/` và bộ lọc định dạng file.
+> Xem chi tiết tại [../../../../../references/atlassian-rules.md](../../../../../references/atlassian-rules.md) về cấu hình `.env`, biến `ATLASSIAN_*`, cấu trúc thư mục `workspace/issues/{issueKey}/` và bộ lọc định dạng file.
 
 ---
 

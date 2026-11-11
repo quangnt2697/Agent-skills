@@ -1,7 +1,7 @@
 # Quick-Start Checklist — ba-refine
 
 > **Mục đích:** Tờ nhắc cực ngắn. Đọc trước khi bắt đầu mỗi task refine.
-> Chi tiết từng bước tại `references/workflow-and-phases.md`.
+> Chi tiết từng bước tại [workflow-and-phases.md](workflow-and-phases.md).
 
 ---
 
@@ -88,7 +88,7 @@ Cần: `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`
 
 > Xem rubric stress-test: [refinement-criteria.md](refinement-criteria.md)
 > Xem lăng kính ideation: [frameworks.md](frameworks.md)
-> Nếu domain chứng khoán: đọc `references/securities-domain-rules.md`
+> Nếu domain chứng khoán: đọc [securities-domain-rules.md](../../../../../references/securities-domain-rules.md)
 
 ---
 

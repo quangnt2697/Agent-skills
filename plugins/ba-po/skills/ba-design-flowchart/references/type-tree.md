@@ -20,5 +20,3 @@
 
 ## Examples
 - `assets/example-tree.html` — minimal light
-- `assets/example-tree-dark.html` — minimal dark
-- `assets/example-tree-full.html` — full editorial

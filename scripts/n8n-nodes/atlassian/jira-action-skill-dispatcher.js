@@ -102,6 +102,7 @@ const webhookBase = `${n8nBase}/webhook/agent-trigger-skill`;
 const email = ($env && $env.ATLASSIAN_EMAIL) || '';
 const token = ($env && $env.ATLASSIAN_API_TOKEN) || '';
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
+const allowInsecureTls = String(((typeof $env !== 'undefined' && $env) ? $env.ALLOW_INSECURE_TLS : '') || process.env.ALLOW_INSECURE_TLS || '').toLowerCase() === 'true';
 
 let executionSuccess = false;
 let executionMessage = '';
@@ -139,7 +140,7 @@ async function fetchJiraIssueDirect(key) {
   }
 
   const inlineScript = `
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    ${allowInsecureTls ? "process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';" : ''}
     (async () => {
       const res = await fetch(${JSON.stringify(url)}, {
         method: 'GET',
@@ -326,7 +327,7 @@ try {
     if (fs.existsSync(pushScript)) {
       const pushRes = spawnSync('node', [pushScript, issueKey, targetSpec], {
         cwd: wsDir,
-        env: { ...process.env, NODE_TLS_REJECT_UNAUTHORIZED: '0' },
+        env: allowInsecureTls ? { ...process.env, NODE_TLS_REJECT_UNAUTHORIZED: '0' } : { ...process.env },
         encoding: 'utf8',
         timeout: 60000
       });
