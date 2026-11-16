@@ -1,0 +1,8 @@
+interface:
+  display_name: "QA Full Pipeline"
+  short_description: "Điều phối toàn bộ quy trình kiểm thử QA end-to-end từ phân tí..."
+  brand_color: "#10B981"
+  default_prompt: "Sử dụng $qa-full-pipeline để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: false

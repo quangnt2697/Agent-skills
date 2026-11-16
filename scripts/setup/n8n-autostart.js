@@ -464,8 +464,10 @@ export async function processSkillQueue({ rootDir = projectRoot } = {}) {
     envConfig.AGENT_CLI_PATH,
     path.join(os.homedir(), '.local', 'bin', 'agy'),
     '/opt/homebrew/bin/claude',
+    '/opt/homebrew/bin/codex',
     '/usr/local/bin/agy',
-    '/usr/local/bin/claude'
+    '/usr/local/bin/claude',
+    '/usr/local/bin/codex'
   ].filter(Boolean);
 
   const selectedCli = candidateClis.find((c) => fs.existsSync(c));
@@ -525,7 +527,17 @@ export async function processSkillQueue({ rootDir = projectRoot } = {}) {
     }
 
     const promptToRun = job.promptCmd || `/${job.skill} ${job.issueKey} --auto`;
-    const res = spawnSync(selectedCli, ['-p', promptToRun, '--dangerously-skip-permissions'], {
+    const isCodex = path.basename(selectedCli).toLowerCase() === 'codex';
+    const cliArgs = isCodex
+      ? [
+          'exec',
+          '--sandbox', 'workspace-write',
+          '-c', 'sandbox_workspace_write.network_access=true',
+          '--skip-git-repo-check',
+          `Sử dụng $${job.skill} để xử lý công việc ${job.issueKey} (chạy tự động).`
+        ]
+      : ['-p', promptToRun, '--dangerously-skip-permissions'];
+    const res = spawnSync(selectedCli, cliArgs, {
       cwd: rootDir,
       timeout: 300000,
       encoding: 'utf8'

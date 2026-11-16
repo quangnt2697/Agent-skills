@@ -1,7 +1,9 @@
 ---
 name: ba-process-modeling
-description: Vẽ sơ đồ quy trình nghiệp vụ (Business Process Diagram, Flowchart, Swimlane) trực quan hóa các bước xử lý, tác nhân và điểm quyết định.
-trigger: Khi cần trực quan hóa quy trình phức tạp, làm rõ workflow cho stakeholders hoặc nhận yêu cầu "vẽ quy trình", "process diagram".
+description: "Vẽ sơ đồ quy trình nghiệp vụ (Business Process Diagram, Flowchart, Swimlane) trực quan hóa các bước xử lý, tác nhân và điểm quyết định. Dùng khi cần trực quan hóa quy trình phức tạp, làm rõ workflow cho stakeholders hoặc nhận yêu cầu \"vẽ quy trình\", \"process diagram\"."
+metadata:
+  version: "1.0.0"
+  short-description: "Vẽ sơ đồ quy trình nghiệp vụ (Business Process Diagram, Flowc..."
 ---
 
 # Kỹ Năng Lập Mô Hình Quy Trình Nghiệp Vụ (ba-process-modeling)

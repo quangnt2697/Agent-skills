@@ -1,0 +1,8 @@
+interface:
+  display_name: "BA User Story Writing"
+  short_description: "Viết User Stories chuẩn mực theo nguyên tắc INVEST (\\\"As a"
+  brand_color: "#2563EB"
+  default_prompt: "Sử dụng $ba-user-story-writing để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

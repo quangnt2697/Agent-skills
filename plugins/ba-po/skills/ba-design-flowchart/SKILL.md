@@ -1,9 +1,9 @@
 ---
 name: ba-design-flowchart
-description: Tạo và render sơ đồ kiến trúc, nghiệp vụ (flowchart, sequence, ERD...) dạng HTML/SVG tĩnh với hệ thống thiết kế Editorial (không dùng Mermaid). Tích hợp khả năng xuất PNG/SVG qua Playwright.
-trigger: Khi cần vẽ flowchart, sequence, ERD, kiến trúc hệ thống, hoặc chuyển đổi file HTML diagram sang hình ảnh PNG/SVG để đính kèm Jira/báo cáo.
+description: "Tạo và render sơ đồ kiến trúc, nghiệp vụ (flowchart, sequence, ERD...) dạng HTML/SVG tĩnh với hệ thống thiết kế Editorial (không dùng Mermaid). Tích hợp khả năng xuất PNG/SVG qua Playwright. Dùng khi cần vẽ flowchart, sequence, ERD, kiến trúc hệ thống, hoặc chuyển đổi file HTML diagram sang hình ảnh PNG/SVG để đính kèm Jira/báo cáo."
 metadata:
   version: "3.1"
+  short-description: "Tạo và render sơ đồ kiến trúc, nghiệp vụ (flowchart, sequence..."
 ---
 
 # ba-design-flowchart

@@ -5,16 +5,45 @@
   },
   "plugins": [
     {
-      "name": "agent-skills",
-      "description": "Các kỹ năng kỹ thuật chuẩn production bao phủ mọi giai đoạn của quá trình phát triển phần mềm: đặc tả (spec), lên kế hoạch, xây dựng, xác minh, review, và ra mắt (ship).",
-      "source": {
-        "source": "local",
-        "path": "./"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
+      "name": "agent-skills-ba-po",
+      "description": "10 kỹ năng BA/PO: import Jira/Confluence, ba-refine 5 phần, phỏng vấn gaps, sơ đồ Editorial & UI Mockup Prod-Twin.",
+      "source": { "source": "local", "path": "./plugins/ba-po" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL", "products": ["CODEX"] },
+      "category": "Productivity"
+    },
+    {
+      "name": "agent-skills-qa",
+      "description": "6 kỹ năng QA/SDET: Checklist BVA, BDD Gherkin, Playwright/Pytest POM, 100% log, code2spec & Squash TM.",
+      "source": { "source": "local", "path": "./plugins/qa" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL", "products": ["CODEX"] },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "agent-skills-code-reviewer",
+      "description": "4 kỹ năng Review Code đa chiều, đơn giản hóa mã nguồn, OWASP Security Audit & Core Web Vitals.",
+      "source": { "source": "local", "path": "./plugins/code-reviewer" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL", "products": ["CODEX"] },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "agent-skills-scrum-master",
+      "description": "4 kỹ năng Scrum Master: Daily Standup tự động từ Jira, Impediment Triage, Sprint Planning & Retro.",
+      "source": { "source": "local", "path": "./plugins/scrum-master" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL", "products": ["CODEX"] },
+      "category": "Productivity"
+    },
+    {
+      "name": "agent-skills-fintech-data",
+      "description": "Kỹ năng đối chiếu dữ liệu thị trường KRX MDDS trên TimescaleDB (parity, value drift, NULL/dup, OHLC gap).",
+      "source": { "source": "local", "path": "./plugins/fintech-data" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL", "products": ["CODEX"] },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "agent-skills-core",
+      "description": "6 kỹ năng lõi: điều hướng skill, tối ưu context, session checkpoint, continuous learning, cross-validation & repo sync.",
+      "source": { "source": "local", "path": "./plugins/core" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL", "products": ["CODEX"] },
       "category": "Productivity"
     }
   ]

@@ -1,0 +1,25 @@
+{
+  "name": "agent-skills",
+  "version": "1.0.0",
+  "description": "Bộ kỹ năng sản xuất toàn diện cho AI Coding Agents — BA/PO, QA/SDET, Scrum Master, Code Review, Security & WebPerf chuẩn KRX.",
+  "author": {
+    "name": "QuangNT",
+    "url": "https://github.com/quangnt2697/Agent-skills"
+  },
+  "homepage": "https://github.com/quangnt2697/Agent-skills",
+  "repository": "https://github.com/quangnt2697/Agent-skills",
+  "license": "MIT",
+  "keywords": ["agent-skills", "ba", "qa", "sdet", "krx", "fintech", "scrum"],
+  "interface": {
+    "displayName": "Agent Skills",
+    "shortDescription": "BA/PO, QA/SDET, SM & Code Review chuẩn Fintech/KRX",
+    "developerName": "QuangNT",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "brandColor": "#2563EB",
+    "defaultPrompt": [
+      "Sử dụng $ba-spec để phân tích yêu cầu Jira và xuất spec/final.md.",
+      "Sử dụng $qa-test-design để thiết kế checklist và kịch bản Gherkin."
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "AGENT_SKILLS_HOME=\"/path/to/agent-skills\" bash \"/path/to/agent-skills/.agents/hooks/codex/session-start.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "AGENT_SKILLS_HOME=\"/path/to/agent-skills\" bash \"/path/to/agent-skills/.agents/hooks/codex/pre-tool-guard.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "AGENT_SKILLS_HOME=\"/path/to/agent-skills\" bash \"/path/to/agent-skills/.agents/hooks/codex/post-tool-guard.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "AGENT_SKILLS_HOME=\"/path/to/agent-skills\" bash \"/path/to/agent-skills/.agents/hooks/codex/session-end.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

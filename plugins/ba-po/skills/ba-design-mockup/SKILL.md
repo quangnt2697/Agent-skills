@@ -1,9 +1,9 @@
 ---
 name: ba-design-mockup
-description: Tự động trích xuất màn hình gốc từ link/Live DOM hoặc codebase (master/main), thiết kế giao diện đúng theo phong cách có sẵn ở độ phân giải tối thiểu Full HD (1920x1080), highlight phần thiết kế mới cho client (không chèn ghi chú QA/BA), review chống vỡ layout và render ảnh Retina 2x.
-trigger: Khi cần vẽ mockup giao diện WEB hoặc APP cho ba-refine, hoặc khi cần thiết kế giao diện chi tiết bám sát 100% phong cách gốc của hệ thống.
+description: "Tự động trích xuất màn hình gốc từ link/Live DOM hoặc codebase (master/main), thiết kế giao diện đúng theo phong cách có sẵn ở độ phân giải tối thiểu Full HD (1920x1080), highlight phần thiết kế mới cho client (không chèn ghi chú QA/BA), review chống vỡ layout và render ảnh Retina 2x. Dùng khi cần vẽ mockup giao diện WEB hoặc APP cho ba-refine, hoặc khi cần thiết kế giao diện chi tiết bám sát 100% phong cách gốc của hệ thống."
 metadata:
   version: "1.1.0"
+  short-description: "Tự động trích xuất màn hình gốc từ link/Live DOM hoặc codebas..."
 ---
 
 # ba-design-mockup

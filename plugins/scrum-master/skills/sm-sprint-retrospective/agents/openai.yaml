@@ -1,0 +1,8 @@
+interface:
+  display_name: "SM Sprint Retrospective"
+  short_description: "Kỹ năng tổng kết Sprint"
+  brand_color: "#F59E0B"
+  default_prompt: "Sử dụng $sm-sprint-retrospective để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: false

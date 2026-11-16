@@ -1,0 +1,22 @@
+{
+  "name": "agent-skills-ba-po",
+  "version": "1.0.0",
+  "description": "Bộ kỹ năng BA/PO: import Jira/Confluence, mài giũa spec 5 phần, phỏng vấn gaps, vẽ sơ đồ Editorial và dựng UI Mockup Prod-Twin.",
+  "author": { "name": "QuangNT", "url": "https://github.com/quangnt2697/Agent-skills" },
+  "homepage": "https://github.com/quangnt2697/Agent-skills",
+  "repository": "https://github.com/quangnt2697/Agent-skills",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Skills — BA/PO",
+    "shortDescription": "Phân tích yêu cầu, Mockup Prod-Twin & đồng bộ Jira",
+    "developerName": "QuangNT",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "brandColor": "#2563EB",
+    "defaultPrompt": [
+      "Sử dụng $ba-spec để import Jira issue và xuất spec/final.md.",
+      "Sử dụng $ba-refine để mài giũa ý tưởng thô thành Spec 5 phần."
+    ]
+  }
+}

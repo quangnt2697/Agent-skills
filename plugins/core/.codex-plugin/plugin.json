@@ -1,0 +1,22 @@
+{
+  "name": "agent-skills-core",
+  "version": "1.0.0",
+  "description": "Các siêu kỹ năng lõi: điều hướng skill, tối ưu ngữ cảnh, checkpoint phiên, học liên tục, cross-validation và đồng bộ nhóm repo.",
+  "author": { "name": "QuangNT", "url": "https://github.com/quangnt2697/Agent-skills" },
+  "homepage": "https://github.com/quangnt2697/Agent-skills",
+  "repository": "https://github.com/quangnt2697/Agent-skills",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Skills — Core & Meta",
+    "shortDescription": "Điều hướng skill, Checkpoint, Cross-Validation & Sync",
+    "developerName": "QuangNT",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "brandColor": "#64748B",
+    "defaultPrompt": [
+      "Sử dụng $meta-cross-validation để kiểm tra độ bao phủ Spec và Test.",
+      "Sử dụng $repo-group-sync để đồng bộ các repo microservice."
+    ]
+  }
+}

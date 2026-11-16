@@ -1,0 +1,22 @@
+{
+  "name": "agent-skills-qa",
+  "version": "1.0.0",
+  "description": "Bộ kỹ năng QA/SDET: thiết kế Checklist BVA & Gherkin, sinh code Playwright/Pytest POM, chạy test 100% log, dịch ngược code2spec và đồng bộ Squash TM.",
+  "author": { "name": "QuangNT", "url": "https://github.com/quangnt2697/Agent-skills" },
+  "homepage": "https://github.com/quangnt2697/Agent-skills",
+  "repository": "https://github.com/quangnt2697/Agent-skills",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Skills — QA/SDET",
+    "shortDescription": "Thiết kế & thực thi kiểm thử tự động chuẩn KRX",
+    "developerName": "QuangNT",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "brandColor": "#10B981",
+    "defaultPrompt": [
+      "Sử dụng $qa-test-design để thiết kế checklist và file .feature.",
+      "Sử dụng $qa-run-test để chạy kiểm thử và xuất báo cáo."
+    ]
+  }
+}

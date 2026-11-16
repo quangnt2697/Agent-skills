@@ -49,7 +49,7 @@ npm run n8n:up
    - Đọc dữ liệu kiểm thử từ Metabase UAT / TimescaleDB (`${METABASE_UAT_DB_TIMESCALE_ID}`). Cấm tự bịa giá vi phạm biên độ trần/sàn HOSE (±7%), HNX (±10%), UPCoM (±15%).
    - Bắt buộc dùng kiểu dữ liệu `Decimal` cho bước giá (tick size), cấm dùng float gây sai số số học.
 5. **Progressive Disclosure 3 Tầng:**
-   - Khi chỉnh sửa hoặc tạo mới Skill: Giữ `SKILL.md` tinh gọn (tối ưu <= 120 dòng, tối đa <= 180 dòng), chuyển tài liệu tham chiếu sâu vào `references/` và mẫu thực thi vào `assets/` / `templates/`.
+   - Khi chỉnh sửa hoặc tạo mới Skill: Giữ `SKILL.md` tinh gọn (tối ưu <= 120 dòng, tối đa <= 180 dòng), chuyển tài liệu tham chiếu sâu vào `references/` và mẫu thực thi/script vào `assets/`.
 6. **Bắt Rễ Dữ Liệu & Chống Kết Quả Giả (Grounding & Anti-Hallucination):**
    - 100% assertions, endpoint, mã lỗi, giá trị test BẮT BUỘC lấy từ nguồn thực tế (Jira, Spec, DB, Code). Cấm tự suy diễn.
    - Bằng chứng thực tế (Evidence-or-Stop): chỉ công bố xong khi có tool call thật (file tồn tại, exit code 0). Khi lỗi: báo cáo sự thật, cấm tự giả lập kết quả.

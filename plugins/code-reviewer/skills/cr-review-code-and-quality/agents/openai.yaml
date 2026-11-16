@@ -1,0 +1,8 @@
+interface:
+  display_name: "CR Review Code And Quality"
+  short_description: "Đánh giá code đa chiều (multi-axis code review) kết hợp kiểm..."
+  brand_color: "#8B5CF6"
+  default_prompt: "Sử dụng $cr-review-code-and-quality để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

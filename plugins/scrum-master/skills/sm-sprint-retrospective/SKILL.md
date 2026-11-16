@@ -1,8 +1,10 @@
 ---
 name: sm-sprint-retrospective
-description: Kỹ năng tổng kết Sprint. Phân tích Velocity, rút ra bài học cải tiến (What went well, What to improve) từ dữ liệu Jira.
-trigger: Use when kết thúc Sprint và cần đánh giá để cải tiến tiến trình.
-disable-auto-invoke: true
+description: "Kỹ năng tổng kết Sprint. Phân tích Velocity, rút ra bài học cải tiến (What went well, What to improve) từ dữ liệu Jira. Use when kết thúc Sprint và cần đánh giá để cải tiến tiến trình."
+metadata:
+  version: "1.0.0"
+  short-description: "Kỹ năng tổng kết Sprint"
+  disable-auto-invoke: true
 ---
 
 # sm-sprint-retrospective

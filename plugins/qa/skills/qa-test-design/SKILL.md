@@ -1,7 +1,9 @@
 ---
 name: qa-test-design
-description: Thiết kế bộ artifacts kiểm thử 2 giai đoạn chuẩn mực gồm Checklist kiểm thử thực thi (checklist.md) và kịch bản BDD Gherkin (.feature). Chỉ thiết kế — KHÔNG viết code test, KHÔNG thực thi test.
-trigger: Khi cần thiết kế test plan, tạo checklist kiểm thử hoặc viết kịch bản BDD Gherkin từ đặc tả nghiệp vụ. Trigger bằng lệnh /qa-test-design.
+description: "Thiết kế bộ artifacts kiểm thử 2 giai đoạn chuẩn mực gồm Checklist kiểm thử thực thi (checklist.md) và kịch bản BDD Gherkin (.feature). Chỉ thiết kế — KHÔNG viết code test, KHÔNG thực thi test. Dùng khi cần thiết kế test plan, tạo checklist kiểm thử hoặc viết kịch bản BDD Gherkin từ đặc tả nghiệp vụ."
+metadata:
+  version: "1.0.0"
+  short-description: "Thiết kế bộ artifacts kiểm thử 2 giai đoạn chuẩn mực gồm Chec..."
 ---
 
 # Kỹ Năng Thiết Kế Kiểm Thử QA (qa-test-design)

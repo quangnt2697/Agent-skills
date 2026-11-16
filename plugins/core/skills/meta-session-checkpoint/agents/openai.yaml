@@ -1,0 +1,8 @@
+interface:
+  display_name: "Meta Session Checkpoint"
+  short_description: "Kỹ năng Siêu cấp giúp Agent nén lại toàn bộ ngữ cảnh (context..."
+  brand_color: "#64748B"
+  default_prompt: "Sử dụng $meta-session-checkpoint để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

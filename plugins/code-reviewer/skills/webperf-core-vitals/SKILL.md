@@ -1,7 +1,9 @@
 ---
 name: webperf-core-vitals
-description: Đo lường và phân tích Core Web Vitals (LCP, FID, CLS) cùng các metrics hiệu năng khác.
-trigger: Sử dụng khi cần đánh giá performance của web app trước khi deploy hoặc sau khi có thay đổi lớn về UI/UX.
+description: "Đo lường và phân tích Core Web Vitals (LCP, FID, CLS) cùng các metrics hiệu năng khác. Dùng khi cần đánh giá performance của web app trước khi deploy hoặc sau khi có thay đổi lớn về UI/UX."
+metadata:
+  version: "1.0.0"
+  short-description: "Đo lường và phân tích Core Web Vitals (LCP, FID, CLS) cùng cá..."
 ---
 
 # Kỹ năng: Web Performance - Core Web Vitals

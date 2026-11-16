@@ -1,0 +1,8 @@
+interface:
+  display_name: "Meta Cross Validation"
+  short_description: "Xác thực truy vết traceability giữa Spec và Test Cases"
+  brand_color: "#64748B"
+  default_prompt: "Sử dụng $meta-cross-validation để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: false

@@ -8,9 +8,10 @@ Mỗi skill nằm trong một thư mục riêng biệt bên trong `plugins/<plug
 
 ```text
 plugins/<plugin-name>/skills/<skill-name>/
-  ├── SKILL.md       # Bắt buộc: Level 1 (Metadata) & Level 2 (Body tinh gọn 50–120 dòng)
-  ├── assets/        # Tùy chọn: Level 3 (Templates khung sườn, scripts thực thi .js/.py/.sh, HTML shells, dữ liệu mẫu)
-  └── references/    # Tùy chọn: Level 3 (Tài liệu logic, cẩm nang nghiệp vụ, checklists kiểm định, từ điển JSON)
+  ├── SKILL.md            # Bắt buộc: Level 1 (Metadata) & Level 2 (Body tinh gọn 50–120 dòng)
+  ├── agents/openai.yaml  # Tự động sinh qua `npm run build` (cấu hình giao diện & policy cho OpenAI Codex)
+  ├── assets/             # Tùy chọn: Level 3 (Templates khung sườn, scripts thực thi .js/.py/.sh, HTML shells, dữ liệu mẫu)
+  └── references/         # Tùy chọn: Level 3 (Tài liệu logic, cẩm nang nghiệp vụ, checklists kiểm định, từ điển JSON)
 ```
 
 - **`assets/` (Công cụ & Mẫu thực thi dùng ngay):** Chứa file mẫu (`.md`, `.json`, `.html`), script tự động (`.js`, `.py`, `.sh`), dữ liệu mock. Agent nạp vào để copy-paste hoặc chạy lệnh trực tiếp.
@@ -26,16 +27,18 @@ plugins/<plugin-name>/skills/<skill-name>/
 ```yaml
 ---
 name: skill-name-with-hyphens
-description: 1-2 câu ngắn gọn mô tả skill làm gì ở ngôi thứ ba và khi nào KHÔNG dùng.
-trigger: Điều kiện kích hoạt cụ thể (khi user yêu cầu X, chạy lệnh /cmd, hoặc cung cấp tệp Y).
-disable-auto-invoke: true # Chỉ bật khi skill có tác dụng phụ ghi ra hệ thống ngoài (Jira, Squash, Git)
+description: "1-2 câu ngắn gọn mô tả skill làm gì ở ngôi thứ ba. Dùng khi user yêu cầu X hoặc cung cấp tệp Y; KHÔNG dùng khi..."
+metadata:
+  version: "1.0.0"
+  short-description: "Mô tả ngắn <= 64 ký tự cho OpenAI Codex"
+  disable-auto-invoke: true # Chỉ bật khi skill có tác dụng phụ ghi ra hệ thống ngoài (Jira, Squash, Git)
 ---
 ```
 
 **Quy tắc:**
 - `name`: Kebab-case tiếng Anh viết thường, trùng khớp 100% với tên thư mục chứa skill.
-- `description`: Ngắn gọn 1–2 câu ở ngôi thứ ba, nêu rõ *Làm cái gì*, *Giải quyết bài toán gì* và *Phân biệt với skill lân cận*. Chứa các từ khóa thực tế người dùng hay gõ để bộ định tuyến (`npm run evals`) đạt tỷ lệ xếp hạng 1 ≥ 90%.
-- `trigger`: Khai báo tách biệt điều kiện kích hoạt cụ thể để Router nhận diện nhanh và chuẩn xác.
+- `description`: Ngắn gọn (<= 1024 ký tự) ở ngôi thứ ba, gộp cả điều kiện kích hoạt (`"Dùng khi..."` / `"Use when..."`) và phân biệt với skill lân cận. Chứa các từ khóa thực tế người dùng hay gõ để bộ định tuyến (`npm run evals`) đạt tỷ lệ xếp hạng 1 ≥ 90%. Không đặt khóa `trigger:` ở cấp gốc YAML để tương thích với Codex `quick_validate.py`.
+- `metadata`: Chứa `version`, `short-description` (<= 64 ký tự) và `disable-auto-invoke: true` (nếu cần chặn tự động gọi). Chạy `npm run build` để sinh `agents/openai.yaml`.
 
 ### Level 2: Body Tinh Gọn (Recommended Pattern)
 
@@ -106,18 +109,18 @@ Khi bạn cần xuất một plugin độc lập để mang sang cài đặt cho
 ```bash
 npm run plugin:export -- -p qa --tar
 ```
-Script `scripts/release/export-plugin.js` sẽ tự động đóng gói kèm các tài liệu dùng chung trong `references/` và viết lại các đường dẫn tương đối để plugin xuất ra hoạt động độc lập 100% mà không có bất kỳ liên kết gãy nào.
+Script `scripts/setup/export-plugin.js` sẽ tự động đóng gói kèm các tài liệu dùng chung trong `references/` và viết lại các đường dẫn tương đối để plugin xuất ra hoạt động độc lập 100% mà không có bất kỳ liên kết gãy nào.
 
 ---
 
 ## Hiệu Suất Ngữ Cảnh (Context Efficiency) & Quy Ước Script
 
-1. **Giữ `SKILL.md` tinh gọn (50–120 dòng):** Được kiểm soát ngân sách tự động qua Gate 9 (`npm run validate:tokens`).
+1. **Giữ `SKILL.md` tinh gọn (50–120 dòng):** Được kiểm soát ngân sách tự động qua Gate 10 (`npm run validate:tokens`).
 2. **Ưu tiên gọi CLI Script trong `assets/` hoặc `scripts/` hơn là nhúng code dài trong Markdown:** Việc chạy một script Node.js/Bash chỉ tiêu tốn token ở phần kết quả in ra (`stdout`), trong khi nhúng hàng trăm dòng code vào `SKILL.md` sẽ làm tốn token ở mọi lần nạp skill.
 3. **Quy ước viết Script thực thi (`assets/*.sh`, `assets/*.js`):**
    - Với Bash script: dùng `#!/usr/bin/env bash` và `set -euo pipefail` để dừng ngay khi gặp lỗi (fail-fast).
    - Luôn kiểm tra tham số đầu vào và trả về mã thoát (`exit code`) khác 0 khi thất bại để Agent nhận diện chính xác theo nguyên tắc *Evidence-or-Stop*.
-   - Mọi đường dẫn tới script trong `SKILL.md` đều được kiểm tra sự tồn tại tự động bởi Gate 5 (`npm run validate:refs`).
+   - Mọi đường dẫn tới script trong `SKILL.md` đều được kiểm tra sự tồn tại tự động bởi Gate 6 (`npm run validate:refs`).
 
 ---
 
@@ -136,7 +139,7 @@ Khi một kỹ năng cần phối hợp với kỹ năng khác trong hệ sinh t
 ## Checklist Kiểm Định Bắt Buộc Cho Mọi `SKILL.md`
 
 - [ ] File nằm tại `plugins/<plugin-name>/skills/<skill-name>/SKILL.md`
-- [ ] YAML frontmatter hợp lệ gồm `name`, `description`, `trigger` (và `disable-auto-invoke: true` nếu có tác dụng phụ bên ngoài)
+- [ ] YAML frontmatter hợp lệ gồm `name`, `description` (chứa điều kiện kích hoạt `"Dùng khi..."`), `metadata:` (kèm `disable-auto-invoke: true` nếu có tác dụng phụ bên ngoài) và đã sinh `agents/openai.yaml` qua `npm run build`
 - [ ] Có khối trích dẫn `Grounding (grounding-contract)`
 - [ ] Có mục `## Input Bắt Buộc & Bằng Chứng Hoàn Thành`
 - [ ] Có mục phân định rõ `Khi KHÔNG sử dụng`

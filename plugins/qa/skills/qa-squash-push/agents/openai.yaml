@@ -1,0 +1,8 @@
+interface:
+  display_name: "QA Squash Push"
+  short_description: "Tự động đồng bộ kịch bản kiểm thử BDD Gherkin ("
+  brand_color: "#10B981"
+  default_prompt: "Sử dụng $qa-squash-push để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: false

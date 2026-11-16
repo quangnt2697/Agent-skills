@@ -214,6 +214,16 @@ mkdir -p ~/.gemini/config/plugins/
 cp -r /path/to/agent-skills-${options.plugin} ~/.gemini/config/plugins/
 \`\`\`
 
+### Cách 3: Sử dụng trong OpenAI Codex CLI / App
+Sao chép hoặc tạo symlink từng thư mục kỹ năng trong \`skills/\` vào \`~/.codex/skills/\`:
+\`\`\`bash
+mkdir -p ~/.codex/skills
+for s in /path/to/agent-skills-${options.plugin}/skills/*; do
+  ln -sfn "$s" ~/.codex/skills/"$(basename "$s")"
+done
+\`\`\`
+*(Khuyên dùng \`npm run setup:codex\` từ monorepo khi chạy các skill có tham chiếu dùng chung sang \`references/\` gốc.)*
+
 ---
 
 ## 📖 Kiểm Tra Hoạt Động

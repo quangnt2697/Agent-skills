@@ -1,8 +1,10 @@
 ---
 name: qa-run-test
-description: 'Chạy test automation hiện có (Pytest), regression test, chạy lại test sau khi fix bug. ĐO LƯỜNG trung thực, KHÔNG sửa lỗi. Báo cáo kết quả nguyên văn (Pass/Fail/Error/Timeout) và đề xuất skill xử lý nếu có lỗi.'
-trigger: Khi cần chạy test automation, regression test, hoặc thẩm định kết quả sau fix bug. Trigger bằng /qa-run-test.
-disable-auto-invoke: true
+description: "Chạy test automation hiện có (Pytest), regression test, chạy lại test sau khi fix bug. ĐO LƯỜNG trung thực, KHÔNG sửa lỗi. Báo cáo kết quả nguyên văn (Pass/Fail/Error/Timeout) và đề xuất skill xử lý nếu có lỗi. Dùng khi cần chạy test automation, regression test, hoặc thẩm định kết quả sau fix bug. Trigger bằng /qa-run-test."
+metadata:
+  version: "1.0.0"
+  short-description: "Chạy test automation hiện có (Pytest), regression test, chạy..."
+  disable-auto-invoke: true
 ---
 
 # Kỹ Năng Thực Thi Kiểm Thử Tự Động (qa-run-test)

@@ -1,7 +1,9 @@
 ---
 name: ba-gap-analysis
-description: Phân tích khoảng cách giữa trạng thái hiện tại (AS-IS) và trạng thái mục tiêu (TO-BE), xác định tính năng thiếu hụt và lộ trình chuyển đổi.
-trigger: Khi cần phân tích AS-IS vs TO-BE, lập lộ trình bù đắp khoảng cách nghiệp vụ hoặc nhận yêu cầu "phân tích gap", "gap analysis".
+description: "Phân tích khoảng cách giữa trạng thái hiện tại (AS-IS) và trạng thái mục tiêu (TO-BE), xác định tính năng thiếu hụt và lộ trình chuyển đổi. Dùng khi cần phân tích AS-IS vs TO-BE, lập lộ trình bù đắp khoảng cách nghiệp vụ hoặc nhận yêu cầu \"phân tích gap\", \"gap analysis\"."
+metadata:
+  version: "1.0.0"
+  short-description: "Phân tích khoảng cách giữa trạng thái hiện tại (AS-IS) và trạ..."
 ---
 
 # Kỹ Năng Phân Tích Khoảng Cách (ba-gap-analysis)

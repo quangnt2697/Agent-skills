@@ -1,0 +1,8 @@
+interface:
+  display_name: "QA Auto Design"
+  short_description: "Sinh mã kiểm thử tự động (Automation Test Code) từ kịch bản G..."
+  brand_color: "#10B981"
+  default_prompt: "Sử dụng $qa-auto-design để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

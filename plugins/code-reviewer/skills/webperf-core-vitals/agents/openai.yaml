@@ -1,0 +1,8 @@
+interface:
+  display_name: "Webperf Core Vitals"
+  short_description: "Đo lường và phân tích Core Web Vitals (LCP, FID, CLS) cùng cá..."
+  brand_color: "#8B5CF6"
+  default_prompt: "Sử dụng $webperf-core-vitals để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

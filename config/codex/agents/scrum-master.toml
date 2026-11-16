@@ -1,0 +1,4 @@
+# Scrum Master Role (Tier 2: Artifact-Only trong workspace/sprints/)
+sandbox_mode = "workspace-write"
+model_reasoning_effort = "medium"
+model_instructions_file = "../../../plugins/scrum-master/agents/scrum-master.md"

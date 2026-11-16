@@ -1,0 +1,8 @@
+interface:
+  display_name: "CR Code Simplification"
+  short_description: "Đơn giản hóa, simplify code cho rõ ràng, giảm bớt sự phức tạp..."
+  brand_color: "#8B5CF6"
+  default_prompt: "Sử dụng $cr-code-simplification để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: false

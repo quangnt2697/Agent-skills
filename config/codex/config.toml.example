@@ -1,0 +1,62 @@
+# ==============================================================================
+# OpenAI Codex CLI / App Configuration Template (config/codex/config.toml.example)
+# Lưu ý: `npm run setup:codex` sẽ tự động điền AGENT_SKILLS_HOME, 6 [agents.*],
+# [features] hooks/multi_agent và ~/.codex/hooks.json với đường dẫn tuyệt đối chuẩn.
+# File này đóng vai trò mẫu tham khảo đầy đủ cho cấu hình toàn cục hoặc từng project.
+# ==============================================================================
+
+project_doc_max_bytes = 65536
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "live"
+
+[features]
+multi_agent = true
+hooks = true
+skill_search = true
+default_mode_request_user_input = true
+
+# Cho phép mạng khi chạy các skill kết nối Jira, n8n, Metabase UAT.
+# Thư mục repo đang mở mặc định có quyền ghi trong sandbox `workspace-write`;
+# chỉ thêm `writable_roots = ["/abs/path"]` (đường dẫn tuyệt đối) khi cần ghi ngoài cwd.
+[sandbox_workspace_write]
+network_access = true
+
+[shell_environment_policy]
+inherit = "all"
+
+[shell_environment_policy.set]
+# Cập nhật tự động bởi: npm run setup:codex
+AGENT_SKILLS_HOME = "/path/to/agent-skills"
+
+# ── Custom Agent Roles (Cưỡng chế Permission Tiers bằng OS Sandbox) ────────────
+# Lưu ý: Codex phân giải `config_file` theo thư mục chứa `config.toml`, nên cần dùng
+# đường dẫn tuyệt đối khi đặt tại ~/.codex/config.toml (do `npm run setup:codex` tự điền).
+[agents.ba_po]
+description = "Chuyên gia Phân tích Nghiệp vụ & Product Owner (Tier 2 Artifact-Only)"
+config_file = "/path/to/agent-skills/config/codex/agents/ba-po.toml"
+
+[agents.qa]
+description = "Kỹ sư Tự động hóa Kiểm thử QA/SDET (Tier 2/3)"
+config_file = "/path/to/agent-skills/config/codex/agents/qa.toml"
+
+[agents.code_reviewer]
+description = "Kỹ sư Review Code & Chất lượng (Tier 1 Read-Only)"
+config_file = "/path/to/agent-skills/config/codex/agents/code-reviewer.toml"
+
+[agents.security_auditor]
+description = "Kỹ sư Kiểm toán Bảo mật OWASP (Tier 1 Read-Only)"
+config_file = "/path/to/agent-skills/config/codex/agents/security-auditor.toml"
+
+[agents.webperf_auditor]
+description = "Kỹ sư Kiểm toán Hiệu năng Web Core Vitals (Tier 1 Read-Only)"
+config_file = "/path/to/agent-skills/config/codex/agents/webperf-auditor.toml"
+
+[agents.scrum_master]
+description = "Scrum Master điều phối Sprint, Daily Standup & Impediment (Tier 2 Artifact-Only)"
+config_file = "/path/to/agent-skills/config/codex/agents/scrum-master.toml"
+
+# ── Lifecycle Hooks ───────────────────────────────────────────────────────────
+# Trên OpenAI Codex CLI 0.166+, Lifecycle Hooks được khai báo trong `~/.codex/hooks.json`
+# (hoặc `<repo>/.codex/hooks.json`), KHÔNG khai báo bằng `[hooks]` trong config.toml.
+# Xem mẫu tại `config/codex/hooks.json.example` hoặc chạy `npm run setup:codex` để tự cài.

@@ -1,7 +1,9 @@
 ---
 name: ba-backlog-prioritization
-description: Prioritize list of features, sắp xếp backlog, đánh giá business value and urgency theo các framework (MoSCoW, WSJF) để lên kế hoạch Sprint/Release.
-trigger: Khi có danh sách User Stories cần xếp độ ưu tiên, lập lộ trình phát hành hoặc nhận yêu cầu "ưu tiên backlog", "sắp xếp theo priority".
+description: "Prioritize list of features, sắp xếp backlog, đánh giá business value and urgency theo các framework (MoSCoW, WSJF) để lên kế hoạch Sprint/Release. Dùng khi có danh sách User Stories cần xếp độ ưu tiên, lập lộ trình phát hành hoặc nhận yêu cầu \"ưu tiên backlog\", \"sắp xếp theo priority\"."
+metadata:
+  version: "1.0.0"
+  short-description: "Prioritize list of features, sắp xếp backlog, đánh giá busine..."
 ---
 
 # Kỹ Năng Ưu Tiên Hóa Backlog (ba-backlog-prioritization)

@@ -1,0 +1,22 @@
+{
+  "name": "agent-skills-code-reviewer",
+  "version": "1.0.0",
+  "description": "Bộ kỹ năng Review Code đa chiều, đơn giản hóa mã nguồn, kiểm toán bảo mật OWASP Top 10 và đo Core Web Vitals.",
+  "author": { "name": "QuangNT", "url": "https://github.com/quangnt2697/Agent-skills" },
+  "homepage": "https://github.com/quangnt2697/Agent-skills",
+  "repository": "https://github.com/quangnt2697/Agent-skills",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Skills — Code Review & Security",
+    "shortDescription": "Review code đa chiều, OWASP Security & WebPerf",
+    "developerName": "QuangNT",
+    "category": "Developer Tools",
+    "capabilities": ["Read"],
+    "brandColor": "#8B5CF6",
+    "defaultPrompt": [
+      "Sử dụng $cr-review-code-and-quality để đánh giá chất lượng MR/diff.",
+      "Sử dụng $security-code-audit để quét lỗ hổng bảo mật."
+    ]
+  }
+}

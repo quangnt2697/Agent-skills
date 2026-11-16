@@ -189,17 +189,30 @@ function dispatchToAgentCliOrHostQueue(skillName, key, extraNote = '') {
     ($env && $env.AGENT_CLI_PATH),
     '/opt/homebrew/bin/agy',
     '/opt/homebrew/bin/claude',
+    '/opt/homebrew/bin/codex',
     '/usr/local/bin/agy',
     '/usr/local/bin/claude',
+    '/usr/local/bin/codex',
     'agy',
-    'claude'
+    'claude',
+    'codex'
   ].filter(Boolean);
 
   for (const cli of candidateClis) {
     try {
       const check = spawnSync('which', [cli], { encoding: 'utf8' });
       if (check.status === 0 || fs.existsSync(cli)) {
-        const runCmd = spawnSync(cli, ['-p', promptCmd, '--dangerously-skip-permissions'], {
+        const isCodex = path.basename(cli).toLowerCase() === 'codex';
+        const cliArgs = isCodex
+          ? [
+              'exec',
+              '--sandbox', 'workspace-write',
+              '-c', 'sandbox_workspace_write.network_access=true',
+              '--skip-git-repo-check',
+              `Sử dụng $${skillName} để xử lý công việc ${key}${autoFlag ? ' (tự động toàn trình)' : ''}.`
+            ]
+          : ['-p', promptCmd, '--dangerously-skip-permissions'];
+        const runCmd = spawnSync(cli, cliArgs, {
           cwd: wsDir,
           timeout: 180000,
           encoding: 'utf8'

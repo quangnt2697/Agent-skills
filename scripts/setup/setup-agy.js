@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Script tự động thiết lập / gỡ bỏ các plugin của agent-skills
- * vào thư mục cấu hình toàn cục của Gemini CLI và Google Antigravity (~/.gemini/config/plugins/).
+ * Script cài đặt / gỡ bỏ agent-skills dành riêng cho Google Antigravity IDE
+ * và Gemini CLI (~/.gemini/config/).
  *
  * Cách dùng:
- *   node scripts/setup/setup-plugins.js            # Sao chép/đồng bộ plugin (khuyên dùng cho Antigravity IDE)
- *   node scripts/setup/setup-plugins.js --symlink  # Tạo symlink (dành cho phát triển trên Gemini CLI)
- *   node scripts/setup/setup-plugins.js --unlink   # Gỡ bỏ các plugin đã cài
+ *   npm run setup:agy                  # Sao chép/đồng bộ vào ~/.gemini/config/ (mặc định cho Antigravity IDE)
+ *   npm run setup:agy -- --symlink     # Tạo symlink (dành cho phát triển trên Gemini CLI)
+ *   npm run unlink:agy                 # Gỡ bỏ toàn bộ plugins/rules khỏi ~/.gemini/config/
  */
 
 import fs from 'node:fs';
@@ -36,11 +36,11 @@ const sourceAgentsMd = path.join(projectRoot, 'AGENTS.md');
 
 console.log('='.repeat(65));
 if (isUnlink) {
-  console.log('  GỠ BỎ AGENT-SKILLS PLUGINS KHỎI GEMINI / ANTIGRAVITY');
+  console.log('  [ANTIGRAVITY / GEMINI CLI] GỠ BỎ AGENT-SKILLS KHỎI ~/.gemini/config');
 } else if (isSymlink) {
-  console.log('  THIẾT LẬP SYMLINKS AGENT-SKILLS (CHẾ ĐỘ PHÁT TRIỂN)');
+  console.log('  [ANTIGRAVITY / GEMINI CLI] THIẾT LẬP SYMLINKS AGENT-SKILLS (DEV)');
 } else {
-  console.log('  ĐỒNG BỘ AGENT-SKILLS PLUGINS CHO GEMINI / ANTIGRAVITY');
+  console.log('  [ANTIGRAVITY / GEMINI CLI] CÀI ĐẶT & ĐỒNG BỘ AGENT-SKILLS');
 }
 console.log('='.repeat(65));
 console.log(`Thư mục config: ${targetConfigDir}`);
@@ -238,9 +238,9 @@ console.log('');
 if (isUnlink) {
   console.log(`Hoàn tất gỡ bỏ ${successCount}/${subPlugins.length} plugins.`);
 } else {
-  console.log(`🎉 Hoàn tất thiết lập ${successCount}/${subPlugins.length} plugins!`);
+  console.log(`🎉 [Antigravity / Gemini CLI] Hoàn tất thiết lập ${successCount}/${subPlugins.length} plugins!`);
   console.log('');
-  console.log('📌 Giờ đây khi mở bất kỳ project nào trong Gemini CLI hoặc Antigravity,');
-  console.log('   tất cả 30 skills và 6 agents sẽ được nhận diện và thực thi an toàn (không bị chặn ranh giới file).');
+  console.log('📌 Giờ đây khi mở bất kỳ project nào trong Google Antigravity IDE hoặc Gemini CLI,');
+  console.log('   tất cả 31 skills và 6 agents sẽ được nhận diện và thực thi an toàn (không bị chặn ranh giới file).');
 }
 console.log('='.repeat(65));

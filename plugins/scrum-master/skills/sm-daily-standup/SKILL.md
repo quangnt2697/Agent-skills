@@ -1,8 +1,10 @@
 ---
 name: sm-daily-standup
-description: Điều hành Daily Standup tự động, thống kê tiến độ Sprint từ Jira, phân tích cân bằng tải cho DEV và lưu báo cáo vào workspace trace.
-trigger: Khi cần tạo báo cáo daily standup tự động cho team hoặc phân tích cân bằng tải giữa các lập trình viên.
-disable-auto-invoke: true
+description: "Điều hành Daily Standup tự động, thống kê tiến độ Sprint từ Jira, phân tích cân bằng tải cho DEV và lưu báo cáo vào workspace trace. Dùng khi cần tạo báo cáo daily standup tự động cho team hoặc phân tích cân bằng tải giữa các lập trình viên."
+metadata:
+  version: "1.0.0"
+  short-description: "Điều hành Daily Standup tự động, thống kê tiến độ Sprint từ J..."
+  disable-auto-invoke: true
 ---
 
 # Kỹ Năng Điều Hành Daily Standup (sm-daily-standup)

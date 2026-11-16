@@ -1,0 +1,4 @@
+# BA / PO Agent Role (Tier 2: Artifact-Only trong workspace/)
+sandbox_mode = "workspace-write"
+model_reasoning_effort = "high"
+model_instructions_file = "../../../plugins/ba-po/agents/ba-po.md"

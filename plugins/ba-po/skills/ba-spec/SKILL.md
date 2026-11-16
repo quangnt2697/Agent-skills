@@ -1,7 +1,9 @@
 ---
 name: ba-spec
-description: Tự động import, scan tài liệu tham chiếu từ Jira issue lần đầu hoặc Confluence để tạo Business-Spec (*-final.md) bàn giao cho QA và DEV. KHÔNG dùng cho Tech-Spec kiến trúc, KHÔNG code, KHÔNG làm test cases.
-trigger: Khi cần phân tích một Jira Issue lần đầu tiên hoặc import tài liệu Confluence để tạo Business-Spec. Kích hoạt bằng lệnh /ba-spec {issueKey} hoặc /ba-spec confluence {keyword}.
+description: "Tự động import, scan tài liệu tham chiếu từ Jira issue lần đầu hoặc Confluence để tạo Business-Spec (spec/final.md) bàn giao cho QA và DEV. Dùng khi nhận Jira issueKey hoặc trang Confluence mới cần tổng hợp spec; KHÔNG dùng cho Tech-Spec kiến trúc, KHÔNG code, KHÔNG làm test cases."
+metadata:
+  version: "1.0.0"
+  short-description: "Tự động import, scan tài liệu tham chiếu từ Jira issue lần đầ..."
 ---
 
 # Kỹ năng Phân Tích & Viết Spec (ba-spec)

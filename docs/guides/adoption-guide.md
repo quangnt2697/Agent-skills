@@ -1,6 +1,6 @@
 # Cẩm Nang Áp Dụng Agent Skills Trong Doanh Nghiệp (Adoption Guide)
 
-Tài liệu này hướng dẫn cách áp dụng bộ kỹ năng **agent-skills** (Nhánh `main`: **6 Plugins, 31 Skills, 29 Slash Commands, 6 Personas**) vào quy trình phát triển và đảm bảo chất lượng phần mềm thực tế theo mô hình Agile/Scrum trong lĩnh vực Tài chính — Chứng khoán (KRX).
+Tài liệu này hướng dẫn cách áp dụng bộ kỹ năng **agent-skills** (Nhánh `main`: **6 Plugins, 31 Skills, 30 Slash Commands, 6 Personas**) vào quy trình phát triển và đảm bảo chất lượng phần mềm thực tế theo mô hình Agile/Scrum trong lĩnh vực Tài chính — Chứng khoán (KRX).
 
 ---
 

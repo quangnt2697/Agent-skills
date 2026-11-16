@@ -8,10 +8,16 @@ Thư mục này chứa toàn bộ tài liệu hướng dẫn cài đặt, vận 
 
 ### [guides/installation-guide.md](guides/installation-guide.md)
 Hướng dẫn cài đặt từ A–Z trên máy mới và tích hợp vào đa nền tảng AI Agent:
-- Cài đặt và đồng bộ 6 plugins (31 skills, 29 commands, 6 subagents) cho **Claude Code**, **Antigravity IDE**, **Gemini CLI**.
+- Cài đặt và đồng bộ 6 plugins (31 skills, 30 commands, 6 subagents) riêng biệt cho từng nền tảng: **Google Antigravity / Gemini CLI** (`npm run setup:agy`), **Claude Code** (`npm run setup:claude`), **OpenAI Codex** (`npm run setup:codex`) và **ChatGPT** (`npm run chatgpt:export`).
 - Kích hoạt Git Protection Hooks (`npm run setup:hooks`).
 - Khởi chạy và quản lý n8n Fast-Path Container qua Colima + Docker Compose (`npm run colima:start && npm run n8n:up`).
 - Đóng gói và xuất (export) plugin độc lập sang các repo microservice (`npm run plugin:export`).
+
+### [guides/codex-and-chatgpt-guide.md](guides/codex-and-chatgpt-guide.md)
+Hướng dẫn chuyên sâu vận hành trên hệ sinh thái OpenAI:
+- Cài đặt 31 skills cho **OpenAI Codex CLI / App** (`npm run setup:codex`), cấu hình 6 Agent Roles (`sandbox_mode = "read-only"` cho Tier 1) và Lifecycle Hooks (`.agents/hooks/codex/`).
+- Lưu ý bảo mật & giới hạn mạng/Secrets trên **Codex Cloud**.
+- Đóng gói và sử dụng 7 Knowledge Files trên **ChatGPT Projects & Custom GPTs** (`npm run chatgpt:export`) kết hợp Code Interpreter và Canvas.
 
 ### [guides/adoption-guide.md](guides/adoption-guide.md)
 Cẩm nang áp dụng Agent Skills vào quy trình thực tế của đội ngũ:
@@ -35,7 +41,7 @@ Cấu phẫu chi tiết của một kỹ năng (`SKILL.md`). Bắt buộc đọc
 - Nguyên tắc tiết kiệm ngữ cảnh (Context Efficiency) và chống ngụy biện (Anti-rationalization).
 
 ### [guides/create-new-plugin.md](guides/create-new-plugin.md)
-Quy trình chuẩn 5 bước (SOP) để khởi tạo một Plugin mới, định nghĩa Persona, viết `SKILL.md`, biên dịch lệnh `.toml` qua `npm run build`, viết bộ test `evals/cases/*.json` và vượt qua 9 cổng kiểm định `npm test`.
+Quy trình chuẩn 5 bước (SOP) để khởi tạo một Plugin mới, định nghĩa Persona, viết `SKILL.md`, biên dịch lệnh `.toml` & `agents/openai.yaml` qua `npm run build`, viết bộ test `evals/cases/*.json` và vượt qua 10 cổng kiểm định `npm test`.
 
 ### [guides/definition-of-done.md](guides/definition-of-done.md)
 Tiêu chuẩn Hoàn thành (Definition of Done) cố định toàn dự án đối với mọi bản bàn giao: Tính đúng đắn, Chất lượng mã nguồn, Tính tích hợp, Tài liệu hóa và Sẵn sàng triển khai.
@@ -76,8 +82,8 @@ Tiêu chuẩn Hoàn thành (Definition of Done) cố định toàn dự án đ�
 ## 📖 3. Tài Liệu Gốc Liên Quan Ở Thư Mục Root
 
 - [../AGENTS.md](../AGENTS.md) — Luật cốt lõi (Core Rules), Vai trò và Quy trình Pipeline của toàn bộ Workspace.
-- [../CATALOG.md](../CATALOG.md) — Bảng tra cứu nhanh toàn diện 31 Skills, 29 Slash Commands, 6 Personas và bộ lệnh CLI.
+- [../CATALOG.md](../CATALOG.md) — Bảng tra cứu nhanh toàn diện 31 Skills, 30 Slash Commands, 6 Personas và bộ lệnh CLI.
 - [../LEARNING-ROADMAP.md](../LEARNING-ROADMAP.md) — Lộ trình làm chủ hệ thống theo từng cột mốc (15 phút, 1 ngày, 1 tuần).
 - [../CLAUDE.md](../CLAUDE.md) — Chỉ dẫn dự án và các bất biến kiến trúc dành cho Agent.
-- [../CONTRIBUTING.md](../CONTRIBUTING.md) — Hướng dẫn đóng góp và 9 cổng kiểm định tự động (`npm test`).
+- [../CONTRIBUTING.md](../CONTRIBUTING.md) — Hướng dẫn đóng góp và 10 cổng kiểm định tự động (`npm test`).
 - [../README.md](../README.md) — Tổng quan kho lưu trữ và bắt đầu nhanh.

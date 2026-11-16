@@ -1,0 +1,8 @@
+interface:
+  display_name: "BA Spec"
+  short_description: "Tự động import, scan tài liệu tham chiếu từ Jira issue lần đầ..."
+  brand_color: "#2563EB"
+  default_prompt: "Sử dụng $ba-spec để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,8 @@
+interface:
+  display_name: "Meta Continuous Learning"
+  short_description: "Kỹ năng Siêu cấp giúp Agent tự động đúc kết bài học, sai lầm,..."
+  brand_color: "#64748B"
+  default_prompt: "Sử dụng $meta-continuous-learning để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

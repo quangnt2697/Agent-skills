@@ -1,0 +1,8 @@
+interface:
+  display_name: "Security Code Audit"
+  short_description: "Quét mã nguồn để phát hiện lỗ hổng bảo mật theo chuẩn OWASP T..."
+  brand_color: "#8B5CF6"
+  default_prompt: "Sử dụng $security-code-audit để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

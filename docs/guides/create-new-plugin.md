@@ -1,6 +1,6 @@
 # Hướng Dẫn Tạo Plugin & Kỹ Năng Mới Theo Chuẩn Progressive Disclosure
 
-Tài liệu này là quy trình chuẩn (Standard Operating Procedure) hướng dẫn từng bước tạo mới một **Plugin** và các **Skills** bên trong hệ thống `agent-skills`, tuân thủ nghiêm ngặt kiến trúc **Progressive Disclosure (Lazy Loading 3 tầng)** và **9 cổng kiểm định tự động (`npm test`)** nhằm tối ưu hóa chi phí token, giảm độ trễ và triệt tiêu ảo giác (Anti-Hallucination).
+Tất cả quy trình tuân thủ nghiêm ngặt kiến trúc **Progressive Disclosure (Lazy Loading 3 tầng)** và **10 cổng kiểm định tự động (`npm test`)** nhằm tối ưu hóa chi phí token, giảm độ trễ và triệt tiêu ảo giác (Anti-Hallucination).
 
 ---
 
@@ -11,6 +11,8 @@ Mỗi plugin đại diện cho một vai trò chuyên môn (Persona) hoặc mộ
 ```text
 plugins/<plugin-name>/
 ├── plugin.json                          # Bắt buộc: Metadata định danh plugin (version đồng bộ toàn repo)
+├── .codex-plugin/plugin.json            # Tùy chọn: Manifest chuẩn OpenAI Codex Plugin (trỏ skills: "./skills/")
+├── .claude-plugin/plugin.json           # Tùy chọn: Manifest chuẩn Claude Code Plugin
 ├── agents/                              # Bắt buộc: Định nghĩa Persona Subagent
 │   └── <role-name>.md                   # System prompt, boundaries, danh sách kỹ năng và composition
 ├── commands/                            # Tùy chọn: Nguồn sự thật duy nhất (SSoT) cho Slash commands (.toml)
@@ -20,6 +22,7 @@ plugins/<plugin-name>/
 └── skills/                              # Bắt buộc: Các kỹ năng nghiệp vụ theo chuẩn 3 tầng
     └── <skill-name>/                    # Tên kỹ năng dạng kebab-case
         ├── SKILL.md                     # Level 1 (Metadata) & Level 2 (Body tinh gọn + Grounding + Few-shot)
+        ├── agents/openai.yaml           # Tự động sinh qua `npm run build` (cấu hình hiển thị & policy cho Codex)
         ├── assets/                      # Level 3: File mẫu, templates, scripts thực thi (.js, .py, .sh), HTML shells
         │   ├── template.md
         │   └── helper-script.js
@@ -36,7 +39,7 @@ Mỗi kỹ năng (`skill`) bên trong Plugin **BẮT BUỘC** phải tuân thủ
 
 | Tầng | Tên gọi | File/Thư mục | Khi nào nạp vào Agent? | Nội dung chứa | Giới hạn dung lượng |
 |:---:|:---|:---|:---|:---|:---:|
-| **Level 1** | **Metadata** | Frontmatter của `SKILL.md` | Luôn nạp trong bộ định tuyến (Router) | `name`, `description` (1–2 câu ngôi thứ ba), `trigger` rõ ràng | < 15 dòng |
+| **Level 1** | **Metadata** | Frontmatter của `SKILL.md` | Luôn nạp trong bộ định tuyến (Router) | `name`, `description` (chứa điều kiện kích hoạt `"Dùng khi..."`), `metadata:` (`version`, `short-description`, `disable-auto-invoke`) | < 15 dòng |
 | **Level 2** | **Body** | Phần thân của `SKILL.md` | Khi Agent khớp nhu cầu với Skill này | Khối `Grounding`, `Input Bắt Buộc`, Quy trình tóm tắt, Links Level 3, Few-shot | 50 – 120 dòng |
 | **Level 3** | **Chi tiết thực thi** | `assets/` và `references/` | Chỉ mở khi Agent chạy tới bước cần dùng | Mẫu thực thi, scripts CLI, quy chuẩn chuyên sâu | Tùy nhu cầu |
 
@@ -55,7 +58,7 @@ Mỗi kỹ năng (`skill`) bên trong Plugin **BẮT BUỘC** phải tuân thủ
    npm run setup:hooks
    git checkout -b feature/<ten-skill-hoac-plugin>
    ```
-2. Nếu tạo plugin mới, tạo thư mục `plugins/<plugin-name>/` và file `plugin.json` (version phải khớp với `package.json` gốc để vượt qua Gate 3 `validate:versions`):
+2. Nếu tạo plugin mới, tạo thư mục `plugins/<plugin-name>/` và file `plugin.json` (version phải khớp với các manifest còn lại để vượt qua Gate 4 `validate:versions`):
    ```json
    {
      "name": "agent-skills-<plugin-name>",
@@ -100,8 +103,10 @@ Mọi file `SKILL.md` mới **BẮT BUỘC** có khối `Grounding`, mục `## I
 ```markdown
 ---
 name: <skill-name>
-description: <1-2 câu ngôi thứ ba: Làm cái gì và giải quyết bài toán gì. Không dùng cho trường hợp ngoại lệ nào>.
-trigger: <Điều kiện kích hoạt cụ thể khi user yêu cầu X, chạy lệnh /cmd, hoặc cung cấp file Y>.
+description: "<1-2 câu ngôi thứ ba: Làm cái gì và giải quyết bài toán gì. Dùng khi người dùng yêu cầu X hoặc cung cấp tệp Y; KHÔNG dùng cho trường hợp ngoại lệ nào.>"
+metadata:
+  version: "1.0.0"
+  short-description: "<Mô tả siêu ngắn <= 64 ký tự cho OpenAI Codex>"
 ---
 
 # [Tên Kỹ Năng Tiếng Việt] (`<skill-name>`)
@@ -135,7 +140,7 @@ trigger: <Điều kiện kích hoạt cụ thể khi user yêu cầu X, chạy l
 - **Output:** `<Định dạng kết quả đầu ra mẫu>`
 ```
 
-> 📌 **Lưu ý về `disable-auto-invoke: true`:** Nếu skill có tác dụng phụ ghi lên hệ thống bên ngoài (push Jira, push Squash TM, pull/sync Git), bắt buộc thêm dòng `disable-auto-invoke: true` vào YAML frontmatter.
+> 📌 **Lưu ý về `disable-auto-invoke: true`:** Nếu skill có tác dụng phụ ghi lên hệ thống bên ngoài (push Jira, push Squash TM, pull/sync Git), bắt buộc thêm `disable-auto-invoke: true` vào khối `metadata:` trong YAML frontmatter để khi chạy `npm run build`, file `agents/openai.yaml` tự động đặt `allow_implicit_invocation: false`.
 
 ---
 
@@ -153,7 +158,7 @@ Kích hoạt vai trò `<role-name>` và thực hiện kỹ năng `<skill-name>` 
 """
 ```
 
-Sau đó chạy lệnh build để hệ thống **tự động sinh ra** file `.claude/commands/<cmd-name>.md` tương ứng (đảm bảo vượt qua Gate 2 `validate:commands`):
+Sau đó chạy lệnh build để hệ thống **tự động sinh ra** file `.claude/commands/<cmd-name>.md` và `skills/<skill-name>/agents/openai.yaml` tương ứng (đảm bảo vượt qua Gate 2 `validate:commands` và hỗ trợ OpenAI Codex):
 ```bash
 npm run build
 ```
@@ -194,8 +199,8 @@ npm run build
    ```
 2. **Cập nhật các tài liệu chỉ mục của dự án:**
    - Cập nhật danh sách và số lượng skills trong [CATALOG.md](../../CATALOG.md), [AGENTS.md](../../AGENTS.md), [README.md](../../README.md) và [CLAUDE.md](../../CLAUDE.md).
-3. **Chạy toàn bộ 9 cổng kiểm định tự động + Unit Tests + Evals:**
+3. **Chạy toàn bộ 10 cổng kiểm định tự động + Unit Tests + Evals:**
    ```bash
    npm test
    ```
-   Tất cả 9 cổng validators (`skills`, `commands`, `versions`, `links`, `refs`, `paths`, `icons`, `nodes`, `tokens`), bộ unit tests và ngưỡng `trigger rank-1 rate ≥ 90%` đều phải báo **PASSED** trước khi commit và merge.
+   Tất cả 10 cổng validators (`skills`, `commands`, `scope`, `versions`, `links`, `refs`, `paths`, `icons`, `nodes`, `tokens`), bộ unit tests và ngưỡng `trigger rank-1 rate ≥ 90%` đều phải báo **PASSED** trước khi commit và merge.

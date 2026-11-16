@@ -1,0 +1,8 @@
+interface:
+  display_name: "BA Design Flowchart"
+  short_description: "Tạo và render sơ đồ kiến trúc, nghiệp vụ (flowchart, sequence..."
+  brand_color: "#2563EB"
+  default_prompt: "Sử dụng $ba-design-flowchart để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

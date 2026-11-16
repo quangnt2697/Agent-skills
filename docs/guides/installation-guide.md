@@ -62,8 +62,8 @@ Bạn có thể chọn **Tùy chọn A (Tự động 1 lệnh)** hoặc **Tùy c
 ### Tùy chọn A: Cài Đặt Tự Động Bằng 1 Lệnh (Khuyên dùng cho macOS)
 Copy và chạy 3 dòng lệnh sau trong Terminal:
 ```bash
-git clone git@gitlab.example.com:my-project/agent-skills.git
-cd agent-skills
+git clone https://github.com/quangnt2697/Agent-skills.git
+cd Agent-skills
 npm run setup:mac
 ```
 **Lệnh `npm run setup:mac` sẽ tự động làm thay bạn toàn bộ các việc sau:**
@@ -72,7 +72,7 @@ npm run setup:mac
 3. Cài đặt thư viện của dự án (`npm install`).
 4. Bật máy ảo `Colima`, tự động nạp chứng chỉ bảo mật mạng công ty (như `DNSE Santa CA`) từ macOS Keychain vào máy ảo để không bị chặn mạng khi tải Docker image.
 5. Khởi chạy container `agent-skills-n8n` và **tự động nạp + bật (`Active = ON`) toàn bộ 19 workflows**.
-6. Đồng bộ toàn bộ 6 bộ kỹ năng (Plugins) vào công cụ AI trên máy của bạn.
+6. Tự động cài đặt toàn bộ 31 kỹ năng vào cả 3 nền tảng AI trên máy: **Google Antigravity / Gemini CLI** (`npm run setup:agy`), **Claude Code** (`npm run setup:claude`) và **OpenAI Codex** (`npm run setup:codex`).
 
 👉 *Sau khi chạy xong Tùy chọn A, bạn chỉ cần xem tiếp **Mục 1.3 (Điền thông tin vào file `.env`)** bên dưới.*
 
@@ -83,8 +83,8 @@ Nếu bạn muốn tự tay thực hiện từng bước hoặc đang dùng Wind
 
 **Bước 1.1 — Tải dự án và cài đặt thư viện:**
 ```bash
-git clone git@gitlab.example.com:my-project/agent-skills.git
-cd agent-skills
+git clone https://github.com/quangnt2697/Agent-skills.git
+cd Agent-skills
 npm install
 ```
 
@@ -110,7 +110,7 @@ Dưới đây là cách lấy từng thông tin cơ bản để điền vào `.e
 | `PROJECT_SCAN_DIRS` | Tuỳ chọn | Đường dẫn thư mục chứa các repo code khác trên máy bạn để Agent tự động đồng bộ mỗi sáng (phân tách bằng dấu phẩy). |
 | `SQUASH_*`, `METABASE_*`, `GITLAB_*` | Tuỳ chọn | Chỉ cần điền nếu vai trò của bạn có dùng đến Squash TM (QA) hoặc Metabase TimescaleDB. |
 
-**Bước 1.4 — Khởi động Colima & Container n8n (Nạp tự động 18 Workflows):**
+**Bước 1.4 — Khởi động Colima & Container n8n (Nạp tự động 19 Workflows):**
 Sau khi lưu file `.env`, chạy lệnh sau:
 ```bash
 npm run n8n:setup
@@ -128,15 +128,31 @@ npm run n8n:setup
    ```bash
    npm test
    ```
-   Nếu màn hình hiện `PASSED` cho toàn bộ 10 cổng kiểm định, 228 unit tests và 159 skill evals là môi trường của bạn đã hoàn hảo!
+   Nếu màn hình hiện `PASSED` cho toàn bộ 10 cổng kiểm định, 243 unit tests và 159 skill evals là môi trường của bạn đã hoàn hảo!
 
 ---
 
-## Giai đoạn 2: Tích hợp AI Agent CLI (Claude Code / Antigravity / Gemini)
+## Giai đoạn 2: Cài Đặt Kỹ Năng Vào AI Agent Bạn Đang Dùng (`setup:agy` · `setup:claude` · `setup:codex` · `chatgpt:export`)
 
-`agent-skills` gồm 6 plugins chuyên biệt (`ba-po`, `qa`, `code-reviewer`, `scrum-master`, `fintech-data`, `core`). Cần đồng bộ chúng vào cấu hình của Agent CLI để sử dụng.
+Mỗi công cụ AI Agent có một lệnh cài đặt và gỡ bỏ riêng biệt để bạn biết chính xác mình đang thao tác trên nền tảng nào:
 
-### Claude Code (toàn máy, tự cập nhật)
+| Nền tảng AI Agent | Lệnh cài đặt | Lệnh gỡ bỏ | Thư mục đích trên máy |
+|---|---|---|---|
+| **Google Antigravity IDE / Gemini CLI** | `npm run setup:agy` | `npm run unlink:agy` | `~/.gemini/config/` |
+| **Claude Code (CLI / IDE)** | `npm run setup:claude` | `npm run unlink:claude` | `~/.claude/skills/agent-skills` & `~/.claude/settings.json` |
+| **OpenAI Codex (CLI / Desktop / IDE)** | `npm run setup:codex` | `npm run unlink:codex` | `~/.codex/skills/*` & `~/.codex/config.toml` |
+| **ChatGPT (Projects / Custom GPTs)** | `npm run chatgpt:export` | *(Xoá `dist/chatgpt/`)* | `dist/chatgpt/` (7 file đóng gói sẵn) |
+
+### 2.1. Google Antigravity IDE / Gemini CLI
+```bash
+npm run setup:agy
+```
+- Sao chép 6 bộ plugins (`ba-po`, `qa`, `code-reviewer`, `scrum-master`, `fintech-data`, `core`), `references/`, `scripts/{lib,sync}/`, `AGENTS.md` và `.agents/rules/` vào `~/.gemini/config/` (chế độ sao chép giúp Antigravity IDE đọc file ở mọi dự án mà không bị chặn ranh giới workspace).
+- Dành cho người phát triển skill trên Gemini CLI muốn sửa trong repo có hiệu lực ngay: `npm run setup:agy -- --symlink`.
+- Gỡ bỏ: `npm run unlink:agy`.
+- > **Lưu ý:** Sau khi `git pull` bản mới về repo, hãy chạy lại `npm run setup:agy` để cập nhật bản sao trong `~/.gemini/config/`.
+
+### 2.2. Claude Code (toàn máy, tự cập nhật qua symlink)
 ```bash
 npm run setup:claude
 ```
@@ -144,38 +160,35 @@ Lệnh này (idempotent, `setup:mac` đã chạy sẵn) làm 2 việc:
 1. Tạo symlink `~/.claude/skills/agent-skills` → thư mục repo. Claude Code nạp nó như plugin `agent-skills@skills-dir` ở **mọi project**, gồm 31 skills, 30 slash commands và 6 subagents (`agent-skills:ba-po`, `agent-skills:qa`, `agent-skills:code-reviewer`…).
 2. Ghi `env.AGENT_SKILLS_HOME` vào `~/.claude/settings.json` để skill gọi được script của repo (`node ${AGENT_SKILLS_HOME}/scripts/...`) từ bất kỳ thư mục làm việc nào. Bản sao lưu: `settings.json.agent-skills.bak`.
 
-Vì là symlink nên **sửa nội dung skill trong repo là có hiệu lực ngay** ở mọi project (phiên mới). Thêm/xoá skill thì gõ `/reload-plugins` trong phiên đang mở. `git pull` cũng tự cập nhật, không cần chạy lại lệnh nào. Gỡ bỏ: `npm run unlink:claude`.
+Vì là symlink nên **sửa nội dung skill hoặc `git pull` trong repo là có hiệu lực ngay** ở mọi project (phiên mới). Thêm/xoá skill thì gõ `/reload-plugins` trong phiên đang mở. Gỡ bỏ: `npm run unlink:claude`.
 
-> Mỗi máy chỉ cần chạy 1 lần. Nếu di chuyển thư mục repo, chạy lại `npm run setup:claude`.
-> Không cài qua `/plugin marketplace add`: cách đó sao chép plugin vào cache và phải `plugin update` mỗi lần đổi.
-
-### Antigravity / Gemini CLI
-**Bước 1: Đồng bộ plugins & rules** *(Tuỳ chọn A đã chạy sẵn bước này; chạy lại khi pull bản mới)*
+### 2.3. OpenAI Codex CLI / App (toàn máy, tự cập nhật qua symlink)
 ```bash
-npm run setup:plugins
+npm run setup:codex
 ```
-Lệnh này sao chép plugins, `references/`, một số script, `AGENTS.md` và `.agents/rules/` vào `~/.gemini/config/`. Gỡ bỏ: `npm run unlink:plugins`. Dành cho người phát triển skill: `npm run setup:plugins -- --symlink` để sửa trong repo là có hiệu lực ngay.
+1. Tạo 31 symlink trực tiếp từ `plugins/*/skills/*` vào `~/.codex/skills/` (giữ nguyên độ sâu 4 cấp thực tế để mọi liên kết `../../../../references/...` hoạt động chính xác).
+2. Symlink `AGENTS.md` sang `~/.codex/AGENTS.md` và ghi `AGENT_SKILLS_HOME` + 6 Agent Roles (`ba_po`, `qa`, `code_reviewer`, `security_auditor`, `webperf_auditor`, `scrum_master` — Tier 1 ép `sandbox_mode = "read-only"`) vào `~/.codex/config.toml`.
+3. Tự động cài đặt/merge 4 Lifecycle Hooks bảo vệ (`SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`) vào `~/.codex/hooks.json` kèm đường dẫn tuyệt đối (dùng `npm run setup:codex -- --no-hooks` nếu chỉ muốn cài skills + `AGENTS.md`).
+4. Gõ `$skill-name` (ví dụ `$ba-spec`, `$qa-test-design`) trong Codex để kích hoạt. Gỡ bỏ: `npm run unlink:codex`. Xem chi tiết cấu hình nâng cao & ChatGPT tại [codex-and-chatgpt-guide.md](codex-and-chatgpt-guide.md).
 
-> Sau khi `git pull`, hãy chạy lại `npm run setup:plugins` để máy bạn nhận skills mới.
-
-**Bước 2: Kích hoạt Git Protection Hooks (Bắt buộc)**
+### 2.4. Kích hoạt Git Protection Hooks (Bắt buộc khi đóng góp vào repo này)
 ```bash
 npm run setup:hooks
 ```
 Lệnh này cài đặt pre-commit hook chặn commit trực tiếp vào nhánh `main`/`master` (tuân thủ Rule 5.1). Kỹ sư bắt buộc làm việc trên nhánh tính năng (`git checkout -b feature/<tên-nhánh>`).
 
-**Bước 3: Dùng trong khung chat của agent** — mở lại Agent CLI/IDE, gõ các slash command:
+### 2.5. Các lệnh mẫu trong khung chat của Agent
 
-| Lệnh | Chức năng | Skill tương ứng |
-|---|---|---|
-| `/ba-spec {issueKey}` | Import & phân tích Jira/Confluence → Business-Spec | `ba-spec` |
-| `/qa-test-design {issueKey}` | Thiết kế Checklist BVA/EP và kịch bản BDD Gherkin | `qa-test-design` |
-| `/qa-auto-design {issueKey}` | Sinh mã test automation Playwright/Pytest chuẩn POM | `qa-auto-design` |
-| `/qa-run-test {issueKey}` | Chạy test automation và ghi log 100% request/response | `qa-run-test` |
-| `/cr-review` | Review code đa chiều (kiến trúc, logic, hiệu năng, an ninh) | `cr-review-code-and-quality` |
-| `/security-audit` | Quét lỗ hổng bảo mật mã nguồn theo chuẩn OWASP Top 10 | `security-code-audit` |
+| Lệnh (Antigravity / Claude) | Lệnh (OpenAI Codex) | Chức năng | Skill tương ứng |
+|---|---|---|---|
+| `/ba-spec {issueKey}` | `$ba-spec {issueKey}` | Import & phân tích Jira/Confluence → Business-Spec | `ba-spec` |
+| `/qa-test-design {issueKey}` | `$qa-test-design {issueKey}` | Thiết kế Checklist BVA/EP và kịch bản BDD Gherkin | `qa-test-design` |
+| `/qa-auto-design {issueKey}` | `$qa-auto-design {issueKey}` | Sinh mã test automation Playwright/Pytest chuẩn POM | `qa-auto-design` |
+| `/qa-run-test {issueKey}` | `$qa-run-test {issueKey}` | Chạy test automation và ghi log 100% request/response | `qa-run-test` |
+| `/cr-review` | `$cr-review-code-and-quality` | Review code đa chiều (kiến trúc, logic, hiệu năng, an ninh) | `cr-review-code-and-quality` |
+| `/security-audit` | `$security-code-audit` | Quét lỗ hổng bảo mật mã nguồn theo chuẩn OWASP Top 10 | `security-code-audit` |
 
-Nếu agent không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` có đủ 6 plugin và khởi động lại agent.
+Nếu Antigravity không nhận ra lệnh: kiểm tra `ls ~/.gemini/config/plugins` có đủ 6 plugin và khởi động lại IDE.
 
 ---
 
@@ -203,7 +216,7 @@ Từ giờ trở đi, mỗi khi bạn khởi động lại máy Mac hoặc đăn
 | **Sáng bật máy lên làm việc** *(nếu đã bật `npm run autostart:on`)* | *Không cần gõ gì, máy tự chạy ngầm và tự bù standup nếu mở trễ!* |
 | **Sáng bật máy lên làm việc** *(nếu chưa bật autostart)* | `npm run colima:start && npm run n8n:up` |
 | **Vừa sửa thông tin trong file `.env`** *(ví dụ đổi token Jira/Slack)* | `npm run n8n:up` *(container sẽ tự nạp lại `.env` mới)* |
-| **Vừa kéo code mới của dự án về (`git pull`)** | `npm run setup:plugins && npm run n8n:up` |
+| **Vừa kéo code mới của dự án về (`git pull`)** | `npm run setup:agy && npm run n8n:up` *(Claude/Codex dùng symlink nên tự cập nhật)* |
 | **Muốn xem n8n đang chạy gì / có báo lỗi gì không** | `npm run n8n:logs` *(nhấn `Ctrl + C` để thoát xem log)* |
 | **Hết giờ làm, muốn tắt hẳn n8n và giải phóng 2GB RAM của máy ảo** | `npm run n8n:down && npm run colima:stop` |
 
@@ -292,9 +305,10 @@ ln -s /path/to/agent-skills/plugins/qa /path/to/my-microservice/.agents/plugins/
 | `EADDRINUSE :5678` | Cổng 5678 đang bị chiếm bởi tiến trình khác | Kiểm tra `lsof -i :5678`; dừng container bằng `npm run n8n:down` |
 | Workflow n8n lỗi âm thầm | Lỗi chỉ ghi vào execution của n8n | Xem `workspace/.n8n-errors.log` (do Global Error Handler ghi) hoặc `npm run n8n:logs` |
 | Sửa `.env` nhưng không có tác dụng | Container n8n chưa nạp lại cấu hình | Chạy `npm run n8n:up` (hoặc `docker-compose up -d`) để cập nhật container |
-| Agent không thấy skills mới sau `git pull` | Chưa đồng bộ plugins | Gemini/Antigravity: `npm run setup:plugins` rồi khởi động lại agent. Claude Code: `/reload-plugins` |
-| Claude Code ở project khác không thấy skill | Chưa chạy setup Claude | `npm run setup:claude`, rồi mở phiên mới. Kiểm tra: `claude plugin list` phải có `agent-skills@skills-dir ✔ loaded` |
-| Skill báo `No such file` khi gọi script ở project khác | Thiếu `AGENT_SKILLS_HOME` | `npm run setup:claude` rồi mở phiên mới; kiểm tra `~/.claude/settings.json` có `env.AGENT_SKILLS_HOME` |
+| Agent không thấy skills mới sau `git pull` | Chưa đồng bộ bản sao vào Antigravity | Antigravity / Gemini CLI: chạy `npm run setup:agy` rồi khởi động lại IDE. Claude Code: gõ `/reload-plugins`. Codex: mở phiên mới |
+| Claude Code ở project khác không thấy skill | Chưa chạy setup Claude | Chạy `npm run setup:claude`, rồi mở phiên mới. Kiểm tra: `claude plugin list` phải có `agent-skills@skills-dir ✔ loaded` |
+| Codex ở project khác không thấy skill | Chưa chạy setup Codex | Chạy `npm run setup:codex`, rồi mở phiên mới. Kiểm tra: `ls ~/.codex/skills` có đủ 31 symlinks |
+| Skill báo `No such file` khi gọi script ở project khác | Thiếu `AGENT_SKILLS_HOME` | Chạy `npm run setup:claude` (cho Claude) hoặc `npm run setup:codex` (cho Codex) rồi mở phiên mới |
 
 ---
 
@@ -304,6 +318,10 @@ Tất cả các lệnh đều được tích hợp sẵn qua hệ thống `npm r
 
 | Lệnh npm | Chức năng |
 |---|---|
+| `npm run setup:agy` / `npm run unlink:agy` | Cài đặt / gỡ bỏ 6 plugins & rules vào `~/.gemini/config/` cho **Google Antigravity IDE & Gemini CLI** |
+| `npm run setup:claude` / `npm run unlink:claude` | Cài đặt / gỡ bỏ symlink `agent-skills` vào `~/.claude/` cho **Claude Code** |
+| `npm run setup:codex` / `npm run unlink:codex` | Cài đặt / gỡ bỏ 31 skill symlinks, `AGENTS.md`, 6 Agent Roles & `hooks.json` vào `~/.codex/` cho **OpenAI Codex CLI & App** |
+| `npm run chatgpt:export` | Đóng gói 7 file tri thức vào `dist/chatgpt/` cho **ChatGPT Projects & Custom GPTs** |
 | `npm run autostart:on` | Cài đặt & kích hoạt LaunchAgent tự bật Colima + n8n khi login macOS |
 | `npm run autostart:status` | Kiểm tra trạng thái LaunchAgent, Colima, n8n và Standup hôm nay |
 | `npm run autostart:off` | Gỡ bỏ LaunchAgent và tắt chế độ tự khởi động |

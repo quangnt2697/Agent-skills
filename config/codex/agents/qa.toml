@@ -1,0 +1,4 @@
+# QA / SDET Agent Role (Tier 2/3: Test artifacts & automation code)
+sandbox_mode = "workspace-write"
+model_reasoning_effort = "high"
+model_instructions_file = "../../../plugins/qa/agents/qa.md"

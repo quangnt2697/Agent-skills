@@ -1,8 +1,10 @@
 ---
 name: repo-group-sync
-description: Đồng bộ, fetch và pull mã nguồn mới nhất của các dự án hoặc microservices trong group về máy cục bộ. Bỏ qua repo dirty (chỉ reset working tree khi có --force), fetch toàn bộ các nhánh (--all --prune) và pull code toàn bộ các nhánh local (--ff-only). Sử dụng khi cần cập nhật code trước khi phân tích spec, viết test, review code hoặc chạy pipeline e2e-delivery.
-trigger: Khi cần cập nhật code mới nhất của các repo/microservices trong group trước khi phân tích spec, viết test hoặc review code. Trigger bằng lệnh /repo-group-sync.
-disable-auto-invoke: true
+description: "Đồng bộ, fetch và pull mã nguồn mới nhất của các dự án hoặc microservices trong group về máy cục bộ. Bỏ qua repo dirty (chỉ reset working tree khi có --force), fetch toàn bộ các nhánh (--all --prune) và pull code toàn bộ các nhánh local (--ff-only). Sử dụng khi cần cập nhật code trước khi phân tích spec, viết test, review code hoặc chạy pipeline e2e-delivery."
+metadata:
+  version: "1.0.0"
+  short-description: "Đồng bộ, fetch và pull mã nguồn mới nhất của các dự án hoặc m..."
+  disable-auto-invoke: true
 ---
 
 # Kỹ Năng: Đồng Bộ Mã Nguồn Dự Án (repo-group-sync)

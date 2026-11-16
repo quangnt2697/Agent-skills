@@ -1,0 +1,21 @@
+{
+  "name": "agent-skills-fintech-data",
+  "version": "1.0.0",
+  "description": "Bộ kỹ năng đối chiếu dữ liệu thị trường KRX MDDS trên TimescaleDB (count parity, value drift, NULL/duplicate, late data, OHLC gap).",
+  "author": { "name": "QuangNT", "url": "https://github.com/quangnt2697/Agent-skills" },
+  "homepage": "https://github.com/quangnt2697/Agent-skills",
+  "repository": "https://github.com/quangnt2697/Agent-skills",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Skills — Fintech Data",
+    "shortDescription": "Đối chiếu dữ liệu KRX MDDS trên TimescaleDB",
+    "developerName": "QuangNT",
+    "category": "Developer Tools",
+    "capabilities": ["Read"],
+    "brandColor": "#06B6D4",
+    "defaultPrompt": [
+      "Sử dụng $db-timescale-reconciler để đối chiếu dữ liệu KRX MDDS."
+    ]
+  }
+}

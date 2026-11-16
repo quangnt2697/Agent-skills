@@ -1,8 +1,10 @@
 ---
 name: sm-impediment-triage
-description: Kỹ năng xử lý sự cố. Lấy danh sách ticket bị treo quá lâu trên một trạng thái (Open, In progress, Ready to test...) và đề xuất chiến lược giải quyết.
-trigger: Use when cần khơi thông luồng công việc Sprint.
-disable-auto-invoke: true
+description: "Kỹ năng xử lý sự cố. Lấy danh sách ticket bị treo quá lâu trên một trạng thái (Open, In progress, Ready to test...) và đề xuất chiến lược giải quyết. Use when cần khơi thông luồng công việc Sprint."
+metadata:
+  version: "1.0.0"
+  short-description: "Kỹ năng xử lý sự cố. Lấy danh sách ticket bị treo quá lâu trê..."
+  disable-auto-invoke: true
 ---
 
 # sm-impediment-triage

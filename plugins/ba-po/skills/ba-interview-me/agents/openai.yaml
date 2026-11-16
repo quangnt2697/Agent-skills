@@ -1,0 +1,8 @@
+interface:
+  display_name: "BA Interview Me"
+  short_description: "Phỏng vấn tương tác từng-câu-hỏi-một để khai thác nhu cầu thự..."
+  brand_color: "#2563EB"
+  default_prompt: "Sử dụng $ba-interview-me để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

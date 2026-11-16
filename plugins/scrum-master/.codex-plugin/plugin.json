@@ -1,0 +1,22 @@
+{
+  "name": "agent-skills-scrum-master",
+  "version": "1.0.0",
+  "description": "Bộ kỹ năng Scrum Master: Daily Standup tự động từ Jira, xử lý Impediment, Sprint Planning và Sprint Retrospective.",
+  "author": { "name": "QuangNT", "url": "https://github.com/quangnt2697/Agent-skills" },
+  "homepage": "https://github.com/quangnt2697/Agent-skills",
+  "repository": "https://github.com/quangnt2697/Agent-skills",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Skills — Scrum Master",
+    "shortDescription": "Điều phối Sprint, Daily Standup & Impediments",
+    "developerName": "QuangNT",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "brandColor": "#F59E0B",
+    "defaultPrompt": [
+      "Sử dụng $sm-daily-standup để tổng hợp tiến độ Sprint hiện tại.",
+      "Sử dụng $sm-impediment-triage để kiểm tra ticket bị treo."
+    ]
+  }
+}

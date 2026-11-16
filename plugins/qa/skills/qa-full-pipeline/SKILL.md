@@ -1,8 +1,10 @@
 ---
 name: qa-full-pipeline
-description: Điều phối toàn bộ quy trình kiểm thử QA end-to-end từ phân tích đặc tả, thiết kế test, sinh mã automation đến thực thi và xuất báo cáo trong 1 lệnh duy nhất.
-trigger: Khi cần thực hiện toàn trình quy trình QA cho một task Jira hoặc feature mới. Trigger bằng lệnh /qa-full-pipeline {issueKey}.
-disable-auto-invoke: true
+description: "Điều phối toàn bộ quy trình kiểm thử QA end-to-end từ phân tích đặc tả, thiết kế test, sinh mã automation đến thực thi và xuất báo cáo trong 1 lệnh duy nhất. Dùng khi cần thực hiện toàn trình quy trình QA cho một task Jira hoặc feature mới."
+metadata:
+  version: "1.0.0"
+  short-description: "Điều phối toàn bộ quy trình kiểm thử QA end-to-end từ phân tí..."
+  disable-auto-invoke: true
 ---
 
 # Kỹ Năng Điều Phối Toàn Trình QA (qa-full-pipeline)

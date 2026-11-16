@@ -1,0 +1,8 @@
+interface:
+  display_name: "Repo Group Sync"
+  short_description: "Đồng bộ, fetch và pull mã nguồn mới nhất của các dự án hoặc m..."
+  brand_color: "#64748B"
+  default_prompt: "Sử dụng $repo-group-sync để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: false

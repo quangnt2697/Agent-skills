@@ -1,0 +1,8 @@
+interface:
+  display_name: "Meta Context"
+  short_description: "Tối ưu hóa việc thiết lập ngữ cảnh (context) cho agent"
+  brand_color: "#64748B"
+  default_prompt: "Sử dụng $meta-context để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

@@ -31,16 +31,22 @@ const MANIFEST_PATHS = [
   ".agents/plugins/marketplace.json",
   "plugins/ba-po/plugin.json",
   "plugins/ba-po/.claude-plugin/plugin.json",
+  "plugins/ba-po/.codex-plugin/plugin.json",
   "plugins/code-reviewer/plugin.json",
   "plugins/code-reviewer/.claude-plugin/plugin.json",
+  "plugins/code-reviewer/.codex-plugin/plugin.json",
   "plugins/core/plugin.json",
   "plugins/core/.claude-plugin/plugin.json",
+  "plugins/core/.codex-plugin/plugin.json",
   "plugins/qa/plugin.json",
   "plugins/qa/.claude-plugin/plugin.json",
+  "plugins/qa/.codex-plugin/plugin.json",
   "plugins/scrum-master/plugin.json",
   "plugins/scrum-master/.claude-plugin/plugin.json",
+  "plugins/scrum-master/.codex-plugin/plugin.json",
   "plugins/fintech-data/plugin.json",
   "plugins/fintech-data/.claude-plugin/plugin.json",
+  "plugins/fintech-data/.codex-plugin/plugin.json",
 ];
 
 function readManifestVersion(manifestPath) {

@@ -1,0 +1,8 @@
+interface:
+  display_name: "DB Timescale Reconciler"
+  short_description: "Quét, đối chiếu và phát hiện sai lệch dữ liệu thị trường KRX..."
+  brand_color: "#06B6D4"
+  default_prompt: "Sử dụng $db-timescale-reconciler để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: false

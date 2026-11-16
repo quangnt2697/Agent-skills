@@ -132,6 +132,19 @@ Mọi artifact phải có section `## 📊 Confidence Assessment` ở cuối v�
 ## 6. Quy Tắc Thiết Kế Sơ Đồ & Mockup Giao Diện (Editorial Diagrams & Prod-Twin Mockups)
 - **Khi tạo sơ đồ (flowchart, sequence, BPMN, kiến trúc):** **BẮT BUỘC** gọi skill `ba-design-flowchart` và xem hướng dẫn chi tiết tại [style-guide.md](plugins/ba-po/skills/ba-design-flowchart/references/style-guide.md) cũng như các quy tắc semantic pattern tương ứng.
 - **Khi dựng mockup giao diện (WEB / APP):** **BẮT BUỘC** gọi skill `ba-design-mockup`, thiết kế đúng theo phong cách có sẵn từ codebase (`origin/master`) hoặc link được cung cấp (không tự suy diễn), độ phân giải tối thiểu Full HD (`1920x1080`) cho Web, chỉ thiết kế theo yêu cầu của task và highlight vào phần được thiết kế mới (`data-change="added|modified"`) để client dễ nhận ra (không thiết kế các ghi chú cho QA/BA như huy hiệu `① ② ③` hay bảng `UI Delta Mapping` trên mockup), vượt qua kiểm định `validate-mockup-fidelity.js` (Fidelity Score ≥ 90%), kết xuất ảnh Retina 2x và review ảnh đảm bảo không bị vỡ layout. Trên file `refined-draft.md` / `refined.md`, phần `## 🎨 UI Design / Mockup` chỉ sử dụng ảnh mockup đó chứ không mô tả design bằng text (không ghi chú gì thêm).
+- **Quy tắc chống chiếm quyền trên OpenAI Codex:** Khi người dùng yêu cầu dựng *"mockup"*, *"giao diện"*, *"sơ đồ"* hoặc *"flowchart"*, **TUYỆT ĐỐI KHÔNG** dùng system skill `$imagegen` hay tool `image_gen` để vẽ ảnh bitmap AI — **BẮT BUỘC** kích hoạt `$ba-design-mockup` hoặc `$ba-design-flowchart`.
 
 ## 7. Cẩm Nang Nghiệp Vụ Chứng Khoán & Fintech (Domain Knowledge Base)
 Khi làm task liên quan đến fintech/chứng khoán, **BẮT BUỘC** mở [references/securities-domain-rules.md](references/securities-domain-rules.md) để tra cứu tài liệu chuyên sâu.
+
+## 8. Bảng Ánh Xạ Công Cụ Đa Nền Tảng (Antigravity · Claude Code · OpenAI Codex)
+Khi tài liệu skill nhắc tới thao tác hệ thống, Agent tự động dùng công cụ tương đương trên nền tảng đang chạy:
+
+| Thao tác | Antigravity | Claude Code | OpenAI Codex |
+|---|---|---|---|
+| **Gọi Skill** | `/skill-name` | `/skill-name` | `$skill-name` |
+| **Đọc file / ảnh** | `read_file` / `view_file` | `Read` | Đọc file / shell read |
+| **Ghi / Sửa file** | `write_file` / `edit_file` | `Write` / `Edit` | `apply_patch` |
+| **Chạy lệnh Shell** | `run_command` | `Bash` | Shell / `exec_command` |
+| **Hỏi người dùng** | `ask_question` | `AskUserQuestion` | `request_user_input` (hoặc hỏi bằng văn bản nếu không có) |
+| **Ủy quyền Subagent** | `invoke_subagent` | `Task` | `spawn_agent` / `send_message` |

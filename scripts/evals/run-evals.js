@@ -543,7 +543,11 @@ function parseGrading(raw) {
 // resolve to files outside the project tree for both reads and writes.
 const VALID_SKILL_NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
-function runBehavioral(skillName, dryRun) {
+function runBehavioral(skillName, dryRun, runner = 'claude') {
+  if (!['claude', 'codex'].includes(runner)) {
+    console.error(`Invalid --runner "${runner}" — expected "claude" or "codex"`);
+    process.exit(1);
+  }
   if (!skillName || !VALID_SKILL_NAME.test(skillName)) {
     console.error(`Invalid skill name: "${skillName}" — must be kebab-case (e.g. "my-skill")`);
     process.exit(1);
@@ -580,7 +584,10 @@ function runBehavioral(skillName, dryRun) {
       const artifact = kind === 'dialogue'
         ? 'dialogue transcript; no fixture required'
         : `execution trace in workspace + ${fixtures} fixture(s)`;
-      console.log(`[dry-run] eval ${ev.id}: ${artifact}; claude -p --verbose --output-format stream-json --permission-mode acceptEdits --allowedTools ${EXECUTOR_TOOLS} --append-system-prompt <${skillName}/SKILL.md> < prompt-on-stdin`);
+      const cliPreview = runner === 'codex'
+        ? `codex exec --json --sandbox workspace-write --skip-git-repo-check - < prompt-with-$${skillName}`
+        : `claude -p --verbose --output-format stream-json --permission-mode acceptEdits --allowedTools ${EXECUTOR_TOOLS} --append-system-prompt <${skillName}/SKILL.md> < prompt-on-stdin`;
+      console.log(`[dry-run] eval ${ev.id} (${runner}): ${artifact}; ${cliPreview}`);
       continue;
     }
     const workspace = kind === 'dialogue'
@@ -594,14 +601,26 @@ function runBehavioral(skillName, dryRun) {
     // headless denials would force the exact narrate-instead-of-perform
     // failure mode that trace grading exists to catch.
     try {
-    const trace = execFileSync(
-      'claude',
-      ['-p', '--verbose', '--output-format', 'stream-json',
-        '--permission-mode', 'acceptEdits',
-        '--allowedTools', EXECUTOR_TOOLS,
-        '--append-system-prompt', `Follow this skill exactly:\n\n${fs.readFileSync(skillFile, 'utf8')}`],
-      { input: ev.prompt, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, cwd: workspace, timeout: EXECUTOR_TIMEOUT_MS },
-    );
+    const trace = runner === 'codex'
+      ? execFileSync(
+          'codex',
+          ['exec', '--json', '--sandbox', 'workspace-write', '--skip-git-repo-check', '-'],
+          {
+            input: `Follow $${skillName} instructions strictly:\n\n${fs.readFileSync(skillFile, 'utf8')}\n\nTask:\n${ev.prompt}`,
+            encoding: 'utf8',
+            maxBuffer: 64 * 1024 * 1024,
+            cwd: workspace,
+            timeout: EXECUTOR_TIMEOUT_MS,
+          },
+        )
+      : execFileSync(
+          'claude',
+          ['-p', '--verbose', '--output-format', 'stream-json',
+            '--permission-mode', 'acceptEdits',
+            '--allowedTools', EXECUTOR_TOOLS,
+            '--append-system-prompt', `Follow this skill exactly:\n\n${fs.readFileSync(skillFile, 'utf8')}`],
+          { input: ev.prompt, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, cwd: workspace, timeout: EXECUTOR_TIMEOUT_MS },
+        );
     const gradingInstructions = kind === 'dialogue'
       ? [
         'You are grading an agent dialogue transcript against explicit expectations.',
@@ -620,7 +639,9 @@ function runBehavioral(skillName, dryRun) {
     ].join('\n\n');
     // The trace can be megabytes; pass the grader prompt via stdin, never
     // argv, or it would blow past the OS argument-size limit (E2BIG).
-    const raw = execFileSync('claude', ['-p'], { input: graderPrompt, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: GRADER_TIMEOUT_MS });
+    const raw = runner === 'codex'
+      ? execFileSync('codex', ['exec', '--skip-git-repo-check', '-'], { input: graderPrompt, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: GRADER_TIMEOUT_MS })
+      : execFileSync('claude', ['-p'], { input: graderPrompt, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: GRADER_TIMEOUT_MS });
     const grading = parseGrading(raw);
     const base = path.join(RESULTS_DIR, `${skillName}.eval-${ev.id}`);
     if (!grading) {
@@ -660,7 +681,9 @@ function main(args = process.argv.slice(2)) {
       console.error('--min-rank1 applies only to deterministic evals');
       process.exit(1);
     }
-    runBehavioral(args[bIdx + 1], args.includes('--dry-run'));
+    const runnerIdx = args.indexOf('--runner');
+    const runner = runnerIdx !== -1 ? args[runnerIdx + 1] : 'claude';
+    runBehavioral(args[bIdx + 1], args.includes('--dry-run'), runner);
   } else {
     runDeterministic(minRank1);
   }

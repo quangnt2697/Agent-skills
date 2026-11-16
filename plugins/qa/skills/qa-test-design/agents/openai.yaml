@@ -1,0 +1,8 @@
+interface:
+  display_name: "QA Test Design"
+  short_description: "Thiết kế bộ artifacts kiểm thử 2 giai đoạn chuẩn mực gồm Chec..."
+  brand_color: "#10B981"
+  default_prompt: "Sử dụng $qa-test-design để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

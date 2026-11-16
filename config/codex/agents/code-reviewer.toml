@@ -1,0 +1,4 @@
+# Code Reviewer Role (Tier 1: Cưỡng chế READ-ONLY ở tầng OS Sandbox)
+sandbox_mode = "read-only"
+model_reasoning_effort = "high"
+model_instructions_file = "../../../plugins/code-reviewer/agents/code-reviewer.md"

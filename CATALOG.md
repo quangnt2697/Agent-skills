@@ -22,7 +22,7 @@
 
 ## 2. Danh mục Slash Commands (30 lệnh)
 
-Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/commands/`) và tự động nạp vào CLI / Claude Code / Antigravity.
+Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/commands/`) và tự động nạp vào CLI / Antigravity / Claude Code (trên OpenAI Codex dùng cú pháp `$skill-name`).
 
 ### 2.1. Phân tích Nghiệp vụ & Sản phẩm — BA/PO (`plugins/ba-po` — 9 lệnh)
 
@@ -89,21 +89,21 @@ Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/comm
 ## 3. Danh mục Kỹ năng Skills (31 Skills)
 
 Mỗi skill tuân thủ cấu trúc **Progressive Disclosure 3 tầng**:
-- **Level 1 (Frontmatter):** `name` + `description` + `trigger` (~100 tokens, luôn nạp trong registry).
+- **Level 1 (Frontmatter):** `name` + `description` (chứa điều kiện kích hoạt) + `metadata:` (~100 tokens, luôn nạp trong registry).
 - **Level 2 (Body):** `SKILL.md` (< 120 dòng), gồm quy trình 3-5 bước và tiêu chí hoàn thành.
-- **Level 3 (Resources):** Thư mục `references/` (kiến thức), `assets/` / `templates/` (tools/templates) mở theo nhu cầu.
+- **Level 3 (Resources):** Thư mục `references/` (kiến thức), `assets/` (tools/templates thực thi) và `agents/openai.yaml` (Codex UI metadata) mở theo nhu cầu.
 
 ```mermaid
 graph TD
     subgraph "Level 1: Registry (Luôn nạp)"
-        L1["YAML Frontmatter<br/>name + description + trigger (~100 tokens)"]
+        L1["YAML Frontmatter<br/>name + description + metadata (~100 tokens)"]
     end
     subgraph "Level 2: Execution Plan (Nạp khi kích hoạt)"
         L2["SKILL.md Body<br/>50-100 dòng hành động cụ thể (<5k tokens)"]
     end
     subgraph "Level 3: Bundled Resources (Mở theo nhu cầu)"
         L3A["references/<br/>Domain Rules & Checklists"]
-        L3B["assets/ & templates/<br/>Scripts, Tools, Mockups"]
+        L3B["assets/<br/>Scripts, Tools, Mockups"]
     end
     L1 -->|Trigger match| L2
     L2 -->|Chỉ nạp khi cần sâu| L3A
@@ -224,7 +224,7 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 
 | Lệnh / Tiện ích | Cú pháp | Mục đích |
 |---|---|---|
-| **Pipeline Kiểm định Toàn diện** | `npm test` hoặc `npm run lint` | Chạy toàn bộ 10 cổng validators + 30 unit test suites + evals |
+| **Pipeline Kiểm định Toàn diện** | `npm test` hoặc `npm run lint` | Chạy toàn bộ 10 cổng validators + 33 unit test suites + evals |
 | **Kiểm định 10 Cổng Validators** | `npm run validate` | Chạy lần lượt cả 10 script kiểm định chất lượng bên dưới |
 | ↳ *Gate 1: Skills Structure* | `npm run validate:skills` | Kiểm định cấu trúc SKILL.md, frontmatter YAML và từ khóa kích hoạt |
 | ↳ *Gate 2: Command Parity* | `npm run validate:commands` | Kiểm định đồng bộ giữa commands TOML và Markdown |
@@ -238,6 +238,10 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 | ↳ *Gate 10: Token Budget* | `npm run validate:tokens` | Kiểm định độ dài & ngân sách token cho 31 file `SKILL.md` |
 | **Lưu Trữ Workspace Issue** | `npm run workspace:archive` | Đóng gói nén thư mục `workspace/issues/` phục vụ lưu trữ |
 | **So sánh Checkpoint Diff** | `npm run checkpoint:diff` | So sánh biến động file `workspace/` so với snapshot gần nhất |
+| **Cài đặt cho Antigravity / Gemini CLI** | `npm run setup:agy` / `npm run unlink:agy` | Đồng bộ hoặc gỡ bỏ 6 plugins & rules vào `~/.gemini/config/` |
+| **Cài đặt cho Claude Code** | `npm run setup:claude` / `npm run unlink:claude` | Tạo hoặc gỡ bỏ symlink `agent-skills` vào `~/.claude/` |
+| **Cài đặt cho OpenAI Codex** | `npm run setup:codex` / `npm run unlink:codex` | Tạo hoặc gỡ bỏ 31 skill symlinks vào `~/.codex/skills/` |
+| **Đóng gói cho ChatGPT** | `npm run chatgpt:export` | Xuất 7 file tri thức chuẩn hóa vào `dist/chatgpt/` cho ChatGPT Projects / Custom GPTs |
 | **Export Plugin Độc lập** | `npm run plugin:export -- -p <name> [--tar]` | Đóng gói 1 plugin thành thư mục độc lập hoặc file `.tar.gz` |
 | **Quét UI Design System** | `npm run scan:ui-components` | Quét UI components từ web/mobile trading sang dictionary |
 | **Quản Lý Máy Ảo Colima** | `npm run colima:start` / `:status` / `:stop` | Khởi động/kiểm tra/dừng máy ảo Colima (2 CPU, 2GB RAM) |

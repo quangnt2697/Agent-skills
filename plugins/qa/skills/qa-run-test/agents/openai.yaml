@@ -1,0 +1,8 @@
+interface:
+  display_name: "QA Run Test"
+  short_description: "Chạy test automation hiện có (Pytest), regression test, chạy..."
+  brand_color: "#10B981"
+  default_prompt: "Sử dụng $qa-run-test để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: false

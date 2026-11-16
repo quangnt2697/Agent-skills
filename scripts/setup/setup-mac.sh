@@ -56,17 +56,21 @@ mkdir -p config
 [ -f config/projects.json ] || [ -f projects.json ] || { [ -f config/projects.json.example ] && cp config/projects.json.example config/projects.json && echo "📄 Tạo config/projects.json từ mẫu."; }
 [ -f config/sm-config.yaml ] || [ -f sm-config.yaml ] || { [ -f config/sm-config.example.yaml ] && cp config/sm-config.example.yaml config/sm-config.yaml && echo "📄 Tạo config/sm-config.yaml từ mẫu."; }
 
-# 6. Khởi động Colima + n8n Container & Nạp + Kích hoạt (active = 1) toàn bộ 18 Workflows
-echo "⚙️ Đang khởi tạo Colima VM, container agent-skills-n8n và nạp 18 Workflows..."
+# 6. Khởi động Colima + n8n Container & Nạp + Kích hoạt (active = 1) toàn bộ 19 Workflows
+echo "⚙️ Đang khởi tạo Colima VM, container agent-skills-n8n và nạp 19 Workflows..."
 npm run n8n:setup
 
-# 7. Đồng bộ plugins và rules toàn cục cho Antigravity / Gemini CLI
-echo "🔌 Đang đồng bộ Agent Plugins và Global Rules (bao gồm Focus ADHD)..."
-npm run setup:plugins
+# 7. Cài đặt agent-skills cho Google Antigravity IDE / Gemini CLI (~/.gemini/config/)
+echo "🔌 [Antigravity / Gemini CLI] Đang đồng bộ plugins và rules vào ~/.gemini/config/..."
+npm run setup:agy
 
-# 8. Cài skills cho Claude Code (toàn máy, tự cập nhật qua symlink)
-echo "🔌 Đang cài agent-skills cho Claude Code..."
+# 8. Cài đặt agent-skills cho Claude Code (~/.claude/)
+echo "🔌 [Claude Code] Đang cài symlink agent-skills vào ~/.claude/..."
 npm run setup:claude
+
+# 9. Cài đặt agent-skills cho OpenAI Codex CLI / App (~/.codex/)
+echo "🔌 [OpenAI Codex] Đang cài symlink 31 skills vào ~/.codex/skills/..."
+npm run setup:codex
 
 echo ""
 echo "🎉 XONG! TOÀN BỘ MÔI TRƯỜNG ĐÃ ĐƯỢC CÀI ĐẶT THÀNH CÔNG."
@@ -79,7 +83,7 @@ echo "   • npm run autostart:status # Kiểm tra trạng thái tự khởi đ�
 echo "   • npm run autostart:off    # Tắt tự khởi động cùng máy"
 echo "   • npm run autostart:on     # Bật lại tự khởi động cùng máy"
 echo "   • npm run colima:start     # Bật máy ảo Colima thủ công"
-echo "   • npm run n8n:up           # Bật n8n Container & kích hoạt 18 workflows"
+echo "   • npm run n8n:up           # Bật n8n Container & kích hoạt 19 workflows"
 echo "   • npm run n8n:logs         # Xem log n8n Container"
 echo "   • npm run n8n:down         # Dừng n8n Container"
 echo "3. Chế độ Tự Động Khởi Động (macOS LaunchAgent):"

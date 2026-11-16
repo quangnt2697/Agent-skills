@@ -7,13 +7,14 @@
 # Hosts that validate hook output (Codex CLI, Claude Code) reject other shapes.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SKILLS_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")/skills"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+SKILLS_DIR="$PROJECT_ROOT/skills"
 
 # The meta-skill directory is meta-using-agent-skills/ in this repo; upstream
 # ships it as using-agent-skills/. Accept either so the hook works in both.
 META_SKILL="$SKILLS_DIR/meta-using-agent-skills/SKILL.md"
 [ -f "$META_SKILL" ] || META_SKILL="$SKILLS_DIR/using-agent-skills/SKILL.md"
-[ -f "$META_SKILL" ] || META_SKILL="$(dirname "$(dirname "$SCRIPT_DIR")")/plugins/core/skills/meta-using-agent-skills/SKILL.md"
+[ -f "$META_SKILL" ] || META_SKILL="$PROJECT_ROOT/plugins/core/skills/meta-using-agent-skills/SKILL.md"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "agent-skills: jq is required for the session-start hook but was not found on PATH. Install jq (e.g. `brew install jq` or `apt-get install jq`) to enable meta-skill injection. Skills remain available individually."}}'

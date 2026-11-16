@@ -1,7 +1,9 @@
 ---
 name: qa-code2spec
-description: 'Dịch ngược mã nguồn thành đặc tả nghiệp vụ. Đối chiếu code thực tế với spec và đọc hiểu mã nguồn developer thông qua kiểm tra đồng bộ GitLab.'
-trigger: Khi cần dựng lại tài liệu đặc tả từ codebase sẵn có, tiếp nhận module legacy hoặc đối chiếu code thực tế với spec. Trigger bằng lệnh /qa-code2spec {đường_dẫn_file_api}.
+description: "Dịch ngược mã nguồn thành đặc tả nghiệp vụ. Đối chiếu code thực tế với spec và đọc hiểu mã nguồn developer thông qua kiểm tra đồng bộ GitLab. Dùng khi cần dựng lại tài liệu đặc tả từ codebase sẵn có, tiếp nhận module legacy hoặc đối chiếu code thực tế với spec."
+metadata:
+  version: "1.0.0"
+  short-description: "Dịch ngược mã nguồn thành đặc tả nghiệp vụ"
 ---
 
 # Kỹ Năng Dịch Ngược Code Sang Spec (qa-code2spec)

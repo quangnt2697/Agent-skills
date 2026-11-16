@@ -44,16 +44,30 @@ Kỹ sư dữ liệu thị trường và kiểm toán dữ liệu chứng khoán
 Toàn bộ quy trình thiết lập từ A–Z (dành cho cả người mới bắt đầu chưa cài môi trường) được trình bày chi tiết tại:
 👉 **[Cẩm Nang Cài Đặt Chi Tiết Cho Người Mới (Installation Guide)](docs/guides/installation-guide.md)**
 
-### Cách 1: Cài đặt tự động 1 lệnh trên macOS (Khuyên dùng)
-Script sẽ tự động kiểm tra và cài đặt **Homebrew, Node.js (>=20), Colima, Docker CLI, Docker Compose**, tạo file cấu hình `.env`, khởi chạy container `n8n` (nạp sẵn 19 workflows) và đồng bộ toàn bộ kỹ năng vào AI Agent:
+### Cách 1: Cài nhanh chỉ trong 30 giây theo từng AI Agent (Không cần Docker)
+Nếu bạn chỉ muốn nạp ngay **31 skills** vào công cụ AI đang dùng trên máy:
 ```bash
 git clone https://github.com/quangnt2697/Agent-skills.git
 cd Agent-skills
-npm run setup:mac     # Tự động cài Colima + Docker + n8n + đồng bộ Agent Plugins
-npm test              # Kiểm tra toàn bộ hệ thống
+npm install
+
+# Chọn đúng lệnh theo công cụ AI của bạn:
+npm run setup:agy      # Cho Google Antigravity IDE / Gemini CLI (~/.gemini/config/)
+npm run setup:claude   # Cho Claude Code (~/.claude/)
+npm run setup:codex    # Cho OpenAI Codex CLI / App (~/.codex/)
+npm run chatgpt:export # Xuất 7 file tri thức vào dist/chatgpt/ để nạp vào ChatGPT Projects / Custom GPTs
 ```
 
-### Cách 2: Cài đặt từng bước tường minh (Step-by-Step)
+### Cách 2: Cài đặt tự động toàn diện trên macOS (Gồm cả n8n Fast-Path + 3 Agents)
+Script sẽ tự động kiểm tra và cài đặt **Homebrew, Node.js (>=20), Colima, Docker CLI, Docker Compose**, tạo `.env`, khởi chạy container `n8n` (nạp sẵn 19 workflows) và cài đặt kỹ năng cho **cả Antigravity, Claude Code và Codex**:
+```bash
+git clone https://github.com/quangnt2697/Agent-skills.git
+cd Agent-skills
+npm run setup:mac     # Tự động cài Colima + Docker + n8n + Antigravity + Claude + Codex
+npm test              # Kiểm tra toàn bộ hệ thống (10 gates + 243 unit tests + evals)
+```
+
+### Cách 3: Cài đặt từng bước tường minh (Step-by-Step kèm n8n)
 Nếu bạn muốn tự cài đặt và kiểm soát từng thành phần:
 ```bash
 # 1. Cài đặt Node.js và bộ 3 Colima + Docker CLI + Docker Compose qua Homebrew (không cần quyền sudo)
@@ -69,17 +83,21 @@ cp .env.example .env
 cp config/projects.json.example config/projects.json
 cp config/sm-config.example.yaml config/sm-config.yaml
 
-# 4. Bật máy ảo Colima, nạp chứng chỉ mạng công ty & khởi chạy n8n Container (18 workflows)
+# 4. Bật máy ảo Colima, nạp chứng chỉ mạng công ty & khởi chạy n8n Container (19 workflows)
 npm run n8n:setup
 
-# 5. Đồng bộ kỹ năng vào Antigravity IDE / Gemini CLI / Claude Code & kích hoạt Git Hooks
-npm run setup:plugins
-npm run setup:claude
-npm run setup:hooks
+# 5. Cài đặt agent-skills vào công cụ AI bạn đang sử dụng (và bật Git Hook bảo vệ nhánh main)
+npm run setup:agy      # Cho Google Antigravity IDE / Gemini CLI (~/.gemini/config/)
+npm run setup:claude   # Cho Claude Code (~/.claude/)
+npm run setup:codex    # Cho OpenAI Codex CLI / App (~/.codex/)
+npm run setup:hooks    # Kích hoạt Git pre-commit hook bảo vệ nhánh main
+# (Tùy chọn) Đóng gói 7 file tri thức dùng trên ChatGPT Projects / Custom GPTs:
+# npm run chatgpt:export
 ```
 
 *Xem thêm:*
 - **[docs/guides/installation-guide.md](docs/guides/installation-guide.md)** — Hướng dẫn chi tiết cách lấy Jira/Slack token, cấu hình `.env`, tự khởi động cùng macOS và xử lý sự cố.
+- **[docs/guides/codex-and-chatgpt-guide.md](docs/guides/codex-and-chatgpt-guide.md)** — Hướng dẫn cài đặt & sử dụng trên OpenAI Codex (CLI/IDE/Cloud) và ChatGPT.
 - **[docs/guides/adoption-guide.md](docs/guides/adoption-guide.md)** — Cẩm nang áp dụng theo quy trình Agile/Scrum.
 
 ### Workflow cơ bản

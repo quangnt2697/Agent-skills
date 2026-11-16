@@ -1,8 +1,10 @@
 ---
 name: sm-sprint-planning
-description: Kỹ năng lập kế hoạch Sprint. Tự động tính toán chu kỳ Sprint hiện tại, pull backlog và sprint tới (hoặc hiện tại) từ Jira.
-trigger: Use when cần lập kế hoạch (planning) cho Sprint mới hoặc phân bổ công việc.
-disable-auto-invoke: true
+description: "Kỹ năng lập kế hoạch Sprint. Tự động tính toán chu kỳ Sprint hiện tại, pull backlog và sprint tới (hoặc hiện tại) từ Jira. Use when cần lập kế hoạch (planning) cho Sprint mới hoặc phân bổ công việc."
+metadata:
+  version: "1.0.0"
+  short-description: "Kỹ năng lập kế hoạch Sprint"
+  disable-auto-invoke: true
 ---
 
 # Kỹ năng Lập Kế Hoạch Sprint (sm-sprint-planning)

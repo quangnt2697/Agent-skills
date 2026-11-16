@@ -1,0 +1,8 @@
+interface:
+  display_name: "SM Daily Standup"
+  short_description: "Điều hành Daily Standup tự động, thống kê tiến độ Sprint từ J..."
+  brand_color: "#F59E0B"
+  default_prompt: "Sử dụng $sm-daily-standup để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: false

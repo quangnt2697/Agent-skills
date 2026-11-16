@@ -1,7 +1,9 @@
 ---
 name: ba-user-story-writing
-description: Viết User Stories chuẩn mực theo nguyên tắc INVEST ("As a... I want... So that...") kèm tiêu chí chấp nhận Acceptance Criteria bằng định dạng Gherkin.
-trigger: Khi cần chuyển hóa yêu cầu nghiệp vụ thành User Stories, chuẩn hóa backlog Jira hoặc nhận yêu cầu "viết user story".
+description: "Viết User Stories chuẩn mực theo nguyên tắc INVEST (\"As a... I want... So that...\") kèm tiêu chí chấp nhận Acceptance Criteria bằng định dạng Gherkin. Dùng khi cần chuyển hóa yêu cầu nghiệp vụ thành User Stories, chuẩn hóa backlog Jira hoặc nhận yêu cầu \"viết user story\"."
+metadata:
+  version: "1.0.0"
+  short-description: "Viết User Stories chuẩn mực theo nguyên tắc INVEST (\"As a"
 ---
 
 # Kỹ Năng Viết User Stories (ba-user-story-writing)

@@ -1,0 +1,8 @@
+interface:
+  display_name: "BA Gap Analysis"
+  short_description: "Phân tích khoảng cách giữa trạng thái hiện tại (AS-IS) và trạ..."
+  brand_color: "#2563EB"
+  default_prompt: "Sử dụng $ba-gap-analysis để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,7 +1,9 @@
 ---
 name: ba-interview-me
-description: Phỏng vấn tương tác từng-câu-hỏi-một để khai thác nhu cầu thực sự của người dùng, giải tỏa giả định ngầm và đạt độ tự tin cao trước khi lập kế hoạch.
-trigger: Khi yêu cầu bị thiếu thông tin cốt lõi, người dùng gọi lệnh ("interview me", "hỏi tôi đi"), hoặc phát hiện Spec có lỗ hổng logic cần chất vấn.
+description: "Phỏng vấn tương tác từng-câu-hỏi-một để khai thác nhu cầu thực sự của người dùng, giải tỏa giả định ngầm và đạt độ tự tin cao trước khi lập kế hoạch. Dùng khi yêu cầu bị thiếu thông tin cốt lõi, người dùng gọi lệnh (\"interview me\", \"hỏi tôi đi\"), hoặc phát hiện Spec có lỗ hổng logic cần chất vấn."
+metadata:
+  version: "1.0.0"
+  short-description: "Phỏng vấn tương tác từng-câu-hỏi-một để khai thác nhu cầu thự..."
 ---
 
 # Kỹ Năng Phỏng Vấn Làm Rõ Yêu Cầu (ba-interview-me)

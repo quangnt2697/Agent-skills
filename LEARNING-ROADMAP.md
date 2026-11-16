@@ -50,10 +50,11 @@ npm run setup:hooks
 npm run validate
 ```
 
-**Thử nghiệm lệnh đầu tiên trong Claude Code / Antigravity:**
+**Thử nghiệm lệnh đầu tiên trong Claude Code / Antigravity / Codex:**
 - Phân tích thử một Jira ticket:
   ```bash
-  /ba-spec PROJ-101
+  /ba-spec PROJ-101       # Claude Code / Antigravity
+  $ba-spec PROJ-101       # OpenAI Codex
   ```
 - Hoặc kiểm thử pipeline QA:
   ```bash

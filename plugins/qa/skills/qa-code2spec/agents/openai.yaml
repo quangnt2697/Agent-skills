@@ -1,0 +1,8 @@
+interface:
+  display_name: "QA Code2spec"
+  short_description: "Dịch ngược mã nguồn thành đặc tả nghiệp vụ"
+  brand_color: "#10B981"
+  default_prompt: "Sử dụng $qa-code2spec để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

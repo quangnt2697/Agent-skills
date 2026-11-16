@@ -1,8 +1,10 @@
 ---
 name: meta-cross-validation
-description: 'Xác thực truy vết traceability giữa Spec và Test Cases. Kiểm tra độ bao phủ coverage của test cases so với yêu cầu nghiệp vụ, phát hiện gaps.'
-trigger: Sử dụng khi cần kiểm tra độ bao phủ của test cases so với yêu cầu nghiệp vụ.
-disable-auto-invoke: true
+description: "Xác thực truy vết traceability giữa Spec và Test Cases. Kiểm tra độ bao phủ coverage của test cases so với yêu cầu nghiệp vụ, phát hiện gaps. Dùng khi cần kiểm tra độ bao phủ của test cases so với yêu cầu nghiệp vụ."
+metadata:
+  version: "1.0.0"
+  short-description: "Xác thực truy vết traceability giữa Spec và Test Cases"
+  disable-auto-invoke: true
 ---
 
 # Cross-Validation — Xác thực Truy vết (Meta)

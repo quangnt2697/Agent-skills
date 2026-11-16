@@ -10,16 +10,19 @@ Thư mục `scripts/` chứa toàn bộ các công cụ dòng lệnh (CLI), kị
 scripts/
 ├── README.md                 # Tài liệu tổng quan cấu trúc & hướng dẫn sử dụng scripts
 │
-├── tests/                    # Toàn bộ Unit Test Suite (30 file test suites, 228 test cases)
+├── tests/                    # Toàn bộ Unit Test Suite (33 file test suites, 243 test cases)
 │   ├── antigravity-hooks-test.js    # Kiểm thử hooks tích hợp Antigravity/Gemini
 │   ├── archive-issues-test.js       # Kiểm thử lưu trữ archive workspace issue
 │   ├── ba-design-mockup-test.js     # Kiểm thử engine dựng mockup giao diện
 │   ├── ba-refine-push-spec-test.js  # Kiểm thử nén spec và đẩy spec lên Jira qua n8n
 │   ├── ba-refine-validation-gate-test.js # Kiểm thử cổng kiểm định refine spec
 │   ├── clean-issue-workspace-test.js# Kiểm thử dọn dẹp không gian workspace sau khi hoàn tất
+│   ├── codex-hooks-test.js          # Kiểm thử PreToolUse guard & apply_patch đa file trên Codex
+│   ├── codex-setup-test.js          # Kiểm thử setup-codex, agent roles & config/hooks templates
 │   ├── db-recon-core-test.js        # Kiểm thử suite 4 query cốt lõi TimescaleDB
 │   ├── db-recon-test.js             # Kiểm thử CLI parser, thay thế tham số & catalog đối chiếu
 │   ├── error-log-writer-test.js     # Kiểm thử bộ ghi lỗi n8n ops
+│   ├── export-chatgpt-test.js       # Kiểm thử đóng gói 7 knowledge bundles cho ChatGPT & quét secret
 │   ├── jira-clean-payload-multisource-test.js # Kiểm thử dọn dẹp payload Jira đa nguồn
 │   ├── jira-my-tasks-notifier-test.js # Kiểm thử polling task Jira người dùng
 │   ├── n8n-autostart-test.js        # Kiểm thử kịch bản quản lý LaunchAgent n8n
@@ -61,14 +64,17 @@ scripts/
 │   ├── db-recon-core.js             # Bộ đối chiếu 4 query cốt lõi & volume traded (16:00 daily)
 │   └── metabase-sso-login.js        # Helper đăng nhập SSO tự động qua Playwright lấy Session Token
 │
-├── setup/                    # Bộ cài đặt môi trường & liên kết Plugins
-│   ├── setup-mac.sh                 # Script bootstrap môi trường macOS (Homebrew, Node.js, Colima, Docker)
-│   ├── setup-plugins.js             # Symlink/copy plugins vào thư mục cấu hình của agent
+├── setup/                    # Bộ cài đặt môi trường & liên kết theo từng AI Agent
+│   ├── setup-mac.sh                 # Script bootstrap môi trường macOS (Homebrew, Node.js, Colima, Docker, Agents)
+│   ├── setup-agy.js                 # Cài đặt / gỡ bỏ plugins & rules cho Google Antigravity IDE / Gemini CLI (~/.gemini/config/)
+│   ├── setup-claude.js              # Cài đặt / gỡ bỏ symlink agent-skills cho Claude Code (~/.claude/)
+│   ├── setup-codex.js               # Cài đặt / gỡ bỏ symlink 31 skills cho OpenAI Codex CLI / App (~/.codex/)
+│   ├── export-chatgpt.js            # Đóng gói 7 file tri thức vào dist/chatgpt/ cho ChatGPT Projects & Custom GPTs
+│   ├── export-plugin.js             # Xuất đóng gói plugin độc lập cho các microservice
 │   ├── setup-n8n.js                 # Khởi tạo Colima + CA doanh nghiệp + container n8n & nạp workflows
 │   ├── n8n-autostart.js             # Quản lý macOS LaunchAgent (Tự bật Colima/n8n khi login, Watchdog & Catch-up)
-│   ├── setup-claude.js              # Cài đặt / gỡ liên kết agent-skills cho Claude Code
-│   ├── export-plugin.js             # Xuất đóng gói plugin độc lập cho các microservice
-│   └── build-commands.js            # Tạo tự động .claude/commands/*.md từ commands/*.toml của plugins
+│   ├── build-commands.js            # Tạo tự động .claude/commands/*.md từ commands/*.toml của plugins
+│   └── build-codex-metadata.js      # Chuẩn hóa frontmatter SKILL.md & sinh agents/openai.yaml cho OpenAI Codex
 │
 ├── sync/                     # Bộ công cụ đồng bộ mã nguồn các microservices trong hệ thống
 │   └── repo-sync.js                 # Smart Git pull đa repo, tự động stash/reset & chuyển nhánh
@@ -105,15 +111,15 @@ scripts/
 
 ---
 
-## 🚀 Toàn Bộ 42 Lệnh NPM Được Hỗ Trợ
+## 🚀 Toàn Bộ 51 Lệnh NPM Được Hỗ Trợ
 
 ### 1. Kiểm định Chất lượng & Kiểm thử (Validation & Testing)
 
 | Lệnh | Mô Tả | Script / Công Cụ Thực Thi |
 |---|---|---|
-| `npm test` | Chạy toàn bộ pipeline: 10 validators + 30 unit test suites + evals | `npm run validate && npm run test:unit && npm run evals` |
+| `npm test` | Chạy toàn bộ pipeline: 10 validators + 33 unit test suites (243 tests) + evals | `npm run validate && npm run test:unit && npm run evals` |
 | `npm run lint` | Alias của `npm run validate` | `npm run validate` |
-| `npm run pretest` | Alias chuẩn bị kiểm thử (tự động build commands) | `npm run build` |
+| `npm run pretest` | Alias chuẩn bị kiểm thử (tự động build commands & Codex metadata) | `npm run build` |
 | `npm run validate` | Chạy toàn bộ 10 cổng kiểm định hệ thống | Cả 10 script kiểm định dưới đây |
 | `npm run validate:skills` | Gate 1: Kiểm định cấu trúc SKILL.md, frontmatter, trigger keywords | `node scripts/validators/validate-skills.js` |
 | `npm run validate:commands` | Gate 2: Kiểm định đồng bộ giữa TOML và Markdown commands | `node scripts/validators/validate-commands.js` |
@@ -125,7 +131,7 @@ scripts/
 | `npm run validate:icons` | Gate 8: Kiểm tra thư viện icon gallery của flowchart | `node plugins/ba-po/skills/ba-design-flowchart/assets/build_icons_gallery.mjs --check` |
 | `npm run validate:nodes` | Gate 9: Kiểm định đồng bộ code node JavaScript với n8n JSON | `node scripts/n8n/sync-n8n-nodes.js --check` |
 | `npm run validate:tokens` | Gate 10: Kiểm định ngân sách token cho 31 file SKILL.md | `node scripts/validators/validate-skill-tokens.js` |
-| `npm run test:unit` | Thực thi toàn bộ 30 file unit test suites (228 test cases) | `node --test scripts/tests/*-test.js` |
+| `npm run test:unit` | Thực thi toàn bộ 33 file unit test suites (243 test cases) | `node --test scripts/tests/*-test.js` |
 | `npm run evals` | Đo lường độ nhạy kích hoạt kỹ năng (Rank-1 trigger rate ≥ 90%) | `node scripts/evals/run-evals.js --min-rank1 90` |
 
 ### 2. Quản lý Không gian Làm việc & Snapshot (Workspace & Checkpoints)
@@ -136,18 +142,21 @@ scripts/
 | `npm run workspace:clean` | Tự động dọn dẹp file nháp/rác sau khi push Jira, giữ lại bộ thành quả cuối cùng | `node scripts/workspace/clean-issue-workspace.js` |
 | `npm run checkpoint:diff` | So sánh biến động file `workspace/` so với snapshot gần nhất | `node scripts/checkpoint/diff-checkpoint.js` |
 
-### 3. Cài đặt Môi trường, Plugins & Hooks (Setup & Plugins)
+### 3. Cài đặt Môi trường, AI Agents & Hooks (Setup & Export)
 
 | Lệnh | Mô Tả | Script / Công Cụ Thực Thi |
 |---|---|---|
-| `npm run setup:mac` | Cài đặt trọn bộ môi trường macOS (asdf, tools, config) | `bash scripts/setup/setup-mac.sh` |
-| `npm run setup:plugins` | Cài đặt/liên kết 6 plugins vào cấu hình agent CLI | `node scripts/setup/setup-plugins.js` |
-| `npm run unlink:plugins` | Gỡ bỏ liên kết plugins khỏi cấu hình agent CLI | `node scripts/setup/setup-plugins.js --unlink` |
-| `npm run plugin:export` | Đóng gói 1 plugin độc lập ra thư mục hoặc tarball | `node scripts/setup/export-plugin.js` |
-| `npm run setup:claude` | Cài đặt symlink agent-skills cho Claude Code (toàn máy) | `node scripts/setup/setup-claude.js` |
-| `npm run unlink:claude` | Gỡ bỏ cài đặt agent-skills khỏi Claude Code | `node scripts/setup/setup-claude.js --unlink` |
-| `npm run setup:hooks` | Kích hoạt bộ hooks bảo vệ nhánh và workspace | `git config core.hooksPath .agents/hooks` |
-| `npm run build` | Đồng bộ sinh tự động lệnh Markdown từ file TOML | `node scripts/setup/build-commands.js` |
+| `npm run setup:mac` | Cài đặt trọn bộ môi trường macOS (Homebrew, Colima, n8n, Antigravity, Claude, Codex) | `bash scripts/setup/setup-mac.sh` |
+| `npm run setup:agy` | Cài đặt/đồng bộ 6 plugins & rules cho **Google Antigravity IDE / Gemini CLI** (`~/.gemini/config/`) | `node scripts/setup/setup-agy.js` |
+| `npm run unlink:agy` | Gỡ bỏ plugins & rules khỏi cấu hình **Google Antigravity IDE / Gemini CLI** | `node scripts/setup/setup-agy.js --unlink` |
+| `npm run setup:claude` | Cài đặt symlink agent-skills cho **Claude Code** toàn máy (`~/.claude/`) | `node scripts/setup/setup-claude.js` |
+| `npm run unlink:claude` | Gỡ bỏ cài đặt agent-skills khỏi **Claude Code** | `node scripts/setup/setup-claude.js --unlink` |
+| `npm run setup:codex` | Cài đặt 31 skill symlinks, `AGENTS.md`, `AGENT_SKILLS_HOME`, 6 Agent Roles & `hooks.json` cho **OpenAI Codex** (`~/.codex/`) | `node scripts/setup/setup-codex.js` |
+| `npm run unlink:codex` | Gỡ bỏ symlinks, agent roles và hooks của repo khỏi **OpenAI Codex** | `node scripts/setup/setup-codex.js --unlink` |
+| `npm run chatgpt:export` | Đóng gói 7 file tri thức vào `dist/chatgpt/` cho **ChatGPT Projects / Custom GPTs** | `node scripts/setup/export-chatgpt.js` |
+| `npm run plugin:export` | Đóng gói 1 plugin độc lập ra thư mục hoặc tarball cho microservice | `node scripts/setup/export-plugin.js` |
+| `npm run setup:hooks` | Kích hoạt Git pre-commit hook bảo vệ nhánh `main` | `cp .agents/hooks/core/check-branch.sh .git/hooks/pre-commit` |
+| `npm run build` | Đồng bộ `.claude/commands/*.md` từ `.toml` và `agents/openai.yaml` cho Codex | `node scripts/setup/build-commands.js && node scripts/setup/build-codex-metadata.js` |
 | `npm run scan:ui-components` | Quét UI components từ web/mobile trading sang dictionary | `node plugins/ba-po/skills/ba-refine/assets/generate-ui-component-map.js` |
 
 ### 4. Dữ liệu Fintech & Đồng bộ Mã Nguồn (Fintech Data & Git Sync)

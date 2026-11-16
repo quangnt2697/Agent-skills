@@ -6,7 +6,7 @@ Cảm ơn bạn đã đóng góp cho **agent-skills**! Tài liệu này quy đ�
 
 ## 1. Phạm Vi & Kiến Trúc Hệ Sinh Thái (`agent-skills`)
 
-Repository cung cấp hệ thống kỹ năng (Skills), lệnh tắt (Slash Commands), luật vận hành (Core Rules) và luồng tự động hóa (n8n Fast-Path) cấp sản xuất cho AI Agent (Claude Code, Antigravity IDE, Gemini CLI) trong lĩnh vực **Tài chính — Chứng khoán (KRX)**.
+Repository cung cấp hệ thống kỹ năng (Skills), lệnh tắt (Slash Commands), luật vận hành (Core Rules) và luồng tự động hóa (n8n Fast-Path) cấp sản xuất cho AI Agent (**Google Antigravity IDE / Gemini CLI, Claude Code, OpenAI Codex CLI/App & ChatGPT Projects/Custom GPTs**) trong lĩnh vực **Tài chính — Chứng khoán (KRX)**.
 
 Hệ thống được module hóa thành **6 Plugins (31 Skills, 30 Slash Commands, 6 Personas)**:
 
@@ -41,22 +41,23 @@ Mọi đóng góp Plugin và Skill mới **BẮT BUỘC** tuân thủ kiến tr�
    - Tạo nhánh mới từ `main` (`feature/<ten-tinh-nang>`, `fix/<ten-loi>`, `docs/<ten-tai-lieu>`). **Tuyệt đối không commit trực tiếp vào `main`.**
 
 2. **Bước 2 — Thiết kế Skill theo chuẩn 3 tầng (`plugins/<plugin>/skills/<skill-name>/`):**
-   - **Level 1 (YAML Frontmatter):** Gồm `name` (kebab-case trùng tên thư mục), `description` (1–2 câu ngôi thứ ba) và `trigger` (điều kiện kích hoạt rõ ràng).
+   - **Level 1 (YAML Frontmatter):** Gồm `name` (kebab-case trùng tên thư mục), `description` (1–2 câu ngôi thứ ba kèm điều kiện kích hoạt `"Dùng khi..."` — tương thích chuẩn Codex `quick_validate.py`) và khối `metadata:` (`version`, `short-description`, `disable-auto-invoke: true` nếu có tác dụng phụ ghi hệ thống ngoài).
    - **Level 2 (`SKILL.md` Body — tinh gọn tối ưu <= 120 dòng, tối đa <= 180 dòng):**
      - Bắt buộc có khối **`Grounding (grounding-contract)`** và mục **`## Input Bắt Buộc & Bằng Chứng Hoàn Thành`** (trừ các skill được miễn trừ cấu trúc).
      - Nêu rõ ranh giới nhiệm vụ (*Làm gì / Không làm gì*), quy trình từng bước, đường dẫn sang Level 3 và ví dụ mẫu Few-shot có cảnh báo chống sao chép số liệu giả (*Few-Shot Quarantine*).
-   - **Level 3 (`assets/` và `references/`):**
+   - **Level 3 (`assets/`, `references/`, `agents/`):**
      - `assets/`: Chứa templates, scripts thực thi (`.js`, `.py`, `.sh`), HTML shells/harnesses dùng trực tiếp.
      - `references/`: Chứa quy tắc nghiệp vụ, checklists, từ điển dữ liệu (`.md`, `.json`).
+     - `agents/`: Chứa `openai.yaml` (tự động sinh khi chạy `npm run build` để phục vụ Codex CLI/App).
      - **Nghiêm cấm** tạo thư mục phi chuẩn như `templates/`, `scripts/`, `examples/`, `resources/` bên trong thư mục skill.
 
 3. **Bước 3 — Tạo/Cập nhật Slash Command (Single Source of Truth là `.toml`):**
    - Định nghĩa hoặc chỉnh sửa file `plugins/<plugin>/commands/<cmd>.toml`.
-   - **KHÔNG sửa tay** file trong `.claude/commands/<cmd>.md`. Hãy chạy lệnh build tự động:
+   - **KHÔNG sửa tay** file trong `.claude/commands/<cmd>.md` hay `agents/openai.yaml`. Hãy chạy lệnh build tự động:
      ```bash
      npm run build
      ```
-     Script `scripts/setup/build-commands.js` sẽ tự động biên dịch toàn bộ `.toml` sang `.claude/commands/*.md` tương ứng.
+     Script `scripts/setup/build-commands.js` sẽ biên dịch toàn bộ `.toml` sang `.claude/commands/*.md`, và `scripts/setup/build-codex-metadata.js` sẽ tự động sinh `agents/openai.yaml` cho OpenAI Codex (truyền `-- --normalize` nếu cần chuẩn hóa frontmatter mới).
 
 4. **Bước 4 — Bổ sung Bộ Đánh Giá Kỹ Năng (`evals/`) & Unit Tests (`tests/`):**
    - Tạo hoặc cập nhật file test case tại `evals/cases/<skill-name>.json` (gồm `positive` prompts để test độ nhạy router, `negative` prompts chống kích hoạt nhầm, và `assertions` kiểm tra cấu trúc output).
@@ -77,10 +78,10 @@ Trước khi tạo Merge Request hoặc merge vào `main`, lệnh `npm test` (ba
 
 | Lệnh kiểm định | Cổng kiểm tra | Tiêu chí đạt (Pass Criteria) |
 |---|---|---|
-| `npm run validate:skills` | **Gate 1: Skills Structure** | Đủ frontmatter (`name`, `description`, `trigger`), đủ section `Grounding` & `Input Bắt Buộc`, không vượt giới hạn dòng. |
+| `npm run validate:skills` | **Gate 1: Skills Structure** | Đủ frontmatter (`name`, `description` chứa điều kiện kích hoạt `"Dùng khi..."`), đủ section `Grounding` & `Input Bắt Buộc`, không vượt giới hạn dòng. |
 | `npm run validate:commands` | **Gate 2: Command Parity** | Đồng bộ 1-1 giữa `commands/*.toml` và `.claude/commands/*.md`. |
 | `npm run validate:scope` | **Gate 3: Scope Guard** | Kiểm tra ranh giới phạm vi, ngăn ngừa scope creep và lệnh không được phép. |
-| `npm run validate:versions` | **Gate 4: Version Manifests** | Nhất quán phiên bản giữa `package.json` và toàn bộ `plugins/*/plugin.json`. |
+| `npm run validate:versions` | **Gate 4: Version Manifests** | Nhất quán phiên bản giữa `plugin.json`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` và `.agents/plugins/marketplace.json` (22 manifests). |
 | `npm run validate:links` | **Gate 5: Relative Links** | Không có markdown link tương đối nào bị gãy (broken links) trong các skills. |
 | `npm run validate:refs` | **Gate 6: Script & Asset Refs** | Mọi đường dẫn gọi script/template/checklist trong `SKILL.md` đều tồn tại thực tế. |
 | `npm run validate:paths` | **Gate 7: Canonical Workspace** | Mọi đường dẫn output tuân thủ đúng 5 thư mục chuẩn `workspace/issues/{issueKey}/{source,spec,tech,test,trace}/`. |
@@ -112,7 +113,7 @@ Trước khi tạo Merge Request hoặc merge vào `main`, lệnh `npm test` (ba
 
 1. **Single Source of Truth cho Rules:**
    - Thư mục `.agents/rules/` là nơi duy nhất lưu trữ và chỉnh sửa các luật cốt lõi (`git-workflow.md`, `workspace-paths.md`, `grounding-contract.md`, `autonomy-contract.md`, `action-first-adhd.md`, `confidence-level.md`, `skills-contributing.md`).
-   - Thư mục `.claude/rules` là **Symbolic Link** trỏ trực tiếp sang `../.agents/rules`. Mọi chỉnh sửa trong `.agents/rules/` sẽ tự động có hiệu lực cho cả Antigravity, Gemini CLI và Claude Code.
+   - Thư mục `.claude/rules` là **Symbolic Link** trỏ trực tiếp sang `../.agents/rules`, và `~/.codex/AGENTS.md` được symlink tới `AGENTS.md` bởi `npm run setup:codex`. Mọi chỉnh sửa trong `.agents/rules/` và `AGENTS.md` sẽ có hiệu lực đồng bộ cho Antigravity, Gemini CLI, Claude Code và OpenAI Codex.
 
 2. **Ranh giới Output Artifacts (`workspace/`):**
    - Toàn bộ sản phẩm sinh ra trong quá trình chạy skill bắt buộc đặt tại `workspace/issues/{issueKey}/` (theo 5 thư mục con: `source/`, `spec/`, `tech/`, `test/`, `trace/`), `workspace/sprints/{sprintId}/` hoặc `workspace/adhoc/{slug}/`.

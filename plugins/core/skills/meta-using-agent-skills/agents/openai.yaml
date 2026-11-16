@@ -1,0 +1,8 @@
+interface:
+  display_name: "Meta Using Agent Skills"
+  short_description: "Khám phá và gọi các kỹ năng (skills) của agent"
+  brand_color: "#64748B"
+  default_prompt: "Sử dụng $meta-using-agent-skills để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true

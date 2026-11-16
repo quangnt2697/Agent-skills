@@ -1,0 +1,8 @@
+interface:
+  display_name: "BA Backlog Prioritization"
+  short_description: "Prioritize list of features, sắp xếp backlog, đánh giá busine..."
+  brand_color: "#2563EB"
+  default_prompt: "Sử dụng $ba-backlog-prioritization để thực hiện tác vụ này theo đúng quy trình chuẩn."
+
+policy:
+  allow_implicit_invocation: true
