@@ -44,8 +44,8 @@ prompt = """
    - Nếu cả 2 đều không tồn tại: Báo lỗi SPEC_NOT_FOUND và DỪNG LẠI NGAY.
    ↓
 2. Thực thi Push (Fast-path):
-   - Fast-path n8n (ưu tiên): Gửi POST webhook pushSpecToJira qua scripts/lib/n8n-client.js
-   - CLI Direct: node plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} {filePath} [options]
+   - Fast-path n8n (ưu tiên, chạy từ mọi repo trên máy): `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js pushSpecToJira {issueKey} [filePath] [options]`
+   - CLI Direct (khi cần chạy trực tiếp ngoài sandbox): `node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} {filePath} [options]`
    ↓
 3. Xử lý Kết Quả & Báo cáo:
    - Thành công: Trả về Jira URL và xuất bản spec/testability-manifest.json cho QA.

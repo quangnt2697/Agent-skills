@@ -419,3 +419,182 @@ test('Securities Domain Engine (WF-18 / WF-19): evaluates rule matrix, filters M
   assert.equal(lintResGood[0].json.errorCount, 0);
 });
 
+test('pushSpecToJira: đóng gói markdownContent + ảnh PNG base64 từ dự án ngoài bất kỳ và xử lý backup/manifest/cleanup tại cwd', async () => {
+  const os = await import('node:os');
+  const tmpProject = fs.mkdtempSync(path.join(os.tmpdir(), 'external-arrow-app-'));
+  const issueKey = 'G3PTP-18039';
+  const specDir = path.join(tmpProject, 'workspace', 'issues', issueKey, 'spec');
+  const diagDir = path.join(specDir, 'diagrams');
+  fs.mkdirSync(diagDir, { recursive: true });
+
+  const pngPath = path.join(diagDir, 'mockup-case-1.png');
+  fs.writeFileSync(pngPath, Buffer.from('fake-png-bytes'));
+  fs.writeFileSync(path.join(specDir, 'refined-draft.md'), '# draft');
+
+  const validSpec = [
+    '## 🧩 User Story',
+    '**As a** Nhà đầu tư  ',
+    '**I want** xem màn hình chi tiết  ',
+    '**So that** ra quyết định nhanh',
+    '',
+    '## 💼 Business Context',
+    '- **Vấn đề:** Thiếu thông tin.',
+    '- **Mục tiêu:** Bổ sung.',
+    '',
+    '## ✅ Acceptance Criteria',
+    '```gherkin',
+    'Feature: Xem chi tiết',
+    '  Scenario: Happy - Hiển thị thành công',
+    '    Given Đã đăng nhập',
+    '    When Mở màn hình',
+    '    Then Hiển thị đúng dữ liệu',
+    '',
+    '  Scenario: Validation - Thiếu dữ liệu',
+    '    Given Không có dữ liệu',
+    '    When Mở màn hình',
+    '    Then Hiển thị trạng thái trống',
+    '',
+    '  Scenario: Edge - Mất kết nối mạng',
+    '    Given Mạng bị ngắt',
+    '    When Tải lại màn hình',
+    '    Then Hiển thị nút thử lại',
+    '```',
+    '',
+    '## 🎨 UI Design / Mockup',
+    '',
+    '![Mockup Case 1](workspace/issues/G3PTP-18039/spec/diagrams/mockup-case-1.png)',
+    '',
+    '## ☀️ Success Criteria & Tracking',
+    '| Metric | Current | Target | Measurement |',
+    '|---|---|---|---|',
+    '| Adoption | 0% | 50% | GA4 |',
+  ].join('\n');
+
+  const specPath = path.join(specDir, 'refined.md');
+  fs.writeFileSync(specPath, validSpec, 'utf8');
+
+  let capturedPayload = null;
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    assert.ok(String(url).endsWith('/webhook/jira-push-spec'));
+    capturedPayload = JSON.parse(init.body);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        success: true,
+        isError: false,
+        issueKey,
+        oldDescription: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: 'old' }] }] },
+        uploadedCount: 1,
+      }),
+    };
+  };
+
+  try {
+    const res = await pushSpecToJira(issueKey, 'workspace/issues/G3PTP-18039/spec/refined.md', { cwd: tmpProject });
+    assert.equal(res.success, true);
+    assert.equal(capturedPayload.issueKey, issueKey);
+    assert.equal(capturedPayload.callerWorkspaceDir, tmpProject);
+    assert.ok(capturedPayload.markdownContent.includes('Nhà đầu tư'));
+    assert.equal(capturedPayload.attachments.length, 1);
+    assert.equal(capturedPayload.attachments[0].filename, 'mockup-case-1.png');
+    assert.equal(Buffer.from(capturedPayload.attachments[0].dataBase64, 'base64').toString(), 'fake-png-bytes');
+
+    // Kiểm tra backup, testability-manifest.json, final.md và cleanup draft tại dự án ngoài
+    const sourceDir = path.join(tmpProject, 'workspace', 'issues', issueKey, 'source');
+    assert.ok(fs.readdirSync(sourceDir).some(f => f.startsWith('jira-description-backup-')));
+    assert.ok(fs.existsSync(path.join(specDir, 'testability-manifest.json')));
+    assert.ok(fs.existsSync(path.join(specDir, 'final.md')));
+    assert.equal(fs.existsSync(path.join(specDir, 'refined-draft.md')), false);
+  } finally {
+    globalThis.fetch = origFetch;
+    fs.rmSync(tmpProject, { recursive: true, force: true });
+  }
+});
+
+test('jira-push-preflight.js: xử lý Payload Mode (markdownContent + ADF CommonJS helper) không cần resolver', async () => {
+  const preflightCode = fs.readFileSync(
+    path.join(__dirname, '..', 'n8n-nodes', 'ba', 'jira-push-preflight.js'),
+    'utf8'
+  );
+  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+  const fn = new AsyncFunction('require', '$input', '$', '$env', preflightCode);
+
+  const md = [
+    '## 🧩 User Story',
+    '**As a** Tester  ',
+    '**I want** push ADF  ',
+    '**So that** giữ nguyên bảng',
+    '',
+    '## ✅ Acceptance Criteria',
+    '```gherkin',
+    'Scenario: Happy - A',
+    '  Given 1',
+    '  When 2',
+    '  Then 3',
+    'Scenario: Validation - B',
+    '  Given 4',
+    '  When 5',
+    '  Then 6',
+    '```',
+    '',
+    '| Col1 | Col2 |',
+    '|---|---|',
+    '| v1 | v2 |',
+  ].join('\n');
+
+  const prepPayload = {
+    issueKey: 'G3PTP-18039',
+    project: 'arrow-app',
+    filePath: '/tmp/arrow-app/workspace/issues/G3PTP-18039/spec/refined.md',
+    callerWorkspaceDir: '/tmp/arrow-app',
+    markdownContent: md,
+    hasInlinePayload: true,
+    attachments: [],
+    dryRun: true,
+    force: false,
+    _triggerSource: 'webhook'
+  };
+
+  const out = await fn(
+    require,
+    { first: () => ({ json: prepPayload }) },
+    (name) => ({ first: () => ({ json: name === 'Prepare Resolver Input' ? prepPayload : {} }) }),
+    { AGENT_WORKSPACE_DIR: path.resolve(__dirname, '..', '..') }
+  );
+
+  assert.equal(out[0].json.isError, false);
+  assert.equal(out[0].json.isExternalCaller, true);
+  assert.equal(out[0].json.tableCount, 1);
+  assert.equal(out[0].json.scenarioCount, 2);
+  assert.ok(out[0].json.adfContent.content.some(n => n.type === 'table'));
+});
+
+test('local-workspace-resolver.json: dò đúng chuẩn workspace/issues/{issueKey} và config/projects.json', async () => {
+  const os = await import('node:os');
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'lwr-test-'));
+  try {
+    fs.mkdirSync(path.join(tmpRoot, 'config'), { recursive: true });
+    fs.mkdirSync(path.join(tmpRoot, 'workspace', 'issues', 'G3PTP-18039', 'spec'), { recursive: true });
+    fs.writeFileSync(path.join(tmpRoot, 'workspace', 'issues', 'G3PTP-18039', 'spec', 'refined.md'), '# test');
+    fs.writeFileSync(path.join(tmpRoot, 'config', 'projects.json'), JSON.stringify({ demo: tmpRoot }));
+
+    const wf = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'n8n-workflows', 'data-recon', 'local-workspace-resolver.json'), 'utf8'));
+    const code = wf.nodes.find(n => n.name === 'Resolve Workspace Path').parameters.jsCode;
+    const fn = new Function('require', '$input', '$', '$env', code);
+
+    const payload = { issueKey: 'G3PTP-18039', targetPath: 'spec' };
+    const out = fn(
+      require,
+      { first: () => ({ json: payload }) },
+      () => ({ first: () => ({ json: payload }) }),
+      { AGENT_WORKSPACE_DIR: tmpRoot }
+    );
+    assert.equal(out[0].json.found, true);
+    assert.equal(out[0].json.resolvedPath, path.join(tmpRoot, 'workspace', 'issues', 'G3PTP-18039', 'spec'));
+  } finally {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  }
+});
+

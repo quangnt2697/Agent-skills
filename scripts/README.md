@@ -117,7 +117,7 @@ scripts/
 
 | Lệnh | Mô Tả | Script / Công Cụ Thực Thi |
 |---|---|---|
-| `npm test` | Chạy toàn bộ pipeline: 10 validators + 34 unit test suites (250 tests) + evals | `npm run validate && npm run test:unit && npm run evals` |
+| `npm test` | Chạy toàn bộ pipeline: 10 validators + 34 unit test suites (253 tests) + evals | `npm run validate && npm run test:unit && npm run evals` |
 | `npm run lint` | Alias của `npm run validate` | `npm run validate` |
 | `npm run pretest` | Alias chuẩn bị kiểm thử (tự động build commands & Codex metadata) | `npm run build` |
 | `npm run validate` | Chạy toàn bộ 10 cổng kiểm định hệ thống | Cả 10 script kiểm định dưới đây |
