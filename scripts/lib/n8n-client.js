@@ -10,6 +10,7 @@
  */
 
 import dotenv from 'dotenv';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -17,7 +18,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..', '..');
 
-// Đảm bảo nạp .env
+// Nạp .env theo thứ tự ưu tiên: dự án hiện tại (process.cwd()) trước, fallback về agent-skills/.env
+const cwdEnvPath = path.join(process.cwd(), '.env');
+if (path.resolve(process.cwd()) !== path.resolve(projectRoot) && fs.existsSync(cwdEnvPath)) {
+  dotenv.config({ path: cwdEnvPath });
+}
 dotenv.config({ path: path.join(projectRoot, '.env') });
 
 const N8N_BASE_URL = (process.env.N8N_BASE_URL || `${process.env.N8N_PROTOCOL || 'http'}://${process.env.N8N_HOST || 'localhost'}:${process.env.N8N_PORT || '5678'}`).replace(/\/$/, '');
@@ -144,22 +149,104 @@ export async function triggerAsyncTest(params, options = {}) {
 }
 
 /**
- * Fast-Path: Đẩy file refined.md lên Jira Description qua n8n
- * @param {string} issueKey Mã Jira
- * @param {string} filePathOrProject Đường dẫn file hoặc tên project/cluster
- * @param {object} options { dryRun: boolean, project: string, timeoutMs: number }
+ * Fast-Path: Đẩy file refined.md / final.md lên Jira Description qua n8n (hỗ trợ mọi repo trên máy)
+ * @param {string} rawIssueKey Mã Jira hoặc URL ticket
+ * @param {string} filePathOrProject Đường dẫn file .md hoặc tên project/cluster
+ * @param {object} options { dryRun: boolean, force: boolean, project: string, cwd: string, timeoutMs: number }
  * @returns {Promise<object>}
  */
-export async function pushSpecToJira(issueKey, filePathOrProject = '', options = {}) {
+export async function pushSpecToJira(rawIssueKey, filePathOrProject = '', options = {}) {
+  const { normalizeIssueKey, collectLocalMockupFiles, exportTestabilityManifest } = await import(
+    '../../plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js'
+  );
+  const issueKey = normalizeIssueKey(rawIssueKey) || String(rawIssueKey || '').trim();
+  const callerCwd = options.cwd ? path.resolve(options.cwd) : process.cwd();
   const isMd = typeof filePathOrProject === 'string' && filePathOrProject.endsWith('.md');
-  const payload = {
-    issueKey,
-    filePath: isMd ? filePathOrProject : undefined,
-    project: options.project || (!isMd ? filePathOrProject : undefined),
-    dryRun: Boolean(options.dryRun)
-  };
-  const timeoutMs = options.timeoutMs || 30000;
-  return await callN8nWebhook('jira-push-spec', payload, timeoutMs);
+
+  let resolvedFilePath = '';
+  if (isMd || (filePathOrProject && fs.existsSync(path.resolve(callerCwd, filePathOrProject)))) {
+    resolvedFilePath = path.resolve(callerCwd, filePathOrProject);
+  } else if (!filePathOrProject) {
+    const defaultRefined = path.join(callerCwd, 'workspace', 'issues', issueKey, 'spec', 'refined.md');
+    const defaultFinal = path.join(callerCwd, 'workspace', 'issues', issueKey, 'spec', 'final.md');
+    if (fs.existsSync(defaultRefined)) resolvedFilePath = defaultRefined;
+    else if (fs.existsSync(defaultFinal)) resolvedFilePath = defaultFinal;
+  }
+
+  let payload;
+  let localMarkdown = '';
+
+  if (resolvedFilePath && fs.existsSync(resolvedFilePath) && fs.statSync(resolvedFilePath).isFile()) {
+    localMarkdown = fs.readFileSync(resolvedFilePath, 'utf8');
+    const isFinalSpec = path.basename(resolvedFilePath).toLowerCase().includes('final');
+
+    if (!options.force && !options.dryRun && !isFinalSpec) {
+      const { validateRefinedSpec } = await import('../validators/validate-ba-refine.js');
+      const valResult = validateRefinedSpec(resolvedFilePath);
+      if (!valResult.valid) {
+        throw new Error(`Spec chưa đạt chuẩn pre-flight:\n- ${valResult.errors.join('\n- ')}`);
+      }
+    }
+
+    const imagePaths = collectLocalMockupFiles(resolvedFilePath, localMarkdown, callerCwd);
+    const attachments = imagePaths.map((imgPath) => {
+      const ext = path.extname(imgPath).toLowerCase();
+      const mimeType = ext === '.svg' ? 'image/svg+xml' : (ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png');
+      return {
+        filename: path.basename(imgPath),
+        mimeType,
+        dataBase64: fs.readFileSync(imgPath).toString('base64')
+      };
+    });
+
+    payload = {
+      issueKey,
+      filePath: resolvedFilePath,
+      callerWorkspaceDir: callerCwd,
+      markdownContent: localMarkdown,
+      attachments,
+      project: options.project || path.basename(callerCwd),
+      dryRun: Boolean(options.dryRun),
+      force: Boolean(options.force)
+    };
+  } else {
+    payload = {
+      issueKey,
+      filePath: isMd ? filePathOrProject : undefined,
+      project: options.project || (!isMd ? filePathOrProject : undefined),
+      dryRun: Boolean(options.dryRun),
+      force: Boolean(options.force)
+    };
+  }
+
+  const timeoutMs = options.timeoutMs || 60000;
+  const result = await callN8nWebhook('jira-push-spec', payload, timeoutMs);
+
+  // Khi push từ dự án bất kỳ trên host thành công: sao lưu description cũ, xuất manifest và dọn nháp tại callerCwd
+  if (localMarkdown && result && !result.isError && !options.dryRun) {
+    if (result.oldDescription) {
+      try {
+        const sourceDir = path.join(callerCwd, 'workspace', 'issues', issueKey, 'source');
+        fs.mkdirSync(sourceDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(sourceDir, `jira-description-backup-${Date.now()}.json`),
+          JSON.stringify(result.oldDescription, null, 2),
+          'utf8'
+        );
+      } catch (_) {}
+    }
+
+    try {
+      exportTestabilityManifest(issueKey, localMarkdown, resolvedFilePath);
+    } catch (_) {}
+
+    try {
+      const { cleanIssueWorkspace } = await import('../workspace/clean-issue-workspace.js');
+      cleanIssueWorkspace(issueKey, { rootDir: callerCwd });
+    } catch (_) {}
+  }
+
+  return result;
 }
 
 /**
@@ -345,9 +432,16 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         case 'prepJiraContext':
           result = await prepJiraContext(args[1]);
           break;
-        case 'pushSpecToJira':
-          result = await pushSpecToJira(args[1], args[2], JSON.parse(args[3] || '{}'));
+        case 'pushSpecToJira': {
+          const rest = args.slice(1);
+          const flags = new Set(rest.filter(a => a.startsWith('--')));
+          const pos = rest.filter(a => !a.startsWith('--'));
+          const jsonOpts = pos[2] && pos[2].startsWith('{') ? JSON.parse(pos[2]) : {};
+          if (flags.has('--dry-run')) jsonOpts.dryRun = true;
+          if (flags.has('--force') || flags.has('--skip-validation')) jsonOpts.force = true;
+          result = await pushSpecToJira(pos[0], pos[1] || '', jsonOpts);
           break;
+        }
         case 'queryMetabase':
           result = await queryMetabase(args[1], JSON.parse(args[2] || '{}'));
           break;

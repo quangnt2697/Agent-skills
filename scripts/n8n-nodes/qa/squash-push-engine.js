@@ -61,8 +61,12 @@ if (!featureFile) {
 
 // Tìm namejira từ final.md nếu có
 let namejira = issueKey;
-const finalMdPath = path.join(projectRoot, 'workspace', issueKey, 'spec', 'final.md');
-if (fs.existsSync(finalMdPath)) {
+const finalMdCandidates = [
+  path.join(projectRoot, 'workspace', 'issues', issueKey, 'spec', 'final.md'),
+  path.join(projectRoot, 'workspace', issueKey, 'spec', 'final.md')
+];
+const finalMdPath = finalMdCandidates.find(p => fs.existsSync(p)) || '';
+if (finalMdPath) {
   try {
     const finalContent = fs.readFileSync(finalMdPath, 'utf-8');
     const firstLine = finalContent.split('\n').find(l => l.startsWith('# '));

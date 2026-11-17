@@ -38,6 +38,10 @@ if (specContext.dryRun) {
       success: true,
       isDryRun: true,
       issueKey,
+      adfContent: specContext.adfContent,
+      tableCount: specContext.tableCount || 0,
+      blockCount: specContext.blockCount || 0,
+      scenarioCount: specContext.scenarioCount || 0,
       reportText: dryRunMsg,
       _triggerSource: triggerSource,
       userName
@@ -66,7 +70,8 @@ if (json.error || json.errorMessages || (json.status && json.status >= 400)) {
 const formattedUser = userName ? (userName.startsWith('@') ? userName : '@' + userName) : '@User';
 const projectTag = specContext.project ? specContext.project + ' ' : '';
 
-// Tự động dọn dẹp các file nháp/rác sau khi push Jira thành công (Post-Push Cleanup)
+// Tự động dọn dẹp các file nháp/rác trong container chỉ khi chạy nội bộ (không phải payload từ project ngoài)
+if (!specContext.isExternalCaller) {
 try {
   const fs = require('fs');
   const path = require('path');
@@ -147,6 +152,7 @@ try {
     }
   }
 } catch (_) {}
+}
 
 const successMsg = `### 🚀 Đẩy Đặc Tả Lên Jira Thành Công!
 - **Ticket:** **[${issueKey}](${jiraUrl})**
@@ -168,6 +174,13 @@ return [{
     issueKey,
     jiraUrl,
     filePath: specContext.filePath,
+    adfContent: specContext.adfContent,
+    oldDescription: specContext.oldDescription || null,
+    uploadedAttachments: specContext.attachmentMap || {},
+    uploadedCount: specContext.uploadedCount || 0,
+    tableCount: specContext.tableCount || 0,
+    blockCount: specContext.blockCount || 0,
+    scenarioCount: specContext.scenarioCount || 0,
     reportText: successMsg,
     _triggerSource: triggerSource,
     userName
