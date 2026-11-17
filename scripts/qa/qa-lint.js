@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const issueKey = process.argv[2];
-if (!issueKey) {
+if (!issueKey || !/^[A-Za-z0-9_-]+$/.test(issueKey)) {
   console.error('Usage: node qa-lint.js {issueKey}');
   process.exit(1);
 }

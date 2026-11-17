@@ -4,7 +4,7 @@ description: "Lập kế hoạch Sprint, tính toán vận tốc và kéo backlo
 
 Kích hoạt kỹ năng sm-sprint-planning.
 
-Đọc chi tiết trong plugins/scrum-master/skills/sm-sprint-planning/SKILL.md và thực thi quy trình lập kế hoạch Sprint. Kế hoạch ghi vào `workspace/sprints/{sprintId}/trace/sprint-plan.md`.
+Đọc chi tiết trong plugins/scrum-master/skills/sm-sprint-planning/SKILL.md và thực thi quy trình lập kế hoạch Sprint. Kế hoạch ghi vào `workspace/sprints/{sprintId}/tech/sprint-plan.md`.
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 

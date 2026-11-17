@@ -70,11 +70,8 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 
 ## 2. Quy trình 6 Bước Thực Thi
 
-> 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 60 dòng.
-
 - **Phase 0 — Scan & Duyệt References (GATE 1):**
-  Đọc credentials từ `.env`, lấy metadata Jira thô (n8n Fast-Path: `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js` — CLI: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js prepJiraContext {issueKey}` — nếu n8n offline báo user và DỪNG), quét Confluence links + attachments, kiểm tra cache `workspace/issues/{issueKey}/source/refs/`, hiển thị bảng cho user duyệt → **DỪNG chờ "OK"**. Khi phát hiện link Confluence, ưu tiên dùng Fast-Path `fetchConfluenceDoc(urlOrId)` — CLI: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js fetchConfluenceDoc {urlOrId}` — để lấy trực tiếp nội dung Markdown sạch (tiết kiệm 90% token).
-  > 📖 Chi tiết API: [references/jira-api-reference.md](references/jira-api-reference.md)
+  Lấy metadata Jira qua n8n Fast-Path (`node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js prepJiraContext {issueKey}`; nếu n8n offline báo user và DỪNG), quét Confluence links + attachments, kiểm tra cache `workspace/issues/{issueKey}/source/refs/`, trình bảng cho user duyệt → **DỪNG chờ "OK"**. Với link Confluence, dùng `fetchConfluenceDoc {urlOrId}` lấy Markdown sạch ([jira-api-reference.md](references/jira-api-reference.md)).
 
 - **Phase 1 — Download (Chỉ tải file thiếu):**
   Tải Jira PDF (`assets/jira-fetch-pdf.sh`) + Confluence PDF (`{slug}-{pageId}.pdf`) + attachments còn thiếu. Nếu đã lấy được Markdown sạch qua Fast-Path Confluence (`fetchConfluenceDoc`), lưu trực tiếp vào `workspace/issues/{issueKey}/source/` và `source/refs/`. Ghi `metadata.json`.
@@ -100,21 +97,9 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 
-- 🚀 **BẮT BUỘC ĐỌC TRƯỚC:**
-  - [quick-start-checklist.md](references/quick-start-checklist.md): Tờ nhắc 6 bước ≤ 60 dòng.
-  - [spec-final-template.md](assets/spec-final-template.md): Template 13 sections chuẩn cho `final.md`.
-
-- 🛠️ **Công cụ & Assets:**
-  - [jira-auth-check.sh](assets/jira-auth-check.sh): Script kiểm tra kết nối Jira API.
-  - [jira-fetch-pdf.sh](assets/jira-fetch-pdf.sh): Script tải Jira issue thành PDF và metadata thô.
-
-- 📖 **Tài liệu chi tiết (references/):**
-  - [workflow-and-phases.md](references/workflow-and-phases.md): Chi tiết các Phase 0-5 Luồng A (Jira) và Luồng B (Confluence).
-  - [rules-and-guidelines.md](references/rules-and-guidelines.md): Authentication, quy tắc đặt tên, bộ lọc file, red flags, next steps.
-  - [jira-api-reference.md](references/jira-api-reference.md): Danh mục endpoint Jira REST API v3 và định dạng response.
-  - [profile-api.md](references/profile-api.md): 14 chiều phân tích cho API/BE/WebSocket.
-  - [profile-app.md](references/profile-app.md): 9 chiều phân tích cho Mobile App.
-  - [profile-web.md](references/profile-web.md): 9 chiều phân tích cho Web Portal.
+- **Template & Checklist nhanh:** [spec-final-template.md](assets/spec-final-template.md) · [quick-start-checklist.md](references/quick-start-checklist.md)
+- **Assets CLI:** [jira-auth-check.sh](assets/jira-auth-check.sh) · [jira-fetch-pdf.sh](assets/jira-fetch-pdf.sh)
+- **Tài liệu chi tiết:** [workflow-and-phases.md](references/workflow-and-phases.md) · [rules-and-guidelines.md](references/rules-and-guidelines.md) · [jira-api-reference.md](references/jira-api-reference.md) · [profile-api.md](references/profile-api.md) · [profile-app.md](references/profile-app.md) · [profile-web.md](references/profile-web.md)
 
 ---
 
@@ -165,8 +150,8 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
 - Tự ý tải file đính kèm mà chưa qua Gate 1 (chờ user duyệt bảng tài liệu).
 - Bỏ qua việc đọc tài liệu tham chiếu đính kèm hoặc đọc lướt qua tóm tắt sơ sài.
 - Tự ý đoán yêu cầu thay vì phỏng vấn từng câu một qua `ba-interview-me`.
-- Bỏ trống các section trong template chuẩn 13 sections của `*-final.md`.
-- Dừng lại hỏi user "có tiếp tục sang QA không" thay vì tự động chuyển tiếp theo quy trình tự chủ.
+- Bỏ trống các section trong template chuẩn 13 sections của `spec/final.md`.
+- Tự động kích hoạt QA downstream khi chưa có lệnh Pipeline hoặc yêu cầu từ user.
 
 ## Xác minh (Verification)
 

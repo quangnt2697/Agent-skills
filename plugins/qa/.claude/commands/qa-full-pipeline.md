@@ -1,5 +1,5 @@
 ---
-description: "Chạy full QA pipeline tự động từ test design đến execution (tự kích hoạt ba-spec nếu chưa có final.md)"
+description: "Chạy full QA pipeline tự động từ test design đến execution và traceability từ spec/final.md"
 ---
 
 Kích hoạt kỹ năng `qa-full-pipeline` với `$ARGUMENTS`.
@@ -10,9 +10,9 @@ và làm theo, không tự diễn giải lại ở đây.
 
 ## Quy Trình Tích Hợp Tự Động
 
-1. **Kiểm tra Spec Đầu Vào (`workspace/issues/{issueKey}/spec/final.md`):**
+1. **Gate G0 — Kiểm tra Spec Đầu Vào (`workspace/issues/{issueKey}/spec/final.md`):**
    - Nếu **ĐÃ CÓ**: Chuyển ngay sang Phase 1 (`qa-test-design`).
-   - Nếu **CHƯA CÓ**: Tự động kích hoạt Phase 0 (`ba-spec {issueKey}`) để import Jira/Confluence và tạo `workspace/issues/{issueKey}/spec/final.md` trước khi tiến hành thiết kế test.
+   - Nếu **CHƯA CÓ**: **DỪNG NGAY tại Gate G0** (QA không tự làm việc của BA) và yêu cầu chạy `/ba-spec {issueKey}` trước, hoặc dùng `/e2e-delivery {issueKey}` nếu muốn chạy trọn gói từ BA → QA.
 
 2. **Phase 1-4 — QA Pipeline:**
    - Phase 1: `qa-test-design` → checklist kiểm thử và kịch bản Gherkin (.feature).
@@ -52,12 +52,12 @@ và làm theo, không tự diễn giải lại ở đây.
 
 ```
 workspace/issues/{issueKey}/
-├── spec/final.md                    # (Phase 0 nếu tự kích hoạt ba-spec)
+├── spec/final.md                    # (Input bắt buộc từ BA/PO)
 └── test/
     ├── checklist.md
     ├── {issueKey}.feature
     ├── steps/test_*.py
-    └── result/summary.md
+    └── result/report.md
 ```
 
 ## Xem thêm

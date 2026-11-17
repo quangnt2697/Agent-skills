@@ -4,7 +4,7 @@ Các personas chuyên biệt đóng một vai trò duy nhất với một góc n
 
 | Persona                                                                                            | Plugin                    | Vai Trò                          | Phù hợp nhất cho                                                       |
 |----------------------------------------------------------------------------------------------------|---------------------------|----------------------------------|------------------------------------------------------------------------|
-| [ba-po](../../plugins/ba-po/agents/ba-po.md)                                                       | `ba-po`                   | Business Analyst & Product Owner | Phân tích requirements, xác định gaps, lập tài liệu *-final.md         |
+| [ba-po](../../plugins/ba-po/agents/ba-po.md)                                                       | `ba-po`                   | Business Analyst & Product Owner | Phân tích requirements, xác định gaps, lập tài liệu `spec/final.md`    |
 | [qa](../../plugins/qa/agents/qa.md)                                                                | `qa`                      | QA Engineer                      | Chiến lược test, phân tích độ bao phủ, thiết kế checklist, BDD Gherkin |
 | [scrum-master](../../plugins/scrum-master/agents/scrum-master.md)                                  | `scrum-master`            | Scrum Master                     | Lập kế hoạch, daily standup, xử lý rủi ro, retrospective               |
 | [code-reviewer](../../plugins/code-reviewer/agents/code-reviewer.md)                               | `code-reviewer`           | Senior Staff Engineer            | Review code 5 phương diện trước khi merge                              |

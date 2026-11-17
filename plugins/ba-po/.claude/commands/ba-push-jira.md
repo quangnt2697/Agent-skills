@@ -55,7 +55,7 @@ description: "Đẩy đặc tả nghiệp vụ (spec/refined.md hoặc spec/fina
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 
-1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ đẩy file đặc tả nghiệp vụ có sẵn lên Jira Issue Description và cập nhật `spec/testability-manifest.json`. TUYỆT ĐỐI CẤM sửa/xóa mã nguồn sản phẩm (`src/`, `app/`).
+1. **CHỈ LÀM (TIER 2b - EXTERNAL-WRITE):** Lệnh này CHỈ làm nhiệm vụ đẩy file đặc tả nghiệp vụ có sẵn lên Jira Issue Description và cập nhật `spec/testability-manifest.json`. TUYỆT ĐỐI CẤM sửa/xóa mã nguồn sản phẩm (`src/`, `app/`).
 2. **NO SCOPE CREEP:** TUYỆT ĐỐI KHÔNG tự ý quét tài liệu liên quan, không phân kỳ ý tưởng (Divergent), không hội tụ (Convergent), không gọi `ba-interview-me`.
 3. **SPEC IMMUTABILITY (CẤM SỬA SPEC):** Khi script báo lỗi validator (thiếu mục, có @tag, v.v.), Agent TUYỆT ĐỐI KHÔNG ĐƯỢC tự ý mở file spec ra sửa lại nội dung để lách gate. BẮT BUỘC dừng lại, in chi tiết lỗi và để người dùng quyết định (hoặc dùng cờ `--force` nếu người dùng cho phép).
 4. **LOG TRUTH (TRUNG THỰC BÁO CÁO):** Chỉ báo thành công khi có phản hồi HTTP 200/204 từ Jira API.

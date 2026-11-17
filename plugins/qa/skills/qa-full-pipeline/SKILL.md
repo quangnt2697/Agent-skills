@@ -11,7 +11,7 @@ metadata:
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
-> 🔒 **Scope & Permission:** Tier 3 (PIPELINE ORCHESTRATOR) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+> 🔒 **Scope & Permission:** Tier 3 (PIPELINE ORCHESTRATOR) · Auto-Mode Pipeline (chỉ dừng tại 5 trường hợp trong [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md)) · Mặc định không dừng hỏi giữa các phase.
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
 - **Input bắt buộc:** `issueKey`; n8n đang chạy. Thiếu input thì dừng và hỏi lại, không tự điền.
@@ -27,7 +27,7 @@ metadata:
 
 ## 2. Quy trình 5 Phase Điều phối
 - **Phase 0 (Pre-flight Validation):** Kiểm tra sự tồn tại của `final.md`, nạp biến môi trường `.env`, thiết lập trạng thái pipeline.
-- **Phase 1 (Test Design - `qa-test-design`):** Sinh `checklist.md`, sinh `{issueKey}.feature`, chạy `qa-validate.sh` (exit 0 mới được đi tiếp).
+- **Phase 1 (Test Design - `qa-test-design`):** Sinh `checklist.md`, sinh `{issueKey}.feature`, chạy `qa-validate.js` (exit 0 mới được đi tiếp).
 - **Phase 2 (Test Automation - `qa-auto-design`):** Khảo sát codebase (Recon), sinh mã phân tầng POM/Service + Test steps, thẩm định cú pháp (`pytest --collect-only`).
 - **Phase 3 (Test Execution - `qa-run-test`):** Thực thi toàn bộ test suite, ghi nhận log vào `test-output.log` và xuất báo cáo chi tiết `report.md`.
 - **Phase 4 (Summary & Traceability):** Chạy `trace-check.js --stage=all` (skill `meta-cross-validation`) sinh `workspace/issues/{issueKey}/trace/matrix.md` theo mã BR/AC. Nếu pass rate ≥ 90% và không có `--no-squash` → đẩy `.feature` lên Squash TM (`qa-squash-push`).
@@ -54,6 +54,7 @@ metadata:
 
 ## 4. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 - 📖 **Tài liệu quy trình & Điều phối (references/):**
+  - [qa-operational-rules.md](references/qa-operational-rules.md): Quy chuẩn vận hành QA bắt buộc (BVA/EP, Traceability, API/WS SDK, Log Schema).
   - [workflow.md](references/workflow.md): Chi tiết 5 Phase, Phase Gates, cơ chế Resume, Red Flags và Verification checklist.
   - [pipeline-states.md](references/pipeline-states.md): Quản lý file trạng thái pipeline và xử lý ngoại lệ.
 

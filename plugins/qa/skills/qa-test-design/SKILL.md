@@ -3,178 +3,95 @@ name: qa-test-design
 description: "Thiết kế bộ artifacts kiểm thử phi-mã-nguồn gồm Checklist kiểm thử thực thi (checklist.md) và kịch bản BDD Gherkin (.feature) từ đặc tả nghiệp vụ. Dùng khi cần lập test plan, phân tích ma trận 6 trục, tạo checklist hoặc viết kịch bản BDD trước khi lập trình automation."
 metadata:
   version: "1.0.0"
-  short-description: "Thiết kế bộ artifacts kiểm thử 2 giai đoạn chuẩn mực gồm Chec..."
+  short-description: "Thiết kế Checklist kiểm thử và kịch bản BDD Gherkin từ spec..."
 ---
 
 # Kỹ Năng Thiết Kế Kiểm Thử QA (qa-test-design)
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
-> 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+> 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
-- **Input bắt buộc:** `spec/final.md`; dữ liệu chứng khoán lấy từ Metabase UAT/TimescaleDB. Thiếu input thì dừng và hỏi lại, không tự điền.
-- **Bằng chứng hoàn thành:** `checklist.md` và `.feature` tồn tại; `qa-validate.js` exit 0; không bịa mã chứng khoán.
+- **Input bắt buộc:** `workspace/issues/{issueKey}/spec/final.md`; dữ liệu chứng khoán tra từ Metabase UAT/TimescaleDB (read-only). Thiếu input thì DỪNG và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** `checklist.md` và `{issueKey}.feature` tồn tại, ánh xạ 1-1 qua `@CL-xxx`, `qa-validate.js` exit 0, không bịa mã chứng khoán.
 
-## ⚠️ RANH GIỚI NHIỆM VỤ (Bắt buộc đọc trước)
+## ⚠️ RANH GIỚI NHIỆM VỤ & KHI NÀO DÙNG
 
 | ✅ qa-test-design LÀM | ❌ qa-test-design KHÔNG LÀM |
 |---|---|
-| Đọc spec/final.md, phân tích yêu cầu | Viết code Python/Pytest/Playwright |
-| Thiết kế `checklist.md` theo 6 chiều | Chạy test thực sự lên server |
-| Tra cứu dữ liệu thật UAT (read-only) | Debug lỗi hệ thống backend |
-| Viết kịch bản BDD Gherkin `.feature` | Debug lỗi hệ thống backend |
-| Chạy `qa-validate.sh` (kiểm tra cú pháp Gherkin) | Tạo file conftest.py, services/, pages/ |
-| Bàn giao artifacts cho `qa-auto-design` | Viết báo cáo kết quả test |
+| Đọc `spec/final.md`, phân tích test profile & ma trận 6 trục | Viết code Python/Pytest/Playwright (`conftest.py`, `services/`, `pages/`) |
+| Tra cứu dữ liệu thật UAT (read-only) vào `data-grounding.json` | Chạy test lên server hoặc debug lỗi hệ thống backend |
+| Thiết kế `checklist.md` + BDD `{issueKey}.feature` và chạy `qa-validate.js` | Tự sửa spec/assertion gốc hoặc viết báo cáo kết quả chạy test |
 
-## 1. Khi nào dùng?
-- Đã có tài liệu đặc tả nghiệp vụ (`workspace/issues/{issueKey}/spec/final.md`).
-- Cần chuyển hóa spec thành 2 artifacts kiểm thử chuẩn mực: `checklist.md` (Kiểm thử cái gì) và `{issueKey}.feature` (Kiểm thử như thế nào).
-- Chuẩn bị đầu vào cho quá trình sinh mã tự động (`qa-auto-design`) hoặc đồng bộ lên Squash TM (`qa-squash-push`).
-- **Khuyến nghị Planning Mode (`/plan`):** Đối với các tính năng có từ 2 profile kiểm thử trở lên hoặc tác động trực tiếp luồng khớp lệnh ORS/ký quỹ, khuyến nghị bật `/plan` để phân tích ma trận rủi ro trước khi chốt checklist.
+- **Dùng khi:** Đã có `workspace/issues/{issueKey}/spec/final.md`, cần tạo `checklist.md` + `{issueKey}.feature` trước `qa-auto-design` hoặc `qa-squash-push`. *(Với ticket ≥ 2 profile hoặc luồng khớp lệnh ORS/ký quỹ, có thể bật `/plan`.)*
+- **Khi KHÔNG sử dụng:** Chưa có spec rõ ràng → Dùng `ba-spec` / `ba-interview-me`. Đã có `.feature` và cần viết code test → Dùng `qa-auto-design`.
 
-**Khi KHÔNG sử dụng:**
-- Chưa có spec rõ ràng → Dùng `ba-spec` hoặc `ba-interview-me` trước.
-- Đã có kịch bản `.feature` và cần viết code test tự động → Dùng `qa-auto-design`.
+## 1. Định tuyến 5 Test Profiles & Ma trận 6 Trục Bao phủ
 
-## 1.1. Phân loại 5 Test Profiles chuẩn hóa (Định tuyến tự động)
+Nhận diện profile từ `spec/testability-manifest.json` hoặc `spec/final.md`:
 
-Tự động nhận diện profile từ `spec/testability-manifest.json` hoặc phân tích `spec/final.md` để nạp đúng Bộ khung kiểm thử (Test Archetype):
+| Mã Profile | Phạm vi áp dụng | Trọng tâm Kiểm thử & Tài nguyên |
+|---|---|---|
+| **QA-PROFILE-API** | REST / GraphQL / OpenAPI | Schema, Auth/IDOR, Idempotency, tính toán `Decimal`, mã lỗi (`fixtures_api.py`, `api_ws_service.py`) |
+| **QA-PROFILE-WS** | WebSocket / MDDS | Ngưỡng theo hạng Normal/VIP/Ultimate, reconnect, topic timeout ([05-market-data-mdds.md](../../../../references/securities/05-market-data-mdds.md)) |
+| **QA-PROFILE-UI** | Web Trading & Mobile App | Hiển thị theo phiên, validation, khóa double-click, đồng bộ UI↔API (`web_ui_pom.py`, `mobile_app_pom.py`) |
+| **QA-PROFILE-STATE** | Vòng đời lệnh / ORS / Margin | Pending→New→Partial→Filled/Cancelled/Rejected, giữ/giải tỏa sức mua ([03-order-lifecycle-and-ors.md](../../../../references/securities/03-order-lifecycle-and-ors.md), [06-traditional-margin.md](../../../../references/securities/06-traditional-margin.md), [07-deal-based-margin.md](../../../../references/securities/07-deal-based-margin.md)) |
+| **QA-PROFILE-DATA** | TimescaleDB v3/v2 / OpenAPI DB | Parity 11 topics KRX MDDS, value drift, ưu tiên v3 fallback v2 (`recon_guide.md`, `db-timescale-reconciler`) |
 
-| Mã Profile | Loại Task áp dụng | Trọng tâm Kiểm thử Bắt buộc | Liên kết Tài nguyên trong Repo |
-|---|---|---|---|
-| **QA-PROFILE-API** | REST / OpenAPI (Đặt lệnh, truy vấn tài sản, sức mua, danh mục) | Schema validation, Auth/Token, Idempotency, Công thức tính toán (Decimal), Mã lỗi nghiệp vụ | `fixtures_api.py`, `api_ws_service.py`, `test_api_example.py`, `api.env.example` |
-| **QA-PROFILE-WS** | WebSocket Streaming, Market Data (MDDS), Thông báo đẩy | Ngưỡng kết nối/stream theo hạng user (Normal/VIP/Ultimate), Reconnect, Watchdog/Topic Timeout, Thứ tự bản tin | `fixtures_ws.py`, `test_ws_example.py`, `ws.env.example`, `references/securities/05-market-data-mdds.md` |
-| **QA-PROFILE-UI** | Web Trading Dashboard & Mobile App (Appium/Playwright) | Trạng thái hiển thị theo phiên, Form validation tức thời, Khóa nút (Double-click), Đồng bộ dữ liệu UI ↔ API | `fixtures_web_ui.py`, `fixtures_mobile.py`, `web_ui_pom.py`, `mobile_app_pom.py`, `web-ui.env.example` |
-| **QA-PROFILE-STATE** | Vòng đời lệnh (Order Lifecycle), Khớp lệnh ORS, Deal Margin | Chuyển đổi trạng thái lệnh (Pending → New → Partial → Filled/Cancelled/Rejected), Giữ/Giải tỏa sức mua & ký quỹ | `fixtures_api.py`, `order_state_testing.md`, `references/securities/03-order-lifecycle-and-ors.md`, `references/securities/06-traditional-margin.md`, `references/securities/07-deal-based-margin.md` |
-| **QA-PROFILE-DATA** | Đối chiếu Database (TimescaleDB v3/v2, OpenAPI DB) | Độ vẹn toàn dữ liệu giữa 11 topics KRX MDDS, kiểm tra lệch giá/khối lượng, ưu tiên bảng v3 fallback v2 | `recon_guide.md`, `timescale-schema.md`, `db-timescale-reconciler` |
+Quét mỗi `[BR-xx]` và `[AC-x.y]` qua **Ma trận 6 Trục** (chi tiết tại [qa-testing-checklist.md](references/qa-testing-checklist.md)):
+1. **Lớp 1 (`@happy-path`, `@persona`):** Phân khúc Normal/VIP/Ultimate, tiểu khoản 1 vs 6 ([08-persona-matrix.md](../../../../references/securities/08-persona-matrix.md)).
+2. **Lớp 2 (`@boundary`, `@bva`):** Biên giá (Sàn-1, Sàn, TC, Trần, Trần+1, Tick size), biên KL (0, lẻ 1–99, chẵn 100, MAX, MAX+100), hạn mức connector/stream.
+3. **Lớp 3 (`@domain-matrix`):** Sàn (HOSE/HNX/UPCoM/Phái sinh) × Phiên (ATO/Liên tục/ATC/PLO/Nghỉ) × Trạng thái mã (Normal/CR/CA/RES/SUS) qua `Scenario Outline`.
+4. **Lớp 4 (`@negative`):** Thiếu/sai input, hết hạn token/IDOR, vi phạm quy tắc lệnh (MTL mã cảnh báo, sửa/hủy ATO/ATC).
+5. **Lớp 5 (`@state-concurrency`):** Hủy/sửa sai trạng thái, concurrency vét sức mua, idempotency.
+6. **Lớp 6 (`@resilience`):** Mất kết nối WS, reconnect tự động, Watchdog timeout, SLA.
 
-*(Một ticket phức tạp có thể kết hợp nhiều profile, ví dụ: QA-PROFILE-API + QA-PROFILE-STATE)*
+## 2. Quy trình 3 Giai đoạn Thực thi Ngay
 
-## 1.2. Công thức Ma trận 6 Trục Bao phủ (6-Axis Coverage Matrix) chống sót Case
-
-Mọi Yêu cầu Nghiệp vụ (`[BR-xx]`) và Tiêu chí Nghiệm thu (`[AC-x.y]`) bắt buộc quét qua 6 trục sau (chi tiết tại [qa-testing-checklist.md](references/qa-testing-checklist.md)):
-
-1. **Lớp 1 (`@happy-path`, `@persona`):** Luồng chuẩn theo phân khúc (Normal/VIP/Ultimate, tiểu khoản 1 vs 6 theo `references/securities/08-persona-matrix.md`).
-2. **Lớp 2 (`@boundary`, `@bva`):** Phân tích 4 điểm biên: Biên giá (Sàn - 1, Sàn, TC, Trần, Trần + 1, Tick size); Biên KL (0, lẻ 1-99, chẵn 100, sai bước, MAX, MAX + 100); Hạn mức kết nối (`MAX_CONNECTOR`, `MAX_STREAM`, +1).
-3. **Lớp 3 (`@domain-matrix`):** Tổ hợp: Sàn (HOSE/HNX/UPCoM/Phái sinh) × Phiên (ATO/Liên tục/ATC/PLO/Nghỉ) × Trạng thái mã (Normal/CR/CA/RES/SUS). Tham số hóa qua `Scenario Outline` + `Examples`.
-4. **Lớp 4 (`@negative`):** Thiếu/sai dữ liệu (null, chuỗi rỗng, số âm); Vi phạm quyền (hết hạn token, IDOR chéo user); Vi phạm nghiệp vụ (lệnh MTL cho mã cảnh báo, sửa/hủy trong ATO/ATC).
-5. **Lớp 5 (`@state-concurrency`):** Chuyển đổi trạng thái sai (hủy lệnh Filled, sửa lệnh Cancelled); Concurrency (2 lệnh mua cùng vét sức mua); Idempotency trùng lặp.
-6. **Lớp 6 (`@resilience`):** Mất kết nối WS đột ngột, reconnect tự động, Watchdog topic timeout, SLA vượt ngưỡng.
-
-## 2. Quy trình 3 Giai đoạn Thiết kế
-
-> 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 40 dòng cho toàn bộ quy trình.
-
-- **Giai đoạn 1 (Phân tích Spec theo Profile & Thiết kế Checklist `checklist.md`):**
-  - Đọc `workspace/issues/{issueKey}/spec/final.md` và `spec/testability-manifest.json` để xác định **Test Profile** (API, WS, UI, STATE, DATA).
-  - Quét từng `[BR-xx]` và `[AC-x.y]` qua **Ma trận 6 Trục Bao phủ** để không bỏ sót kịch bản.
-  - Ghi nhận Test Profile đã chọn vào dòng đầu của `checklist.md`:
-    ```markdown
-    <!-- TEST_PROFILE: QA-PROFILE-API | QA-PROFILE-WS | QA-PROFILE-UI | QA-PROFILE-STATE | QA-PROFILE-DATA -->
-    ```
-  - Gán nhãn ưu tiên `[P0]`, `[P1]`, `[P2]` và **gán ID ổn định** (VD: `CL-001`). Mỗi item bắt đầu bằng **động từ hành động**, lượng hóa rõ ràng.
-  - *Quy tắc ưu tiên:*
-    - `[P0]`: Boundary BVA + Security + giao dịch tiền/cổ phiếu + Race Condition
-    - `[P1]`: Happy path chính + Negative scenario ảnh hưởng UX
-    - `[P2]`: Nice-to-have, tính năng phụ, resilience không critical
-
-- **Giai đoạn 1.5 (Data Grounding):**
-  - Đọc file [data-grounding.md](references/data-grounding.md) để hiểu quy trình.
-  - Liệt kê các dữ liệu định danh cần cho test (VD: số tài khoản, mã CK, mã order).
-  - Sử dụng các Tool Call để lấy dữ liệu có THẬT từ UAT (qua DB/Metabase hoặc API).
-  - Ghi thông tin dữ liệu đã verify vào `workspace/issues/{issueKey}/test/fixtures/data-grounding.json`.
-  - **Nhận diện & chuẩn bị cho Data Accuracy Verification (nếu task yêu cầu):**
-    - Trigger khi Jira có keyword: `"chính xác"`, `"trúng khớp"`, `"match"`, `"consistency"`, `"so sánh"`, `"verify data"`.
-    - BẮT BUỘC tra cứu sẵn **giá trị reference** từ Metabase UAT cho từng field cần verify.
-    - Ghi reference value vào `data-grounding.json` với `"kind": "accuracy-reference"`.
-    - Thiết kế nhóm kịch bản `@data-accuracy` trong checklist và feature (mẫu tại [quick-start-checklist.md Bước 3.5](references/quick-start-checklist.md)).
-
-- **Giai đoạn 2 (Thiết kế Kịch bản BDD Gherkin `{issueKey}.feature`):**
-  - Viết duy nhất 1 file `.feature` ánh xạ 1-1 từ checklist.
-  - Gắn tag **`@CL-xxx`** tương ứng với ID checklist.
-  - Ngôn ngữ miền nghiệp vụ thuần túy — **cấm tuyệt đối** biến code, XPath, SQL, `.env` keys.
-  - Dùng ranh giới tượng trưng: `TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`.
-  - **Tham số hóa Đa sàn / Đa mã:** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa. **CẤM TUYỆT ĐỐI** gộp chung.
-  - **GraphQL Task — BẮT BUỘC thiết kế đủ 4 nhóm kịch bản tham số query:**
-    1. `@graphql-full-query` — Gửi query với đầy đủ tất cả fields/arguments theo spec Jira.
-    2. `@graphql-partial-query` — Gửi query với tập field tối giản (bỏ optional fields).
-    3. `@graphql-no-query` — Gửi body rỗng, `query=""`, hoặc thiếu trường `query` hoàn toàn.
-    4. `@graphql-invalid-query` — Gửi query sai syntax, sai tên field, sai kiểu dữ liệu argument.
-    - **Tham khảo mẫu:** [gherkin-patterns.md Section 9](references/gherkin-patterns.md#9-graphql-api--tham-s%E1%BB%91-query-full--partial--empty--invalid).
-    - **QUY TẮC `Then` — Tuyệt đối không được tự suy diễn kết quả:** Nội dung `Then` phải lấy **nguyên văn** từ Acceptance Criteria hoặc mô tả task Jira. Nếu Jira không mô tả rõ expected value → đánh dấu `# NEEDS-SPEC` và dừng, không tự đưa ra giá trị mặc định.
-  - Gắn thẻ bắt buộc: `@smoke` hoặc `@regression`, `@happy-path` hoặc `@negative` hoặc `@edge-case`, `@JIRA-{issueKey}`, `@domain-securities`.
-
-- **Giai đoạn 3 (GATE: Xác minh, Linter & Bàn giao):**
-  1. *Kiểm tra Cú pháp & Traceability:*
+- **Giai đoạn 1 — Thiết kế `checklist.md`:**
+  - Đọc `spec/final.md` (+ `testability-manifest.json` nếu có), ghi dòng đầu `<!-- TEST_PROFILE: ... -->`.
+  - Gán ID `CL-001`, ưu tiên `[P0]` (Boundary/Security/Tiền/Race) · `[P1]` (Happy/Negative UX) · `[P2]` (Phụ/Resilience), gắn tag **`@AC-xx`** để truy vết đủ Happy + Negative + Boundary cho mỗi AC.
+- **Giai đoạn 1.5 — Data Grounding UAT ([data-grounding.md](references/data-grounding.md)):**
+  - Tra cứu dữ liệu THẬT từ Metabase/TimescaleDB UAT (mã CK, tài khoản, mã lệnh) và ghi vào `workspace/issues/{issueKey}/test/fixtures/data-grounding.json`.
+  - Nếu ticket có keyword đối chiếu dữ liệu (`"chính xác"`, `"trúng khớp"`, `"consistency"`, `"so sánh"`), ghi thêm reference values (`"kind": "accuracy-reference"`) và gắn nhóm `@data-accuracy`.
+- **Giai đoạn 2 — Thiết kế `{issueKey}.feature` (Ghi đè 1 file chuẩn):**
+  - Map 1-1 với `checklist.md` qua `@CL-xxx`, gắn tag bắt buộc `@smoke` hoặc `@regression`, `@happy-path` / `@negative` / `@edge-case`, `@JIRA-{issueKey}`, `@domain-securities`, và `@AC-xx` (mỗi AC phủ đủ 3 loại Happy, Negative, Boundary để pass `qa-validate.js`).
+  - Dùng ngôn ngữ miền nghiệp vụ và ranh giới tượng trưng (`TAI_HAN_MUC`, `VUOT_HAN_MUC`); **CẤM** biến code, XPath, SQL, `.env` keys. Tách hoặc dùng `Scenario Outline` + `Examples` khi có ≥ 2 sàn/mã CK khác phiên.
+  - Với GraphQL: thiết kế đủ 4 nhóm `@graphql-full-query`, `@graphql-partial-query`, `@graphql-no-query`, `@graphql-invalid-query` ([gherkin-patterns.md](references/gherkin-patterns.md)). Mọi `Then` lấy nguyên văn AC/Jira; thiếu thì ghi `# NEEDS-SPEC` và DỪNG.
+- **Giai đoạn 3 — GATE Thẩm định & Bàn giao:**
+  1. Kiểm tra cú pháp & traceability (trên `checklist.md` và `{issueKey}.feature`):
      ```bash
      node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-validate.js --checklist workspace/issues/{issueKey}/test/checklist.md "workspace/issues/{issueKey}/test/{issueKey}.feature"
      ```
-  2. *Kiểm tra Quy tắc Nghiệp vụ Chứng khoán (Domain Linter):*
+  2. Kiểm tra quy tắc chứng khoán qua n8n (nếu n8n đang chạy):
      ```bash
-     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js lintDomainGherkin "{\"issueKey\":\"{issueKey}\",\"gherkinContent\":$(node -e 'console.log(JSON.stringify(require(\"fs\").readFileSync(\"workspace/issues/{issueKey}/test/{issueKey}.feature\", \"utf8\"))')}"
+     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js lintDomainGherkin --file "workspace/issues/{issueKey}/test/{issueKey}.feature"
      ```
-  3. Ghi kết quả ma trận traceability ra `workspace/issues/{issueKey}/trace/matrix.md`.
-  4. Ghi trạng thái và SHA256 của feature file vào `workspace/issues/{issueKey}/.pipeline-state.json`.
-  5. Tự sửa lỗi cú pháp .feature vừa sinh tối đa 1 vòng duy nhất nếu không qua linter (tuân thủ autonomy-contract.md). Sau khi pass, DỪNG và gợi ý bước tiếp theo.
+  3. Ghi ma trận traceability ra `workspace/issues/{issueKey}/trace/matrix.md` và SHA256 vào `.pipeline-state.json`. Gọi lại skill luôn **ghi đè** `checklist.md` và `{issueKey}.feature` (không tạo file `-v2` hay `-new`). Tự sửa cú pháp `.feature` tối đa 1 vòng nếu lỗi; sau khi pass thì **DỪNG** và gợi ý `/qa-auto-design {issueKey}`.
 
-## ⚡ Quy Tắc Output File (Output File Rules — Bắt buộc tuân thủ)
+## 3. Tài nguyên Mở rộng (Chỉ mở khi cần)
 
-> 📌 **1 skill call = 1 lần ghi file. Gọi lại skill → ghi đè hoàn toàn file cũ.**
-
-| File Output | Đường dẫn chuẩn | Hành vi khi gọi lại |
-|---|---|---|
-| Checklist kiểm thử | `workspace/issues/{issueKey}/test/checklist.md` | **Ghi đè** toàn bộ nội dung cũ |
-| Kịch bản BDD Gherkin | `workspace/issues/{issueKey}/test/{issueKey}.feature` | **Ghi đè** toàn bộ nội dung cũ |
-
-**Quy tắc:**
-- **KHÔNG** tạo file mới với suffix (checklist-v2.md, STK-101-new.feature, ...).
-- **KHÔNG** append vào file cũ — luôn overwrite hoàn toàn.
-- Nếu file chưa tồn tại → tạo mới tại đúng đường dẫn trên.
-- Nếu file đã tồn tại → ghi đè không cần xác nhận.
-
-## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
-
-- 🚀 **BẮT BUỘC ĐỌC TRƯỚC:**
-  - [quick-start-checklist.md](references/quick-start-checklist.md): Tờ nhắc quy trình ≤ 40 dòng.
-
-- 🛠️ **Công cụ & Script (assets/):**
-  - [qa-init.sh](assets/qa-init.sh): Khởi tạo thư mục và triển khai fixtures lắp ghép theo loại task (`--type=api,ws,web_ui,mobile`).
-  - [qa-validate.sh](assets/qa-validate.sh): Script thẩm định cú pháp file Gherkin (6 quy tắc cứng).
-
-- 📖 **Tài liệu quy trình & Kỹ thuật (references/):**
-  - [data-grounding.md](references/data-grounding.md): Quy trình Grounding dữ liệu thật UAT.
-  - [workflow.md](references/workflow.md): 7 Nguyên Tắc Vàng, Anti-patterns, Verification checklist.
-  - [qa-testing-checklist.md](references/qa-testing-checklist.md): Kỹ thuật BVA, EP, mẫu kịch bản theo domain.
-  - [gherkin-patterns.md](references/gherkin-patterns.md): Mẫu Gherkin chuẩn cho từng loại task (API, WS, Web UI, Securities).
-  - [securities-domain-rules.md](../../../../references/securities-domain-rules.md): Cẩm nang nghiệp vụ chứng khoán.
+- **Script & Checklist nhanh:** [qa-init.sh](assets/qa-init.sh) · [qa-validate.sh](assets/qa-validate.sh) · [quick-start-checklist.md](references/quick-start-checklist.md)
+- **Tham khảo chuyên sâu:** [data-grounding.md](references/data-grounding.md) · [workflow.md](references/workflow.md) · [qa-testing-checklist.md](references/qa-testing-checklist.md) · [gherkin-patterns.md](references/gherkin-patterns.md) · [securities-domain-rules.md](../../../../references/securities-domain-rules.md)
 
 ## 4. Ví dụ mẫu (Few-shot Example)
 
 > ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
 
-**Input:** Yêu cầu: "Kiểm tra giới hạn đặt lệnh tối đa 500,000 cổ phiếu/lệnh trên sàn HOSE"
-
-**Output Giai đoạn 1 — checklist.md (trích):**
 ```markdown
-## Ranh giới [P0]
-- [P0] CL-001 Xác minh hệ thống TỪ CHỐI lệnh mua khi khối lượng = 500,001 cổ phiếu (VUOT_HAN_MUC) trên sàn HOSE
-- [P0] CL-002 Xác minh hệ thống CHẤP NHẬN lệnh mua khi khối lượng = 500,000 cổ phiếu (TAI_HAN_MUC) trên sàn HOSE
-- [P1] CL-003 Xác minh hệ thống CHẤP NHẬN lệnh mua khi khối lượng = 499,900 cổ phiếu (DUOI_HAN_MUC) trên sàn HOSE
+<!-- checklist.md (trích) -->
+- [P0] CL-001 @AC-01 Xác minh hệ thống TỪ CHỐI lệnh mua khi KL = 500,001 (VUOT_HAN_MUC) trên HOSE
 ```
 
-**Output Giai đoạn 2 — STK-101.feature (trích):**
 ```gherkin
-@regression @boundary @domain-securities @JIRA-STK-101 @CL-001
+@regression @boundary @negative @domain-securities @JIRA-STK-101 @CL-001 @AC-01
 Scenario: Từ chối đặt lệnh mua khi khối lượng vượt hạn mức sàn HOSE
-  Given Nhà đầu tư đã đăng nhập vào tài khoản giao dịch tiểu khoản đuôi 1
-  And Số dư tiền mặt khả dụng đáp ứng đủ giá trị lệnh
-  When Nhà đầu tư gửi lệnh mua cổ phiếu "VND" với khối lượng "VUOT_HAN_MUC_SAN"
-  Then Hệ thống từ chối nhận lệnh và trả về thông báo lỗi "Khối lượng vượt quá 500,000 cổ phiếu"
+  Given Nhà đầu tư đăng nhập tài khoản tiểu khoản 1 với sức mua khả dụng đủ
+  When Nhà đầu tư đặt lệnh mua "VND" khối lượng "VUOT_HAN_MUC_SAN"
+  Then Hệ thống từ chối và trả về lỗi "Khối lượng vượt quá 500,000 cổ phiếu"
 ```
 
 ## Xác minh & Phản biện Đối kháng (Verification)
-- [ ] `checklist.md` và `{issueKey}.feature` tồn tại, ánh xạ 1-1 qua `@CL-xxx` và `qa-validate.js` exit 0.
-- [ ] Với ticket Fintech/Critical, đối chiếu chéo `spec/final.md` (kể cả Business Decision Log) qua `meta-cross-validation` (Bước 5: Phản biện Đối kháng) để chắc chắn không sót case negative/concurrency.
-
----
+- [ ] `workspace/issues/{issueKey}/test/checklist.md` và `{issueKey}.feature` tồn tại, map 1-1 qua `@CL-xxx`, `qa-validate.js` exit 0.
+- [ ] Với ticket Fintech/Critical: rà lại `spec/final.md` qua `meta-cross-validation` để không sót case negative/concurrency.

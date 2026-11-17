@@ -141,7 +141,7 @@ Tài liệu này hướng dẫn chi tiết quy trình khảo sát thực tế (R
    - **Enums & Constants:** Tìm các file định nghĩa hằng số channels (`tick`, `top_price`, `order_events`, `conditional_orders`), order types, side (`BUY`/`SELL`).
 
 2. **Bước 2: Đối chiếu Spec và Trích xuất Hợp Đồng (Contract):**
-   - Đọc Swagger/OpenAPI spec, Postman collection, hoặc Jira `*-final.md` để trích xuất:
+   - Đọc Swagger/OpenAPI spec, Postman collection, hoặc `workspace/issues/{issueKey}/spec/final.md` để trích xuất:
      + URL paths, HTTP methods.
      + Headers bắt buộc (`x-api-key`, `Authorization: Bearer ...`, `Content-Type`).
      + Schema của Request Body và Response Body (để tạo Pydantic v2 models).

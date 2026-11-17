@@ -1,6 +1,6 @@
 interface:
   display_name: "BA Refine"
-  short_description: "Brainstorm, phân kỳ-hội tụ (refine) các ý tưởng thô/mơ hồ thà..."
+  short_description: "Brainstorm, phân kỳ-hội tụ (refine) ý tưởng thô thành spec Jira..."
   brand_color: "#2563EB"
   default_prompt: "Sử dụng $ba-refine để thực hiện tác vụ này theo đúng quy trình chuẩn."
 

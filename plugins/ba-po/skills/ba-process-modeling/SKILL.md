@@ -22,8 +22,8 @@ metadata:
 - Tạo tài liệu trao đổi chung giữa nghiệp vụ (BA/PO), kỹ thuật (DEV) và kiểm thử (QA).
 
 **Khi KHÔNG sử dụng:**
-- Chỉ cần vẽ sơ đồ kiến trúc hạ tầng kỹ thuật (Network/Infra diagram) → Việc của DEV/Architect (dùng `ba-design-flowchart`).
-- Chỉ cần render một đoạn mã Mermaid có sẵn → Dùng `ba-design-flowchart`.
+- Vẽ sơ đồ kiến trúc hạ tầng kỹ thuật, ERD, sequence hoặc xuất file SVG/PNG đơn lẻ → Dùng trực tiếp `ba-design-flowchart`.
+- Dựng mockup màn hình giao diện Web/Mobile → Dùng `ba-design-mockup`.
 
 ## 2. Quy trình Thực hiện 5 Bước
 - **Bước 1 (Xác định Thành phần):** Trích xuất Tác nhân (Actors), Nhiệm vụ (Tasks), Điểm rẽ nhánh (Decision Points) và Trạng thái Đầu/Cuối (Start/End).

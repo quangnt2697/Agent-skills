@@ -11,7 +11,7 @@ $ARGUMENTS có thể chứa:
 
 **Workflow:**
 
-1. **Đọc Gaps**: Nếu có issueKey, đọc Section 10 (Gap Analysis) từ `*-final.md`
+1. **Đọc Gaps**: Nếu có issueKey, đọc Section 10 (Gap Analysis) từ `workspace/issues/{issueKey}/spec/final.md`
 2. **Ưu tiên hóa**: Sắp xếp theo priority: 🔴 Critical → 🟡 Important → 🟢 Nice-to-have
 3. **Phỏng vấn**: Hỏi từng câu một theo format:
    ```
@@ -29,7 +29,7 @@ $ARGUMENTS có thể chứa:
    ```
 
 4. **Ghi nhận câu trả lời**: 
-   - Nếu A/B/C → Update vào `*-final.md` section tương ứng
+   - Nếu A/B/C → Update vào `workspace/issues/{issueKey}/spec/final.md` section tương ứng
    - Nếu D (Không biết) → Ghi vào Section 11 (Open Questions)
 
 5. **Tính Confidence Level**: 
@@ -39,7 +39,7 @@ $ARGUMENTS có thể chứa:
    - ≥90% → Đủ để tiếp tục
    - <90% → Tiếp tục hỏi hoặc escalate
 
-6. **Output**: Update `*-final.md` với câu trả lời đã clarify
+6. **Output**: Update `workspace/issues/{issueKey}/spec/final.md` với câu trả lời đã clarify
 
 **Ranh giới BA/PO:**
 - ✅ Hỏi về business requirements, user flow, edge cases, business rules

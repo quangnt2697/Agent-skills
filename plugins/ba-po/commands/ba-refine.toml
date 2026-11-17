@@ -61,7 +61,7 @@ Phase 4: Đồng bộ lên Jira & Handoff Kỹ thuật
 - **Scan trước, tải sau (Gate 1):** Trích xuất từ khóa tiêu đề, quét Jira/Confluence liên quan → trình danh sách → user approve → tải
 - **Multi-source & Cache-aware:** Đọc Jira PDF + Confluence pages + attachments, tái sử dụng file đã tải trong `source/refs/`
 - **5 Chiều Nghiệp vụ & Stress-test:** Khai phóng thuần nghiệp vụ (Zero Technical Noise), kiểm định xung đột quy tắc ngành
-- **Prod-Twin UI Mockup (`ba-design-mockup`):** Bóc tách AS-IS từ codebase, dựng Delta-Only kèm huy hiệu `① ② ③`, kiểm định `validate-mockup-fidelity.js` (Fidelity ≥ 90%)
+- **Prod-Twin UI Mockup (`ba-design-mockup`):** Bóc tách AS-IS từ link/codebase, thiết kế chuẩn Full HD (`1920x1080`) highlight phần mới (`data-change="added|modified"` — KHÔNG chèn huy hiệu `① ② ③` hay bảng `UI Delta Mapping`), kiểm định `validate-mockup-fidelity.js` (Fidelity ≥ 90%)
 - **Hard Gate & Clean Gherkin (Gate 2):** Kiểm định cấu trúc 5 mục qua `validate-ba-refine.js` trước khi trình duyệt nội dung (Gate 2a) và xin phép push Jira (Gate 2b)
 
 ## Output
@@ -80,7 +80,7 @@ Sau khi refinement hoàn tất, hiển thị gợi ý cho user:
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 
-1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ refine đặc tả nghiệp vụ, dựng mockup Delta-Only và cập nhật lên Jira Description theo phê duyệt qua 2 Approval Gates.
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ refine đặc tả nghiệp vụ, dựng mockup Prod-Twin và cập nhật lên Jira Description theo phê duyệt qua 2 Approval Gates.
 2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
    - TUYỆT ĐỐI CẤM viết code application, viết mã test tự động, hoặc can thiệp file ngoài thư mục `workspace/issues/{issueKey}/`.
    - CẤM tự ý sửa đổi đặc tả để lách cổng kiểm định `validate-ba-refine.js`.
@@ -94,10 +94,5 @@ Sau khi refinement hoàn tất, hiển thị gợi ý cho user:
 
 ## Requirements
 
-`.env` file với Jira credentials:
-```
-ATLASSIAN_BASE_URL=https://your-domain.atlassian.net
-ATLASSIAN_EMAIL=your-email@company.com
-ATLASSIAN_API_TOKEN=your-api-token
-```
+Biến môi trường kết nối Jira đã cấu hình sẵn (`ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`) cho n8n/scripts (agent không mở đọc raw `.env`).
 """

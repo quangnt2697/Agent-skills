@@ -38,8 +38,8 @@ Xác thực truy vết (traceability) đa tầng giữa các artifacts trong SDL
 ```bash
 # Chạy script xác định theo mã BR/AC (từ assets/ hoặc scripts/):
 node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/assets/trace-check.js \
-  workspace/{issueKey} --stage=tech   # sau Tech-Spec
-#                     --stage=all     # sau test design / automation
+  workspace/issues/{issueKey} --stage=tech   # sau Tech-Spec
+#                             --stage=all    # sau test design / automation
 ```
 
 - **Exit 0:** Coverage ≥ 90% ở mọi stage được kiểm tra.

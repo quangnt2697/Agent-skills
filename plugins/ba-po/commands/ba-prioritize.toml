@@ -89,7 +89,7 @@ LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT.
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 
-1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ ưu tiên hóa backlog theo MoSCoW/WSJF và lưu vào `workspace/issues/{issueKey}/spec/prioritization.md`.
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ ưu tiên hóa backlog theo MoSCoW/WSJF và lưu vào `workspace/issues/{issueKey}/spec/backlog.md`.
 2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM tự ý thay đổi trạng thái, sprint, hoặc giá trị fields trên Jira API. CẤM can thiệp mã nguồn.
-3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file `spec/prioritization.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt lệnh tiếp theo.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file `spec/backlog.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt lệnh tiếp theo.
 """

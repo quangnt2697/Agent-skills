@@ -4,7 +4,7 @@ description: "Xử lý sự cố kẹt ticket và đề xuất chiến lược g
 
 Kích hoạt kỹ năng sm-impediment-triage.
 
-Đọc chi tiết trong plugins/scrum-master/skills/sm-impediment-triage/SKILL.md và thực thi quy trình gỡ rối. Báo cáo ghi vào `workspace/sprints/{sprintId}/trace/impediment-report.md`.
+Đọc chi tiết trong plugins/scrum-master/skills/sm-impediment-triage/SKILL.md và thực thi quy trình gỡ rối. Báo cáo ghi vào `workspace/sprints/{sprintId}/trace/blockers-triage.md`.
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 

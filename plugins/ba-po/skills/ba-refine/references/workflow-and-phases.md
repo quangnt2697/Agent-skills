@@ -23,13 +23,8 @@ Tài liệu này chứa chi tiết các bước từ Tải tài liệu đến Đ
    Từ đây trở đi, `{issueKey}` LUÔN là giá trị đã chuẩn hoá này — không bao giờ
    là chuỗi thô user nhập.
 
-2. **Đọc credentials từ `.env`**
-   ```bash
-   # Nguồn chính: đọc từ plugin dir (KHÔNG HỎI user)
-   source "${PLUGIN_DIR}/.env"
-   # Override: nếu project có .env riêng
-   [ -f "${PROJECT_ROOT}/.env" ] && source "${PROJECT_ROOT}/.env"
-   ```
+2. **Xác nhận biến môi trường Jira/Confluence:**
+   Các script CLI (`jira-fetch-pdf.sh`, `jira-push-spec.js`) và `n8n-client.js` tự động nạp `.env` theo thứ tự `${PROJECT_ROOT}/.env` ưu tiên trên `${PLUGIN_DIR}/.env`. Agent **không** mở đọc hoặc in nội dung raw file `.env`.
 
 3. **Lấy metadata Jira issue** (chưa tải PDF) theo **n8n Fast-Path**:
    - **n8n Fast-Path (Bắt buộc):** Import và chạy hàm `prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`. Hệ thống tự động gọi webhook `/webhook/jira-prep` để lấy metadata JSON siêu sạch (có cả `attachments` và `issueLinks`). BẮT BUỘC dùng `summary` từ đây làm Tiêu đề Task.
@@ -311,7 +306,7 @@ Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App, kíc
      *Script `jira-push-spec.js` sẽ tự động phát hiện tất cả ảnh mockup (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`...), tải lên Jira Attachments trước, sau đó chèn chính xác các node ADF `mediaSingle` để **dán trực tiếp ảnh vào Mục UI Design / Mockup trong Description** chứ không chỉ đính kèm file rời rạc.*
 
 4. **Tự động xuất bản Testability Manifest (`spec/testability-manifest.json`):**
-   Script `jira-push-spec.js` tự động trích xuất các phần tử UI từ Bảng UI Delta Mapping của Mục `## 🎨 UI Design / Mockup`, ánh xạ cùng danh sách `[BR-*]` và các Scenario AC vào `workspace/issues/{issueKey}/spec/testability-manifest.json`. File này là đầu vào chuẩn hóa để QA sinh automation test và Page Object Model (POM) mà không phải gõ tay locators.
+   Script `jira-push-spec.js` tự động trích xuất danh sách `[BR-*]`, các Scenario AC và thông tin tương tác UI (nếu có) từ `workspace/issues/{issueKey}/spec/refined.md` vào `workspace/issues/{issueKey}/spec/testability-manifest.json`. File này là đầu vào chuẩn hóa để QA sinh automation test và Page Object Model (POM) mà không phải gõ tay locators.
 
 5. **Ghi log push history** vào `push-log.json`.
 

@@ -7,13 +7,13 @@ Kích hoạt skill ba-process-modeling với BA/PO persona. Đọc `plugins/ba-p
 
 $ARGUMENTS có thể chứa:
 - Process name (VD: "Đặt lệnh cổ phiếu")
-- Hoặc Jira issue key (VD: G3PTP-16584) → Đọc từ `*-final.md` Section 5 (User Flow)
+- Hoặc Jira issue key (VD: G3PTP-16584) → Đọc từ `workspace/issues/{issueKey}/spec/final.md` Section 5 (User Flow)
 - Hoặc không có arguments → Agent sẽ hỏi process details
 
 **Workflow:**
 
 1. **Đọc Input** (Process Description):
-   - Nếu có issueKey: Đọc từ `*-final.md` Section 5 (User Flow)
+   - Nếu có issueKey: Đọc từ `workspace/issues/{issueKey}/spec/final.md` Section 5 (User Flow)
    - Nếu có Gap Analysis: Đọc từ `workspace/issues/{issueKey}/spec/gap-analysis.md`
    - Nếu text từ user: Parse process description trực tiếp
 
@@ -95,7 +95,7 @@ LƯU Ý: Tất cả labels trong diagram phải bằng TIẾNG VIỆT.
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 
-1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ mô hình hóa quy trình nghiệp vụ và lưu vào `workspace/issues/{issueKey}/spec/process-model.md`.
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ mô hình hóa quy trình nghiệp vụ và lưu vào `workspace/issues/{issueKey}/spec/process-as-is.md` và `workspace/issues/{issueKey}/spec/process-to-be.md` (kèm sơ đồ HTML/SVG nếu cần).
 2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM viết code application hoặc can thiệp file mã nguồn hệ thống.
 3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file quy trình, DỪNG LẠI NGAY và xuất trình kết quả.
 """

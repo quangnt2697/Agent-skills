@@ -14,7 +14,7 @@ metadata:
 > 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
-- **Input bắt buộc:** `sm-config.yaml`, `.env` Jira. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Input bắt buộc:** `config/sm-config.yaml`, biến môi trường kết nối Jira. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** Dữ liệu Sprint/Backlog từ Jira thật; `workspace/sprints/{sprintId}/tech/sprint-plan.md` tồn tại.
 
 ## 1. Khi nào dùng?
@@ -29,8 +29,8 @@ metadata:
 ## 2. Quy Trình Thực Hiện 5 Bước
 
 - **Bước 0 (Khởi tạo & Cấu hình):**
-  - Đọc `sm-config.yaml` tại plugin dir hoặc `config/sm-config.yaml` (trích xuất `anchor_start_date`, `duration_days`, danh sách `team`, `jira_board`).
-  - Đọc `.env` (lấy `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`). Dừng ngay nếu thiếu credentials.
+  - Đọc `config/sm-config.yaml` (trích xuất `anchor_start_date`, `duration_days`, danh sách `team`, `jira_board`).
+  - Dùng biến môi trường `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN` đã cấu hình sẵn khi gọi API (không mở hay in nội dung raw `.env`); dừng ngay nếu thiếu.
 - **Bước 1 (Tính toán & Pull Jira):**
   - Tự động tính chỉ số Sprint theo công thức ngày mỏ neo (Anchor date).
   - Gọi Jira Agile API lấy danh sách Active/Future Sprint và Backlog (Chi tiết curl tại [jira-sprint-api.md](references/jira-sprint-api.md)).

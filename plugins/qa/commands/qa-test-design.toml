@@ -2,7 +2,7 @@ description = "Thiết kế test artifacts — checklist kiểm thử thực thi
 
 prompt = """
 Kích hoạt skill qa-test-design theo vai trò QA/SDET.
-Tuân thủ quy trình 3 giai đoạn: Thiết kế Checklist (checklist.md) → Thiết kế Kịch bản BDD Gherkin ({issueKey}.feature) → Xác minh cú pháp (qa-validate.sh) & Bàn giao.
+Tuân thủ quy trình 3 giai đoạn: Thiết kế Checklist (checklist.md) → Thiết kế Kịch bản BDD Gherkin ({issueKey}.feature) → Xác minh cú pháp (qa-validate.js) & Bàn giao.
 KHÔNG được bỏ qua Giai đoạn 1 — checklist là nguồn sự thật duy nhất cho phạm vi kịch bản.
 
 ## Nguồn đầu vào
@@ -25,7 +25,7 @@ KHÔNG được bỏ qua Giai đoạn 1 — checklist là nguồn sự thật du
    - Sử dụng Ranh giới Tượng trưng (`TAI_HAN_MUC`, `VUOT_HAN_MUC`, `TRONG_NGUONG`) và BVA 3 giá trị cho tài chính.
    - Lưu tại `workspace/issues/{issueKey}/test/{issueKey}.feature`.
 3. **Giai đoạn 3: Xác minh Cú pháp & Bàn giao:**
-   - Chạy `bash ${AGENT_SKILLS_HOME:-.}/plugins/qa/skills/qa-test-design/assets/qa-validate.sh workspace/issues/{issueKey}/test/{issueKey}.feature` và tự sửa lỗi cú pháp (Self-fix Loop ≤ 1 vòng duy nhất).
+   - Chạy `node ${AGENT_SKILLS_HOME:-.}/scripts/qa/qa-validate.js --checklist workspace/issues/{issueKey}/test/checklist.md workspace/issues/{issueKey}/test/{issueKey}.feature` và tự sửa lỗi cú pháp (Self-fix Loop ≤ 1 vòng duy nhất).
    - Bàn giao 2 artifacts và hướng dẫn chạy `/qa-auto-design {issueKey}` để sinh code hoặc `/qa-squash-push {issueKey}` để đẩy lên Squash TM.
 
 ## Output
@@ -47,5 +47,5 @@ KHÔNG được bỏ qua Giai đoạn 1 — checklist là nguồn sự thật du
    - TUYỆT ĐỐI CẤM viết mã test tự động (Python/Playwright/Pytest, conftest.py, services/, pages/).
    - TUYỆT ĐỐI CẤM tự ý push lên Squash TM hoặc thực thi test lên server.
    - CẤM can thiệp vào bất kỳ file mã nguồn nào ngoài thư mục `workspace/issues/{issueKey}/test/`.
-3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi chạy `qa-validate.sh` kiểm tra cú pháp Gherkin thành công, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt `/qa-auto-design` hay `/qa-squash-push`.
+3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi chạy `qa-validate.js` kiểm tra cú pháp Gherkin thành công, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt `/qa-auto-design` hay `/qa-squash-push`.
 """

@@ -14,6 +14,7 @@ if [[ -z "$TARGET_PATH" || -z "$CONTENT" ]]; then
     STDIN_DATA="$(cat)"
     if [[ -z "$TARGET_PATH" ]]; then
       TARGET_PATH="$(echo "$STDIN_DATA" | jq -r '
+        .toolCall.args.Path //
         .toolCall.args.TargetFile //
         .tool_input.file_path //
         .toolCall.args.path //
@@ -31,8 +32,9 @@ if [[ -z "$TARGET_PATH" || -z "$CONTENT" ]]; then
   fi
 fi
 
-# Ngoại lệ hợp lệ: Bỏ qua thư mục test fixtures của eval
-if [[ "$TARGET_PATH" =~ evals/fixtures/ || "$TARGET_PATH" =~ scripts/tests/ ]]; then
+# Ngoại lệ hợp lệ: Bỏ qua thư mục test fixtures của eval (chặn path traversal ..)
+NORM_PATH="${TARGET_PATH#./}"
+if [[ ! "$NORM_PATH" =~ (^|/)\.\.(/|$) ]] && [[ "$NORM_PATH" =~ ^(evals/fixtures/|scripts/tests/) || "$NORM_PATH" =~ /agent-skills/(evals/fixtures|scripts/tests)/ ]]; then
   exit 0
 fi
 
@@ -71,15 +73,15 @@ EOF
   exit 2
 fi
 
-# 3. Quét Token các dịch vụ thông dụng (GitLab, Slack, Google/Gemini)
-TOKEN_LINE="$(echo "$CONTENT" | grep -E "(glpat-[A-Za-z0-9_-]{20,}|xox[baprs]-[0-9A-Za-z_-]{20,}|AIzaSy[A-Za-z0-9_-]{33})" | grep -vE "(example|mock|placeholder|xxx|your_)" | head -n 1 || true)"
+# 3. Quét Token các dịch vụ thông dụng (GitLab, Slack, Google/Gemini, Atlassian, AWS, GitHub, OpenAI/Anthropic)
+TOKEN_LINE="$(echo "$CONTENT" | grep -E "(glpat-[A-Za-z0-9_-]{20,}|xox[baprs]-[0-9A-Za-z_-]{20,}|AIzaSy[A-Za-z0-9_-]{33}|ATATT3x[A-Za-z0-9_=-]{20,}|(AKIA|ASIA)[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{36,}|github_pat_[A-Za-z0-9_]{22,}|sk-(proj-|ant-api03-)[A-Za-z0-9_-]{20,})" | grep -vE "(example|mock|placeholder|xxx|your_)" | head -n 1 || true)"
 if [[ -n "$TOKEN_LINE" ]]; then
   cat >&2 << EOF
 ================================================================================
-❌ [LỖI BẢO MẬT] PHÁT HIỆN ACCESS TOKEN DẠNG THÔ (GITLAB/SLACK/GEMINI)!
+❌ [LỖI BẢO MẬT] PHÁT HIỆN ACCESS TOKEN DẠNG THÔ!
 --------------------------------------------------------------------------------
 File: $TARGET_PATH
-Nguyên nhân: Phát hiện token định dạng thật (glpat- / xox* / AIzaSy...).
+Nguyên nhân: Phát hiện token định dạng thật (glpat- / xox* / AIzaSy / ATATT3x / AKIA / ghp_ / sk-).
 Cách khắc phục: BẮT BUỘC dùng biến môi trường (.env), CẤM ghi token thô vào file.
 ================================================================================
 EOF

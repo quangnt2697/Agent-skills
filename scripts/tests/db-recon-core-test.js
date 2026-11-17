@@ -94,3 +94,19 @@ test('Core Recon: Node format sinh chính xác 4 items độc lập', () => {
 
   assert.equal(items[3].json.hasDiscrepancy, false);
 });
+
+test('sanitizeQuery: giữ nguyên dấu chấm phẩy và dấu -- bên trong string literal, chặn multi-statement thật', () => {
+  const okSemi = sanitizeQuery("SELECT symbol, ';' AS sep FROM ticks WHERE note = 'a--b; DROP TABLE x'");
+  assert.equal(okSemi.valid, true, okSemi.error);
+  assert.ok(okSemi.cleanSql.includes("'a--b; DROP TABLE x'"));
+
+  const okTrailSemi = sanitizeQuery("SELECT count(*) FROM ticks WHERE note = 'x';");
+  assert.equal(okTrailSemi.valid, true, okTrailSemi.error);
+
+  const blockedMulti = sanitizeQuery("SELECT 'ok'; DROP TABLE ticks");
+  assert.equal(blockedMulti.valid, false);
+  assert.match(blockedMulti.error, /nhiều câu lệnh|DROP/);
+
+  const blockedUnclosed = sanitizeQuery("SELECT 'unclosed");
+  assert.equal(blockedUnclosed.valid, false);
+});

@@ -46,11 +46,9 @@ metadata:
 
 ## 2. Quy trình 6 Giai đoạn Thực thi
 
-> 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng.
-
 - **Giai đoạn 0 (Preflight Gate):**
   - Kiểm tra `sha256` của `.feature` so với `workspace/issues/{issueKey}/.pipeline-state.json`.
-  - Chạy tất định SDK preflight (1 lệnh): `node ${AGENT_SKILLS_HOME:-.}/scripts/qa/check-sdk.js`. Dừng nếu thiếu dependency.
+  - Chạy `node ${AGENT_SKILLS_HOME:-.}/scripts/qa/check-sdk.js` (dừng nếu thiếu dependency). Nếu task API/WS → đọc [sdk-map.json](references/sdk-map.json) trước khi tạo Service mới.
 
 - **Giai đoạn 1 (Reuse Scan & Recon):**
   - Đọc `workspace/issues/{issueKey}/test/fixtures/data-grounding.json` nếu tồn tại. Sử dụng dữ liệu định danh đã grounding.
@@ -110,28 +108,10 @@ metadata:
 
 ## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
 
-- 🚀 **BẮT BUỘC ĐỌC TRƯỚC (task API/WS):**
-  - [quick-start-checklist.md](references/quick-start-checklist.md): Tờ nhắc quy trình ≤ 50 dòng.
-  - [sdk-map.json](references/sdk-map.json): SDK Index — đọc ngay trước khi recon, tránh grep toàn repo.
-
-- 🛠️ **Công cụ & Mã nguồn mẫu (assets/):**
-  - [conftest_core.py](assets/conftest_core.py): File Core bất biến (Env loader, UAT DB guard, Pytest hooks ghi test-output.log & report.md, Composable `pytest_plugins` dynamic loader).
-  - Fixture Modules lắp ghép (Composable): [fixtures_api.py](assets/fixtures_api.py), [fixtures_ws.py](assets/fixtures_ws.py), [fixtures_web_ui.py](assets/fixtures_web_ui.py), [fixtures_mobile.py](assets/fixtures_mobile.py).
-  - [conftest_template.py](assets/conftest_template.py): Master composite reference wrapper (tái xuất toàn bộ fixtures).
-  - [api_ws_service.py](assets/api_ws_service.py), [test_api_example.py](assets/test_api_example.py), [web_ui_pom.py](assets/web_ui_pom.py), [mobile_app_pom.py](assets/mobile_app_pom.py): Mẫu code hoàn chỉnh kế thừa SDK.
-
-- 📋 **Template môi trường (references/env-templates/):**
-  - [api.env.example](references/env-templates/api.env.example): Biến môi trường cho REST API task.
-  - [ws.env.example](references/env-templates/ws.env.example): Biến môi trường cho WebSocket task.
-  - [web-ui.env.example](references/env-templates/web-ui.env.example): Biến môi trường cho Web UI / Mobile task.
-
-- 📖 **Tài liệu quy trình & Hướng dẫn kỹ thuật (references/):**
-  - [automation_rules.md](references/automation_rules.md): 14 Quy tắc vàng đầy đủ, Anti-patterns.
-  - [shared_fixtures_and_env.md](references/shared_fixtures_and_env.md): Cơ chế `.env` phân tầng.
-  - [test_logging_guidelines.md](references/test_logging_guidelines.md): Chuẩn log 4 thẻ, Fixed-Width.
-  - [folder_structure_blueprint.md](references/folder_structure_blueprint.md): Sơ đồ cây thư mục chuẩn.
-  - [order_state_testing.md](references/order_state_testing.md): Test E2E Order State Machine.
-  - [known-errors-and-fixes.md](references/known-errors-and-fixes.md): Lỗi phổ biến & cách fix nhanh.
+- **SDK & Checklist nhanh:** [sdk-map.json](references/sdk-map.json) (đọc trước cho API/WS) · [quick-start-checklist.md](references/quick-start-checklist.md)
+- **Assets & Fixtures mẫu:** [conftest_core.py](assets/conftest_core.py) · [conftest_template.py](assets/conftest_template.py) · [fixtures_api.py](assets/fixtures_api.py) · [fixtures_ws.py](assets/fixtures_ws.py) · [fixtures_web_ui.py](assets/fixtures_web_ui.py) · [fixtures_mobile.py](assets/fixtures_mobile.py) · [api_ws_service.py](assets/api_ws_service.py) · [test_api_example.py](assets/test_api_example.py) · [web_ui_pom.py](assets/web_ui_pom.py) · [mobile_app_pom.py](assets/mobile_app_pom.py)
+- **Env Templates:** [api.env.example](references/env-templates/api.env.example) · [ws.env.example](references/env-templates/ws.env.example) · [web-ui.env.example](references/env-templates/web-ui.env.example)
+- **Hướng dẫn kỹ thuật:** [automation_rules.md](references/automation_rules.md) · [shared_fixtures_and_env.md](references/shared_fixtures_and_env.md) · [test_logging_guidelines.md](references/test_logging_guidelines.md) · [folder_structure_blueprint.md](references/folder_structure_blueprint.md) · [order_state_testing.md](references/order_state_testing.md) · [recon_guide.md](references/recon_guide.md) · [known-errors-and-fixes.md](references/known-errors-and-fixes.md)
 
 ## 4. Ví dụ mẫu (Few-shot Example)
 > ⚠️ **LƯU Ý MINH HỌA:** Dữ liệu dưới đây là ví dụ định dạng (formatting template). TUYỆT ĐỐI KHÔNG sao chép số liệu mẫu vào kết quả thực tế.
@@ -140,6 +120,7 @@ metadata:
 - **Output:** Test step trong `test_orders.py` (toàn bộ tham số lấy từ `.env` / fixture, không hardcode):
   ```python
   import os
+  from decimal import Decimal
   import pytest
 
   @pytest.mark.scenario("Đặt lệnh mua cổ phiếu hợp lệ")
@@ -154,7 +135,7 @@ metadata:
       """
       # [KỊCH BẢN] Đặt lệnh mua cổ phiếu hợp lệ
       symbol = os.getenv("TEST_ORDER_SYMBOL", valid_order_symbol.get("symbol"))
-      price = float(os.getenv("TEST_ORDER_PRICE", valid_order_symbol.get("reference_price")))
+      price = str(Decimal(os.getenv("TEST_ORDER_PRICE", str(valid_order_symbol.get("reference_price")))))
 
       qty = int(os.getenv("TEST_ORDER_QTY", "100"))
 

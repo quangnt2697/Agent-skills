@@ -71,7 +71,7 @@ Test code có quy ước comment **khác** với app code. Lý do: test code c�
 | `# fixture-scope: <scope>` | Đầu fixture phức tạp | Giải rõ lý do dùng session/module scope | `# fixture-scope: session — auth token tốn 2s khởi tạo` |
 
 **Khác với Ponytail `# ponytail: <lý do>` (chỉ dùng cho app code):**
-- Ponytail đánh dấu **simplification trong lúạ code** — áp dụng khi chọn giải pháp đơn giản hơn có chủ ý
+- Ponytail đánh dấu **simplification trong lúc sửa code** — áp dụng khi chọn giải pháp đơn giản hơn có chủ ý
 - Test conventions đánh dấu **ý định kiểm thử** — giúp QA khác hiểu test này cover gì và vì sao viết vậy
 
 **Never-Cut List cho Test Code** — cấm đơn giản hóa các yếu tố sau:
@@ -113,11 +113,9 @@ Trước khi viết bất kỳ dòng code thay thế nào, dừng lại và leo 
 
 > Khi động chạm vào simplification có chủ ý (cắt tối đa nhưng vẫn đủ đúng), gọi rõ bằng comment:
 > - **App code:** `# ponytail: <lý do>` (VD: `# ponytail: browser has one`)
-> - **Test code:** xem Quy ước Comment phía dưới
+> - **Test code:** xem Quy ước Comment phía trên
 
 ---
-
-## Quy Ước
 
 ## Các Biện hộ Thường gặp
 

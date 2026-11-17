@@ -12,7 +12,7 @@ $ARGUMENTS có thể chứa:
 **Workflow:**
 
 1. **Đọc Input**: 
-   - Nếu có issueKey: Đọc `*-final.md` Sections 1, 5, 8, 9
+   - Nếu có issueKey: Đọc `workspace/issues/{issueKey}/spec/final.md` Sections 1, 5, 8, 9
    - Nếu có requirements thô: Parse trực tiếp từ user input
 
 2. **Identify Actors (WHO)**: 

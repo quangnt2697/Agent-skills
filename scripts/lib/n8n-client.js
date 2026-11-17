@@ -382,9 +382,17 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         case 'getSecuritiesRuleMatrix':
           result = await getSecuritiesRuleMatrix(JSON.parse(args[1] || '{}'));
           break;
-        case 'lintDomainGherkin':
-          result = await lintDomainGherkin(args[1] && args[1].startsWith('{') ? JSON.parse(args[1]) : args[1]);
+        case 'lintDomainGherkin': {
+          let payload;
+          if (args[1] === '--file' && args[2]) {
+            const targetFile = path.resolve(args[2]);
+            payload = fs.readFileSync(targetFile, 'utf8');
+          } else {
+            payload = args[1] && args[1].startsWith('{') ? JSON.parse(args[1]) : args[1];
+          }
+          result = await lintDomainGherkin(payload);
           break;
+        }
         case 'pollMyJiraTasks':
           result = await pollMyJiraTasks(JSON.parse(args[1] || '{}'));
           break;

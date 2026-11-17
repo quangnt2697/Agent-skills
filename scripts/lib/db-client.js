@@ -253,10 +253,73 @@ function sanitizeQuery(sql) {
     if (!sql || typeof sql !== 'string') {
         return { valid: false, error: 'Câu lệnh SQL không hợp lệ hoặc bị rỗng.' };
     }
-    const stripped = sql.replace(/--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').trim();
-    if (!stripped) return { valid: false, error: 'Câu lệnh SQL rỗng sau khi loại bỏ comment.' };
 
-    const statements = stripped.split(';').map(s => s.trim()).filter(Boolean);
+    const cleanParts = [];
+    const maskedParts = [];
+    for (let i = 0; i < sql.length; i++) {
+        const ch = sql[i];
+        const next = sql[i + 1];
+        const prev = i > 0 ? sql[i - 1] : '';
+
+        // Giữ nguyên string literal '...' (và E'...') ở cleanParts, chỉ mask thành '' khi kiểm tra an toàn
+        const isEscapeString = (ch === 'E' || ch === 'e') && next === "'" && !/[A-Za-z0-9_$]/.test(prev);
+        if (ch === "'" || isEscapeString) {
+            const start = i;
+            if (isEscapeString) i++;
+            i++; // skip opening quote
+            let closed = false;
+            while (i < sql.length) {
+                if (isEscapeString && sql[i] === '\\' && i + 1 < sql.length) {
+                    i += 2;
+                    continue;
+                }
+                if (sql[i] === "'") {
+                    if (sql[i + 1] === "'") {
+                        i += 2;
+                        continue;
+                    }
+                    closed = true;
+                    break;
+                }
+                i++;
+            }
+            if (!closed) {
+                return { valid: false, error: 'Câu lệnh SQL có chuỗi ký tự chưa đóng.' };
+            }
+            cleanParts.push(sql.slice(start, i + 1));
+            maskedParts.push("''");
+            continue;
+        }
+
+        // Loại bỏ line comment (-- ...) ở cả clean và masked
+        if (ch === '-' && next === '-') {
+            const nl = sql.indexOf('\n', i + 2);
+            i = nl === -1 ? sql.length - 1 : nl;
+            cleanParts.push(' ');
+            maskedParts.push(' ');
+            continue;
+        }
+
+        // Loại bỏ block comment (/* ... */)
+        if (ch === '/' && next === '*') {
+            const end = sql.indexOf('*/', i + 2);
+            if (end === -1) {
+                return { valid: false, error: 'Câu lệnh SQL có block comment chưa đóng.' };
+            }
+            i = end + 1;
+            cleanParts.push(' ');
+            maskedParts.push(' ');
+            continue;
+        }
+
+        cleanParts.push(ch);
+        maskedParts.push(ch);
+    }
+
+    const masked = maskedParts.join('').trim();
+    if (!masked) return { valid: false, error: 'Câu lệnh SQL rỗng sau khi loại bỏ comment.' };
+
+    const statements = masked.split(';').map(s => s.trim()).filter(Boolean);
     if (statements.length > 1) {
         return { valid: false, error: 'BẢO VỆ AN TOÀN: không cho phép chạy nhiều câu lệnh cùng lúc (phân tách bằng dấu chấm phẩy).' };
     }
@@ -265,15 +328,13 @@ function sanitizeQuery(sql) {
         return { valid: false, error: `TRUY VẤN BỊ CHẶN: Chỉ chấp nhận SELECT/WITH/EXPLAIN/SHOW. Nhận: "${stmt.slice(0, 40)}..."` };
     }
 
-    // Loại bỏ chuỗi ký tự '...' trước khi kiểm tra từ khóa nguy hiểm để tránh false positive khi chuỗi chứa từ khóa
-    const codeWithoutStrings = stmt.replace(/'(?:''|[^'])*'/g, "''");
-
     const forbiddenRegex = /\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|GRANT|REVOKE|REINDEX|VACUUM|COPY|EXECUTE|EXEC|MERGE|CALL|DO|LOCK|INTO)\b/i;
-    if (forbiddenRegex.test(codeWithoutStrings)) {
-        const kw = codeWithoutStrings.match(forbiddenRegex)[0];
+    if (forbiddenRegex.test(stmt)) {
+        const kw = stmt.match(forbiddenRegex)[0];
         return { valid: false, error: `TRUY VẤN BỊ CHẶN: Phát hiện từ khóa nguy hiểm "${kw.toUpperCase()}". Chế độ READ-ONLY.` };
     }
-    return { valid: true, cleanSql: stmt };
+    const cleanSql = cleanParts.join('').trim().replace(/;\s*$/, '').trim();
+    return { valid: true, cleanSql };
 }
 
 function applyLimit(cleanSql, requestedLimit) {
