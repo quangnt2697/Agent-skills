@@ -92,9 +92,9 @@ Nhập yêu cầu từ Jira Issue hoặc Confluence Page → Quét và tải ref
   Phát hiện gaps (❌ Thiếu, ⚠️ Mơ hồ, 🔀 Xung đột). Phân cấp: 🔴 Critical, 🟡 Important, 🟢 Nice-to-have.
   Gọi `ba-interview-me`: hỏi từng câu kèm hypothesis & guess. Nếu user "Không biết" → đưa vào Open Questions, không block handoff.
 
-- **Phase 5 — Tổng Hợp `final.md` (Handoff Artifact):**
+- **Phase 5 — Tổng Hợp `final.md` & `testability-manifest.json` (Handoff Artifact):**
   Dùng template chuẩn: [spec-final-template.md](assets/spec-final-template.md).
-  Lưu tại `workspace/issues/{issueKey}/spec/final.md`. Đủ 13 sections. Section 9 (AC) viết dạng **Checklist Tiêu Chí Pass/Fail**, KHÔNG viết Gherkin. Đính kèm Section `## 📊 Confidence Assessment`.
+  Lưu tại `workspace/issues/{issueKey}/spec/final.md`. Đủ 13 sections, ghi rõ **Business Decision Log** (Section 10 — các trade-off đã chốt để QA/CR không hiểu nhầm). Section 9 (AC) viết dạng **Checklist Tiêu Chí Pass/Fail**, KHÔNG viết Gherkin. Xuất kèm `workspace/issues/{issueKey}/spec/testability-manifest.json` (danh sách `BR-*`/`AC-*`/`EC-*`, sàn, Test Profile) cho `qa-test-design`. Với ticket Fintech/Critical, khuyến nghị chạy phản biện đối kháng (Adversarial Critique) qua `meta-cross-validation` trước khi chốt. Đính kèm Section `## 📊 Confidence Assessment`.
 
 ---
 

@@ -80,4 +80,21 @@ Trước khi tổng hợp spec, agent tự kiểm tra checklist:
 
 Nếu ≥ 4/5 → chuyển sang tổng hợp spec. Nếu < 4/5 → đặt thêm câu hỏi.
 
+## Những lời Biện minh Thường gặp (Common Rationalizations)
+
+| Biện minh | Thực tế |
+|---|---|
+| "Hỏi gộp 4-5 câu một lúc để tiết kiệm lượt chat cho user" | Hỏi chùm làm user bỏ sót câu trả lời hoặc trả lời qua loa. Bắt buộc hỏi **từng câu một** kèm phỏng đoán. |
+| "Câu này hiển nhiên rồi, tự đoán luôn khỏi hỏi" | Giả định ngầm là nguồn gốc của bug nghiệp vụ. Phải phơi bày giả định để user xác nhận. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- Đặt từ 2 câu hỏi trở lên trong cùng một lượt phản hồi.
+- Tự trả lời thay user hoặc chốt spec khi chưa đạt Confidence ≥ 90% (hoặc < 4/5 checklist).
+
+## Xác minh (Verification)
+
+- [ ] Mọi câu hỏi đều đi kèm hypothesis/gợi ý cụ thể và được user xác nhận thật.
+- [ ] Đạt ngưỡng Confidence ≥ 90% hoặc ≥ 4/5 mục fallback checklist trước khi chuyển tiếp.
+
 ---

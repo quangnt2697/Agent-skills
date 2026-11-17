@@ -28,7 +28,7 @@ metadata:
 ## 2. Quy trình Thực hiện 5 Bước
 - **Bước 1 (Xác định Tác nhân - Role/Persona):** Làm rõ người dùng cụ thể là ai (Nhà đầu tư cá nhân, Môi giới, Quản trị viên hệ thống...), không dùng chung chung "Người dùng".
 - **Bước 2 (Trích xuất Mục tiêu & Giá trị - Goal & Value):** Định hình hành động mong muốn và lý do vì sao tính năng đó mang lại giá trị thiết thực.
-- **Bước 3 (Định dạng User Story):** Viết theo cấu trúc chuẩn: *"Là một [vai trò], tôi muốn [hành động], để [giá trị đạt được]"*.
+- **Bước 3 (Định dạng User Story & Vertical Slicing):** Khi nhận đầu vào là `spec/final.md` lớn, tách thành các **Vertical Slices** (cắt dọc End-to-End có thể kiểm thử độc lập, gắn sẵn `Test Profile` và `Dependencies` cho `sm-sprint-planning`). Viết mỗi story theo cấu trúc chuẩn: *"Là một [vai trò], tôi muốn [hành động], để [giá trị đạt được]"*.
 - **Bước 4 (Viết Acceptance Criteria dạng Gherkin):** Mô tả tối thiểu 2-3 kịch bản Given-When-Then bao quát luồng chuẩn (Happy Path) và ngoại lệ (Error Path).
 - **Bước 5 (Kiểm định chuẩn INVEST):** Đánh giá xem Story có độc lập (Independent), thương lượng được (Negotiable), có giá trị (Valuable), ước lượng được (Estimable), vừa vặn (Small) và kiểm thử được (Testable).
 

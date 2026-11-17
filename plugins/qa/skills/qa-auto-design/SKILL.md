@@ -1,6 +1,6 @@
 ---
 name: qa-auto-design
-description: "Sinh mã kiểm thử tự động (Automation Test Code) từ kịch bản Gherkin (.feature) và checklist bằng Playwright/Pytest theo chuẩn POM/Service. Áp dụng Reuse-First Scan trước khi viết bất kỳ file mới nào. KHÔNG thực thi test, KHÔNG debug hệ thống. Viết test code cho scenarios đã có. Dùng khi đã có kịch bản Gherkin (.feature) và checklist, cần viết test code và sinh mã automation test."
+description: "Sinh mã Automation Test Code (Python/Pytest/Playwright theo chuẩn POM/Service) từ feature files và scenarios đã có, áp dụng Reuse-First Scan. Dùng khi cần viết test code, tạo Page Object, Service layer hoặc generate automation test."
 metadata:
   version: "1.0.0"
   short-description: "Sinh mã kiểm thử tự động (Automation Test Code) từ kịch bản G..."

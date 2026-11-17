@@ -1,6 +1,6 @@
 ---
 name: qa-test-design
-description: "Thiết kế bộ artifacts kiểm thử 2 giai đoạn chuẩn mực gồm Checklist kiểm thử thực thi (checklist.md) và kịch bản BDD Gherkin (.feature). Chỉ thiết kế — KHÔNG viết code test, KHÔNG thực thi test. Dùng khi cần thiết kế test plan, tạo checklist kiểm thử hoặc viết kịch bản BDD Gherkin từ đặc tả nghiệp vụ."
+description: "Thiết kế bộ artifacts kiểm thử phi-mã-nguồn gồm Checklist kiểm thử thực thi (checklist.md) và kịch bản BDD Gherkin (.feature) từ đặc tả nghiệp vụ. Dùng khi cần lập test plan, phân tích ma trận 6 trục, tạo checklist hoặc viết kịch bản BDD trước khi lập trình automation."
 metadata:
   version: "1.0.0"
   short-description: "Thiết kế bộ artifacts kiểm thử 2 giai đoạn chuẩn mực gồm Chec..."
@@ -172,5 +172,9 @@ Scenario: Từ chối đặt lệnh mua khi khối lượng vượt hạn mức 
   When Nhà đầu tư gửi lệnh mua cổ phiếu "VND" với khối lượng "VUOT_HAN_MUC_SAN"
   Then Hệ thống từ chối nhận lệnh và trả về thông báo lỗi "Khối lượng vượt quá 500,000 cổ phiếu"
 ```
+
+## Xác minh & Phản biện Đối kháng (Verification)
+- [ ] `checklist.md` và `{issueKey}.feature` tồn tại, ánh xạ 1-1 qua `@CL-xxx` và `qa-validate.js` exit 0.
+- [ ] Với ticket Fintech/Critical, đối chiếu chéo `spec/final.md` (kể cả Business Decision Log) qua `meta-cross-validation` (Bước 5: Phản biện Đối kháng) để chắc chắn không sót case negative/concurrency.
 
 ---

@@ -173,12 +173,14 @@
 
 ---
 
-## 10. Giả Định & Quyết Định Nghiệp Vụ (Assumptions & Decisions)
+## 10. Giả Định & Quyết Định Nghiệp Vụ (Assumptions & Business Decision Log)
 
-| STT | Giả định / Quyết định | Lý do đưa ra | Mức độ rủi ro |
-|---|---|---|:---:|
-| 1 | [Giả định về hành vi người dùng hoặc luồng hệ thống] | [Căn cứ từ tài liệu hoặc phỏng vấn] | Thấp / Trung bình / Cao |
-| 2 | [Quyết định chọn giải pháp A thay vì B] | [Thống nhất qua Phase 4 Interview] | Thấp |
+> 📌 Ghi nhận rõ các trade-off và phương án đã loại bỏ (tương đương ADR cho nghiệp vụ) để QA và Code Reviewer không hiểu nhầm khi đối chiếu logic.
+
+| ID | Giả định / Quyết định chốt | Phương án bị loại & Lý do (Trade-off) | Người chốt / Rủi ro |
+|---|---|---|---|
+| `BDR-01` | [Giả định hoặc quyết định chọn giải pháp A] | [Loại phương án B vì vi phạm quy định sàn / tăng độ phức tạp] | [PO/BA — Rủi ro: Thấp] |
+| `BDR-02` | [Quy tắc làm tròn / xử lý biên đã thống nhất] | [Thống nhất qua Phase 4 Interview] | [PO — Rủi ro: Trung bình] |
 
 ---
 
