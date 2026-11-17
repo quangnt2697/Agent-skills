@@ -70,11 +70,11 @@ Skill này **CHỈ REPORT findings**, KHÔNG tự ý sửa mã nguồn. Báo cá
 
 **Next Steps:**
 - Tác giả sửa code theo đề xuất và đẩy commit mới.
-- Nếu muốn Agent tự động áp dụng các sửa chữa đã đề xuất: Dùng lệnh `/dev-audit` (kèm xác nhận approval gate).
+- Nếu code chạy đúng nhưng cần đơn giản hóa / tái cấu trúc dễ đọc: Dùng lệnh `/cr-code-simplify` (Tier 3, sau khi user xác nhận phạm vi).
 ```
 
 **QUAN TRỌNG:**
 - ❌ **KHÔNG** tự động apply fixes trong skill này
 - ❌ **KHÔNG** show diff/code blocks rời rạc với lời "copy vào file X"
 - ✅ **BẮT BUỘC** trích dẫn đoạn code thực tế từ diff (`Existing Code`) để dev biết chính xác vị trí
-- ✅ **GỢI Ý** dùng `/dev-audit` nếu user muốn auto-fix
+- ✅ **GỢI Ý** dùng `/cr-code-simplify` nếu code đã đúng chức năng nhưng cần refactor cho gọn sạch

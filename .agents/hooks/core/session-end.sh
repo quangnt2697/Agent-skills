@@ -5,21 +5,24 @@
 # ==============================================================================
 set -euo pipefail
 
-CHECKPOINT_DIR=".checkpoints"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+CHECKPOINT_DIR="$PROJECT_ROOT/.checkpoints"
 mkdir -p "$CHECKPOINT_DIR"
 
-CURRENT_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || echo "HEAD")"
+CURRENT_BRANCH="$(git -C "$PROJECT_ROOT" symbolic-ref --short HEAD 2>/dev/null || echo "HEAD")"
 TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 # Lấy danh sách file thay đổi trong workspace/
 # Vì workspace/ nằm trong .gitignore, kết hợp quét file thực tế và git status
-CHANGED_FILES="$(git status --porcelain workspace/ 2>/dev/null || true)"
+CHANGED_FILES="$(git -C "$PROJECT_ROOT" status --porcelain workspace/ 2>/dev/null || true)"
 
 # Quét snapshot file thực tế trong workspace/
-WORKSPACE_SNAPSHOT="$(node -e '
+WORKSPACE_SNAPSHOT="$(PROJECT_ROOT="$PROJECT_ROOT" node -e '
 const fs = require("fs");
 const path = require("path");
-const ws = "workspace";
+const root = process.env.PROJECT_ROOT;
+const ws = path.join(root, "workspace");
 const files = [];
 if (fs.existsSync(ws)) {
   function walk(d) {
@@ -30,7 +33,7 @@ if (fs.existsSync(ws)) {
         if (e.isDirectory()) walk(p);
         else if (e.isFile()) {
           const stat = fs.statSync(p);
-          files.push({ path: p, mtime: stat.mtimeMs, size: stat.size });
+          files.push({ path: path.relative(root, p), mtime: stat.mtimeMs, size: stat.size });
         }
       }
     } catch (_) {}
@@ -43,18 +46,21 @@ console.log(JSON.stringify(files));
 FILE_COUNT="$(echo "$WORKSPACE_SNAPSHOT" | jq 'length' 2>/dev/null || echo "0")"
 
 if [[ -n "$CHANGED_FILES" || "$FILE_COUNT" -gt 0 ]]; then
-  # Tạo file auto-save.json ghi nhận trạng thái
-  cat << EOF > "$CHECKPOINT_DIR/auto-save.json"
-{
-  "timestamp": "$TIMESTAMP",
-  "branch": "$CURRENT_BRANCH",
-  "auto_saved": true,
-  "summary": "Phiên làm việc tự động lưu khi kết thúc session",
-  "git_status": $(echo "$CHANGED_FILES" | jq -R . | jq -s .),
-  "changed_workspace_files": $(echo "$WORKSPACE_SNAPSHOT" | jq '[.[].path]'),
-  "workspace_files_snapshot": $WORKSPACE_SNAPSHOT
-}
-EOF
+  # Tạo file auto-save.json an toàn qua jq (chống injection ký tự đặc biệt trong tên branch/file)
+  jq -n \
+    --arg timestamp "$TIMESTAMP" \
+    --arg branch "$CURRENT_BRANCH" \
+    --arg changed "$CHANGED_FILES" \
+    --argjson snapshot "$WORKSPACE_SNAPSHOT" \
+    '{
+      timestamp: $timestamp,
+      branch: $branch,
+      auto_saved: true,
+      summary: "Phiên làm việc tự động lưu khi kết thúc session",
+      git_status: ($changed | split("\n") | map(select(length > 0))),
+      changed_workspace_files: ($snapshot | map(.path)),
+      workspace_files_snapshot: $snapshot
+    }' > "$CHECKPOINT_DIR/auto-save.json"
   echo "[agent-skills hooks] Đã tự động lưu snapshot phiên vào $CHECKPOINT_DIR/auto-save.json ($FILE_COUNT files)" >&2
 fi
 

@@ -88,11 +88,29 @@ function toDisplayName(skillName) {
     .join(' ');
 }
 
-function buildShortDescription(description) {
-  const firstSentence = description.split(/[.!?]/)[0].trim();
-  if (firstSentence.length <= 64 && firstSentence.length >= 20) return firstSentence;
-  if (firstSentence.length > 64) return firstSentence.slice(0, 61).trimEnd() + '...';
-  return description.slice(0, 61).trimEnd() + (description.length > 61 ? '...' : '');
+export function buildShortDescription(description) {
+  // Chuẩn hóa khoảng trắng, giữ nguyên chấm phần mở rộng (.feature) và dấu ba chấm (...) khi tách câu
+  const normalized = description
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\.{2,}/g, '…')
+    .replace(/\(([^)]+)\)/g, (m, inner) => `(${inner.replace(/\./g, '·')})`);
+  const firstSentence = normalized
+    .split(/[.!?](?=\s|$)/)[0]
+    .replace(/·/g, '.')
+    .trim();
+
+  if (firstSentence.length >= 25 && firstSentence.length <= 64) {
+    return firstSentence;
+  }
+
+  const base = firstSentence.length > 64 ? firstSentence : normalized.replace(/·/g, '.');
+  if (base.length <= 64) return base;
+
+  const slice = base.slice(0, 61);
+  const lastSpace = slice.lastIndexOf(' ');
+  const trimmed = lastSpace >= 36 ? slice.slice(0, lastSpace) : slice;
+  return trimmed.trimEnd().replace(/[,;:\-(]+$/, '').trimEnd() + '...';
 }
 
 function normalizeSkillFrontmatter(skillFile) {

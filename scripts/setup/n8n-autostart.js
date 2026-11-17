@@ -496,7 +496,16 @@ export async function processSkillQueue({ rootDir = projectRoot } = {}) {
       .trim();
   }
 
+  const ISSUE_KEY_RE = /^[A-Z][A-Z0-9_-]{1,63}$/;
+
   for (const job of pendingJobs) {
+    if (!job.skill || !job.issueKey || !Object.hasOwn(SKILL_LABELS, job.skill) || !ISSUE_KEY_RE.test(String(job.issueKey))) {
+      job.status = 'failed';
+      job.error = 'Dữ liệu job không hợp lệ (skill hoặc issueKey ngoài danh sách cho phép).';
+      fs.writeFileSync(queueFile, JSON.stringify(queue, null, 2), 'utf8');
+      continue;
+    }
+
     job.status = 'running';
     job.startedAt = new Date().toISOString();
     fs.writeFileSync(queueFile, JSON.stringify(queue, null, 2), 'utf8');
@@ -526,7 +535,8 @@ export async function processSkillQueue({ rootDir = projectRoot } = {}) {
       continue;
     }
 
-    const promptToRun = job.promptCmd || `/${job.skill} ${job.issueKey} --auto`;
+    const autoFlag = ['ba-refine', 'ba-spec', 'qa-test-design', 'qa-auto-design', 'qa-full-pipeline'].includes(job.skill) ? ' --auto' : '';
+    const promptToRun = `/${job.skill} ${job.issueKey}${autoFlag}`;
     const isCodex = path.basename(selectedCli).toLowerCase() === 'codex';
     const cliArgs = isCodex
       ? [

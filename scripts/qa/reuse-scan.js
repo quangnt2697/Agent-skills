@@ -9,7 +9,7 @@ import path from 'node:path';
 
 const [issueKey, ...kw] = process.argv.slice(2);
 const keywords = kw.join(' ').toLowerCase().split(/\s+/).filter((k) => k.length > 2);
-if (!issueKey || !keywords.length) {
+if (!issueKey || !keywords.length || !/^[A-Za-z0-9_-]+$/.test(issueKey)) {
   console.error('Usage: node reuse-scan.js {issueKey} "từ_khóa"');
   process.exit(1);
 }
@@ -36,7 +36,13 @@ function walk(dir) {
 }
 walk(path.join(root, 'workspace'));
 
-const sdkMap = path.join(root, 'plugins/qa/skills/qa-auto-design/references/sdk-map.json');
+const sdkRelPath = 'plugins/qa/skills/qa-auto-design/references/sdk-map.json';
+const sdkMapCandidates = [
+  path.join(root, sdkRelPath),
+  process.env.AGENT_SKILLS_HOME ? path.join(process.env.AGENT_SKILLS_HOME, sdkRelPath) : null,
+  path.resolve(__dirname, '../..', sdkRelPath),
+].filter(Boolean);
+const sdkMap = sdkMapCandidates.find((p) => fs.existsSync(p)) || sdkMapCandidates[0];
 const out = {
   issueKey,
   keywords,

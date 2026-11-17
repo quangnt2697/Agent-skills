@@ -4,7 +4,7 @@ description: "Tổng kết Sprint, đánh giá vận tốc và rút ra bài họ
 
 Kích hoạt kỹ năng sm-sprint-retrospective.
 
-Đọc chi tiết trong plugins/scrum-master/skills/sm-sprint-retrospective/SKILL.md và thực thi quy trình tổng kết Sprint. Báo cáo ghi vào `workspace/sprints/{sprintId}/trace/retrospective-report.md`.
+Đọc chi tiết trong plugins/scrum-master/skills/sm-sprint-retrospective/SKILL.md và thực thi quy trình tổng kết Sprint. Báo cáo ghi vào `workspace/sprints/{sprintId}/trace/sprint-retrospective-report.md`.
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 

@@ -6,11 +6,11 @@ Pipeline tự động gọi các skills con theo thứ tự:
 
 ```text
 Phase 0: Validation (Pre-flight)
-         └─ Check *-final.md exists from BA/PO
+         └─ Check spec/final.md exists from BA/PO
 
 Phase 1: Test Design (qa-test-design)
          ├─ Generate Checklist
-         └─ Generate Gherkin (.feature files) + qa-validate.sh (exit 0)
+         └─ Generate Gherkin (.feature files) + qa-validate.js (exit 0)
 
 Phase 2: Test Automation (qa-auto-design)
          ├─ Recon & Generate POM/Service

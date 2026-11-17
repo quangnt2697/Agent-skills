@@ -68,7 +68,7 @@ npm run validate
 | Vai trò | Kỹ năng trọng tâm | Luồng thực hiện chuẩn trong 1 giờ |
 |---|---|---|
 | **BA / PO** | `ba-spec` → `ba-interview-me` → `ba-process-modeling` | 1. Chạy `/ba-spec {issueKey}` để kéo dữ liệu Jira.<br/>2. Chạy `/ba-interview-me` để AI chất vấn làm rõ các giả định ngầm.<br/>3. Vẽ sơ đồ quy trình qua `/ba-process` hoặc xuất ảnh bằng `/flowchart`. |
-| **QA / SDET** | `qa-test-design` → `qa-auto-design` → `qa-run-test` | 1. Nhận `spec/*-final.md` từ BA.<br/>2. Chạy `/qa-test-design` tạo `checklist.md` và `.feature`.<br/>3. Chạy `/qa-auto-design` (AI tự động tra cứu `sdk-map.json` để tái sử dụng client có sẵn).<br/>4. Chạy `/qa-run-test` và đọc báo cáo `report.md` (100% logs). |
+| **QA / SDET** | `qa-test-design` → `qa-auto-design` → `qa-run-test` | 1. Nhận `spec/final.md` từ BA.<br/>2. Chạy `/qa-test-design` tạo `checklist.md` và `.feature`.<br/>3. Chạy `/qa-auto-design` (AI tự động tra cứu `sdk-map.json` để tái sử dụng client có sẵn).<br/>4. Chạy `/qa-run-test` và đọc báo cáo `report.md` (100% logs). |
 | **Scrum Master**| `sm-daily-standup` → `sm-impediment-triage` | 1. Chạy `/sm-daily-standup` để tổng hợp tiến độ Sprint hiện tại từ Jira.<br/>2. Chạy `/sm-impediment-triage` để phát hiện các ticket bị treo trên Kanban. |
 | **Code Reviewer**| `cr-review-code-and-quality` → `security-code-audit` | 1. Chạy `/cr-review {mrUrl}` để review đa chiều (Kiến trúc, logic, hiệu năng, clean code, testability).<br/>2. Chạy `/security-audit` quét các lỗ hổng OWASP Top 10. |
 
@@ -88,7 +88,7 @@ sequenceDiagram
     participant CR as Review (cr-review, security)
 
     User->>BA: /ba-spec JIRA-123
-    BA-->>User: workspace/issues/JIRA-123/spec/*-final.md
+    BA-->>User: workspace/issues/JIRA-123/spec/final.md
     
     User->>QA: /qa-test-design JIRA-123
     QA-->>User: test/checklist.md & .feature

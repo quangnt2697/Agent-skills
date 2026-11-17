@@ -16,26 +16,17 @@ metadata:
 - **Input bắt buộc:** `issueKey`, loại task (`WEB` hoặc `APP`), và nguồn giao diện gốc (link URL màn hình có sẵn hoặc đường dẫn codebase / `screenKey`). Thiếu input thì dừng và hỏi lại, không tự suy diễn.
 - **Bằng chứng hoàn thành:** File `spec/asis-inventory.json`, `spec/asis-inventory.md`, `spec/diagrams/mockup.html`, `validate-mockup-fidelity.js` exit code 0 với Fidelity Score ≥ 90%, tồn tại các file ảnh `mockup-case-1.png` (và `mockup-case-2.png`, `mockup-case-3.png` nếu đa trạng thái) đạt độ phân giải tối thiểu Full HD (`1920x1080`) và đã được review trực quan đảm bảo không vỡ layout.
 
-## Overview (Tổng quan)
+## Overview & Khi nào sử dụng (Tổng quan)
 
-Kỹ năng chuyên biệt phục vụ thiết kế Mockup giao diện bám sát thực tế (Prod-Twin UI) cho BA/PO trong giai đoạn Refine với **5 nguyên tắc cốt lõi**:
-1. **Bám sát 100% Phong cách có sẵn (Codebase / Link):** Trích xuất trực tiếp từ link màn hình được cung cấp (`capture-asis-dom.js`) hoặc từ codebase (`extract-asis-ui.js`). Giữ nguyên 100% Design System có sẵn của sản phẩm (Ant Design Pro, Entrade X Dark/Light, Flutter Mobile...), tuyệt đối không tự suy diễn style.
-2. **Độ phân giải tối thiểu Full HD (`1920x1080`):** Mọi mockup Web/Desktop bắt buộc thiết kế ở độ phân giải tối thiểu `1920x1080` (`min-width: 1920px; min-height: 1080px`). Mobile thiết kế theo khung chuẩn `393x852`.
-3. **Chỉ thiết kế theo Yêu cầu Task + Highlight phần mới cho Client (Không ghi chú QA/BA):**
-   - Trong mockup chỉ thiết kế đúng các thành phần giao diện theo yêu cầu của task.
-   - Highlight trực quan vào phần được thiết kế mới hoặc sửa đổi (`data-change="added|modified"` với viền/nền highlight tinh tế) để client dễ dàng nhận ra đâu là phần mới so với thiết kế cũ.
-   - **TUYỆT ĐỐI KHÔNG** thiết kế các ghi chú cho QA/BA/Dev trên mockup: không gắn huy hiệu số `①`, `②`, `③` (`delta-pin`, `delta-badge`), không chèn bảng `UI Delta Mapping` (`delta-table`), không hiển thị thanh công cụ preview.
-4. **Kiểm định Fidelity & Review Chống Vỡ Layout:** Chạy `validate-mockup-fidelity.js` (Fidelity Score ≥ 90%) kết hợp kiểm tra layout tự động trong `render-mockup.js` và **bắt buộc đọc lại file ảnh `.png` sau khi render** để kiểm tra không bị tràn chữ, lệch cột, hụt nền hay vỡ bố cục.
-5. **Sử dụng Trực tiếp Ảnh Mockup trên `refined-draft.md`:** Sau khi có ảnh mockup, trong mục `## 🎨 UI Design / Mockup` của `refined-draft.md` chỉ nhúng ảnh mockup đó (`![...](...)`), **không mô tả design bằng text và không ghi chú gì thêm**.
+Thiết kế Mockup giao diện bám sát thực tế (Prod-Twin UI) cho BA/PO trong giai đoạn Refine theo **5 nguyên tắc bất biến**:
+1. **Bám sát 100% Phong cách Gốc:** Trích xuất trực tiếp từ link Live DOM (`capture-asis-dom.js`) hoặc codebase `master/main` (`extract-asis-ui.js`). Giữ nguyên Design System hiện hữu, không tự suy diễn style.
+2. **Độ phân giải chuẩn:** Web/Desktop tối thiểu **Full HD (`1920x1080`)**; Mobile chuẩn **`393x852`**.
+3. **Sạch bóng ghi chú QA/BA:** Chỉ thiết kế đúng yêu cầu task + highlight phần mới/sửa (`data-change="added|modified"`). **Cấm** gắn huy hiệu `① ② ③` (`delta-pin`, `delta-badge`), bảng `UI Delta Mapping` (`delta-table`), thanh công cụ preview hoặc mã `[BR-*]` lên ảnh.
+4. **Kiểm định Fidelity & Review Ảnh:** Đạt `validate-mockup-fidelity.js` (≥ 90%), `layout_check.layoutValid === true` khi render Retina 2x (`render-mockup.js`), và **bắt buộc đọc lại ảnh `.png`** chống vỡ layout.
+5. **Nhúng Trực tiếp Vào Spec:** Mục `## 🎨 UI Design / Mockup` trong `refined-draft.md` chỉ nhúng ảnh `![...](...)`, **không** mô tả design bằng text hay thêm ghi chú.
 
-## When to Use (Khi nào sử dụng)
-
-- Khi thiết kế giao diện màn hình cho các Jira task thuộc loại `WEB` hoặc `APP`.
-- Khi kỹ năng `ba-refine` đến Giai đoạn 3 cần dựng Mockup trực quan để trình User phê duyệt tại Gate 2.
-
-**Khi KHÔNG sử dụng:**
-- Task thuần Backend, API, Kafka, cơ sở dữ liệu TimescaleDB/PostgreSQL không có giao diện người dùng.
-- Vẽ sơ đồ luồng quy trình, sequence, kiến trúc hệ thống → Dùng `ba-design-flowchart`.
+- **Dùng khi:** Thiết kế màn hình cho Jira task `WEB` hoặc `APP` (đặc biệt tại Phase 0 & Gate 2 của `ba-refine`).
+- **Khi KHÔNG sử dụng:** Task thuần Backend/API/DB không có UI, hoặc vẽ sơ đồ luồng/sequence/ERD → dùng `ba-design-flowchart`.
 
 ## Quy Trình Thực Thi & Tài Liệu Tham Chiếu
 

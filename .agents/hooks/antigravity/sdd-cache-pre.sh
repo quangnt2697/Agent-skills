@@ -22,7 +22,7 @@ if [ -t 0 ]; then INPUT="{}"; else INPUT=$(cat); fi
 
 # Resolve project root from hooks.json CWD (.agents/)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # Debug logging
 dbg() {

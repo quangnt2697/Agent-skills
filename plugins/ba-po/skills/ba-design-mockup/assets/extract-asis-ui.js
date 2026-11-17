@@ -19,7 +19,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -45,10 +45,15 @@ for (let i = 0; i < args.length; i++) {
   if (args[i] === '--output' && args[i + 1]) outputDir = path.resolve(args[++i]);
 }
 
-// Xác định root của project
+// Xác định root của project (ưu tiên config gần script -> AGENT_SKILLS_HOME -> cwd)
 let projectRoot = '';
-const projectsConfigPath = path.resolve(__dirname, '../../../../../config/projects.json');
-if (fs.existsSync(projectsConfigPath)) {
+const configCandidates = [
+  path.resolve(__dirname, '../../../../../config/projects.json'),
+  process.env.AGENT_SKILLS_HOME ? path.resolve(process.env.AGENT_SKILLS_HOME, 'config/projects.json') : null,
+  path.resolve(process.cwd(), 'config/projects.json')
+].filter(Boolean);
+const projectsConfigPath = configCandidates.find(p => fs.existsSync(p));
+if (projectsConfigPath) {
   try {
     const cfg = JSON.parse(fs.readFileSync(projectsConfigPath, 'utf8'));
     projectRoot = cfg[projectKey] || '';
@@ -72,12 +77,19 @@ const sourceDirsOrFiles = screenInfo.source_files || [];
 const primaryActions = screenInfo.primary_actions || [];
 const keyFields = screenInfo.key_fields || [];
 
+function runGit(args) {
+  return execFileSync('git', ['-C', projectRoot, ...args], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore']
+  });
+}
+
 // Tìm remote branch hợp lệ (origin/master hoặc origin/main hoặc HEAD)
 let masterRef = 'HEAD';
 const candidateRefs = ['origin/main', 'origin/master', 'main', 'master', 'HEAD'];
 for (const cr of candidateRefs) {
   try {
-    execSync(`git -C "${projectRoot}" rev-parse --verify "${cr}" 2>/dev/null`, { encoding: 'utf8' });
+    runGit(['rev-parse', '--verify', cr]);
     masterRef = cr;
     break;
   } catch (_) {}
@@ -85,7 +97,7 @@ for (const cr of candidateRefs) {
 
 let commitHash = 'UNKNOWN';
 try {
-  commitHash = execSync(`git -C "${projectRoot}" rev-parse "${masterRef}" 2>/dev/null`, { encoding: 'utf8' }).trim();
+  commitHash = runGit(['rev-parse', masterRef]).trim();
 } catch (_) {}
 
 console.log(`📌 Source Reference: ${masterRef} | Commit: ${commitHash.substring(0, 8)}`);
@@ -103,7 +115,7 @@ for (const targetPath of sourceDirsOrFiles) {
   let matchedFiles = [];
   try {
     // Thử dùng git ls-tree -r để lấy toàn bộ file con nếu là thư mục
-    const treeOut = execSync(`git -C "${projectRoot}" ls-tree -r --name-only "${masterRef}" "${targetPath}" 2>/dev/null`, { encoding: 'utf8' });
+    const treeOut = runGit(['ls-tree', '-r', '--name-only', masterRef, targetPath]);
     if (treeOut) {
       matchedFiles = treeOut.split('\n').map(s => s.trim()).filter(f => /\.(tsx?|dart)$/i.test(f));
     }
@@ -117,7 +129,7 @@ for (const targetPath of sourceDirsOrFiles) {
     ];
     for (const c of candidates) {
       try {
-        const check = execSync(`git -C "${projectRoot}" rev-parse --verify "${masterRef}:${c}" 2>/dev/null`, { encoding: 'utf8' });
+        const check = runGit(['rev-parse', '--verify', `${masterRef}:${c}`]);
         if (check) { matchedFiles.push(c); break; }
       } catch (_) {}
     }
@@ -125,7 +137,7 @@ for (const targetPath of sourceDirsOrFiles) {
 
   for (const filePath of matchedFiles.slice(0, 15)) {
     try {
-      const fileContent = execSync(`git -C "${projectRoot}" show "${masterRef}:${filePath}" 2>/dev/null`, { encoding: 'utf8' });
+      const fileContent = runGit(['show', `${masterRef}:${filePath}`]);
       if (fileContent) {
         filesRead.push({ file: filePath, lines: fileContent.split('\n').length });
 
@@ -188,7 +200,7 @@ const tokenCandidates = [
 
 for (const tc of tokenCandidates) {
   try {
-    const tContent = execSync(`git -C "${projectRoot}" show "${masterRef}:${tc}" 2>/dev/null`, { encoding: 'utf8' });
+    const tContent = runGit(['show', `${masterRef}:${tc}`]);
     if (tContent) {
       const hexMatches = tContent.match(/#[0-9a-fA-F]{6}\b/g) || [];
       hexMatches.slice(0, 10).forEach(h => {

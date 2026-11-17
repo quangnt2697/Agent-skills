@@ -28,15 +28,15 @@ Tất cả lệnh được định nghĩa đồng bộ qua TOML (`plugins/*/comm
 
 | Command | Tham số | Đầu ra chính | Mục đích & Khi nào dùng |
 |---|---|---|---|
-| `/ba-spec` | `{issueKey}` | `spec/*-final.md` | Import từ Jira/Confluence, quét gaps, lập Business Spec bàn giao. |
+| `/ba-spec` | `{issueKey}` | `spec/final.md` | Import từ Jira/Confluence, quét gaps, lập Business Spec bàn giao. |
 | `/ba-refine` | `{issueKey}` | `spec/refined.md` + `testability-manifest.json` | Brainstorm phân kỳ/hội tụ ý tưởng thô và cập nhật spec lên Jira. |
 | `/ba-push-jira` | `{issueKey}` | Jira Description ADF | Đẩy trực tiếp spec lên Jira kèm inline mockup (không chạy lại quy trình refine). |
 | `/ba-interview` | `{issueKey}` | Spec Clarifications | Phỏng vấn tương tác 1-1 làm rõ điểm mù logic nghiệp vụ. |
 | `/ba-user-stories` | `{issueKey}` | `spec/user-stories.md` | Viết User Stories theo chuẩn INVEST kèm Acceptance Criteria Gherkin. |
 | `/ba-gap-analysis` | `{issueKey}` | `spec/gap-analysis.md` | Phân tích khoảng cách AS-IS vs TO-BE và lộ trình chuyển đổi. |
-| `/ba-prioritize` | `{issueKey}` | `spec/prioritization.md`| Ưu tiên tính năng/backlog theo mô hình MoSCoW hoặc WSJF. |
-| `/ba-stakeholder` | `{issueKey}` | `spec/stakeholder-notes.md` | Phỏng vấn đa đối tượng (PO, Dev Lead, Compliance, End-user). |
-| `/ba-process` | `{issueKey}` | `spec/process-model.md` | Vẽ sơ đồ quy trình nghiệp vụ (BPMN / Swimlane / Flowchart). |
+| `/ba-prioritize` | `{issueKey}` | `spec/backlog.md` | Ưu tiên tính năng/backlog theo mô hình MoSCoW hoặc WSJF. |
+| `/ba-stakeholder` | `{issueKey}` | `spec/stakeholders.md` | Phỏng vấn đa đối tượng (PO, Dev Lead, Compliance, End-user). |
+| `/ba-process` | `{issueKey}` | `spec/process-as-is.md` / `process-to-be.md` | Vẽ sơ đồ quy trình nghiệp vụ (BPMN / Swimlane / Flowchart). |
 
 ### 2.2. Kiểm thử & Đảm bảo Chất lượng — QA/SDET (`plugins/qa` — 6 lệnh)
 
@@ -190,7 +190,7 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 4. **[workspace-paths.md](.agents/rules/workspace-paths.md) — Cấu trúc Thư mục Artifacts**
    - Bắt buộc mọi artifact nằm trong `workspace/issues/{issueKey}/`:
      - `source/`: Tài liệu gốc tải về (PDF, Jira JSON)
-     - `spec/`: Đặc tả nghiệp vụ `*-final.md`, sơ đồ quy trình
+     - `spec/`: Đặc tả nghiệp vụ `spec/final.md`, sơ đồ quy trình
      - `tech/`: Tech-spec, kế hoạch lập trình `plan.md`
      - `test/`: Checklist, file `.feature`, mã automation test
      - `trace/`: Ma trận truy vết yêu cầu ↔ test
@@ -224,7 +224,7 @@ Nằm tại `.agents/rules/` và được kích hoạt tự động 100% (**Alwa
 
 | Lệnh / Tiện ích | Cú pháp | Mục đích |
 |---|---|---|
-| **Pipeline Kiểm định Toàn diện** | `npm test` hoặc `npm run lint` | Chạy toàn bộ 10 cổng validators + 33 unit test suites + evals |
+| **Pipeline Kiểm định Toàn diện** | `npm test` hoặc `npm run lint` | Chạy toàn bộ 10 cổng validators + 34 unit test suites + evals |
 | **Kiểm định 10 Cổng Validators** | `npm run validate` | Chạy lần lượt cả 10 script kiểm định chất lượng bên dưới |
 | ↳ *Gate 1: Skills Structure* | `npm run validate:skills` | Kiểm định cấu trúc SKILL.md, frontmatter YAML và từ khóa kích hoạt |
 | ↳ *Gate 2: Command Parity* | `npm run validate:commands` | Kiểm định đồng bộ giữa commands TOML và Markdown |

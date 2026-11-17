@@ -4,7 +4,7 @@
 
 ### Bước 1: Đọc Input (Business-Spec hoặc Requirements)
 
-**Input A: File `*-final.md`**
+**Input A: File `spec/final.md`**
 Đọc file Business-Spec từ kỹ năng `ba-spec`: `workspace/issues/{issueKey}/spec/final.md`. Trích xuất:
 - Section 1: Summary → Feature name, Context
 - Section 2: Current State/Background → AS-IS hints

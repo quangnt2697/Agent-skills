@@ -42,7 +42,7 @@ const PLUGINS_DIR = path.join(ROOT, 'plugins');
 // Matches a link to a references/ markdown file, with any number of leading
 // `../` segments: `references/x.md`, `../../references/x.md`. Anchored on a
 // non-path character so `myreferences/x.md` does not match.
-const REFERENCE_LINK_RE = /(?<![A-Za-z0-9._/-])((?:\.\.\/)*references\/[A-Za-z0-9._-]+\.md)/g;
+const REFERENCE_LINK_RE = /(?<![A-Za-z0-9._/-])((?:\.\.\/)*references\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+\.md)/g;
 
 function findViolations(skillDir, skillFile) {
   const violations = [];

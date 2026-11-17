@@ -27,8 +27,8 @@ Tạo sơ đồ nghiệp vụ và kiến trúc dưới dạng file HTML độc l
 - Khi cần xuất ảnh PNG/SVG chất lượng cao gắn vào Jira ticket hoặc báo cáo Sprint.
 
 **Khi KHÔNG sử dụng:**
-- Dựng mockup giao diện người dùng (Web/Mobile App) → Dùng `ba-refine` với HTML mockup harness.
-- Chỉ cần sơ đồ nhanh dạng Mermaid thô trong chat mà không yêu cầu xuất ảnh chất lượng cao hoặc chuẩn Editorial.
+- Dựng mockup giao diện người dùng (Web/Mobile App) → Dùng `ba-design-mockup`.
+- Trình bày dàn ý quy trình dạng văn bản/bullet đơn giản không cần file sơ đồ.
 
 ## Quy Trình Thực Thi & Tài Liệu Tham Chiếu
 

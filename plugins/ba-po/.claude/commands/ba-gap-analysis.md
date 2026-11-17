@@ -76,6 +76,6 @@ LƯU Ý: Tất cả output phải bằng TIẾNG VIỆT.
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 
-1. **CHỈ LÀM (TIER 1 - READ-ONLY):** Lệnh này CHỈ làm nhiệm vụ phân tích khoảng cách AS-IS vs TO-BE và xuất tài liệu tại `workspace/issues/{issueKey}/spec/gap-analysis.md`.
+1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ phân tích khoảng cách AS-IS vs TO-BE và xuất tài liệu tại `workspace/issues/{issueKey}/spec/gap-analysis.md`.
 2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** TUYỆT ĐỐI CẤM viết code, sửa code ứng dụng, hoặc tự ý thay đổi file spec gốc.
 3. **ĐIỀU KIỆN DỪNG (HARD STOP):** Sau khi ghi file `spec/gap-analysis.md`, DỪNG LẠI NGAY và xuất trình kết quả. CẤM tự động kích hoạt bất kỳ lệnh nào trong phần Handoff.

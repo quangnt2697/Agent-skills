@@ -50,10 +50,11 @@ function toCleanUserText(raw) {
     .trim();
 }
 
+const ISSUE_KEY_RE = /^[A-Z][A-Z0-9_-]{1,63}$/;
 const skillLabel = SKILL_LABELS[skill] || 'Thao tác công việc';
 
-if (!skill || !issueKey) {
-  const errorMsg = 'Thiếu thông tin mã công việc hoặc thao tác cần thực hiện.';
+if (!skill || !issueKey || !Object.hasOwn(SKILL_LABELS, skill) || !ISSUE_KEY_RE.test(issueKey)) {
+  const errorMsg = 'Thông tin mã công việc hoặc thao tác cần thực hiện không hợp lệ.';
   return [{
     json: {
       success: false,

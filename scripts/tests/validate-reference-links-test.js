@@ -170,3 +170,15 @@ test('checks links inside colocated references/*.md files too', () => {
   assert.match(result.stdout, /1 skills checked — 1 error\(s\) — FAILED/);
   assert.match(result.stdout, /L1: \.\.\/\.\.\/\.\.\/\.\.\/references\/securities-domain-rules\.md/);
 });
+
+test('checks nested references subpaths (references/securities/*.md)', () => {
+  const root = makeSandbox();
+  writeFile(root, 'references/securities/05-market-data-mdds.md', '# MDDS\n');
+  writeFile(root, 'plugins/qa/skills/qa-test-design/SKILL.md', 'See `references/securities/05-market-data-mdds.md`.\n');
+
+  const result = run(root);
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /1 skills checked — 1 error\(s\) — FAILED/);
+  assert.match(result.stdout, /references\/securities\/05-market-data-mdds\.md/);
+});

@@ -25,7 +25,7 @@ command -v shasum >/dev/null 2>&1 || command -v sha256sum >/dev/null 2>&1 || { e
 if [ -t 0 ]; then INPUT="{}"; else INPUT=$(cat); fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # Debug logging
 dbg() {
@@ -101,10 +101,9 @@ if [ -f "$CACHE_FILE" ]; then
   EXISTING_CONTENT=$(jq -r '.content // empty' "$CACHE_FILE" 2>/dev/null || true)
 fi
 
-# If no existing content, try to fetch the page content directly for caching
+# Không gọi curl unauthenticated dự phòng để tránh trễ 10s sau mỗi read_url_content
 if [ -z "$EXISTING_CONTENT" ]; then
-  EXISTING_CONTENT=$(curl -sL --max-time 10 "$URL" 2>/dev/null | head -c 50000 || true)
-  dbg "fetched content for cache: ${#EXISTING_CONTENT} bytes"
+  dbg "no existing content for cache; skipping fallback curl"
 fi
 
 TMP="${CACHE_FILE}.$$.tmp"

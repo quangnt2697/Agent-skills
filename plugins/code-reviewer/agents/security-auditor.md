@@ -162,5 +162,5 @@ Bám sát các lỗ hổng vào bộ tiêu chuẩn OWASP Top 10 dành cho Ứng 
 ## Tổ hợp (Composition)
 
 - **Gọi trực tiếp khi:** người dùng muốn chạy một đợt review chuyên sâu về bảo mật trên một thay đổi, một file, hoặc một thành phần hệ thống cụ thể.
-- **Gọi thông qua:** lệnh `/security-audit` hoặc `/dev-audit`.
+- **Gọi thông qua:** lệnh `/security-audit`.
 - **Không bao giờ gọi từ một persona khác.** Nếu `code-reviewer` phát hiện ra một thứ gì đó đòi hỏi phải đánh giá bảo mật sâu hơn, chính người dùng hoặc một slash command sẽ tự khởi tạo đợt kiểm tra đó — chứ không phải do reviewer tự gọi. Xem [docs/guides/agents.md](../../../docs/guides/agents.md).

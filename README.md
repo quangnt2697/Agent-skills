@@ -105,7 +105,7 @@ npm run setup:hooks    # Kích hoạt Git pre-commit hook bảo vệ nhánh main
 **1. BA/PO: Phân tích yêu cầu**
 ```bash
 /ba-spec JIRA-123
-# → Import Jira issue → Phân tích gaps → Tổng hợp thành *-final.md
+# → Import Jira issue → Phân tích gaps → Tổng hợp thành spec/final.md
 ```
 
 **2. QA: Thiết kế & chạy kiểm thử tự động toàn diện**
@@ -311,7 +311,7 @@ Sửa file `plugins/<plugin-name>/agents/{persona}.md` để thay đổi:
 | [CLAUDE.md](CLAUDE.md)                            | Project instructions cho Claude agent |
 | [Installation Guide](docs/guides/installation-guide.md) | Hướng dẫn cài đặt & sử dụng           |
 | [Skill Anatomy](docs/guides/skill-anatomy.md)     | Cấu trúc một skill, best practices    |
-| [Agents Guide](docs/guides/agents.md)             | Chi tiết 7 personas và ranh giới      |
+| [Agents Guide](docs/guides/agents.md)             | Chi tiết 6 personas và ranh giới      |
 | [CONTRIBUTING.md](CONTRIBUTING.md)                | Hướng dẫn đóng góp                    |
 
 ### Architecture & Workflows

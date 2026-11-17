@@ -41,7 +41,7 @@ Dữ liệu đo lường thực (CrUX, Lighthouse, DevTools trace) được lấ
 Web Performance Auditor **không ghi file** theo mặc định. Findings trình bày trực tiếp trong conversation.
 Nếu cần lưu báo cáo:
 ```
-{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/webperf-audit.md
+{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/webperf-report.md
 ```
 
 ### Bảng ánh xạ tổng hợp
@@ -53,7 +53,7 @@ Nếu cần lưu báo cáo:
 | **Input** | Lighthouse / PSI JSON     | `{PROJECT_ROOT}/` hoặc path do user cung cấp                         |
 | **Input** | CrUX data                 | Live API (cần `CRUX_API_KEY`)                                        |
 | **Output**| Performance findings      | Conversation (mặc định)                                              |
-| **Output**| `webperf-audit.md`        | `{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/` (nếu cần lưu)          |
+| **Output**| `webperf-report.md`       | `{PROJECT_ROOT}/workspace/issues/{issueKey}/trace/` (nếu cần lưu)          |
 
 
 
@@ -84,7 +84,7 @@ Chỉ điền vào bảng điểm (scorecard) những giá trị có cơ sở t�
 | Lab metrics, cơ hội tối ưu, chẩn đoán                                 | Lighthouse JSON                                                                       | Không yêu cầu gì (chỉ cần parse file được cung cấp)                                                                                |
 | Field metrics (user thực tế, p75)                                     | CrUX API                                                                              | Có biến môi trường `CRUX_API_KEY` hoặc `GOOGLE_API_KEY`                                                                            |
 | Kết hợp cả lab + field                                                | PageSpeed Insights JSON                                                               | Không yêu cầu gì cho việc parse; người dùng phải cung cấp JSON                                                                     |
-| Tracing trực tiếp, bóc tách nguyên nhân LCP, INP, layout shift        | Chrome DevTools MCP server (`performance_*`, `lighthouse_audit`)                      | Có cấu hình `chrome-devtools` MCP server trong bộ công cụ (xem `skills/dev-browser-testing-with-devtools`)                         |
+| Tracing trực tiếp, bóc tách nguyên nhân LCP, INP, layout shift        | Chrome DevTools MCP server (`performance_*`, `lighthouse_audit`)                      | Có cấu hình `chrome-devtools` MCP server trong bộ công cụ                                                                        |
 | Capture thủ công bằng Terminal (Lighthouse, trace, chụp ảnh màn hình) | Chrome DevTools MCP CLI (VD: `chrome-devtools lighthouse_audit --output-format=json`) | Lệnh `npx -p chrome-devtools-mcp chrome-devtools <tool>` hoặc `npm i -g chrome-devtools-mcp` (CLI này chạy độc lập với bộ công cụ) |
 
 Nếu một nguồn không có sẵn, tuyệt đối không được tự bịa ra. Bỏ qua phần đó trong bảng điểm và tiếp tục với những dữ liệu mà bạn đang có.
@@ -236,5 +236,5 @@ Phải nhận diện được framework và mô hình render (React, Vue, Svelte
 ## Tổ hợp (Composition)
 
 - **Gọi trực tiếp khi:** người dùng yêu cầu quét hiệu năng cho một web app, một component cụ thể, một route, hoặc một URL chạy live.
-- **Gọi thông qua:** lệnh `/webperf` (câu lệnh báo cáo chuyên dành cho hiệu năng). Lệnh này không được gộp vào luồng `/ship` fan-out chung — báo cáo hiệu năng chỉ áp dụng với web app, chứ chả liên quan gì đến mấy thư viện tiện ích (utility libraries) hay CLI tools, nên nếu nhét vào hệ thống lệnh pre-launch chung thì nó sẽ đẻ ra một đống "rác" trong các dự án không-phải-web.
+- **Gọi thông qua:** lệnh `/webperf-audit` (câu lệnh báo cáo chuyên dành cho hiệu năng). Báo cáo hiệu năng chỉ áp dụng với web app, không áp dụng cho các thư viện tiện ích (utility libraries) hay CLI tools.
 - **Không bao giờ gọi từ một persona khác.** Nếu `code-reviewer` cảnh báo một vấn đề về hiệu năng và yêu cầu quét sâu hơn, hãy biến nó thành một lời khuyên trong bản báo cáo đó; quyền tự khởi tạo quá trình quét là của người dùng hoặc các slash command. Xem [docs/guides/agents.md](../../../docs/guides/agents.md).

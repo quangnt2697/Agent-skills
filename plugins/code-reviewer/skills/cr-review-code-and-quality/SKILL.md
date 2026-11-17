@@ -34,9 +34,9 @@ Quá trình review kết hợp hài hòa giữa **kỹ thuật tất định** (
 - Sau khi `qa-auto-design` sinh code automation — review chất lượng test code trước khi chạy.
 
 **KHÔNG sử dụng khi:**
-- Chỉ cần dọn dẹp code đã chạy đúng mà không tìm lỗi → dùng `cr-code-simplification`
-- Cần audit toàn diện kèm tự động sửa từ đầu đến cuối → dùng `dev-audit-and-fix`
-- Chỉ cần chạy lại test đã có → dùng `qa-run-test`
+- Chỉ cần dọn dẹp code đã chạy đúng cho dễ đọc hơn → dùng `cr-code-simplification`
+- Chỉ kiểm toán lỗ hổng bảo mật chuyên sâu theo OWASP → dùng `security-code-audit`
+- Chỉ cần chạy lại bộ test đã có → dùng `qa-run-test`
 
 ---
 
@@ -64,7 +64,7 @@ Trọng tâm: **Chất lượng mã nguồn, Kiến trúc, và Hiệu năng.**
 
 #### 2. Góc nhìn của QA / SDET
 Trọng tâm: **Tính chính xác, Độ bao phủ kiểm thử, và Automation.**
-- **Tính chính xác (Correctness):** Bám sát Acceptance Criteria trong `*-final.md`, kiểm tra đầy đủ boundary và negative edge cases.
+- **Tính chính xác (Correctness):** Bám sát Acceptance Criteria trong `spec/final.md`, kiểm tra đầy đủ boundary và negative edge cases.
 - **Độ bao phủ Test (Coverage):** Có unit test cho logic mới chưa? Test có assertion thực chất hay chỉ lấy số liệu coverage? Có test regression cho bug fix không?
 - **Chất lượng Test Code:** Kiểm tra tính độc lập của test, teardown dữ liệu sạch sẽ, mock data thực tế.
 

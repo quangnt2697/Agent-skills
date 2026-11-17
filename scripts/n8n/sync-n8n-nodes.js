@@ -145,6 +145,12 @@ export const mappings = [
   },
   {
     workflowFile: 'n8n-workflows/ops/security-vulnerability-digest.json',
+    nodeName: 'Run Security Scanner',
+    nodeId: 'run-audit-scanner',
+    scriptFile: 'scripts/n8n-nodes/security/run-security-scanner.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/ops/security-vulnerability-digest.json',
     nodeName: 'Security Digest Engine',
     nodeId: 'code-security-digest',
     scriptFile: 'scripts/n8n-nodes/security/security-digest-engine.js'

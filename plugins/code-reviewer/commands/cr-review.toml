@@ -24,7 +24,7 @@ Tập trung vào:
 - Luôn trích xuất code nguyên văn từ diff (Existing Code) và đề xuất sửa đổi cụ thể để triệt tiêu lỗi lệch dòng.
 
 Mọi đánh giá phải được phân loại (Nghiêm trọng, Bắt buộc, Đề xuất).
-Xuất kết quả dưới định dạng có cấu trúc bao gồm vị trí (file:line) và khuyến nghị sửa chữa cụ thể vào `workspace/issues/{issueKey}/trace/cr-report.md` (hoặc `workspace/adhoc/review/trace/cr-report.md`).
+Xuất kết quả dưới định dạng có cấu trúc bao gồm vị trí (file:line) và khuyến nghị sửa chữa cụ thể vào `workspace/issues/{issueKey}/trace/code-review-report.md` (hoặc `workspace/adhoc/code-review/trace/code-review-report.md`).
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 

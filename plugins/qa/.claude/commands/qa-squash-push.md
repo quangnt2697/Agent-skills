@@ -25,7 +25,7 @@ $ARGUMENTS chứa Issue Key (VD: PROJ-123).
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)
 
-1. **CHỈ LÀM (TIER 2 - ARTIFACT-ONLY):** Lệnh này CHỈ làm nhiệm vụ đọc file `.feature` có sẵn và gọi API đồng bộ lên Squash TM.
+1. **CHỈ LÀM (TIER 2b - EXTERNAL-WRITE):** Lệnh này CHỈ làm nhiệm vụ đọc file `.feature` có sẵn và gọi API đồng bộ lên Squash TM.
 2. **TUYỆT ĐỐI CẤM (STRICT FORBIDDEN):** 
    - TUYỆT ĐỐI CẤM tự ý sửa đổi nội dung file `.feature` hoặc `final.md`.
    - CẤM can thiệp vào bất kỳ file mã nguồn nào của dự án.

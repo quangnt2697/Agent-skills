@@ -14,60 +14,26 @@ metadata:
 > 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
-- **Input bắt buộc:** `sm-config.yaml`, `.env` Jira. Thiếu input thì dừng và hỏi lại, không tự điền.
-- **Bằng chứng hoàn thành:** Dữ liệu Sprint từ Jira thật; báo cáo retrospective tồn tại.
+- **Input bắt buộc:** `config/sm-config.yaml`, biến môi trường kết nối Jira đã cấu hình sẵn. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** Dữ liệu Sprint từ Jira thật; `sprint-retrospective-report.md` tồn tại.
 
 ## Khi nào dùng?
-- Tổng kết Sprint vào ngày cuối cùng của chu kỳ để phân tích Velocity, tỷ lệ cam kết vs hoàn thành, và đưa ra Action Items cải tiến.
-- Rút ra bài học kinh nghiệm (What went well, What needs improvement).
+- Tổng kết Sprint vào ngày cuối cùng của chu kỳ để phân tích Velocity, tỷ lệ cam kết vs hoàn thành, và đưa ra Action Items cải tiến (What went well, What needs improvement).
 
 **Khi KHÔNG sử dụng:**
 - Đang trong chu kỳ Sprint cần báo cáo hằng ngày → Dùng `sm-daily-standup`.
 - Xử lý các blocker / ticket bị treo → Dùng `sm-impediment-triage`.
 - Chuẩn bị kế hoạch cho Sprint mới sắp mở → Dùng `sm-sprint-planning`.
 
-## Đầu vào
-1. Đọc cấu hình team từ file `sm-config.yaml` tại `PLUGIN_DIR` (thư mục plugin `agent-skills`, cố định).
-2. Đọc thông tin xác thực Jira từ file `.env` tại `PLUGIN_DIR` (cố định). Nếu `PROJECT_ROOT/.env` tồn tại → ghi đè biến trùng tên.
-3. Dữ liệu Sprint từ Jira REST API.
+## Đầu vào & Hướng dẫn thực thi (Instructions)
+> - **`PLUGIN_DIR`:** Thư mục plugin `agent-skills` (chứa `config/sm-config.yaml`, `skills/`, `agents/`).
+> - **`PROJECT_ROOT`:** Thư mục gốc user đang mở trong IDE (nơi chứa `workspace/sprints/{sprintId}/`).
 
-> **Thuật ngữ:**
-> - **`PLUGIN_DIR`** = Thư mục plugin `agent-skills` (chứa `sm-config.yaml`, `skills/`, `agents/`). Cố định, không đổi theo project.
-> - **`PROJECT_ROOT`** = Thư mục gốc mà user đang mở trong IDE. Thay đổi tùy dự án.
-
-## Chiến lược Truy cập Jira/Confluence
-
-Skill này truy xuất dữ liệu Sprint từ Jira REST API với cấu hình xác thực từ `.env`.
-
----
-
-## Hướng dẫn thực thi (Instructions)
-1. **Đọc config & credentials**:
-   - Đọc `{PLUGIN_DIR}/sm-config.yaml` để lấy `anchor_start_date`, `duration_days`, và danh sách team.
-   - Đọc `{PLUGIN_DIR}/.env` (nguồn chính, cố định trong plugin) để lấy `ATLASSIAN_BASE_URL`, `ATLASSIAN_EMAIL`, `ATLASSIAN_API_TOKEN`. Nếu `{PROJECT_ROOT}/.env` tồn tại → các biến trùng tên sẽ ghi đè.
-2. **Kiểm tra thời điểm**:
-   - Tính toán Sprint End Date dựa trên `sm-config.yaml` (anchor_start_date & duration_days).
-   - Nếu hôm nay chưa phải cuối Sprint (vẫn đang ở giữa chừng), hãy xuất ra thông báo: "Sprint vẫn đang diễn ra, dữ liệu Retro có thể chưa hoàn chỉnh".
-3. **Tổng hợp dữ liệu Jira**:
-   - Gọi Jira REST API với JQL `sprint in openSprints()` để lấy toàn bộ issues. Dựa vào `statusCategory` và `customfield_10022` / `customfield_10026` (Story Points) để tính:
-     - Velocity: Điểm đã cam kết (Committed Points) vs Điểm hoàn thành (Completed Points).
-     - Cycle Time trung bình của các ticket.
-     - Số lượng bug phát sinh trong Sprint.
-4. **Đánh giá & Insight**:
-   - **What went well**: Điểm sáng của Sprint này (chẳng hạn không có blocker quá hạn lâu, hoặc nhóm Backend chia việc đều).
-   - **What needs improvement**: Các vấn đề kẹt ticket, mất cân bằng tải, scope creep. Tham khảo lại dữ liệu từ `{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/blockers-triage.md` nếu có.
-   - **Action Items**: Nhiệm vụ cải tiến cụ thể cho Sprint sau (Ví dụ: Yêu cầu QA test sớm hơn, BA viết doc rõ hơn, v.v.).
-5. **Xuất file**:
-   - Nếu thư mục `{PROJECT_ROOT}/workspace/sprints/{sprintId}/` chưa tồn tại, chạy `mkdir -p` để tạo.
-   - Tạo file **`{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/sprint-retrospective-report.md`** (mặc định `{sprintId}` là `sprint` khi không chỉ định).
-   - ⚠️ Lưu ý: `workspace` ở đây là **tên thư mục con** bên trong PROJECT_ROOT, KHÔNG phải "workspace root" của IDE.
-
-
-## When to Use
-
-Kích hoạt kỹ năng này khi:
-- Một Sprint kết thúc.
-- Scrum Master cần đánh giá lại khối lượng hoàn thành (velocity) và phân tích các bài học.
+1. **Đọc cấu hình Sprint:** Đọc `{PLUGIN_DIR}/config/sm-config.yaml` để lấy `anchor_start_date`, `duration_days`, và danh sách `team` (không mở hay in nội dung file `.env`; sử dụng biến môi trường hoặc n8n khi gọi Jira API).
+2. **Kiểm tra thời điểm:** Tính Sprint End Date từ `anchor_start_date` và `duration_days`. Nếu chưa cuối Sprint, ghi chú rõ dữ liệu Retro có thể chưa hoàn chỉnh.
+3. **Tổng hợp dữ liệu Jira:** Gọi JQL `sprint in openSprints()` (sử dụng `statusCategory` và `customfield_10022` / `customfield_10026`) để tính Velocity (Committed vs Completed Points), Cycle Time trung bình và số bug phát sinh trong Sprint.
+4. **Đánh giá & Insight:** Tổng hợp *What went well*, *What needs improvement* (tham khảo `{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/blockers-triage.md` nếu có) và *Action Items* cụ thể cho Sprint tới.
+5. **Xuất file:** `mkdir -p` và ghi đè **`{PROJECT_ROOT}/workspace/sprints/{sprintId}/trace/sprint-retrospective-report.md`** (mặc định `{sprintId}` là `sprint`).
 
 ## Common Rationalizations
 

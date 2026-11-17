@@ -181,37 +181,6 @@ Trước khi thông báo "Hoàn thành":
 - Merge chỉ sau khi test pass + user approve
 - Giữ feature branch cho đến khi merge xong
 
-## Tích hợp với Skills
-
-### Skill: `incremental-implementation`
-
-**TRƯỚC ĐÂY:** Mỗi increment một commit
-**BÂY GIỜ:** Mỗi increment chỉ verify (test + build), KHÔNG commit
-
-Sửa line 41 trong `skills/incremental-implementation/SKILL.md`:
-```markdown
-# Old
-4. **Commit** -- lưu lại tiến độ với một message mô tả đàng hoàng
-
-# New
-4. **Verify & Continue** -- xác nhận increment hoạt động tốt, ghi nhận trong working memory, tiếp tục increment tiếp theo
-```
-
-### Skill: `planning-and-task-breakdown`
-
-Output `tech/plan.md` và `tech/todo.md` KHÔNG cần commit riêng.
-Chỉ commit KHI hoàn thành toàn bộ plan + user approve để bắt đầu code.
-
-### Command: `/build auto`
-
-**TRƯỚC ĐÂY:** Commit sau mỗi task
-**BÂY GIỜ:** 
-1. Tạo feature branch
-2. Chạy tất cả tasks
-3. Verify toàn bộ
-4. Trình bày kết quả cho user
-5. Commit 1 lần duy nhất SAU KHI user approve
-
 ## Ví dụ Hoàn chỉnh
 
 ```bash

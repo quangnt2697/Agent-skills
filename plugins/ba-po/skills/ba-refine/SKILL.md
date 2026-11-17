@@ -3,7 +3,7 @@ name: ba-refine
 description: "Brainstorm, phân kỳ-hội tụ (refine) các ý tưởng thô/mơ hồ thành spec chi tiết rõ ràng, sau đó cập nhật lại lên Jira. Dùng khi có Jira task ý tưởng sơ khai/mơ hồ cần làm rõ; không dùng để import Jira lần đầu khi đã có spec rõ ràng."
 metadata:
   version: "1.0.0"
-  short-description: "Brainstorm, phân kỳ-hội tụ (refine) các ý tưởng thô/mơ hồ thà..."
+  short-description: "Brainstorm, phân kỳ-hội tụ (refine) ý tưởng thô thành spec Jira..."
   disable-auto-invoke: true
 ---
 
@@ -11,116 +11,59 @@ metadata:
 
 > 🛡️ **Grounding (grounding-contract):** Mọi số liệu, assertion, endpoint, mã lỗi phải lấy từ nguồn thật (Jira/Spec/DB/Code); thiếu thì ghi `NEEDS-INPUT`/`NEEDS-SPEC` và hỏi lại, KHÔNG suy diễn. Chỉ báo "đã xong" khi có bằng chứng thực (file tồn tại, exit code 0); công cụ/n8n lỗi thì báo nguyên văn và DỪNG, KHÔNG giả lập kết quả. Cấm sao chép số liệu từ ví dụ mẫu.
 
-> 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
+> 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
-- **Input bắt buộc:** `issueKey` Jira và ý tưởng thô; metadata Jira lấy qua n8n (`prepJiraContext`). Thiếu input thì dừng và hỏi lại, không tự điền.
-- **Bằng chứng hoàn thành:** File `refined.md`/`final.md` tồn tại; chỉ báo đã đẩy Jira khi nhận phản hồi HTTP thật; không dựng mockup khi chưa có `spec/asis-inventory.md` hoặc snapshot từ link/codebase.
+- **Input bắt buộc:** `issueKey` Jira + ý tưởng thô; metadata Jira lấy qua n8n (`prepJiraContext`). Thiếu input thì DỪNG và hỏi lại, không tự điền.
+- **Bằng chứng hoàn thành:** File `refined.md`/`final.md` pass `validate-ba-refine.js`, `testability-manifest.json` tồn tại; chỉ báo đã đẩy Jira khi có phản hồi HTTP thật; không dựng mockup khi chưa có `spec/asis-inventory.md`.
 
-## Tổng quan & Khi nào sử dụng (Overview & When to Use)
+## Tổng quan & Ranh giới Nghiệp vụ (WHAT & WHY)
 
-Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần túy theo tư duy nghiệp vụ (Zero Technical Noise) → Push lại lên Jira theo cấu trúc chuẩn và xuất bản `spec/final.md`.
+Tải Jira task thô → Brainstorm 5 chiều nghiệp vụ & phản biện xung đột (Zero Technical Noise) → Dựng mockup Prod-Twin (nếu có UI) → Xuất bản `spec/final.md` và cập nhật lên Jira.
 
-- **Dùng khi:** Jira task chỉ mới có ý tưởng sơ khai/mơ hồ cần brainstorm phân kỳ-hội tụ, dựng mockup hoặc làm rõ AC trước khi đẩy lên Jira.
-- **KHÔNG dùng khi:** Jira/Confluence đã có spec đầy đủ cần tổng hợp bàn giao ngay → dùng `ba-spec`.
+- **Dùng khi:** Jira task chỉ có ý tưởng sơ khai/mơ hồ cần phân kỳ-hội tụ, làm rõ AC hoặc dựng mockup.
+- **KHÔNG dùng khi:** Jira/Confluence đã có đặc tả đầy đủ cần tổng hợp bàn giao ngay → dùng `ba-spec`.
 
-## ⚠️ RANH GIỚI NHIỆM VỤ & BỘ LỌC CHỐNG KỸ THUẬT (Bắt buộc đọc trước)
-
-| ✅ ba-refine LÀM (WHAT & WHY) | ❌ ba-refine KHÔNG LÀM (HOW TO BUILD) |
-|---|---|
-| Tải và phân tích Jira task, Confluence, attachments | Viết code, test script, SQL, API contract |
-| Khai phóng ý tưởng theo 5 chiều nghiệp vụ cốt lõi | Bàn luận kiến trúc hệ thống, microservices, DB Schema |
-| Stress-test xung đột quy tắc nghiệp vụ và phiên giao dịch | Viết JSON payload mẫu (camelCase, snake_case) |
-| Viết `refined.md` 5 phần chuẩn Jira thuần nghiệp vụ (kèm ảnh Mockup trong mục UI khi có thay đổi màn hình) & push lên Jira | Tự ý push Jira trước khi user duyệt qua 2 gates |
-| Xuất bản `spec/final.md` chuẩn hóa bàn giao cho DEV & QA | Tự suy diễn giao diện/phong cách hoặc viết mô tả design bằng text trong mục UI |
-
-### 🛡️ Bảng Ranh giới Ngôn ngữ Bất biến (Strict Business-Only Guardrail)
-
-| Khía cạnh | ❌ NGHIÊM CẤM xuất hiện trong ba-refine | ✅ BẮT BUỘC dùng Ngôn ngữ Nghiệp vụ thay thế |
+| Khía cạnh | ✅ ba-refine LÀM (Ngôn ngữ Nghiệp vụ) | ❌ NGHIÊM CẤM (Nhiễu Kỹ thuật & Vượt phạm vi) |
 |---|---|---|
-| **Dữ liệu** | Tên bảng DB (`security_definition_v3`), kiểu dữ liệu kỹ thuật (`varchar(50)`, `int64`, `JSONB`), câu lệnh SQL | Tên thông tin nghiệp vụ (Mã chứng khoán, Giá trần, Tỷ lệ ký quỹ ban đầu), quy tắc định dạng hiển thị & làm tròn |
-| **Giao tiếp hệ thống** | HTTP Method (`POST /api/v1/orders`), JSON key (`camelCase`, `snake_case`), HTTP Status (`400`, `500`), Kafka topic, Redis cache | Hành động của người dùng/hệ thống (Nhà đầu tư gửi yêu cầu đặt lệnh, Hệ thống từ chối và thông báo lý do...) |
-| **Xử lý lỗi** | Exception name, Stack trace, Timeout ms kỹ thuật, Deadlock, Thread pool | Tình huống ngoại lệ nghiệp vụ (Khi lệnh chưa nhận được phản hồi từ Sở giao dịch, Khi sức mua thay đổi trong lúc chờ duyệt) |
-| **Luồng trạng thái** | Biến cờ trong code (`status = 2`, `is_active = true`) | Trạng thái nghiệp vụ của đối tượng (Chờ gửi lên Sở → Đã vào sổ lệnh → Khớp một phần → Hoàn tất) |
+| **Phạm vi** | Phân tích Jira/Confluence, brainstorm 5 chiều, viết `refined.md` 5 phần & `final.md` | Viết code, SQL, test script; bàn kiến trúc/DB Schema; tự push Jira khi chưa qua Gate |
+| **Dữ liệu & Lỗi** | Tên thông tin nghiệp vụ (Mã CK, Giá trần, Tỷ lệ ký quỹ), tình huống ngoại lệ (mất kết nối Sở, hụt sức mua) | Tên bảng (`security_definition_v3`), kiểu cột (`int64`, `JSONB`), HTTP Method/Status, JSON keys, Exception/Stack trace |
+| **UI & Trạng thái** | Hành vi người dùng, trạng thái nghiệp vụ (Chờ gửi → Đã vào sổ → Khớp), nhúng ảnh mockup highlight `added/modified` | Cờ code (`is_active`), suy diễn phong cách UI, mô tả design bằng text hoặc chèn ghi chú QA/BA trong ảnh mockup |
 
-**Ranh giới với ba-spec:**
-- **ba-spec**: Yêu cầu đã rõ ràng → tổng hợp + phát hiện gap → handoff `final.md`
-- **ba-refine**: Yêu cầu thô/mơ hồ → brainstorm 5 chiều nghiệp vụ + hội tụ → cập nhật Jira + handoff `spec/final.md`
+> ⚠️ **DOMAIN CHỨNG KHOÁN:** Khi liên quan đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, KRX/MDDS, ký quỹ — bắt buộc đối chiếu [securities-domain-rules.md](../../../../references/securities-domain-rules.md).
 
-> ⚠️ **DOMAIN CHỨNG KHOÁN & FINTECH:**
-> Khi spec liên quan đến giao dịch tài chính, đặt/sửa/hủy lệnh, sổ lệnh, bảng giá, KRX/MDDS, ký quỹ — **BẮT BUỘC** đọc `../../../../references/securities-domain-rules.md` trong suốt Phase 0-3.
-
-## 1. Các Approval Gates Bắt buộc
-
-> 📌 **ĐÂY LÀ 2 CỔNG CHẶN — vi phạm = lỗi nghiêm trọng.**
+## 1. Hai Approval Gates Bắt buộc
 
 | Gate | Vị trí | Hành động bắt buộc |
 |---|---|---|
-| **Gate 1** | Cuối Phase 0 | Trình bảng tài liệu → **DỪNG chờ user gõ OK** |
-| **Gate 2** | Bước 3.2 | Trình đồng thời: Toàn bộ draft 5 phần chuẩn Jira (trong đó mục `## 🎨 UI Design / Mockup` chỉ nhúng ảnh mockup đã highlight phần thiết kế mới, không mô tả bằng text) → **DỪNG chờ user approve** trước khi lưu `refined.md` |
+| **Gate 1** | Cuối Phase 0 | Trình bảng tài liệu + task liên quan + UI inventory (nếu có) → **DỪNG chờ user gõ OK** |
+| **Gate 2** | Cuối Phase 3 | Trình toàn bộ `refined-draft.md` 5 phần chuẩn Jira (đã pass `validate-ba-refine.js`, mục UI chỉ nhúng ảnh mockup) → **DỪNG chờ user approve** trước khi lưu `refined.md` & push |
 
-## 2. Quy trình 4 Giai đoạn Theo Tư Duy Nghiệp Vụ
+## 2. Quy trình 4 Giai đoạn Thực thi Ngay
 
-> 📖 **ĐỌC NGAY TRƯỚC KHI BẮT ĐẦU:** [quick-start-checklist.md](references/quick-start-checklist.md) — Tờ nhắc ≤ 50 dòng.
+- **Giai đoạn 0 (Thu thập & Đối chiếu Ngành — Gate 1):**
+  - Chuẩn hóa `{issueKey}`, gọi n8n `prepJiraContext(issueKey)` (`scripts/lib/n8n-client.js`), quét Confluence/attachments, bóc tách từ khóa tiêu đề (bỏ `[WEB]`/`[APP]`) để tìm task liên quan, đối chiếu quy tắc ngành tại `../../../../references/securities-domain-rules.md`.
+  - **Nếu có thay đổi UI (WEB/APP):** Ủy quyền `ba-design-mockup` trích xuất AS-IS (`capture-asis-dom.js`/`extract-asis-ui.js`), dựng HTML Full HD `1920x1080`, highlight phần mới (`data-change="added|modified"`), chạy `validate-mockup-fidelity.js` (≥90%) và render ảnh Retina 2x qua `render-mockup.js`.
+  - Trình bảng tài liệu cho user duyệt tại **Gate 1**.
+- **Giai đoạn 1 (Phân kỳ 5 Chiều Nghiệp vụ):**
+  - Mở rộng theo 5 chiều: **(1) Who** (Nhóm KH: Normal/VIP/Ultimate, tiểu khoản Thường/Margin) · **(2) Why** (Mục tiêu kinh doanh, quy định KRX/UBCKNN) · **(3) What Rules** (Điều kiện, công thức sức mua/phí/thuế/ký quỹ, biên) · **(4) When** (Phiên ATO/Liên tục/ATC/PLO/Nghỉ × Sàn HOSE/HNX/UPCoM/Phái sinh) · **(5) User Journey**.
+  - Chất vấn gap 🔴 Critical qua `ba-interview-me` (chỉ hỏi theo `autonomy-contract.md`) đến khi confidence ≥ 90%.
+- **Giai đoạn 2 (Phản biện & Hội tụ):** Stress-test xung đột quy tắc nghiệp vụ (sức mua, lô lẻ, cảnh báo CR/CA/RES/SUS, hủy/sửa khi chờ Sở, đình chỉ giữa phiên, call margin) và chốt 2–3 phương án để user chọn.
+- **Giai đoạn 3 (Soạn Spec 5 Phần & Kiểm định — Gate 2):**
+  - Tạo `workspace/issues/{issueKey}/spec/refined-draft.md` gồm đúng 5 phần chuẩn Jira:
+    1. `## 🧩 User Story` (`**As a** ... **I want** ... **So that** ...`)
+    2. `## 💼 Business Context` (`Vấn đề`, `Mục tiêu`, `Tính cấp thiết`, `Phạm vi`)
+    3. `## ✅ Acceptance Criteria` (Khối `gherkin` sạch: **không `@tags` automation**, **không `[AC-x.y]`**, dùng `Scenario: Happy - ...`, `Validation - ...`, `Edge - ...`)
+    4. `## 🎨 UI Design / Mockup` (**CHỈ nhúng ảnh `![...](...)`**, tuyệt đối không text mô tả thêm; ghi `N/A` nếu backend)
+    5. `## ☀️ Success Criteria & Tracking` (Bảng Success Metrics & Tracking)
+  - Chạy Hard Gate: `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md" [--ui]` (bắt buộc PASS 100%), sau đó trình **Gate 2**.
+- **Giai đoạn 4 (Push Jira, Dọn Nháp & Handoff):**
+  - Đẩy mô tả Jira qua n8n hoặc `jira-push-spec.js` (tự upload + nhúng ảnh mockup inline ADF `mediaSingle`, tự sinh `spec/testability-manifest.json`, và dọn các file nháp `refined-draft.md`, `adf.json`, `.scratch/` để giữ bộ `refined.md`, `final.md`, `testability-manifest.json`, mockup chính thức). Handoff DEV/QA (`/qa-test-design`).
 
-- **Giai đoạn 0 (Thu thập Ý tưởng, Trích xuất Từ khóa & Đối chiếu Quy tắc Ngành — Gate 1):**
-  - Chuẩn hóa `{issueKey}`, đọc `.env`, lấy metadata Jira qua n8n Fast-Path (`prepJiraContext(issueKey)` từ `scripts/lib/n8n-client.js`).
-  - **Trích xuất từ khóa từ Tiêu đề Task (Summary):** Tự động bóc tách từ khóa nghiệp vụ (loại bỏ prefix `[WEB]`, `[APP]` và stopwords) để tìm kiếm các task Jira và trang Confluence liên quan mật thiết.
-  - Tự động tra cứu các quy định nghiệp vụ liên quan trong `references/securities/` (cấu trúc thị trường, phiên giao dịch, vòng đời lệnh, quy tắc margin) để nắm vững nền tảng nghiệp vụ trước khi phân tích.
-  - **AS-IS Screen Discovery & Mockup Generation (ba-design-mockup):** Khi task liên quan UI (WEB/APP), ủy quyền cho kỹ năng `ba-design-mockup` thực hiện trích xuất giao diện gốc (`capture-asis-dom.js` / `extract-asis-ui.js`), thiết kế chuẩn Full HD `1920x1080`, highlight phần mới (`data-change="added|modified"`), chấm điểm fidelity (`validate-mockup-fidelity.js` ≥ 90%) và render ảnh Retina 2x qua `render-mockup.js`.
-  - Quét Confluence + attachments, trình bảng tài liệu và task liên quan cho user duyệt qua **Gate 1**.
+## 3. Tài nguyên Mở rộng (Chỉ mở khi cần)
 
-- **Giai đoạn 1 (Khai phóng theo 5 Chiều Nghiệp vụ — Business-Driven Divergence):**
-  - Mở rộng ý tưởng thô theo 5 câu hỏi nghiệp vụ cốt lõi:
-    1. **Đối tượng & Phân quyền (Who):** Nhóm khách hàng/nhân sự nào tham gia? Quyền hạn khác nhau thế nào (Normal vs VIP/Ultimate, Thường vs Margin)?
-    2. **Giá trị & Mục tiêu (Why):** Nhu cầu kinh doanh hay quy định pháp lý (KRX/UBCKNN) nào thúc đẩy tính năng này?
-    3. **Điều kiện & Công thức (What Rules):** Điều kiện tiên quyết, công thức tính toán (sức mua, phí, thuế, tỷ lệ ký quỹ), ranh giới định lượng?
-    4. **Thời điểm & Trạng thái (When):** Tính năng hoạt động khác nhau ra sao giữa các phiên (ATO, Liên tục, ATC, PLO, Nghỉ) và các sàn (HOSE, HNX, UPCoM, Phái sinh)?
-    5. **Hành trình Người dùng (User Journey):** Người dùng bắt đầu từ đâu, thao tác bước nào, và nhận được kết quả/thông báo gì?
-  - Chất vấn user qua `ba-interview-me` (chỉ hỏi câu 🔴 Critical theo `autonomy-contract.md`), đạt ≥90% confidence.
-
-- **Giai đoạn 2 (Phản biện Nghiệp vụ & Tình huống Biên — Business Stress-Test & Convergence):**
-  - Loại bỏ hoàn toàn việc stress-test hạ tầng kỹ thuật. Tập trung 100% vào phản biện xung đột nghiệp vụ:
-    - **Tác động chéo:** Có mâu thuẫn với quy tắc tính sức mua, quy tắc lô lẻ, hay cảnh báo cổ phiếu (CR/CA/RES/SUS) hiện hành không?
-    - **Xử lý ngoại lệ nghiệp vụ:** Khách hàng hủy/sửa khi lệnh đang chờ Sở, cổ phiếu bị đình chỉ giữa phiên, hoặc tài khoản chạm tỷ lệ call margin thì xử lý thế nào?
-  - Gom các biến thể thành 2-3 hướng đi nghiệp vụ rõ ràng để user lựa chọn.
-
-- **Giai đoạn 3 (Chuẩn hóa Tài liệu Đặc tả Nghiệp vụ & Dựng Mockup — Gate 2):**
-  - Tạo `refined-draft.md` theo cấu trúc **Jira Description chuẩn mực 5 phần**:
-    1. **`## 🧩 User Story`** (`**As a** [role/persona cụ thể]`, `**I want** [hành động]`, `**So that** [giá trị đạt được]`)
-    2. **`## 💼 Business Context`** (`Vấn đề (Problem)`, `Mục tiêu (Goal)`, `Tính cấp thiết (Urgency)`, `Phạm vi (Scope)`)
-    3. **`## ✅ Acceptance Criteria`** (Khối `gherkin` sạch: **tuyệt đối không có automation `@tags`**, **không có tiền tố `[AC-x.y]`**, sử dụng `Scenario: Happy - ...`, `Scenario: Validation - ...`, `Scenario: Edge - ...`)
-    4. **`## 🎨 UI Design / Mockup`** (**CHỈ sử dụng hình ảnh mockup `![...](...)` trong phần design, TUYỆT ĐỐI KHÔNG mô tả design bằng text và KHÔNG ghi chú gì thêm**; ghi `N/A` nếu task backend)
-    5. **`## ☀️ Success Criteria & Tracking`** (Bảng Success Metrics & Tracking)
-  - **Quy tắc Dựng & Kiểm định Mockup (Khi task có UI):** Thiết kế đúng phong cách có sẵn (Full HD `1920x1080`), highlight phần mới (`data-change="added|modified"`), review ảnh `.png` chống vỡ layout, và mục `## 🎨 UI Design / Mockup` chỉ nhúng ảnh mockup (không ghi text mô tả).
-  - **Kiểm định Hard Gate trước Gate 2:** Chạy lệnh `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md" --ui` — BẮT BUỘC PASS 100% trước khi trình user.
-  - Trình toàn bộ draft kèm ảnh Mockup qua **Gate 2** để user phê duyệt.
-
-- **Giai đoạn 4 (Đồng bộ lên Jira, Tự động Dọn dẹp Workspace & Handoff Kỹ thuật):**
-  - Cập nhật mô tả Jira qua n8n hoặc CLI helper `jira-push-spec.js`.
-  - **Tự động upload toàn bộ ảnh `mockup*.png` và dán trực tiếp (inline image ADF `mediaSingle`) vào Mục UI Design / Mockup trong Description của Jira ticket** (không chỉ đính kèm file ở tab attachments).
-  - **Tự động xuất bản `spec/testability-manifest.json`** để QA tự động sinh test code POM.
-  - **Tự động Dọn dẹp Workspace sau khi Push (Post-Push Cleanup):** Hệ thống tự động xóa sạch các file nháp (`refined-draft.md`, `adf.json`, `*.mmd`, `.scratch/`, file backup cũ và ảnh render thử nghiệm không được nhúng vào spec) để chỉ giữ lại bộ thành quả cuối cùng (`refined.md`, `final.md`, `testability-manifest.json`, `mockup.html`, script render và ảnh mockup chính thức).
-  - Handoff sang DEV và QA (`/qa-test-design`).
-
-## 3. Tài nguyên mở rộng (Level 3 - Chỉ mở khi cần)
-
-- 🚀 **BẮT BUỘC ĐỌC TRƯỚC:**
-  - [quick-start-checklist.md](references/quick-start-checklist.md): Tờ nhắc 5 bước ≤ 50 dòng.
-
-- 🛠️ **Công cụ & Assets:**
-  - [jira-push-spec.js](assets/jira-push-spec.js): CLI helper push ADF, upload ảnh Mockup và xuất manifest.
-  - [jira-description-template.md](assets/jira-description-template.md): Template skeleton 5 phần chuẩn Jira.
-  - [render-mockup.js](assets/render-mockup.js): Script chụp ảnh Retina 2x Full HD kèm kiểm tra vỡ layout qua Playwright.
-  - [generate-ui-component-map.js](assets/generate-ui-component-map.js): Script quét tự động codebase Web & Mobile.
-
-- 📖 **Tài liệu chi tiết (references/):**
-  - [ui-component-map.json](../ba-design-mockup/references/ui-component-map.json): Chỉ mục Màn hình UI & Component Design System chuẩn.
-  - [workflow-and-phases.md](references/workflow-and-phases.md): Chi tiết 4 phase theo tư duy nghiệp vụ.
-  - [quality-rules.md](references/quality-rules.md): Bộ lọc chống kỹ thuật & Confidence Score.
-  - [refinement-criteria.md](references/refinement-criteria.md): Rubric 4 tiêu chí stress-test nghiệp vụ.
-  - [frameworks.md](references/frameworks.md): 5 chiều khai phóng ý tưởng nghiệp vụ.
-  - [securities-domain-rules.md](../../../../references/securities-domain-rules.md): Quy tắc Domain ngành Chứng khoán.
+- **Workflow & Rubric:** [quick-start-checklist.md](references/quick-start-checklist.md) · [workflow-and-phases.md](references/workflow-and-phases.md) · [quality-rules.md](references/quality-rules.md) · [refinement-criteria.md](references/refinement-criteria.md) · [frameworks.md](references/frameworks.md) · [securities-domain-rules.md](../../../../references/securities-domain-rules.md)
+- **Assets & Mockup:** [jira-push-spec.js](assets/jira-push-spec.js) · [jira-description-template.md](assets/jira-description-template.md) · [render-mockup.js](assets/render-mockup.js) · [generate-ui-component-map.js](assets/generate-ui-component-map.js) · [ui-component-map.json](../ba-design-mockup/references/ui-component-map.json)
 
 ## 4. Ví dụ mẫu Đầu Ra Thuần Nghiệp Vụ
 
@@ -130,33 +73,32 @@ Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần
 ## 🧩 User Story
 **As a** Nhà đầu tư giao dịch ký quỹ (Margin)  
 **I want** chủ động lựa chọn gói phí ưu đãi theo kỳ hạn  
-**So that** tối ưu hóa chi phí vay vốn phù hợp với chiến lược nắm giữ cổ phiếu
+**So that** tối ưu hóa chi phí vay vốn phù hợp chiến lược nắm giữ
 
 ## 💼 Business Context
-- **Vấn đề (Problem):** Khách hàng giao dịch ngắn hạn hiện phải chịu mức lãi suất thả nổi cố định cả kỳ, làm giảm hiệu quả sinh lời và tăng tỷ lệ rời bỏ nền tảng.
-- **Mục tiêu (Goal):** Cung cấp các gói lãi suất ưu đãi theo kỳ hạn (T+10, T+30), giúp tăng 20% dư nợ margin và giữ chân nhà đầu tư năng động.
-- **Tính cấp thiết (Urgency):** Đối thủ đã tung các gói lãi suất linh hoạt; cần triển khai ngay trước thềm mùa báo cáo tài chính quý.
-- **Phạm vi (Scope):** Áp dụng cho tài khoản ký quỹ cá nhân đã kích hoạt hạn mức; ngoài phạm vi: tài khoản thường và tài khoản phái sinh.
+- **Vấn đề:** Khách hàng giao dịch ngắn hạn đang chịu mức lãi suất thả nổi cố định cả kỳ.
+- **Mục tiêu:** Cung cấp gói T+10, T+30 giúp tăng dư nợ margin và giữ chân nhà đầu tư.
+- **Tính cấp thiết:** Đối thủ đã triển khai gói linh hoạt trước mùa báo cáo quý.
+- **Phạm vi:** Tài khoản ký quỹ cá nhân đã kích hoạt hạn mức (loại trừ tài khoản thường/phái sinh).
 
 ## ✅ Acceptance Criteria
 ```gherkin
 Feature: Đăng ký gói vay margin ưu đãi theo kỳ hạn
 
-  Scenario: Happy - Đăng ký gói vay ưu đãi T+10 thành công
-    Given Tài khoản ký quỹ có trạng thái hoạt động bình thường
+  Scenario: Happy - Đăng ký gói T+10 thành công
+    Given Tài khoản ký quỹ đang hoạt động bình thường
     When Nhà đầu tư chọn gói T+10 và xác nhận đăng ký
     Then hệ thống áp dụng lãi suất ưu đãi cho các món giải ngân mới phát sinh
-    And hiển thị thông báo đăng ký thành công kèm ngày hết hạn gói
 
-  Scenario: Validation - Từ chối khi tài khoản chưa kích hoạt hạn mức
+  Scenario: Validation - Từ chối khi chưa kích hoạt hạn mức ký quỹ
     Given Tài khoản chưa hoàn tất hợp đồng ký quỹ
     When Nhà đầu tư chọn đăng ký gói vay
-    Then hệ thống từ chối và hướng dẫn kích hoạt hạn mức ký quỹ
+    Then hệ thống từ chối và hướng dẫn kích hoạt hạn mức
 
   Scenario: Edge - Hết thời hạn gói ưu đãi
-    Given Gói lãi suất ưu đãi chạm mốc hết hạn
-    When phát sinh dư nợ sau ngày hết hạn
-    Then lãi suất tự động quay về mức thả nổi chuẩn theo quy định biểu phí hiện hành
+    Given Gói lãi suất ưu đãi đã quá ngày hết hạn
+    When phát sinh dư nợ mới sau ngày hết hạn
+    Then lãi suất tự động quay về mức thả nổi theo biểu phí hiện hành
 ```
 
 ## 🎨 UI Design / Mockup
@@ -165,34 +107,14 @@ Feature: Đăng ký gói vay margin ưu đãi theo kỳ hạn
 
 ## ☀️ Success Criteria & Tracking
 
-### Success Metrics
-
-| Metric | Current | Target | Measurement |
-|---|---|---|---|
-| Tỷ lệ kích hoạt gói vay kỳ hạn | 0% | 35% | Đo lường qua báo cáo dư nợ Margin hàng tuần |
-
-### Tracking
-
-| Event | Dashboard / Report | Owner |
-|---|---|---|
-| Đăng ký gói vay ưu đãi | Margin Growth Dashboard | Khối Nguồn vốn & Margin |
+| Metric | Current | Target | Measurement | Event | Dashboard | Owner |
+|---|---|---|---|---|---|---|
+| Tỷ lệ kích hoạt gói | 0% | 35% | Báo cáo dư nợ Margin hàng tuần | Đăng ký gói ưu đãi | Margin Growth Dashboard | Khối Nguồn vốn |
 ```
 
-## Những lời Biện minh Thường gặp (Common Rationalizations)
+## Red Flags & Xác minh (Verification)
 
-| Biện minh | Thực tế |
-|---|---|
-| "Thêm tên bảng DB / API endpoint vào spec cho dev dễ hiểu" | Vi phạm Zero Technical Noise; `ba-refine` chỉ nói ngôn ngữ nghiệp vụ (WHAT & WHY). |
-| "Tự vẽ mockup theo cảm tính cho nhanh, khỏi scan codebase" | Mockup không theo phong cách gốc (`origin/master`) sẽ bị lệch UI thực tế và fail Fidelity Gate. |
-
-## Dấu hiệu Cảnh báo (Red Flags)
-
-- Đẩy thẳng lên Jira khi chưa qua Gate 1 hoặc Gate 2.
-- Chèn ghi chú cho QA/BA hoặc mô tả design bằng text vào mục `## 🎨 UI Design / Mockup`.
-
-## Xác minh (Verification)
-
-- [ ] `refined.md` đạt chuẩn `validate-ba-refine.js` và `spec/testability-manifest.json` đã được sinh.
-- [ ] Nếu có UI, mockup đạt `validate-mockup-fidelity.js` ≥ 90% và đã review ảnh Retina 2x.
-
----
+- **Biện minh sai:** *"Thêm tên bảng DB/API cho dev dễ hiểu"* hoặc *"Tự vẽ mockup theo cảm tính"* → Vi phạm Zero Technical Noise & Prod-Twin Fidelity Gate.
+- **Red Flags:** Push Jira trước Gate 1/2; chèn ghi chú QA/BA (`① ② ③`, `UI Delta Mapping`) hoặc mô tả text vào mục `## 🎨 UI Design / Mockup`.
+- [ ] `refined.md`, `final.md`, `testability-manifest.json` tồn tại và pass `validate-ba-refine.js`.
+- [ ] Nếu có UI: `validate-mockup-fidelity.js` ≥ 90% và đã review ảnh Retina 2x chống vỡ layout.

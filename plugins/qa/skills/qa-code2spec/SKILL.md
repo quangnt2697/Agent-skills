@@ -28,7 +28,7 @@ metadata:
 ## 1. Khi nào dùng?
 - Dự án có mã nguồn đang chạy nhưng không có tài liệu Jira/Spec tương ứng hoặc tài liệu đã lỗi thời.
 - Tiếp nhận module legacy cần viết test tự động mà chưa rõ toàn bộ logic rẽ nhánh.
-- Cần tạo file đặc tả `final.md` làm căn cứ bàn giao cho `qa-test-design`.
+- Cần tạo file đặc tả `code2spec.md` làm căn cứ tham chiếu cho `qa-test-design` (không ghi đè `spec/final.md`).
 
 **Khi KHÔNG sử dụng:**
 - Đã có sẵn issue Jira hoặc tài liệu nghiệp vụ rõ ràng từ BA → Dùng `ba-spec`.
@@ -58,7 +58,7 @@ metadata:
   
   ## 1. API Definition
   - Endpoint: `POST /orders` (Body: symbol, price, volume, order_type).
-  - Validation Rules: Biên độ giá trần sàn sàn HOSE, bội số 100 cổ phiếu.
+  - Validation Rules: Biên độ giá trần sàn HOSE, bội số 100 cổ phiếu.
   - Error Codes: `INVALID_PRICE` (400), `INSUFFICIENT_FUNDS` (422).
   ```
 

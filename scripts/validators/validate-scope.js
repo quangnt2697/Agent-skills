@@ -32,10 +32,18 @@ const DEAD_REFERENCES = [
   'dev-planning-and-task-breakdown',
   'dev-incremental-implementation',
   'dev-tech-spec',
-  'skills/dev-performance'
+  'skills/dev-performance',
+  'dev-audit-and-fix',
+  '/dev-audit',
+  'dev-browser-testing-with-devtools',
+  'incremental-implementation',
+  'planning-and-task-breakdown',
+  '/build auto'
 ];
 
 let errors = [];
+let checkedSkills = 0;
+let checkedCommands = 0;
 
 function checkSkills() {
   const pluginsDir = path.join(REPO_ROOT, 'plugins');
@@ -50,6 +58,7 @@ function checkSkills() {
       const skillFile = path.join(skillsDir, skill, 'SKILL.md');
       if (!fs.existsSync(skillFile)) continue;
 
+      checkedSkills++;
       const content = fs.readFileSync(skillFile, 'utf8');
 
       // 1. Kiểm tra Tier banner
@@ -84,6 +93,7 @@ function checkCommands() {
 
     const files = fs.readdirSync(cmdDir).filter(f => f.endsWith('.toml'));
     for (const file of files) {
+      checkedCommands++;
       const filePath = path.join(cmdDir, file);
       const content = fs.readFileSync(filePath, 'utf8');
 
@@ -165,6 +175,6 @@ if (errors.length > 0) {
   }
   process.exit(1);
 } else {
-  console.log('✓ Scope Containment & Permission Tiers validation PASSED (31 skills, 30 commands)');
+  console.log(`✓ Scope Containment & Permission Tiers validation PASSED (${checkedSkills} skills, ${checkedCommands} commands)`);
 }
 

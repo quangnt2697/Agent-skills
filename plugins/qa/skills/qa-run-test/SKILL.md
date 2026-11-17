@@ -43,7 +43,7 @@ metadata:
 
 - **Bước 1: Preflight**
   - Xác định mục tiêu từ tham số (hoặc mặc định `workspace/issues/{issueKey}/test/steps/`).
-  - Ghi đè file nếu đã tồn tại ở `result/`. Cấm ghi file ra ngoài `result/`.
+  - N8n runner sẽ tự động ghi đè kết quả tại `result/`; agent không ghi file ra ngoài `result/` và không tự tạo/sửa `report.md`.
 - **Bước 2: Run (Chạy n8n Runner & Background Execution)**
   - Gọi webhook n8n chuẩn (không dùng shell bash):
     ```bash

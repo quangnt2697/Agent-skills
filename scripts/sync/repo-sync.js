@@ -29,8 +29,10 @@ const execFileAsync = promisify(execFile);
  * Trả về stdout (đã trim). Ném lỗi kèm stderr khi thất bại.
  */
 async function git(cmd, { cwd, timeout } = {}) {
-  const argv = [...cmd.replace(/^git\s+/, '').matchAll(/"([^"]*)"|'([^']*)'|(\S+)/g)]
-    .map(m => m[1] ?? m[2] ?? m[3]);
+  const argv = Array.isArray(cmd)
+    ? cmd.map(String)
+    : [...cmd.replace(/^git\s+/, '').matchAll(/"([^"]*)"|'([^']*)'|(\S+)/g)]
+        .map(m => m[1] ?? m[2] ?? m[3]);
   try {
     const { stdout } = await execFileAsync('git', argv, { cwd, timeout, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
     return stdout.trim();

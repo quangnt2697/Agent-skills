@@ -16,7 +16,7 @@ Lệnh này điều phối chuỗi phân tích yêu cầu, thiết kế kiểm t
 - ✅ Automation Tests written (`test/steps/test_*.py`)
 - ✅ Test Suite executed & logged (`test/result/report.md`, `test-output.log`)
 - ✅ Traceability Matrix verified (`trace/matrix.md`)
-- ✅ Test Quality & Security Reviewed (`trace/cr-review-report.md`)
+- ✅ Test Quality & Security Reviewed (`trace/code-review-report.md`)
 - ✅ Ready for Handoff (`trace/delivery-summary.md`)
 
 ## Pipeline Flow (6 Phases Tuần Tự)
@@ -24,7 +24,7 @@ Lệnh này điều phối chuỗi phân tích yêu cầu, thiết kế kiểm t
 ```
 Phase 1: ba-spec           [BA/PO]  Import Jira/Confluence → spec/final.md
    ↓
-Phase 2: qa-test-design    [QA]     Thiết kế checklist.md + {issueKey}.feature (qa-validate.sh exit 0)
+Phase 2: qa-test-design    [QA]     Thiết kế checklist.md + {issueKey}.feature (qa-validate.js exit 0)
    ↓
 Phase 3: qa-auto-design    [QA]     Sinh mã test Playwright/Pytest (test/steps/) theo sdk-map.json
    ↓
@@ -64,7 +64,7 @@ Phase 6: cr-review         [CR]     Kiểm tra chất lượng mã test, asserti
 ### Phase 2: qa-test-design — Thiết kế Checklist & Gherkin
 - **Thực thi:** Gọi skill `qa-test-design` với đầu vào `spec/final.md`.
 - **Output:** `workspace/issues/{issueKey}/test/checklist.md` và `test/{issueKey}.feature`.
-- **Cổng chuyển:** Script `qa-validate.sh` exit 0, số scenario Gherkin ≥ số checklist item P0.
+- **Cổng chuyển:** Script `qa-validate.js --checklist` exit 0, số scenario Gherkin ≥ số checklist item P0.
 
 ### Phase 3: qa-auto-design — Sinh Mã Kiểm Thử Tự Động
 - **Thực thi:** Gọi skill `qa-auto-design`, kế thừa SDK map và DOM recon.
@@ -83,7 +83,7 @@ Phase 6: cr-review         [CR]     Kiểm tra chất lượng mã test, asserti
 
 ### Phase 6: cr-review — Đánh Giá Chất Lượng Test
 - **Thực thi:** Gọi skill `cr-review-code-and-quality` đánh giá toàn bộ mã test vừa sinh trong `test/steps/`.
-- **Output:** `workspace/issues/{issueKey}/trace/cr-review-report.md`.
+- **Output:** `workspace/issues/{issueKey}/trace/code-review-report.md`.
 - **Bàn giao:** Xuất bản `workspace/issues/{issueKey}/trace/delivery-summary.md` tổng hợp toàn bộ kết quả.
 
 ## 🔒 Scope Boundaries & Immutable Hard Stops (Bắt buộc tuân thủ 100%)

@@ -5,7 +5,7 @@
 Mỗi skill output có **Confidence Level** (mức độ tin cậy) để agent/user đánh giá chất lượng output.
 
 > **KHÔNG dùng Confidence Level làm cổng chặn luồng.** Việc dừng hay chạy tiếp do
-> `.claude/rules/autonomy-contract.md` quyết định.
+> `.agents/rules/autonomy-contract.md` quyết định.
 
 Confidence Level chỉ có **2 tác dụng**:
 1. **Báo cáo chất lượng** — trong section `## 📊 Confidence Assessment` cuối mỗi artifact

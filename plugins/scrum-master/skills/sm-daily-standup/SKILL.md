@@ -14,7 +14,7 @@ metadata:
 > 🔒 **Scope & Permission:** Tier 2 (ARTIFACT-ONLY) · Single-Task Hard Stop sau artifact · Tuân thủ tuyệt đối [autonomy-contract.md](../../../../.agents/rules/autonomy-contract.md).
 
 ## Input Bắt Buộc & Bằng Chứng Hoàn Thành
-- **Input bắt buộc:** `sm-config.yaml`, `.env` Jira và n8n đang chạy. Thiếu input thì dừng và hỏi lại, không tự điền.
+- **Input bắt buộc:** `config/sm-config.yaml`, biến môi trường kết nối Jira và n8n đang chạy. Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** Phản hồi webhook thật và file `daily-standup-report.md` tồn tại.
 
 ## 1. Khi nào dùng?
@@ -27,8 +27,8 @@ metadata:
 - Tổng kết Sprint sau khi kết thúc chu kỳ → Dùng `sm-sprint-retrospective`.
 
 ## 2. Đầu vào & Cấu hình
-1. File cấu hình team: `sm-config.yaml` tại thư mục gốc dự án.
-2. Biến môi trường kết nối Jira từ `.env`.
+1. File cấu hình team: `config/sm-config.yaml` tại thư mục gốc dự án.
+2. Biến môi trường kết nối Jira đã nạp sẵn (n8n đọc từ env; không mở hay in raw `.env`).
 3. Dữ liệu các Issues trong Open Sprint trên Jira REST API.
 
 ## 3. Quy trình Thực hiện 3 Bước

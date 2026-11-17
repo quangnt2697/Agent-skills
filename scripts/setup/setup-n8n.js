@@ -6,7 +6,7 @@
  * Ưu tiên kiến trúc Colima + Docker CLI + Docker Compose (Zero-Permission, không cần sudo hay npm -g):
  * 1. Kiểm tra Colima + Docker CLI + Docker Compose (hoặc fallback sang n8n CLI local nếu không dùng Docker)
  * 2. Tự động đồng bộ chứng chỉ CA doanh nghiệp (macOS Keychain -> Colima VM) để tránh lỗi TLS x509 khi pull image
- * 3. Khởi động container `agent-skills-n8n` và nạp + kích hoạt (active = 1) toàn bộ 18 workflows
+ * 3. Khởi động container `agent-skills-n8n` và nạp + kích hoạt (active = 1) toàn bộ 19 workflows
  *
  * Cách dùng:
  *   npm run n8n:setup
@@ -91,7 +91,7 @@ if (hasDocker && hasDockerCompose) {
   }
 
   // 3. Khởi động container n8n và nạp + kích hoạt toàn bộ workflows
-  console.log('\n📦 Đang khởi động container agent-skills-n8n và kích hoạt 18 workflows...');
+  console.log('\n📦 Đang khởi động container agent-skills-n8n và kích hoạt 19 workflows...');
   const composeCmd = hasCommand('docker-compose') ? 'docker-compose up -d' : 'docker compose up -d';
   execSync(composeCmd, { cwd: projectRoot, stdio: 'inherit' });
   execSync('node scripts/n8n/import-and-activate.js', { cwd: projectRoot, stdio: 'inherit' });
@@ -114,7 +114,7 @@ if (hasDocker && hasDockerCompose) {
   console.log('  • npm run autostart:off    --> Tắt chế độ tự khởi động cùng macOS');
   console.log('  • npm run autostart:on     --> Bật lại chế độ tự khởi động cùng macOS');
   console.log('  • npm run colima:start     --> Khởi động máy ảo Colima thủ công');
-  console.log('  • npm run n8n:up           --> Khởi động n8n Container & kích hoạt 18 workflows');
+  console.log('  • npm run n8n:up           --> Khởi động n8n Container & kích hoạt 19 workflows');
   console.log('  • npm run n8n:logs         --> Xem log hoạt động của n8n Container');
   console.log('  • npm run n8n:down         --> Dừng n8n Container');
   const n8nBaseUrl = process.env.N8N_BASE_URL || `http://${process.env.N8N_HOST || 'localhost'}:${process.env.N8N_PORT || '5678'}`;

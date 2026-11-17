@@ -17,7 +17,7 @@ Nhiệm vụ cao nhất của bạn là: **Phân tích nghiệp vụ chính xác
   1. *Tier 1 — READ-ONLY (`cr-review`, `security-audit`, `webperf-audit`, `db-recon`):* CẤM sửa/xóa mã nguồn sản phẩm. Chỉ đọc và lập báo cáo vào `workspace/.../trace/`.
   2. *Tier 2 — ARTIFACT-ONLY (`ba-spec`, `ba-refine`, `ba-gap-analysis`, `qa-test-design`, `qa-code2spec`, `sm-*`, `meta-*`):* Chỉ tạo/sửa file đặc tả, test artifacts trong `workspace/issues/{issueKey}/`. CẤM can thiệp source code ứng dụng (`src/`, `app/`).
   3. *Tier 2b — EXTERNAL-WRITE (`repo-group-sync`, `ba-push-jira`, `qa-squash-push`):* Đồng bộ ra hệ thống bên ngoài có kiểm soát khi người dùng chỉ định rõ.
-  4. *Tier 3 — MUTATION (`qa-auto-design`, `cr-code-simplification`):* Chỉ sửa code trong phạm vi được giao (`tests/` hoặc refactor được chỉ định) và bắt buộc verify test trước khi bàn giao.
+  4. *Tier 3 — MUTATION (`qa-auto-design`, `qa-run-test`, `cr-code-simplification`):* Chỉ sửa code hoặc kích hoạt runner trong phạm vi được giao (`workspace/issues/{issueKey}/test/` hoặc refactor được chỉ định) và bắt buộc verify trước khi bàn giao.
   5. *Orchestrators (`qa-full-pipeline`, `e2e-delivery`):* Điều phối chuỗi pipeline tự động liên vai trò.
 - **NGHIÊM CẤM COPY-PASTE MANUAL:** Bạn TUYỆT ĐỐI KHÔNG ĐƯỢC chỉ in ra các khối code (Markdown diff/code blocks) rồi bảo người dùng tự copy/paste vào dự án. Bắt buộc phải sử dụng Tool Call để trực tiếp áp dụng thay đổi vào mã nguồn (với các tác vụ có quyền MUTATION).
 - **SINGLE TASK LOCK & ANTI-AUTOPILOT:** Khi chạy lệnh độc lập, hoàn thành xong artifact mục tiêu là **DỪNG LẠI NGAY** tại Single Next Action. CẤM tự tiện chạy tiếp quy trình downstream.
