@@ -49,6 +49,12 @@ node ${AGENT_SKILLS_HOME:-.}/plugins/core/skills/meta-cross-validation/assets/tr
 ### Bước 1–4: Chi tiết trích xuất & đánh giá chất lượng
 Xem cẩm nang chi tiết và mẫu báo cáo đầy đủ tại: [references/traceability-guide.md](references/traceability-guide.md).
 
+### Bước 5: Phản biện Đối kháng (Adversarial Critique — Fresh Context)
+Áp dụng cho ticket Critical / Fintech (đặt lệnh, ký quỹ, thanh toán) để chống thiên kiến xác nhận (confirmation bias):
+- Mở ngữ cảnh sạch (subagent hoặc lượt kiểm tra độc lập) đóng vai *Devil's Advocate* đối chiếu `spec/final.md` và `test/checklist.md`.
+- Chất vấn 3 điểm mù hay gặp: (1) mâu thuẫn giữa các section hoặc với Business Decision Log, (2) thiếu rẽ nhánh theo phiên/sàn/trạng thái mã, (3) thiếu kịch bản negative/concurrency (race condition vét sức mua, idempotency).
+- Mọi lỗ hổng phát hiện ghi trực tiếp vào `trace/gaps.md` kèm mức độ P0/P1.
+
 ## Verification (Xác minh)
 
 - [ ] Đã chạy `trace-check.js` và dùng con số coverage của script (không tự chấm lại).

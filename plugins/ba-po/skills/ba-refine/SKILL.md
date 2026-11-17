@@ -17,7 +17,12 @@ metadata:
 - **Input bắt buộc:** `issueKey` Jira và ý tưởng thô; metadata Jira lấy qua n8n (`prepJiraContext`). Thiếu input thì dừng và hỏi lại, không tự điền.
 - **Bằng chứng hoàn thành:** File `refined.md`/`final.md` tồn tại; chỉ báo đã đẩy Jira khi nhận phản hồi HTTP thật; không dựng mockup khi chưa có `spec/asis-inventory.md` hoặc snapshot từ link/codebase.
 
+## Tổng quan & Khi nào sử dụng (Overview & When to Use)
+
 Download Jira task có ý tưởng thô/mơ hồ → Mài giũa (refine) thuần túy theo tư duy nghiệp vụ (Zero Technical Noise) → Push lại lên Jira theo cấu trúc chuẩn và xuất bản `spec/final.md`.
+
+- **Dùng khi:** Jira task chỉ mới có ý tưởng sơ khai/mơ hồ cần brainstorm phân kỳ-hội tụ, dựng mockup hoặc làm rõ AC trước khi đẩy lên Jira.
+- **KHÔNG dùng khi:** Jira/Confluence đã có spec đầy đủ cần tổng hợp bàn giao ngay → dùng `ba-spec`.
 
 ## ⚠️ RANH GIỚI NHIỆM VỤ & BỘ LỌC CHỐNG KỸ THUẬT (Bắt buộc đọc trước)
 
@@ -172,5 +177,22 @@ Feature: Đăng ký gói vay margin ưu đãi theo kỳ hạn
 |---|---|---|
 | Đăng ký gói vay ưu đãi | Margin Growth Dashboard | Khối Nguồn vốn & Margin |
 ```
+
+## Những lời Biện minh Thường gặp (Common Rationalizations)
+
+| Biện minh | Thực tế |
+|---|---|
+| "Thêm tên bảng DB / API endpoint vào spec cho dev dễ hiểu" | Vi phạm Zero Technical Noise; `ba-refine` chỉ nói ngôn ngữ nghiệp vụ (WHAT & WHY). |
+| "Tự vẽ mockup theo cảm tính cho nhanh, khỏi scan codebase" | Mockup không theo phong cách gốc (`origin/master`) sẽ bị lệch UI thực tế và fail Fidelity Gate. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- Đẩy thẳng lên Jira khi chưa qua Gate 1 hoặc Gate 2.
+- Chèn ghi chú cho QA/BA hoặc mô tả design bằng text vào mục `## 🎨 UI Design / Mockup`.
+
+## Xác minh (Verification)
+
+- [ ] `refined.md` đạt chuẩn `validate-ba-refine.js` và `spec/testability-manifest.json` đã được sinh.
+- [ ] Nếu có UI, mockup đạt `validate-mockup-fidelity.js` ≥ 90% và đã review ảnh Retina 2x.
 
 ---

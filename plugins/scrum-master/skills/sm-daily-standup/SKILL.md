@@ -58,4 +58,21 @@ metadata:
   - **Báo cáo chi tiết:** Đã xuất file `workspace/sprints/{sprintId}/trace/daily-standup-report.md`.
   ```
 
+## Những lời Biện minh Thường gặp (Common Rationalizations)
+
+| Biện minh | Thực tế |
+|---|---|
+| "n8n/Jira đang lỗi, tự ước lượng số SP hôm qua để báo cáo kịp giờ họp" | Sai nghiêm trọng. Cấm bịa số liệu; n8n offline phải báo `npm run n8n` và DỪNG ngay. |
+| "Ticket chưa có estimate SP nên tự gán 3 SP cho đủ bảng" | Không có estimate thì ghi `Unestimated (NEEDS-INPUT)`, không tự điền số. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- Tự suy diễn nguyên nhân DEV chậm tiến độ khi chưa có dữ liệu comment/blocker thật trên Jira.
+- Copy số liệu mẫu (`28/45 SP`, `DEV 1`, `DEV 2`) từ Few-shot vào báo cáo thật.
+
+## Xác minh (Verification)
+
+- [ ] Phản hồi từ `getStandupReport()` là dữ liệu thật (không giả lập).
+- [ ] File `workspace/sprints/{sprintId}/trace/daily-standup-report.md` tồn tại trên đĩa.
+
 ---

@@ -37,9 +37,9 @@ metadata:
 - **Bước 2 (Kiểm tra thời điểm & Carry-over):**
   - Giữa Sprint: Lấy Backlog + Future Sprint (Section Carry-over ghi: "Không áp dụng – Sprint hiện tại đang diễn ra").
   - Cuối Sprint: Lấy Active Sprint để rà soát ticket dở dang đưa vào Carry-over + Backlog mới.
-- **Bước 3 (Phân bổ Khối lượng Công việc):**
+- **Bước 3 (Phân bổ Khối lượng Công việc & Vertical Slicing):**
   - Xác định Sprint Goal dựa trên task ưu tiên High/Critical.
-  - Phân bổ ticket theo role: Web/Mobile/Backend/QA tương ứng.
+  - Nếu có `workspace/issues/{issueKey}/spec/final.md` hoặc `testability-manifest.json`, ưu tiên chia việc theo **Vertical Slices** (độc lập End-to-End, gắn rõ `Test Profile` và `Dependencies`) trước khi phân bổ ticket theo role: Web/Mobile/Backend/QA tương ứng.
 - **Bước 4 (Xuất bản Báo cáo Kế hoạch):**
   - Đảm bảo thư mục tồn tại: `mkdir -p workspace/sprints/{sprintId}/tech/`.
   - Ghi đè vào file **`workspace/sprints/{sprintId}/tech/sprint-plan.md`** (mặc định `{sprintId}` là `sprint` khi không chỉ định) sử dụng template tại `assets/sprint-plan.md`.
@@ -59,7 +59,19 @@ metadata:
   - **Tổng Story Points:** 42 SP (DEV 1: 20 SP, DEV 2: 22 SP).
   ```
 
-## 5. Dấu Hiệu Cảnh Báo & Xác Minh (Verification)
+## Những lời Biện minh Thường gặp (Common Rationalizations)
+
+| Biện minh | Thực tế |
+|---|---|
+| "Backlog dài quá, bốc đại vài ticket theo cảm tính cho đủ Sprint" | Phải dựa vào Velocity lịch sử, độ sẵn sàng của spec (`final.md`) và cân bằng tải từng role. |
+| "Ticket chưa có Story Points thì tạm cho bằng 5 SP" | Cấm tự bịa SP; đánh dấu `Unestimated (NEEDS-INPUT)` để team estimate trong buổi Planning. |
+
+## Dấu hiệu Cảnh báo (Red Flags)
+
+- Đưa ticket chưa có Acceptance Criteria hoặc đang bị block vào Sprint Backlog.
+- Dồn tải quá mức (>80% capacity) cho một cá nhân/role hoặc bỏ qua Carry-over từ Sprint trước.
+
+## 5. Xác Minh (Verification)
 - [ ] File `workspace/sprints/{sprintId}/tech/sprint-plan.md` tồn tại và thay thế 100% placeholders bằng số liệu Jira thật
 - [ ] Sprint có mục tiêu rõ ràng (Sprint Goal)
-- [ ] Phân bổ tải công việc cân bằng giữa các thành viên theo role
+- [ ] Phân bổ tải công việc cân bằng giữa các thành viên theo role (ưu tiên Vertical Slices nếu có `final.md`)
