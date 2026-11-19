@@ -6,6 +6,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const [issueKey, ...kw] = process.argv.slice(2);
 const keywords = kw.join(' ').toLowerCase().split(/\s+/).filter((k) => k.length > 2);

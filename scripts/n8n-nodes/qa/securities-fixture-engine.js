@@ -16,9 +16,15 @@ const input = $input.first();
 const json = (input && input.json) || {};
 
 // 1. Nạp biến môi trường xác thực từ $env hoặc process.env
-const baseUrl = ($env && $env.BASE_URL) || (process.env && process.env.BASE_URL) || '';
-const apiKey = ($env && $env.API_KEY) || (process.env && process.env.API_KEY) || '';
-const apiSecret = ($env && $env.API_SECRET) || (process.env && process.env.API_SECRET) || '';
+const procEnv = (() => {
+  try {
+    const p = typeof process !== 'undefined' ? process : require('process');
+    return (p && p.env) || {};
+  } catch (_) { return {}; }
+})();
+const baseUrl = ($env && $env.BASE_URL) || procEnv.BASE_URL || '';
+const apiKey = ($env && $env.API_KEY) || procEnv.API_KEY || '';
+const apiSecret = ($env && $env.API_SECRET) || procEnv.API_SECRET || '';
 
 // 2. Trích xuất danh sách rows từ kết quả query Metabase hoặc payload
 let rows = [];

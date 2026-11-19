@@ -16,6 +16,10 @@ Sử dụng:
 
 import sys
 import re
+import os
+import json
+import shutil
+import subprocess
 import pathlib
 import argparse
 
@@ -72,18 +76,69 @@ def export_svg(src_path: pathlib.Path, out_path: pathlib.Path) -> bool:
     print(f"✅ Đã xuất SVG độc lập: {out_path} ({out_path.stat().st_size} bytes)")
     return True
 
-def export_png(src_path: pathlib.Path, out_path: pathlib.Path, scale: float = 2.0, transparent: bool = True) -> bool:
-    """Render và chụp ảnh PNG qua Playwright với Viewport tối thiểu Full HD (1920x1080)."""
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        print("❌ Playwright chưa được cài đặt. Chạy: pip install playwright && playwright install chromium")
+def _export_png_node_fallback(src_path: pathlib.Path, out_path: pathlib.Path, vp_w: int, vp_h: int, scale: float, transparent: bool) -> bool:
+    """Fallback dùng Node.js Playwright đã cài sẵn trong repo khi Python chưa có playwright."""
+    node_bin = shutil.which("node")
+    if not node_bin:
+        print("❌ Playwright chưa được cài trong Python và không tìm thấy Node.js fallback.")
         return False
 
+    repo_root = pathlib.Path(__file__).resolve().parents[5]
+    pw_entry = repo_root / "node_modules" / "playwright" / "index.mjs"
+    if not pw_entry.exists():
+        print("❌ Thiếu cả Python playwright lẫn node_modules/playwright. Chạy: pip install playwright hoặc npm install playwright")
+        return False
+
+    node_script = """
+import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
+const [pwPath, srcUrl, outFile, vpW, vpH, sc, omitBg] = process.argv.slice(1);
+const { chromium } = await import(pathToFileURL(pwPath).href);
+const chromePath = process.env.CHROME_BIN || (fs.existsSync('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome') ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : undefined);
+const browser = await chromium.launch({ headless: true, executablePath: chromePath });
+try {
+  const page = await browser.newPage({ viewport: { width: Number(vpW), height: Number(vpH) }, deviceScaleFactor: Number(sc) });
+  await page.goto(srcUrl, { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => document.fonts.ready, { timeout: 5000 }).catch(() => {});
+  const svg = page.locator('svg').first();
+  if (await svg.count() > 0) {
+    await svg.screenshot({ path: outFile, omitBackground: omitBg === '1' });
+  } else {
+    await page.screenshot({ path: outFile, fullPage: true, omitBackground: omitBg === '1' });
+  }
+} finally {
+  await browser.close();
+}
+"""
+    res = subprocess.run(
+        [
+            node_bin,
+            "--input-type=module",
+            "-e",
+            node_script,
+            str(pw_entry),
+            f"file://{src_path.resolve()}",
+            str(out_path),
+            str(vp_w),
+            str(vp_h),
+            str(scale),
+            "1" if transparent else "0",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if res.returncode != 0:
+        print(f"❌ Lỗi Node Playwright fallback: {res.stderr.strip() or res.stdout.strip()}")
+        return False
+    print(f"✅ Đã xuất PNG sắc nét qua Node Playwright ({vp_w}x{vp_h} @{scale}x): {out_path} ({out_path.stat().st_size} bytes)")
+    return True
+
+def export_png(src_path: pathlib.Path, out_path: pathlib.Path, scale: float = 2.0, transparent: bool = True) -> bool:
+    """Render và chụp ảnh PNG qua Playwright với Viewport tối thiểu Full HD (1920x1080)."""
     # Đọc viewBox của SVG trong HTML để tính kích thước viewport tối ưu
     content = src_path.read_text(encoding='utf-8')
     vb_match = re.search(r'<svg\b[^>]*viewBox=["\']\s*[\d.-]+\s+[\d.-]+\s+([\d.-]+)\s+([\d.-]+)\s*["\']', content, re.IGNORECASE)
-    
+
     vb_w = float(vb_match.group(1)) if vb_match else 1920.0
     vb_h = float(vb_match.group(2)) if vb_match else 1080.0
 
@@ -92,8 +147,24 @@ def export_png(src_path: pathlib.Path, out_path: pathlib.Path, scale: float = 2.
     vp_h = max(1080, int(vb_h + 120))
 
     try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return _export_png_node_fallback(src_path, out_path, vp_w, vp_h, scale, transparent)
+
+    try:
         with sync_playwright() as p:
-            browser = p.chromium.launch()
+            chrome_bin = os.environ.get("CHROME_BIN") or (
+                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+                if os.path.exists("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+                else None
+            )
+            try:
+                browser = p.chromium.launch()
+            except Exception:
+                if chrome_bin:
+                    browser = p.chromium.launch(executable_path=chrome_bin)
+                else:
+                    raise
             page = browser.new_page(
                 viewport={"width": vp_w, "height": vp_h},
                 device_scale_factor=scale
@@ -118,8 +189,8 @@ def export_png(src_path: pathlib.Path, out_path: pathlib.Path, scale: float = 2.
             print(f"✅ Đã xuất PNG sắc nét ({vp_w}x{vp_h} @{scale}x): {out_path} ({out_path.stat().st_size} bytes)")
             return True
     except Exception as e:
-        print(f"❌ Lỗi khi xuất PNG qua Playwright: {e}")
-        return False
+        print(f"⚠️ Python Playwright chưa khả dụng ({e}), thử Node Playwright fallback...")
+        return _export_png_node_fallback(src_path, out_path, vp_w, vp_h, scale, transparent)
 
 def main():
     if len(sys.argv) < 2:

@@ -177,7 +177,12 @@ if (!sessionToken && typeof require !== 'undefined') {
   try {
     const fs = require('fs');
     const path = require('path');
-    const envFile = path.resolve(process.cwd(), '.env');
+    let baseDir = ($env && $env.AGENT_WORKSPACE_DIR) || '/workspace';
+    try {
+      const p = typeof process !== 'undefined' ? process : require('process');
+      if (p && typeof p.cwd === 'function') baseDir = p.cwd();
+    } catch (_) {}
+    const envFile = path.resolve(baseDir, '.env');
     if (fs.existsSync(envFile)) {
       const envContent = fs.readFileSync(envFile, 'utf8');
       const tokenKey = isProd ? 'METABASE_PROD_SESSION_TOKEN' : 'METABASE_UAT_API_TOKEN';

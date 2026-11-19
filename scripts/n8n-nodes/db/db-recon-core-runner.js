@@ -18,19 +18,26 @@ const body = raw.body || raw;
 const now = new Date();
 const targetDate = body.date || raw.date || now.toISOString().slice(0, 10);
 
+const safeProc = (() => {
+  try { return typeof process !== 'undefined' ? process : require('process'); } catch (_) { return null; }
+})();
+const safeEnv = (safeProc && safeProc.env) || {};
+const safeCwd = (() => {
+  try { return safeProc && typeof safeProc.cwd === 'function' ? safeProc.cwd() : '/workspace'; } catch (_) { return '/workspace'; }
+})();
 const workspaceDir = (typeof $env !== 'undefined' && $env.AGENT_WORKSPACE_DIR)
-  || (typeof process !== 'undefined' && process.env && process.env.AGENT_WORKSPACE_DIR)
-  || path.resolve(process.cwd());
+  || safeEnv.AGENT_WORKSPACE_DIR
+  || path.resolve(safeCwd);
 
 const scriptPath = path.resolve(workspaceDir, 'scripts/db/db-recon-core.js');
 
 let stdout = '';
 try {
-  const envPath = (process.env && process.env.PATH) || '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin';
+  const envPath = safeEnv.PATH || '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin';
   const result = await execAsync(`node "${scriptPath}" --date "${targetDate}" --json`, {
     cwd: workspaceDir,
     encoding: 'utf-8',
-    env: Object.assign({}, process.env, { PATH: envPath, AGENT_WORKSPACE_DIR: workspaceDir, METABASE_ENV: 'prod' }),
+    env: Object.assign({}, safeEnv, { PATH: envPath, AGENT_WORKSPACE_DIR: workspaceDir, METABASE_ENV: 'prod' }),
     timeout: 120000
   });
   stdout = result.stdout || '';

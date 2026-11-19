@@ -437,17 +437,45 @@ try {
       'Accept': 'application/json'
     };
 
-    // Hàm helper gọi HTTP đồng bộ (ưu tiên global.__mockHttpGet trong unit test, fallback curl)
+    // Hàm helper gọi HTTP đồng bộ bằng Node fetch (không phụ thuộc binary curl trong container)
+    const nodeSyncHttp = ({ method = 'GET', targetUrl, headers = {}, body = null, outFile = null, timeoutMs = 12000 }) => {
+      try {
+        const { spawnSync } = require('child_process');
+        const tlsAllow = String(($env && $env.ALLOW_INSECURE_TLS) || '').toLowerCase() === 'true';
+        const inlineCode = `
+          ${tlsAllow ? "process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';" : ''}
+          const fs = require('fs');
+          const [m, u, hJson, b, out, tMs] = process.argv.slice(1);
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), Number(tMs) || 12000);
+          (async () => {
+            const opts = { method: m, headers: JSON.parse(hJson || '{}'), signal: ctrl.signal };
+            if (b) opts.body = b;
+            const res = await fetch(u, opts);
+            if (!res.ok) process.exit(1);
+            if (out) {
+              const buf = Buffer.from(await res.arrayBuffer());
+              fs.writeFileSync(out, buf);
+            } else {
+              process.stdout.write(await res.text());
+            }
+          })().catch(() => process.exit(1)).finally(() => clearTimeout(timer));
+        `;
+        const r = spawnSync('node', [
+          '-e', inlineCode,
+          method, targetUrl, JSON.stringify(headers), body || '', outFile || '', String(timeoutMs)
+        ], { encoding: 'utf8', timeout: timeoutMs + 3000, maxBuffer: 16 * 1024 * 1024 });
+        return r.status === 0 ? (outFile ? true : (r.stdout || '')) : null;
+      } catch (_) {
+        return null;
+      }
+    };
+
     const curlGet = (targetUrl) => {
       if (typeof globalThis !== 'undefined' && typeof globalThis.__mockJiraCleanHttpGet === 'function') {
         return globalThis.__mockJiraCleanHttpGet(targetUrl, authHeaders);
       }
-      try {
-        const { execSync } = require('child_process');
-        return execSync(`curl -s --max-time 10 -H "Authorization: ${authHeaders.Authorization}" -H "Accept: application/json" "${targetUrl}"`, { encoding: 'utf8' });
-      } catch (_) {
-        return null;
-      }
+      return nodeSyncHttp({ method: 'GET', targetUrl, headers: authHeaders, timeoutMs: 10000 });
     };
 
     // A. Quét Remote Links (/remotelink) để bắt trọn link Confluence gắn ở mục Link của Jira
@@ -556,11 +584,16 @@ try {
               }
             } else {
               // Thử qua n8n confluence-doc webhook trước
-              const { execSync } = require('child_process');
               try {
                 const n8nBase = (($env && $env.N8N_BASE_URL) || `${($env && $env.N8N_PROTOCOL) || 'http'}://${($env && $env.N8N_HOST) || 'localhost'}:${($env && $env.N8N_PORT) || '5678'}`).replace(/\/+$/, '');
-                const cfPost = execSync(`curl -s --max-time 10 -X POST -H 'Content-Type: application/json' -d '{"pageUrlOrId":"${pId}"}' ${n8nBase}/webhook/confluence-doc`, { encoding: 'utf8' });
-                const cfJson = JSON.parse(cfPost);
+                const cfPost = nodeSyncHttp({
+                  method: 'POST',
+                  targetUrl: `${n8nBase}/webhook/confluence-doc`,
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ pageUrlOrId: pId }),
+                  timeoutMs: 10000
+                });
+                const cfJson = cfPost ? JSON.parse(cfPost) : null;
                 if (cfJson && cfJson.markdownContent) docMd = cfJson.markdownContent;
               } catch (_) {}
             }
@@ -610,8 +643,13 @@ try {
               downloadedAttachments.push(safeName);
             }
           } else if (!fs.existsSync(destPath)) {
-            const { execSync } = require('child_process');
-            execSync(`curl -s -L --max-time 15 -H "Authorization: ${authHeaders.Authorization}" -o "${destPath}" "${att.content}"`);
+            nodeSyncHttp({
+              method: 'GET',
+              targetUrl: att.content,
+              headers: { 'Authorization': authHeaders.Authorization },
+              outFile: destPath,
+              timeoutMs: 15000
+            });
             if (fs.existsSync(destPath) && fs.statSync(destPath).size > 0) {
               downloadedAttachments.push(safeName);
             }

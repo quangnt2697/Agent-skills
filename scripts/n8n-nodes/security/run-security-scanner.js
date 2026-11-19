@@ -15,10 +15,16 @@ const input = $input.first();
 const json = (input && input.json) || {};
 const body = json.body || json;
 
-const defaultRoot = path.resolve(($env && $env.AGENT_WORKSPACE_DIR) || process.cwd());
+const safeProc = (() => {
+  try { return typeof process !== 'undefined' ? process : require('process'); } catch (_) { return null; }
+})();
+const safeCwd = (() => {
+  try { return safeProc && typeof safeProc.cwd === 'function' ? safeProc.cwd() : '/workspace'; } catch (_) { return '/workspace'; }
+})();
+const defaultRoot = path.resolve(($env && $env.AGENT_WORKSPACE_DIR) || safeCwd);
 const allowedRoots = [
   defaultRoot,
-  path.resolve(process.cwd()),
+  path.resolve(safeCwd),
   $env && $env.PROJECTS_ROOT ? path.resolve($env.PROJECTS_ROOT) : null
 ].filter(Boolean);
 

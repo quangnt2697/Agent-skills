@@ -48,7 +48,7 @@ for (let i = 0; i < args.length; i++) {
 // Xác định root của project (ưu tiên config gần script -> AGENT_SKILLS_HOME -> cwd)
 let projectRoot = '';
 const configCandidates = [
-  path.resolve(__dirname, '../../../../../config/projects.json'),
+  path.resolve(__dirname, '../../../../../../config/projects.json'),
   process.env.AGENT_SKILLS_HOME ? path.resolve(process.env.AGENT_SKILLS_HOME, 'config/projects.json') : null,
   path.resolve(process.cwd(), 'config/projects.json')
 ].filter(Boolean);

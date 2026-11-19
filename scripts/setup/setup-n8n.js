@@ -18,6 +18,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { syncCorporateCaBundle } from '../lib/host-bridge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -90,8 +91,9 @@ if (hasDocker && hasDockerCompose) {
     }
   }
 
-  // 3. Khởi động container n8n và nạp + kích hoạt toàn bộ workflows
+  // 3. Đồng bộ Root CA vào .n8n-data/corporate-ca.pem, khởi động container n8n và nạp workflows
   console.log('\n📦 Đang khởi động container agent-skills-n8n và kích hoạt 19 workflows...');
+  syncCorporateCaBundle(projectRoot);
   const composeCmd = hasCommand('docker-compose') ? 'docker-compose up -d' : 'docker compose up -d';
   execSync(composeCmd, { cwd: projectRoot, stdio: 'inherit' });
   execSync('node scripts/n8n/import-and-activate.js', { cwd: projectRoot, stdio: 'inherit' });
