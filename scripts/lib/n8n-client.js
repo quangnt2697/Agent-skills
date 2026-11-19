@@ -283,7 +283,7 @@ export async function getSecuritiesFixture(params = {}, options = {}) {
 /**
  * Fast-Path: Khám phá locator Web UI thật bằng cách mở browser, đăng nhập
  * bằng TRADING_USERNAME/PASSWORD và dump DOM của trang chỉ định.
- * Kết quả lưu vào workspace/{issueKey}/test/fixtures/locators.json.
+ * Kết quả lưu vào workspace/issues/{issueKey}/test/fixtures/locators.json.
  * @param {string} issueKey  Jira issue key (VD: STK-201)
  * @param {string} targetPage Tên màn hình cần lấy locator (VD: 'login', 'order', 'portfolio')
  * @param {object} options   { urlOverride, timeoutMs } — ghi đè URL nếu cần

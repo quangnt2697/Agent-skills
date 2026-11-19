@@ -6,7 +6,8 @@ const extractNode = (typeof $('Extract issueKey') !== 'undefined') ? $('Extract 
 const issueKey = extractNode.issueKey || input.json.issueKey || '';
 const project = extractNode.project || input.json.project || '';
 const procCwd = (() => { try { return require('process').cwd(); } catch (_) { return ''; } })();
-const cwd = input.json.cwd || ($env && $env.AGENT_WORKSPACE_DIR) || procCwd || '';
+const fallbackCwd = ($env && $env.AGENT_WORKSPACE_DIR) || procCwd || '/workspace';
+const cwd = (input.json.cwd && fs.existsSync(input.json.cwd)) ? input.json.cwd : fallbackCwd;
 const targetLabel = project ? (project + ' / ' + issueKey) : issueKey;
 const triggerSource = extractNode._triggerSource || input.json._triggerSource || 'webhook';
 
@@ -56,6 +57,10 @@ if (!fs.existsSync(resultDir)) {
   fs.mkdirSync(resultDir, { recursive: true });
 }
 
+const errorDetail = (!success && (execRes.error?.message || execRes.stderr || execRes.message))
+  ? String(execRes.error?.message || execRes.stderr || execRes.message).trim().slice(0, 400)
+  : '';
+
 const reportMd = [
   `# Báo Cáo Kiểm Thử Tự Động: ${issueKey}`,
   '',
@@ -65,7 +70,8 @@ const reportMd = [
   `| **Project** | \`${project || 'default'}\` |`,
   `| **Verdict** | **${verdict}** |`,
   `| **Mã lỗi** | \`${errorCode || 'N/A'}\` |`,
-  `| **Thời Gian** | \`${new Date().toISOString()}\` |`
+  `| **Thời Gian** | \`${new Date().toISOString()}\` |`,
+  ...(errorDetail ? ['', '## Chi tiết lỗi', '', '```text', errorDetail, '```'] : [])
 ].join('\n');
 
 try {
@@ -75,7 +81,7 @@ try {
 }
 
 const runStatus = {
-  issueKey, project, verdict, errorCode, exitCode, timestamp: new Date().toISOString()
+  issueKey, project, verdict, errorCode, exitCode, ...(errorDetail ? { errorDetail } : {}), timestamp: new Date().toISOString()
 };
 try {
   fs.writeFileSync(path.join(resultDir, 'run-status.json'), JSON.stringify(runStatus, null, 2), 'utf8');
@@ -86,7 +92,8 @@ try {
 const statusIcon = success ? '✅' : (verdict === 'FAIL' ? '❌' : (verdict === 'TIMEOUT' ? '⏱️' : '⛔'));
 const message = `🚀 **[QA Automation]** Kết quả chạy kiểm thử cho ticket **${targetLabel}**:\n` +
                 `- Verdict: ${statusIcon} **${verdict}**\n` +
-                (errorCode ? `- Lỗi: \`${errorCode}\`\n` : '');
+                (errorCode ? `- Lỗi: \`${errorCode}\`\n` : '') +
+                (errorDetail ? `- Chi tiết: \`${errorDetail.split('\n')[0]}\`\n` : '');
 
 return [{
   json: {

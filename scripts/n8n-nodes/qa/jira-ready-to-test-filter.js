@@ -229,8 +229,11 @@ for (const rawItem of candidateItems) {
   let workspaceFoundPath = '';
 
   for (const cRoot of candidateRoots) {
-    const wsDir = path.join(cRoot, 'workspace', issueKey);
-    if (fs.existsSync(wsDir)) {
+    const wsDir = [
+      path.join(cRoot, 'workspace', 'issues', issueKey),
+      path.join(cRoot, 'workspace', issueKey)
+    ].find(d => fs.existsSync(d));
+    if (wsDir) {
       workspaceFoundPath = wsDir;
 
       // A. Kiểm tra file .feature (Gherkin)

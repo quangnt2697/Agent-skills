@@ -103,7 +103,13 @@ const webhookBase = `${n8nBase}/webhook/agent-trigger-skill`;
 const email = ($env && $env.ATLASSIAN_EMAIL) || '';
 const token = ($env && $env.ATLASSIAN_API_TOKEN) || '';
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
-const allowInsecureTls = String(((typeof $env !== 'undefined' && $env) ? $env.ALLOW_INSECURE_TLS : '') || process.env.ALLOW_INSECURE_TLS || '').toLowerCase() === 'true';
+const procEnv = (() => {
+  try {
+    const p = typeof process !== 'undefined' ? process : require('process');
+    return (p && p.env) || {};
+  } catch (_) { return {}; }
+})();
+const allowInsecureTls = String(((typeof $env !== 'undefined' && $env) ? $env.ALLOW_INSECURE_TLS : '') || procEnv.ALLOW_INSECURE_TLS || '').toLowerCase() === 'true';
 
 let executionSuccess = false;
 let executionMessage = '';
@@ -341,7 +347,7 @@ try {
     if (fs.existsSync(pushScript)) {
       const pushRes = spawnSync('node', [pushScript, issueKey, targetSpec], {
         cwd: wsDir,
-        env: allowInsecureTls ? { ...process.env, NODE_TLS_REJECT_UNAUTHORIZED: '0' } : { ...process.env },
+        env: allowInsecureTls ? { ...procEnv, NODE_TLS_REJECT_UNAUTHORIZED: '0' } : { ...procEnv },
         encoding: 'utf8',
         timeout: 60000
       });

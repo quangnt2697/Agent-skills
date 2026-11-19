@@ -5,14 +5,16 @@ const fs = require('fs');
 const execAsync = util.promisify(exec);
 
 let procEnv = {};
+let procCwd = '/workspace';
 try {
-  const proc = require('process');
+  const proc = typeof process !== 'undefined' ? process : require('process');
   procEnv = proc.env || {};
+  if (typeof proc.cwd === 'function') procCwd = proc.cwd();
 } catch (e) {}
 
 const workspaceDir = (typeof $env !== 'undefined' && $env.AGENT_WORKSPACE_DIR)
   || procEnv.AGENT_WORKSPACE_DIR
-  || path.resolve(process.cwd());
+  || path.resolve(procCwd);
 
 const input = $input.first();
 const json = (input && input.json) || {};

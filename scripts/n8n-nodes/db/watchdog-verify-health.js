@@ -337,7 +337,12 @@ try {
 
   if (fsModule && pathMod) {
     const envObj     = (typeof $env !== 'undefined' && $env) ? $env : ((typeof process !== 'undefined' && process.env) ? process.env : {});
-    const currentDir = (envObj && envObj.AGENT_WORKSPACE_DIR) || process.cwd();
+    let fallbackDir  = '/workspace';
+    try {
+      const p = typeof process !== 'undefined' ? process : require('process');
+      if (p && typeof p.cwd === 'function') fallbackDir = p.cwd();
+    } catch (_) {}
+    const currentDir = (envObj && envObj.AGENT_WORKSPACE_DIR) || fallbackDir;
 
     const configFiles = [
       pathMod.join(currentDir, 'config', 'projects.json'),
@@ -446,7 +451,12 @@ try {
 
   if (fsMod && pathM) {
     const envObj = (typeof $env !== 'undefined' && $env) ? $env : ((typeof process !== 'undefined' && process.env) ? process.env : {});
-    const currentDir = (envObj && envObj.AGENT_WORKSPACE_DIR) || process.cwd();
+    let fallbackDir = '/workspace';
+    try {
+      const p = typeof process !== 'undefined' ? process : require('process');
+      if (p && typeof p.cwd === 'function') fallbackDir = p.cwd();
+    } catch (_) {}
+    const currentDir = (envObj && envObj.AGENT_WORKSPACE_DIR) || fallbackDir;
     const stateDir = pathM.join(currentDir, 'workspace', 'adhoc', 'database');
     const stateFile = pathM.join(stateDir, 'watchdog-alert-state.json');
 

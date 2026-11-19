@@ -1,4 +1,4 @@
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -77,6 +77,128 @@ if (project) {
   }
 }
 
+function readBridgeToken() {
+  const candidates = [
+    '/home/node/.n8n/host-bridge-token',
+    path.join(cwd, '.n8n-data', 'host-bridge-token'),
+    '/workspace/.n8n-data/host-bridge-token'
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      try {
+        const t = fs.readFileSync(p, 'utf8').trim();
+        if (t) return t;
+      } catch (_) {}
+    }
+  }
+  return ($env && $env.HOST_BRIDGE_TOKEN) || procEnv.HOST_BRIDGE_TOKEN || '';
+}
+
+function callHostBridge(endpoint, bodyObj, timeoutMs = 610000) {
+  const http = require('http');
+  const https = require('https');
+  const { URL } = require('url');
+  const { Buffer } = require('buffer');
+  const bridgePort = ($env && $env.HOST_BRIDGE_PORT) || procEnv.HOST_BRIDGE_PORT || '5680';
+  const bridgeUrl = (($env && $env.HOST_BRIDGE_URL) || procEnv.HOST_BRIDGE_URL || `http://host.docker.internal:${bridgePort}`).replace(/\/$/, '');
+  const token = readBridgeToken();
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(`${bridgeUrl}${endpoint}`);
+    const lib = parsed.protocol === 'https:' ? https : http;
+    const payloadStr = JSON.stringify(bodyObj);
+    const req = lib.request({
+      hostname: parsed.hostname,
+      port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
+      path: parsed.pathname,
+      method: 'POST',
+      timeout: timeoutMs,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payloadStr),
+        'x-bridge-token': token
+      }
+    }, (res) => {
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => {
+        const raw = Buffer.concat(chunks).toString('utf8');
+        try {
+          resolve({ status: res.statusCode, data: JSON.parse(raw) });
+        } catch (e) {
+          reject(new Error(`Host Bridge invalid JSON (HTTP ${res.statusCode}): ${raw.slice(0, 200)}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(new Error('Host Bridge request timeout')); });
+    req.write(payloadStr);
+    req.end();
+  });
+}
+
+// Định vị binary pytest khả dụng (.venv của dự án -> PATH -> python3 -m pytest)
+function resolvePytestRunner() {
+  const candidates = [
+    [path.join(cwd, '.venv', 'bin', 'pytest'), []],
+    ['/workspace/.venv/bin/pytest', []],
+    ['pytest', []],
+    ['python3', ['-m', 'pytest']]
+  ];
+  for (const [bin, prefixArgs] of candidates) {
+    if (bin.includes('/') && !fs.existsSync(bin)) continue;
+    const probe = spawnSync(bin, [...prefixArgs, '--help'], { cwd, encoding: 'utf8', timeout: 5000 });
+    if (probe.status === 0) {
+      const hasTimeoutPlugin = /--timeout\b/.test(probe.stdout || '');
+      return { bin, prefixArgs, hasTimeoutPlugin };
+    }
+  }
+  return null;
+}
+
+const runner = resolvePytestRunner();
+
+// Nếu container không có pytest (Alpine), ủy quyền sang Host Runner Bridge trên macOS
+if (!runner) {
+  try {
+    const bridgeRes = await callHostBridge('/run-pytest', {
+      issueKey,
+      project,
+      testFiles: reqTestFiles
+    });
+    const b = bridgeRes.data || {};
+    if (bridgeRes.status >= 400) {
+      return [{ json: { stdout: '', stderr: b.error || b.stderr || `Host Bridge HTTP ${bridgeRes.status}`, exitCode: 4, error: { message: b.error || 'Host Bridge error' }, project, issueKey, cwd } }];
+    }
+    return [{
+      json: {
+        stdout: b.stdout || '',
+        stderr: b.stderr || '',
+        exitCode: typeof b.exitCode === 'number' ? b.exitCode : 1,
+        message: b.message || '',
+        project: b.project || project,
+        issueKey,
+        cwd,
+        hostCwd: b.hostCwd || cwd,
+        logFile: b.logFile || '',
+        junitFile: b.junitFile || '',
+        executedVia: b.executedVia || 'host-bridge'
+      }
+    }];
+  } catch (bridgeErr) {
+    return [{
+      json: {
+        stdout: '',
+        stderr: `RUNNER_MISSING: Không tìm thấy pytest trong container và không kết nối được Host Bridge (${bridgeErr.message}). Chạy "npm run bridge:start" trên máy host.`,
+        exitCode: 4,
+        error: { message: `Host Bridge unreachable: ${bridgeErr.message}` },
+        project,
+        issueKey,
+        cwd
+      }
+    }];
+  }
+}
+
 let ticketDir = path.resolve(cwd, 'workspace', 'issues', issueKey);
 if (!fs.existsSync(ticketDir)) {
   ticketDir = path.resolve(cwd, 'workspace', issueKey);
@@ -106,16 +228,17 @@ const junitFile = path.join(resultDir, 'junit.xml');
 const logStream = fs.createWriteStream(logFile);
 
 const args = [
+  ...runner.prefixArgs,
   target,
   '-v',
   '--tb=short',
-  '--timeout=60',
+  ...(runner.hasTimeoutPlugin ? ['--timeout=60'] : []),
   '-o', 'python_files=test*.py *test.py test-*.py *-test.py test_*.py *_test.py',
   `--junitxml=${junitFile}`
 ];
 
 return new Promise((resolve) => {
-  const child = spawn('pytest', args, { cwd: cwd, shell: false });
+  const child = spawn(runner.bin, args, { cwd: cwd, shell: false });
   let stdoutData = '';
   let stderrData = '';
   

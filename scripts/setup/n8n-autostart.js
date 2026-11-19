@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { ensureBridgeBackground, isBridgeHealthy, stopBridgeBackground } from '../lib/host-bridge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -390,6 +391,7 @@ export function disableAutostart() {
   } else {
     console.log('ℹ️ LaunchAgent chưa được kích hoạt trước đó.');
   }
+  stopBridgeBackground(projectRoot);
 }
 
 /**
@@ -425,6 +427,16 @@ export function showStatus() {
     containerOk = psOut.length > 0;
   } catch (_) {}
   console.log(`• Container n8n:     ${containerOk ? '🟢 ĐANG HOẠT ĐỘNG' : '🔴 ĐANG TẮT'}`);
+
+  const bridgePidFile = path.resolve(projectRoot, '.n8n-data', 'host-bridge.pid');
+  let bridgeAlive = false;
+  if (fs.existsSync(bridgePidFile)) {
+    const bPid = parseInt(fs.readFileSync(bridgePidFile, 'utf8').trim(), 10);
+    if (Number.isFinite(bPid)) {
+      try { process.kill(bPid, 0); bridgeAlive = true; } catch (_) {}
+    }
+  }
+  console.log(`• Host Bridge:       ${bridgeAlive ? '🟢 ĐANG HOẠT ĐỘNG' : '⚪ CHƯA CHẠY (chạy: npm run bridge:start)'}`);
 
   const envConfig = readEnvConfig(projectRoot);
   const hasSlack = isSlackWebhookConfigured(envConfig.SLACK_WEBHOOK_URL);
@@ -642,6 +654,12 @@ export async function runEnsure() {
   const containerRes = ensureContainerRunning();
   if (containerRes.started) {
     console.log('[Watchdog] ✅ Container n8n đã khởi động xong.');
+  }
+
+  // Đảm bảo Host Runner Bridge (chạy pytest/.venv và bash/squash trên macOS) đang hoạt động
+  const bridgeRes = await ensureBridgeBackground({ rootDir: projectRoot });
+  if (bridgeRes.started) {
+    console.log('[Watchdog] ✅ Host Runner Bridge đã khởi động xong.');
   }
 
   await checkAndCatchUpStandup();

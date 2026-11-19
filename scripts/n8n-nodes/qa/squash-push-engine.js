@@ -1,4 +1,4 @@
-const { exec } = require('child_process');
+const { exec, spawnSync } = require('child_process');
 const util = require('util');
 const fs = require('fs');
 const path = require('path');
@@ -108,6 +108,86 @@ if (!scriptPath) {
 }
 
 const absFeatureFile = path.isAbsolute(featureFile) ? featureFile : path.join(projectRoot, featureFile);
+const hasLocalShellDeps = ['bash', 'curl', 'jq'].every((bin) => spawnSync('which', [bin], { encoding: 'utf8' }).status === 0);
+
+if (!hasLocalShellDeps) {
+  try {
+    const http = require('http');
+    const https = require('https');
+    const { URL } = require('url');
+    const { Buffer } = require('buffer');
+    let procEnv = {};
+    try { procEnv = require('process').env || {}; } catch (_) {}
+    const bridgePort = ($env && $env.HOST_BRIDGE_PORT) || procEnv.HOST_BRIDGE_PORT || '5680';
+    const bridgeUrl = (($env && $env.HOST_BRIDGE_URL) || procEnv.HOST_BRIDGE_URL || `http://host.docker.internal:${bridgePort}`).replace(/\/$/, '');
+    const tokenPath = ['/home/node/.n8n/host-bridge-token', path.join(projectRoot, '.n8n-data', 'host-bridge-token'), '/workspace/.n8n-data/host-bridge-token'].find((p) => fs.existsSync(p));
+    const token = tokenPath ? fs.readFileSync(tokenPath, 'utf8').trim() : (($env && $env.HOST_BRIDGE_TOKEN) || procEnv.HOST_BRIDGE_TOKEN || '');
+    const bodyStr = JSON.stringify({ issueKey, project, namejira: namejira || issueKey, featureFile: absFeatureFile, projectRoot });
+
+    const bridgeResp = await new Promise((resolve, reject) => {
+      const parsed = new URL(`${bridgeUrl}/squash-push`);
+      const lib = parsed.protocol === 'https:' ? https : http;
+      const req = lib.request({
+        hostname: parsed.hostname,
+        port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
+        path: parsed.pathname,
+        method: 'POST',
+        timeout: 185000,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(bodyStr),
+          'x-bridge-token': token
+        }
+      }, (res) => {
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => {
+          const raw = Buffer.concat(chunks).toString('utf8');
+          try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); }
+          catch (e) { reject(new Error(`Host Bridge invalid JSON: ${raw.slice(0, 200)}`)); }
+        });
+      });
+      req.on('error', reject);
+      req.on('timeout', () => req.destroy(new Error('Host Bridge squash-push timeout')));
+      req.write(bodyStr);
+      req.end();
+    });
+
+    const b = bridgeResp.data || {};
+    if (bridgeResp.status >= 400 || b.isError) {
+      const errOut = b.errorOutput || b.error || `Host Bridge HTTP ${bridgeResp.status}`;
+      return [{
+        json: {
+          success: false, isError: true, issueKey, project, featureFile: absFeatureFile,
+          errorOutput: errOut,
+          reportText: `🚨 **[Squash Push Thất Bại]** Không thể đồng bộ kịch bản Gherkin của **${issueKey}** lên Squash TM:\n\`\`\`text\n${String(errOut).slice(-1200)}\n\`\`\``,
+          _triggerSource: triggerSource, userName
+        }
+      }];
+    }
+    return [{
+      json: {
+        success: true, isError: false, issueKey, project,
+        featureFile: b.featureFile || absFeatureFile,
+        namejira: b.namejira || namejira,
+        stdout: b.stdout || '',
+        syncMeta: b.syncMeta || null,
+        executedVia: 'host-bridge',
+        _triggerSource: triggerSource, userName
+      }
+    }];
+  } catch (bridgeErr) {
+    return [{
+      json: {
+        success: false, isError: true, issueKey, project, featureFile: absFeatureFile,
+        errorOutput: bridgeErr.message,
+        reportText: `🚨 **[Squash Push Thất Bại]** Container thiếu bash/curl/jq và không kết nối được Host Bridge (${bridgeErr.message}). Hãy chạy \`npm run bridge:start\` trên máy host.`,
+        _triggerSource: triggerSource, userName
+      }
+    }];
+  }
+}
+
 const cmd = `bash "${scriptPath}" "${issueKey}" "${namejira || issueKey}" "${absFeatureFile}"`;
 
 try {
@@ -120,10 +200,14 @@ try {
 
   const stdout = result.stdout || '';
   
-  // Đọc file sync metadata nếu có
+  // Đọc file sync metadata nếu có (ưu tiên workspace/issues/{issueKey}/test/)
   let syncMeta = null;
-  const syncJsonPath = path.join(projectRoot, 'workspace', issueKey, 'test', 'squash_sync.json');
-  if (fs.existsSync(syncJsonPath)) {
+  const syncJsonCandidates = [
+    path.join(projectRoot, 'workspace', 'issues', issueKey, 'test', 'squash_sync.json'),
+    path.join(projectRoot, 'workspace', issueKey, 'test', 'squash_sync.json')
+  ];
+  const syncJsonPath = syncJsonCandidates.find(p => fs.existsSync(p));
+  if (syncJsonPath) {
     try {
       syncMeta = JSON.parse(fs.readFileSync(syncJsonPath, 'utf-8'));
     } catch (_) {}
