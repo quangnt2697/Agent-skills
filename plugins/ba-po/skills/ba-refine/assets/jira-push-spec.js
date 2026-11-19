@@ -20,6 +20,8 @@ import { cleanIssueWorkspace } from '../../../../../scripts/workspace/clean-issu
 
 const {
     normalizeIssueKey,
+    getImageDimensionsFromBuffer,
+    resolveJiraMediaUuid,
     splitBlocks,
     imageBlockToAdf,
     markdownToAdf
@@ -259,6 +261,7 @@ async function uploadAllMockupAttachments(issueKey, baseUrl, authHeader, mdFileP
         const fileName = path.basename(filePath);
         try {
             const fileBuffer = fs.readFileSync(filePath);
+            const dims = getImageDimensionsFromBuffer(fileBuffer);
             const blob = new Blob([fileBuffer], { type: 'image/png' });
             const formData = new FormData();
             formData.append('file', blob, fileName);
@@ -275,13 +278,16 @@ async function uploadAllMockupAttachments(issueKey, baseUrl, authHeader, mdFileP
             if (attachRes.ok) {
                 const uploadedList = await attachRes.json();
                 for (const item of uploadedList) {
+                    const mediaId = await resolveJiraMediaUuid(item.content, authHeader);
                     attachmentMap[item.filename] = {
                         id: item.id,
                         filename: item.filename,
                         content: item.content,
-                        size: item.size
+                        size: item.size,
+                        ...(mediaId ? { mediaId } : {}),
+                        ...(dims ? { naturalWidth: dims.width, naturalHeight: dims.height } : {})
                     };
-                    console.log(`✅ Đã tải lên ảnh Mockup: ${item.filename} (ID: ${item.id})`);
+                    console.log(`✅ Đã tải lên ảnh Mockup: ${item.filename} (ID: ${item.id}${mediaId ? ', Media: ' + mediaId : ''})`);
                 }
             } else {
                 const errText = await attachRes.text();
@@ -402,6 +408,14 @@ async function main() {
     if (!isDryRun) {
         console.log(`⏳ Đang kiểm tra và tải ảnh Mockup lên Jira Attachments...`);
         attachmentMap = await uploadAllMockupAttachments(issueKey, baseUrl, authHeader, mdFilePath, markdownContent);
+    } else {
+        for (const imgPath of collectLocalMockupFiles(mdFilePath, markdownContent)) {
+            try {
+                const dims = getImageDimensionsFromBuffer(fs.readFileSync(imgPath));
+                const name = path.basename(imgPath);
+                if (dims) attachmentMap[name] = { filename: name, naturalWidth: dims.width, naturalHeight: dims.height };
+            } catch (_) {}
+        }
     }
 
     console.log(`⏳ Đang chuyển đổi Markdown sang Jira ADF...`);

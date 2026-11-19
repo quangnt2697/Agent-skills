@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
+const { Buffer } = require('buffer');
 
 const input = $input.first();
 const resolveRes = (input && input.json) || {};
@@ -81,23 +83,39 @@ if (hasInlinePayload) {
     }];
   }
 
-  // Thu thập ảnh local từ diagrams/ khi chạy ở Resolver Mode
+  // Thu thập ảnh local từ markdown (![...](...)) và diagrams/ khi chạy ở Resolver Mode
+  const collectedPaths = new Set();
+  const imgRegex = /!\[[^\]]*\]\(([^)]+)\)/g;
+  let mImg;
+  while ((mImg = imgRegex.exec(markdownContent)) !== null) {
+    const rawSrc = mImg[1].trim().split(/\s+/)[0];
+    if (!rawSrc || rawSrc.startsWith('http://') || rawSrc.startsWith('https://')) continue;
+    const cands = [
+      path.resolve(specDir, rawSrc),
+      path.resolve(specDir, 'diagrams', path.basename(rawSrc)),
+      path.resolve(specDir, path.basename(rawSrc))
+    ];
+    const hit = cands.find(c => fs.existsSync(c) && fs.statSync(c).isFile());
+    if (hit) collectedPaths.add(hit);
+  }
   const diagramDir = path.join(specDir, 'diagrams');
   if (fs.existsSync(diagramDir)) {
     try {
-      const files = fs.readdirSync(diagramDir).filter(f => /\.(png|jpe?g|svg)$/i.test(f));
-      inlineAttachments = files.map(f => {
-        const full = path.join(diagramDir, f);
-        const ext = path.extname(f).toLowerCase();
-        const mimeType = ext === '.svg' ? 'image/svg+xml' : (ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png');
-        return {
-          filename: f,
-          mimeType,
-          dataBase64: fs.readFileSync(full).toString('base64')
-        };
-      });
+      for (const f of fs.readdirSync(diagramDir)) {
+        if (/\.(png|jpe?g|svg)$/i.test(f)) collectedPaths.add(path.join(diagramDir, f));
+      }
     } catch (_) {}
   }
+  inlineAttachments = Array.from(collectedPaths).map(full => {
+    const f = path.basename(full);
+    const ext = path.extname(f).toLowerCase();
+    const mimeType = ext === '.svg' ? 'image/svg+xml' : (ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png');
+    return {
+      filename: f,
+      mimeType,
+      dataBase64: fs.readFileSync(full).toString('base64')
+    };
+  });
 }
 
 if (!markdownContent.trim()) {
@@ -190,7 +208,7 @@ if (qualityErrors.length > 0) {
   }];
 }
 
-// 3. Tải parser Markdown -> ADF (CommonJS helper, dùng được cả trong n8n và ESM CLI)
+// 3. Tải parser Markdown -> ADF (CommonJS helper, hỗ trợ cả require trực tiếp lẫn spawnSync CLI trong sandbox n8n)
 let procCwd = '';
 try {
   const proc = require('process');
@@ -198,19 +216,19 @@ try {
 } catch (_) {}
 const projectRoot = ($env && $env.AGENT_WORKSPACE_DIR) || (fs.existsSync('/workspace/package.json') ? '/workspace' : procCwd);
 
+let jiraAdfMod = null;
 let markdownToAdfFn = null;
 const parserCandidates = [
   path.join(projectRoot, 'scripts/lib/jira-adf.cjs'),
   '/workspace/scripts/lib/jira-adf.cjs'
 ];
-for (const cand of parserCandidates) {
+const jiraAdfPath = parserCandidates.find(c => fs.existsSync(c)) || '';
+if (jiraAdfPath) {
   try {
-    if (fs.existsSync(cand)) {
-      const mod = require(cand);
-      if (mod && typeof mod.markdownToAdf === 'function') {
-        markdownToAdfFn = mod.markdownToAdf;
-        break;
-      }
+    const mod = require(jiraAdfPath);
+    jiraAdfMod = mod;
+    if (mod && typeof mod.markdownToAdf === 'function') {
+      markdownToAdfFn = mod.markdownToAdf;
     }
   } catch (_) {}
 }
@@ -220,86 +238,206 @@ const email = ($env && $env.ATLASSIAN_EMAIL) || '';
 const token = ($env && $env.ATLASSIAN_API_TOKEN) || '';
 const authHeader = 'Basic ' + Buffer.from(`${email}:${token}`).toString('base64');
 
-// 4. Khi Live Push: lấy attachments hiện có + oldDescription để backup, và upload mockup PNG base64 nếu có
+// 4. Nạp kích thước ảnh local (kể cả Dry Run để xem trước chuẩn kích thước mẫu G3PTP-17483);
+// Khi Live Push: lấy attachments hiện có + oldDescription để backup, upload PNG + giải Media UUID thật
+// Lưu ý: JsTaskRunner của n8n không cấp global fetch/FormData/Blob trong vm context -> dùng child process node khi thiếu fetch
 const attachmentMap = {};
-let oldDescription = null;
-let uploadedCount = 0;
-
-if (!isDryRun && baseUrl && email && token && typeof fetch === 'function') {
-  try {
-    const issueRes = await fetch(`${baseUrl}/rest/api/3/issue/${issueKey}?fields=attachment,description`, {
-      method: 'GET',
-      headers: {
-        'Authorization': authHeader,
-        'Accept': 'application/json'
-      }
-    });
-    if (issueRes.ok) {
-      const issueData = await issueRes.json();
-      oldDescription = issueData?.fields?.description || null;
-      const existing = issueData?.fields?.attachment || [];
-      for (const att of existing) {
-        attachmentMap[att.filename] = {
-          id: att.id,
-          filename: att.filename,
-          content: att.content,
-          size: att.size
-        };
-      }
-    }
-  } catch (_) {}
-
-  for (const att of inlineAttachments) {
-    if (!att || !att.filename || !att.dataBase64) continue;
+for (const att of inlineAttachments) {
+  if (!att || !att.filename) continue;
+  const name = path.basename(att.filename);
+  let nw = Number(att.naturalWidth) || 0;
+  let nh = Number(att.naturalHeight) || 0;
+  if ((!nw || !nh) && att.dataBase64) {
     try {
-      const buf = Buffer.from(att.dataBase64, 'base64');
-      const blob = new Blob([buf], { type: att.mimeType || 'image/png' });
-      const formData = new FormData();
-      formData.append('file', blob, path.basename(att.filename));
-
-      const uploadRes = await fetch(`${baseUrl}/rest/api/3/issue/${issueKey}/attachments`, {
-        method: 'POST',
-        headers: {
-          'Authorization': authHeader,
-          'X-Atlassian-Token': 'no-check'
-        },
-        body: formData
-      });
-      if (uploadRes.ok) {
-        const uploadedList = await uploadRes.json();
-        for (const item of uploadedList) {
-          attachmentMap[item.filename] = {
-            id: item.id,
-            filename: item.filename,
-            content: item.content,
-            size: item.size
-          };
-          uploadedCount++;
-        }
+      const headBuf = Buffer.from(att.dataBase64, 'base64');
+      if (jiraAdfMod && typeof jiraAdfMod.getImageDimensionsFromBuffer === 'function') {
+        const d = jiraAdfMod.getImageDimensionsFromBuffer(headBuf);
+        if (d) { nw = d.width; nh = d.height; }
+      } else if (headBuf.length >= 24 && headBuf[0] === 0x89 && headBuf[1] === 0x50 && headBuf[2] === 0x4E && headBuf[3] === 0x47) {
+        nw = headBuf.readUInt32BE(16);
+        nh = headBuf.readUInt32BE(20);
       }
     } catch (_) {}
   }
+  attachmentMap[name] = {
+    filename: name,
+    ...(nw > 0 && nh > 0 ? { naturalWidth: nw, naturalHeight: nh } : {})
+  };
+}
+let oldDescription = null;
+let uploadedCount = 0;
+
+if (!isDryRun && baseUrl && email && token) {
+  if (typeof fetch === 'function' && typeof FormData === 'function' && typeof Blob === 'function') {
+    try {
+      const issueRes = await fetch(`${baseUrl}/rest/api/3/issue/${issueKey}?fields=attachment,description`, {
+        method: 'GET',
+        headers: { 'Authorization': authHeader, 'Accept': 'application/json' }
+      });
+      if (issueRes.ok) {
+        const issueData = await issueRes.json();
+        oldDescription = issueData?.fields?.description || null;
+        for (const att of (issueData?.fields?.attachment || [])) {
+          const prev = attachmentMap[att.filename] || {};
+          attachmentMap[att.filename] = { ...prev, id: att.id, filename: att.filename, content: att.content, size: att.size };
+        }
+      }
+    } catch (_) {}
+
+    const resolveUuidFn = jiraAdfMod && typeof jiraAdfMod.resolveJiraMediaUuid === 'function'
+      ? jiraAdfMod.resolveJiraMediaUuid
+      : null;
+
+    for (const att of inlineAttachments) {
+      if (!att || !att.filename || !att.dataBase64) continue;
+      try {
+        const buf = Buffer.from(att.dataBase64, 'base64');
+        const blob = new Blob([buf], { type: att.mimeType || 'image/png' });
+        const formData = new FormData();
+        formData.append('file', blob, path.basename(att.filename));
+        const uploadRes = await fetch(`${baseUrl}/rest/api/3/issue/${issueKey}/attachments`, {
+          method: 'POST',
+          headers: { 'Authorization': authHeader, 'X-Atlassian-Token': 'no-check' },
+          body: formData
+        });
+        if (uploadRes.ok) {
+          for (const item of (await uploadRes.json())) {
+            const mediaId = resolveUuidFn ? await resolveUuidFn(item.content, authHeader) : null;
+            const prev = attachmentMap[item.filename] || {};
+            attachmentMap[item.filename] = {
+              ...prev,
+              id: item.id,
+              filename: item.filename,
+              content: item.content,
+              size: item.size,
+              ...(mediaId ? { mediaId } : {})
+            };
+            uploadedCount++;
+          }
+        }
+      } catch (_) {}
+    }
+  } else {
+    const syncScript = `
+      const fs = require('fs');
+      const path = require('path');
+      const payload = JSON.parse(fs.readFileSync(0, 'utf8'));
+      const { baseUrl, authHeader, issueKey, attachments, jiraAdfPath } = payload;
+      let adfLib = null;
+      if (jiraAdfPath) { try { adfLib = require(jiraAdfPath); } catch (_) {} }
+      const out = { oldDescription: null, attachmentMap: {}, uploadedCount: 0, errors: [] };
+      (async () => {
+        try {
+          const r = await fetch(baseUrl + '/rest/api/3/issue/' + issueKey + '?fields=attachment,description', {
+            headers: { 'Authorization': authHeader, 'Accept': 'application/json' }
+          });
+          if (r.ok) {
+            const d = await r.json();
+            out.oldDescription = d?.fields?.description || null;
+            for (const att of (d?.fields?.attachment || [])) {
+              out.attachmentMap[att.filename] = { id: att.id, filename: att.filename, content: att.content, size: att.size };
+            }
+          } else {
+            out.errors.push('GET issue HTTP ' + r.status);
+          }
+        } catch (e) { out.errors.push('GET issue: ' + e.message); }
+        for (const att of (attachments || [])) {
+          if (!att || !att.filename || !att.dataBase64) continue;
+          try {
+            const buf = Buffer.from(att.dataBase64, 'base64');
+            const dims = adfLib && typeof adfLib.getImageDimensionsFromBuffer === 'function'
+              ? adfLib.getImageDimensionsFromBuffer(buf)
+              : null;
+            const blob = new Blob([buf], { type: att.mimeType || 'image/png' });
+            const fd = new FormData();
+            fd.append('file', blob, path.basename(att.filename));
+            const up = await fetch(baseUrl + '/rest/api/3/issue/' + issueKey + '/attachments', {
+              method: 'POST',
+              headers: { 'Authorization': authHeader, 'X-Atlassian-Token': 'no-check' },
+              body: fd
+            });
+            if (up.ok) {
+              for (const item of (await up.json())) {
+                const mediaId = adfLib && typeof adfLib.resolveJiraMediaUuid === 'function'
+                  ? await adfLib.resolveJiraMediaUuid(item.content, authHeader)
+                  : null;
+                out.attachmentMap[item.filename] = {
+                  id: item.id,
+                  filename: item.filename,
+                  content: item.content,
+                  size: item.size,
+                  ...(mediaId ? { mediaId } : {}),
+                  ...(dims ? { naturalWidth: dims.width, naturalHeight: dims.height } : {})
+                };
+                out.uploadedCount++;
+              }
+            } else {
+              out.errors.push('Upload ' + att.filename + ' HTTP ' + up.status);
+            }
+          } catch (e) { out.errors.push('Upload ' + att.filename + ': ' + e.message); }
+        }
+        process.stdout.write(JSON.stringify(out));
+      })();
+    `;
+    const upRun = spawnSync('node', ['-e', syncScript], {
+      input: JSON.stringify({ baseUrl, authHeader, issueKey, attachments: inlineAttachments, jiraAdfPath }),
+      encoding: 'utf8',
+      timeout: 120000,
+      maxBuffer: 32 * 1024 * 1024
+    });
+    if (upRun.status === 0 && upRun.stdout) {
+      try {
+        const upRes = JSON.parse(upRun.stdout);
+        oldDescription = upRes.oldDescription || null;
+        for (const [k, v] of Object.entries(upRes.attachmentMap || {})) {
+          attachmentMap[k] = { ...(attachmentMap[k] || {}), ...v };
+        }
+        uploadedCount = upRes.uploadedCount || 0;
+      } catch (_) {}
+    }
+  }
 }
 
-// 5. Chuyển đổi Markdown sang ADF kèm attachmentMap thật
+// 5. Chuyển đổi Markdown sang ADF kèm attachmentMap thật (tuyệt đối KHÔNG fallback đẩy raw #)
 let adfContent = null;
+let adfError = '';
 if (markdownToAdfFn) {
   try {
     adfContent = markdownToAdfFn(markdownContent, attachmentMap);
-  } catch (_) {}
+  } catch (e) {
+    adfError = e.message;
+  }
+} else if (jiraAdfPath) {
+  const adfRun = spawnSync('node', [jiraAdfPath, '--stdin'], {
+    input: JSON.stringify({ markdown: markdownContent, attachmentMap }),
+    encoding: 'utf8',
+    timeout: 30000,
+    maxBuffer: 16 * 1024 * 1024
+  });
+  if (adfRun.status === 0 && adfRun.stdout) {
+    try {
+      adfContent = JSON.parse(adfRun.stdout);
+    } catch (e) {
+      adfError = `Parse ADF JSON lỗi: ${e.message}`;
+    }
+  } else {
+    adfError = (adfRun.stderr || adfRun.error?.message || `exit ${adfRun.status}`).trim();
+  }
+} else {
+  adfError = `Không tìm thấy parser jira-adf.cjs tại ${parserCandidates.join(', ')}`;
 }
 
-if (!adfContent || !adfContent.content) {
-  adfContent = {
-    version: 1,
-    type: 'doc',
-    content: [
-      {
-        type: 'paragraph',
-        content: [{ type: 'text', text: markdownContent }]
-      }
-    ]
-  };
+if (!adfContent || !Array.isArray(adfContent.content) || adfContent.content.length === 0) {
+  return [{
+    json: {
+      isError: true,
+      errorType: 'ADF_CONVERSION_FAILED',
+      reportText: `🚨 **[Lỗi Chuyển Đổi ADF]** Không thể chuyển Markdown sang Jira ADF cho **${issueKey}** (chặn đẩy raw text chứa \`#\` lên Jira).\n> Chi tiết: ${adfError || 'adfContent rỗng'}`,
+      _triggerSource: triggerSource,
+      userName,
+      issueKey
+    }
+  }];
 }
 
 const tableCount = (adfContent.content || []).filter(n => n.type === 'table').length;

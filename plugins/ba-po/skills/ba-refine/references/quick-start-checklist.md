@@ -135,12 +135,12 @@ Bước 3.3: Copy refined-draft.md → refined.md
 ## BƯỚC 6 — Phase 4: Push Jira & Handoff (Sau khi user approve)
 
 ```bash
-# 1. Dry-run preview (không gọi Jira, tự export testability-manifest.json và ADF mediaSingle preview)
-DRY_RUN=1 node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
-  "workspace/issues/{issueKey}/spec/refined.md" | head -40
+# 1. Dry-run preview qua n8n hoặc CLI (kiểm tra ADF mediaSingle cỡ gọn 160px/320px, không gọi Jira)
+node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js pushSpecToJira {issueKey} \
+  "workspace/issues/{issueKey}/spec/refined.md" --dry-run
 
-# 2. Push thật: Tự động upload toàn bộ ảnh mockup lên Attachments + Dán trực tiếp (inline) vào Description Jira
-node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
+# 2. Push thật qua n8n (ưu tiên): upload ảnh + giải Media UUID + dán inline align-start gọn (160px dọc / 320px ngang)
+node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js pushSpecToJira {issueKey} \
   "workspace/issues/{issueKey}/spec/refined.md"
 ```
 

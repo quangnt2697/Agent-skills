@@ -188,14 +188,19 @@ export async function pushSpecToJira(rawIssueKey, filePathOrProject = '', option
       }
     }
 
+    const { default: jiraAdf } = await import('./jira-adf.cjs');
+    const getImageDims = jiraAdf && jiraAdf.getImageDimensionsFromBuffer;
     const imagePaths = collectLocalMockupFiles(resolvedFilePath, localMarkdown, callerCwd);
     const attachments = imagePaths.map((imgPath) => {
       const ext = path.extname(imgPath).toLowerCase();
       const mimeType = ext === '.svg' ? 'image/svg+xml' : (ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png');
+      const buf = fs.readFileSync(imgPath);
+      const dims = typeof getImageDims === 'function' ? getImageDims(buf) : null;
       return {
         filename: path.basename(imgPath),
         mimeType,
-        dataBase64: fs.readFileSync(imgPath).toString('base64')
+        ...(dims ? { naturalWidth: dims.width, naturalHeight: dims.height } : {}),
+        dataBase64: buf.toString('base64')
       };
     });
 
