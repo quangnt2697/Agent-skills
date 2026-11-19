@@ -69,7 +69,7 @@ Phase 4: Đồng bộ lên Jira & Handoff Kỹ thuật
 - **Local spec:** `workspace/issues/{issueKey}/spec/refined.md` (kèm `refined-draft.md`)
 - **UI & Testability artifacts:** `workspace/issues/{issueKey}/spec/asis-inventory.*`, `spec/diagrams/mockup-case-*.png`, `spec/testability-manifest.json`
 - **Local references:** `workspace/issues/{issueKey}/source/refs/` (Confluence + attachments)
-- **Jira:** Updated description dạng ADF chuẩn kèm inline mockup images (KHÔNG comment, KHÔNG label)
+- **Jira:** Updated description dạng ADF chuẩn kèm inline mockup images (`mediaSingle` `align-start`, `160px` dọc / `320px` ngang, tự giải Media UUID; KHÔNG comment, KHÔNG label)
 - **Confidence level:** ≥90% required for handoff
 
 ## Next Steps (Chỉ gợi ý cho người dùng, CẤM tự ý kích hoạt)

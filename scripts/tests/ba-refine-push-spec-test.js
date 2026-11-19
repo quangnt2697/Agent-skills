@@ -10,12 +10,15 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import jiraAdf from '../lib/jira-adf.cjs';
 import {
   normalizeIssueKey,
   markdownToAdf,
   splitBlocks,
   exportTestabilityManifest,
 } from '../../plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js';
+
+const { getImageDimensionsFromBuffer, computeJiraMediaDimensions } = jiraAdf;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -280,7 +283,9 @@ test('markdownToAdf converts markdown image into mediaSingle ADF node with attac
   const mediaSingles = doc.content.filter(n => n.type === 'mediaSingle');
 
   assert.strictEqual(mediaSingles.length, 1);
-  assert.strictEqual(mediaSingles[0].attrs.layout, 'center');
+  assert.strictEqual(mediaSingles[0].attrs.layout, 'align-start');
+  assert.strictEqual(mediaSingles[0].attrs.width, 160);
+  assert.strictEqual(mediaSingles[0].attrs.widthType, 'pixel');
   assert.strictEqual(mediaSingles[0].content[0].type, 'media');
   assert.strictEqual(mediaSingles[0].content[0].attrs.type, 'file');
   assert.strictEqual(mediaSingles[0].content[0].attrs.id, '99881');
@@ -306,4 +311,107 @@ test('the shipped template converts with 3 mediaSingle mockup blocks for Case 1,
   const mediaSingles = doc.content.filter(n => n.type === 'mediaSingle');
   assert.strictEqual(mediaSingles.length, 3, 'Template phải có đúng 3 khối ảnh mockup cho Case 1, Case 2, Case 3');
 });
+
+test('markdownToAdf strips HTML comments outside code blocks but keeps them inside code blocks', () => {
+  const md = [
+    '## 🎨 UI Design / Mockup',
+    '<!-- CHỈ SỬ DỤNG ẢNH MOCKUP -->',
+    '![Mockup](mockup.png)',
+    '',
+    '```html',
+    '<!-- keep inside code block -->',
+    '<div>ok</div>',
+    '```',
+  ].join('\n');
+
+  const doc = markdownToAdf(md, {});
+  const json = JSON.stringify(doc);
+  assert.ok(!json.includes('CHỈ SỬ DỤNG ẢNH MOCKUP'));
+  assert.ok(json.includes('keep inside code block'));
+});
+
+test('jira-adf.cjs --stdin converts markdown to multi-block ADF via child process', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const scriptPath = path.join(__dirname, '..', 'lib', 'jira-adf.cjs');
+  const out = execFileSync(process.execPath, [scriptPath, '--stdin'], {
+    input: JSON.stringify({ markdown: '## Title\n\n- item 1\n\n![Img](a.png)', attachmentMap: {} }),
+    encoding: 'utf8',
+  });
+  const adf = JSON.parse(out);
+  assert.strictEqual(adf.type, 'doc');
+  assert.ok(adf.content.length >= 3);
+  assert.strictEqual(adf.content[0].type, 'heading');
+  assert.ok(!out.includes('## Title'));
+});
+
+test('getImageDimensionsFromBuffer reads PNG IHDR width and height', () => {
+  const png = Buffer.alloc(24);
+  Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]).copy(png, 0);
+  png.writeUInt32BE(320, 16);
+  png.writeUInt32BE(692, 20);
+  assert.deepStrictEqual(getImageDimensionsFromBuffer(png), { width: 320, height: 692 });
+});
+
+test('computeJiraMediaDimensions scales portrait mockups to 160px wide (G3PTP-17483 style) and caps landscape cleanly', () => {
+  assert.deepStrictEqual(computeJiraMediaDimensions(320, 692), { width: 160, height: 346 });
+  assert.deepStrictEqual(computeJiraMediaDimensions(600, 276), { width: 320, height: 147 });
+  assert.deepStrictEqual(computeJiraMediaDimensions(3840, 2160), { width: 320, height: 180 });
+  assert.deepStrictEqual(computeJiraMediaDimensions(0, 0), { width: 160 });
+});
+
+test('markdownToAdf emits native Jira mediaSingle pixel sizing + Media UUID file node when mediaId is resolved', () => {
+  const md = [
+    '![Mockup Mobile](../tech/mockup.png)',
+    '![Mockup Landscape](../tech/mockup_full_chart_landscape.png)',
+  ].join('\n');
+  const attachmentMap = {
+    'mockup.png': {
+      id: '54654',
+      mediaId: 'bfb11c85-894c-4e25-9bdf-e37375d939c7',
+      filename: 'mockup.png',
+      content: 'https://entrade.atlassian.net/rest/api/3/attachment/content/54654',
+      naturalWidth: 320,
+      naturalHeight: 692,
+    },
+    'mockup_full_chart_landscape.png': {
+      id: '54655',
+      filename: 'mockup_full_chart_landscape.png',
+      content: 'https://entrade.atlassian.net/rest/api/3/attachment/content/54655',
+      naturalWidth: 600,
+      naturalHeight: 276,
+    },
+  };
+
+  const doc = markdownToAdf(md, attachmentMap);
+  const mediaSingles = doc.content.filter(n => n.type === 'mediaSingle');
+  assert.strictEqual(mediaSingles.length, 2);
+
+  assert.deepStrictEqual(mediaSingles[0].attrs, {
+    width: 160,
+    widthType: 'pixel',
+    layout: 'align-start',
+  });
+  assert.deepStrictEqual(mediaSingles[0].content[0].attrs, {
+    type: 'file',
+    id: 'bfb11c85-894c-4e25-9bdf-e37375d939c7',
+    collection: '',
+    alt: 'Mockup Mobile',
+    width: 160,
+    height: 346,
+  });
+
+  assert.deepStrictEqual(mediaSingles[1].attrs, {
+    width: 320,
+    widthType: 'pixel',
+    layout: 'align-start',
+  });
+  assert.deepStrictEqual(mediaSingles[1].content[0].attrs, {
+    type: 'external',
+    url: 'https://entrade.atlassian.net/rest/api/3/attachment/content/54655',
+    alt: 'Mockup Landscape',
+    width: 320,
+    height: 147,
+  });
+});
+
 

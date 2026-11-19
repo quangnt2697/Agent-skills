@@ -303,7 +303,7 @@ Nếu task liên quan đến thay đổi giao diện Web hoặc Mobile App, kíc
      node ${AGENT_SKILLS_HOME:-.}/plugins/ba-po/skills/ba-refine/assets/jira-push-spec.js {issueKey} \
        "workspace/issues/{issueKey}/spec/refined.md"
      ```
-     *Script `jira-push-spec.js` sẽ tự động phát hiện tất cả ảnh mockup (`mockup-case-1.png`, `mockup-case-2.png`, `mockup-case-3.png`...), tải lên Jira Attachments trước, sau đó chèn chính xác các node ADF `mediaSingle` để **dán trực tiếp ảnh vào Mục UI Design / Mockup trong Description** chứ không chỉ đính kèm file rời rạc.*
+     *Cả `n8n` (`pushSpecToJira`) và `jira-push-spec.js` tự động phát hiện mọi ảnh mockup tham chiếu trong Markdown (`![...](...)` tại `spec/diagrams/`, `../tech/`...), upload lên Jira Attachments, giải Media UUID (`type: "file"`), và chèn các node ADF `mediaSingle` chuẩn Jira (`layout: "align-start"`, `widthType: "pixel"`, co tỷ lệ `160px` cho mockup dọc như `160×346` và `320px` cho ảnh ngang/Web) để nhúng gọn ngay trong Mục `UI Design / Mockup`.*
 
 4. **Tự động xuất bản Testability Manifest (`spec/testability-manifest.json`):**
    Script `jira-push-spec.js` tự động trích xuất danh sách `[BR-*]`, các Scenario AC và thông tin tương tác UI (nếu có) từ `workspace/issues/{issueKey}/spec/refined.md` vào `workspace/issues/{issueKey}/spec/testability-manifest.json`. File này là đầu vào chuẩn hóa để QA sinh automation test và Page Object Model (POM) mà không phải gõ tay locators.

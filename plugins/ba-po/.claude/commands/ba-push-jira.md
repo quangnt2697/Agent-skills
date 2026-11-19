@@ -63,5 +63,5 @@ description: "Đẩy đặc tả nghiệp vụ (spec/refined.md hoặc spec/fina
 
 ## Output
 
-- **Jira Description:** Cập nhật dạng ADF chuẩn kèm inline mockup images (mediaSingle).
+- **Jira Description:** Cập nhật dạng ADF chuẩn kèm inline mockup images (`mediaSingle` căn `align-start`, `widthType: "pixel"` tự co `160px` dọc / `320px` ngang và ưu tiên Media UUID `type: "file"`).
 - **Testability Artifact:** `workspace/issues/{issueKey}/spec/testability-manifest.json` (tự động cập nhật để QA SDET bám sát kiểm thử).

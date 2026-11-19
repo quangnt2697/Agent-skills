@@ -9,6 +9,9 @@ const rawMd2Adf = require('md-to-adf');
 const md2adf = (rawMd2Adf && rawMd2Adf.default) || rawMd2Adf;
 
 const HARD_BREAK_TOKEN = '⁣HARDBREAK⁣';
+const DEFAULT_MEDIA_LAYOUT = 'align-start';
+const PORTRAIT_MEDIA_MAX_WIDTH = 160;
+const LANDSCAPE_MEDIA_MAX_WIDTH = 320;
 
 const ALLOWED_LANGUAGES = new Set([
   'abap', 'actionscript', 'ada', 'arduino', 'autoit', 'c', 'c++', 'clojure',
@@ -192,23 +195,127 @@ function sanitizeCodeBlocks(node) {
   return node;
 }
 
+function getImageDimensionsFromBuffer(buf) {
+  if (!Buffer.isBuffer(buf) || buf.length < 10) return null;
+
+  // PNG: signature 89 50 4E 47 0D 0A 1A 0A, IHDR width/height at offsets 16..23
+  if (buf.length >= 24 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) {
+    const width = buf.readUInt32BE(16);
+    const height = buf.readUInt32BE(20);
+    if (width > 0 && height > 0) return { width, height };
+  }
+
+  // GIF: GIF87a / GIF89a width/height LE at offsets 6..9
+  if (buf.length >= 10 && buf.toString('ascii', 0, 3) === 'GIF') {
+    const width = buf.readUInt16LE(6);
+    const height = buf.readUInt16LE(8);
+    if (width > 0 && height > 0) return { width, height };
+  }
+
+  // JPEG: scan SOF0..SOF3/SOF5..SOF15 markers (FFC0..FFCF except DHT=FFC4, JPG=FFC8, DAC=FFCC)
+  if (buf.length >= 4 && buf[0] === 0xFF && buf[1] === 0xD8) {
+    let i = 2;
+    while (i + 9 < buf.length) {
+      if (buf[i] !== 0xFF) { i++; continue; }
+      while (i < buf.length && buf[i] === 0xFF) i++;
+      if (i >= buf.length) break;
+      const marker = buf[i];
+      i++;
+      if (marker === 0xD8 || marker === 0xD9 || marker === 0x00 || marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)) {
+        continue;
+      }
+      if (i + 1 >= buf.length) break;
+      const segLen = buf.readUInt16BE(i);
+      if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
+        if (i + 6 < buf.length) {
+          const height = buf.readUInt16BE(i + 3);
+          const width = buf.readUInt16BE(i + 5);
+          if (width > 0 && height > 0) return { width, height };
+        }
+        break;
+      }
+      if (segLen < 2) break;
+      i += segLen;
+    }
+  }
+
+  return null;
+}
+
+function computeJiraMediaDimensions(naturalWidth, naturalHeight) {
+  if (!(naturalWidth > 0 && naturalHeight > 0)) {
+    return { width: PORTRAIT_MEDIA_MAX_WIDTH };
+  }
+  const maxWidth = naturalWidth > naturalHeight ? LANDSCAPE_MEDIA_MAX_WIDTH : PORTRAIT_MEDIA_MAX_WIDTH;
+  const width = Math.min(Math.round(naturalWidth), maxWidth);
+  const height = Math.max(1, Math.round((naturalHeight * width) / naturalWidth));
+  return { width, height };
+}
+
+async function resolveJiraMediaUuid(contentUrl, authHeader) {
+  if (!contentUrl || !authHeader || typeof fetch !== 'function') return null;
+  try {
+    const res = await fetch(contentUrl, {
+      method: 'GET',
+      headers: { Authorization: authHeader },
+      redirect: 'manual'
+    });
+    const loc = res.headers && typeof res.headers.get === 'function' ? res.headers.get('location') : '';
+    const m = String(loc || '').match(/\/file\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\b/i);
+    return m ? m[1] : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 function imageBlockToAdf(block, attachmentMap = {}) {
   const filename = path.basename(block.src);
   const attach = attachmentMap[filename]
     || attachmentMap[block.src]
     || Object.values(attachmentMap).find(a => a && a.filename === filename);
 
+  const naturalWidth = attach && Number(attach.naturalWidth || attach.width);
+  const naturalHeight = attach && Number(attach.naturalHeight || attach.height);
+  const dims = computeJiraMediaDimensions(naturalWidth, naturalHeight);
+  const singleAttrs = {
+    width: dims.width,
+    widthType: 'pixel',
+    layout: DEFAULT_MEDIA_LAYOUT
+  };
+  const dimMediaAttrs = dims.height ? { width: dims.width, height: dims.height } : {};
+  const altText = block.alt || filename;
+
+  if (attach && attach.mediaId) {
+    return {
+      type: 'mediaSingle',
+      attrs: singleAttrs,
+      content: [
+        {
+          type: 'media',
+          attrs: {
+            id: String(attach.mediaId),
+            type: 'file',
+            collection: '',
+            alt: altText,
+            ...dimMediaAttrs
+          }
+        }
+      ]
+    };
+  }
+
   if (attach && (attach.content || attach.url)) {
     return {
       type: 'mediaSingle',
-      attrs: { layout: 'center' },
+      attrs: singleAttrs,
       content: [
         {
           type: 'media',
           attrs: {
             type: 'external',
             url: attach.content || attach.url,
-            alt: block.alt || filename
+            alt: altText,
+            ...dimMediaAttrs
           }
         }
       ]
@@ -218,7 +325,7 @@ function imageBlockToAdf(block, attachmentMap = {}) {
   if (attach && attach.id) {
     return {
       type: 'mediaSingle',
-      attrs: { layout: 'center' },
+      attrs: singleAttrs,
       content: [
         {
           type: 'media',
@@ -226,7 +333,8 @@ function imageBlockToAdf(block, attachmentMap = {}) {
             id: String(attach.id),
             type: 'file',
             collection: '',
-            alt: block.alt || filename
+            alt: altText,
+            ...dimMediaAttrs
           }
         }
       ]
@@ -236,14 +344,15 @@ function imageBlockToAdf(block, attachmentMap = {}) {
   if (block.src.startsWith('http://') || block.src.startsWith('https://')) {
     return {
       type: 'mediaSingle',
-      attrs: { layout: 'center' },
+      attrs: singleAttrs,
       content: [
         {
           type: 'media',
           attrs: {
             type: 'external',
             url: block.src,
-            alt: block.alt || filename
+            alt: altText,
+            ...dimMediaAttrs
           }
         }
       ]
@@ -252,7 +361,7 @@ function imageBlockToAdf(block, attachmentMap = {}) {
 
   return {
     type: 'mediaSingle',
-    attrs: { layout: 'center' },
+    attrs: singleAttrs,
     content: [
       {
         type: 'media',
@@ -260,15 +369,56 @@ function imageBlockToAdf(block, attachmentMap = {}) {
           id: `local-${filename}`,
           type: 'file',
           collection: '',
-          alt: block.alt || filename
+          alt: altText,
+          ...dimMediaAttrs
         }
       }
     ]
   };
 }
 
+function stripHtmlCommentsOutsideCode(markdown) {
+  const lines = String(markdown || '').split('\n');
+  let inCode = false;
+  const out = [];
+  let inHtmlComment = false;
+
+  for (const line of lines) {
+    if (/^\s*```/.test(line)) {
+      if (!inHtmlComment) inCode = !inCode;
+      out.push(line);
+      continue;
+    }
+    if (inCode) {
+      out.push(line);
+      continue;
+    }
+
+    let cur = line;
+    if (inHtmlComment) {
+      const endIdx = cur.indexOf('-->');
+      if (endIdx === -1) continue;
+      cur = cur.slice(endIdx + 3);
+      inHtmlComment = false;
+    }
+
+    cur = cur.replace(/<!--[\s\S]*?-->/g, '');
+    const openIdx = cur.indexOf('<!--');
+    if (openIdx !== -1) {
+      cur = cur.slice(0, openIdx);
+      inHtmlComment = true;
+    }
+
+    if (cur.trim() !== '' || line.trim() === '') {
+      out.push(cur);
+    }
+  }
+  return out.join('\n');
+}
+
 function markdownToAdf(markdown, attachmentMap = {}) {
-  const marked = markdown.replace(/[ \t]{2,}\r?\n/g, `${HARD_BREAK_TOKEN}\n`);
+  const cleaned = stripHtmlCommentsOutsideCode(markdown);
+  const marked = cleaned.replace(/[ \t]{2,}\r?\n/g, `${HARD_BREAK_TOKEN}\n`);
   const content = [];
 
   for (const block of splitBlocks(marked)) {
@@ -296,8 +446,24 @@ function markdownToAdf(markdown, attachmentMap = {}) {
 module.exports = {
   HARD_BREAK_TOKEN,
   ALLOWED_LANGUAGES,
+  DEFAULT_MEDIA_LAYOUT,
+  PORTRAIT_MEDIA_MAX_WIDTH,
+  LANDSCAPE_MEDIA_MAX_WIDTH,
   normalizeIssueKey,
+  stripHtmlCommentsOutsideCode,
+  getImageDimensionsFromBuffer,
+  computeJiraMediaDimensions,
+  resolveJiraMediaUuid,
   splitBlocks,
   imageBlockToAdf,
   markdownToAdf,
 };
+
+if (require.main === module && process.argv.includes('--stdin')) {
+  const fs = require('node:fs');
+  const raw = fs.readFileSync(0, 'utf8');
+  const parsed = JSON.parse(raw || '{}');
+  const md = typeof parsed.markdown === 'string' ? parsed.markdown : '';
+  const map = (parsed.attachmentMap && typeof parsed.attachmentMap === 'object') ? parsed.attachmentMap : {};
+  process.stdout.write(JSON.stringify(markdownToAdf(md, map)));
+}

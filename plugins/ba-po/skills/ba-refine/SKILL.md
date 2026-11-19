@@ -58,7 +58,7 @@ Tải Jira task thô → Brainstorm 5 chiều nghiệp vụ & phản biện xung
     5. `## ☀️ Success Criteria & Tracking` (Bảng Success Metrics & Tracking)
   - Chạy Hard Gate: `node scripts/validators/validate-ba-refine.js "workspace/issues/{issueKey}/spec/refined-draft.md" [--ui]` (bắt buộc PASS 100%), sau đó trình **Gate 2**.
 - **Giai đoạn 4 (Push Jira, Dọn Nháp & Handoff):**
-  - Đẩy mô tả Jira qua n8n hoặc `jira-push-spec.js` (tự upload + nhúng ảnh mockup inline ADF `mediaSingle`, tự sinh `spec/testability-manifest.json`, và dọn các file nháp `refined-draft.md`, `adf.json`, `.scratch/` để giữ bộ `refined.md`, `final.md`, `testability-manifest.json`, mockup chính thức). Handoff DEV/QA (`/qa-test-design`).
+  - Đẩy mô tả Jira qua n8n (`n8n-client.js pushSpecToJira`, ưu tiên) hoặc `jira-push-spec.js` (tự upload mọi ảnh `![...](...)`, giải Media UUID `type: "file"`, chèn `mediaSingle` căn trái `align-start` thu gọn `160px` dọc / `320px` ngang theo mẫu chuẩn Jira, tự sinh `spec/testability-manifest.json`, và dọn các file nháp `refined-draft.md`, `adf.json`, `.scratch/` để giữ bộ `refined.md`, `final.md`, `testability-manifest.json`, mockup chính thức). Handoff DEV/QA (`/qa-test-design`).
 
 ## 3. Tài nguyên Mở rộng (Chỉ mở khi cần)
 
