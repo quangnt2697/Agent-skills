@@ -438,12 +438,27 @@ try {
     };
 
     // Hàm helper gọi HTTP đồng bộ bằng Node fetch (không phụ thuộc binary curl trong container)
+    let nodeEnvMod = null;
+    for (const cand of [path.join(targetRoot, 'scripts/lib/n8n-node-env.cjs'), '/workspace/scripts/lib/n8n-node-env.cjs']) {
+      if (fs.existsSync(cand)) { try { nodeEnvMod = require(cand); break; } catch (_) {} }
+    }
+    const procEnv = (() => {
+      try { const p = typeof process !== 'undefined' ? process : require('process'); return (p && p.env) || {}; } catch (_) { return {}; }
+    })();
+    const childEnv = (nodeEnvMod && typeof nodeEnvMod.buildNodeChildEnv === 'function')
+      ? nodeEnvMod.buildNodeChildEnv({ env: $env || {}, procEnv, projectRoot: targetRoot })
+      : (() => {
+          const e = { ...procEnv };
+          const ca = [($env && $env.NODE_EXTRA_CA_CERTS), procEnv.NODE_EXTRA_CA_CERTS, '/home/node/.n8n/corporate-ca.pem', path.join(targetRoot, '.n8n-data', 'corporate-ca.pem')].find(p => p && fs.existsSync(p));
+          if (ca) e.NODE_EXTRA_CA_CERTS = ca;
+          if (String(($env && $env.ALLOW_INSECURE_TLS) || '').toLowerCase() === 'true') e.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+          return e;
+        })();
+
     const nodeSyncHttp = ({ method = 'GET', targetUrl, headers = {}, body = null, outFile = null, timeoutMs = 12000 }) => {
       try {
         const { spawnSync } = require('child_process');
-        const tlsAllow = String(($env && $env.ALLOW_INSECURE_TLS) || '').toLowerCase() === 'true';
         const inlineCode = `
-          ${tlsAllow ? "process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';" : ''}
           const fs = require('fs');
           const [m, u, hJson, b, out, tMs] = process.argv.slice(1);
           const ctrl = new AbortController();
@@ -464,7 +479,7 @@ try {
         const r = spawnSync('node', [
           '-e', inlineCode,
           method, targetUrl, JSON.stringify(headers), body || '', outFile || '', String(timeoutMs)
-        ], { encoding: 'utf8', timeout: timeoutMs + 3000, maxBuffer: 16 * 1024 * 1024 });
+        ], { env: childEnv, encoding: 'utf8', timeout: timeoutMs + 3000, maxBuffer: 16 * 1024 * 1024 });
         return r.status === 0 ? (outFile ? true : (r.stdout || '')) : null;
       } catch (_) {
         return null;
