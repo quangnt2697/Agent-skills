@@ -111,6 +111,20 @@ const procEnv = (() => {
 })();
 const allowInsecureTls = String(((typeof $env !== 'undefined' && $env) ? $env.ALLOW_INSECURE_TLS : '') || procEnv.ALLOW_INSECURE_TLS || '').toLowerCase() === 'true';
 
+let nodeEnvMod = null;
+for (const cand of [path.join(wsDir, 'scripts/lib/n8n-node-env.cjs'), '/workspace/scripts/lib/n8n-node-env.cjs']) {
+  if (fs.existsSync(cand)) { try { nodeEnvMod = require(cand); break; } catch (_) {} }
+}
+const childNodeEnv = (nodeEnvMod && typeof nodeEnvMod.buildNodeChildEnv === 'function')
+  ? nodeEnvMod.buildNodeChildEnv({ env: (typeof $env !== 'undefined' && $env) ? $env : {}, procEnv, projectRoot: wsDir })
+  : (() => {
+      const e = { ...procEnv };
+      const ca = [((typeof $env !== 'undefined' && $env) ? $env.NODE_EXTRA_CA_CERTS : ''), procEnv.NODE_EXTRA_CA_CERTS, '/home/node/.n8n/corporate-ca.pem', wsDir ? path.join(wsDir, '.n8n-data', 'corporate-ca.pem') : ''].find(p => p && fs.existsSync(p));
+      if (ca) e.NODE_EXTRA_CA_CERTS = ca;
+      if (allowInsecureTls) e.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+      return e;
+    })();
+
 let executionSuccess = false;
 let executionMessage = '';
 let executionError = null;
@@ -127,7 +141,7 @@ const ALLOWED_SKILLS = [
   'qa-squash-push'
 ];
 
-// HÀM GỌI TRỰC TIẾP JIRA CLOUD REST API (Tránh gọi vòng lại webhook n8n gây nghẽn Single Task Runner)
+// HÀM GỌI TRỰC TIẾP JIRA CLOUD REST API (luôn chạy qua child process Node có NODE_EXTRA_CA_CERTS)
 async function fetchJiraIssueDirect(key) {
   const sprintField = ($env && $env.JIRA_SPRINT_CUSTOM_FIELD) || 'customfield_10018';
   const fields = `summary,description,status,assignee,priority,reporter,issuetype,comment,parent,issuelinks,attachment,${sprintField}`;
@@ -137,17 +151,7 @@ async function fetchJiraIssueDirect(key) {
     'Accept': 'application/json'
   };
 
-  if (typeof fetch === 'function') {
-    const res = await fetch(url, { method: 'GET', headers });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      throw new Error(`Jira API trả về HTTP ${res.status} cho ${key}: ${txt.slice(0, 200)}`);
-    }
-    return await res.json();
-  }
-
   const inlineScript = `
-    ${allowInsecureTls ? "process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';" : ''}
     (async () => {
       const res = await fetch(${JSON.stringify(url)}, {
         method: 'GET',
@@ -160,11 +164,11 @@ async function fetchJiraIssueDirect(key) {
       }
       process.stdout.write(txt);
     })().catch(e => {
-      process.stderr.write(e.message || String(e));
+      process.stderr.write((e.message || String(e)) + (e.cause?.code ? ' (' + e.cause.code + ')' : ''));
       process.exit(1);
     });
   `;
-  const sub = spawnSync('node', ['-e', inlineScript], { encoding: 'utf8', timeout: 25000 });
+  const sub = spawnSync('node', ['-e', inlineScript], { env: childNodeEnv, encoding: 'utf8', timeout: 25000 });
   if (sub.status !== 0) {
     throw new Error(`Không thể lấy dữ liệu Jira cho ${key}: ${sub.stderr || sub.stdout || 'exit ' + sub.status}`);
   }
@@ -347,7 +351,7 @@ try {
     if (fs.existsSync(pushScript)) {
       const pushRes = spawnSync('node', [pushScript, issueKey, targetSpec], {
         cwd: wsDir,
-        env: allowInsecureTls ? { ...procEnv, NODE_TLS_REJECT_UNAUTHORIZED: '0' } : { ...procEnv },
+        env: childNodeEnv,
         encoding: 'utf8',
         timeout: 60000
       });

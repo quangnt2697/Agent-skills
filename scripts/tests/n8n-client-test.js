@@ -598,3 +598,212 @@ test('local-workspace-resolver.json: dò đúng chuẩn workspace/issues/{issueK
   }
 });
 
+test('n8n-node-env.cjs: khôi phục NODE_EXTRA_CA_CERTS khi task-runner process.env bị cắt bỏ', async () => {
+  const os = await import('node:os');
+  const { createRequire } = await import('node:module');
+  const require = createRequire(import.meta.url);
+  const { buildNodeChildEnv, resolveExtraCaCerts } = require('../lib/n8n-node-env.cjs');
+
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'n8n-env-test-'));
+  try {
+    const caDir = path.join(tmpRoot, '.n8n-data');
+    fs.mkdirSync(caDir, { recursive: true });
+    const caFile = path.join(caDir, 'corporate-ca.pem');
+    fs.writeFileSync(caFile, '-----BEGIN CERTIFICATE-----\nFAKE\n-----END CERTIFICATE-----\n');
+
+    // Trường hợp 1: $env có NODE_EXTRA_CA_CERTS hợp lệ trong khi procEnv của task-runner bị rỗng
+    const resolvedFromEnv = resolveExtraCaCerts({
+      env: { NODE_EXTRA_CA_CERTS: caFile },
+      procEnv: { PATH: '/usr/bin' },
+      projectRoot: tmpRoot
+    });
+    assert.equal(resolvedFromEnv, caFile);
+
+    // Trường hợp 2: cả $env lẫn procEnv đều không có, tự fallback về .n8n-data/corporate-ca.pem
+    const childEnv = buildNodeChildEnv({
+      env: { ALLOW_INSECURE_TLS: 'true' },
+      procEnv: { PATH: '/usr/bin' },
+      projectRoot: tmpRoot
+    });
+    assert.equal(childEnv.NODE_EXTRA_CA_CERTS, caFile);
+    assert.equal(childEnv.NODE_TLS_REJECT_UNAUTHORIZED, '0');
+  } finally {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test('jira-push-preflight.js: Live Push dùng child node nhận NODE_EXTRA_CA_CERTS qua HTTPS self-signed, giải Media UUID và chặn local-* khi upload lỗi', async () => {
+  const os = await import('node:os');
+  const { spawn, execFileSync } = await import('node:child_process');
+  const { createRequire } = await import('node:module');
+  const require = createRequire(import.meta.url);
+
+  const preflightCode = fs.readFileSync(
+    path.join(__dirname, '..', 'n8n-nodes', 'ba', 'jira-push-preflight.js'),
+    'utf8'
+  );
+  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+  const fn = new AsyncFunction('require', '$input', '$', '$env', preflightCode);
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jira-tls-test-'));
+  const keyPath = path.join(tmpDir, 'server.key');
+  const certPath = path.join(tmpDir, 'server.crt');
+  const mediaUuid = 'add1a557-a26a-48ca-9427-6f0ea6a9ff6f';
+
+  execFileSync('openssl', [
+    'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+    '-keyout', keyPath, '-out', certPath, '-days', '1',
+    '-subj', '/CN=127.0.0.1',
+    '-addext', 'subjectAltName=IP:127.0.0.1'
+  ], { stdio: 'ignore' });
+
+  const serverScript = `
+    const https = require('node:https');
+    const fs = require('node:fs');
+    const [keyPath, certPath, mediaUuid] = process.argv.slice(1);
+    const server = https.createServer({
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath)
+    }, (req, res) => {
+      if (req.url === '/__fail') {
+        server.failUpload = true;
+        res.writeHead(200); res.end('ok'); return;
+      }
+      if (req.method === 'GET' && req.url.startsWith('/rest/api/3/issue/G3PTP-18092?fields=attachment,description')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ fields: { description: { type: 'doc', version: 1, content: [] }, attachment: [] } }));
+        return;
+      }
+      if (req.method === 'POST' && req.url === '/rest/api/3/issue/G3PTP-18092/attachments') {
+        if (server.failUpload) {
+          res.writeHead(500, { 'Content-Type': 'text/plain' });
+          res.end('Simulated upload error');
+          return;
+        }
+        const chunks = [];
+        req.on('data', c => chunks.push(c));
+        req.on('end', () => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify([{
+            id: '90001',
+            filename: 'mockup-case-1.png',
+            content: 'https://127.0.0.1:' + server.address().port + '/rest/api/3/attachment/content/90001',
+            size: 128
+          }]));
+        });
+        return;
+      }
+      if (req.method === 'GET' && req.url === '/rest/api/3/attachment/content/90001') {
+        res.writeHead(302, { Location: 'https://media.example.local/file/' + mediaUuid + '/binary' });
+        res.end();
+        return;
+      }
+      res.writeHead(404); res.end();
+    });
+    server.listen(0, '127.0.0.1', () => {
+      process.stdout.write(String(server.address().port) + '\\n');
+    });
+  `;
+
+  const srvProc = spawn(process.execPath, ['-e', serverScript, keyPath, certPath, mediaUuid], {
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  const port = await new Promise((resolve, reject) => {
+    let buf = '';
+    srvProc.stdout.on('data', (chunk) => {
+      buf += chunk.toString();
+      if (buf.includes('\n')) resolve(Number(buf.trim()));
+    });
+    srvProc.on('error', reject);
+    srvProc.on('exit', (code) => reject(new Error(`Mock HTTPS server exited early (${code})`)));
+  });
+
+  try {
+    const md = [
+      '## 🧩 User Story',
+      '**As a** Tester  ',
+      '**I want** push ảnh mockup  ',
+      '**So that** hiển thị đúng trên Jira',
+      '',
+      '## 🎨 UI Design / Mockup',
+      '![Mockup](diagrams/mockup-case-1.png)',
+      '',
+      '## ✅ Acceptance Criteria',
+      '```gherkin',
+      'Scenario: Happy - A',
+      '  Given 1',
+      '  When 2',
+      '  Then 3',
+      'Scenario: Validation - B',
+      '  Given 4',
+      '  When 5',
+      '  Then 6',
+      '```',
+    ].join('\n');
+
+    const png1x1 = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+      'base64'
+    );
+    const prepPayload = {
+      issueKey: 'G3PTP-18092',
+      project: 'agent-skills',
+      filePath: '/tmp/G3PTP-18092/spec/refined.md',
+      callerWorkspaceDir: '/tmp/G3PTP-18092',
+      markdownContent: md,
+      hasInlinePayload: true,
+      attachments: [
+        { filename: 'mockup-case-1.png', mimeType: 'image/png', dataBase64: png1x1.toString('base64') }
+      ],
+      dryRun: false,
+      force: false,
+      _triggerSource: 'webhook'
+    };
+
+    const envCfg = {
+      AGENT_WORKSPACE_DIR: path.resolve(__dirname, '..', '..'),
+      ATLASSIAN_BASE_URL: `https://127.0.0.1:${port}`,
+      ATLASSIAN_EMAIL: 'bot@example.com',
+      ATLASSIAN_API_TOKEN: 'secret-token',
+      NODE_EXTRA_CA_CERTS: certPath
+    };
+
+    // 1. Live upload qua HTTPS self-signed thành công nhờ NODE_EXTRA_CA_CERTS -> giải Media UUID thật
+    const okOut = await fn(
+      require,
+      { first: () => ({ json: prepPayload }) },
+      (name) => ({ first: () => ({ json: name === 'Prepare Resolver Input' ? prepPayload : {} }) }),
+      envCfg
+    );
+    assert.equal(okOut[0].json.isError, false);
+    assert.equal(okOut[0].json.uploadedCount, 1);
+    assert.equal(okOut[0].json.attachmentMap['mockup-case-1.png'].mediaId, mediaUuid);
+    assert.ok(!JSON.stringify(okOut[0].json.adfContent).includes('local-mockup-case-1.png'));
+
+    // 2. Upload lỗi -> fail-fast ATTACHMENT_UPLOAD_FAILED thay vì đẩy local-* lên Jira
+    const https = await import('node:https');
+    await new Promise((resolve, reject) => {
+      const req = https.get(`https://127.0.0.1:${port}/__fail`, { ca: fs.readFileSync(certPath) }, (res) => {
+        res.resume();
+        res.on('end', resolve);
+      });
+      req.on('error', reject);
+    });
+
+    const errOut = await fn(
+      require,
+      { first: () => ({ json: prepPayload }) },
+      (name) => ({ first: () => ({ json: name === 'Prepare Resolver Input' ? prepPayload : {} }) }),
+      envCfg
+    );
+    assert.equal(errOut[0].json.isError, true);
+    assert.equal(errOut[0].json.errorType, 'ATTACHMENT_UPLOAD_FAILED');
+    assert.ok(errOut[0].json.reportText.includes('HTTP 500'));
+    assert.ok(errOut[0].json.reportText.includes(certPath));
+  } finally {
+    srvProc.kill();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
