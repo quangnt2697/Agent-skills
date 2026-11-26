@@ -8,7 +8,7 @@
  *
  * Bảo mật:
  * - Xác thực mọi POST request bằng token ngẫu nhiên 32-byte lưu trong `.n8n-data/host-bridge-token`
- * - Allowlist cố định endpoint (`/health`, `/run-pytest`, `/squash-push`), không nhận shell tùy ý
+ * - Allowlist cố định endpoint (`/health`, `/run-pytest`, `/squash-push`, `/discover-web-locators`), không nhận shell tùy ý
  * - Validate `issueKey` và kiểm tra containment đường dẫn
  */
 
@@ -16,6 +16,7 @@ import crypto from 'node:crypto';
 import { execFile, spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
+import https from 'node:https';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -295,9 +296,15 @@ export async function handleRunPytest(payload = {}, rootDir = projectRoot) {
   ];
 
   const logStream = fs.createWriteStream(logFile);
+  const caCertPath = path.join(rootDir, CA_BUNDLE_REL);
+  const pytestEnv = {
+    ...process.env,
+    HEADLESS: process.env.HEADLESS || 'true',
+    ...(fs.existsSync(caCertPath) && !process.env.NODE_EXTRA_CA_CERTS ? { NODE_EXTRA_CA_CERTS: caCertPath } : {})
+  };
 
   return await new Promise((resolve) => {
-    const child = spawn(runner.bin, args, { cwd, shell: false });
+    const child = spawn(runner.bin, args, { cwd, shell: false, env: pytestEnv });
     let stdoutData = '';
     let stderrData = '';
     let isTimeout = false;
@@ -455,6 +462,407 @@ export async function handleSquashPush(payload = {}, rootDir = projectRoot) {
   });
 }
 
+function parseDotenvFile(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return {};
+  try {
+    return dotenv.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function probeUrlHead(targetUrl, timeoutMs = 5000) {
+  return new Promise((resolve) => {
+    if (!targetUrl) {
+      resolve({ ok: false, status: 0, reason: 'empty_url' });
+      return;
+    }
+    try {
+      const parsed = new URL(targetUrl);
+      const lib = parsed.protocol === 'https:' ? https : http;
+      const req = lib.request({
+        hostname: parsed.hostname,
+        port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
+        path: (parsed.pathname || '/') + (parsed.search || ''),
+        method: 'HEAD',
+        timeout: timeoutMs,
+        rejectUnauthorized: false
+      }, (res) => {
+        res.resume();
+        resolve({ ok: (res.statusCode || 500) < 400, status: res.statusCode || 0 });
+      });
+      req.on('error', () => resolve({ ok: false, status: 0, reason: 'connection_error' }));
+      req.on('timeout', () => {
+        req.destroy();
+        resolve({ ok: false, status: 0, reason: 'timeout' });
+      });
+      req.end();
+    } catch (err) {
+      resolve({ ok: false, status: 0, reason: err.message });
+    }
+  });
+}
+
+async function launchHostChromium({ chromium, headless = true, slowMo = 0, env = process.env }) {
+  const baseArgs = ['--no-sandbox', '--disable-dev-shm-usage'];
+  const customBin = env.CHROME_BIN && fs.existsSync(env.CHROME_BIN) ? env.CHROME_BIN : '';
+  if (customBin) {
+    return await chromium.launch({ headless, slowMo, executablePath: customBin, args: baseArgs });
+  }
+  try {
+    return await chromium.launch({ headless, slowMo, args: baseArgs });
+  } catch (firstErr) {
+    const macChrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+    if (fs.existsSync(macChrome)) {
+      return await chromium.launch({ headless, slowMo, executablePath: macChrome, args: baseArgs });
+    }
+    throw firstErr;
+  }
+}
+
+/**
+ * Thực thi Playwright headless trực tiếp trên máy Host (ngoài OS Sandbox của AI Agent
+ * và ngoài Docker Alpine) để kiểm tra trang web, đăng nhập tùy chọn, chụp screenshot và trích xuất semantic locators.
+ */
+export async function handleDiscoverWebLocators(payload = {}, rootDir = projectRoot) {
+  const urlOverride = String(payload.urlOverride || payload.url || '').trim();
+  const issueKey = String(payload.issueKey || (urlOverride ? 'ADHOC-WEB' : '')).toUpperCase().trim();
+  if (!issueKey || !ISSUE_KEY_RE.test(issueKey)) {
+    return { status: 400, body: { success: false, error: 'Thiếu hoặc sai định dạng issueKey.' } };
+  }
+  if (urlOverride && !/^https?:\/\//i.test(urlOverride)) {
+    return { status: 400, body: { success: false, error: 'urlOverride phải bắt đầu bằng http:// hoặc https://.' } };
+  }
+
+  const rawProject = String(payload.project || '').trim();
+  const targetPage = String(payload.targetPage || 'home').toLowerCase().trim().replace(/^\/+/, '');
+  const { cwd, project, allowedRoots } = resolveHostProjectDir({ issueKey, project: rawProject, rootDir });
+
+  let ticketDir = path.resolve(cwd, 'workspace', 'issues', issueKey);
+  if (!fs.existsSync(ticketDir) && fs.existsSync(path.resolve(cwd, 'workspace', issueKey))) {
+    ticketDir = path.resolve(cwd, 'workspace', issueKey);
+  }
+  if (!isPathInsideRoots(ticketDir, allowedRoots)) {
+    return { status: 403, body: { success: false, error: 'Đường dẫn ticket ngoài phạm vi workspace được phép.' } };
+  }
+
+  const mergedEnv = {
+    ...parseDotenvFile(path.join(rootDir, '.env')),
+    ...parseDotenvFile(path.join(cwd, '.env')),
+    ...parseDotenvFile(path.join(ticketDir, 'test', '.env')),
+    ...process.env
+  };
+
+  const issueKeyTemplate = String(payload.issueKeyUrl || mergedEnv.ISSUE_KEY_URL || '').replace(/\/$/, '');
+  const webBaseUrl = String(payload.webBaseUrl || mergedEnv.WEB_BASE_URL || '').replace(/\/$/, '');
+  const issueKeyUrl = issueKeyTemplate.includes('{issueKey}')
+    ? issueKeyTemplate.replace(/\{issueKey\}/gi, issueKey.toLowerCase())
+    : issueKeyTemplate;
+
+  let resolvedUrl = '';
+  let urlSource = '';
+  let probeStatus = null;
+
+  if (urlOverride) {
+    resolvedUrl = urlOverride.replace(/\/$/, '');
+    urlSource = 'urlOverride';
+    probeStatus = { ok: true, status: 'skipped' };
+  } else if (issueKeyUrl) {
+    probeStatus = await probeUrlHead(issueKeyUrl, 5000);
+    if (probeStatus.ok) {
+      resolvedUrl = issueKeyUrl;
+      urlSource = 'ISSUE_KEY_URL';
+    } else {
+      resolvedUrl = webBaseUrl;
+      urlSource = 'WEB_BASE_URL (fallback)';
+    }
+  } else {
+    resolvedUrl = webBaseUrl;
+    urlSource = 'WEB_BASE_URL';
+  }
+
+  if (!resolvedUrl) {
+    return {
+      status: 200,
+      body: {
+        success: false,
+        exitCode: 1,
+        issueKey,
+        targetPage,
+        stderr: 'Chưa cấu hình WEB_BASE_URL / ISSUE_KEY_URL trong .env và không có urlOverride.',
+        executedVia: 'host-bridge'
+      }
+    };
+  }
+
+  const tradingUsername = String(payload.tradingUsername || mergedEnv.TRADING_USERNAME || '').trim();
+  const tradingPassword = String(payload.tradingPassword || mergedEnv.TRADING_PASSWORD || '').trim();
+  const skipLogin = payload.skipLogin !== undefined
+    ? Boolean(payload.skipLogin)
+    : Boolean(urlOverride && (!tradingUsername || !tradingPassword));
+
+  if (!skipLogin && (!tradingUsername || !tradingPassword)) {
+    return {
+      status: 200,
+      body: {
+        success: false,
+        exitCode: 1,
+        issueKey,
+        targetPage,
+        resolvedUrl,
+        urlSource,
+        stderr: 'Thiếu TRADING_USERNAME hoặc TRADING_PASSWORD trong .env (truyền skipLogin: true nếu trang không cần đăng nhập).',
+        executedVia: 'host-bridge'
+      }
+    };
+  }
+
+  const headless = payload.headless !== undefined
+    ? Boolean(payload.headless)
+    : String(mergedEnv.HEADLESS || 'true').toLowerCase() !== 'false';
+  const slowMo = Number(payload.slowMo ?? mergedEnv.SLOW_MO_MS ?? 0) || 0;
+  const viewportWidth = Number(payload.viewportWidth ?? mergedEnv.VIEWPORT_WIDTH ?? 1920) || 1920;
+  const viewportHeight = Number(payload.viewportHeight ?? mergedEnv.VIEWPORT_HEIGHT ?? 1080) || 1080;
+  const playwrightTimeout = Number(payload.playwrightTimeout ?? mergedEnv.PLAYWRIGHT_TIMEOUT_MS ?? 30000) || 30000;
+
+  const fixtureDir = path.join(ticketDir, 'test', 'fixtures');
+  const screenshotDir = path.join(ticketDir, 'test', 'result', 'screenshots');
+  fs.mkdirSync(fixtureDir, { recursive: true });
+  fs.mkdirSync(screenshotDir, { recursive: true });
+
+  const safeTag = targetPage.replace(/[^a-z0-9_-]/gi, '_') || 'home';
+  const outputFile = path.join(fixtureDir, 'locators.json');
+  const screenshotBefore = path.join(screenshotDir, `${safeTag}-before-login.png`);
+  const screenshotAfter = path.join(screenshotDir, `${safeTag}-after-login.png`);
+
+  let chromium;
+  try {
+    const pw = await import('playwright');
+    chromium = pw.chromium;
+  } catch (err) {
+    return {
+      status: 200,
+      body: {
+        success: false,
+        exitCode: 1,
+        issueKey,
+        targetPage,
+        stderr: `Không tìm thấy thư viện Playwright trên Host: ${err.message}`,
+        executedVia: 'host-bridge'
+      }
+    };
+  }
+
+  const loginUrl = urlOverride ? resolvedUrl : `${resolvedUrl}/login`;
+  const targetUrl = urlOverride
+    ? resolvedUrl
+    : (targetPage === 'home' || !targetPage ? resolvedUrl : `${resolvedUrl}/${targetPage}`);
+
+  const result = {
+    issueKey,
+    project,
+    targetPage,
+    resolvedUrl,
+    finalUrl: targetUrl,
+    pageTitle: '',
+    urlSource,
+    issueKeyUrl,
+    webBaseUrl,
+    probeStatus,
+    skipLogin,
+    loginSuccess: false,
+    headings: [],
+    visibleTextSample: '',
+    consoleErrors: [],
+    pageErrors: [],
+    locators: {},
+    errors: [],
+    capturedAt: new Date().toISOString()
+  };
+
+  let browser;
+  try {
+    browser = await launchHostChromium({ chromium, headless, slowMo, env: mergedEnv });
+    const ctx = await browser.newContext({
+      viewport: { width: viewportWidth, height: viewportHeight },
+      ignoreHTTPSErrors: true,
+      locale: 'vi-VN'
+    });
+    const page = await ctx.newPage();
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') result.consoleErrors.push(msg.text().slice(0, 300));
+    });
+    page.on('pageerror', (err) => {
+      result.pageErrors.push((err && err.message ? err.message : String(err)).slice(0, 300));
+    });
+
+    if (!skipLogin) {
+      await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: playwrightTimeout });
+      await page.screenshot({ path: screenshotBefore }).catch(() => {});
+
+      const loginCandidates = [
+        { key: 'username_input', tries: ['getByLabel:Tên đăng nhập', 'getByLabel:Username', 'getByPlaceholder:Tên đăng nhập', 'getByPlaceholder:Tài khoản', 'locator:input[name="username"]', 'locator:input[type="text"]'] },
+        { key: 'password_input', tries: ['getByLabel:Mật khẩu', 'getByLabel:Password', 'getByPlaceholder:Mật khẩu', 'locator:input[type="password"]'] },
+        { key: 'login_button', tries: ['getByRole:button|Đăng nhập', 'getByRole:button|Login', 'locator:button[type="submit"]'] }
+      ];
+      const loginLoc = {};
+      for (const cand of loginCandidates) {
+        for (const t of cand.tries) {
+          const [method, ...rest] = t.split(':');
+          const arg = rest.join(':');
+          try {
+            let loc;
+            if (method === 'getByRole') { const [r, n] = arg.split('|'); loc = page.getByRole(r, { name: n }); }
+            else if (method === 'getByLabel') loc = page.getByLabel(arg);
+            else if (method === 'getByPlaceholder') loc = page.getByPlaceholder(arg);
+            else loc = page.locator(arg);
+            if ((await loc.count()) > 0) {
+              const el = loc.first();
+              const attrs = await el.evaluate((n) => ({
+                tag: n.tagName.toLowerCase(),
+                role: n.getAttribute('role'),
+                ariaLabel: n.getAttribute('aria-label'),
+                placeholder: n.getAttribute('placeholder'),
+                name: n.getAttribute('name'),
+                type: n.getAttribute('type')
+              })).catch(() => ({}));
+              const playwright_code = method === 'getByRole'
+                ? (() => { const [r, n] = arg.split('|'); return `page.get_by_role("${r}", name="${n}")`; })()
+                : method === 'getByLabel' ? `page.get_by_label("${arg}")`
+                : method === 'getByPlaceholder' ? `page.get_by_placeholder("${arg}")`
+                : `page.locator(${JSON.stringify(arg)})`;
+              loginLoc[cand.key] = {
+                method,
+                arg,
+                playwright_code,
+                ...attrs,
+                isVisible: await el.isVisible().catch(() => false),
+                isEnabled: await el.isEnabled().catch(() => false)
+              };
+              break;
+            }
+          } catch (_) {}
+        }
+      }
+      result.locators.login = loginLoc;
+
+      if (loginLoc.username_input && loginLoc.password_input && loginLoc.login_button) {
+        const resolveEl = (info) => {
+          if (info.method === 'getByRole') { const [r, n] = info.arg.split('|'); return page.getByRole(r, { name: n }).first(); }
+          if (info.method === 'getByLabel') return page.getByLabel(info.arg).first();
+          if (info.method === 'getByPlaceholder') return page.getByPlaceholder(info.arg).first();
+          return page.locator(info.arg).first();
+        };
+        await resolveEl(loginLoc.username_input).fill(tradingUsername);
+        await resolveEl(loginLoc.password_input).fill(tradingPassword);
+        await resolveEl(loginLoc.login_button).click();
+        await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+        result.loginSuccess = true;
+      } else {
+        result.errors.push('Không tìm đủ locator login form (username/password/button)');
+      }
+
+      if (result.loginSuccess && targetUrl !== loginUrl) {
+        await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: playwrightTimeout });
+        await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      }
+      await page.screenshot({ path: screenshotAfter }).catch(() => {});
+    } else {
+      await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: playwrightTimeout });
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.screenshot({ path: screenshotAfter }).catch(() => {});
+    }
+
+    result.finalUrl = page.url();
+    result.pageTitle = await page.title().catch(() => '');
+
+    const snapshot = await page.evaluate(() => {
+      const headings = Array.from(document.querySelectorAll('h1, h2, h3, [role="heading"]'))
+        .map((h) => (h.innerText || '').trim())
+        .filter(Boolean)
+        .slice(0, 20);
+      const visibleTextSample = (document.body && document.body.innerText ? document.body.innerText : '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 1000);
+      const elems = [];
+      ['button', 'a[href]', 'input', 'select', 'textarea', '[role="tab"]', '[role="dialog"]', '[role="alert"]', '[role="heading"]', '[data-testid]'].forEach((sel) => {
+        document.querySelectorAll(sel).forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          const isVisible = rect.width > 0 && rect.height > 0 && getComputedStyle(el).visibility !== 'hidden';
+          if (!isVisible) return;
+          const tag = el.tagName.toLowerCase();
+          const role = el.getAttribute('role') || (tag === 'a' ? 'link' : tag);
+          const ariaLabel = (el.getAttribute('aria-label') || '').trim();
+          const placeholder = (el.getAttribute('placeholder') || '').trim();
+          const name = (el.getAttribute('name') || '').trim();
+          const testId = (el.getAttribute('data-testid') || '').trim();
+          const innerText = (el.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+          if (!ariaLabel && !placeholder && !name && !testId && !innerText) return;
+          let playwright_code = '';
+          if (testId) playwright_code = `page.get_by_test_id(${JSON.stringify(testId)})`;
+          else if (['button', 'link', 'tab', 'heading', 'dialog', 'alert'].includes(role) && innerText) {
+            playwright_code = `page.get_by_role(${JSON.stringify(role)}, name=${JSON.stringify(innerText.slice(0, 40))})`;
+          } else if (ariaLabel) playwright_code = `page.get_by_label(${JSON.stringify(ariaLabel)})`;
+          else if (placeholder) playwright_code = `page.get_by_placeholder(${JSON.stringify(placeholder)})`;
+          else if (name) playwright_code = `page.locator(${JSON.stringify(`[name="${name}"]`)})`;
+          if (playwright_code) {
+            elems.push({ tag, role, ariaLabel, placeholder, name, testId, innerText, playwright_code, isVisible: true });
+          }
+        });
+      });
+      return { headings, visibleTextSample, elems: elems.slice(0, 80) };
+    });
+
+    result.headings = snapshot.headings;
+    result.visibleTextSample = snapshot.visibleTextSample;
+    result.locators[targetPage] = snapshot.elems;
+  } catch (err) {
+    result.errors.push(err.message || String(err));
+  } finally {
+    if (browser) await browser.close().catch(() => {});
+  }
+
+  fs.writeFileSync(outputFile, JSON.stringify(result, null, 2), 'utf8');
+  const pageLocators = result.locators[targetPage] || [];
+  const ok = result.errors.length === 0 && (skipLogin || result.loginSuccess);
+
+  return {
+    status: 200,
+    body: {
+      issueKey,
+      project,
+      targetPage,
+      issueKeyUrl,
+      webBaseUrl,
+      resolvedUrl,
+      finalUrl: result.finalUrl,
+      pageTitle: result.pageTitle,
+      urlSource,
+      probeStatus,
+      skipLogin,
+      loginSuccess: result.loginSuccess,
+      locatorCount: pageLocators.length,
+      headings: result.headings,
+      visibleTextSample: result.visibleTextSample,
+      consoleErrors: result.consoleErrors,
+      pageErrors: result.pageErrors,
+      outputFile,
+      screenshotBefore: skipLogin ? '' : screenshotBefore,
+      screenshotAfter,
+      locatorsData: result,
+      login_locators: result.locators.login || {},
+      page_locators: pageLocators.slice(0, 50),
+      errors: result.errors,
+      capturedAt: result.capturedAt,
+      exitCode: ok ? 0 : 1,
+      stderr: result.errors.join('; '),
+      success: ok,
+      executedVia: 'host-bridge'
+    }
+  };
+}
+
 function readJsonBody(req, maxBytes = 1024 * 1024) {
   return new Promise((resolve, reject) => {
     let size = 0;
@@ -490,12 +898,15 @@ export function createHostBridgeServer({ rootDir = projectRoot, token = ensureBr
     try {
       if (req.method === 'GET' && req.url === '/health') {
         const pytestInfo = resolveHostPytest(rootDir, rootDir);
+        const macChrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
         send(200, {
           ok: true,
           pid: process.pid,
           rootDir,
           pytest: pytestInfo ? pytestInfo.bin : null,
-          hasTimeoutPlugin: Boolean(pytestInfo?.hasTimeoutPlugin)
+          hasTimeoutPlugin: Boolean(pytestInfo?.hasTimeoutPlugin),
+          chromeBin: process.env.CHROME_BIN || (fs.existsSync(macChrome) ? macChrome : null),
+          endpoints: ['/health', '/run-pytest', '/squash-push', '/discover-web-locators']
         });
         return;
       }
@@ -519,6 +930,11 @@ export function createHostBridgeServer({ rootDir = projectRoot, token = ensureBr
       }
       if (req.url === '/squash-push') {
         const result = await handleSquashPush(body, rootDir);
+        send(result.status, result.body);
+        return;
+      }
+      if (req.url === '/discover-web-locators') {
+        const result = await handleDiscoverWebLocators(body, rootDir);
         send(result.status, result.body);
         return;
       }

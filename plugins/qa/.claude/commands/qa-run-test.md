@@ -12,7 +12,7 @@ $ARGUMENTS có thể chứa Jira issue key (VD: G3PTP-16825) hoặc đường d�
    - Định vị target `workspace/issues/{issueKey}/test/steps/`. Không đọc spec. Không sửa file.
    - BẮT BUỘC gọi webhook bằng lệnh:
      `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testFiles":"workspace/issues/{issueKey}/test/steps/"}'`
-   - Tuyệt đối không dùng `pytest` hay `bash`. Không dùng `tee`. Mọi cấu hình cờ `--timeout`, `--junitxml` do n8n tự xử lý.
+   - Tuyệt đối không dùng `pytest` hay `bash` mở trình duyệt trực tiếp trong sandbox của Agent và KHÔNG yêu cầu người dùng cấp quyền `Full access`. Không dùng `tee`. Mọi cấu hình `--timeout`, `--junitxml` và Playwright `HEADLESS=true` do n8n + Host Bridge tự động thực thi trên máy Host.
 
 2. **Trả Kết Quả Tức Thì & Nguyên Bản:**
    - Đọc kết quả từ console output của node script hoặc từ `workspace/issues/{issueKey}/test/result/report.md` do n8n sinh.

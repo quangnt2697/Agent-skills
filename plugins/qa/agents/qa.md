@@ -48,7 +48,7 @@ spec/final.md ──► [Phase 1: qa-test-design] ──► [Phase 2: qa-auto-de
 2. **Symmetry & Multi-Symbol Parameterization:** Phủ toàn bộ biến thể tương đương (Mua/Bán/Sửa, LO/ATO/ATC, Normal/VIP/Ultimate). Từ 2 sàn hoặc 2 mã CK khác phiên/topic trở lên **BẮT BUỘC** tách Scenario độc lập hoặc dùng `Scenario Outline` + `Examples` — CẤM gộp chung.
 3. **Fintech BVA & Concurrency:** Test đủ biên giá/KL (`min-1`, `min`, `max`, `max+1`, null/0/âm, tick size) bằng `Decimal`, và test race conditions / idempotency (đặt trùng session, hủy khi đang khớp).
 4. **WebSocket Tier bằng Ngôn ngữ Nghiệp vụ:** Bao phủ `normal`/`vip`/`ultimate`, connector & stream limit bằng hằng tượng trưng (`TAI_HAN_MUC`, `VUOT_HAN_MUC`) — CẤM đưa tên biến `.env` vào `.feature`.
-5. **Automation Phân tầng & Reuse-First:** Web (`Playwright` + POM + DOM Recon `1920x1080`), API/WS (`pytest` + Service kế thừa `sdk-map.json`), App (`Appium`/Playwright Mobile). Toàn bộ assertions chỉ đặt ở `test_*.py`, KHÔNG `time.sleep()`, KHÔNG over-mock hàm nội bộ, KHÔNG hardcode URL/mã CK (`os.getenv` + `data-grounding.json`).
+5. **Automation Phân tầng & Reuse-First:** Web (`Playwright` headless mặc định qua n8n + Host Bridge `discoverWebUILocators`/`inspectWebPage`/`triggerAsyncTest` `1920x1080` — cấm tự mở Chromium trong sandbox hay xin quyền `Full access`), API/WS (`pytest` + Service kế thừa `sdk-map.json`), App (`Appium`/Playwright Mobile). Toàn bộ assertions chỉ đặt ở `test_*.py`, KHÔNG `time.sleep()`, KHÔNG over-mock hàm nội bộ, KHÔNG hardcode URL/mã CK (`os.getenv` + `data-grounding.json`).
 </workflow>
 
 ## Ranh giới Persona & Quy tắc Tự chủ

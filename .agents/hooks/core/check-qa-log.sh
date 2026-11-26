@@ -25,8 +25,8 @@ if [[ -z "$CMD" ]]; then
   exit 0
 fi
 
-# Kiểm tra nếu lệnh chạy kiểm thử pytest hoặc behave
-if echo "$CMD" | grep -qE "(pytest|python3[[:space:]]+-m[[:space:]]+pytest|behave)"; then
+# Kiểm tra nếu lệnh thực thi kiểm thử pytest hoặc behave (tránh bắt nhầm tên file như qa-run-pytest.js)
+if echo "$CMD" | grep -qE "(^|[;&|[:space:]/])(pytest|behave)([[:space:]]|$)|python3?[[:space:]]+-m[[:space:]]+pytest"; then
   # Ngoại lệ hợp lệ: Kiểm tra cú pháp, help, collect-only, hoặc đã có chuyển hướng log (>, >>, | tee)
   if echo "$CMD" | grep -qE "(--help|([[:space:]]|^)-h([[:space:]]|$)|--collect-only|--version|>|tee)"; then
     exit 0

@@ -35,3 +35,11 @@ Khi thực thi test (`qa-run-test` trong `qa-full-pipeline`), nếu test fail, A
 ## 6. Quy Tắc Dữ Liệu Động JIT (Just-In-Time Data Grounding & price_type)
 - **Kịch bản Gherkin (.feature):** Bảng `Examples` khi có giá chứng khoán BẮT BUỘC có thêm cột `price_type` (`AT_REF`, `AT_CEILING`, `AT_FLOOR`, `OVER_CEILING_1_TICK`, `UNDER_FLOOR_1_TICK`) bên cạnh mức giá mẫu.
 - **Test Fixture (conftest):** Kiểm tra `trading_date` trong `data-grounding.json`. Nếu khác ngày hiện tại, fixture tự động cập nhật lại mức giá thực tế tương ứng với `price_type` từ Metabase UAT, chống fail giả do biên độ giá thay đổi qua ngày.
+
+## 7. Thực Thi Playwright Web UI Tự Động Không Cần Full Access (Zero-Prompt Host Bridge)
+- **Không Chạy Trình Duyệt Trong Sandbox Agent:** OS Sandbox (`workspace-write` / macOS Seatbelt) chặn MachPort/Chromium khi gọi trực tiếp từ shell của Agent. Do đó, Agent **TUYỆT ĐỐI KHÔNG** tự mở Chromium/Playwright trực tiếp trong shell và **KHÔNG BAO GIỜ** dừng lại đòi quyền `Full access` (`danger-full-access`) hay báo lỗi không thể mở web.
+- **Tự Động Định Tuyến Qua n8n → Host Runner Bridge (`HEADLESS=true`):**
+  - Soi DOM & lấy semantic locators có đăng nhập: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}`
+  - Kiểm tra nhanh trang Web bất kỳ (chụp ảnh, lấy title/text/console errors/locators): `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js inspectWebPage "<URL>" '{"issueKey":"{issueKey}"}'`
+  - Chạy bộ test E2E Pytest-Playwright: `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testFiles":"workspace/issues/{issueKey}/test/steps/"}'`
+- `Host Runner Bridge` chạy nền sẵn trên máy Host (ngoài sandbox) với `HEADLESS=true` mặc định, tự động dùng Playwright Chromium hoặc fallback Google Chrome mà không cần bất kỳ thao tác cấp quyền nào.

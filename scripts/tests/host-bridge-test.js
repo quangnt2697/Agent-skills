@@ -99,3 +99,58 @@ test('host-bridge: HTTP /health, auth guard, validation, and real pytest executi
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('host-bridge: /discover-web-locators mở trang web bằng Playwright headless tự động không cần quyền GUI', async () => {
+  const http = await import('node:http');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hb-web-'));
+  const token = ensureBridgeToken(tmp);
+  const bridgeServer = createHostBridgeServer({ rootDir: tmp, token });
+  const bridgePort = await listenEphemeral(bridgeServer);
+
+  const webApp = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`<!doctype html>
+      <html>
+        <head><title>Cổng Đặt Lệnh UAT</title></head>
+        <body>
+          <h1>Đặt lệnh cổ phiếu</h1>
+          <label for="sym">Mã chứng khoán</label>
+          <input id="sym" name="symbol" placeholder="Nhập mã CK" />
+          <button type="button">Xác nhận mua</button>
+        </body>
+      </html>`);
+  });
+  const webPort = await listenEphemeral(webApp);
+
+  try {
+    const res = await fetch(`http://127.0.0.1:${bridgePort}/discover-web-locators`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-bridge-token': token
+      },
+      body: JSON.stringify({
+        issueKey: 'WEB-101',
+        targetPage: 'order',
+        urlOverride: `http://127.0.0.1:${webPort}`,
+        skipLogin: true,
+        headless: true
+      })
+    });
+
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.equal(data.success, true, data.stderr);
+    assert.equal(data.executedVia, 'host-bridge');
+    assert.equal(data.pageTitle, 'Cổng Đặt Lệnh UAT');
+    assert.ok(data.headings.includes('Đặt lệnh cổ phiếu'));
+    assert.ok(data.locatorCount >= 2);
+    assert.ok(data.page_locators.some((l) => l.playwright_code.includes('Xác nhận mua')));
+    assert.ok(fs.existsSync(data.outputFile));
+    assert.ok(fs.existsSync(data.screenshotAfter));
+  } finally {
+    await new Promise((r) => webApp.close(r));
+    await new Promise((r) => bridgeServer.close(r));
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});

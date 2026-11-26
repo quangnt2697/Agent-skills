@@ -1,4 +1,8 @@
 # QA / SDET Agent Role (Tier 2/3: Test artifacts & automation code)
+# Bật network_access trong workspace-write để gọi n8n + Host Bridge chạy Playwright tự động không cần Full Access
 sandbox_mode = "workspace-write"
 model_reasoning_effort = "high"
 model_instructions_file = "../../../plugins/qa/agents/qa.md"
+
+[sandbox_workspace_write]
+network_access = true
