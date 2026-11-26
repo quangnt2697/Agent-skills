@@ -40,6 +40,7 @@ test('cài mới mặc định: 31 skills, AGENTS.md, config.toml hợp lệ (6 
 
   const cfg = parseToml(fs.readFileSync(path.join(dir, 'config.toml'), 'utf8'));
   assert.equal(cfg.shell_environment_policy.set.AGENT_SKILLS_HOME, REPO_ROOT);
+  assert.equal(cfg.sandbox_workspace_write.network_access, true);
   assert.equal(cfg.features.hooks, true);
   assert.equal(cfg.features.multi_agent, true);
   for (const role of ['ba_po', 'qa', 'code_reviewer', 'security_auditor', 'webperf_auditor', 'scrum_master']) {
@@ -93,6 +94,7 @@ test('bảo toàn cấu hình sẵn có của user và --unlink gỡ sạch ph�
 
   const cfgText = fs.readFileSync(path.join(dir, 'config.toml'), 'utf8');
   assert.equal(cfgText.includes('[shell_environment_policy.set]'), false, 'Không được để lại section rỗng');
+  assert.equal(cfgText.includes('[sandbox_workspace_write]'), false, 'Không được để lại sandbox_workspace_write rỗng sau unlink');
   const cfg = parseToml(cfgText);
   assert.equal(cfg.model, 'gpt-5');
   assert.ok(cfg.agents.user_custom);

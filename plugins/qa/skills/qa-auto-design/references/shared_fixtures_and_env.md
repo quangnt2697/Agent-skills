@@ -236,7 +236,7 @@ def get_cached_or_fresh_token(login_func, username, password, expiry_seconds=360
 | | `DASHBOARD_PASSWORD` | Password đăng nhập Dashboard |
 | **Playwright Config** | `BROWSER` | `chromium` \| `firefox` \| `webkit` (mặc định: `chromium`) |
 | | `VIEWPORT_WIDTH` / `VIEWPORT_HEIGHT` | Độ phân giải chuẩn: `1920` × `1080` |
-| | `HEADLESS` | `false` khi debug hoặc kiểm tra UI trực tiếp; `true` khi CI/CD |
+| | `HEADLESS` | `true` (mặc định để chạy tự động qua Host Bridge không cần quyền GUI); `false` khi muốn hiện cửa sổ debug trực tiếp |
 | | `PLAYWRIGHT_TIMEOUT_MS` | Timeout mỗi action (ms, mặc định: `30000`) |
 | | `PLAYWRIGHT_TRACE` | `retain-on-failure` — lưu trace khi test fail |
 | **Output** | `SCREENSHOT_DIR` | Thư mục ảnh chụp khi fail (VD: `workspace/issues/{issueKey}/test/result/screenshots`) |

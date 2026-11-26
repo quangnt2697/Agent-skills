@@ -214,6 +214,24 @@ export const mappings = [
     nodeName: 'Dispatch Action Skill',
     nodeId: 'dispatch-action',
     scriptFile: 'scripts/n8n-nodes/atlassian/jira-action-skill-dispatcher.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/qa-squash/web-ui-locator-discovery.json',
+    nodeName: '1. Validate & Prepare URLs',
+    nodeId: 'validate-resolve-input',
+    scriptFile: 'scripts/n8n-nodes/qa/web-ui-validate-input.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/qa-squash/web-ui-locator-discovery.json',
+    nodeName: '3. Probe URL -> Playwright Login & DOM Discovery',
+    nodeId: 'playwright-login-dump',
+    scriptFile: 'scripts/n8n-nodes/qa/web-ui-locator-runner.js'
+  },
+  {
+    workflowFile: 'n8n-workflows/qa-squash/web-ui-locator-discovery.json',
+    nodeName: '4. Format Response',
+    nodeId: 'format-response',
+    scriptFile: 'scripts/n8n-nodes/qa/web-ui-format-response.js'
   }
 ];
 

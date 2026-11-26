@@ -51,6 +51,7 @@ Khi test fail hoặc cần review chất lượng test code/MR, áp dụng `/cr-
   ```
   File này chứa đường dẫn đến class Auth, Trading API, MarketData API, WS Client đã có sẵn. Đọc trước để tránh viết lại code đã tồn tại.
 - **Quy tắc Tham số hóa Đa sàn / Đa mã (Multi-Symbol Parameterization):** Khi kiểm thử tính năng liên quan đến từ 2 sàn hoặc 2 mã chứng khoán có đặc thù phiên/khung giờ/topic khác nhau, **BẮT BUỘC** phải tách riêng Scenario độc lập hoặc sử dụng `Scenario Outline` kèm bảng `Examples` tham số hóa chi tiết. **CẤM TUYỆT ĐỐI** viết scenario gộp chung làm mờ ranh giới thời gian và kênh dữ liệu.
+- **Kiểm thử Web UI & Playwright Tự Động Không Cần Full Access:** Khi cần mở trang Web kiểm tra giao diện/luồng, chụp screenshot, soi DOM/locators hoặc chạy E2E Playwright, Agent **BẮT BUỘC** gọi tự động qua `scripts/lib/n8n-client.js` (`discoverWebUILocators`, `inspectWebPage`, `triggerAsyncTest`) để ủy quyền sang **Host Runner Bridge** chạy Playwright `HEADLESS=true` trực tiếp trên máy Host (ngoài OS Sandbox). **TUYỆT ĐỐI CẤM** tự khởi chạy Chromium/Playwright trực tiếp trong shell sandbox của Agent, **CẤM** yêu cầu người dùng cấp quyền `Full access` (`danger-full-access`) hoặc báo lỗi không thể mở web do sandbox.
 
 ### BA Pipeline
 - **Tạo mới Spec từ Jira/Confluence có sẵn:** `/ba-spec {issueKey} → Scan references → Extract → Gap detection → ba-interview-me → spec/final.md`

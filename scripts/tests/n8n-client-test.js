@@ -15,6 +15,7 @@ import {
   queryMetabase,
   getSecuritiesFixture,
   discoverWebUILocators,
+  inspectWebPage,
   fetchConfluenceDoc,
   cleanDiffForReview,
   runSecurityDigest,
@@ -36,6 +37,7 @@ test('n8n-client: All fast-path adapter methods are exported as functions', () =
   assert.equal(typeof queryMetabase, 'function');
   assert.equal(typeof getSecuritiesFixture, 'function');
   assert.equal(typeof discoverWebUILocators, 'function');
+  assert.equal(typeof inspectWebPage, 'function');
   assert.equal(typeof fetchConfluenceDoc, 'function');
   assert.equal(typeof cleanDiffForReview, 'function');
   assert.equal(typeof runSecurityDigest, 'function');

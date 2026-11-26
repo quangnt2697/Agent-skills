@@ -69,7 +69,7 @@ def pytest_addoption(parser):
         ("--trading-username", os.getenv("TRADING_USERNAME", ""), "Tài khoản đăng nhập Web Trading"),
         ("--trading-password", os.getenv("TRADING_PASSWORD", ""), "Mật khẩu đăng nhập Web Trading"),
         ("--target-browser", os.getenv("TARGET_BROWSER", os.getenv("BROWSER", "chromium")), "Trình duyệt mục tiêu: chromium, coccoc, chrome, msedge, firefox, webkit"),
-        ("--headless-mode", os.getenv("HEADLESS", "false"), "Chạy headless: true | false (mặc định false)"),
+        ("--headless-mode", os.getenv("HEADLESS", "true"), "Chạy headless: true | false (mặc định true để chạy tự động không cần quyền GUI)"),
     ]
     for opt, default_val, help_text in options:
         try:
@@ -140,16 +140,16 @@ def browser_type_launch_args(browser_type_launch_args, request):
     """
     launch_args = {**browser_type_launch_args}
 
-    # 1. Headless mode (mặc định False theo yêu cầu)
+    # 1. Headless mode (mặc định True để chạy tự động qua Host Bridge không cần quyền GUI; truyền --headed hoặc HEADLESS=false khi debug trực quan)
     headless_opt = None
     try:
         headless_opt = request.config.getoption("--headless-mode")
     except Exception:
         pass
     if not headless_opt:
-        headless_opt = os.getenv("HEADLESS", "false")
+        headless_opt = os.getenv("HEADLESS", "true")
 
-    is_headless = str(headless_opt).strip().lower() in ("true", "1", "yes")
+    is_headless = str(headless_opt).strip().lower() not in ("false", "0", "no")
 
     # Kiểm tra flag --headed chuẩn của pytest-playwright nếu có
     try:
@@ -160,7 +160,7 @@ def browser_type_launch_args(browser_type_launch_args, request):
 
     launch_args["headless"] = is_headless
 
-    # 2. Browser selection & CocCoc custom binary
+    # 2. Browser selection, safe sandbox flags & Chrome fallback
     target_browser = ""
     try:
         target_browser = request.config.getoption("--target-browser") or ""
@@ -170,15 +170,28 @@ def browser_type_launch_args(browser_type_launch_args, request):
         target_browser = os.getenv("TARGET_BROWSER") or os.getenv("BROWSER", "chromium")
     target_browser = target_browser.strip().lower()
 
+    base_chromium_args = ["--no-sandbox", "--disable-dev-shm-usage"]
+
     if target_browser in ("coccoc", "coc-coc"):
         coccoc_path = get_coccoc_executable_path()
         launch_args["executable_path"] = coccoc_path
-        launch_args["args"] = launch_args.get("args", []) + [
+        launch_args["args"] = launch_args.get("args", []) + base_chromium_args + [
             "--no-first-run",
             "--no-default-browser-check",
         ]
     elif target_browser in ("chrome", "msedge", "chrome-beta"):
         launch_args["channel"] = target_browser
+        launch_args["args"] = launch_args.get("args", []) + base_chromium_args
+    elif target_browser == "chromium":
+        launch_args["args"] = launch_args.get("args", []) + base_chromium_args
+        chrome_bin = os.getenv("CHROME_BIN", "")
+        if chrome_bin and os.path.exists(chrome_bin):
+            launch_args["executable_path"] = chrome_bin
+        else:
+            pw_cache = Path(os.getenv("PLAYWRIGHT_BROWSERS_PATH") or (Path.home() / "Library/Caches/ms-playwright"))
+            mac_chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+            if not pw_cache.exists() and os.path.exists(mac_chrome):
+                launch_args["executable_path"] = mac_chrome
 
     slow_mo = int(os.getenv("SLOW_MO_MS", "0"))
     if slow_mo > 0:

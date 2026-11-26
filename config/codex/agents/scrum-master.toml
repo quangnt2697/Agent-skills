@@ -2,3 +2,6 @@
 sandbox_mode = "workspace-write"
 model_reasoning_effort = "medium"
 model_instructions_file = "../../../plugins/scrum-master/agents/scrum-master.md"
+
+[sandbox_workspace_write]
+network_access = true

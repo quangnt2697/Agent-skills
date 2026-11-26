@@ -136,47 +136,44 @@ Bộ quy tắc này được Agent tự động tham chiếu khi thực thi skil
 
 ## 2. Quy Tắc Chuyên Biệt Cho Web UI Testing (Desktop & Webview)
 
-### 2.1. Cấu hình Browser, Headless & Viewport Chuẩn
+### 2.1. Cấu hình Browser, Headless & Viewport Chuẩn (Zero-Prompt Host Bridge)
 - **Viewport Chuẩn:** Toàn bộ phiên kiểm thử Web UI tự động áp dụng độ phân giải chuẩn Full HD: **`1920x1080`**.
-- **Chế độ Headless:** Mặc định chạy ở chế độ **`headless = False`** (`HEADLESS=false`) để quan sát trực quan tiến trình thao tác trên trình duyệt thật. Chỉ bật `headless=true` khi chạy batch trên môi trường CI/CD headless.
+- **Chế độ Headless Mặc định (`HEADLESS=true`):** Mặc định chạy **`headless = True`** (`HEADLESS=true`) thông qua **n8n → Host Runner Bridge** (tiến trình nền chạy trực tiếp trên máy Host ngoài OS Sandbox của Agent) để tự động kiểm tra Web mượt mà mà **KHÔNG CẦN xin quyền `Full access` (`danger-full-access`)** hay bật cửa sổ chiếm màn hình. Chỉ đặt `HEADLESS=false` hoặc `--headed` khi người dùng chủ động yêu cầu mở trình duyệt xem trực tiếp.
+- **NGHIÊM CẤM Chạy Browser Trực tiếp Trong Shell Sandbox:** Tuyệt đối không gọi `playwright` / `chromium` trực tiếp trong shell của Agent (sẽ bị macOS Seatbelt chặn MachPort gây lỗi không mở được web). Mọi bước mở web, soi DOM, chụp ảnh và chạy test đều đi qua `n8n-client.js` (`discoverWebUILocators`, `inspectWebPage`, `triggerAsyncTest`).
 - **Khởi chạy trình duyệt tương ứng theo task (Browser Selection):**
   - **Cốc Cốc (`coccoc`):** Dùng Chromium engine với `executable_path` trỏ đến binary Cốc Cốc (tự động phát hiện qua `get_coccoc_executable_path()` hoặc cấu hình `COCCOC_BINARY_PATH` trong `.env`). Chạy với cờ `--target-browser=coccoc` hoặc thiết lập `TARGET_BROWSER=coccoc` trong `.env`.
   - **Google Chrome / Microsoft Edge:** Sử dụng channel tương ứng: `channel="chrome"` hoặc `channel="msedge"`.
-  - **Chromium / Firefox / WebKit:** Theo tham số mặc định của Playwright.
+  - **Chromium (mặc định):** Tự động thêm `--no-sandbox`, `--disable-dev-shm-usage` và tự fallback sang `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` nếu máy chưa tải cache Playwright Chromium.
 - **Cơ chế Chốt chặn Auth (Fail-Fast & Zero False-Positive):**
   - Khi đăng nhập thất bại do sai tài khoản/mật khẩu, fixture `authenticated_page` hoặc auth helper **BẮT BUỘC** phải `pytest.fail()` ngay lập tức tại bước Setup.
   - **TUYỆT ĐỐI CẤM** bọc `try...except` nuốt lỗi hoặc chỉ `wait_for_load_state("networkidle")` mà không assert element màn hình chính, tránh hiện tượng test pass ảo.
 
 ### 2.2. Quy Trình Thao Tác Bắt Buộc Với Web UI Testing
-Khi làm việc với các task kiểm thử Web UI, Agent **BẮT BUỘC** thao tác theo quy trình 6 bước:
+Khi làm việc với các task kiểm thử Web UI, Agent **BẮT BUỘC** thao tác tự động theo quy trình 4 bước (không cần xin thêm quyền):
 
-1. **Resolve URL từ `.env` (Bước 0 — Trước khi mở browser):**
-   - **BẮT BUỘC** đọc URL từ file `.env` — KHÔNG hardcode:
-     - **Trading Platform (per-feature-branch):** `ISSUE_KEY_URL` (thay `{issueKey}` bằng issueKey thực tế của task, VD: `STK-201` → `https://stk-201.trading-test.dnse.com.vn`).
-     - **Trading Platform (dev/test ổn định):** `WEB_BASE_URL` (`https://dev.trading-test.dnse.com.vn`).
-     - **Dashboard/Backoffice:** `DASHBOARD_URL`.
-   - Dùng hàm `resolve_web_url(issue_key)` từ [`web_ui_pom.py`](../assets/web_ui_pom.py) để tự động probe `ISSUE_KEY_URL` trước (HTTP HEAD); nếu phản hồi tốt (< 400) thì dùng, nếu lỗi hoặc không phản hồi thì tự động fallback về `WEB_BASE_URL`.
+1. **Resolve URL & Credentials từ `.env` (Bước 0 — Không hardcode):**
+   - **BẮT BUỘC** đọc URL và tài khoản từ `.env`:
+     - **Trading Platform (per-feature-branch):** `ISSUE_KEY_URL` (thay `{issueKey}` bằng issueKey thực tế, tự động probe HTTP HEAD 5s, nếu lỗi tự fallback về `WEB_BASE_URL`).
+     - **Trading Platform (dev/test ổn định):** `WEB_BASE_URL` + `TRADING_USERNAME` / `TRADING_PASSWORD`.
+     - **Dashboard/Backoffice:** `DASHBOARD_URL` + `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`.
+   - Trong code POM Python, dùng hàm `resolve_web_url(issue_key)` từ [`web_ui_pom.py`](../assets/web_ui_pom.py).
 
-2. **Đăng nhập thật bằng TRADING_USERNAME/TRADING_PASSWORD (`playwright_navigate` → điền form login):**
-   - **BẮT BUỘC** đọc credentials từ `.env`:
-     - `TRADING_USERNAME` và `TRADING_PASSWORD` — tài khoản Trading Platform UAT.
-     - `DASHBOARD_USERNAME` và `DASHBOARD_PASSWORD` — tài khoản Backoffice/Dashboard.
-   - Navigate đến URL đăng nhập, điền thông tin thật, bấm login thật — **KHÔNG bypass hoặc mock token**.
-   - Xác nhận đăng nhập thành công (có heading hoặc element đặc trưng của màn hình chính) trước khi bước tiếp.
-   - ⚡ **n8n Fast-Path (Khuyến nghị):** Gọi `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}` để workflow `web-ui-locator-discovery` tự động probe URL, đăng nhập thật, dump DOM và lưu danh sách semantic locators vào `workspace/issues/{issueKey}/test/fixtures/locators.json`.
+2. **Tự động Mở Web Headless, Chụp Screenshot & Soi DOM Thật qua n8n → Host Bridge:**
+   - **Với màn hình cần đăng nhập Trading Platform:**
+     ```bash
+     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}
+     ```
+   - **Với URL bất kỳ cần kiểm tra nhanh (không cần đăng nhập hoặc truyền URL riêng):**
+     ```bash
+     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js inspectWebPage "<URL>" '{"issueKey":"{issueKey}","targetPage":"inspect"}'
+     ```
+   - Host Bridge sẽ tự động mở Playwright `HEADLESS=true` trên máy Host, đăng nhập thật (nếu bật), chụp ảnh lưu vào `workspace/issues/{issueKey}/test/result/screenshots/`, trích xuất `pageTitle`, `headings`, `visibleTextSample`, `consoleErrors` và lưu toàn bộ semantic locators thật vào `workspace/issues/{issueKey}/test/fixtures/locators.json`.
 
-3. **Quan sát trực quan (`playwright_screenshot`):**
-   - Chụp ảnh màn hình (`playwright_screenshot(name="ui_overview")`) để xác định chính xác layout, menu, và trạng thái hiển thị.
+3. **Đọc Kết quả DOM & Ảnh Chụp Để Thiết kế POM:**
+   - Đọc file `workspace/issues/{issueKey}/test/fixtures/locators.json` và dùng `read_file` xem ảnh chụp trong `test/result/screenshots/` để đối chiếu layout, nhãn nút, form input và trạng thái hiển thị thật.
+   - **NGHIÊM CẤM** tự suy đoán locator mà không qua bước trích xuất DOM thật này.
 
-4. **Soi DOM thật (`playwright_get_dom` & `playwright_inspect_element`):**
-   - Lấy mã HTML thực tế từ DOM bằng `playwright_get_dom`.
-   - Dùng `playwright_inspect_element(selector=...)` để soi thuộc tính `role`, `name`, `placeholder`, `aria-label`, `isVisible`, `isEnabled`.
-   - **NGHIÊM CẤM** tự suy đoán locator mà không inspect DOM thật.
-
-5. **Thử nghiệm tương tác (`playwright_click` & `playwright_fill`):**
-   - Thực hiện bấm thử và điền thử giá trị trước khi sinh mã code, bảo đảm selector hoạt động trơn tru.
-
-6. **Chốt Semantic Locators:**
+4. **Chốt Semantic Locators Chuẩn Playwright:**
    - Ưu tiên 1: `page.get_by_role()` (button, link, heading, tab, dialog).
    - Ưu tiên 2: `page.get_by_label()` (form fields).
    - Ưu tiên 3: `page.get_by_placeholder()` (search/input).

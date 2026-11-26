@@ -190,6 +190,14 @@ function updateConfigToml(configPath, { remove = false, includeHooksAndAgents = 
       }
     }
 
+    const swwSec = parsed.sections.find(s => s.name === 'sandbox_workspace_write');
+    if (swwSec) {
+      removeSectionKey(swwSec, 'network_access');
+      if (!hasAnyKeyValue(swwSec)) {
+        parsed.sections = parsed.sections.filter(s => s !== swwSec);
+      }
+    }
+
     const managedSections = new Set(CODEX_AGENT_ROLES.map(r => `agents.${r.key}`));
     parsed.sections = parsed.sections.filter(sec => {
       if (!managedSections.has(sec.name)) return true;
@@ -212,6 +220,11 @@ function updateConfigToml(configPath, { remove = false, includeHooksAndAgents = 
 
   const setSec = ensureSection(parsed.sections, 'shell_environment_policy.set');
   upsertSectionKey(setSec, ENV_KEY, JSON.stringify(projectRoot), false);
+
+  // Bật network_access trong sandbox workspace-write để Agent gọi được localhost:5678 (n8n) & 127.0.0.1:5680 (Host Bridge)
+  // giúp chạy Playwright tự động trên Host mà không cần xin nâng lên quyền danger-full-access ("Full access")
+  const swwSec = ensureSection(parsed.sections, 'sandbox_workspace_write');
+  upsertSectionKey(swwSec, 'network_access', 'true', true);
 
   if (includeHooksAndAgents) {
     const featuresSec = ensureSection(parsed.sections, 'features');

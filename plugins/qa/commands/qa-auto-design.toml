@@ -17,7 +17,7 @@ $ARGUMENTS chứa Jira issue key (VD: G3PTP-16825).
    - Áp dụng Blueprint thư mục chuẩn tại `workspace/issues/{issueKey}/test/`.
    - Nhận diện Task Type (`🌐 WEB`, `🔌 API`, `⚡ WebSocket`, `📱 Mobile`).
    - Kế thừa cấu hình `.env` 3 tầng (Root → Sibling → Local).
-   - Code Recon Gate: Quét và tái sử dụng trực tiếp code dev có sẵn. Soi DOM thật nếu là Web UI. Với chứng khoán: chỉ dùng Metabase UAT (`${METABASE_UAT_DB_TIMESCALE_ID}`, ưu tiên v3 fallback v2).
+   - Code Recon Gate: Quét và tái sử dụng trực tiếp code dev có sẵn. Nếu là Web UI: tự động chạy Playwright headless qua `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}` (hoặc `inspectWebPage`) trên Host Bridge để soi DOM/screenshot thật mà KHÔNG yêu cầu quyền `Full access` hay tự mở trình duyệt trong sandbox. Với chứng khoán: chỉ dùng Metabase UAT (`${METABASE_UAT_DB_TIMESCALE_ID}`, ưu tiên v3 fallback v2).
 
 2. **Giai đoạn 2: Thiết kế Kiến trúc & Tầng Đối tượng (POM / Service Design):**
    - Tách biệt nghiêm ngặt: Assertions CHỈ nằm ở tầng Test, KHÔNG ở Page/Service.

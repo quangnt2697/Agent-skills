@@ -49,7 +49,7 @@ metadata:
     ```bash
     node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js triggerAsyncTest '{"issueKey":"{issueKey}","testFiles":"workspace/issues/{issueKey}/test/steps/"}'
     ```
-  - Runner sẽ tự áp dụng cờ `--timeout`, `--junitxml` và timeout toàn suite (600s).
+  - Runner tự áp dụng `--timeout`, `--junitxml`, timeout toàn suite (600s) và ủy quyền sang **Host Runner Bridge** chạy Pytest/Playwright (`HEADLESS=true` mặc định) trực tiếp trên máy Host ngoài OS Sandbox của Agent — **TUYỆT ĐỐI KHÔNG** yêu cầu quyền `Full access` (`danger-full-access`) hay tự mở Chromium trực tiếp bằng Bash.
   - ⚡ **Chế độ Chạy Nền Bất Đồng Bộ (Background Async Mode):** Đối với các suite kiểm thử E2E Playwright hoặc regression kéo dài (>3 phút), agent kích hoạt webhook n8n ở chế độ nền (không chờ đồng bộ trong chat). Kết quả được ghi vào `test/result/` (report.md, test-output.log) khi hoàn tất; agent đọc lại các file này để báo cáo.
 - **Bước 3: Verify (Xác minh kết quả)**
   - Kết quả trả về gồm `verdict` và `errorCode` theo Error Contract.

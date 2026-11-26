@@ -286,19 +286,42 @@ export async function getSecuritiesFixture(params = {}, options = {}) {
 }
 
 /**
- * Fast-Path: Khám phá locator Web UI thật bằng cách mở browser, đăng nhập
- * bằng TRADING_USERNAME/PASSWORD và dump DOM của trang chỉ định.
+ * Fast-Path: Khám phá locator Web UI thật qua n8n -> Host Runner Bridge (chạy Playwright headless
+ * trực tiếp trên máy Host ngoài OS Sandbox của Agent, không cần yêu cầu quyền Full Access).
  * Kết quả lưu vào workspace/issues/{issueKey}/test/fixtures/locators.json.
  * @param {string} issueKey  Jira issue key (VD: STK-201)
  * @param {string} targetPage Tên màn hình cần lấy locator (VD: 'login', 'order', 'portfolio')
- * @param {object} options   { urlOverride, timeoutMs } — ghi đè URL nếu cần
- * @returns {Promise<object>} { success, loginSuccess, locatorCount, outputFile, login_locators, page_locators }
+ * @param {object} options   { urlOverride, skipLogin, headless, project, timeoutMs }
+ * @returns {Promise<object>}
  */
 export async function discoverWebUILocators(issueKey, targetPage = 'home', options = {}) {
   const { timeoutMs: customTimeout, ...restOptions } = options;
-  const payload = { issueKey, targetPage, ...restOptions };
-  const timeoutMs = customTimeout || 120000; // 2 phút cho Playwright
+  const payload = {
+    issueKey: issueKey || (restOptions.urlOverride ? 'ADHOC-WEB' : ''),
+    targetPage,
+    headless: restOptions.headless ?? true,
+    ...restOptions
+  };
+  const timeoutMs = customTimeout || 120000;
   return await callN8nWebhook('web-ui-locator-discovery', payload, timeoutMs);
+}
+
+/**
+ * Fast-Path: Kiểm tra nhanh bất kỳ trang Web nào bằng Playwright headless trên Host Bridge
+ * (chụp screenshot, lấy title, headings, visibleTextSample, consoleErrors và semantic locators).
+ * Mặc định skipLogin=true nếu không truyền khác; không bao giờ cần xin quyền Full Access.
+ * @param {string} urlOverride URL trang web cần mở (http:// hoặc https://)
+ * @param {object} [options]   { issueKey, targetPage, skipLogin, headless, project, timeoutMs }
+ * @returns {Promise<object>}
+ */
+export async function inspectWebPage(urlOverride, options = {}) {
+  const { issueKey = 'ADHOC-WEB', targetPage = 'inspect', skipLogin = true, headless = true, ...rest } = options;
+  return await discoverWebUILocators(issueKey, targetPage, {
+    urlOverride,
+    skipLogin,
+    headless,
+    ...rest
+  });
 }
 
 /**
@@ -463,8 +486,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
           result = await getSecuritiesFixture(JSON.parse(args[1] || '{}'));
           break;
         case 'discoverWebUILocators':
-          // Usage: node n8n-client.js discoverWebUILocators STK-201 order
+          // Usage: node n8n-client.js discoverWebUILocators STK-201 order '{"urlOverride":"..."}'
           result = await discoverWebUILocators(args[1], args[2] || 'home', JSON.parse(args[3] || '{}'));
+          break;
+        case 'inspectWebPage':
+          // Usage: node n8n-client.js inspectWebPage https://example.com '{"issueKey":"STK-201"}'
+          result = await inspectWebPage(args[1], JSON.parse(args[2] || '{}'));
           break;
         case 'fetchConfluenceDoc':
           result = await fetchConfluenceDoc(args[1]);

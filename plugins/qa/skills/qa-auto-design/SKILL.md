@@ -58,7 +58,7 @@ metadata:
     ```
   - Ghi kết quả vào `workspace/issues/{issueKey}/test/reuse-scan.json`. Dùng code tái sử dụng theo JSON này.
   - Lấy dữ liệu chứng khoán: chuỗi ưu tiên bắt buộc là `fixture valid_order_symbol` (nguồn Metabase UAT) → `getSecuritiesFixture` (n8n) → `.env`.
-  - Web UI: Dùng n8n `discoverWebUILocators` hoặc Playwright thủ công, verify locators trước khi dùng.
+  - Web UI: Tự động chạy Playwright headless qua n8n → Host Bridge bằng `node ${AGENT_SKILLS_HOME:-.}/scripts/lib/n8n-client.js discoverWebUILocators {issueKey} {targetPage}` (hoặc `inspectWebPage "<URL>" '{"issueKey":"{issueKey}"}'`) để chụp ảnh và verify semantic locators trước khi dùng. **CẤM** tự mở Chromium trực tiếp trong shell sandbox và **CẤM** yêu cầu quyền `Full access`.
 
 - **Giai đoạn 2 (Thiết kế Kiến trúc Phân tầng):**
   - Tạo Page Object Model (Web UI) hoặc Service Client (API/WS, kế thừa SDK có sẵn).
